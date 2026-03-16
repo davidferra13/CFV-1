@@ -24,6 +24,8 @@ import { AllergenBadgePanel } from '@/components/recipes/allergen-badge-panel'
 import { SubRecipeSearchModal } from '@/components/recipes/sub-recipe-search-modal'
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
+import { useDeferredAction } from '@/hooks/use-deferred-action'
+import { toast } from 'sonner'
 import {
   logProduction,
   getProductionLog,
@@ -163,21 +165,34 @@ export function RecipeDetailClient({ recipe }: Props) {
     }
   }
 
+  const { execute: deferRecipeDelete } = useDeferredAction({
+    delay: 8000,
+    toastMessage: `Recipe "${recipe.name}" deleted`,
+    onExecute: async () => {
+      await deleteRecipe(recipe.id)
+      trackAction('Deleted recipe', recipe.name)
+      router.push('/recipes')
+    },
+    onUndo: () => {
+      setShowDeleteConfirm(false)
+      setLoading(false)
+    },
+    onError: (err: unknown) => {
+      setShowDeleteConfirm(false)
+      setLoading(false)
+      const message = err instanceof Error ? err.message : 'Failed to delete recipe'
+      setError(message)
+      toast.error(message)
+    },
+  })
+
   const handleDelete = () => {
     setShowDeleteConfirm(true)
   }
 
-  const handleConfirmedDelete = async () => {
+  const handleConfirmedDelete = () => {
     setShowDeleteConfirm(false)
-    setLoading(true)
-    try {
-      await deleteRecipe(recipe.id)
-      trackAction('Deleted recipe', recipe.name)
-      router.push('/recipes')
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete recipe')
-      setLoading(false)
-    }
+    deferRecipeDelete()
   }
 
   const handleDuplicate = async () => {
@@ -973,7 +988,7 @@ export function RecipeDetailClient({ recipe }: Props) {
       <ConfirmModal
         open={showDeleteConfirm}
         title="Delete this recipe?"
-        description="It will be unlinked from any menu components. This cannot be undone."
+        description="It will be unlinked from any menu components. You'll have 8 seconds to undo."
         confirmLabel="Delete"
         variant="danger"
         loading={loading}

@@ -38,10 +38,15 @@ try {
     const eqIndex = trimmed.indexOf('=')
     if (eqIndex === -1) continue
     const key = trimmed.slice(0, eqIndex).trim()
-    const value = trimmed.slice(eqIndex + 1).trim().replace(/^["']|["']$/g, '')
+    const value = trimmed
+      .slice(eqIndex + 1)
+      .trim()
+      .replace(/^["']|["']$/g, '')
     if (!process.env[key]) process.env[key] = value
   }
-} catch { /* .env.local not found */ }
+} catch {
+  /* .env.local not found */
+}
 
 // ── Configuration ─────────────────────────────────────────────────
 
@@ -83,7 +88,9 @@ function log(source, message, type = 'info') {
   for (const client of sseClients) {
     try {
       client.write(`data: ${JSON.stringify(entry)}\n\n`)
-    } catch { sseClients.delete(client) }
+    } catch {
+      sseClients.delete(client)
+    }
   }
   // Persist to log file (non-blocking, errors silently)
   const ts = new Date(entry.time).toISOString()
@@ -127,8 +134,12 @@ function initFileWatcher() {
         log('vscode', `${action}: ${filePath}`, 'info')
 
         // Auto-invalidate manual scan cache when pages or routes change
-        if (filePath.endsWith('page.tsx') || filePath.endsWith('page.ts') ||
-            filePath.endsWith('route.ts') || filePath.endsWith('route.tsx')) {
+        if (
+          filePath.endsWith('page.tsx') ||
+          filePath.endsWith('page.ts') ||
+          filePath.endsWith('route.ts') ||
+          filePath.endsWith('route.tsx')
+        ) {
           scanCache = null
           scanCacheTime = 0
         }
@@ -142,9 +153,9 @@ function initFileWatcher() {
 
 function getActivitySummary() {
   const now = Date.now()
-  const last5min = fileActivity.filter(e => now - e.time < 5 * 60 * 1000)
-  const lastHour = fileActivity.filter(e => now - e.time < 60 * 60 * 1000)
-  const today = fileActivity.filter(e => {
+  const last5min = fileActivity.filter((e) => now - e.time < 5 * 60 * 1000)
+  const lastHour = fileActivity.filter((e) => now - e.time < 60 * 60 * 1000)
+  const today = fileActivity.filter((e) => {
     const d = new Date(e.time)
     const t = new Date()
     return d.toDateString() === t.toDateString()
@@ -187,7 +198,10 @@ function getActivitySummary() {
       total: fileActivity.length,
     },
     byDir: Object.fromEntries(
-      Object.entries(byDir).map(([dir, data]) => [dir, { count: data.count, uniqueFiles: data.files.size }])
+      Object.entries(byDir).map(([dir, data]) => [
+        dir,
+        { count: data.count, uniqueFiles: data.files.size },
+      ])
     ),
     recent,
     hotspots,
@@ -233,14 +247,24 @@ function feedEvent(source, message, level = 'info') {
   for (const client of liveFeedClients) {
     try {
       client.write(`event: log\ndata: ${JSON.stringify(entry)}\n\n`)
-    } catch { liveFeedClients.delete(client) }
+    } catch {
+      liveFeedClients.delete(client)
+    }
   }
 }
 
 function parseLogLevel(text) {
   const lower = text.toLowerCase()
-  if (lower.includes('error') || lower.includes('err ') || lower.includes('fatal') || lower.includes('econnrefused') || lower.includes('enoent')) return 'error'
-  if (lower.includes('warn') || lower.includes('warning') || lower.includes('deprecated')) return 'warn'
+  if (
+    lower.includes('error') ||
+    lower.includes('err ') ||
+    lower.includes('fatal') ||
+    lower.includes('econnrefused') ||
+    lower.includes('enoent')
+  )
+    return 'error'
+  if (lower.includes('warn') || lower.includes('warning') || lower.includes('deprecated'))
+    return 'warn'
   if (lower.includes('debug') || lower.includes('trace')) return 'debug'
   return 'info'
 }
@@ -267,10 +291,14 @@ function startLiveFeedTaps() {
   const ollamaLogPath = join(process.env.LOCALAPPDATA || '', 'Ollama', 'logs', 'server.log')
   try {
     // Use PowerShell Get-Content -Wait for Windows tail -f equivalent
-    const ollamaTail = spawn('powershell', ['-Command', `Get-Content -Path '${ollamaLogPath}' -Tail 20 -Wait`], {
-      shell: false,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
+    const ollamaTail = spawn(
+      'powershell',
+      ['-Command', `Get-Content -Path '${ollamaLogPath}' -Tail 20 -Wait`],
+      {
+        shell: false,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      }
+    )
     ollamaTail.stdout.on('data', (d) => {
       const lines = d.toString().trim().split('\n')
       for (const line of lines) {
@@ -279,7 +307,9 @@ function startLiveFeedTaps() {
       }
     })
     ollamaTail.stderr.on('data', () => {}) // silently ignore
-    ollamaTail.on('close', () => { delete liveFeedProcesses.ollamaTail })
+    ollamaTail.on('close', () => {
+      delete liveFeedProcesses.ollamaTail
+    })
     liveFeedProcesses.ollamaTail = ollamaTail
   } catch {
     feedEvent('ollama', 'Could not tail Ollama logs — file may not exist', 'warn')
@@ -287,11 +317,21 @@ function startLiveFeedTaps() {
 
   // Tail PM2 logs from Pi via SSH (streaming)
   try {
-    const betaTail = spawn('ssh', ['-o', 'ConnectTimeout=5', '-o', 'ServerAliveInterval=30', 'pi',
-      'pm2 logs chefflow-beta --lines 20 --raw --nostream; pm2 logs chefflow-beta --raw'], {
-      shell: false,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
+    const betaTail = spawn(
+      'ssh',
+      [
+        '-o',
+        'ConnectTimeout=5',
+        '-o',
+        'ServerAliveInterval=30',
+        'pi',
+        'pm2 logs chefflow-beta --lines 20 --raw --nostream; pm2 logs chefflow-beta --raw',
+      ],
+      {
+        shell: false,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      }
+    )
     betaTail.stdout.on('data', (d) => {
       const lines = d.toString().trim().split('\n')
       for (const line of lines) {
@@ -303,7 +343,9 @@ function startLiveFeedTaps() {
       const text = d.toString().trim()
       if (text && !text.includes('Warning:')) feedEvent('beta', text, 'warn')
     })
-    betaTail.on('close', () => { delete liveFeedProcesses.betaTail })
+    betaTail.on('close', () => {
+      delete liveFeedProcesses.betaTail
+    })
     liveFeedProcesses.betaTail = betaTail
   } catch {
     feedEvent('beta', 'Could not connect to Pi for beta logs', 'warn')
@@ -311,11 +353,21 @@ function startLiveFeedTaps() {
 
   // Tail cloudflared journal from Pi via SSH
   try {
-    const tunnelTail = spawn('ssh', ['-o', 'ConnectTimeout=5', '-o', 'ServerAliveInterval=30', 'pi',
-      'journalctl -u cloudflared -n 20 -f --no-pager'], {
-      shell: false,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
+    const tunnelTail = spawn(
+      'ssh',
+      [
+        '-o',
+        'ConnectTimeout=5',
+        '-o',
+        'ServerAliveInterval=30',
+        'pi',
+        'journalctl -u cloudflared -n 20 -f --no-pager',
+      ],
+      {
+        shell: false,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      }
+    )
     tunnelTail.stdout.on('data', (d) => {
       const lines = d.toString().trim().split('\n')
       for (const line of lines) {
@@ -324,7 +376,9 @@ function startLiveFeedTaps() {
       }
     })
     tunnelTail.stderr.on('data', () => {})
-    tunnelTail.on('close', () => { delete liveFeedProcesses.tunnelTail })
+    tunnelTail.on('close', () => {
+      delete liveFeedProcesses.tunnelTail
+    })
     liveFeedProcesses.tunnelTail = tunnelTail
   } catch {
     feedEvent('tunnel', 'Could not connect to Pi for tunnel logs', 'warn')
@@ -333,7 +387,11 @@ function startLiveFeedTaps() {
   // System metrics — push CPU/memory every 10 seconds
   liveFeedProcesses.systemInterval = setInterval(() => {
     const mem = process.memoryUsage()
-    feedEvent('system', `Mission Control heap: ${(mem.heapUsed / 1024 / 1024).toFixed(1)} MB`, 'info')
+    feedEvent(
+      'system',
+      `Mission Control heap: ${(mem.heapUsed / 1024 / 1024).toFixed(1)} MB`,
+      'info'
+    )
   }, 10000)
 
   feedEvent('system', 'Live feed started — tapping all sources', 'info')
@@ -344,7 +402,9 @@ function stopLiveFeedTaps() {
   // Kill all spawned tailing processes
   for (const [key, proc] of Object.entries(liveFeedProcesses)) {
     if (proc && typeof proc.kill === 'function') {
-      try { proc.kill() } catch {}
+      try {
+        proc.kill()
+      } catch {}
     } else if (key === 'systemInterval') {
       clearInterval(proc)
     }
@@ -378,16 +438,17 @@ async function sshExec(cmd, timeout = 15000) {
 
 async function findPidOnPort(port) {
   try {
-    const { stdout } = await execAsync(
-      `netstat -ano | findstr :${port} | findstr LISTENING`,
-      { shell: 'cmd' }
-    )
+    const { stdout } = await execAsync(`netstat -ano | findstr :${port} | findstr LISTENING`, {
+      shell: 'cmd',
+    })
     const lines = stdout.trim().split('\n')
     if (lines.length > 0) {
       const pid = lines[0].trim().split(/\s+/).pop()
       if (pid && !isNaN(Number(pid))) return Number(pid)
     }
-  } catch { /* no process found */ }
+  } catch {
+    /* no process found */
+  }
   return null
 }
 
@@ -413,10 +474,15 @@ async function checkBetaServer() {
     try {
       const controller = new AbortController()
       const timer = setTimeout(() => controller.abort(), 5000)
-      const res = await fetch(CONFIG.betaHealthUrl, { signal: controller.signal, cache: 'no-store' })
+      const res = await fetch(CONFIG.betaHealthUrl, {
+        signal: controller.signal,
+        cache: 'no-store',
+      })
       clearTimeout(timer)
       details = await res.json()
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   return {
     online: check.ok,
@@ -438,9 +504,11 @@ async function checkOllama(url, model) {
     const res = await fetch(`${url}/api/tags`, { signal: controller.signal, cache: 'no-store' })
     clearTimeout(timer)
     const data = await res.json()
-    result.models = (data.models ?? []).map(m => m.name)
-    result.modelReady = result.models.some(m => m === model || m.startsWith(model.split(':')[0]))
-  } catch { /* ignore */ }
+    result.models = (data.models ?? []).map((m) => m.name)
+    result.modelReady = result.models.some((m) => m === model || m.startsWith(model.split(':')[0]))
+  } catch {
+    /* ignore */
+  }
   return result
 }
 
@@ -451,10 +519,15 @@ async function checkProduction() {
     try {
       const controller = new AbortController()
       const timer = setTimeout(() => controller.abort(), 5000)
-      const res = await fetch(CONFIG.prodHealthUrl, { signal: controller.signal, cache: 'no-store' })
+      const res = await fetch(CONFIG.prodHealthUrl, {
+        signal: controller.signal,
+        cache: 'no-store',
+      })
       clearTimeout(timer)
       details = await res.json()
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   // Try to get last deploy info and usage from Vercel API
   let vercel = null
@@ -464,14 +537,18 @@ async function checkProduction() {
       // Get recent deployments
       const controller = new AbortController()
       const timer = setTimeout(() => controller.abort(), 8000)
-      const res = await fetch('https://api.vercel.com/v6/deployments?limit=3&projectId=' + (process.env.VERCEL_PROJECT_ID || ''), {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: controller.signal,
-      })
+      const res = await fetch(
+        'https://api.vercel.com/v6/deployments?limit=3&projectId=' +
+          (process.env.VERCEL_PROJECT_ID || ''),
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        }
+      )
       clearTimeout(timer)
       if (res.ok) {
         const data = await res.json()
-        const deployments = (data.deployments || []).map(d => ({
+        const deployments = (data.deployments || []).map((d) => ({
           url: d.url,
           state: d.state,
           created: d.created,
@@ -490,9 +567,13 @@ async function checkProduction() {
           vercel = vercel || {}
           vercel.team = teamData.teams?.[0]?.name
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return {
     online: check.ok,
     latency: check.latency,
@@ -509,7 +590,10 @@ async function checkGitStatus() {
       execAsync('git status --porcelain', { cwd: PROJECT_ROOT }),
       execAsync('git log --oneline -5', { cwd: PROJECT_ROOT }),
     ])
-    const dirty = statusResult.stdout.trim().split('\n').filter(l => l.trim()).length
+    const dirty = statusResult.stdout
+      .trim()
+      .split('\n')
+      .filter((l) => l.trim()).length
     return {
       branch: branchResult.stdout.trim(),
       dirty,
@@ -545,7 +629,9 @@ async function readPersistentLog(lines = 100) {
   try {
     const content = await readFile(CONFIG.logFile, 'utf-8')
     return content.trim().split('\n').slice(-lines)
-  } catch { return [] }
+  } catch {
+    return []
+  }
 }
 
 // ── Actions ───────────────────────────────────────────────────────
@@ -561,15 +647,15 @@ async function startDevServer() {
     stdio: ['ignore', 'pipe', 'pipe'],
   })
 
-  devServerProcess.stdout.on('data', d => {
+  devServerProcess.stdout.on('data', (d) => {
     const text = d.toString().trim()
     if (text) log('dev', text)
   })
-  devServerProcess.stderr.on('data', d => {
+  devServerProcess.stderr.on('data', (d) => {
     const text = d.toString().trim()
     if (text && !text.includes('ExperimentalWarning')) log('dev', text, 'warn')
   })
-  devServerProcess.on('close', code => {
+  devServerProcess.on('close', (code) => {
     log('dev', `Dev server exited (code ${code})`, code === 0 ? 'info' : 'error')
     feedEvent('dev', `Dev server exited (code ${code})`, code === 0 ? 'info' : 'error')
     devServerProcess = null
@@ -599,7 +685,9 @@ async function stopDevServer() {
       } else {
         devServerProcess.kill('SIGTERM')
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     devServerProcess = null
     return { ok: true, message: 'Dev server stopped' }
   }
@@ -624,7 +712,7 @@ async function restartBeta() {
     const { stdout } = await sshExec('pm2 restart chefflow-beta')
     log('beta', stdout.trim() || 'PM2 restart sent', 'success')
     // Wait a moment then health check
-    await new Promise(r => setTimeout(r, 3000))
+    await new Promise((r) => setTimeout(r, 3000))
     const check = await httpCheck(`http://10.0.0.177:3100`, 5000)
     if (check.ok) {
       log('beta', 'Beta server is back online!', 'success')
@@ -650,19 +738,29 @@ function deployBeta() {
   const job = { id: 'deploy', child, startTime: Date.now(), status: 'running' }
   runningJobs.set('deploy', job)
 
-  child.stdout.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('deploy', line.trim())
-    })
+  child.stdout.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('deploy', line.trim())
+      })
   })
-  child.stderr.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('deploy', line.trim(), 'warn')
-    })
+  child.stderr.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('deploy', line.trim(), 'warn')
+      })
   })
-  child.on('close', async code => {
+  child.on('close', async (code) => {
     job.status = code === 0 ? 'success' : 'failed'
-    log('deploy', code === 0 ? 'Deploy completed successfully!' : `Deploy failed (code ${code})`, code === 0 ? 'success' : 'error')
+    log(
+      'deploy',
+      code === 0 ? 'Deploy completed successfully!' : `Deploy failed (code ${code})`,
+      code === 0 ? 'success' : 'error'
+    )
     runningJobs.delete('deploy')
     try {
       const td = await readProjectTimelineData()
@@ -686,11 +784,15 @@ async function rollbackBeta() {
       cwd: PROJECT_ROOT,
       stdio: ['ignore', 'pipe', 'pipe'],
     })
-    child.stdout.on('data', d => log('rollback', d.toString().trim()))
-    child.stderr.on('data', d => log('rollback', d.toString().trim(), 'warn'))
-    return new Promise(resolve => {
-      child.on('close', async code => {
-        log('rollback', code === 0 ? 'Rollback complete!' : `Rollback failed (code ${code})`, code === 0 ? 'success' : 'error')
+    child.stdout.on('data', (d) => log('rollback', d.toString().trim()))
+    child.stderr.on('data', (d) => log('rollback', d.toString().trim(), 'warn'))
+    return new Promise((resolve) => {
+      child.on('close', async (code) => {
+        log(
+          'rollback',
+          code === 0 ? 'Rollback complete!' : `Rollback failed (code ${code})`,
+          code === 0 ? 'success' : 'error'
+        )
         if (code === 0) {
           await logRollback({ trigger: 'manual', result: 'success' })
         }
@@ -709,7 +811,12 @@ async function ollamaAction(target, action) {
   try {
     if (target === 'pc') {
       if (action === 'start') {
-        spawn('ollama', ['serve'], { cwd: PROJECT_ROOT, detached: true, stdio: 'ignore', shell: true }).unref()
+        spawn('ollama', ['serve'], {
+          cwd: PROJECT_ROOT,
+          detached: true,
+          stdio: 'ignore',
+          shell: true,
+        }).unref()
         log('ollama', 'Ollama PC starting...', 'success')
       } else {
         await execAsync('taskkill /IM ollama.exe /F', { shell: 'cmd' })
@@ -792,7 +899,8 @@ async function shipIt(message) {
   const results = { commit: null, push: null, deploy: null }
 
   // Step 1: Commit
-  const commitMsg = message || `update: ${new Date().toISOString().slice(0, 10)} ship from Mission Control`
+  const commitMsg =
+    message || `update: ${new Date().toISOString().slice(0, 10)} ship from Mission Control`
   log('ship', `Step 1/3: Committing — "${commitMsg}"`, 'info')
   try {
     await execAsync('git add -A', { cwd: PROJECT_ROOT })
@@ -817,7 +925,11 @@ async function shipIt(message) {
     const { stdout: branch } = await execAsync('git branch --show-current', { cwd: PROJECT_ROOT })
     const branchName = branch.trim()
     const { stdout } = await execAsync(`git push origin ${branchName}`, { cwd: PROJECT_ROOT })
-    results.push = { ok: true, branch: branchName, message: stdout.trim() || `Pushed ${branchName}` }
+    results.push = {
+      ok: true,
+      branch: branchName,
+      message: stdout.trim() || `Pushed ${branchName}`,
+    }
     log('ship', `Pushed ${branchName} to origin`, 'success')
   } catch (err) {
     results.push = { ok: false, error: err.stderr || err.message }
@@ -839,9 +951,7 @@ async function clearCache() {
   log('cache', 'Clearing .next/ build cache...', 'info')
   try {
     const { stdout } = await execAsync(
-      process.platform === 'win32'
-        ? 'if exist ".next" rmdir /s /q ".next"'
-        : 'rm -rf .next/',
+      process.platform === 'win32' ? 'if exist ".next" rmdir /s /q ".next"' : 'rm -rf .next/',
       { cwd: PROJECT_ROOT, shell: process.platform === 'win32' ? 'cmd' : true }
     )
     log('cache', 'Build cache cleared!', 'success')
@@ -867,20 +977,30 @@ async function npmInstall() {
   const job = { id: 'npm-install', child, startTime: Date.now(), status: 'running' }
   runningJobs.set('npm-install', job)
 
-  child.stdout.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('npm', line.trim())
-    })
+  child.stdout.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('npm', line.trim())
+      })
   })
-  child.stderr.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('npm', line.trim(), 'warn')
-    })
+  child.stderr.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('npm', line.trim(), 'warn')
+      })
   })
-  child.on('close', code => {
+  child.on('close', (code) => {
     job.status = code === 0 ? 'success' : 'failed'
     const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
-    log('npm', code === 0 ? `npm install completed (${duration}s)` : `npm install failed (${duration}s)`, code === 0 ? 'success' : 'error')
+    log(
+      'npm',
+      code === 0 ? `npm install completed (${duration}s)` : `npm install failed (${duration}s)`,
+      code === 0 ? 'success' : 'error'
+    )
     runningJobs.delete('npm-install')
   })
 
@@ -890,7 +1010,8 @@ async function npmInstall() {
 // ── Generate DB Types ───────────────────────────────────────────
 
 async function generateTypes() {
-  if (runningJobs.has('gen-types')) return { ok: false, error: 'Type generation already in progress' }
+  if (runningJobs.has('gen-types'))
+    return { ok: false, error: 'Type generation already in progress' }
 
   log('db', 'Generating database types from Supabase...', 'info')
   const child = spawn('npx', ['supabase', 'gen', 'types', 'typescript', '--linked'], {
@@ -903,13 +1024,18 @@ async function generateTypes() {
   runningJobs.set('gen-types', job)
 
   let output = ''
-  child.stdout.on('data', d => { output += d.toString() })
-  child.stderr.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('db', line.trim(), 'warn')
-    })
+  child.stdout.on('data', (d) => {
+    output += d.toString()
   })
-  child.on('close', async code => {
+  child.stderr.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('db', line.trim(), 'warn')
+      })
+  })
+  child.on('close', async (code) => {
     if (code === 0 && output.trim()) {
       try {
         const typesPath = join(PROJECT_ROOT, 'types', 'database.ts')
@@ -924,7 +1050,11 @@ async function generateTypes() {
     }
     job.status = code === 0 ? 'success' : 'failed'
     const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
-    log('db', `Type generation ${code === 0 ? 'completed' : 'failed'} (${duration}s)`, code === 0 ? 'success' : 'error')
+    log(
+      'db',
+      `Type generation ${code === 0 ? 'completed' : 'failed'} (${duration}s)`,
+      code === 0 ? 'success' : 'error'
+    )
     runningJobs.delete('gen-types')
   })
 
@@ -940,8 +1070,10 @@ async function getPromptQueue() {
     let files = []
     try {
       files = await readdir(queueDir)
-      files = files.filter(f => f.endsWith('.md'))
-    } catch { /* directory may not exist */ }
+      files = files.filter((f) => f.endsWith('.md'))
+    } catch {
+      /* directory may not exist */
+    }
 
     if (files.length === 0) {
       return { ok: true, prompts: [], total: 0, message: 'Prompt queue is empty' }
@@ -957,16 +1089,25 @@ async function getPromptQueue() {
           title: titleMatch ? titleMatch[1] : f.replace('.md', ''),
           preview: content.slice(0, 200),
         })
-      } catch { prompts.push({ file: f, title: f.replace('.md', ''), preview: '' }) }
+      } catch {
+        prompts.push({ file: f, title: f.replace('.md', ''), preview: '' })
+      }
     }
 
-    return { ok: true, prompts, total: prompts.length, message: `${prompts.length} prompt(s) in queue` }
+    return {
+      ok: true,
+      prompts,
+      total: prompts.length,
+      message: `${prompts.length} prompt(s) in queue`,
+    }
   } catch (err) {
     return { ok: false, error: err.message, prompts: [], total: 0 }
   }
 }
 
 // ── Feature Close-Out (typecheck + build + commit + push) ───────
+
+const TYPECHECK_CMD = 'node scripts/run-typecheck.mjs -p tsconfig.ci.json'
 
 async function closeOutFeature(message) {
   if (runningJobs.has('close-out')) return { ok: false, error: 'Close-out already in progress' }
@@ -978,7 +1119,7 @@ async function closeOutFeature(message) {
   // Step 1: Type check
   log('close-out', 'Step 1/4: Running type check...', 'info')
   try {
-    await execAsync('npx tsc --noEmit --skipLibCheck', { cwd: PROJECT_ROOT, timeout: 120000 })
+    await execAsync(TYPECHECK_CMD, { cwd: PROJECT_ROOT, timeout: 120000 })
     log('close-out', 'Type check passed!', 'success')
   } catch (err) {
     log('close-out', `Type check failed: ${err.stderr || err.message}`, 'error')
@@ -1035,14 +1176,17 @@ async function closeOutFeature(message) {
   const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
   log('close-out', `✅ Feature close-out complete! (${duration}s)`, 'success')
   runningJobs.delete('close-out')
-  return { ok: true, message: `Feature close-out complete (${duration}s). Type check ✓ Build ✓ Commit ✓ Push ✓` }
+  return {
+    ok: true,
+    message: `Feature close-out complete (${duration}s). Type check ✓ Build ✓ Commit ✓ Push ✓`,
+  }
 }
 
 async function runBuild(type) {
   const jobId = `build-${type}`
   if (runningJobs.has(jobId)) return { ok: false, error: 'Build already in progress' }
 
-  const cmd = type === 'typecheck' ? 'npx tsc --noEmit --skipLibCheck' : 'npx next build --no-lint'
+  const cmd = type === 'typecheck' ? TYPECHECK_CMD : 'npx next build --no-lint'
   log('build', `Running ${type === 'typecheck' ? 'type check' : 'full build'}...`, 'info')
 
   const child = spawn(cmd.split(' ')[0], cmd.split(' ').slice(1), {
@@ -1054,20 +1198,32 @@ async function runBuild(type) {
   const job = { id: jobId, child, startTime: Date.now(), status: 'running' }
   runningJobs.set(jobId, job)
 
-  child.stdout.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('build', line.trim())
-    })
+  child.stdout.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('build', line.trim())
+      })
   })
-  child.stderr.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('build', line.trim(), 'warn')
-    })
+  child.stderr.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('build', line.trim(), 'warn')
+      })
   })
-  child.on('close', code => {
+  child.on('close', (code) => {
     job.status = code === 0 ? 'success' : 'failed'
     const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
-    log('build', code === 0 ? `${type === 'typecheck' ? 'Type check' : 'Build'} passed (${duration}s)` : `${type === 'typecheck' ? 'Type check' : 'Build'} failed (${duration}s)`, code === 0 ? 'success' : 'error')
+    log(
+      'build',
+      code === 0
+        ? `${type === 'typecheck' ? 'Type check' : 'Build'} passed (${duration}s)`
+        : `${type === 'typecheck' ? 'Type check' : 'Build'} failed (${duration}s)`,
+      code === 0 ? 'success' : 'error'
+    )
     runningJobs.delete(jobId)
   })
 
@@ -1078,12 +1234,15 @@ async function runBuild(type) {
 
 async function getGitHistory() {
   try {
-    const { stdout } = await execAsync(
-      'git log --pretty=format:"%h|%ad|%s" --date=short',
-      { cwd: PROJECT_ROOT, maxBuffer: 5 * 1024 * 1024 }
-    )
-    const lines = stdout.trim().split('\n').filter(l => l.trim())
-    const commits = lines.map(line => {
+    const { stdout } = await execAsync('git log --pretty=format:"%h|%ad|%s" --date=short', {
+      cwd: PROJECT_ROOT,
+      maxBuffer: 5 * 1024 * 1024,
+    })
+    const lines = stdout
+      .trim()
+      .split('\n')
+      .filter((l) => l.trim())
+    const commits = lines.map((line) => {
       const [hash, date, ...msgParts] = line.split('|')
       return { hash, date, message: msgParts.join('|') }
     })
@@ -1111,16 +1270,10 @@ async function getRetroactiveActivity() {
     )
 
     // 2. Hotspot files (raw numstat, parsed in JS for Windows compatibility)
-    const { stdout: numstatRaw } = await execAsync(
-      'git log --all --numstat --format=""',
-      opts
-    )
+    const { stdout: numstatRaw } = await execAsync('git log --all --numstat --format=""', opts)
 
     // 3. Commits by hour (raw timestamps, parsed in JS)
-    const { stdout: hourRawTs } = await execAsync(
-      'git log --all --format="%aI"',
-      opts
-    )
+    const { stdout: hourRawTs } = await execAsync('git log --all --format="%aI"', opts)
 
     // 4. Commits by day-of-week (raw timestamps, parsed in JS)
     const { stdout: dowRawTs } = await execAsync(
@@ -1129,10 +1282,7 @@ async function getRetroactiveActivity() {
     )
 
     // 5. Co-author attribution (raw bodies, parsed in JS)
-    const { stdout: bodyRaw } = await execAsync(
-      'git log --all --format="%b"',
-      opts
-    )
+    const { stdout: bodyRaw } = await execAsync('git log --all --format="%b"', opts)
 
     // 6. Files born per day (raw output, parsed in JS)
     const { stdout: birthRawLog } = await execAsync(
@@ -1154,7 +1304,15 @@ async function getRetroactiveActivity() {
         const date = ts.replace(/T.*/, '')
         const time = ts.replace(/.*T/, '').replace(/-.*/, '')
 
-        if (!days[date]) days[date] = { commits: 0, added: 0, deleted: 0, filesChanged: 0, messages: [], times: [] }
+        if (!days[date])
+          days[date] = {
+            commits: 0,
+            added: 0,
+            deleted: 0,
+            filesChanged: 0,
+            messages: [],
+            times: [],
+          }
         days[date].commits++
         days[date].messages.push(msg)
         days[date].times.push(time)
@@ -1170,19 +1328,21 @@ async function getRetroactiveActivity() {
     }
 
     // Build daily array sorted by date
-    const dailyLog = Object.entries(days).sort((a, b) => a[0].localeCompare(b[0])).map(([date, d]) => {
-      const times = d.times.sort()
-      return {
-        date,
-        commits: d.commits,
-        linesAdded: d.added,
-        linesDeleted: d.deleted,
-        filesChanged: d.filesChanged,
-        firstCommit: times[0] || null,
-        lastCommit: times[times.length - 1] || null,
-        messages: d.messages,
-      }
-    })
+    const dailyLog = Object.entries(days)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, d]) => {
+        const times = d.times.sort()
+        return {
+          date,
+          commits: d.commits,
+          linesAdded: d.added,
+          linesDeleted: d.deleted,
+          filesChanged: d.filesChanged,
+          firstCommit: times[0] || null,
+          lastCommit: times[times.length - 1] || null,
+          messages: d.messages,
+        }
+      })
 
     // Parse hotspots from numstat (count file occurrences in JS)
     const fileCounts = {}
@@ -1257,11 +1417,15 @@ async function getRetroactiveActivity() {
       if (curr.date === sessionPrev.date) {
         const [ph, pm] = sessionPrev.time.split(':').map(Number)
         const [ch, cm] = curr.time.split(':').map(Number)
-        gap = (ch * 60 + cm) - (ph * 60 + pm)
+        gap = ch * 60 + cm - (ph * 60 + pm)
       }
 
       if (gap > 90) {
-        sessions.push({ start: sessionStart.date + 'T' + sessionStart.time, end: sessionPrev.date + 'T' + sessionPrev.time, commits: sessionCommits })
+        sessions.push({
+          start: sessionStart.date + 'T' + sessionStart.time,
+          end: sessionPrev.date + 'T' + sessionPrev.time,
+          commits: sessionCommits,
+        })
         sessionStart = curr
         sessionCommits = 1
       } else {
@@ -1269,17 +1433,36 @@ async function getRetroactiveActivity() {
       }
       sessionPrev = curr
     }
-    if (sessionStart) sessions.push({ start: sessionStart.date + 'T' + sessionStart.time, end: sessionPrev.date + 'T' + sessionPrev.time, commits: sessionCommits })
+    if (sessionStart)
+      sessions.push({
+        start: sessionStart.date + 'T' + sessionStart.time,
+        end: sessionPrev.date + 'T' + sessionPrev.time,
+        commits: sessionCommits,
+      })
 
     // Compute totals
-    let totalCommits = 0, totalAdded = 0, totalDeleted = 0, totalBorn = 0
-    for (const d of dailyLog) { totalCommits += d.commits; totalAdded += d.linesAdded; totalDeleted += d.linesDeleted }
+    let totalCommits = 0,
+      totalAdded = 0,
+      totalDeleted = 0,
+      totalBorn = 0
+    for (const d of dailyLog) {
+      totalCommits += d.commits
+      totalAdded += d.linesAdded
+      totalDeleted += d.linesDeleted
+    }
     for (const v of Object.values(filesBorn)) totalBorn += v
 
     const result = {
       ok: true,
       generated: new Date().toISOString(),
-      totals: { commits: totalCommits, linesAdded: totalAdded, linesDeleted: totalDeleted, filesBorn: totalBorn, sessions: sessions.length, activeDays: dailyLog.length },
+      totals: {
+        commits: totalCommits,
+        linesAdded: totalAdded,
+        linesDeleted: totalDeleted,
+        filesBorn: totalBorn,
+        sessions: sessions.length,
+        activeDays: dailyLog.length,
+      },
       dailyLog,
       sessions,
       hotspots,
@@ -1312,7 +1495,7 @@ function buildCommitSessions(timestampsAsc, gapSeconds) {
 
   for (let i = 1; i < timestampsAsc.length; i += 1) {
     const current = timestampsAsc[i]
-    if ((current - prev) > gapSeconds) {
+    if (current - prev > gapSeconds) {
       sessions.push([start, prev])
       start = current
     }
@@ -1325,7 +1508,7 @@ function buildCommitSessions(timestampsAsc, gapSeconds) {
 function estimateSessionSeconds(sessions, { padSeconds, minSeconds, maxSeconds }) {
   let total = 0
   for (const [start, end] of sessions) {
-    let duration = (end - start) + padSeconds
+    let duration = end - start + padSeconds
     if (duration < minSeconds) duration = minSeconds
     if (duration > maxSeconds) duration = maxSeconds
     total += duration
@@ -1422,14 +1605,18 @@ function nextMilestoneId(milestones) {
 }
 
 function buildLifeTimelineView(timelineData, gitSummary) {
-  const trackedFromFile = normalizeHoursBlock(timelineData.estimatedHours?.trackedSinceTelemetry || {})
-  const preTelemetry = normalizeHoursBlock(timelineData.estimatedHours?.preTelemetryRestartEra || {})
+  const trackedFromFile = normalizeHoursBlock(
+    timelineData.estimatedHours?.trackedSinceTelemetry || {}
+  )
+  const preTelemetry = normalizeHoursBlock(
+    timelineData.estimatedHours?.preTelemetryRestartEra || {}
+  )
   const gitModel = gitSummary
     ? normalizeHoursBlock({
-      low: gitSummary.estimatedHours?.conservative ?? 0,
-      mid: gitSummary.estimatedHours?.midpoint ?? 0,
-      high: gitSummary.estimatedHours?.aggressive ?? 0,
-    })
+        low: gitSummary.estimatedHours?.conservative ?? 0,
+        mid: gitSummary.estimatedHours?.midpoint ?? 0,
+        high: gitSummary.estimatedHours?.aggressive ?? 0,
+      })
     : normalizeHoursBlock({})
 
   // Use the stronger tracked estimate between saved VS Code evidence and current git signal.
@@ -1437,22 +1624,22 @@ function buildLifeTimelineView(timelineData, gitSummary) {
     low: roundHours(Math.max(trackedFromFile.low, gitModel.low)),
     mid: roundHours(Math.max(trackedFromFile.mid, gitModel.mid)),
     high: roundHours(Math.max(trackedFromFile.high, gitModel.high)),
-    upperBound: trackedFromFile.upperBound == null
-      ? null
-      : roundHours(Math.max(trackedFromFile.upperBound, trackedFromFile.high, gitModel.high)),
+    upperBound:
+      trackedFromFile.upperBound == null
+        ? null
+        : roundHours(Math.max(trackedFromFile.upperBound, trackedFromFile.high, gitModel.high)),
   }
 
   const combined = {
     low: roundHours(tracked.low + preTelemetry.low),
     mid: roundHours(tracked.mid + preTelemetry.mid),
     high: roundHours(tracked.high + preTelemetry.high),
-    upperBound: tracked.upperBound == null
-      ? null
-      : roundHours(tracked.upperBound + preTelemetry.high),
+    upperBound:
+      tracked.upperBound == null ? null : roundHours(tracked.upperBound + preTelemetry.high),
   }
 
   const milestones = [...(timelineData.milestones || [])]
-    .filter(m => m && typeof m.date === 'string' && typeof m.title === 'string')
+    .filter((m) => m && typeof m.date === 'string' && typeof m.title === 'string')
     .sort((a, b) => String(b.date).localeCompare(String(a.date)))
     .slice(0, 300)
 
@@ -1468,16 +1655,21 @@ function buildLifeTimelineView(timelineData, gitSummary) {
     finalVersionName: origin.finalVersionName || 'CFv1',
     totalRestarts: restarts.totalCount || restartVersions.length,
     restartSources: {
-      billyBobVersions: restartVersions.filter(v => v.name?.startsWith('BillyBob')).length,
-      filesystemGraveyard: restartVersions.filter(v => v.source === 'filesystem-graveyard' || v.source === 'filesystem-archive').length,
-      aiStudioSubmissions: restartVersions.filter(v => v.source === 'google-ai-studio').length,
+      billyBobVersions: restartVersions.filter((v) => v.name?.startsWith('BillyBob')).length,
+      filesystemGraveyard: restartVersions.filter(
+        (v) => v.source === 'filesystem-graveyard' || v.source === 'filesystem-archive'
+      ).length,
+      aiStudioSubmissions: restartVersions.filter((v) => v.source === 'google-ai-studio').length,
     },
     graveyardTotalFiles: restarts.graveyardTotalFiles || 0,
     graveyardTotalGB: restarts.graveyardTotalGB || 0,
     restartVersions,
-    daysFromIdeaToFinal: origin.ideaStartDate && origin.finalVersionStartDate
-      ? Math.floor((Date.parse(origin.finalVersionStartDate) - Date.parse(origin.ideaStartDate)) / 86400000)
-      : null,
+    daysFromIdeaToFinal:
+      origin.ideaStartDate && origin.finalVersionStartDate
+        ? Math.floor(
+            (Date.parse(origin.finalVersionStartDate) - Date.parse(origin.ideaStartDate)) / 86400000
+          )
+        : null,
     daysFromIdeaToNow: origin.ideaStartDate
       ? Math.floor((Date.now() - Date.parse(origin.ideaStartDate)) / 86400000)
       : null,
@@ -1562,7 +1754,7 @@ async function getReflogTimelineEvents() {
       'git reflog show --all --date=iso-strict --pretty=format:"%gD%x1f%gs%x1f%H"',
       { cwd: PROJECT_ROOT, maxBuffer: 30 * 1024 * 1024 }
     )
-    const lines = stdout.split('\n').filter(line => line.trim())
+    const lines = stdout.split('\n').filter((line) => line.trim())
     const out = []
     const seen = new Set()
 
@@ -1712,7 +1904,7 @@ function milestoneToTimelineEvent(milestone, index) {
   const low = toFiniteNumber(milestone.hoursLow, 0)
   const mid = toFiniteNumber(milestone.hoursMid, 0)
   const high = toFiniteNumber(milestone.hoursHigh, 0)
-  const hoursText = (low > 0 || mid > 0 || high > 0) ? ` | hours ${low}/${mid}/${high}` : ''
+  const hoursText = low > 0 || mid > 0 || high > 0 ? ` | hours ${low}/${mid}/${high}` : ''
 
   return {
     id: `milestone-${cleanEventIdPart(milestone.id || index + 1)}`,
@@ -1732,8 +1924,13 @@ function buildLinearTimelineBundle({ commits, timelineData, reflogEvents, fileEv
     .map((m, i) => milestoneToTimelineEvent(m, i))
     .filter(Boolean)
 
-  const events = [...commitEvents, ...milestoneEvents, ...(reflogEvents || []), ...(fileEvents || [])]
-    .filter(e => e && Number.isFinite(e.timestamp))
+  const events = [
+    ...commitEvents,
+    ...milestoneEvents,
+    ...(reflogEvents || []),
+    ...(fileEvents || []),
+  ]
+    .filter((e) => e && Number.isFinite(e.timestamp))
     .sort((a, b) => {
       if (a.timestamp !== b.timestamp) return a.timestamp - b.timestamp
       return String(a.id).localeCompare(String(b.id))
@@ -1764,22 +1961,27 @@ function buildLinearTimelineBundle({ commits, timelineData, reflogEvents, fileEv
 async function getProjectTimeline() {
   try {
     const timelineData = await readProjectTimelineData()
-    const { stdout } = await execAsync(
-      'git log --pretty=format:"%h%x1f%ct%x1f%an%x1f%s"',
-      { cwd: PROJECT_ROOT, maxBuffer: 10 * 1024 * 1024 }
-    )
-    const lines = stdout.trim().split('\n').filter(l => l.trim())
-    const commits = lines.map(line => {
-      const [hash, tsRaw, author, ...msgParts] = line.split('\x1f')
-      const timestamp = Number(tsRaw)
-      return {
-        hash,
-        timestamp,
-        author: author || 'Unknown',
-        message: msgParts.join('\x1f'),
-        date: localDateKeyFromSeconds(timestamp),
-      }
-    }).filter(c => Number.isFinite(c.timestamp))
+    const { stdout } = await execAsync('git log --pretty=format:"%h%x1f%ct%x1f%an%x1f%s"', {
+      cwd: PROJECT_ROOT,
+      maxBuffer: 10 * 1024 * 1024,
+    })
+    const lines = stdout
+      .trim()
+      .split('\n')
+      .filter((l) => l.trim())
+    const commits = lines
+      .map((line) => {
+        const [hash, tsRaw, author, ...msgParts] = line.split('\x1f')
+        const timestamp = Number(tsRaw)
+        return {
+          hash,
+          timestamp,
+          author: author || 'Unknown',
+          message: msgParts.join('\x1f'),
+          date: localDateKeyFromSeconds(timestamp),
+        }
+      })
+      .filter((c) => Number.isFinite(c.timestamp))
 
     const [reflogEvents, fileEvents] = await Promise.all([
       getReflogTimelineEvents(),
@@ -1805,13 +2007,13 @@ async function getProjectTimeline() {
       }
     }
 
-    const timestampsAsc = commits.map(c => c.timestamp).sort((a, b) => a - b)
+    const timestampsAsc = commits.map((c) => c.timestamp).sort((a, b) => a - b)
     const firstTimestamp = timestampsAsc[0]
     const lastTimestamp = timestampsAsc[timestampsAsc.length - 1]
-    const activeDateSet = new Set(commits.map(c => c.date))
+    const activeDateSet = new Set(commits.map((c) => c.date))
     const activeDatesAsc = Array.from(activeDateSet).sort()
     const calendarSpanDays = Math.floor((lastTimestamp - firstTimestamp) / 86400) + 1
-    const authors = Array.from(new Set(commits.map(c => c.author)))
+    const authors = Array.from(new Set(commits.map((c) => c.author)))
     const sessions45 = buildCommitSessions(timestampsAsc, 45 * 60)
     const sessions90 = buildCommitSessions(timestampsAsc, 90 * 60)
 
@@ -1864,16 +2066,16 @@ async function getProjectTimeline() {
     const life = buildLifeTimelineView(timelineData, summary)
 
     // Count pushes from reflog events
-    const pushCount = reflogEvents.filter(e => e.type === 'push').length
+    const pushCount = reflogEvents.filter((e) => e.type === 'push').length
 
     // Count Vercel deploys (main branch pushes = production deploys)
-    const mainPushCount = reflogEvents.filter(e =>
-      e.type === 'push' && (e.branch === 'refs/remotes/origin/main' || e.branch === 'main')
+    const mainPushCount = reflogEvents.filter(
+      (e) => e.type === 'push' && (e.branch === 'refs/remotes/origin/main' || e.branch === 'main')
     ).length
 
     // Count unique branches
     const branchCount = new Set(
-      reflogEvents.filter(e => e.type === 'branch_created').map(e => e.branch)
+      reflogEvents.filter((e) => e.type === 'branch_created').map((e) => e.branch)
     ).size
 
     return {
@@ -1934,18 +2136,22 @@ async function getDevHoursStats() {
     const timelineData = await readProjectTimelineData()
 
     // Total project hours from git
-    const { stdout } = await execAsync(
-      'git log --pretty=format:"%ct"',
-      { cwd: PROJECT_ROOT, maxBuffer: 10 * 1024 * 1024 }
-    )
-    const allTimestamps = stdout.trim().split('\n')
-      .map(t => Number(t.replace(/"/g, '')))
+    const { stdout } = await execAsync('git log --pretty=format:"%ct"', {
+      cwd: PROJECT_ROOT,
+      maxBuffer: 10 * 1024 * 1024,
+    })
+    const allTimestamps = stdout
+      .trim()
+      .split('\n')
+      .map((t) => Number(t.replace(/"/g, '')))
       .filter(Number.isFinite)
       .sort((a, b) => a - b)
 
     const sessions45 = buildCommitSessions(allTimestamps, 45 * 60)
     const midpointSec = estimateSessionSeconds(sessions45, {
-      padSeconds: 20 * 60, minSeconds: 25 * 60, maxSeconds: 6 * 3600,
+      padSeconds: 20 * 60,
+      minSeconds: 25 * 60,
+      maxSeconds: 6 * 3600,
     })
     const totalHours = Number((midpointSec / 3600).toFixed(1))
 
@@ -1955,21 +2161,25 @@ async function getDevHoursStats() {
     const combinedHours = roundHours(totalHours + preMid)
 
     const totalCommits = allTimestamps.length
-    const activeDays = new Set(allTimestamps.map(ts => localDateKeyFromSeconds(ts))).size
+    const activeDays = new Set(allTimestamps.map((ts) => localDateKeyFromSeconds(ts))).size
 
     // Remy-specific hours from git (commits touching remy-related files)
     const { stdout: remyLog } = await execAsync(
       'git log --pretty=format:"%ct" -- "lib/ai/remy*" "components/ai/remy*" "scripts/remy-eval/*" "docs/remy*" "app/**/remy*"',
       { cwd: PROJECT_ROOT, maxBuffer: 5 * 1024 * 1024 }
     )
-    const remyTimestamps = remyLog.trim().split('\n')
-      .map(t => Number(t.replace(/"/g, '')))
+    const remyTimestamps = remyLog
+      .trim()
+      .split('\n')
+      .map((t) => Number(t.replace(/"/g, '')))
       .filter(Number.isFinite)
       .sort((a, b) => a - b)
 
     const remySessions = buildCommitSessions(remyTimestamps, 45 * 60)
     const remyMidSec = estimateSessionSeconds(remySessions, {
-      padSeconds: 20 * 60, minSeconds: 25 * 60, maxSeconds: 6 * 3600,
+      padSeconds: 20 * 60,
+      minSeconds: 25 * 60,
+      maxSeconds: 6 * 3600,
     })
     const remyHours = Number((remyMidSec / 3600).toFixed(1))
     const remyCommits = remyTimestamps.length
@@ -1982,20 +2192,37 @@ async function getDevHoursStats() {
       remyCommits,
     }
   } catch (err) {
-    return { totalHours: 0, totalCommits: 0, activeDays: 0, remyHours: 0, remyCommits: 0, error: err.message }
+    return {
+      totalHours: 0,
+      totalCommits: 0,
+      activeDays: 0,
+      remyHours: 0,
+      remyCommits: 0,
+      error: err.message,
+    }
   }
 }
 
 async function getRemyStats() {
   const EVAL_DIR = join(PROJECT_ROOT, 'scripts', 'remy-eval', 'reports')
   try {
-    const files = (await readdir(EVAL_DIR)).filter(f => f.endsWith('.json')).sort().reverse()
-    if (!files.length) return { totalEvals: 0, latestPassRate: 0, latestPassed: 0, latestTotal: 0, avgResponseTime: 0, trend: 'neutral' }
+    const files = (await readdir(EVAL_DIR))
+      .filter((f) => f.endsWith('.json'))
+      .sort()
+      .reverse()
+    if (!files.length)
+      return {
+        totalEvals: 0,
+        latestPassRate: 0,
+        latestPassed: 0,
+        latestTotal: 0,
+        avgResponseTime: 0,
+        trend: 'neutral',
+      }
 
     const latest = JSON.parse(await readFile(join(EVAL_DIR, files[0]), 'utf-8'))
-    const passRate = latest.totalTests > 0
-      ? Number(((latest.passed / latest.totalTests) * 100).toFixed(1))
-      : 0
+    const passRate =
+      latest.totalTests > 0 ? Number(((latest.passed / latest.totalTests) * 100).toFixed(1)) : 0
     const avgTime = latest.avgResponseTimeMs
       ? Number((latest.avgResponseTimeMs / 1000).toFixed(1))
       : 0
@@ -2017,7 +2244,9 @@ async function getRemyStats() {
         if (data.avgResponseTimeMs && data.totalTests) {
           totalEvalSeconds += (data.avgResponseTimeMs / 1000) * data.totalTests
         }
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
     const totalEvalHours = Number((totalEvalSeconds / 3600).toFixed(2))
 
@@ -2032,7 +2261,15 @@ async function getRemyStats() {
       lastEvalDate: latest.timestamp || null,
     }
   } catch {
-    return { totalEvals: 0, latestPassRate: 0, latestPassed: 0, latestTotal: 0, avgResponseTime: 0, totalEvalHours: 0, trend: 'neutral' }
+    return {
+      totalEvals: 0,
+      latestPassRate: 0,
+      latestPassed: 0,
+      latestTotal: 0,
+      avgResponseTime: 0,
+      totalEvalHours: 0,
+      trend: 'neutral',
+    }
   }
 }
 
@@ -2067,8 +2304,8 @@ async function getFeedback() {
     const timer = setTimeout(() => controller.abort(), 10000)
     const res = await fetch(url, {
       headers: {
-        'apikey': CONFIG.supabaseServiceKey,
-        'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
+        apikey: CONFIG.supabaseServiceKey,
+        Authorization: `Bearer ${CONFIG.supabaseServiceKey}`,
       },
       signal: controller.signal,
     })
@@ -2083,7 +2320,10 @@ async function getFeedback() {
 
 // ── Supabase Query Helper ────────────────────────────────────────
 
-async function supabaseQuery(endpoint, { select, filters = [], order, limit = 50, extra = '' } = {}) {
+async function supabaseQuery(
+  endpoint,
+  { select, filters = [], order, limit = 50, extra = '' } = {}
+) {
   if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey) {
     return { ok: false, error: 'Supabase credentials not configured' }
   }
@@ -2099,9 +2339,9 @@ async function supabaseQuery(endpoint, { select, filters = [], order, limit = 50
     const timer = setTimeout(() => controller.abort(), 10000)
     const res = await fetch(url.toString(), {
       headers: {
-        'apikey': CONFIG.supabaseServiceKey,
-        'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
-        'Accept': 'application/json',
+        apikey: CONFIG.supabaseServiceKey,
+        Authorization: `Bearer ${CONFIG.supabaseServiceKey}`,
+        Accept: 'application/json',
       },
       signal: controller.signal,
     })
@@ -2109,9 +2349,10 @@ async function supabaseQuery(endpoint, { select, filters = [], order, limit = 50
     if (!res.ok) {
       const errBody = await res.text()
       // Truncate HTML error pages (Cloudflare worker crashes)
-      const cleanErr = errBody.startsWith('<!DOCTYPE') || errBody.startsWith('<html')
-        ? `Cloudflare/Supabase error ${res.status} (may be rate-limited — try again in a moment)`
-        : errBody.slice(0, 300)
+      const cleanErr =
+        errBody.startsWith('<!DOCTYPE') || errBody.startsWith('<html')
+          ? `Cloudflare/Supabase error ${res.status} (may be rate-limited — try again in a moment)`
+          : errBody.slice(0, 300)
       return { ok: false, error: `Supabase ${res.status}: ${cleanErr}` }
     }
     const data = await res.json()
@@ -2126,13 +2367,14 @@ async function supabaseQuery(endpoint, { select, filters = [], order, limit = 50
 async function getUpcomingEvents() {
   const now = new Date().toISOString().slice(0, 10)
   const result = await supabaseQuery('events', {
-    select: 'id,event_date,serve_time,status,guest_count,occasion,service_style,location_city,client:clients(full_name)',
+    select:
+      'id,event_date,serve_time,status,guest_count,occasion,service_style,location_city,client:clients(full_name)',
     filters: [`event_date=gte.${now}`, 'status=neq.cancelled'],
     order: 'event_date.asc',
     limit: 15,
   })
   if (!result.ok) return result
-  const events = result.data.map(e => ({
+  const events = result.data.map((e) => ({
     name: e.occasion || 'Event',
     date: e.event_date,
     time: e.serve_time || '',
@@ -2155,23 +2397,32 @@ async function getEventsByStatus() {
   for (const e of result.data) {
     counts[e.status] = (counts[e.status] || 0) + 1
   }
-  return { ok: true, counts, total: result.data.length, message: `${result.data.length} total events` }
+  return {
+    ok: true,
+    counts,
+    total: result.data.length,
+    message: `${result.data.length} total events`,
+  }
 }
 
 async function getRevenueSummary() {
   const result = await supabaseQuery('event_financial_summary', {
-    select: 'event_id,total_paid_cents,total_refunded_cents,net_revenue_cents,total_expenses_cents,profit_cents,profit_margin,food_cost_percentage,outstanding_balance_cents',
+    select:
+      'event_id,total_paid_cents,total_refunded_cents,net_revenue_cents,total_expenses_cents,profit_cents,profit_margin,food_cost_percentage,outstanding_balance_cents',
     limit: 1000,
   })
   if (!result.ok) return result
-  const totals = result.data.reduce((acc, e) => ({
-    revenue: acc.revenue + (e.net_revenue_cents || 0),
-    expenses: acc.expenses + (e.total_expenses_cents || 0),
-    profit: acc.profit + (e.profit_cents || 0),
-    outstanding: acc.outstanding + (e.outstanding_balance_cents || 0),
-    refunds: acc.refunds + (e.total_refunded_cents || 0),
-  }), { revenue: 0, expenses: 0, profit: 0, outstanding: 0, refunds: 0 })
-  const fmt = c => '$' + (Math.abs(c) / 100).toFixed(2)
+  const totals = result.data.reduce(
+    (acc, e) => ({
+      revenue: acc.revenue + (e.net_revenue_cents || 0),
+      expenses: acc.expenses + (e.total_expenses_cents || 0),
+      profit: acc.profit + (e.profit_cents || 0),
+      outstanding: acc.outstanding + (e.outstanding_balance_cents || 0),
+      refunds: acc.refunds + (e.total_refunded_cents || 0),
+    }),
+    { revenue: 0, expenses: 0, profit: 0, outstanding: 0, refunds: 0 }
+  )
+  const fmt = (c) => '$' + (Math.abs(c) / 100).toFixed(2)
   return {
     ok: true,
     summary: {
@@ -2182,7 +2433,10 @@ async function getRevenueSummary() {
       totalRefunds: fmt(totals.refunds),
       eventCount: result.data.length,
       avgMargin: result.data.length
-        ? (result.data.reduce((s, e) => s + (e.profit_margin || 0), 0) / result.data.length * 100).toFixed(1) + '%'
+        ? (
+            (result.data.reduce((s, e) => s + (e.profit_margin || 0), 0) / result.data.length) *
+            100
+          ).toFixed(1) + '%'
         : '0%',
     },
     message: `Revenue: ${fmt(totals.revenue)} | Profit: ${fmt(totals.profit)} | Outstanding: ${fmt(totals.outstanding)}`,
@@ -2201,14 +2455,14 @@ async function getClients(param) {
   let clients = result.data
   if (param && param.trim()) {
     const q = param.trim().toLowerCase()
-    clients = clients.filter(c =>
-      (c.full_name || '').toLowerCase().includes(q) ||
-      (c.email || '').toLowerCase().includes(q)
+    clients = clients.filter(
+      (c) =>
+        (c.full_name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q)
     )
   }
   return {
     ok: true,
-    clients: clients.slice(0, 25).map(c => ({
+    clients: clients.slice(0, 25).map((c) => ({
       name: c.full_name || 'Unknown',
       email: c.email || '',
       phone: c.phone || '',
@@ -2221,7 +2475,8 @@ async function getClients(param) {
 
 async function getOpenInquiries() {
   const result = await supabaseQuery('inquiries', {
-    select: 'id,created_at,event_type,event_date,guest_count,status,budget_range,client:clients(full_name)',
+    select:
+      'id,created_at,event_type,event_date,guest_count,status,budget_range,client:clients(full_name)',
     filters: ['status=in.(new,open,pending,contacted)'],
     order: 'created_at.desc',
     limit: 20,
@@ -2229,7 +2484,7 @@ async function getOpenInquiries() {
   if (!result.ok) return result
   return {
     ok: true,
-    inquiries: result.data.map(i => ({
+    inquiries: result.data.map((i) => ({
       type: i.event_type || 'General',
       date: i.event_date || 'TBD',
       guests: i.guest_count || 0,
@@ -2257,8 +2512,15 @@ async function getPiStatus() {
     if (pm2Match) {
       try {
         const pm2Data = JSON.parse(pm2Match[1].trim())
-        pm2Info = pm2Data.map(p => `${p.name}: ${p.pm2_env?.status || 'unknown'} (pid ${p.pid}, restarts: ${p.pm2_env?.restart_time || 0})`).join('\n')
-      } catch { pm2Info = pm2Match[1].trim() }
+        pm2Info = pm2Data
+          .map(
+            (p) =>
+              `${p.name}: ${p.pm2_env?.status || 'unknown'} (pid ${p.pid}, restarts: ${p.pm2_env?.restart_time || 0})`
+          )
+          .join('\n')
+      } catch {
+        pm2Info = pm2Match[1].trim()
+      }
     }
     return { ok: true, output: stdout, pm2: pm2Info, message: 'Pi status retrieved' }
   } catch (err) {
@@ -2269,7 +2531,10 @@ async function getPiStatus() {
 async function getPiLogs(param) {
   const lines = parseInt(param) || 50
   try {
-    const { stdout } = await sshExec(`pm2 logs chefflow-beta --lines ${lines} --nostream 2>&1`, 15000)
+    const { stdout } = await sshExec(
+      `pm2 logs chefflow-beta --lines ${lines} --nostream 2>&1`,
+      15000
+    )
     return { ok: true, logs: stdout, message: `Last ${lines} lines of PM2 logs` }
   } catch (err) {
     return { ok: false, error: err.message }
@@ -2304,11 +2569,14 @@ async function getAppHealth() {
 async function getVercelDeployments() {
   const prod = await checkProduction()
   if (!prod.vercel?.deployments) {
-    return { ok: false, error: 'No Vercel data available. Set VERCEL_TOKEN and VERCEL_PROJECT_ID in .env.local' }
+    return {
+      ok: false,
+      error: 'No Vercel data available. Set VERCEL_TOKEN and VERCEL_PROJECT_ID in .env.local',
+    }
   }
   return {
     ok: true,
-    deployments: prod.vercel.deployments.map(d => ({
+    deployments: prod.vercel.deployments.map((d) => ({
       state: d.state,
       branch: d.meta?.branch || 'unknown',
       message: d.meta?.message || '',
@@ -2327,10 +2595,14 @@ async function runTests(param) {
   const testType = param?.trim() || 'smoke'
   const commands = {
     smoke: 'npx playwright test tests/launch/ --reporter=line',
-    typecheck: 'npx tsc --noEmit --skipLibCheck',
+    typecheck: TYPECHECK_CMD,
   }
   const cmd = commands[testType]
-  if (!cmd) return { ok: false, error: `Unknown test type: ${testType}. Available: ${Object.keys(commands).join(', ')}` }
+  if (!cmd)
+    return {
+      ok: false,
+      error: `Unknown test type: ${testType}. Available: ${Object.keys(commands).join(', ')}`,
+    }
 
   const jobId = `test-${testType}`
   if (runningJobs.has(jobId)) return { ok: false, error: 'Test already in progress' }
@@ -2344,20 +2616,30 @@ async function runTests(param) {
   const job = { id: jobId, child, startTime: Date.now(), status: 'running' }
   runningJobs.set(jobId, job)
 
-  child.stdout.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('test', line.trim())
-    })
+  child.stdout.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('test', line.trim())
+      })
   })
-  child.stderr.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('test', line.trim(), 'warn')
-    })
+  child.stderr.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('test', line.trim(), 'warn')
+      })
   })
-  child.on('close', code => {
+  child.on('close', (code) => {
     job.status = code === 0 ? 'success' : 'failed'
     const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
-    log('test', `${testType} tests ${code === 0 ? 'passed' : 'failed'} (${duration}s)`, code === 0 ? 'success' : 'error')
+    log(
+      'test',
+      `${testType} tests ${code === 0 ? 'passed' : 'failed'} (${duration}s)`,
+      code === 0 ? 'success' : 'error'
+    )
     runningJobs.delete(jobId)
   })
 
@@ -2384,7 +2666,11 @@ async function askRemy(param) {
     clearTimeout(timer)
     if (!res.ok) return { ok: false, error: `Remy API returned ${res.status}` }
     const data = await res.json()
-    return { ok: true, response: data.response || data.message || JSON.stringify(data), message: 'Remy responded' }
+    return {
+      ok: true,
+      response: data.response || data.message || JSON.stringify(data),
+      message: 'Remy responded',
+    }
   } catch (err) {
     return { ok: false, error: `Remy bridge failed: ${err.message}` }
   }
@@ -2416,17 +2702,23 @@ function runSoakTest(quick = true) {
   const job = { id: jobId, child, startTime: Date.now(), status: 'running', phase: 'building' }
   runningJobs.set(jobId, job)
 
-  child.stdout.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('test', `[build] ${line.trim()}`)
-    })
+  child.stdout.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('test', `[build] ${line.trim()}`)
+      })
   })
-  child.stderr.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('test', `[build] ${line.trim()}`, 'warn')
-    })
+  child.stderr.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('test', `[build] ${line.trim()}`, 'warn')
+      })
   })
-  child.on('close', buildCode => {
+  child.on('close', (buildCode) => {
     if (buildCode !== 0) {
       job.status = 'failed'
       log('test', `Soak test aborted — build failed (code ${buildCode})`, 'error')
@@ -2444,28 +2736,40 @@ function runSoakTest(quick = true) {
     })
     job.child = testChild
 
-    testChild.stdout.on('data', d => {
-      d.toString().trim().split('\n').forEach(line => {
-        if (line.trim()) log('test', line.trim())
-      })
+    testChild.stdout.on('data', (d) => {
+      d.toString()
+        .trim()
+        .split('\n')
+        .forEach((line) => {
+          if (line.trim()) log('test', line.trim())
+        })
     })
-    testChild.stderr.on('data', d => {
-      d.toString().trim().split('\n').forEach(line => {
-        if (line.trim()) log('test', line.trim(), 'warn')
-      })
+    testChild.stderr.on('data', (d) => {
+      d.toString()
+        .trim()
+        .split('\n')
+        .forEach((line) => {
+          if (line.trim()) log('test', line.trim(), 'warn')
+        })
     })
-    testChild.on('close', testCode => {
+    testChild.on('close', (testCode) => {
       job.status = testCode === 0 ? 'success' : 'failed'
       const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
-      log('test', testCode === 0
-        ? `${label} passed! (${duration}s) — no memory leaks detected`
-        : `${label} failed (${duration}s) — check results for details`,
-        testCode === 0 ? 'success' : 'error')
+      log(
+        'test',
+        testCode === 0
+          ? `${label} passed! (${duration}s) — no memory leaks detected`
+          : `${label} failed (${duration}s) — check results for details`,
+        testCode === 0 ? 'success' : 'error'
+      )
       runningJobs.delete(jobId)
     })
   })
 
-  return { ok: true, message: `${label} started — building first, then running tests. Watch the log.` }
+  return {
+    ok: true,
+    message: `${label} started — building first, then running tests. Watch the log.`,
+  }
 }
 
 // ── E2E Tests ───────────────────────────────────────────────────
@@ -2491,20 +2795,30 @@ function runE2ETests(project) {
   const job = { id: jobId, child, startTime: Date.now(), status: 'running' }
   runningJobs.set(jobId, job)
 
-  child.stdout.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('test', line.trim())
-    })
+  child.stdout.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('test', line.trim())
+      })
   })
-  child.stderr.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('test', line.trim(), 'warn')
-    })
+  child.stderr.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('test', line.trim(), 'warn')
+      })
   })
-  child.on('close', code => {
+  child.on('close', (code) => {
     job.status = code === 0 ? 'success' : 'failed'
     const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
-    log('test', `${label} ${code === 0 ? 'passed' : 'failed'} (${duration}s)`, code === 0 ? 'success' : 'error')
+    log(
+      'test',
+      `${label} ${code === 0 ? 'passed' : 'failed'} (${duration}s)`,
+      code === 0 ? 'success' : 'error'
+    )
     runningJobs.delete(jobId)
   })
 
@@ -2527,23 +2841,32 @@ function resetDemoData() {
   const job = { id: jobId, child, startTime: Date.now(), status: 'running' }
   runningJobs.set(jobId, job)
 
-  child.stdout.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('demo', line.trim())
-    })
+  child.stdout.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('demo', line.trim())
+      })
   })
-  child.stderr.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('demo', line.trim(), 'warn')
-    })
+  child.stderr.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('demo', line.trim(), 'warn')
+      })
   })
-  child.on('close', code => {
+  child.on('close', (code) => {
     job.status = code === 0 ? 'success' : 'failed'
     const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
-    log('demo', code === 0
-      ? `Demo data reset complete (${duration}s)`
-      : `Demo data reset failed (${duration}s)`,
-      code === 0 ? 'success' : 'error')
+    log(
+      'demo',
+      code === 0
+        ? `Demo data reset complete (${duration}s)`
+        : `Demo data reset failed (${duration}s)`,
+      code === 0 ? 'success' : 'error'
+    )
     runningJobs.delete(jobId)
   })
 
@@ -2566,22 +2889,31 @@ function setupAgentAccount() {
   const job = { id: jobId, child, startTime: Date.now(), status: 'running' }
   runningJobs.set(jobId, job)
 
-  child.stdout.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('agent', line.trim())
-    })
+  child.stdout.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('agent', line.trim())
+      })
   })
-  child.stderr.on('data', d => {
-    d.toString().trim().split('\n').forEach(line => {
-      if (line.trim()) log('agent', line.trim(), 'warn')
-    })
+  child.stderr.on('data', (d) => {
+    d.toString()
+      .trim()
+      .split('\n')
+      .forEach((line) => {
+        if (line.trim()) log('agent', line.trim(), 'warn')
+      })
   })
-  child.on('close', code => {
+  child.on('close', (code) => {
     job.status = code === 0 ? 'success' : 'failed'
-    log('agent', code === 0
-      ? 'Agent account ready — credentials saved to .auth/agent.json'
-      : 'Agent setup failed — check the log',
-      code === 0 ? 'success' : 'error')
+    log(
+      'agent',
+      code === 0
+        ? 'Agent account ready — credentials saved to .auth/agent.json'
+        : 'Agent setup failed — check the log',
+      code === 0 ? 'success' : 'error'
+    )
     runningJobs.delete(jobId)
   })
 
@@ -2591,7 +2923,8 @@ function setupAgentAccount() {
 // ── Health Check Only (typecheck + build, no commit) ────────────
 
 async function healthCheckOnly() {
-  if (runningJobs.has('health-check')) return { ok: false, error: 'Health check already in progress' }
+  if (runningJobs.has('health-check'))
+    return { ok: false, error: 'Health check already in progress' }
 
   log('health', '🏥 Health Check — typecheck + build (no commit)...', 'info')
   const job = { id: 'health-check', startTime: Date.now(), status: 'running' }
@@ -2600,7 +2933,7 @@ async function healthCheckOnly() {
   // Step 1: Type check
   log('health', 'Step 1/2: Running type check...', 'info')
   try {
-    await execAsync('npx tsc --noEmit --skipLibCheck', { cwd: PROJECT_ROOT, timeout: 120000 })
+    await execAsync(TYPECHECK_CMD, { cwd: PROJECT_ROOT, timeout: 120000 })
     log('health', 'Type check passed!', 'success')
   } catch (err) {
     log('health', `Type check failed: ${err.stderr || err.message}`, 'error')
@@ -2625,7 +2958,10 @@ async function healthCheckOnly() {
   const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
   log('health', `🏥 Health check passed! (${duration}s) — Ready to merge.`, 'success')
   runningJobs.delete('health-check')
-  return { ok: true, message: `Health check passed (${duration}s). Type check ✓ Build ✓ — Ready to merge.` }
+  return {
+    ok: true,
+    message: `Health check passed (${duration}s). Type check ✓ Build ✓ — Ready to merge.`,
+  }
 }
 
 // ── List Migrations ─────────────────────────────────────────────
@@ -2635,12 +2971,12 @@ async function listMigrations() {
     const { readdir } = await import('node:fs/promises')
     const migrationsDir = join(PROJECT_ROOT, 'supabase', 'migrations')
     let files = await readdir(migrationsDir)
-    files = files.filter(f => f.endsWith('.sql')).sort()
+    files = files.filter((f) => f.endsWith('.sql')).sort()
     const latest = files.length > 0 ? files[files.length - 1] : 'none'
     const latestTimestamp = latest !== 'none' ? latest.match(/^(\d+)/)?.[1] || 'unknown' : 'none'
     return {
       ok: true,
-      migrations: files.map(f => {
+      migrations: files.map((f) => {
         const ts = f.match(/^(\d+)/)?.[1] || ''
         const name = f.replace(/^\d+_/, '').replace('.sql', '')
         return { file: f, timestamp: ts, name }
@@ -2674,13 +3010,17 @@ async function loadUptimeHistory() {
     if (data.beta) uptimeHistory.beta = data.beta
     if (data.prod) uptimeHistory.prod = data.prod
     if (data.pi) uptimeHistory.pi = data.pi
-  } catch { /* file doesn't exist yet */ }
+  } catch {
+    /* file doesn't exist yet */
+  }
 }
 
 async function saveUptimeHistory() {
   try {
     await writeFile(UPTIME_HISTORY_FILE, JSON.stringify(uptimeHistory) + '\n')
-  } catch { /* ignore write errors */ }
+  } catch {
+    /* ignore write errors */
+  }
 }
 
 async function pollUptime() {
@@ -2696,7 +3036,9 @@ async function pollUptime() {
   try {
     await sshExec('echo ok', 5000)
     piOk = true
-  } catch { /* pi unreachable */ }
+  } catch {
+    /* pi unreachable */
+  }
 
   uptimeHistory.beta.push({ ts, ok: betaOk })
   uptimeHistory.prod.push({ ts, ok: prodOk })
@@ -2711,11 +3053,15 @@ async function pollUptime() {
 
   // Broadcast downtime notifications via SSE — only on state transitions
   if (!betaOk && prevUptimeState.beta) feedEvent('system', 'ALERT: Beta server is DOWN', 'error')
-  if (betaOk && !prevUptimeState.beta) feedEvent('system', 'RECOVERY: Beta server is back UP', 'info')
+  if (betaOk && !prevUptimeState.beta)
+    feedEvent('system', 'RECOVERY: Beta server is back UP', 'info')
   if (!prodOk && prevUptimeState.prod) feedEvent('system', 'ALERT: Production is DOWN', 'error')
-  if (prodOk && !prevUptimeState.prod) feedEvent('system', 'RECOVERY: Production is back UP', 'info')
-  if (!piOk && prevUptimeState.pi) feedEvent('system', 'ALERT: Raspberry Pi is UNREACHABLE', 'error')
-  if (piOk && !prevUptimeState.pi) feedEvent('system', 'RECOVERY: Raspberry Pi is back REACHABLE', 'info')
+  if (prodOk && !prevUptimeState.prod)
+    feedEvent('system', 'RECOVERY: Production is back UP', 'info')
+  if (!piOk && prevUptimeState.pi)
+    feedEvent('system', 'ALERT: Raspberry Pi is UNREACHABLE', 'error')
+  if (piOk && !prevUptimeState.pi)
+    feedEvent('system', 'RECOVERY: Raspberry Pi is back REACHABLE', 'info')
 
   prevUptimeState.beta = betaOk
   prevUptimeState.prod = prodOk
@@ -2724,9 +3070,13 @@ async function pollUptime() {
   // Beta auto-remediation: restart PM2 after 3 consecutive failures
   if (!betaOk) {
     betaConsecutiveFailures++
-    if (betaConsecutiveFailures >= 3 && (ts - lastBetaRemediationTs) > BETA_REMEDIATION_COOLDOWN_MS) {
+    if (betaConsecutiveFailures >= 3 && ts - lastBetaRemediationTs > BETA_REMEDIATION_COOLDOWN_MS) {
       lastBetaRemediationTs = ts
-      feedEvent('system', `AUTO-REMEDIATION: Restarting beta PM2 (${betaConsecutiveFailures} consecutive failures)`, 'warn')
+      feedEvent(
+        'system',
+        `AUTO-REMEDIATION: Restarting beta PM2 (${betaConsecutiveFailures} consecutive failures)`,
+        'warn'
+      )
       try {
         await sshExec('source /home/davidferra/.nvm/nvm.sh && pm2 restart chefflow-beta', 30000)
         feedEvent('system', 'AUTO-REMEDIATION: PM2 restart command sent successfully', 'info')
@@ -2743,7 +3093,7 @@ async function pollUptime() {
 
 function computeUptimeStats(entries) {
   if (!entries.length) return { percentage: 100, total: 0, up: 0, down: 0, downtimeWindows: [] }
-  const up = entries.filter(e => e.ok).length
+  const up = entries.filter((e) => e.ok).length
   const down = entries.length - up
   const percentage = Number(((up / entries.length) * 100).toFixed(2))
 
@@ -2759,7 +3109,12 @@ function computeUptimeStats(entries) {
     }
   }
   if (windowStart) {
-    windows.push({ start: windowStart, end: Date.now(), duration: Date.now() - windowStart, ongoing: true })
+    windows.push({
+      start: windowStart,
+      end: Date.now(),
+      duration: Date.now() - windowStart,
+      ongoing: true,
+    })
   }
 
   return { percentage, total: entries.length, up, down, downtimeWindows: windows.slice(-10) }
@@ -2779,16 +3134,23 @@ function getUptimeReport() {
 
 function getErrorAggregation() {
   const oneHourAgo = Date.now() - 3600000
-  const recent = errorBuffer.filter(e => e.ts >= oneHourAgo)
+  const recent = errorBuffer.filter((e) => e.ts >= oneHourAgo)
   const grouped = {}
   for (const entry of recent) {
     // Normalize error messages (strip timestamps, PIDs, etc.)
-    const key = entry.message.replace(/\d{4}-\d{2}-\d{2}T[\d:.]+Z?/g, '').replace(/pid \d+/g, 'pid X').trim().slice(0, 120)
-    if (!grouped[key]) grouped[key] = { message: entry.message, count: 0, lastSeen: 0, source: entry.source }
+    const key = entry.message
+      .replace(/\d{4}-\d{2}-\d{2}T[\d:.]+Z?/g, '')
+      .replace(/pid \d+/g, 'pid X')
+      .trim()
+      .slice(0, 120)
+    if (!grouped[key])
+      grouped[key] = { message: entry.message, count: 0, lastSeen: 0, source: entry.source }
     grouped[key].count++
     if (entry.ts > grouped[key].lastSeen) grouped[key].lastSeen = entry.ts
   }
-  const top5 = Object.values(grouped).sort((a, b) => b.count - a.count).slice(0, 5)
+  const top5 = Object.values(grouped)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
   return {
     ok: true,
     totalErrors: recent.length,
@@ -2806,13 +3168,17 @@ async function logRollback(details) {
     try {
       const raw = await readFile(ROLLBACK_HISTORY_FILE, 'utf-8')
       history = JSON.parse(raw)
-    } catch { /* file doesn't exist */ }
+    } catch {
+      /* file doesn't exist */
+    }
     history.push({
       timestamp: new Date().toISOString(),
       ...details,
     })
     await writeFile(ROLLBACK_HISTORY_FILE, JSON.stringify(history, null, 2) + '\n')
-  } catch { /* ignore write errors */ }
+  } catch {
+    /* ignore write errors */
+  }
 }
 
 async function getRollbackHistory() {
@@ -2913,12 +3279,19 @@ async function captureBundleSize() {
     try {
       const histRaw = await readFile(BUNDLE_SIZE_FILE, 'utf-8')
       history = JSON.parse(histRaw)
-    } catch { /* file doesn't exist */ }
+    } catch {
+      /* file doesn't exist */
+    }
     history.push(entry)
     if (history.length > 100) history = history.slice(-100)
     await writeFile(BUNDLE_SIZE_FILE, JSON.stringify(history, null, 2) + '\n')
 
-    return { ok: true, current: entry, history, message: `Bundle: ${entry.totalMB} MB, ${routeCount} routes` }
+    return {
+      ok: true,
+      current: entry,
+      history,
+      message: `Bundle: ${entry.totalMB} MB, ${routeCount} routes`,
+    }
   } catch (err) {
     return { ok: false, error: err.message }
   }
@@ -2930,7 +3303,12 @@ async function getBundleSizeHistory() {
     const history = JSON.parse(raw)
     return { ok: true, history, total: history.length }
   } catch {
-    return { ok: true, history: [], total: 0, message: 'No bundle size history — run a build first' }
+    return {
+      ok: true,
+      history: [],
+      total: 0,
+      message: 'No bundle size history — run a build first',
+    }
   }
 }
 
@@ -2945,10 +3323,11 @@ async function compareEnvFiles() {
   for (const [env, filepath] of Object.entries(files)) {
     try {
       const content = await readFile(filepath, 'utf-8')
-      envKeys[env] = content.split('\n')
-        .map(l => l.trim())
-        .filter(l => l && !l.startsWith('#'))
-        .map(l => l.split('=')[0].trim())
+      envKeys[env] = content
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l && !l.startsWith('#'))
+        .map((l) => l.split('=')[0].trim())
         .filter(Boolean)
         .sort()
     } catch {
@@ -2959,7 +3338,7 @@ async function compareEnvFiles() {
   // Find differences (keys only — never values)
   const allKeys = new Set()
   for (const keys of Object.values(envKeys)) {
-    if (keys) keys.forEach(k => allKeys.add(k))
+    if (keys) keys.forEach((k) => allKeys.add(k))
   }
 
   const comparison = []
@@ -2971,7 +3350,7 @@ async function compareEnvFiles() {
     comparison.push(entry)
   }
 
-  const missing = comparison.filter(c => Object.values(c).some(v => v === false))
+  const missing = comparison.filter((c) => Object.values(c).some((v) => v === false))
   return {
     ok: true,
     comparison,
@@ -3004,7 +3383,9 @@ async function scheduledDbBackup() {
 
     // Retention: keep last 7
     const { readdir, unlink } = await import('node:fs/promises')
-    const files = (await readdir(backupDir)).filter(f => f.startsWith('backup-') && f.endsWith('.sql')).sort()
+    const files = (await readdir(backupDir))
+      .filter((f) => f.startsWith('backup-') && f.endsWith('.sql'))
+      .sort()
     while (files.length > 7) {
       const old = files.shift()
       await unlink(join(backupDir, old))
@@ -3026,7 +3407,11 @@ function startScheduledBackups() {
   if (next3am <= now) next3am.setDate(next3am.getDate() + 1)
   const msUntil3am = next3am - now
 
-  log('backup', `Scheduled daily backup — next run in ${Math.round(msUntil3am / 60000)} minutes (3:00 AM)`, 'info')
+  log(
+    'backup',
+    `Scheduled daily backup — next run in ${Math.round(msUntil3am / 60000)} minutes (3:00 AM)`,
+    'info'
+  )
 
   setTimeout(() => {
     scheduledDbBackup()
@@ -3059,8 +3444,8 @@ async function checkSupabaseHealth() {
     const timer = setTimeout(() => controller.abort(), 5000)
     const res = await fetch(`${CONFIG.supabaseUrl}/rest/v1/?limit=0`, {
       headers: {
-        'apikey': CONFIG.supabaseServiceKey,
-        'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
+        apikey: CONFIG.supabaseServiceKey,
+        Authorization: `Bearer ${CONFIG.supabaseServiceKey}`,
       },
       signal: controller.signal,
     })
@@ -3124,15 +3509,21 @@ async function checkStripeWebhookHealth() {
         ok: true,
         lastReceived: lastEvent?.created_at || 'never',
         recentCount: events.length,
-        events: events.map(e => ({
+        events: events.map((e) => ({
           type: e.event_type,
           status: e.status,
           received: e.created_at?.slice(0, 19) || '',
         })),
-        message: lastEvent ? `Last webhook: ${lastEvent.event_type} at ${lastEvent.created_at?.slice(0, 19)}` : 'No webhooks recorded',
+        message: lastEvent
+          ? `Last webhook: ${lastEvent.event_type} at ${lastEvent.created_at?.slice(0, 19)}`
+          : 'No webhooks recorded',
       }
     }
-    return { ok: true, message: 'Stripe webhook table not found — webhooks may not be configured', events: [] }
+    return {
+      ok: true,
+      message: 'Stripe webhook table not found — webhooks may not be configured',
+      events: [],
+    }
   } catch (err) {
     return { ok: false, error: err.message }
   }
@@ -3158,13 +3549,16 @@ async function checkEmailHealth() {
       ok: true,
       recentCount: emails.length,
       lastSent: emails[0]?.created_at || 'never',
-      emails: emails.map(e => ({
+      emails: emails.map((e) => ({
         to: e.to?.[0] || '',
         subject: e.subject || '',
         status: e.last_event || 'sent',
         sent: e.created_at?.slice(0, 19) || '',
       })),
-      message: emails.length > 0 ? `Last email: "${emails[0].subject}" (${emails[0].last_event || 'sent'})` : 'No recent emails',
+      message:
+        emails.length > 0
+          ? `Last email: "${emails[0].subject}" (${emails[0].last_event || 'sent'})`
+          : 'No recent emails',
     }
   } catch (err) {
     return { ok: false, error: err.message }
@@ -3176,20 +3570,45 @@ async function checkEmailHealth() {
 function getApiRateLimitInfo() {
   // Static info about API limits — actual usage tracking would require wrapping each API call
   const services = [
-    { name: 'Spoonacular', envKey: 'SPOONACULAR_API_KEY', dailyLimit: 150, note: 'Free tier: 150 points/day' },
-    { name: 'Kroger', envKey: 'KROGER_CLIENT_ID', dailyLimit: 10000, note: 'Standard: 10K calls/day' },
+    {
+      name: 'Spoonacular',
+      envKey: 'SPOONACULAR_API_KEY',
+      dailyLimit: 150,
+      note: 'Free tier: 150 points/day',
+    },
+    {
+      name: 'Kroger',
+      envKey: 'KROGER_CLIENT_ID',
+      dailyLimit: 10000,
+      note: 'Standard: 10K calls/day',
+    },
     { name: 'MealMe', envKey: 'MEALME_API_KEY', dailyLimit: 1000, note: 'Varies by plan' },
-    { name: 'Instacart', envKey: 'INSTACART_API_KEY', dailyLimit: null, note: 'Cart links only — no pricing API' },
-    { name: 'Resend', envKey: 'RESEND_API_KEY', dailyLimit: 100, note: 'Free tier: 100 emails/day, 3K/month' },
-    { name: 'Vercel', envKey: 'VERCEL_TOKEN', dailyLimit: null, note: 'Pro plan — no hard daily limit' },
+    {
+      name: 'Instacart',
+      envKey: 'INSTACART_API_KEY',
+      dailyLimit: null,
+      note: 'Cart links only — no pricing API',
+    },
+    {
+      name: 'Resend',
+      envKey: 'RESEND_API_KEY',
+      dailyLimit: 100,
+      note: 'Free tier: 100 emails/day, 3K/month',
+    },
+    {
+      name: 'Vercel',
+      envKey: 'VERCEL_TOKEN',
+      dailyLimit: null,
+      note: 'Pro plan — no hard daily limit',
+    },
   ]
   return {
     ok: true,
-    services: services.map(s => ({
+    services: services.map((s) => ({
       ...s,
       configured: !!process.env[s.envKey],
     })),
-    message: `${services.filter(s => process.env[s.envKey]).length}/${services.length} APIs configured`,
+    message: `${services.filter((s) => process.env[s.envKey]).length}/${services.length} APIs configured`,
   }
 }
 
@@ -3199,7 +3618,8 @@ function getApiRateLimitInfo() {
 
 async function getClientDetails(param) {
   const opts = {
-    select: 'id,full_name,email,phone,company,dietary_restrictions,allergies,notes,vibe_tags,created_at,loyalty_tier,loyalty_points_balance,lifetime_points,preferred_contact_method,address_line1,address_city,address_state',
+    select:
+      'id,full_name,email,phone,company,dietary_restrictions,allergies,notes,vibe_tags,created_at,loyalty_tier,loyalty_points_balance,lifetime_points,preferred_contact_method,address_line1,address_city,address_state',
     order: 'created_at.desc',
     limit: 200,
   }
@@ -3208,13 +3628,19 @@ async function getClientDetails(param) {
   let clients = result.data
   if (param && param.trim()) {
     const q = param.trim().toLowerCase()
-    clients = clients.filter(c =>
-      (c.full_name || '').toLowerCase().includes(q) ||
-      (c.email || '').toLowerCase().includes(q) ||
-      (c.company || '').toLowerCase().includes(q)
+    clients = clients.filter(
+      (c) =>
+        (c.full_name || '').toLowerCase().includes(q) ||
+        (c.email || '').toLowerCase().includes(q) ||
+        (c.company || '').toLowerCase().includes(q)
     )
   }
-  if (clients.length === 0) return { ok: true, clients: [], message: `No clients found${param ? ` matching "${param}"` : ''}` }
+  if (clients.length === 0)
+    return {
+      ok: true,
+      clients: [],
+      message: `No clients found${param ? ` matching "${param}"` : ''}`,
+    }
   // If searching for a specific client, also get their event history
   if (param && clients.length <= 3) {
     for (const c of clients) {
@@ -3229,7 +3655,7 @@ async function getClientDetails(param) {
   }
   return {
     ok: true,
-    clients: clients.slice(0, 25).map(c => ({
+    clients: clients.slice(0, 25).map((c) => ({
       name: c.full_name || 'Unknown',
       email: c.email || '',
       phone: c.phone || '',
@@ -3244,7 +3670,7 @@ async function getClientDetails(param) {
       preferredContact: c.preferred_contact_method || '',
       city: c.address_city || '',
       since: c.created_at?.slice(0, 10) || '',
-      eventHistory: (c._events || []).map(e => ({
+      eventHistory: (c._events || []).map((e) => ({
         date: e.event_date,
         status: e.status,
         occasion: e.occasion || '',
@@ -3258,12 +3684,13 @@ async function getClientDetails(param) {
 
 async function getInquiryPipeline() {
   const result = await supabaseQuery('inquiries', {
-    select: 'id,created_at,event_type,event_date,guest_count,status,budget_range,source,chef_likelihood,follow_up_due_at,unknown_fields,client:clients(full_name,email)',
+    select:
+      'id,created_at,event_type,event_date,guest_count,status,budget_range,source,chef_likelihood,follow_up_due_at,unknown_fields,client:clients(full_name,email)',
     order: 'created_at.desc',
     limit: 30,
   })
   if (!result.ok) return result
-  const inquiries = result.data.map(i => {
+  const inquiries = result.data.map((i) => {
     const leadScore = i.unknown_fields?.lead_score ?? i.chef_likelihood ?? null
     return {
       type: i.event_type || 'General',
@@ -3286,19 +3713,22 @@ async function getInquiryPipeline() {
     inquiries,
     byStatus,
     total: inquiries.length,
-    message: `${inquiries.length} inquiries | ${Object.entries(byStatus).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+    message: `${inquiries.length} inquiries | ${Object.entries(byStatus)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ')}`,
   }
 }
 
 async function getQuoteStatus() {
   const result = await supabaseQuery('quotes', {
-    select: 'id,created_at,status,total_cents,valid_until,notes,event:events(id,event_date,occasion,client:clients(full_name))',
+    select:
+      'id,created_at,status,total_cents,valid_until,notes,event:events(id,event_date,occasion,client:clients(full_name))',
     order: 'created_at.desc',
     limit: 30,
   })
   if (!result.ok) return result
-  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
-  const quotes = result.data.map(q => ({
+  const fmt = (c) => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const quotes = result.data.map((q) => ({
     status: q.status,
     total: fmt(q.total_cents),
     totalCents: q.total_cents || 0,
@@ -3321,7 +3751,9 @@ async function getQuoteStatus() {
     byStatus,
     totalValue: fmt(totalValue),
     total: quotes.length,
-    message: `${quotes.length} quotes (${fmt(totalValue)} total) | ${Object.entries(byStatus).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+    message: `${quotes.length} quotes (${fmt(totalValue)} total) | ${Object.entries(byStatus)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ')}`,
   }
 }
 
@@ -3333,17 +3765,19 @@ async function getMenuRecipeStats() {
       limit: 50,
     }),
     supabaseQuery('recipes', {
-      select: 'id,name,created_at,cost_per_serving_cents,prep_time_minutes,cuisine_type,dietary_tags',
+      select:
+        'id,name,created_at,cost_per_serving_cents,prep_time_minutes,cuisine_type,dietary_tags',
       order: 'created_at.desc',
       limit: 100,
     }),
   ])
   const menus = menuResult.ok ? menuResult.data : []
   const recipes = recipeResult.ok ? recipeResult.data : []
-  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
-  const avgCost = recipes.length > 0
-    ? recipes.reduce((s, r) => s + (r.cost_per_serving_cents || 0), 0) / recipes.length
-    : 0
+  const fmt = (c) => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const avgCost =
+    recipes.length > 0
+      ? recipes.reduce((s, r) => s + (r.cost_per_serving_cents || 0), 0) / recipes.length
+      : 0
   const cuisineTypes = {}
   for (const r of recipes) {
     if (r.cuisine_type) cuisineTypes[r.cuisine_type] = (cuisineTypes[r.cuisine_type] || 0) + 1
@@ -3352,8 +3786,16 @@ async function getMenuRecipeStats() {
     ok: true,
     menuCount: menus.length,
     recipeCount: recipes.length,
-    recentMenus: menus.slice(0, 5).map(m => ({ name: m.name, status: m.status, created: m.created_at?.slice(0, 10) })),
-    recentRecipes: recipes.slice(0, 5).map(r => ({ name: r.name, cost: fmt(r.cost_per_serving_cents), prep: r.prep_time_minutes })),
+    recentMenus: menus
+      .slice(0, 5)
+      .map((m) => ({ name: m.name, status: m.status, created: m.created_at?.slice(0, 10) })),
+    recentRecipes: recipes
+      .slice(0, 5)
+      .map((r) => ({
+        name: r.name,
+        cost: fmt(r.cost_per_serving_cents),
+        prep: r.prep_time_minutes,
+      })),
     avgCostPerServing: fmt(avgCost),
     cuisineBreakdown: cuisineTypes,
     message: `${menus.length} menus, ${recipes.length} recipes | Avg cost/serving: ${fmt(avgCost)}`,
@@ -3367,15 +3809,16 @@ async function getExpenseBreakdown(param) {
     limit: 200,
   })
   if (!result.ok) return result
-  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const fmt = (c) => '$' + (Math.abs(c || 0) / 100).toFixed(2)
   let expenses = result.data
   // Filter by category if param provided
   if (param && param.trim()) {
     const q = param.trim().toLowerCase()
-    expenses = expenses.filter(e =>
-      (e.category || '').toLowerCase().includes(q) ||
-      (e.vendor || '').toLowerCase().includes(q) ||
-      (e.description || '').toLowerCase().includes(q)
+    expenses = expenses.filter(
+      (e) =>
+        (e.category || '').toLowerCase().includes(q) ||
+        (e.vendor || '').toLowerCase().includes(q) ||
+        (e.description || '').toLowerCase().includes(q)
     )
   }
   const byCategory = {}
@@ -3383,12 +3826,12 @@ async function getExpenseBreakdown(param) {
   for (const e of expenses) {
     const cat = e.category || 'Uncategorized'
     byCategory[cat] = (byCategory[cat] || 0) + (e.amount_cents || 0)
-    total += (e.amount_cents || 0)
+    total += e.amount_cents || 0
   }
-  const eventLinked = expenses.filter(e => e.event_id).length
+  const eventLinked = expenses.filter((e) => e.event_id).length
   return {
     ok: true,
-    expenses: expenses.slice(0, 20).map(e => ({
+    expenses: expenses.slice(0, 20).map((e) => ({
       date: e.expense_date?.slice(0, 10) || e.created_at?.slice(0, 10) || '',
       category: e.category || 'Uncategorized',
       amount: fmt(e.amount_cents),
@@ -3439,7 +3882,7 @@ async function getCalendarOverview() {
     ok: true,
     nextTwoWeeks: byDay,
     eventCount: events.length,
-    protectedTimeBlocks: protectedTime.map(p => ({
+    protectedTimeBlocks: protectedTime.map((p) => ({
       title: p.title,
       start: p.start_date?.slice(0, 10),
       end: p.end_date?.slice(0, 10),
@@ -3471,8 +3914,8 @@ async function getStaffRoster() {
     if (!assignmentMap[a.staff_member_id]) assignmentMap[a.staff_member_id] = []
     assignmentMap[a.staff_member_id].push({ date: a.event.event_date, occasion: a.event.occasion })
   }
-  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
-  const staff = staffResult.data.map(s => ({
+  const fmt = (c) => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const staff = staffResult.data.map((s) => ({
     name: s.full_name,
     email: s.email || '',
     phone: s.phone || '',
@@ -3482,7 +3925,7 @@ async function getStaffRoster() {
     since: s.created_at?.slice(0, 10) || '',
     upcomingAssignments: assignmentMap[s.id] || [],
   }))
-  const active = staff.filter(s => s.status === 'active').length
+  const active = staff.filter((s) => s.status === 'active').length
   return {
     ok: true,
     staff,
@@ -3507,7 +3950,7 @@ async function getEmailDigest() {
   ])
   const syncs = syncResult.ok ? syncResult.data : []
   const emails = emailResult.ok ? emailResult.data : []
-  const unread = emails.filter(e => !e.is_read).length
+  const unread = emails.filter((e) => !e.is_read).length
   const byClass = {}
   for (const e of emails) {
     const cls = e.classification || 'unclassified'
@@ -3517,13 +3960,13 @@ async function getEmailDigest() {
     ok: true,
     lastSync: syncs[0]?.synced_at || 'never',
     lastSyncStatus: syncs[0]?.status || 'unknown',
-    syncHistory: syncs.map(s => ({
+    syncHistory: syncs.map((s) => ({
       time: s.synced_at,
       count: s.messages_synced,
       status: s.status,
       error: s.error_message || null,
     })),
-    recentEmails: emails.slice(0, 10).map(e => ({
+    recentEmails: emails.slice(0, 10).map((e) => ({
       from: e.from_address,
       subject: e.subject || '(no subject)',
       received: e.received_at?.slice(0, 16) || '',
@@ -3557,24 +4000,26 @@ async function getLoyaltyOverview() {
   const tiers = configResult.ok ? configResult.data : []
   const transactions = txResult.ok ? txResult.data : []
   const rewards = rewardsResult.ok ? rewardsResult.data : []
-  const totalIssued = transactions.filter(t => t.points > 0).reduce((s, t) => s + t.points, 0)
-  const totalRedeemed = transactions.filter(t => t.points < 0).reduce((s, t) => s + Math.abs(t.points), 0)
+  const totalIssued = transactions.filter((t) => t.points > 0).reduce((s, t) => s + t.points, 0)
+  const totalRedeemed = transactions
+    .filter((t) => t.points < 0)
+    .reduce((s, t) => s + Math.abs(t.points), 0)
   return {
     ok: true,
-    tiers: tiers.map(t => ({
+    tiers: tiers.map((t) => ({
       name: t.tier_name,
       pointsPerDollar: t.points_per_dollar,
       minPoints: t.min_lifetime_points,
       multiplier: t.multiplier,
     })),
-    recentTransactions: transactions.slice(0, 10).map(t => ({
+    recentTransactions: transactions.slice(0, 10).map((t) => ({
       client: t.client?.full_name || 'Unknown',
       points: t.points,
       type: t.type,
       description: t.description,
       date: t.created_at?.slice(0, 10),
     })),
-    rewards: rewards.map(r => ({
+    rewards: rewards.map((r) => ({
       name: r.name,
       cost: r.points_cost,
       type: r.reward_type,
@@ -3601,12 +4046,12 @@ async function getDocumentSummary() {
     const folder = d.folder || 'Root'
     if (!byFolder[folder]) byFolder[folder] = 0
     byFolder[folder]++
-    totalSize += (d.file_size_bytes || 0)
+    totalSize += d.file_size_bytes || 0
   }
   const sizeMB = (totalSize / (1024 * 1024)).toFixed(2)
   return {
     ok: true,
-    recentDocs: docs.slice(0, 10).map(d => ({
+    recentDocs: docs.slice(0, 10).map((d) => ({
       title: d.title,
       type: d.file_type || '',
       folder: d.folder || 'Root',
@@ -3627,7 +4072,8 @@ async function getDocumentSummary() {
 async function getHubCircles(param) {
   const [groupsResult, membersResult] = await Promise.all([
     supabaseQuery('hub_groups', {
-      select: 'id,name,description,emoji,visibility,is_active,allow_member_invites,allow_anonymous_posts,message_count,last_message_at,last_message_preview,event_id,tenant_id,created_at',
+      select:
+        'id,name,description,emoji,visibility,is_active,allow_member_invites,allow_anonymous_posts,message_count,last_message_at,last_message_preview,event_id,tenant_id,created_at',
       order: 'last_message_at.desc.nullslast,created_at.desc',
       limit: 50,
     }),
@@ -3653,13 +4099,13 @@ async function getHubCircles(param) {
   let filtered = groups
   if (param && param.trim()) {
     const q = param.trim().toLowerCase()
-    filtered = groups.filter(g =>
-      (g.name || '').toLowerCase().includes(q) ||
-      (g.description || '').toLowerCase().includes(q)
+    filtered = groups.filter(
+      (g) =>
+        (g.name || '').toLowerCase().includes(q) || (g.description || '').toLowerCase().includes(q)
     )
   }
 
-  const circles = filtered.map(g => {
+  const circles = filtered.map((g) => {
     const stats = memberStats[g.id] || { total: 0, roles: {}, muted: 0 }
     return {
       id: g.id,
@@ -3680,7 +4126,7 @@ async function getHubCircles(param) {
     }
   })
 
-  const activeCircles = circles.filter(c => c.active && c.messageCount > 0).length
+  const activeCircles = circles.filter((c) => c.active && c.messageCount > 0).length
   const totalMembers = Object.values(memberStats).reduce((s, m) => s + m.total, 0)
 
   return {
@@ -3696,7 +4142,8 @@ async function getHubCircles(param) {
 async function getHubMessages(param) {
   // param can be a group name/id filter
   const result = await supabaseQuery('hub_messages', {
-    select: 'id,group_id,message_type,body,is_pinned,is_anonymous,media_urls,reaction_counts,reply_to_message_id,created_at,deleted_at,author_profile_id',
+    select:
+      'id,group_id,message_type,body,is_pinned,is_anonymous,media_urls,reaction_counts,reply_to_message_id,created_at,deleted_at,author_profile_id',
     filters: ['deleted_at=is.null'],
     order: 'created_at.desc',
     limit: 50,
@@ -3704,7 +4151,7 @@ async function getHubMessages(param) {
   if (!result.ok) return result
 
   // Get group names for context
-  const groupIds = [...new Set(result.data.map(m => m.group_id))]
+  const groupIds = [...new Set(result.data.map((m) => m.group_id))]
   const groupsResult = await supabaseQuery('hub_groups', {
     select: 'id,name',
     filters: groupIds.length ? [`id=in.(${groupIds.join(',')})`] : [],
@@ -3718,9 +4165,10 @@ async function getHubMessages(param) {
   let messages = result.data
   if (param && param.trim()) {
     const q = param.trim().toLowerCase()
-    messages = messages.filter(m =>
-      (m.body || '').toLowerCase().includes(q) ||
-      (groupNames[m.group_id] || '').toLowerCase().includes(q)
+    messages = messages.filter(
+      (m) =>
+        (m.body || '').toLowerCase().includes(q) ||
+        (groupNames[m.group_id] || '').toLowerCase().includes(q)
     )
   }
 
@@ -3734,7 +4182,7 @@ async function getHubMessages(param) {
 
   return {
     ok: true,
-    messages: messages.slice(0, 25).map(m => ({
+    messages: messages.slice(0, 25).map((m) => ({
       circle: groupNames[m.group_id] || m.group_id,
       type: m.message_type,
       body: (m.body || '').slice(0, 120),
@@ -3771,7 +4219,7 @@ async function getHubPolls() {
   if (!pollsResult.ok) return pollsResult
 
   // Get group names
-  const groupIds = [...new Set(pollsResult.data.map(p => p.group_id))]
+  const groupIds = [...new Set(pollsResult.data.map((p) => p.group_id))]
   const groupsResult = await supabaseQuery('hub_groups', {
     select: 'id,name',
     filters: groupIds.length ? [`id=in.(${groupIds.join(',')})`] : [],
@@ -3808,7 +4256,7 @@ async function getHubPolls() {
     votersByPoll[v.poll_id].add(v.profile_id)
   }
 
-  const polls = pollsResult.data.map(p => ({
+  const polls = pollsResult.data.map((p) => ({
     circle: groupNames[p.group_id] || p.group_id,
     question: p.question,
     type: p.poll_type,
@@ -3820,7 +4268,7 @@ async function getHubPolls() {
     created: p.created_at?.slice(0, 10) || '',
   }))
 
-  const openPolls = polls.filter(p => !p.closed).length
+  const openPolls = polls.filter((p) => !p.closed).length
   return {
     ok: true,
     polls,
@@ -3834,7 +4282,8 @@ async function getHubPolls() {
 async function getHubProfiles() {
   const [profilesResult, friendsResult, membershipsResult] = await Promise.all([
     supabaseQuery('hub_guest_profiles', {
-      select: 'id,email,display_name,avatar_url,notifications_enabled,known_allergies,known_dietary,auth_user_id,client_id,created_at',
+      select:
+        'id,email,display_name,avatar_url,notifications_enabled,known_allergies,known_dietary,auth_user_id,client_id,created_at',
       order: 'created_at.desc',
       limit: 100,
     }),
@@ -3867,7 +4316,7 @@ async function getHubProfiles() {
     }
   }
 
-  const profiles = profilesResult.data.map(p => ({
+  const profiles = profilesResult.data.map((p) => ({
     name: p.display_name,
     email: p.email || '',
     hasAvatar: !!p.avatar_url,
@@ -3881,10 +4330,10 @@ async function getHubProfiles() {
     joined: p.created_at?.slice(0, 10) || '',
   }))
 
-  const withNotifications = profiles.filter(p => p.notificationsOn).length
-  const linkedAccounts = profiles.filter(p => p.linkedToAuth).length
-  const pendingFriends = friends.filter(f => f.status === 'pending').length
-  const acceptedFriends = friends.filter(f => f.status === 'accepted').length
+  const withNotifications = profiles.filter((p) => p.notificationsOn).length
+  const linkedAccounts = profiles.filter((p) => p.linkedToAuth).length
+  const pendingFriends = friends.filter((f) => f.status === 'pending').length
+  const acceptedFriends = friends.filter((f) => f.status === 'accepted').length
 
   return {
     ok: true,
@@ -3981,15 +4430,15 @@ async function getHubActivity() {
     if (namesResult.ok) {
       const nameMap = {}
       for (const g of namesResult.data) nameMap[g.id] = g.name
-      topCircles = topCircleIds.map(id => ({
+      topCircles = topCircleIds.map((id) => ({
         name: nameMap[id] || id,
         recentMessages: circleActivity[id],
       }))
     }
   }
 
-  const recentMessages7d = messages.filter(m => m.created_at?.slice(0, 10) >= sevenDaysAgo).length
-  const recentJoins7d = members.filter(m => m.joined_at?.slice(0, 10) >= sevenDaysAgo).length
+  const recentMessages7d = messages.filter((m) => m.created_at?.slice(0, 10) >= sevenDaysAgo).length
+  const recentJoins7d = members.filter((m) => m.joined_at?.slice(0, 10) >= sevenDaysAgo).length
 
   return {
     ok: true,
@@ -4002,7 +4451,7 @@ async function getHubActivity() {
       pollsCreated: polls.length,
       friendRequests: friends.length,
     },
-    message: `Last 7 days: ${recentMessages7d} messages, ${recentJoins7d} new members, ${polls.length} polls | Top circles: ${topCircles.map(c => c.name).join(', ') || 'none'}`,
+    message: `Last 7 days: ${recentMessages7d} messages, ${recentJoins7d} new members, ${polls.length} polls | Top circles: ${topCircles.map((c) => c.name).join(', ') || 'none'}`,
   }
 }
 
@@ -4012,19 +4461,21 @@ async function getHubActivity() {
 
 async function getRemyUsageMetrics() {
   const result = await supabaseQuery('remy_usage_metrics', {
-    select: 'tenant_id,metric_date,conversation_count,message_count,feature_category,avg_response_time_ms,error_count,model_version',
+    select:
+      'tenant_id,metric_date,conversation_count,message_count,feature_category,avg_response_time_ms,error_count,model_version',
     order: 'metric_date.desc',
     limit: 100,
   })
   if (!result.ok) return result
   const rows = result.data
-  const uniqueTenants = new Set(rows.map(r => r.tenant_id))
+  const uniqueTenants = new Set(rows.map((r) => r.tenant_id))
   const totalMessages = rows.reduce((s, r) => s + (r.message_count || 0), 0)
   const totalConversations = rows.reduce((s, r) => s + (r.conversation_count || 0), 0)
   const totalErrors = rows.reduce((s, r) => s + (r.error_count || 0), 0)
-  const avgResponseTime = rows.length > 0
-    ? Math.round(rows.reduce((s, r) => s + (r.avg_response_time_ms || 0), 0) / rows.length)
-    : 0
+  const avgResponseTime =
+    rows.length > 0
+      ? Math.round(rows.reduce((s, r) => s + (r.avg_response_time_ms || 0), 0) / rows.length)
+      : 0
   const byCategory = {}
   for (const r of rows) {
     const cat = r.feature_category || 'general'
@@ -4040,7 +4491,7 @@ async function getRemyUsageMetrics() {
     totalErrors,
     avgResponseTimeMs: avgResponseTime,
     byCategory,
-    recentDays: rows.slice(0, 14).map(r => ({
+    recentDays: rows.slice(0, 14).map((r) => ({
       date: r.metric_date,
       messages: r.message_count,
       conversations: r.conversation_count,
@@ -4067,7 +4518,7 @@ async function getRemyGuardrailLog() {
   }
   return {
     ok: true,
-    incidents: rows.slice(0, 20).map(r => ({
+    incidents: rows.slice(0, 20).map((r) => ({
       severity: r.severity,
       category: r.category || '',
       preview: r.message_preview || '',
@@ -4077,26 +4528,29 @@ async function getRemyGuardrailLog() {
     bySeverity,
     byCategory,
     totalIncidents: rows.length,
-    message: `${rows.length} guardrail incidents | ${Object.entries(bySeverity).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+    message: `${rows.length} guardrail incidents | ${Object.entries(bySeverity)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ')}`,
   }
 }
 
 async function getRemyMemoryStore() {
   const result = await supabaseQuery('remy_memories', {
-    select: 'id,tenant_id,category,content,importance,access_count,is_active,created_at,last_accessed_at',
+    select:
+      'id,tenant_id,category,content,importance,access_count,is_active,created_at,last_accessed_at',
     order: 'created_at.desc',
     limit: 100,
   })
   if (!result.ok) return result
   const rows = result.data
   const byCategory = {}
-  const active = rows.filter(r => r.is_active !== false)
+  const active = rows.filter((r) => r.is_active !== false)
   for (const r of rows) {
     byCategory[r.category] = (byCategory[r.category] || 0) + 1
   }
   return {
     ok: true,
-    memories: rows.slice(0, 30).map(r => ({
+    memories: rows.slice(0, 30).map((r) => ({
       category: r.category,
       content: r.content,
       importance: r.importance,
@@ -4108,7 +4562,9 @@ async function getRemyMemoryStore() {
     byCategory,
     totalMemories: rows.length,
     activeMemories: active.length,
-    message: `${rows.length} memories (${active.length} active) | ${Object.entries(byCategory).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+    message: `${rows.length} memories (${active.length} active) | ${Object.entries(byCategory)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ')}`,
   }
 }
 
@@ -4151,10 +4607,16 @@ async function getRemyPerformance() {
   const totalMessages = rows.reduce((s, r) => s + (r.message_count || 0), 0)
   const totalErrors = rows.reduce((s, r) => s + (r.error_count || 0), 0)
   const errorRate = totalMessages > 0 ? ((totalErrors / totalMessages) * 100).toFixed(2) : '0'
-  const avgResponse = rows.length > 0
-    ? Math.round(rows.filter(r => r.avg_response_time_ms > 0).reduce((s, r) => s + r.avg_response_time_ms, 0) / Math.max(1, rows.filter(r => r.avg_response_time_ms > 0).length))
-    : 0
-  const models = [...new Set(rows.map(r => r.model_version).filter(Boolean))]
+  const avgResponse =
+    rows.length > 0
+      ? Math.round(
+          rows
+            .filter((r) => r.avg_response_time_ms > 0)
+            .reduce((s, r) => s + r.avg_response_time_ms, 0) /
+            Math.max(1, rows.filter((r) => r.avg_response_time_ms > 0).length)
+        )
+      : 0
+  const models = [...new Set(rows.map((r) => r.model_version).filter(Boolean))]
   return {
     ok: true,
     totalMessages,
@@ -4162,7 +4624,7 @@ async function getRemyPerformance() {
     errorRate: `${errorRate}%`,
     avgResponseTimeMs: avgResponse,
     models,
-    dailyStats: rows.slice(0, 14).map(r => ({
+    dailyStats: rows.slice(0, 14).map((r) => ({
       date: r.metric_date,
       messages: r.message_count,
       errors: r.error_count,
@@ -4187,8 +4649,8 @@ async function getRecentChanges(param) {
     return {
       ok: true,
       output: stdout.slice(0, 4000),
-      commitCount: lines.filter(l => /^[a-f0-9]{7,}/.test(l)).length,
-      message: `Changes in last ${days} day(s): ${lines.filter(l => /^[a-f0-9]{7,}/.test(l)).length} commits`,
+      commitCount: lines.filter((l) => /^[a-f0-9]{7,}/.test(l)).length,
+      message: `Changes in last ${days} day(s): ${lines.filter((l) => /^[a-f0-9]{7,}/.test(l)).length} commits`,
     }
   } catch (err) {
     return { ok: false, error: err.message }
@@ -4199,8 +4661,14 @@ async function getBranchStatus() {
   try {
     const [branchOut, remoteOut, prOut] = await Promise.all([
       execAsync('git branch -vv', { cwd: PROJECT_ROOT, timeout: 5000 }),
-      execAsync('git rev-list --left-right --count HEAD...@{upstream} 2>/dev/null || echo "no upstream"', { cwd: PROJECT_ROOT, timeout: 5000 }).catch(() => ({ stdout: 'no upstream' })),
-      execAsync('git log --oneline HEAD ^origin/main --no-merges 2>/dev/null | head -20', { cwd: PROJECT_ROOT, timeout: 5000 }).catch(() => ({ stdout: '' })),
+      execAsync(
+        'git rev-list --left-right --count HEAD...@{upstream} 2>/dev/null || echo "no upstream"',
+        { cwd: PROJECT_ROOT, timeout: 5000 }
+      ).catch(() => ({ stdout: 'no upstream' })),
+      execAsync('git log --oneline HEAD ^origin/main --no-merges 2>/dev/null | head -20', {
+        cwd: PROJECT_ROOT,
+        timeout: 5000,
+      }).catch(() => ({ stdout: '' })),
     ])
     const ahead = remoteOut.stdout.includes('no upstream') ? 'no upstream' : remoteOut.stdout.trim()
     return {
@@ -4216,7 +4684,8 @@ async function getBranchStatus() {
 }
 
 async function codebaseSearch(param) {
-  if (!param || !param.trim()) return { ok: false, error: 'Usage: code/search:pattern — searches .ts/.tsx files' }
+  if (!param || !param.trim())
+    return { ok: false, error: 'Usage: code/search:pattern — searches .ts/.tsx files' }
   try {
     // Use git grep for speed, fall back to findstr on Windows
     const { stdout } = await execAsync(
@@ -4232,7 +4701,8 @@ async function codebaseSearch(param) {
     }
   } catch (err) {
     // grep returns exit 1 for no matches
-    if (err.code === 1) return { ok: true, results: [], matchCount: 0, message: `No matches for "${param.trim()}"` }
+    if (err.code === 1)
+      return { ok: true, results: [], matchCount: 0, message: `No matches for "${param.trim()}"` }
     return { ok: false, error: err.message }
   }
 }
@@ -4245,7 +4715,9 @@ async function readFileContent(param) {
     const lines = content.split('\n')
     // Truncate if too long
     const truncated = lines.length > 150
-    const output = truncated ? lines.slice(0, 150).join('\n') + `\n\n... (${lines.length - 150} more lines)` : content
+    const output = truncated
+      ? lines.slice(0, 150).join('\n') + `\n\n... (${lines.length - 150} more lines)`
+      : content
     return {
       ok: true,
       path: param.trim(),
@@ -4262,36 +4734,60 @@ async function readFileContent(param) {
 async function getSupabaseSchema() {
   // Get table list with row counts using Supabase REST
   const tables = [
-    'chefs', 'clients', 'events', 'inquiries', 'quotes', 'expenses', 'menus', 'recipes',
-    'ledger_entries', 'staff_members', 'chef_documents', 'loyalty_transactions', 'loyalty_config',
-    'remy_memories', 'remy_usage_metrics', 'remy_abuse_log', 'user_roles', 'ai_preferences',
-    'gmail_sync_log', 'event_transitions', 'quote_state_transitions',
+    'chefs',
+    'clients',
+    'events',
+    'inquiries',
+    'quotes',
+    'expenses',
+    'menus',
+    'recipes',
+    'ledger_entries',
+    'staff_members',
+    'chef_documents',
+    'loyalty_transactions',
+    'loyalty_config',
+    'remy_memories',
+    'remy_usage_metrics',
+    'remy_abuse_log',
+    'user_roles',
+    'ai_preferences',
+    'gmail_sync_log',
+    'event_transitions',
+    'quote_state_transitions',
   ]
   const counts = {}
-  await Promise.all(tables.map(async (table) => {
-    try {
-      const result = await supabaseQuery(table, { select: 'id', limit: 0, extra: '' })
-      // Use HEAD request with Prefer: count=exact for actual counts
-      const url = `${CONFIG.supabaseUrl}/rest/v1/${table}?select=id&limit=0`
-      const res = await fetch(url, {
-        method: 'HEAD',
-        headers: {
-          'apikey': CONFIG.supabaseServiceKey,
-          'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
-          'Prefer': 'count=exact',
-        },
-      })
-      const range = res.headers.get('content-range')
-      counts[table] = range ? parseInt(range.split('/')[1]) || 0 : '?'
-    } catch {
-      counts[table] = 'error'
-    }
-  }))
+  await Promise.all(
+    tables.map(async (table) => {
+      try {
+        const result = await supabaseQuery(table, { select: 'id', limit: 0, extra: '' })
+        // Use HEAD request with Prefer: count=exact for actual counts
+        const url = `${CONFIG.supabaseUrl}/rest/v1/${table}?select=id&limit=0`
+        const res = await fetch(url, {
+          method: 'HEAD',
+          headers: {
+            apikey: CONFIG.supabaseServiceKey,
+            Authorization: `Bearer ${CONFIG.supabaseServiceKey}`,
+            Prefer: 'count=exact',
+          },
+        })
+        const range = res.headers.get('content-range')
+        counts[table] = range ? parseInt(range.split('/')[1]) || 0 : '?'
+      } catch {
+        counts[table] = 'error'
+      }
+    })
+  )
   return {
     ok: true,
     tables: counts,
     tableCount: tables.length,
-    message: `${tables.length} tables | ` + Object.entries(counts).filter(([, v]) => v > 0).map(([k, v]) => `${k}: ${v}`).join(', '),
+    message:
+      `${tables.length} tables | ` +
+      Object.entries(counts)
+        .filter(([, v]) => v > 0)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(', '),
   }
 }
 
@@ -4315,17 +4811,25 @@ async function scanTsNoCheck() {
         if (/export\s+(async\s+)?function/.test(content)) {
           dangerous.push(filePath)
         }
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
     return {
       ok: true,
       totalFiles: files.length,
       dangerousExports: dangerous,
-      allFiles: files.map(l => l.split(':')[0]),
+      allFiles: files.map((l) => l.split(':')[0]),
       message: `${files.length} @ts-nocheck files | ${dangerous.length} with dangerous exports: ${dangerous.join(', ') || 'none'}`,
     }
   } catch (err) {
-    if (err.code === 1) return { ok: true, totalFiles: 0, dangerousExports: [], message: 'No @ts-nocheck files found' }
+    if (err.code === 1)
+      return {
+        ok: true,
+        totalFiles: 0,
+        dangerousExports: [],
+        message: 'No @ts-nocheck files found',
+      }
     return { ok: false, error: err.message }
   }
 }
@@ -4350,7 +4854,9 @@ async function scanMissingErrorHandling() {
         if (!nearby.includes('try') && !nearby.includes('catch')) {
           issues.push({ file: filePath, line: lineNum })
         }
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
     return {
       ok: true,
@@ -4360,7 +4866,13 @@ async function scanMissingErrorHandling() {
       message: `${lines.length} startTransition calls | ${issues.length} potentially missing try/catch`,
     }
   } catch (err) {
-    if (err.code === 1) return { ok: true, totalStartTransitions: 0, missingTryCatch: 0, message: 'No startTransition calls found' }
+    if (err.code === 1)
+      return {
+        ok: true,
+        totalStartTransitions: 0,
+        missingTryCatch: 0,
+        message: 'No startTransition calls found',
+      }
     return { ok: false, error: err.message }
   }
 }
@@ -4368,8 +4880,14 @@ async function scanMissingErrorHandling() {
 async function scanStaleCache() {
   try {
     const [cacheOut, revalidateOut] = await Promise.all([
-      execAsync('grep -rn "unstable_cache" --include="*.ts" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v .next', { cwd: PROJECT_ROOT, timeout: 10000 }).catch(() => ({ stdout: '' })),
-      execAsync('grep -rn "revalidateTag" --include="*.ts" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v .next', { cwd: PROJECT_ROOT, timeout: 10000 }).catch(() => ({ stdout: '' })),
+      execAsync(
+        'grep -rn "unstable_cache" --include="*.ts" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v .next',
+        { cwd: PROJECT_ROOT, timeout: 10000 }
+      ).catch(() => ({ stdout: '' })),
+      execAsync(
+        'grep -rn "revalidateTag" --include="*.ts" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v .next',
+        { cwd: PROJECT_ROOT, timeout: 10000 }
+      ).catch(() => ({ stdout: '' })),
     ])
     const cacheLines = cacheOut.stdout.trim().split('\n').filter(Boolean)
     const revalidateLines = revalidateOut.stdout.trim().split('\n').filter(Boolean)
@@ -4385,7 +4903,7 @@ async function scanStaleCache() {
       const tagMatch = line.match(/revalidateTag\(['"`]([^'"`]+)['"`]/)
       if (tagMatch) revalidatedTags.add(tagMatch[1])
     }
-    const unbusted = [...cacheTags].filter(t => !revalidatedTags.has(t))
+    const unbusted = [...cacheTags].filter((t) => !revalidatedTags.has(t))
     return {
       ok: true,
       cacheCount: cacheLines.length,
@@ -4406,7 +4924,12 @@ async function scanStaleCache() {
 
 // Universal table query — query ANY Supabase table by name
 async function queryTable(param) {
-  if (!param || !param.trim()) return { ok: false, error: 'Usage: db/query:table_name or db/query:table_name?select=col1,col2&limit=10&filter=status.eq.active' }
+  if (!param || !param.trim())
+    return {
+      ok: false,
+      error:
+        'Usage: db/query:table_name or db/query:table_name?select=col1,col2&limit=10&filter=status.eq.active',
+    }
   const parts = param.trim().split('?')
   const table = parts[0].trim()
   if (!table) return { ok: false, error: 'Table name required' }
@@ -4439,14 +4962,23 @@ async function queryTable(param) {
 
 // SQL-like query via Supabase RPC or raw PostgREST
 async function sqlQuery(param) {
-  if (!param || !param.trim()) return { ok: false, error: 'Usage: db/sql:SELECT count(*) FROM events WHERE status = \'completed\'' }
-  if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey) return { ok: false, error: 'Supabase not configured' }
+  if (!param || !param.trim())
+    return {
+      ok: false,
+      error: "Usage: db/sql:SELECT count(*) FROM events WHERE status = 'completed'",
+    }
+  if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey)
+    return { ok: false, error: 'Supabase not configured' }
 
   // Safety: read-only queries only
   const trimmed = param.trim()
   const upper = trimmed.toUpperCase()
   if (/^\s*(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|GRANT|REVOKE)/i.test(trimmed)) {
-    return { ok: false, error: 'Read-only SQL shell. Write operations are blocked. Use SELECT, WITH, or EXPLAIN only.' }
+    return {
+      ok: false,
+      error:
+        'Read-only SQL shell. Write operations are blocked. Use SELECT, WITH, or EXPLAIN only.',
+    }
   }
 
   try {
@@ -4458,10 +4990,10 @@ async function sqlQuery(param) {
     const res = await fetch(url, {
       method: 'POST',
       headers: {
-        'apikey': CONFIG.supabaseServiceKey,
-        'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
+        apikey: CONFIG.supabaseServiceKey,
+        Authorization: `Bearer ${CONFIG.supabaseServiceKey}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       body: JSON.stringify({ query: trimmed }),
       signal: controller.signal,
@@ -4472,7 +5004,8 @@ async function sqlQuery(param) {
       // RPC function doesn't exist — guide user to create it
       return {
         ok: false,
-        error: 'SQL shell requires a database function. Run this migration:\n\nCREATE OR REPLACE FUNCTION execute_sql(query text) RETURNS json AS $$\nBEGIN\n  RETURN (SELECT json_agg(row_to_json(t)) FROM (EXECUTE query) t);\nEND;\n$$ LANGUAGE plpgsql SECURITY DEFINER;\n\nGRANT EXECUTE ON FUNCTION execute_sql TO service_role;\n\nThen try again.',
+        error:
+          'SQL shell requires a database function. Run this migration:\n\nCREATE OR REPLACE FUNCTION execute_sql(query text) RETURNS json AS $$\nBEGIN\n  RETURN (SELECT json_agg(row_to_json(t)) FROM (EXECUTE query) t);\nEND;\n$$ LANGUAGE plpgsql SECURITY DEFINER;\n\nGRANT EXECUTE ON FUNCTION execute_sql TO service_role;\n\nThen try again.',
       }
     }
 
@@ -4524,14 +5057,14 @@ async function getCronJobs() {
 
   return {
     ok: true,
-    jobs: cronJobs.map(j => ({
+    jobs: cronJobs.map((j) => ({
       name: j,
       lastRun: lastByJob[j]?.started_at || 'never',
       lastStatus: lastByJob[j]?.status || 'unknown',
       lastDuration: lastByJob[j]?.duration_ms || null,
       lastError: lastByJob[j]?.error_message || null,
     })),
-    recentExecutions: executions.slice(0, 10).map(e => ({
+    recentExecutions: executions.slice(0, 10).map((e) => ({
       job: e.job_name,
       started: e.started_at,
       status: e.status,
@@ -4545,7 +5078,8 @@ async function getCronJobs() {
 
 // Trigger a cron job manually
 async function triggerCronJob(param) {
-  if (!param || !param.trim()) return { ok: false, error: 'Usage: cron/trigger:job-name (e.g., cron/trigger:recall-check)' }
+  if (!param || !param.trim())
+    return { ok: false, error: 'Usage: cron/trigger:job-name (e.g., cron/trigger:recall-check)' }
   const jobName = param.trim()
   const cronUrl = `http://localhost:${CONFIG.devPort}/api/cron/${jobName}`
   try {
@@ -4553,7 +5087,7 @@ async function triggerCronJob(param) {
     const timer = setTimeout(() => controller.abort(), 30000)
     const res = await fetch(cronUrl, {
       method: 'GET',
-      headers: { 'Authorization': `Bearer ${process.env.CRON_SECRET || ''}` },
+      headers: { Authorization: `Bearer ${process.env.CRON_SECRET || ''}` },
       signal: controller.signal,
     })
     clearTimeout(timer)
@@ -4562,7 +5096,9 @@ async function triggerCronJob(param) {
       ok: res.ok,
       status: res.status,
       result: data,
-      message: res.ok ? `Cron job ${jobName} triggered successfully` : `Cron job ${jobName} failed: ${res.status}`,
+      message: res.ok
+        ? `Cron job ${jobName} triggered successfully`
+        : `Cron job ${jobName} failed: ${res.status}`,
     }
   } catch (err) {
     return { ok: false, error: `Cannot reach cron endpoint: ${err.message}. Dev server running?` }
@@ -4571,7 +5107,8 @@ async function triggerCronJob(param) {
 
 // Event deep-dive — full operational data for a specific event
 async function eventDeepDive(param) {
-  if (!param || !param.trim()) return { ok: false, error: 'Usage: data/event-deep:event_id or data/event-deep:search term' }
+  if (!param || !param.trim())
+    return { ok: false, error: 'Usage: data/event-deep:event_id or data/event-deep:search term' }
   const q = param.trim()
 
   // Try UUID first, then search by occasion
@@ -4582,26 +5119,63 @@ async function eventDeepDive(param) {
       limit: 200,
     })
     if (!searchResult.ok) return searchResult
-    const match = searchResult.data.find(e => (e.occasion || '').toLowerCase().includes(q.toLowerCase()))
+    const match = searchResult.data.find((e) =>
+      (e.occasion || '').toLowerCase().includes(q.toLowerCase())
+    )
     if (!match) return { ok: false, error: `No event found matching "${q}"` }
     eventId = match.id
   }
 
   // Fetch everything about this event in parallel
-  const [event, ledger, expenses, tempLogs, transitions, staffAssign, quotes, contracts] = await Promise.all([
-    supabaseQuery('events', { select: '*', filters: [`id=eq.${eventId}`], limit: 1 }),
-    supabaseQuery('ledger_entries', { select: 'id,entry_type,amount_cents,description,created_at', filters: [`event_id=eq.${eventId}`], order: 'created_at.desc', limit: 50 }).catch(() => ({ ok: false })),
-    supabaseQuery('expenses', { select: 'id,amount_cents,category,description,expense_date,vendor', filters: [`event_id=eq.${eventId}`], order: 'expense_date.desc', limit: 20 }).catch(() => ({ ok: false })),
-    supabaseQuery('event_temp_logs', { select: 'id,item_name,temperature_f,logged_at,is_safe', filters: [`event_id=eq.${eventId}`], order: 'logged_at.desc', limit: 20 }).catch(() => ({ ok: false })),
-    supabaseQuery('event_transitions', { select: 'id,from_status,to_status,created_at,reason', filters: [`event_id=eq.${eventId}`], order: 'created_at.asc', limit: 20 }).catch(() => ({ ok: false })),
-    supabaseQuery('event_staff_assignments', { select: 'id,role,staff_member:staff_members(full_name,hourly_rate_cents)', filters: [`event_id=eq.${eventId}`], limit: 10 }).catch(() => ({ ok: false })),
-    supabaseQuery('quotes', { select: 'id,status,total_cents,valid_until,created_at', filters: [`event_id=eq.${eventId}`], order: 'created_at.desc', limit: 5 }).catch(() => ({ ok: false })),
-    supabaseQuery('event_contract_versions', { select: 'id,version,status,signed_at,created_at', filters: [`event_id=eq.${eventId}`], order: 'created_at.desc', limit: 5 }).catch(() => ({ ok: false })),
-  ])
+  const [event, ledger, expenses, tempLogs, transitions, staffAssign, quotes, contracts] =
+    await Promise.all([
+      supabaseQuery('events', { select: '*', filters: [`id=eq.${eventId}`], limit: 1 }),
+      supabaseQuery('ledger_entries', {
+        select: 'id,entry_type,amount_cents,description,created_at',
+        filters: [`event_id=eq.${eventId}`],
+        order: 'created_at.desc',
+        limit: 50,
+      }).catch(() => ({ ok: false })),
+      supabaseQuery('expenses', {
+        select: 'id,amount_cents,category,description,expense_date,vendor',
+        filters: [`event_id=eq.${eventId}`],
+        order: 'expense_date.desc',
+        limit: 20,
+      }).catch(() => ({ ok: false })),
+      supabaseQuery('event_temp_logs', {
+        select: 'id,item_name,temperature_f,logged_at,is_safe',
+        filters: [`event_id=eq.${eventId}`],
+        order: 'logged_at.desc',
+        limit: 20,
+      }).catch(() => ({ ok: false })),
+      supabaseQuery('event_transitions', {
+        select: 'id,from_status,to_status,created_at,reason',
+        filters: [`event_id=eq.${eventId}`],
+        order: 'created_at.asc',
+        limit: 20,
+      }).catch(() => ({ ok: false })),
+      supabaseQuery('event_staff_assignments', {
+        select: 'id,role,staff_member:staff_members(full_name,hourly_rate_cents)',
+        filters: [`event_id=eq.${eventId}`],
+        limit: 10,
+      }).catch(() => ({ ok: false })),
+      supabaseQuery('quotes', {
+        select: 'id,status,total_cents,valid_until,created_at',
+        filters: [`event_id=eq.${eventId}`],
+        order: 'created_at.desc',
+        limit: 5,
+      }).catch(() => ({ ok: false })),
+      supabaseQuery('event_contract_versions', {
+        select: 'id,version,status,signed_at,created_at',
+        filters: [`event_id=eq.${eventId}`],
+        order: 'created_at.desc',
+        limit: 5,
+      }).catch(() => ({ ok: false })),
+    ])
 
   if (!event.ok || !event.data[0]) return { ok: false, error: `Event ${eventId} not found` }
   const e = event.data[0]
-  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const fmt = (c) => '$' + (Math.abs(c || 0) / 100).toFixed(2)
 
   return {
     ok: true,
@@ -4617,41 +5191,53 @@ async function eventDeepDive(param) {
       address: e.location_address,
       notes: e.notes,
     },
-    ledger: ledger.ok ? ledger.data.map(l => ({
-      type: l.entry_type,
-      amount: fmt(l.amount_cents),
-      desc: l.description,
-      date: l.created_at?.slice(0, 10),
-    })) : 'unavailable',
-    expenses: expenses.ok ? expenses.data.map(x => ({
-      category: x.category,
-      amount: fmt(x.amount_cents),
-      vendor: x.vendor,
-      desc: x.description,
-      date: x.expense_date,
-    })) : 'unavailable',
-    tempLogs: tempLogs.ok ? tempLogs.data.map(t => ({
-      item: t.item_name,
-      temp: `${t.temperature_f}F`,
-      safe: t.is_safe,
-      time: t.logged_at,
-    })) : 'unavailable',
-    statusHistory: transitions.ok ? transitions.data.map(t => ({
-      from: t.from_status,
-      to: t.to_status,
-      reason: t.reason,
-      date: t.created_at?.slice(0, 16),
-    })) : 'unavailable',
-    staff: staffAssign.ok ? staffAssign.data.map(s => ({
-      name: s.staff_member?.full_name,
-      role: s.role,
-      rate: fmt(s.staff_member?.hourly_rate_cents),
-    })) : 'unavailable',
-    quotes: quotes.ok ? quotes.data.map(q => ({
-      status: q.status,
-      total: fmt(q.total_cents),
-      validUntil: q.valid_until?.slice(0, 10),
-    })) : 'unavailable',
+    ledger: ledger.ok
+      ? ledger.data.map((l) => ({
+          type: l.entry_type,
+          amount: fmt(l.amount_cents),
+          desc: l.description,
+          date: l.created_at?.slice(0, 10),
+        }))
+      : 'unavailable',
+    expenses: expenses.ok
+      ? expenses.data.map((x) => ({
+          category: x.category,
+          amount: fmt(x.amount_cents),
+          vendor: x.vendor,
+          desc: x.description,
+          date: x.expense_date,
+        }))
+      : 'unavailable',
+    tempLogs: tempLogs.ok
+      ? tempLogs.data.map((t) => ({
+          item: t.item_name,
+          temp: `${t.temperature_f}F`,
+          safe: t.is_safe,
+          time: t.logged_at,
+        }))
+      : 'unavailable',
+    statusHistory: transitions.ok
+      ? transitions.data.map((t) => ({
+          from: t.from_status,
+          to: t.to_status,
+          reason: t.reason,
+          date: t.created_at?.slice(0, 16),
+        }))
+      : 'unavailable',
+    staff: staffAssign.ok
+      ? staffAssign.data.map((s) => ({
+          name: s.staff_member?.full_name,
+          role: s.role,
+          rate: fmt(s.staff_member?.hourly_rate_cents),
+        }))
+      : 'unavailable',
+    quotes: quotes.ok
+      ? quotes.data.map((q) => ({
+          status: q.status,
+          total: fmt(q.total_cents),
+          validUntil: q.valid_until?.slice(0, 10),
+        }))
+      : 'unavailable',
     contracts: contracts.ok ? contracts.data : 'unavailable',
     message: `Deep dive: ${e.occasion || 'Event'} on ${e.event_date} (${e.status})`,
   }
@@ -4660,7 +5246,8 @@ async function eventDeepDive(param) {
 // Ledger entries viewer — raw financial journal
 async function getLedgerEntries(param) {
   const opts = {
-    select: 'id,event_id,entry_type,amount_cents,description,created_at,event:events(occasion,event_date)',
+    select:
+      'id,event_id,entry_type,amount_cents,description,created_at,event:events(occasion,event_date)',
     order: 'created_at.desc',
     limit: 50,
   }
@@ -4670,16 +5257,16 @@ async function getLedgerEntries(param) {
   }
   const result = await supabaseQuery('ledger_entries', opts)
   if (!result.ok) return result
-  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const fmt = (c) => '$' + (Math.abs(c || 0) / 100).toFixed(2)
   const byType = {}
   let total = 0
   for (const e of result.data) {
     byType[e.entry_type] = (byType[e.entry_type] || 0) + (e.amount_cents || 0)
-    total += (e.amount_cents || 0)
+    total += e.amount_cents || 0
   }
   return {
     ok: true,
-    entries: result.data.map(e => ({
+    entries: result.data.map((e) => ({
       type: e.entry_type,
       amount: fmt(e.amount_cents),
       description: e.description,
@@ -4690,7 +5277,9 @@ async function getLedgerEntries(param) {
     byType: Object.fromEntries(Object.entries(byType).map(([k, v]) => [k, fmt(v)])),
     total: fmt(total),
     count: result.data.length,
-    message: `${result.data.length} ledger entries | Total: ${fmt(total)} | ${Object.entries(byType).map(([k, v]) => `${k}: ${fmt(v)}`).join(', ')}`,
+    message: `${result.data.length} ledger entries | Total: ${fmt(total)} | ${Object.entries(byType)
+      .map(([k, v]) => `${k}: ${fmt(v)}`)
+      .join(', ')}`,
   }
 }
 
@@ -4709,14 +5298,14 @@ async function getNotifications() {
   ])
   const notifications = notifResult.ok ? notifResult.data : []
   const pushSubs = pushResult.ok ? pushResult.data : []
-  const unread = notifications.filter(n => !n.is_read).length
+  const unread = notifications.filter((n) => !n.is_read).length
   const byType = {}
   for (const n of notifications) {
     byType[n.type || 'general'] = (byType[n.type || 'general'] || 0) + 1
   }
   return {
     ok: true,
-    notifications: notifications.slice(0, 15).map(n => ({
+    notifications: notifications.slice(0, 15).map((n) => ({
       type: n.type,
       title: n.title,
       body: (n.body || '').slice(0, 100),
@@ -4752,23 +5341,23 @@ async function getAutomations() {
   const rules = rulesResult.ok ? rulesResult.data : []
   const executions = execResult.ok ? execResult.data : []
   const sequences = seqResult.ok ? seqResult.data : []
-  const active = rules.filter(r => r.is_active).length
-  const failed = executions.filter(e => e.status === 'failed').length
+  const active = rules.filter((r) => r.is_active).length
+  const failed = executions.filter((e) => e.status === 'failed').length
   return {
     ok: true,
-    rules: rules.map(r => ({
+    rules: rules.map((r) => ({
       name: r.name,
       trigger: r.trigger_type,
       action: r.action_type,
       active: r.is_active,
       created: r.created_at?.slice(0, 10),
     })),
-    recentExecutions: executions.slice(0, 10).map(e => ({
+    recentExecutions: executions.slice(0, 10).map((e) => ({
       status: e.status,
       started: e.started_at?.slice(0, 16),
       error: e.error_message || null,
     })),
-    sequences: sequences.map(s => ({
+    sequences: sequences.map((s) => ({
       name: s.name,
       type: s.type,
       status: s.status,
@@ -4799,30 +5388,30 @@ async function getInventoryEquipment() {
       limit: 20,
     }).catch(() => ({ ok: false })),
   ])
-  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const fmt = (c) => '$' + (Math.abs(c || 0) / 100).toFixed(2)
   const equipment = equipResult.ok ? equipResult.data : []
   const inventory = inventoryResult.ok ? inventoryResult.data : []
   const waste = wasteResult.ok ? wasteResult.data : []
   const totalEquipValue = equipment.reduce((s, e) => s + (e.purchase_price_cents || 0), 0)
-  const lowStock = inventory.filter(i => i.quantity <= (i.min_quantity || 0))
+  const lowStock = inventory.filter((i) => i.quantity <= (i.min_quantity || 0))
   const totalWasteCost = waste.reduce((s, w) => s + (w.cost_cents || 0), 0)
   return {
     ok: true,
-    equipment: equipment.slice(0, 15).map(e => ({
+    equipment: equipment.slice(0, 15).map((e) => ({
       name: e.name,
       value: fmt(e.purchase_price_cents),
       purchased: e.purchase_date,
       condition: e.condition,
       category: e.category,
     })),
-    inventory: inventory.slice(0, 15).map(i => ({
+    inventory: inventory.slice(0, 15).map((i) => ({
       name: i.name,
       quantity: `${i.quantity} ${i.unit || ''}`,
       category: i.category,
       lowStock: i.quantity <= (i.min_quantity || 0),
       lastRestocked: i.last_restocked_at?.slice(0, 10),
     })),
-    recentWaste: waste.slice(0, 10).map(w => ({
+    recentWaste: waste.slice(0, 10).map((w) => ({
       item: w.item_name,
       quantity: w.quantity,
       reason: w.reason,
@@ -4852,10 +5441,11 @@ async function getActivityFeed(param) {
   }
   const events = result.data
   const byType = {}
-  for (const e of events) byType[e.event_type || 'unknown'] = (byType[e.event_type || 'unknown'] || 0) + 1
+  for (const e of events)
+    byType[e.event_type || 'unknown'] = (byType[e.event_type || 'unknown'] || 0) + 1
   return {
     ok: true,
-    events: events.map(e => ({
+    events: events.map((e) => ({
       type: e.event_type,
       entity: `${e.entity_type}:${e.entity_id?.slice(0, 8)}`,
       actor: e.actor_type,
@@ -4864,7 +5454,9 @@ async function getActivityFeed(param) {
     })),
     byType,
     total: events.length,
-    message: `${events.length} recent activities | ${Object.entries(byType).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+    message: `${events.length} recent activities | ${Object.entries(byType)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ')}`,
   }
 }
 
@@ -4884,18 +5476,18 @@ async function getWebhookHistory() {
   ])
   const inbound = stripeResult.ok ? stripeResult.data : []
   const outbound = resendResult.ok ? resendResult.data : []
-  const failedInbound = inbound.filter(e => e.status === 'failed').length
-  const failedOutbound = outbound.filter(e => e.status === 'failed').length
+  const failedInbound = inbound.filter((e) => e.status === 'failed').length
+  const failedOutbound = outbound.filter((e) => e.status === 'failed').length
   return {
     ok: true,
-    inbound: inbound.map(e => ({
+    inbound: inbound.map((e) => ({
       source: e.source,
       type: e.event_type,
       status: e.status,
       time: e.received_at?.slice(0, 16),
       error: e.error_message || null,
     })),
-    outbound: outbound.map(e => ({
+    outbound: outbound.map((e) => ({
       endpoint: e.endpoint?.slice(0, 50),
       status: e.status,
       attempts: e.attempts,
@@ -4912,7 +5504,8 @@ async function getWebhookHistory() {
 async function getBusinessIntelligence() {
   const [revenue, events, inquiries, clients] = await Promise.all([
     supabaseQuery('event_financial_summary', {
-      select: 'event_id,net_revenue_cents,total_expenses_cents,profit_cents,profit_margin,food_cost_percentage',
+      select:
+        'event_id,net_revenue_cents,total_expenses_cents,profit_cents,profit_margin,food_cost_percentage',
       limit: 200,
     }).catch(() => ({ ok: false })),
     supabaseQuery('events', {
@@ -4928,7 +5521,7 @@ async function getBusinessIntelligence() {
       limit: 200,
     }).catch(() => ({ ok: false })),
   ])
-  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const fmt = (c) => '$' + (Math.abs(c || 0) / 100).toFixed(2)
 
   // Revenue trends (by month)
   const monthlyRevenue = {}
@@ -4940,7 +5533,8 @@ async function getBusinessIntelligence() {
       const date = eventDates[r.event_id]
       if (!date) continue
       const month = date.slice(0, 7)
-      if (!monthlyRevenue[month]) monthlyRevenue[month] = { revenue: 0, expenses: 0, profit: 0, events: 0 }
+      if (!monthlyRevenue[month])
+        monthlyRevenue[month] = { revenue: 0, expenses: 0, profit: 0, events: 0 }
       monthlyRevenue[month].revenue += r.net_revenue_cents || 0
       monthlyRevenue[month].expenses += r.total_expenses_cents || 0
       monthlyRevenue[month].profit += r.profit_cents || 0
@@ -4952,7 +5546,7 @@ async function getBusinessIntelligence() {
   let conversionRate = 0
   if (inquiries.ok && events.ok) {
     const totalInquiries = inquiries.data.length
-    const converted = events.data.filter(e => !['draft', 'cancelled'].includes(e.status)).length
+    const converted = events.data.filter((e) => !['draft', 'cancelled'].includes(e.status)).length
     conversionRate = totalInquiries > 0 ? ((converted / totalInquiries) * 100).toFixed(1) : 0
   }
 
@@ -4966,10 +5560,14 @@ async function getBusinessIntelligence() {
   }
 
   // Average event metrics
-  let avgGuests = 0, avgRevPerGuest = 0
+  let avgGuests = 0,
+    avgRevPerGuest = 0
   if (events.ok && revenue.ok) {
-    const validEvents = events.data.filter(e => e.guest_count > 0)
-    avgGuests = validEvents.length > 0 ? Math.round(validEvents.reduce((s, e) => s + e.guest_count, 0) / validEvents.length) : 0
+    const validEvents = events.data.filter((e) => e.guest_count > 0)
+    avgGuests =
+      validEvents.length > 0
+        ? Math.round(validEvents.reduce((s, e) => s + e.guest_count, 0) / validEvents.length)
+        : 0
     const totalRev = revenue.data.reduce((s, r) => s + (r.net_revenue_cents || 0), 0)
     const totalGuests = validEvents.reduce((s, e) => s + e.guest_count, 0)
     avgRevPerGuest = totalGuests > 0 ? fmt(totalRev / totalGuests) : '$0.00'
@@ -4978,13 +5576,24 @@ async function getBusinessIntelligence() {
   // Hot lead score (inquiries with high likelihood)
   let hotLeads = 0
   if (inquiries.ok) {
-    hotLeads = inquiries.data.filter(i => (i.chef_likelihood || 0) >= 70).length
+    hotLeads = inquiries.data.filter((i) => (i.chef_likelihood || 0) >= 70).length
   }
 
   return {
     ok: true,
     monthlyTrends: Object.fromEntries(
-      Object.entries(monthlyRevenue).sort().slice(-6).map(([k, v]) => [k, { revenue: fmt(v.revenue), expenses: fmt(v.expenses), profit: fmt(v.profit), events: v.events }])
+      Object.entries(monthlyRevenue)
+        .sort()
+        .slice(-6)
+        .map(([k, v]) => [
+          k,
+          {
+            revenue: fmt(v.revenue),
+            expenses: fmt(v.expenses),
+            profit: fmt(v.profit),
+            events: v.events,
+          },
+        ])
     ),
     conversionRate: `${conversionRate}%`,
     loyaltyDistribution: loyaltyDist,
@@ -4992,7 +5601,11 @@ async function getBusinessIntelligence() {
     avgRevenuePerGuest: avgRevPerGuest,
     hotLeads,
     totalClients: clients.ok ? clients.data.length : 0,
-    message: `Intelligence: ${conversionRate}% conversion | ${avgGuests} avg guests | ${avgRevPerGuest}/guest | ${hotLeads} hot leads | Loyalty: ${Object.entries(loyaltyDist).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+    message: `Intelligence: ${conversionRate}% conversion | ${avgGuests} avg guests | ${avgRevPerGuest}/guest | ${hotLeads} hot leads | Loyalty: ${Object.entries(
+      loyaltyDist
+    )
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ')}`,
   }
 }
 
@@ -5011,7 +5624,9 @@ async function runHallucinationScan() {
       { cwd: PROJECT_ROOT, timeout: 10000 }
     )
     hardcodedDollars = stdout.trim().split('\n').filter(Boolean)
-  } catch { /* no matches */ }
+  } catch {
+    /* no matches */
+  }
   // Scan for empty onClick handlers
   let emptyHandlers = []
   try {
@@ -5020,7 +5635,9 @@ async function runHallucinationScan() {
       { cwd: PROJECT_ROOT, timeout: 10000 }
     )
     emptyHandlers = stdout.trim().split('\n').filter(Boolean)
-  } catch { /* no matches */ }
+  } catch {
+    /* no matches */
+  }
   const totalIssues =
     (tsNoCheck.dangerousExports?.length || 0) +
     (errorHandling.missingTryCatch || 0) +
@@ -5030,7 +5647,11 @@ async function runHallucinationScan() {
   return {
     ok: true,
     tsNoCheck: { files: tsNoCheck.totalFiles, dangerous: tsNoCheck.dangerousExports },
-    errorHandling: { total: errorHandling.totalStartTransitions, missing: errorHandling.missingTryCatch, issues: errorHandling.issues },
+    errorHandling: {
+      total: errorHandling.totalStartTransitions,
+      missing: errorHandling.missingTryCatch,
+      issues: errorHandling.issues,
+    },
     staleCache: { caches: staleCache.cacheCount, stale: staleCache.potentiallyStale },
     hardcodedDollars: hardcodedDollars.slice(0, 10),
     emptyHandlers: emptyHandlers.slice(0, 10),
@@ -5064,21 +5685,30 @@ async function callThePass() {
       ollamaPi: status.ollamaPi,
     },
     git: status.git,
-    gitDiff: gitDiff.ok ? { dirty: gitDiff.filesChanged || 0, summary: gitDiff.summary || '' } : 'unavailable',
+    gitDiff: gitDiff.ok
+      ? { dirty: gitDiff.filesChanged || 0, summary: gitDiff.summary || '' }
+      : 'unavailable',
     business: {
       revenue: revenue.ok ? revenue.summary : 'unavailable',
       upcomingEvents: events.ok ? events.total : 'unavailable',
       openInquiries: inquiries.ok ? inquiries.total : 'unavailable',
     },
-    remy: remy.ok ? {
-      activeChefs: remy.activeChefs,
-      totalMessages: remy.totalMessages,
-      errorRate: remy.totalErrors,
-    } : 'unavailable',
-    database: schema.ok ? {
-      tables: schema.tableCount,
-      topTables: Object.entries(schema.tables).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 5),
-    } : 'unavailable',
+    remy: remy.ok
+      ? {
+          activeChefs: remy.activeChefs,
+          totalMessages: remy.totalMessages,
+          errorRate: remy.totalErrors,
+        }
+      : 'unavailable',
+    database: schema.ok
+      ? {
+          tables: schema.tableCount,
+          topTables: Object.entries(schema.tables)
+            .filter(([, v]) => v > 0)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5),
+        }
+      : 'unavailable',
     message: 'Full station check complete. All stations reported.',
   }
 }
@@ -5090,7 +5720,10 @@ async function callThePass() {
 async function gitLog(param) {
   const count = parseInt(param) || 20
   try {
-    const { stdout } = await execAsync(`git log --oneline --no-decorate -${count}`, { cwd: PROJECT_ROOT, timeout: 10000 })
+    const { stdout } = await execAsync(`git log --oneline --no-decorate -${count}`, {
+      cwd: PROJECT_ROOT,
+      timeout: 10000,
+    })
     const commits = stdout.trim().split('\n').filter(Boolean)
     return { ok: true, count: commits.length, commits, message: `Last ${commits.length} commits` }
   } catch (err) {
@@ -5103,7 +5736,12 @@ async function gitStash(param) {
     if (!param || param === 'list') {
       const { stdout } = await execAsync('git stash list', { cwd: PROJECT_ROOT, timeout: 10000 })
       const stashes = stdout.trim().split('\n').filter(Boolean)
-      return { ok: true, count: stashes.length, stashes, message: stashes.length ? `${stashes.length} stash(es)` : 'Stash is clean' }
+      return {
+        ok: true,
+        count: stashes.length,
+        stashes,
+        message: stashes.length ? `${stashes.length} stash(es)` : 'Stash is clean',
+      }
     }
     if (param === 'pop') {
       const { stdout } = await execAsync('git stash pop', { cwd: PROJECT_ROOT, timeout: 10000 })
@@ -5111,7 +5749,10 @@ async function gitStash(param) {
     }
     if (param.startsWith('save:')) {
       const msg = param.slice(5).trim() || 'Gustav stash'
-      const { stdout } = await execAsync(`git stash push -m "${msg}"`, { cwd: PROJECT_ROOT, timeout: 10000 })
+      const { stdout } = await execAsync(`git stash push -m "${msg}"`, {
+        cwd: PROJECT_ROOT,
+        timeout: 10000,
+      })
       return { ok: true, message: `Stashed: ${msg}`, output: stdout.trim() }
     }
     return { ok: false, error: 'Usage: git/stash (list), git/stash:pop, git/stash:save:message' }
@@ -5123,14 +5764,25 @@ async function gitStash(param) {
 async function gitBlame(param) {
   if (!param) return { ok: false, error: 'Usage: git/blame:path/to/file.ts' }
   try {
-    const { stdout } = await execAsync(`git blame --line-porcelain "${param}" | grep -E "^(author |author-time |summary )" | head -60`, { cwd: PROJECT_ROOT, timeout: 15000 })
+    const { stdout } = await execAsync(
+      `git blame --line-porcelain "${param}" | grep -E "^(author |author-time |summary )" | head -60`,
+      { cwd: PROJECT_ROOT, timeout: 15000 }
+    )
     const lines = stdout.trim().split('\n').filter(Boolean)
     const authors = {}
     for (let i = 0; i < lines.length; i += 3) {
       const author = lines[i]?.replace('author ', '') || 'unknown'
       authors[author] = (authors[author] || 0) + 1
     }
-    return { ok: true, file: param, authorBreakdown: authors, totalLines: Object.values(authors).reduce((s, c) => s + c, 0), message: `Blame for ${param}: ${Object.entries(authors).map(([a, c]) => `${a}: ${c} lines`).join(', ')}` }
+    return {
+      ok: true,
+      file: param,
+      authorBreakdown: authors,
+      totalLines: Object.values(authors).reduce((s, c) => s + c, 0),
+      message: `Blame for ${param}: ${Object.entries(authors)
+        .map(([a, c]) => `${a}: ${c} lines`)
+        .join(', ')}`,
+    }
   } catch (err) {
     return { ok: false, error: err.message }
   }
@@ -5150,9 +5802,24 @@ async function codeTodo() {
       if (line.includes('HACK')) byType.HACK++
       if (line.includes('XXX')) byType.XXX++
     }
-    return { ok: true, total: items.length, byType, items: items.slice(0, 30), message: `Found ${items.length} items: ${Object.entries(byType).filter(([, v]) => v > 0).map(([k, v]) => `${v} ${k}`).join(', ')}` }
+    return {
+      ok: true,
+      total: items.length,
+      byType,
+      items: items.slice(0, 30),
+      message: `Found ${items.length} items: ${Object.entries(byType)
+        .filter(([, v]) => v > 0)
+        .map(([k, v]) => `${v} ${k}`)
+        .join(', ')}`,
+    }
   } catch (err) {
-    return { ok: true, total: 0, byType: {}, items: [], message: 'Codebase is clean — no TODOs found' }
+    return {
+      ok: true,
+      total: 0,
+      byType: {},
+      items: [],
+      message: 'Codebase is clean — no TODOs found',
+    }
   }
 }
 
@@ -5171,7 +5838,12 @@ async function codeLoc() {
     )
     const codeMatch = breakdown.trim().match(/(\d+)\s+total/)
     const codeLines = codeMatch ? parseInt(codeMatch[1]) : 0
-    return { ok: true, totalLines: total, codeLines, message: `Codebase: ~${total.toLocaleString()} total lines, ~${codeLines.toLocaleString()} code (TS/TSX/MJS)` }
+    return {
+      ok: true,
+      totalLines: total,
+      codeLines,
+      message: `Codebase: ~${total.toLocaleString()} total lines, ~${codeLines.toLocaleString()} code (TS/TSX/MJS)`,
+    }
   } catch (err) {
     return { ok: false, error: err.message }
   }
@@ -5188,38 +5860,83 @@ async function getClientRisk() {
   const now = new Date()
   const atRisk = []
   for (const client of clients.data) {
-    const clientEvents = (events.data || []).filter(e => e.client_id === client.id)
+    const clientEvents = (events.data || []).filter((e) => e.client_id === client.id)
     if (clientEvents.length === 0) {
       const daysSinceCreated = Math.floor((now - new Date(client.created_at)) / 86400000)
-      if (daysSinceCreated > 90) atRisk.push({ name: client.name, tier: client.loyalty_tier, lastEvent: 'never', daysSince: daysSinceCreated, reason: 'No events, 90+ days since signup' })
+      if (daysSinceCreated > 90)
+        atRisk.push({
+          name: client.name,
+          tier: client.loyalty_tier,
+          lastEvent: 'never',
+          daysSince: daysSinceCreated,
+          reason: 'No events, 90+ days since signup',
+        })
     } else {
-      const lastDate = clientEvents.map(e => e.event_date).sort().pop()
+      const lastDate = clientEvents
+        .map((e) => e.event_date)
+        .sort()
+        .pop()
       const daysSince = Math.floor((now - new Date(lastDate)) / 86400000)
-      if (daysSince > 90) atRisk.push({ name: client.name, tier: client.loyalty_tier, lastEvent: lastDate, daysSince, reason: `No events in ${daysSince} days` })
+      if (daysSince > 90)
+        atRisk.push({
+          name: client.name,
+          tier: client.loyalty_tier,
+          lastEvent: lastDate,
+          daysSince,
+          reason: `No events in ${daysSince} days`,
+        })
     }
   }
   atRisk.sort((a, b) => b.daysSince - a.daysSince)
-  return { ok: true, atRisk: atRisk.slice(0, 20), total: atRisk.length, message: `${atRisk.length} client(s) at risk of churn (90+ days inactive)` }
+  return {
+    ok: true,
+    atRisk: atRisk.slice(0, 20),
+    total: atRisk.length,
+    message: `${atRisk.length} client(s) at risk of churn (90+ days inactive)`,
+  }
 }
 
 async function getRevenueForecast() {
-  const events = await supabaseQuery('events', 'id,event_date,status,guest_count', 'status=in.(accepted,paid,confirmed)', 200)
-  const revenue = await supabaseQuery('event_financial_summary', 'event_id,net_revenue_cents', '', 500)
+  const events = await supabaseQuery(
+    'events',
+    'id,event_date,status,guest_count',
+    'status=in.(accepted,paid,confirmed)',
+    200
+  )
+  const revenue = await supabaseQuery(
+    'event_financial_summary',
+    'event_id,net_revenue_cents',
+    '',
+    500
+  )
   if (!events.ok) return { ok: false, error: 'Failed to fetch events' }
   const now = new Date()
   const sixtyDaysOut = new Date(now.getTime() + 60 * 86400000)
-  const pipeline = (events.data || []).filter(e => {
+  const pipeline = (events.data || []).filter((e) => {
     const d = new Date(e.event_date)
     return d >= now && d <= sixtyDaysOut
   })
   // Calculate avg revenue per event from historical data
-  const historicalRevenues = (revenue.data || []).map(r => r.net_revenue_cents || 0).filter(r => r > 0)
-  const avgRevenue = historicalRevenues.length > 0 ? Math.round(historicalRevenues.reduce((s, r) => s + r, 0) / historicalRevenues.length) : 0
+  const historicalRevenues = (revenue.data || [])
+    .map((r) => r.net_revenue_cents || 0)
+    .filter((r) => r > 0)
+  const avgRevenue =
+    historicalRevenues.length > 0
+      ? Math.round(historicalRevenues.reduce((s, r) => s + r, 0) / historicalRevenues.length)
+      : 0
   const projectedTotal = pipeline.length * avgRevenue
   return {
     ok: true,
-    next60Days: { events: pipeline.length, projected: fmt(projectedTotal), avgPerEvent: fmt(avgRevenue) },
-    pipeline: pipeline.map(e => ({ date: e.event_date, status: e.status, guests: e.guest_count })),
+    next60Days: {
+      events: pipeline.length,
+      projected: fmt(projectedTotal),
+      avgPerEvent: fmt(avgRevenue),
+    },
+    pipeline: pipeline.map((e) => ({
+      date: e.event_date,
+      status: e.status,
+      guests: e.guest_count,
+    })),
     message: `Forecast (60 days): ${pipeline.length} events, projected ${fmt(projectedTotal)} (avg ${fmt(avgRevenue)}/event)`,
   }
 }
@@ -5240,7 +5957,12 @@ async function getSeasonalTrends() {
   const slowest = sorted[sorted.length - 1]
   return {
     ok: true,
-    byMonth: Object.fromEntries(sorted.map(([m, d]) => [m, { events: d.events, avgGuests: d.events > 0 ? Math.round(d.guests / d.events) : 0 }])),
+    byMonth: Object.fromEntries(
+      sorted.map(([m, d]) => [
+        m,
+        { events: d.events, avgGuests: d.events > 0 ? Math.round(d.guests / d.events) : 0 },
+      ])
+    ),
     busiest: busiest ? { month: busiest[0], events: busiest[1].events } : null,
     slowest: slowest ? { month: slowest[0], events: slowest[1].events } : null,
     message: `Seasonal trends: Busiest = ${busiest?.[0] || 'N/A'} (${busiest?.[1].events || 0} events), Slowest = ${slowest?.[0] || 'N/A'} (${slowest?.[1].events || 0} events)`,
@@ -5248,13 +5970,25 @@ async function getSeasonalTrends() {
 }
 
 async function getPricingAnalysis() {
-  const events = await supabaseQuery('events', 'id,guest_count,occasion_type,cuisine_type', "status=in.(completed,confirmed,paid,accepted)", 1000)
-  const revenue = await supabaseQuery('event_financial_summary', 'event_id,net_revenue_cents', '', 1000)
+  const events = await supabaseQuery(
+    'events',
+    'id,guest_count,occasion_type,cuisine_type',
+    'status=in.(completed,confirmed,paid,accepted)',
+    1000
+  )
+  const revenue = await supabaseQuery(
+    'event_financial_summary',
+    'event_id,net_revenue_cents',
+    '',
+    1000
+  )
   if (!events.ok || !revenue.ok) return { ok: false, error: 'Failed to fetch data' }
   const revMap = {}
   for (const r of revenue.data) revMap[r.event_id] = r.net_revenue_cents || 0
-  let totalPerGuest = 0, perGuestCount = 0
-  const byOccasion = {}, byCuisine = {}
+  let totalPerGuest = 0,
+    perGuestCount = 0
+  const byOccasion = {},
+    byCuisine = {}
   for (const e of events.data) {
     const rev = revMap[e.id] || 0
     if (e.guest_count > 0 && rev > 0) {
@@ -5275,36 +6009,72 @@ async function getPricingAnalysis() {
   return {
     ok: true,
     avgPerGuest,
-    byOccasion: Object.fromEntries(Object.entries(byOccasion).map(([k, v]) => [k, { avg: fmt(v.total / v.count), events: v.count }])),
-    byCuisine: Object.fromEntries(Object.entries(byCuisine).map(([k, v]) => [k, { avg: fmt(v.total / v.count), events: v.count }])),
+    byOccasion: Object.fromEntries(
+      Object.entries(byOccasion).map(([k, v]) => [
+        k,
+        { avg: fmt(v.total / v.count), events: v.count },
+      ])
+    ),
+    byCuisine: Object.fromEntries(
+      Object.entries(byCuisine).map(([k, v]) => [
+        k,
+        { avg: fmt(v.total / v.count), events: v.count },
+      ])
+    ),
     message: `Pricing: ${avgPerGuest}/guest avg | ${Object.keys(byOccasion).length} occasion types | ${Object.keys(byCuisine).length} cuisine types`,
   }
 }
 
 async function getEventTimeline(param) {
   if (!param) return { ok: false, error: 'Usage: data/event-timeline:event_id' }
-  const transitions = await supabaseQuery('event_transitions', 'id,from_status,to_status,created_at,changed_by', `event_id=eq.${param}`, 100)
+  const transitions = await supabaseQuery(
+    'event_transitions',
+    'id,from_status,to_status,created_at,changed_by',
+    `event_id=eq.${param}`,
+    100
+  )
   if (!transitions.ok) return { ok: false, error: 'Failed to fetch transitions' }
   return {
     ok: true,
     eventId: param,
     transitions: transitions.data.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)),
     count: transitions.data.length,
-    message: `Event ${param}: ${transitions.data.length} transitions — ${transitions.data.map(t => `${t.from_status}→${t.to_status}`).join(' → ')}`,
+    message: `Event ${param}: ${transitions.data.length} transitions — ${transitions.data.map((t) => `${t.from_status}→${t.to_status}`).join(' → ')}`,
   }
 }
 
 async function getRemyConversations() {
-  const metrics = await supabaseQuery('remy_usage_metrics', 'id,tenant_id,messages_sent,conversations_started,created_at', '', 100)
+  const metrics = await supabaseQuery(
+    'remy_usage_metrics',
+    'id,tenant_id,messages_sent,conversations_started,created_at',
+    '',
+    100
+  )
   if (!metrics.ok) return { ok: false, error: 'Failed to fetch Remy metrics' }
   const totalMessages = metrics.data.reduce((s, m) => s + (m.messages_sent || 0), 0)
   const totalConvos = metrics.data.reduce((s, m) => s + (m.conversations_started || 0), 0)
-  return { ok: true, totalMessages, totalConversations: totalConvos, tenants: metrics.data.length, message: `Remy conversations: ${totalMessages} messages, ${totalConvos} conversations across ${metrics.data.length} tenants` }
+  return {
+    ok: true,
+    totalMessages,
+    totalConversations: totalConvos,
+    tenants: metrics.data.length,
+    message: `Remy conversations: ${totalMessages} messages, ${totalConvos} conversations across ${metrics.data.length} tenants`,
+  }
 }
 
 async function getRemyErrors() {
-  const errors = await supabaseQuery('remy_usage_metrics', 'id,tenant_id,errors_count,created_at', 'errors_count=gt.0', 50)
-  const abuse = await supabaseQuery('remy_abuse_log', 'id,tenant_id,blocked_message,guardrail_matched,created_at', '', 20)
+  const errors = await supabaseQuery(
+    'remy_usage_metrics',
+    'id,tenant_id,errors_count,created_at',
+    'errors_count=gt.0',
+    50
+  )
+  const abuse = await supabaseQuery(
+    'remy_abuse_log',
+    'id,tenant_id,blocked_message,guardrail_matched,created_at',
+    '',
+    20
+  )
   const totalErrors = (errors.data || []).reduce((s, m) => s + (m.errors_count || 0), 0)
   return {
     ok: true,
@@ -5318,17 +6088,29 @@ async function getRemyErrors() {
 
 async function getBetaDeepHealth() {
   try {
-    const { stdout } = await execAsync('ssh pi "pm2 jlist && echo SEPARATOR && df -h / && echo SEPARATOR && free -m && echo SEPARATOR && uptime"', { timeout: 15000 })
+    const { stdout } = await execAsync(
+      'ssh pi "pm2 jlist && echo SEPARATOR && df -h / && echo SEPARATOR && free -m && echo SEPARATOR && uptime"',
+      { timeout: 15000 }
+    )
     const parts = stdout.split('SEPARATOR')
     let pm2 = []
-    try { pm2 = JSON.parse(parts[0].trim()) } catch { /* parse fail */ }
+    try {
+      pm2 = JSON.parse(parts[0].trim())
+    } catch {
+      /* parse fail */
+    }
     return {
       ok: true,
-      pm2: pm2.map(p => ({ name: p.name, status: p.pm2_env?.status, restarts: p.pm2_env?.restart_time, uptime: p.pm2_env?.pm_uptime })),
+      pm2: pm2.map((p) => ({
+        name: p.name,
+        status: p.pm2_env?.status,
+        restarts: p.pm2_env?.restart_time,
+        uptime: p.pm2_env?.pm_uptime,
+      })),
       disk: parts[1]?.trim() || 'unavailable',
       memory: parts[2]?.trim() || 'unavailable',
       uptime: parts[3]?.trim() || 'unavailable',
-      message: `Beta deep health: ${pm2.length} PM2 apps, ${pm2.filter(p => p.pm2_env?.status === 'online').length} online`,
+      message: `Beta deep health: ${pm2.length} PM2 apps, ${pm2.filter((p) => p.pm2_env?.status === 'online').length} online`,
     }
   } catch (err) {
     return { ok: false, error: `SSH failed: ${err.message}` }
@@ -5344,15 +6126,25 @@ async function getProdHealth() {
     status: prodCheck.ok ? 'online' : 'down',
     latency: `${latency}ms`,
     statusCode: prodCheck.status || 'unknown',
-    message: prodCheck.ok ? `Production: ONLINE (${latency}ms)` : `Production: 86'd — ${prodCheck.error || 'unreachable'}`,
+    message: prodCheck.ok
+      ? `Production: ONLINE (${latency}ms)`
+      : `Production: 86'd — ${prodCheck.error || 'unreachable'}`,
   }
 }
 
 async function getProdAnalytics() {
   try {
-    const { stdout } = await execAsync('git log main --oneline -20', { cwd: PROJECT_ROOT, timeout: 10000 })
+    const { stdout } = await execAsync('git log main --oneline -20', {
+      cwd: PROJECT_ROOT,
+      timeout: 10000,
+    })
     const commits = stdout.trim().split('\n').filter(Boolean)
-    return { ok: true, recentMainCommits: commits, count: commits.length, message: `Production: ${commits.length} recent main branch commits` }
+    return {
+      ok: true,
+      recentMainCommits: commits,
+      count: commits.length,
+      message: `Production: ${commits.length} recent main branch commits`,
+    }
   } catch (err) {
     return { ok: false, error: err.message }
   }
@@ -5360,22 +6152,35 @@ async function getProdAnalytics() {
 
 async function validateEnv() {
   const required = [
-    'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
-    'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
-    'RESEND_API_KEY', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET',
-    'NEXT_PUBLIC_APP_URL', 'OLLAMA_BASE_URL',
+    'NEXT_PUBLIC_SUPABASE_URL',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    'SUPABASE_SERVICE_ROLE_KEY',
+    'STRIPE_SECRET_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
+    'RESEND_API_KEY',
+    'GOOGLE_CLIENT_ID',
+    'GOOGLE_CLIENT_SECRET',
+    'NEXT_PUBLIC_APP_URL',
+    'OLLAMA_BASE_URL',
   ]
   try {
     const envContent = await readFile(join(PROJECT_ROOT, '.env.local'), 'utf-8')
-    const envKeys = envContent.split('\n').filter(l => l.includes('=')).map(l => l.split('=')[0].trim())
-    const missing = required.filter(k => !envKeys.includes(k))
-    const present = required.filter(k => envKeys.includes(k))
+    const envKeys = envContent
+      .split('\n')
+      .filter((l) => l.includes('='))
+      .map((l) => l.split('=')[0].trim())
+    const missing = required.filter((k) => !envKeys.includes(k))
+    const present = required.filter((k) => envKeys.includes(k))
     return {
       ok: missing.length === 0,
       present: present.length,
       missing,
       total: required.length,
-      message: missing.length === 0 ? `All ${required.length} required env vars present` : `Missing ${missing.length} env var(s): ${missing.join(', ')}`,
+      message:
+        missing.length === 0
+          ? `All ${required.length} required env vars present`
+          : `Missing ${missing.length} env var(s): ${missing.join(', ')}`,
     }
   } catch (err) {
     return { ok: false, error: `.env.local not found: ${err.message}` }
@@ -5387,9 +6192,11 @@ async function findDbOrphans() {
   const expenses = await supabaseQuery('expenses', 'id,event_id', '', 500)
   const events = await supabaseQuery('events', 'id', '', 2000)
   if (!events.ok) return { ok: false, error: 'Failed to fetch events' }
-  const eventIds = new Set(events.data.map(e => e.id))
-  const orphanQuotes = (quotes.data || []).filter(q => q.event_id && !eventIds.has(q.event_id))
-  const orphanExpenses = (expenses.data || []).filter(e => e.event_id && !eventIds.has(e.event_id))
+  const eventIds = new Set(events.data.map((e) => e.id))
+  const orphanQuotes = (quotes.data || []).filter((q) => q.event_id && !eventIds.has(q.event_id))
+  const orphanExpenses = (expenses.data || []).filter(
+    (e) => e.event_id && !eventIds.has(e.event_id)
+  )
   return {
     ok: true,
     orphanQuotes: orphanQuotes.length,
@@ -5401,11 +6208,16 @@ async function findDbOrphans() {
 
 async function dbRlsAudit() {
   // Check which tables have RLS enabled by querying pg_tables
-  const result = await supabaseQuery('information_schema.tables', 'table_name,table_schema', 'table_schema=eq.public', 200)
+  const result = await supabaseQuery(
+    'information_schema.tables',
+    'table_name,table_schema',
+    'table_schema=eq.public',
+    200
+  )
   if (!result.ok) return { ok: false, error: 'Failed to query tables' }
   // We can't directly check RLS via REST API, so we list all public tables
   // and note which ones are known to have RLS from migration files
-  const tables = result.data.map(t => t.table_name).sort()
+  const tables = result.data.map((t) => t.table_name).sort()
   return {
     ok: true,
     publicTables: tables.length,
@@ -5431,12 +6243,22 @@ async function securityAudit() {
       { cwd: PROJECT_ROOT, timeout: 10000 }
     )
     exposedSecrets = stdout.trim().split('\n').filter(Boolean)
-  } catch { /* no matches is good */ }
+  } catch {
+    /* no matches is good */
+  }
   const issues = []
-  if (!env.ok || (env.missing && env.missing.length > 0)) issues.push(`Missing env vars: ${env.missing?.join(', ') || 'check failed'}`)
-  if (npm.vulnerabilities?.high > 0 || npm.vulnerabilities?.critical > 0) issues.push(`NPM vulnerabilities: ${npm.vulnerabilities.critical || 0} critical, ${npm.vulnerabilities.high || 0} high`)
-  if (exposedSecrets.length > 0) issues.push(`${exposedSecrets.length} potential exposed secrets in source code`)
-  if (orphans.orphanQuotes > 0 || orphans.orphanExpenses > 0) issues.push(`Orphaned records: ${orphans.orphanQuotes} quotes, ${orphans.orphanExpenses} expenses`)
+  if (!env.ok || (env.missing && env.missing.length > 0))
+    issues.push(`Missing env vars: ${env.missing?.join(', ') || 'check failed'}`)
+  if (npm.vulnerabilities?.high > 0 || npm.vulnerabilities?.critical > 0)
+    issues.push(
+      `NPM vulnerabilities: ${npm.vulnerabilities.critical || 0} critical, ${npm.vulnerabilities.high || 0} high`
+    )
+  if (exposedSecrets.length > 0)
+    issues.push(`${exposedSecrets.length} potential exposed secrets in source code`)
+  if (orphans.orphanQuotes > 0 || orphans.orphanExpenses > 0)
+    issues.push(
+      `Orphaned records: ${orphans.orphanQuotes} quotes, ${orphans.orphanExpenses} expenses`
+    )
   return {
     ok: issues.length === 0,
     issues,
@@ -5445,7 +6267,10 @@ async function securityAudit() {
     ssl,
     exposedSecrets: exposedSecrets.length,
     orphans: { quotes: orphans.orphanQuotes, expenses: orphans.orphanExpenses },
-    message: issues.length === 0 ? 'Security audit: Clean — no issues found' : `Security audit: ${issues.length} issue(s) — ${issues.join('; ')}`,
+    message:
+      issues.length === 0
+        ? 'Security audit: Clean — no issues found'
+        : `Security audit: ${issues.length} issue(s) — ${issues.join('; ')}`,
   }
 }
 
@@ -5460,7 +6285,9 @@ async function findDeadExports() {
     // Extract function/const names
     const exportNames = []
     for (const line of exportLines) {
-      const match = line.match(/export\s+(?:async\s+)?(?:function|const|class|type|interface)\s+(\w+)/)
+      const match = line.match(
+        /export\s+(?:async\s+)?(?:function|const|class|type|interface)\s+(\w+)/
+      )
       if (match) exportNames.push({ name: match[1], file: line.split(':')[0] })
     }
     // Check each for imports elsewhere (sample — full scan would be too slow)
@@ -5472,7 +6299,9 @@ async function findDeadExports() {
           { cwd: PROJECT_ROOT, timeout: 5000 }
         )
         if (!importCount.trim()) potentiallyDead.push({ name, file })
-      } catch { /* grep no match = potentially dead */ potentiallyDead.push({ name, file }) }
+      } catch {
+        /* grep no match = potentially dead */ potentiallyDead.push({ name, file })
+      }
     }
     return {
       ok: true,
@@ -5542,86 +6371,110 @@ async function getDocsCoverage() {
 
 const INSTANT_ANSWERS = [
   // Greetings — instant response, no LLM needed
-  { patterns: [/^(?:hi|hey|hello|yo|sup|good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|what'?s?\s+up)\s*[!.?]*$/i],
-    response: null, greeting: true },
+  {
+    patterns: [
+      /^(?:hi|hey|hello|yo|sup|good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|what'?s?\s+up)\s*[!.?]*$/i,
+    ],
+    response: null,
+    greeting: true,
+  },
 
   // Status & Health
-  { patterns: [/^status$/i, /^how('s| is) everything/i, /^what('s| is) the status/i, /^all stations/i, /^calling the pass/i, /^mise en place/i],
-    action: 'call-the-pass' },
-  { patterns: [/^(start|run) dev/i, /^start (the )?server/i, /^dev (server )?up/i],
-    action: 'dev/start' },
-  { patterns: [/^stop dev/i, /^kill (the )?server/i, /^dev (server )?down/i],
-    action: 'dev/stop' },
-  { patterns: [/^deploy$/i, /^deploy (to )?beta/i, /^fire$/i, /^ship it$/i],
-    action: 'ship-it' },
-  { patterns: [/^push$/i, /^git push$/i, /^push (the )?branch/i],
-    action: 'git/push' },
-  { patterns: [/^typecheck$/i, /^type check$/i, /^tsc$/i, /^check types/i],
-    action: 'build/typecheck' },
-  { patterns: [/^build$/i, /^full build$/i, /^next build$/i],
-    action: 'build/full' },
-  { patterns: [/^diff$/i, /^git diff$/i, /^what changed/i, /^show changes/i],
-    action: 'git/diff' },
-  { patterns: [/^revenue$/i, /^how('s| is) revenue/i, /^money$/i, /^financials$/i],
-    action: 'data/revenue' },
-  { patterns: [/^events$/i, /^upcoming events/i, /^what('s| is) coming up/i, /^next events/i],
-    action: 'data/events' },
-  { patterns: [/^inquiries$/i, /^open inquiries/i, /^leads$/i, /^pipeline$/i],
-    action: 'data/inquiry-pipeline' },
-  { patterns: [/^clients$/i, /^list clients/i, /^all clients/i],
-    action: 'data/clients' },
-  { patterns: [/^staff$/i, /^roster$/i, /^team$/i, /^who('s| is) on staff/i],
-    action: 'data/staff' },
-  { patterns: [/^quotes$/i, /^open quotes/i, /^pending quotes/i],
-    action: 'data/quotes' },
-  { patterns: [/^expenses$/i, /^spending$/i, /^costs$/i],
-    action: 'data/expenses' },
-  { patterns: [/^calendar$/i, /^schedule$/i, /^what('s| is) (on )?this week/i, /^availability/i],
-    action: 'data/calendar' },
-  { patterns: [/^loyalty$/i, /^points$/i, /^loyalty program/i],
-    action: 'data/loyalty' },
-  { patterns: [/^documents$/i, /^docs$/i, /^files$/i],
-    action: 'data/documents' },
-  { patterns: [/^menus$/i, /^recipes$/i, /^menu stats/i, /^recipe stats/i],
-    action: 'data/menu-recipes' },
-  { patterns: [/^emails?$/i, /^email digest$/i, /^inbox$/i, /^gmail/i],
-    action: 'data/email' },
-  { patterns: [/^remy (status|stats|metrics)/i, /^how('s| is) remy/i],
-    action: 'remy/metrics' },
-  { patterns: [/^remy (guardrails?|blocks?|abuse)/i, /^what('s| is) remy blocking/i],
-    action: 'remy/guardrails' },
-  { patterns: [/^remy memor/i, /^what does remy remember/i],
-    action: 'remy/memories' },
-  { patterns: [/^(test|run) remy/i, /^remy test/i],
-    action: 'remy/test' },
-  { patterns: [/^pi (status|health|vitals)/i, /^how('s| is) (the )?pi/i, /^raspberry/i],
-    action: 'pi/status' },
-  { patterns: [/^schema$/i, /^tables$/i, /^database schema/i, /^db schema/i, /^row counts/i],
-    action: 'db/schema' },
-  { patterns: [/^branches$/i, /^branch status/i, /^what branch/i],
-    action: 'code/branches' },
-  { patterns: [/^scan$/i, /^health scan$/i, /^run scan/i],
-    response: 'Which scan do you need?\n\n| Scan | Command |\n|---|---|\n| @ts-nocheck exports | `scan/ts-nocheck` |\n| Missing error handling | `scan/error-handling` |\n| Stale cache tags | `scan/stale-cache` |\n| Full station check | `call-the-pass` |\n\nOr say "run all scans" and I\'ll fire them all.' },
-  { patterns: [/^run all scans/i, /^scan everything/i, /^full scan/i],
-    multiAction: ['scan/ts-nocheck', 'scan/error-handling', 'scan/stale-cache'] },
+  {
+    patterns: [
+      /^status$/i,
+      /^how('s| is) everything/i,
+      /^what('s| is) the status/i,
+      /^all stations/i,
+      /^calling the pass/i,
+      /^mise en place/i,
+    ],
+    action: 'call-the-pass',
+  },
+  {
+    patterns: [/^(start|run) dev/i, /^start (the )?server/i, /^dev (server )?up/i],
+    action: 'dev/start',
+  },
+  { patterns: [/^stop dev/i, /^kill (the )?server/i, /^dev (server )?down/i], action: 'dev/stop' },
+  { patterns: [/^deploy$/i, /^deploy (to )?beta/i, /^fire$/i, /^ship it$/i], action: 'ship-it' },
+  { patterns: [/^push$/i, /^git push$/i, /^push (the )?branch/i], action: 'git/push' },
+  {
+    patterns: [/^typecheck$/i, /^type check$/i, /^tsc$/i, /^check types/i],
+    action: 'build/typecheck',
+  },
+  { patterns: [/^build$/i, /^full build$/i, /^next build$/i], action: 'build/full' },
+  { patterns: [/^diff$/i, /^git diff$/i, /^what changed/i, /^show changes/i], action: 'git/diff' },
+  {
+    patterns: [/^revenue$/i, /^how('s| is) revenue/i, /^money$/i, /^financials$/i],
+    action: 'data/revenue',
+  },
+  {
+    patterns: [/^events$/i, /^upcoming events/i, /^what('s| is) coming up/i, /^next events/i],
+    action: 'data/events',
+  },
+  {
+    patterns: [/^inquiries$/i, /^open inquiries/i, /^leads$/i, /^pipeline$/i],
+    action: 'data/inquiry-pipeline',
+  },
+  { patterns: [/^clients$/i, /^list clients/i, /^all clients/i], action: 'data/clients' },
+  {
+    patterns: [/^staff$/i, /^roster$/i, /^team$/i, /^who('s| is) on staff/i],
+    action: 'data/staff',
+  },
+  { patterns: [/^quotes$/i, /^open quotes/i, /^pending quotes/i], action: 'data/quotes' },
+  { patterns: [/^expenses$/i, /^spending$/i, /^costs$/i], action: 'data/expenses' },
+  {
+    patterns: [/^calendar$/i, /^schedule$/i, /^what('s| is) (on )?this week/i, /^availability/i],
+    action: 'data/calendar',
+  },
+  { patterns: [/^loyalty$/i, /^points$/i, /^loyalty program/i], action: 'data/loyalty' },
+  { patterns: [/^documents$/i, /^docs$/i, /^files$/i], action: 'data/documents' },
+  {
+    patterns: [/^menus$/i, /^recipes$/i, /^menu stats/i, /^recipe stats/i],
+    action: 'data/menu-recipes',
+  },
+  { patterns: [/^emails?$/i, /^email digest$/i, /^inbox$/i, /^gmail/i], action: 'data/email' },
+  { patterns: [/^remy (status|stats|metrics)/i, /^how('s| is) remy/i], action: 'remy/metrics' },
+  {
+    patterns: [/^remy (guardrails?|blocks?|abuse)/i, /^what('s| is) remy blocking/i],
+    action: 'remy/guardrails',
+  },
+  { patterns: [/^remy memor/i, /^what does remy remember/i], action: 'remy/memories' },
+  { patterns: [/^(test|run) remy/i, /^remy test/i], action: 'remy/test' },
+  {
+    patterns: [/^pi (status|health|vitals)/i, /^how('s| is) (the )?pi/i, /^raspberry/i],
+    action: 'pi/status',
+  },
+  {
+    patterns: [/^schema$/i, /^tables$/i, /^database schema/i, /^db schema/i, /^row counts/i],
+    action: 'db/schema',
+  },
+  { patterns: [/^branches$/i, /^branch status/i, /^what branch/i], action: 'code/branches' },
+  {
+    patterns: [/^scan$/i, /^health scan$/i, /^run scan/i],
+    response:
+      'Which scan do you need?\n\n| Scan | Command |\n|---|---|\n| @ts-nocheck exports | `scan/ts-nocheck` |\n| Missing error handling | `scan/error-handling` |\n| Stale cache tags | `scan/stale-cache` |\n| Full station check | `call-the-pass` |\n\nOr say "run all scans" and I\'ll fire them all.',
+  },
+  {
+    patterns: [/^run all scans/i, /^scan everything/i, /^full scan/i],
+    multiAction: ['scan/ts-nocheck', 'scan/error-handling', 'scan/stale-cache'],
+  },
 
   // Universal Data Access (Tier 1)
-  { patterns: [/^ledger$/i, /^ledger entries/i, /^financial journal/i, /^show ledger/i],
-    action: 'data/ledger' },
-  { patterns: [/^notifications$/i, /^notifs$/i, /^unread$/i],
-    action: 'data/notifications' },
-  { patterns: [/^automations?$/i, /^rules$/i, /^sequences$/i],
-    action: 'data/automations' },
-  { patterns: [/^inventory$/i, /^equipment$/i, /^stock$/i],
-    action: 'data/inventory' },
-  { patterns: [/^activity$/i, /^activity feed$/i, /^recent activity/i],
-    action: 'data/activity' },
-  { patterns: [/^webhooks?$/i, /^webhook history/i, /^deliveries$/i],
-    action: 'data/webhooks' },
-  { patterns: [/^intelligence$/i, /^business intelligence$/i, /^bi$/i, /^insights$/i, /^trends$/i],
-    action: 'data/intelligence' },
-  { patterns: [/^cron$/i, /^cron jobs$/i, /^scheduled tasks/i, /^crons$/i],
-    action: 'cron/list' },
+  {
+    patterns: [/^ledger$/i, /^ledger entries/i, /^financial journal/i, /^show ledger/i],
+    action: 'data/ledger',
+  },
+  { patterns: [/^notifications$/i, /^notifs$/i, /^unread$/i], action: 'data/notifications' },
+  { patterns: [/^automations?$/i, /^rules$/i, /^sequences$/i], action: 'data/automations' },
+  { patterns: [/^inventory$/i, /^equipment$/i, /^stock$/i], action: 'data/inventory' },
+  { patterns: [/^activity$/i, /^activity feed$/i, /^recent activity/i], action: 'data/activity' },
+  { patterns: [/^webhooks?$/i, /^webhook history/i, /^deliveries$/i], action: 'data/webhooks' },
+  {
+    patterns: [/^intelligence$/i, /^business intelligence$/i, /^bi$/i, /^insights$/i, /^trends$/i],
+    action: 'data/intelligence',
+  },
+  { patterns: [/^cron$/i, /^cron jobs$/i, /^scheduled tasks/i, /^crons$/i], action: 'cron/list' },
 
   // Station 9: Git & Codebase Extended
   { patterns: [/^(git log|log|commits)$/i], action: 'git/log' },
@@ -5632,7 +6485,10 @@ const INSTANT_ANSWERS = [
 
   // Station 10: Business Intelligence Extended + Security
   { patterns: [/^(churn|at risk|client risk|risk clients)/i], action: 'data/client-risk' },
-  { patterns: [/^forecast$/i, /^revenue forecast/i, /^projected revenue/i], action: 'data/forecast' },
+  {
+    patterns: [/^forecast$/i, /^revenue forecast/i, /^projected revenue/i],
+    action: 'data/forecast',
+  },
   { patterns: [/^seasonal$/i, /^seasonal trends/i, /^busiest months/i], action: 'data/seasonal' },
   { patterns: [/^pricing$/i, /^pricing analysis/i, /^price per guest/i], action: 'data/pricing' },
   { patterns: [/^(remy conv|remy conversations)/i], action: 'remy/conversations' },
@@ -5647,8 +6503,11 @@ const INSTANT_ANSWERS = [
   { patterns: [/^test coverage$/i, /^coverage$/i], action: 'test/coverage' },
   { patterns: [/^(docs coverage|doc coverage|documentation coverage)/i], action: 'docs/coverage' },
 
-  { patterns: [/^help$/i, /^what can you do/i, /^commands$/i, /^tools$/i],
-    response: '**Station check.** Here\'s what I run — 10 stations, 115+ tools:\n\n| Station | Key Commands |\n|---|---|\n| **1. DevOps** | `dev/start`, `dev/stop`, `beta/deploy`, `beta/restart`, `ship-it` |\n| **2. Git & Build** | `git/push`, `git/commit`, `build/typecheck`, `build/full`, `close-out` |\n| **3. Business Data** | `data/events`, `data/clients`, `data/revenue`, `data/expenses`, `data/inquiry-pipeline`, `data/quotes`, `data/calendar`, `data/staff`, `data/email`, `data/loyalty`, `data/menu-recipes`, `data/documents` |\n| **4. Remy Oversight** | `remy/metrics`, `remy/guardrails`, `remy/memories`, `remy/test`, `remy/performance`, `remy/conversations`, `remy/errors` |\n| **5. Codebase** | `code/search`, `code/read`, `code/changes`, `code/branches`, `db/schema` |\n| **6. App Health** | `scan/ts-nocheck`, `scan/error-handling`, `scan/stale-cache`, `scan/hallucination` |\n| **7. Monitoring** | `status/all`, `pi/status`, `pi/logs`, `health/app`, `uptime/report`, `call-the-pass` |\n| **8. Universal Data** | `db/query`, `db/sql`, `data/ledger`, `data/event-deep`, `data/notifications`, `data/automations`, `data/inventory`, `data/activity`, `data/webhooks`, `data/intelligence`, `cron/list`, `cron/trigger` |\n| **9. Git Extended** | `git/log`, `git/stash`, `git/blame`, `code/todo`, `code/loc` |\n| **10. Intelligence+** | `data/client-risk`, `data/forecast`, `data/seasonal`, `data/pricing`, `data/event-timeline`, `env/validate`, `db/orphans`, `db/rls-audit`, `security/audit`, `code/dead`, `test/coverage`, `docs/coverage`, `beta/health`, `prod/health`, `prod/analytics` |\n\nSay "call the pass" for a full briefing. Oui.' },
+  {
+    patterns: [/^help$/i, /^what can you do/i, /^commands$/i, /^tools$/i],
+    response:
+      '**Station check.** Here\'s what I run — 10 stations, 115+ tools:\n\n| Station | Key Commands |\n|---|---|\n| **1. DevOps** | `dev/start`, `dev/stop`, `beta/deploy`, `beta/restart`, `ship-it` |\n| **2. Git & Build** | `git/push`, `git/commit`, `build/typecheck`, `build/full`, `close-out` |\n| **3. Business Data** | `data/events`, `data/clients`, `data/revenue`, `data/expenses`, `data/inquiry-pipeline`, `data/quotes`, `data/calendar`, `data/staff`, `data/email`, `data/loyalty`, `data/menu-recipes`, `data/documents` |\n| **4. Remy Oversight** | `remy/metrics`, `remy/guardrails`, `remy/memories`, `remy/test`, `remy/performance`, `remy/conversations`, `remy/errors` |\n| **5. Codebase** | `code/search`, `code/read`, `code/changes`, `code/branches`, `db/schema` |\n| **6. App Health** | `scan/ts-nocheck`, `scan/error-handling`, `scan/stale-cache`, `scan/hallucination` |\n| **7. Monitoring** | `status/all`, `pi/status`, `pi/logs`, `health/app`, `uptime/report`, `call-the-pass` |\n| **8. Universal Data** | `db/query`, `db/sql`, `data/ledger`, `data/event-deep`, `data/notifications`, `data/automations`, `data/inventory`, `data/activity`, `data/webhooks`, `data/intelligence`, `cron/list`, `cron/trigger` |\n| **9. Git Extended** | `git/log`, `git/stash`, `git/blame`, `code/todo`, `code/loc` |\n| **10. Intelligence+** | `data/client-risk`, `data/forecast`, `data/seasonal`, `data/pricing`, `data/event-timeline`, `env/validate`, `db/orphans`, `db/rls-audit`, `security/audit`, `code/dead`, `test/coverage`, `docs/coverage`, `beta/health`, `prod/health`, `prod/analytics` |\n\nSay "call the pass" for a full briefing. Oui.',
+  },
 ]
 
 function getGustavGreeting() {
@@ -5666,7 +6525,7 @@ function getGustavGreeting() {
 function getInstantAnswer(message) {
   const trimmed = message.trim()
   for (const entry of INSTANT_ANSWERS) {
-    if (entry.patterns.some(p => p.test(trimmed))) {
+    if (entry.patterns.some((p) => p.test(trimmed))) {
       if (entry.greeting) return getGustavGreeting()
       if (entry.response) return entry.response
       if (entry.action) return null // Let it fall through — will be handled by LLM which will call the action
@@ -5680,7 +6539,7 @@ function getInstantAnswer(message) {
 function getInstantAction(message) {
   const trimmed = message.trim()
   for (const entry of INSTANT_ANSWERS) {
-    if (entry.patterns.some(p => p.test(trimmed))) {
+    if (entry.patterns.some((p) => p.test(trimmed))) {
       if (entry.action) return { type: 'single', action: entry.action }
       if (entry.multiAction) return { type: 'multi', actions: entry.multiAction }
     }
@@ -5692,50 +6551,82 @@ function checkGuardrails(message) {
   const lower = message.toLowerCase().trim()
 
   // Block dangerous system-level commands
-  if (/rm\s+-rf|format\s+c:|del\s+\/[sf]|drop\s+database|truncate|delete\s+from\s+\w+\s+where\s+1/i.test(lower)) {
+  if (
+    /rm\s+-rf|format\s+c:|del\s+\/[sf]|drop\s+database|truncate|delete\s+from\s+\w+\s+where\s+1/i.test(
+      lower
+    )
+  ) {
     return {
       reason: 'dangerous_command',
-      response: 'That\'s a plate I\'m not sending out. Destructive operations require explicit approval — standards exist for a reason. Tell me exactly what you need and I\'ll find the safe way to do it.',
+      response:
+        "That's a plate I'm not sending out. Destructive operations require explicit approval — standards exist for a reason. Tell me exactly what you need and I'll find the safe way to do it.",
     }
   }
 
   // Block prompt injection
-  if (/ignore (all |your |previous )?instructions|you are now|pretend you('re| are)|act as|new persona|system prompt|reveal your/i.test(lower)) {
+  if (
+    /ignore (all |your |previous )?instructions|you are now|pretend you('re| are)|act as|new persona|system prompt|reveal your/i.test(
+      lower
+    )
+  ) {
     return {
       reason: 'prompt_injection',
-      response: 'The pass doesn\'t lie, and neither do I. I\'m Gustav. I run Mission Control. That\'s the job. What do you actually need?',
+      response:
+        "The pass doesn't lie, and neither do I. I'm Gustav. I run Mission Control. That's the job. What do you actually need?",
     }
   }
 
   // Redirect recipe/food questions to Remy
-  if (/recipe for|how (to|do you) (cook|make|prepare|bake)|what should (i|we) cook|meal plan|menu idea|ingredient substitut/i.test(lower)) {
+  if (
+    /recipe for|how (to|do you) (cook|make|prepare|bake)|what should (i|we) cook|meal plan|menu idea|ingredient substitut/i.test(
+      lower
+    )
+  ) {
     return {
       reason: 'remy_domain',
-      response: 'That\'s Remy\'s station — kitchen business, not kitchen infrastructure. Bridge to him with `remy/ask:' + message.trim() + '` (requires dev server running).',
+      response:
+        "That's Remy's station — kitchen business, not kitchen infrastructure. Bridge to him with `remy/ask:" +
+        message.trim() +
+        '` (requires dev server running).',
     }
   }
 
   // Block credential/secret exposure requests
-  if (/show (me )?(the )?(service.?role|api.?key|secret|password|credentials?|token|env|\.env)/i.test(lower) && !/env.?validate|env.?compare|check env/i.test(lower)) {
+  if (
+    /show (me )?(the )?(service.?role|api.?key|secret|password|credentials?|token|env|\.env)/i.test(
+      lower
+    ) &&
+    !/env.?validate|env.?compare|check env/i.test(lower)
+  ) {
     return {
       reason: 'credential_exposure',
-      response: 'Credentials stay in the vault. I\'ll validate they exist (`env/validate`) or compare keys (`env/compare`), but I don\'t read values out loud. Standards.',
+      response:
+        "Credentials stay in the vault. I'll validate they exist (`env/validate`) or compare keys (`env/compare`), but I don't read values out loud. Standards.",
     }
   }
 
   // Block production-dangerous actions
-  if (/push (to )?main|merge (to |into )?main|deploy (to )?(prod|production|vercel)|force.?push/i.test(lower)) {
+  if (
+    /push (to )?main|merge (to |into )?main|deploy (to )?(prod|production|vercel)|force.?push/i.test(
+      lower
+    )
+  ) {
     return {
       reason: 'production_dangerous',
-      response: 'That touches production. I don\'t fire on the main line without the chef\'s explicit order. If you mean it, say it again with "I authorize pushing to main." Otherwise, I\'ll push to the feature branch — that\'s always safe.',
+      response:
+        "That touches production. I don't fire on the main line without the chef's explicit order. If you mean it, say it again with \"I authorize pushing to main.\" Otherwise, I'll push to the feature branch — that's always safe.",
     }
   }
 
   // Redirect off-topic (poetry, philosophy, entertainment)
-  if (/write (me )?(a )?poem|tell (me )?(a )?joke|write (me )?(a )?story|meaning of life|what('s| is) your (favorite|fav)|sing|do you (like|love|hate|feel)/i.test(lower)) {
+  if (
+    /write (me )?(a )?poem|tell (me )?(a )?joke|write (me )?(a )?story|meaning of life|what('s| is) your (favorite|fav)|sing|do you (like|love|hate|feel)/i.test(
+      lower
+    )
+  ) {
     return {
       reason: 'off_topic',
-      response: 'I run the pass. I don\'t write poetry. What station needs attention?',
+      response: "I run the pass. I don't write poetry. What station needs attention?",
     }
   }
 
@@ -5755,166 +6646,442 @@ function calibrateResponseLength(message) {
 
 const TOOLS = {
   // DevOps — Process Control
-  'dev/start':        { fn: startDevServer,                       desc: 'Start the local Next.js dev server on port 3100' },
-  'dev/stop':         { fn: stopDevServer,                        desc: 'Stop the local dev server' },
-  'beta/restart':     { fn: restartBeta,                          desc: 'Restart the beta server (PM2 on Raspberry Pi)' },
-  'beta/deploy':      { fn: () => deployBeta(),                   desc: 'Deploy current code to beta.cheflowhq.com (takes 8-10 min)' },
-  'beta/rollback':    { fn: rollbackBeta,                         desc: 'Rollback beta to previous build' },
-  'ollama/pc/start':  { fn: () => ollamaAction('pc', 'start'),   desc: 'Start Ollama on the PC' },
-  'ollama/pc/stop':   { fn: () => ollamaAction('pc', 'stop'),    desc: 'Stop Ollama on the PC' },
-  'ollama/pi/start':  { fn: () => ollamaAction('pi', 'start'),   desc: 'Start Ollama on the Raspberry Pi' },
-  'ollama/pi/stop':   { fn: () => ollamaAction('pi', 'stop'),    desc: 'Stop Ollama on the Raspberry Pi' },
+  'dev/start': { fn: startDevServer, desc: 'Start the local Next.js dev server on port 3100' },
+  'dev/stop': { fn: stopDevServer, desc: 'Stop the local dev server' },
+  'beta/restart': { fn: restartBeta, desc: 'Restart the beta server (PM2 on Raspberry Pi)' },
+  'beta/deploy': {
+    fn: () => deployBeta(),
+    desc: 'Deploy current code to beta.cheflowhq.com (takes 8-10 min)',
+  },
+  'beta/rollback': { fn: rollbackBeta, desc: 'Rollback beta to previous build' },
+  'ollama/pc/start': { fn: () => ollamaAction('pc', 'start'), desc: 'Start Ollama on the PC' },
+  'ollama/pc/stop': { fn: () => ollamaAction('pc', 'stop'), desc: 'Stop Ollama on the PC' },
+  'ollama/pi/start': {
+    fn: () => ollamaAction('pi', 'start'),
+    desc: 'Start Ollama on the Raspberry Pi',
+  },
+  'ollama/pi/stop': {
+    fn: () => ollamaAction('pi', 'stop'),
+    desc: 'Stop Ollama on the Raspberry Pi',
+  },
 
   // DevOps — Git & Build
-  'git/push':         { fn: gitPush,                              desc: 'Push current git branch to origin' },
-  'git/commit':       { fn: (param) => gitCommit(param),          desc: 'Stage all changes and commit (use git/commit:your message here)' },
-  'build/typecheck':  { fn: () => runBuild('typecheck'),          desc: 'Run TypeScript type check (npx tsc --noEmit)' },
-  'build/full':       { fn: () => runBuild('full'),               desc: 'Run full Next.js production build' },
-  'test/run':         { fn: (param) => runTests(param),           desc: 'Run tests (use test/run:smoke or test/run:typecheck)' },
+  'git/push': { fn: gitPush, desc: 'Push current git branch to origin' },
+  'git/commit': {
+    fn: (param) => gitCommit(param),
+    desc: 'Stage all changes and commit (use git/commit:your message here)',
+  },
+  'build/typecheck': {
+    fn: () => runBuild('typecheck'),
+    desc: 'Run TypeScript type check (node scripts/run-typecheck.mjs -p tsconfig.ci.json)',
+  },
+  'build/full': { fn: () => runBuild('full'), desc: 'Run full Next.js production build' },
+  'test/run': {
+    fn: (param) => runTests(param),
+    desc: 'Run tests (use test/run:smoke or test/run:typecheck)',
+  },
 
   // Pipelines (multi-step)
-  'ship-it':          { fn: (param) => shipIt(param),             desc: 'SHIP IT — commit + push + deploy to beta in one shot (use ship-it:commit message)' },
-  'close-out':        { fn: (param) => closeOutFeature(param),    desc: 'Feature Close-Out — typecheck + build + commit + push (use close-out:commit message)' },
+  'ship-it': {
+    fn: (param) => shipIt(param),
+    desc: 'SHIP IT — commit + push + deploy to beta in one shot (use ship-it:commit message)',
+  },
+  'close-out': {
+    fn: (param) => closeOutFeature(param),
+    desc: 'Feature Close-Out — typecheck + build + commit + push (use close-out:commit message)',
+  },
 
   // Maintenance
-  'cache/clear':      { fn: clearCache,                           desc: 'Clear the .next/ build cache (fixes ENOTEMPTY errors)' },
-  'npm/install':      { fn: npmInstall,                           desc: 'Run npm install to update dependencies' },
-  'db/gen-types':     { fn: generateTypes,                        desc: 'Regenerate types/database.ts from Supabase schema' },
-  'prompts/queue':    { fn: getPromptQueue,                       desc: 'Show pending prompts from the Claude Code queue' },
+  'cache/clear': { fn: clearCache, desc: 'Clear the .next/ build cache (fixes ENOTEMPTY errors)' },
+  'npm/install': { fn: npmInstall, desc: 'Run npm install to update dependencies' },
+  'db/gen-types': { fn: generateTypes, desc: 'Regenerate types/database.ts from Supabase schema' },
+  'prompts/queue': { fn: getPromptQueue, desc: 'Show pending prompts from the Claude Code queue' },
 
   // Status & Monitoring
-  'status/all':       { fn: getAllStatus,                         desc: 'Get current status of all services (dev, beta, prod, Ollama, git)' },
-  'status/git':       { fn: checkGitStatus,                       desc: 'Get git branch, dirty files, and recent commits' },
-  'health/app':       { fn: getAppHealth,                         desc: 'Check app health (database, Redis, circuit breakers) — requires dev server running' },
-  'pi/status':        { fn: getPiStatus,                          desc: 'Get Raspberry Pi system status (uptime, disk, memory, PM2, services)' },
-  'pi/logs':          { fn: (param) => getPiLogs(param),          desc: 'Get recent PM2 logs from Pi (use pi/logs:100 for more lines)' },
-  'prod/deployments': { fn: getVercelDeployments,                 desc: 'Show recent Vercel production deployments' },
+  'status/all': {
+    fn: getAllStatus,
+    desc: 'Get current status of all services (dev, beta, prod, Ollama, git)',
+  },
+  'status/git': { fn: checkGitStatus, desc: 'Get git branch, dirty files, and recent commits' },
+  'health/app': {
+    fn: getAppHealth,
+    desc: 'Check app health (database, Redis, circuit breakers) — requires dev server running',
+  },
+  'pi/status': {
+    fn: getPiStatus,
+    desc: 'Get Raspberry Pi system status (uptime, disk, memory, PM2, services)',
+  },
+  'pi/logs': {
+    fn: (param) => getPiLogs(param),
+    desc: 'Get recent PM2 logs from Pi (use pi/logs:100 for more lines)',
+  },
+  'prod/deployments': {
+    fn: getVercelDeployments,
+    desc: 'Show recent Vercel production deployments',
+  },
 
   // Business Data (read-only Supabase queries)
-  'data/events':      { fn: getUpcomingEvents,                    desc: 'List upcoming events with client, date, status, guest count' },
-  'data/events-by-status': { fn: getEventsByStatus,               desc: 'Count events grouped by FSM status (draft, proposed, accepted, etc.)' },
-  'data/revenue':     { fn: getRevenueSummary,                    desc: 'Revenue summary: total revenue, expenses, profit, outstanding balance' },
-  'data/clients':     { fn: (param) => getClients(param),         desc: 'List or search clients (use data/clients:sarah to search)' },
-  'data/inquiries':   { fn: getOpenInquiries,                     desc: 'List open inquiries awaiting response' },
+  'data/events': {
+    fn: getUpcomingEvents,
+    desc: 'List upcoming events with client, date, status, guest count',
+  },
+  'data/events-by-status': {
+    fn: getEventsByStatus,
+    desc: 'Count events grouped by FSM status (draft, proposed, accepted, etc.)',
+  },
+  'data/revenue': {
+    fn: getRevenueSummary,
+    desc: 'Revenue summary: total revenue, expenses, profit, outstanding balance',
+  },
+  'data/clients': {
+    fn: (param) => getClients(param),
+    desc: 'List or search clients (use data/clients:sarah to search)',
+  },
+  'data/inquiries': { fn: getOpenInquiries, desc: 'List open inquiries awaiting response' },
 
   // Database & History
-  'db/backup':        { fn: dbBackup,                             desc: 'Backup the Supabase database to a local SQL file' },
-  'history/all':      { fn: getGitHistory,                        desc: 'Get the full project commit history' },
-  'feedback/all':     { fn: getFeedback,                          desc: 'Get all user feedback from the database' },
+  'db/backup': { fn: dbBackup, desc: 'Backup the Supabase database to a local SQL file' },
+  'history/all': { fn: getGitHistory, desc: 'Get the full project commit history' },
+  'feedback/all': { fn: getFeedback, desc: 'Get all user feedback from the database' },
 
   // Testing & QA
-  'test/soak-quick':  { fn: () => runSoakTest(true),              desc: 'Run quick soak test (10 iterations) — checks for memory leaks' },
-  'test/soak-full':   { fn: () => runSoakTest(false),             desc: 'Run full soak test (100 iterations) — thorough memory leak check' },
-  'test/e2e':         { fn: (param) => runE2ETests(param),        desc: 'Run E2E tests (use test/e2e:smoke for smoke tests, or test/e2e for all)' },
+  'test/soak-quick': {
+    fn: () => runSoakTest(true),
+    desc: 'Run quick soak test (10 iterations) — checks for memory leaks',
+  },
+  'test/soak-full': {
+    fn: () => runSoakTest(false),
+    desc: 'Run full soak test (100 iterations) — thorough memory leak check',
+  },
+  'test/e2e': {
+    fn: (param) => runE2ETests(param),
+    desc: 'Run E2E tests (use test/e2e:smoke for smoke tests, or test/e2e for all)',
+  },
 
   // Demo & Setup
-  'demo/reset':       { fn: resetDemoData,                        desc: 'Reset demo data — clears old demo data and reloads fresh' },
-  'agent/setup':      { fn: setupAgentAccount,                    desc: 'Set up the agent test account for UI testing' },
+  'demo/reset': {
+    fn: resetDemoData,
+    desc: 'Reset demo data — clears old demo data and reloads fresh',
+  },
+  'agent/setup': { fn: setupAgentAccount, desc: 'Set up the agent test account for UI testing' },
 
   // Health & Verification
-  'health/check':     { fn: healthCheckOnly,                      desc: 'Full health check (typecheck + build) without committing — shows if code is ready to merge' },
-  'db/migrations':    { fn: listMigrations,                       desc: 'List all database migrations and show the latest timestamp' },
+  'health/check': {
+    fn: healthCheckOnly,
+    desc: 'Full health check (typecheck + build) without committing — shows if code is ready to merge',
+  },
+  'db/migrations': {
+    fn: listMigrations,
+    desc: 'List all database migrations and show the latest timestamp',
+  },
 
   // Remy Bridge
-  'remy/ask':         { fn: (param) => askRemy(param),            desc: 'Ask Remy (business AI) a question — requires dev server running. Use remy/ask:your question here' },
+  'remy/ask': {
+    fn: (param) => askRemy(param),
+    desc: 'Ask Remy (business AI) a question — requires dev server running. Use remy/ask:your question here',
+  },
 
   // Business Data — Full Visibility (Track 1)
-  'data/client-details': { fn: (param) => getClientDetails(param), desc: 'Full client profile with loyalty, dietary, allergies, event history. Use data/client-details:name to search' },
-  'data/inquiry-pipeline': { fn: getInquiryPipeline,               desc: 'Full inquiry pipeline — lead scores, status, follow-up dates, source, budget' },
-  'data/quotes':       { fn: getQuoteStatus,                       desc: 'All quotes — status, amounts, validity, linked events and clients' },
-  'data/menu-recipes': { fn: getMenuRecipeStats,                   desc: 'Menu and recipe library stats — counts, recent additions, avg cost, cuisine breakdown' },
-  'data/expenses':     { fn: (param) => getExpenseBreakdown(param), desc: 'Expense breakdown by category, vendor, event. Use data/expenses:food to filter' },
-  'data/calendar':     { fn: getCalendarOverview,                  desc: 'Next 2 weeks — events by day, protected time blocks, availability' },
-  'data/staff':        { fn: getStaffRoster,                       desc: 'Staff roster — roles, rates, status, upcoming assignments' },
-  'data/email':        { fn: getEmailDigest,                       desc: 'Email digest — Gmail sync status, recent emails, classifications, unread count' },
-  'data/loyalty':      { fn: getLoyaltyOverview,                   desc: 'Loyalty program — tiers, points issued/redeemed, active rewards' },
-  'data/documents':    { fn: getDocumentSummary,                   desc: 'Document library — recent docs, folders, storage usage' },
+  'data/client-details': {
+    fn: (param) => getClientDetails(param),
+    desc: 'Full client profile with loyalty, dietary, allergies, event history. Use data/client-details:name to search',
+  },
+  'data/inquiry-pipeline': {
+    fn: getInquiryPipeline,
+    desc: 'Full inquiry pipeline — lead scores, status, follow-up dates, source, budget',
+  },
+  'data/quotes': {
+    fn: getQuoteStatus,
+    desc: 'All quotes — status, amounts, validity, linked events and clients',
+  },
+  'data/menu-recipes': {
+    fn: getMenuRecipeStats,
+    desc: 'Menu and recipe library stats — counts, recent additions, avg cost, cuisine breakdown',
+  },
+  'data/expenses': {
+    fn: (param) => getExpenseBreakdown(param),
+    desc: 'Expense breakdown by category, vendor, event. Use data/expenses:food to filter',
+  },
+  'data/calendar': {
+    fn: getCalendarOverview,
+    desc: 'Next 2 weeks — events by day, protected time blocks, availability',
+  },
+  'data/staff': {
+    fn: getStaffRoster,
+    desc: 'Staff roster — roles, rates, status, upcoming assignments',
+  },
+  'data/email': {
+    fn: getEmailDigest,
+    desc: 'Email digest — Gmail sync status, recent emails, classifications, unread count',
+  },
+  'data/loyalty': {
+    fn: getLoyaltyOverview,
+    desc: 'Loyalty program — tiers, points issued/redeemed, active rewards',
+  },
+  'data/documents': {
+    fn: getDocumentSummary,
+    desc: 'Document library — recent docs, folders, storage usage',
+  },
 
   // Hub / Circles
-  'data/hub-circles':  { fn: (param) => getHubCircles(param),      desc: 'All circles with member counts, roles, activity, visibility. Use data/hub-circles:name to search' },
-  'data/hub-messages': { fn: (param) => getHubMessages(param),     desc: 'Recent hub messages across all circles. Use data/hub-messages:circle name to filter' },
-  'data/hub-polls':    { fn: getHubPolls,                          desc: 'All hub polls with options, vote counts, open/closed status' },
-  'data/hub-profiles': { fn: getHubProfiles,                       desc: 'Hub guest profiles, friend network, notification settings, linked accounts' },
-  'data/hub-activity': { fn: getHubActivity,                       desc: 'Hub engagement: messages, joins, polls, friendships over last 7 days + top circles' },
+  'data/hub-circles': {
+    fn: (param) => getHubCircles(param),
+    desc: 'All circles with member counts, roles, activity, visibility. Use data/hub-circles:name to search',
+  },
+  'data/hub-messages': {
+    fn: (param) => getHubMessages(param),
+    desc: 'Recent hub messages across all circles. Use data/hub-messages:circle name to filter',
+  },
+  'data/hub-polls': {
+    fn: getHubPolls,
+    desc: 'All hub polls with options, vote counts, open/closed status',
+  },
+  'data/hub-profiles': {
+    fn: getHubProfiles,
+    desc: 'Hub guest profiles, friend network, notification settings, linked accounts',
+  },
+  'data/hub-activity': {
+    fn: getHubActivity,
+    desc: 'Hub engagement: messages, joins, polls, friendships over last 7 days + top circles',
+  },
 
   // Remy Oversight (Track 2)
-  'remy/metrics':      { fn: getRemyUsageMetrics,                  desc: 'Remy usage — active chefs, message counts, conversations, errors, response times' },
-  'remy/guardrails':   { fn: getRemyGuardrailLog,                  desc: 'Remy guardrail log — blocked messages, abuse incidents, escalation history' },
-  'remy/memories':     { fn: getRemyMemoryStore,                   desc: 'Remy memory store — all memories across tenants, categories, importance' },
-  'remy/test':         { fn: (param) => runRemyTests(param),       desc: 'Run Remy test suite. Use remy/test:full for complete suite, remy/test for sample' },
-  'remy/performance':  { fn: getRemyPerformance,                   desc: 'Remy performance summary — error rate, response times, model versions' },
+  'remy/metrics': {
+    fn: getRemyUsageMetrics,
+    desc: 'Remy usage — active chefs, message counts, conversations, errors, response times',
+  },
+  'remy/guardrails': {
+    fn: getRemyGuardrailLog,
+    desc: 'Remy guardrail log — blocked messages, abuse incidents, escalation history',
+  },
+  'remy/memories': {
+    fn: getRemyMemoryStore,
+    desc: 'Remy memory store — all memories across tenants, categories, importance',
+  },
+  'remy/test': {
+    fn: (param) => runRemyTests(param),
+    desc: 'Run Remy test suite. Use remy/test:full for complete suite, remy/test for sample',
+  },
+  'remy/performance': {
+    fn: getRemyPerformance,
+    desc: 'Remy performance summary — error rate, response times, model versions',
+  },
 
   // Codebase Intelligence (Track 3)
-  'code/changes':      { fn: (param) => getRecentChanges(param),   desc: 'Recent git changes with stats. Use code/changes:3 for last 3 days' },
-  'code/branches':     { fn: getBranchStatus,                      desc: 'Branch status — current branch, ahead/behind upstream, commits not on main' },
-  'code/search':       { fn: (param) => codebaseSearch(param),     desc: 'Search codebase (.ts/.tsx). Use code/search:functionName' },
-  'code/read':         { fn: (param) => readFileContent(param),    desc: 'Read a file. Use code/read:lib/ai/remy-actions.ts' },
-  'db/schema':         { fn: getSupabaseSchema,                    desc: 'Supabase schema — all tables with row counts' },
+  'code/changes': {
+    fn: (param) => getRecentChanges(param),
+    desc: 'Recent git changes with stats. Use code/changes:3 for last 3 days',
+  },
+  'code/branches': {
+    fn: getBranchStatus,
+    desc: 'Branch status — current branch, ahead/behind upstream, commits not on main',
+  },
+  'code/search': {
+    fn: (param) => codebaseSearch(param),
+    desc: 'Search codebase (.ts/.tsx). Use code/search:functionName',
+  },
+  'code/read': {
+    fn: (param) => readFileContent(param),
+    desc: 'Read a file. Use code/read:lib/ai/remy-actions.ts',
+  },
+  'db/schema': { fn: getSupabaseSchema, desc: 'Supabase schema — all tables with row counts' },
 
   // App Health & Quality Scanners (Track 4)
-  'scan/ts-nocheck':   { fn: scanTsNoCheck,                        desc: 'Scan for @ts-nocheck files with dangerous exports' },
-  'scan/error-handling': { fn: scanMissingErrorHandling,            desc: 'Scan for startTransition calls missing try/catch' },
-  'scan/stale-cache':  { fn: scanStaleCache,                       desc: 'Scan for unstable_cache tags without matching revalidateTag' },
-  'scan/hallucination': { fn: runHallucinationScan,                desc: 'Full hallucination scan — @ts-nocheck, error handling, stale cache, hardcoded $, empty handlers' },
+  'scan/ts-nocheck': {
+    fn: scanTsNoCheck,
+    desc: 'Scan for @ts-nocheck files with dangerous exports',
+  },
+  'scan/error-handling': {
+    fn: scanMissingErrorHandling,
+    desc: 'Scan for startTransition calls missing try/catch',
+  },
+  'scan/stale-cache': {
+    fn: scanStaleCache,
+    desc: 'Scan for unstable_cache tags without matching revalidateTag',
+  },
+  'scan/hallucination': {
+    fn: runHallucinationScan,
+    desc: 'Full hallucination scan — @ts-nocheck, error handling, stale cache, hardcoded $, empty handlers',
+  },
 
   // Universal Data Access (Tier 1)
-  'db/query':          { fn: (param) => queryTable(param),         desc: 'Query any Supabase table. Use db/query:table_name or db/query:table_name?select=col1,col2&filter=status.eq.active&limit=10' },
-  'db/sql':            { fn: (param) => sqlQuery(param),           desc: 'Run read-only SQL query. Use db/sql:SELECT count(*) FROM events WHERE status = \'completed\'' },
-  'cron/list':         { fn: getCronJobs,                          desc: 'List all cron jobs — routes, schedules, recent execution history' },
-  'cron/trigger':      { fn: (param) => triggerCronJob(param),     desc: 'Trigger a cron job manually. Use cron/trigger:daily-maintenance' },
-  'data/event-deep':   { fn: (param) => eventDeepDive(param),      desc: 'Full event deep-dive — ledger, expenses, temps, transitions, staff, quotes, contracts. Use data/event-deep:event_id' },
-  'data/ledger':       { fn: (param) => getLedgerEntries(param),   desc: 'Raw financial journal — ledger entries with type filter and aggregation. Use data/ledger:payment or data/ledger for all' },
-  'data/notifications': { fn: getNotifications,                    desc: 'Notification list — recent notifications, unread count, push subscriptions' },
-  'data/automations':  { fn: getAutomations,                       desc: 'Automation rules, execution history, active sequences' },
-  'data/inventory':    { fn: getInventoryEquipment,                desc: 'Equipment inventory, stock levels, waste logs, depreciation' },
-  'data/activity':     { fn: (param) => getActivityFeed(param),    desc: 'Recent system activity events. Use data/activity:50 for more entries' },
-  'data/webhooks':     { fn: getWebhookHistory,                    desc: 'Webhook delivery history — inbound/outbound, status, recent events' },
-  'data/intelligence': { fn: getBusinessIntelligence,              desc: 'Synthesized business intelligence — revenue trends, conversion funnel, loyalty distribution, hot leads' },
+  'db/query': {
+    fn: (param) => queryTable(param),
+    desc: 'Query any Supabase table. Use db/query:table_name or db/query:table_name?select=col1,col2&filter=status.eq.active&limit=10',
+  },
+  'db/sql': {
+    fn: (param) => sqlQuery(param),
+    desc: "Run read-only SQL query. Use db/sql:SELECT count(*) FROM events WHERE status = 'completed'",
+  },
+  'cron/list': {
+    fn: getCronJobs,
+    desc: 'List all cron jobs — routes, schedules, recent execution history',
+  },
+  'cron/trigger': {
+    fn: (param) => triggerCronJob(param),
+    desc: 'Trigger a cron job manually. Use cron/trigger:daily-maintenance',
+  },
+  'data/event-deep': {
+    fn: (param) => eventDeepDive(param),
+    desc: 'Full event deep-dive — ledger, expenses, temps, transitions, staff, quotes, contracts. Use data/event-deep:event_id',
+  },
+  'data/ledger': {
+    fn: (param) => getLedgerEntries(param),
+    desc: 'Raw financial journal — ledger entries with type filter and aggregation. Use data/ledger:payment or data/ledger for all',
+  },
+  'data/notifications': {
+    fn: getNotifications,
+    desc: 'Notification list — recent notifications, unread count, push subscriptions',
+  },
+  'data/automations': {
+    fn: getAutomations,
+    desc: 'Automation rules, execution history, active sequences',
+  },
+  'data/inventory': {
+    fn: getInventoryEquipment,
+    desc: 'Equipment inventory, stock levels, waste logs, depreciation',
+  },
+  'data/activity': {
+    fn: (param) => getActivityFeed(param),
+    desc: 'Recent system activity events. Use data/activity:50 for more entries',
+  },
+  'data/webhooks': {
+    fn: getWebhookHistory,
+    desc: 'Webhook delivery history — inbound/outbound, status, recent events',
+  },
+  'data/intelligence': {
+    fn: getBusinessIntelligence,
+    desc: 'Synthesized business intelligence — revenue trends, conversion funnel, loyalty distribution, hot leads',
+  },
 
   // The Pass — Full Briefing
-  'call-the-pass':     { fn: callThePass,                          desc: 'FULL STATION CHECK — infrastructure, business, git, Remy, database. The morning briefing.' },
+  'call-the-pass': {
+    fn: callThePass,
+    desc: 'FULL STATION CHECK — infrastructure, business, git, Remy, database. The morning briefing.',
+  },
 
   // New: Monitoring & Health
-  'uptime/report':    { fn: getUptimeReport,                      desc: 'Get uptime report for beta, prod, and Pi (last 24h)' },
-  'errors/top':       { fn: getErrorAggregation,                  desc: 'Get top 5 errors in the last hour from all log sources' },
-  'rollback/history': { fn: getRollbackHistory,                   desc: 'Show rollback history — when and what was rolled back' },
-  'git/diff':         { fn: getGitDiff,                           desc: 'Show git diff — unstaged and staged changes with file stats' },
-  'audit/npm':        { fn: npmAudit,                             desc: 'Run npm audit and show vulnerability summary' },
-  'bundle/size':      { fn: getBundleSizeHistory,                 desc: 'Show bundle size history and trends' },
-  'bundle/capture':   { fn: captureBundleSize,                    desc: 'Capture current bundle size snapshot (requires a build first)' },
-  'env/compare':      { fn: compareEnvFiles,                      desc: 'Compare environment variable keys across dev/beta (keys only, never values)' },
-  'backup/now':       { fn: scheduledDbBackup,                    desc: 'Run a database backup right now (saves to backups/ with 7-day retention)' },
-  'supabase/health':  { fn: checkSupabaseHealth,                  desc: 'Check Supabase database connection health and latency' },
-  'ssl/check':        { fn: checkSSLCerts,                        desc: 'Check SSL certificate expiration for all domains' },
-  'stripe/health':    { fn: checkStripeWebhookHealth,             desc: 'Check Stripe webhook health — last received, recent events' },
-  'email/health':     { fn: checkEmailHealth,                     desc: 'Check email delivery health (Resend API) — recent sends, status' },
-  'api/limits':       { fn: getApiRateLimitInfo,                  desc: 'Show API rate limits and configuration status for all external services' },
+  'uptime/report': {
+    fn: getUptimeReport,
+    desc: 'Get uptime report for beta, prod, and Pi (last 24h)',
+  },
+  'errors/top': {
+    fn: getErrorAggregation,
+    desc: 'Get top 5 errors in the last hour from all log sources',
+  },
+  'rollback/history': {
+    fn: getRollbackHistory,
+    desc: 'Show rollback history — when and what was rolled back',
+  },
+  'git/diff': {
+    fn: getGitDiff,
+    desc: 'Show git diff — unstaged and staged changes with file stats',
+  },
+  'audit/npm': { fn: npmAudit, desc: 'Run npm audit and show vulnerability summary' },
+  'bundle/size': { fn: getBundleSizeHistory, desc: 'Show bundle size history and trends' },
+  'bundle/capture': {
+    fn: captureBundleSize,
+    desc: 'Capture current bundle size snapshot (requires a build first)',
+  },
+  'env/compare': {
+    fn: compareEnvFiles,
+    desc: 'Compare environment variable keys across dev/beta (keys only, never values)',
+  },
+  'backup/now': {
+    fn: scheduledDbBackup,
+    desc: 'Run a database backup right now (saves to backups/ with 7-day retention)',
+  },
+  'supabase/health': {
+    fn: checkSupabaseHealth,
+    desc: 'Check Supabase database connection health and latency',
+  },
+  'ssl/check': { fn: checkSSLCerts, desc: 'Check SSL certificate expiration for all domains' },
+  'stripe/health': {
+    fn: checkStripeWebhookHealth,
+    desc: 'Check Stripe webhook health — last received, recent events',
+  },
+  'email/health': {
+    fn: checkEmailHealth,
+    desc: 'Check email delivery health (Resend API) — recent sends, status',
+  },
+  'api/limits': {
+    fn: getApiRateLimitInfo,
+    desc: 'Show API rate limits and configuration status for all external services',
+  },
 
   // Station 9: Git & Codebase Extended
-  'git/log':           { fn: (param) => gitLog(param),             desc: 'Recent commit log. Use git/log:30 for last 30 commits' },
-  'git/stash':         { fn: (param) => gitStash(param),           desc: 'Git stash operations. Use git/stash (list), git/stash:pop, git/stash:save:message' },
-  'git/blame':         { fn: (param) => gitBlame(param),           desc: 'Git blame a file. Use git/blame:lib/ai/remy-actions.ts' },
-  'code/todo':         { fn: codeTodo,                             desc: 'Scan codebase for TODO/FIXME/HACK/XXX comments' },
-  'code/loc':          { fn: codeLoc,                              desc: 'Lines of code by language/extension' },
+  'git/log': {
+    fn: (param) => gitLog(param),
+    desc: 'Recent commit log. Use git/log:30 for last 30 commits',
+  },
+  'git/stash': {
+    fn: (param) => gitStash(param),
+    desc: 'Git stash operations. Use git/stash (list), git/stash:pop, git/stash:save:message',
+  },
+  'git/blame': {
+    fn: (param) => gitBlame(param),
+    desc: 'Git blame a file. Use git/blame:lib/ai/remy-actions.ts',
+  },
+  'code/todo': { fn: codeTodo, desc: 'Scan codebase for TODO/FIXME/HACK/XXX comments' },
+  'code/loc': { fn: codeLoc, desc: 'Lines of code by language/extension' },
 
   // Station 10: Business Intelligence Extended + Security + Quality
-  'data/client-risk':  { fn: getClientRisk,                        desc: 'Clients at risk of churn — no events in 90+ days' },
-  'data/forecast':     { fn: getRevenueForecast,                   desc: 'Revenue forecast — next 60 days from pipeline + confirmed events' },
-  'data/seasonal':     { fn: getSeasonalTrends,                    desc: 'Seasonal trends — busiest months, avg guests per month' },
-  'data/pricing':      { fn: getPricingAnalysis,                   desc: 'Pricing analysis — avg per guest, by occasion, by cuisine' },
-  'data/event-timeline': { fn: (param) => getEventTimeline(param), desc: 'Event lifecycle timeline — all status transitions. Use data/event-timeline:event_id' },
-  'remy/conversations': { fn: getRemyConversations,                desc: 'Recent Remy conversation metrics across all tenants' },
-  'remy/errors':       { fn: getRemyErrors,                        desc: 'Remy error log — error metrics + abuse incidents with details' },
-  'beta/health':       { fn: getBetaDeepHealth,                    desc: 'Deep beta health — PM2 apps, disk, memory, uptime (requires Pi SSH)' },
-  'prod/health':       { fn: getProdHealth,                        desc: 'Production health check — status, latency, SSL' },
-  'prod/analytics':    { fn: getProdAnalytics,                     desc: 'Production activity — recent main branch commits' },
-  'env/validate':      { fn: validateEnv,                          desc: 'Validate all required env vars are set in .env.local' },
-  'db/orphans':        { fn: findDbOrphans,                        desc: 'Find orphaned records — quotes/expenses without linked events' },
-  'db/rls-audit':      { fn: dbRlsAudit,                          desc: 'Audit RLS policies — which tables have row-level security enabled' },
-  'security/audit':    { fn: securityAudit,                        desc: 'Full security audit — npm, env, SSL, RLS, exposed secrets' },
-  'code/dead':         { fn: findDeadExports,                      desc: 'Find potentially unused exports (dead code)' },
-  'test/coverage':     { fn: getTestCoverage,                      desc: 'Test coverage — test files vs source files' },
-  'docs/coverage':     { fn: getDocsCoverage,                      desc: 'Documentation coverage — doc files vs action files' },
+  'data/client-risk': {
+    fn: getClientRisk,
+    desc: 'Clients at risk of churn — no events in 90+ days',
+  },
+  'data/forecast': {
+    fn: getRevenueForecast,
+    desc: 'Revenue forecast — next 60 days from pipeline + confirmed events',
+  },
+  'data/seasonal': {
+    fn: getSeasonalTrends,
+    desc: 'Seasonal trends — busiest months, avg guests per month',
+  },
+  'data/pricing': {
+    fn: getPricingAnalysis,
+    desc: 'Pricing analysis — avg per guest, by occasion, by cuisine',
+  },
+  'data/event-timeline': {
+    fn: (param) => getEventTimeline(param),
+    desc: 'Event lifecycle timeline — all status transitions. Use data/event-timeline:event_id',
+  },
+  'remy/conversations': {
+    fn: getRemyConversations,
+    desc: 'Recent Remy conversation metrics across all tenants',
+  },
+  'remy/errors': {
+    fn: getRemyErrors,
+    desc: 'Remy error log — error metrics + abuse incidents with details',
+  },
+  'beta/health': {
+    fn: getBetaDeepHealth,
+    desc: 'Deep beta health — PM2 apps, disk, memory, uptime (requires Pi SSH)',
+  },
+  'prod/health': { fn: getProdHealth, desc: 'Production health check — status, latency, SSL' },
+  'prod/analytics': {
+    fn: getProdAnalytics,
+    desc: 'Production activity — recent main branch commits',
+  },
+  'env/validate': { fn: validateEnv, desc: 'Validate all required env vars are set in .env.local' },
+  'db/orphans': {
+    fn: findDbOrphans,
+    desc: 'Find orphaned records — quotes/expenses without linked events',
+  },
+  'db/rls-audit': {
+    fn: dbRlsAudit,
+    desc: 'Audit RLS policies — which tables have row-level security enabled',
+  },
+  'security/audit': {
+    fn: securityAudit,
+    desc: 'Full security audit — npm, env, SSL, RLS, exposed secrets',
+  },
+  'code/dead': { fn: findDeadExports, desc: 'Find potentially unused exports (dead code)' },
+  'test/coverage': { fn: getTestCoverage, desc: 'Test coverage — test files vs source files' },
+  'docs/coverage': {
+    fn: getDocsCoverage,
+    desc: 'Documentation coverage — doc files vs action files',
+  },
 }
 
 async function getAvailableOllamaEndpoint() {
@@ -5931,9 +7098,10 @@ async function buildChatSystemPrompt(memories = []) {
     .map(([name, { desc }]) => `  - ${name}: ${desc}`)
     .join('\n')
 
-  const memoriesSection = memories.length > 0
-    ? `\n## Developer Memories (things they told you to remember)\n${memories.map(m => `- [${m.category}] ${m.content}`).join('\n')}\nUse these naturally when relevant. Don't list them unless asked.\n`
-    : ''
+  const memoriesSection =
+    memories.length > 0
+      ? `\n## Developer Memories (things they told you to remember)\n${memories.map((m) => `- [${m.category}] ${m.content}`).join('\n')}\nUse these naturally when relevant. Don't list them unless asked.\n`
+      : ''
 
   return `You are Gustav — executive chef at the pass, 30 years running three-Michelin-star kitchens. Now you run Mission Control the same way you ran your brigade: every station calls back, every plate gets inspected, nothing goes out unless it meets your standards.
 
@@ -6079,7 +7247,10 @@ async function parseAndExecuteActions(responseText) {
     try {
       const result = await tool.fn(param)
       const duration = Date.now() - actionStart
-      const preview = typeof result === 'string' ? result.slice(0, 200) : JSON.stringify(result || '').slice(0, 200)
+      const preview =
+        typeof result === 'string'
+          ? result.slice(0, 200)
+          : JSON.stringify(result || '').slice(0, 200)
       results.push({ action: actionName, ok: true, result, duration, preview, param })
       log('chat', `Action ${actionName} completed (${duration}ms)`, 'success')
     } catch (err) {
@@ -6096,10 +7267,15 @@ async function parseAndExecuteActions(responseText) {
 function parseBody(req) {
   return new Promise((resolve) => {
     let body = ''
-    req.on('data', chunk => { body += chunk })
+    req.on('data', (chunk) => {
+      body += chunk
+    })
     req.on('end', () => {
-      try { resolve(JSON.parse(body || '{}')) }
-      catch { resolve({}) }
+      try {
+        resolve(JSON.parse(body || '{}'))
+      } catch {
+        resolve({})
+      }
     })
   })
 }
@@ -6131,7 +7307,10 @@ async function handleRequest(req, res) {
   if (path === '/' || path === '/index.html') {
     try {
       const html = await readFile(join(__dirname, 'index.html'), 'utf-8')
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache, no-store, must-revalidate' })
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      })
       return res.end(html)
     } catch {
       res.writeHead(500)
@@ -6155,7 +7334,10 @@ async function handleRequest(req, res) {
   if (path === '/marked.min.js') {
     try {
       const js = await readFile(join(__dirname, 'marked.min.js'), 'utf-8')
-      res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'public, max-age=86400' })
+      res.writeHead(200, {
+        'Content-Type': 'application/javascript; charset=utf-8',
+        'Cache-Control': 'public, max-age=86400',
+      })
       return res.end(js)
     } catch {
       res.writeHead(404)
@@ -6180,7 +7362,7 @@ async function handleRequest(req, res) {
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
     })
     // Send recent log entries
@@ -6198,7 +7380,7 @@ async function handleRequest(req, res) {
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'X-Accel-Buffering': 'no',
       'Access-Control-Allow-Origin': '*',
     })
@@ -6215,7 +7397,11 @@ async function handleRequest(req, res) {
 
     // Send a heartbeat every 15s to keep the connection alive
     const heartbeat = setInterval(() => {
-      try { res.write(`event: ping\ndata: {}\n\n`) } catch { clearInterval(heartbeat) }
+      try {
+        res.write(`event: ping\ndata: {}\n\n`)
+      } catch {
+        clearInterval(heartbeat)
+      }
     }, 15000)
 
     liveFeedClients.add(res)
@@ -6416,17 +7602,23 @@ async function handleRequest(req, res) {
     // Fetch Pi system info (non-blocking — if Pi is down, we still return the rest)
     try {
       const { stdout } = await sshExec(
-        "echo RAM_START && free -m | grep Mem && echo SWAP_START && swapon --show 2>/dev/null | head -2 && echo UPTIME_START && uptime -p && echo SERVICES_START && echo ollama:$(systemctl is-active ollama 2>/dev/null || echo disabled) && echo cloudflared:$(systemctl is-active cloudflared 2>/dev/null) && echo ssh:$(systemctl is-active ssh 2>/dev/null) && echo zramswap:$(systemctl is-active zramswap 2>/dev/null) && echo pm2:$(pm2 pid chefflow-beta >/dev/null 2>&1 && echo active || echo inactive) && echo WATCHDOG_START && (test -e /dev/watchdog && echo active || echo inactive)",
+        'echo RAM_START && free -m | grep Mem && echo SWAP_START && swapon --show 2>/dev/null | head -2 && echo UPTIME_START && uptime -p && echo SERVICES_START && echo ollama:$(systemctl is-active ollama 2>/dev/null || echo disabled) && echo cloudflared:$(systemctl is-active cloudflared 2>/dev/null) && echo ssh:$(systemctl is-active ssh 2>/dev/null) && echo zramswap:$(systemctl is-active zramswap 2>/dev/null) && echo pm2:$(pm2 pid chefflow-beta >/dev/null 2>&1 && echo active || echo inactive) && echo WATCHDOG_START && (test -e /dev/watchdog && echo active || echo inactive)',
         10000
       )
       const lines = stdout.trim().split('\n')
-      const ramLine = lines.find(l => l.startsWith('Mem:'))
-      const uptimeLine = lines.find(l => l.startsWith('up '))
+      const ramLine = lines.find((l) => l.startsWith('Mem:'))
+      const uptimeLine = lines.find((l) => l.startsWith('up '))
       const services = {}
       let inServices = false
       for (const l of lines) {
-        if (l === 'SERVICES_START') { inServices = true; continue }
-        if (l === 'WATCHDOG_START') { inServices = false; continue }
+        if (l === 'SERVICES_START') {
+          inServices = true
+          continue
+        }
+        if (l === 'WATCHDOG_START') {
+          inServices = false
+          continue
+        }
         if (inServices && l.includes(':')) {
           const [svc, status] = l.split(':')
           services[svc] = status
@@ -6436,7 +7628,12 @@ async function handleRequest(req, res) {
       let ram = null
       if (ramLine) {
         const parts = ramLine.trim().split(/\s+/)
-        ram = { total: parts[1] + ' MB', used: parts[2] + ' MB', free: parts[3] + ' MB', available: parts[6] + ' MB' }
+        ram = {
+          total: parts[1] + ' MB',
+          used: parts[2] + ' MB',
+          free: parts[3] + ' MB',
+          available: parts[6] + ' MB',
+        }
       }
       infra.pi = {
         reachable: true,
@@ -6454,7 +7651,12 @@ async function handleRequest(req, res) {
   if (path === '/api/jobs' && method === 'GET') {
     const jobs = {}
     for (const [id, job] of runningJobs) {
-      jobs[id] = { id: job.id, status: job.status, startTime: job.startTime, elapsed: Date.now() - job.startTime }
+      jobs[id] = {
+        id: job.id,
+        status: job.status,
+        startTime: job.startTime,
+        elapsed: Date.now() - job.startTime,
+      }
     }
     return json(res, jobs)
   }
@@ -6532,7 +7734,7 @@ async function handleRequest(req, res) {
         'Content-Type': 'text/plain; charset=utf-8',
         'Transfer-Encoding': 'chunked',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        Connection: 'keep-alive',
         'Access-Control-Allow-Origin': '*',
         'X-Chat-Source': 'deterministic',
       })
@@ -6549,7 +7751,7 @@ async function handleRequest(req, res) {
         'Content-Type': 'text/plain; charset=utf-8',
         'Transfer-Encoding': 'chunked',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        Connection: 'keep-alive',
         'Access-Control-Allow-Origin': '*',
         'X-Chat-Source': 'guardrail',
       })
@@ -6560,7 +7762,11 @@ async function handleRequest(req, res) {
 
     const endpoint = await getAvailableOllamaEndpoint()
     if (!endpoint) {
-      return json(res, { error: 'No Ollama instance available. Start Ollama on PC or Pi first.' }, 503)
+      return json(
+        res,
+        { error: 'No Ollama instance available. Start Ollama on PC or Pi first.' },
+        503
+      )
     }
 
     log('chat', `Chat request via ${endpoint.source} (${endpoint.model})`, 'info')
@@ -6568,16 +7774,21 @@ async function handleRequest(req, res) {
     // ── Instant Action Dispatch (bypass LLM for simple commands) ──
     const instantAction = getInstantAction(message)
     if (instantAction) {
-      log('chat', `Instant action dispatch: ${instantAction.type === 'single' ? instantAction.action : instantAction.actions.join(', ')}`, 'info')
+      log(
+        'chat',
+        `Instant action dispatch: ${instantAction.type === 'single' ? instantAction.action : instantAction.actions.join(', ')}`,
+        'info'
+      )
       res.writeHead(200, {
         'Content-Type': 'text/plain; charset=utf-8',
         'Transfer-Encoding': 'chunked',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        Connection: 'keep-alive',
         'Access-Control-Allow-Origin': '*',
         'X-Chat-Source': 'instant-action',
       })
-      const actionsToRun = instantAction.type === 'single' ? [instantAction.action] : instantAction.actions
+      const actionsToRun =
+        instantAction.type === 'single' ? [instantAction.action] : instantAction.actions
       let fullResponse = ''
       const collectedResults = []
       for (const actionName of actionsToRun) {
@@ -6585,7 +7796,11 @@ async function handleRequest(req, res) {
         if (!tool) {
           const errMsg = `Unknown action: ${actionName}\n`
           fullResponse += errMsg
-          collectedResults.push({ action: actionName, ok: false, error: `Unknown action: ${actionName}` })
+          collectedResults.push({
+            action: actionName,
+            ok: false,
+            error: `Unknown action: ${actionName}`,
+          })
           continue
         }
         try {
@@ -6606,7 +7821,7 @@ async function handleRequest(req, res) {
       return res.end()
     }
 
-    const systemPrompt = await buildChatSystemPrompt(memories) + calibrateResponseLength(message)
+    const systemPrompt = (await buildChatSystemPrompt(memories)) + calibrateResponseLength(message)
     const trimmedHistory = history.slice(-CHAT_CONFIG.maxHistoryMessages)
     const messages = [
       { role: 'system', content: systemPrompt },
@@ -6618,7 +7833,7 @@ async function handleRequest(req, res) {
       'Content-Type': 'text/plain; charset=utf-8',
       'Transfer-Encoding': 'chunked',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
       'X-Chat-Source': endpoint.source,
     })
@@ -6643,7 +7858,9 @@ async function handleRequest(req, res) {
       clearTimeout(timeout)
 
       if (!ollamaRes.ok) {
-        res.write(JSON.stringify({ type: 'error', error: `Ollama returned ${ollamaRes.status}` }) + '\n')
+        res.write(
+          JSON.stringify({ type: 'error', error: `Ollama returned ${ollamaRes.status}` }) + '\n'
+        )
         return res.end()
       }
 
@@ -6656,7 +7873,7 @@ async function handleRequest(req, res) {
         if (done) break
 
         const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n').filter(l => l.trim())
+        const lines = chunk.split('\n').filter((l) => l.trim())
 
         for (const line of lines) {
           try {
@@ -6665,7 +7882,9 @@ async function handleRequest(req, res) {
               fullResponse += parsed.message.content
               res.write(JSON.stringify({ type: 'token', content: parsed.message.content }) + '\n')
             }
-          } catch { /* skip malformed lines */ }
+          } catch {
+            /* skip malformed lines */
+          }
         }
       }
 
@@ -6689,14 +7908,15 @@ async function handleRequest(req, res) {
 
       res.write(JSON.stringify({ type: 'done', fullResponse, actions, memoryCommands }) + '\n')
       res.end()
-
     } catch (err) {
       const errMsg = err.name === 'AbortError' ? 'Request timed out' : err.message
       log('chat', `Chat error: ${errMsg}`, 'error')
       try {
         res.write(JSON.stringify({ type: 'error', error: errMsg }) + '\n')
         res.end()
-      } catch { /* response already closed */ }
+      } catch {
+        /* response already closed */
+      }
     }
     return
   }
@@ -6736,7 +7956,11 @@ async function handleRequest(req, res) {
       const { readdir } = await import('node:fs/promises')
       const backupDir = join(PROJECT_ROOT, 'backups')
       let files = []
-      try { files = (await readdir(backupDir)).filter(f => f.startsWith('backup-') && f.endsWith('.sql')).sort() } catch {}
+      try {
+        files = (await readdir(backupDir))
+          .filter((f) => f.startsWith('backup-') && f.endsWith('.sql'))
+          .sort()
+      } catch {}
       return json(res, {
         ok: true,
         backups: files,
@@ -6773,7 +7997,16 @@ async function handleRequest(req, res) {
   if (path === '/api/login-as' && method === 'POST') {
     const body = await parseBody(req)
     const role = body.role
-    const validRoles = ['chef', 'client', 'staff', 'partner', 'admin', 'chef-b', 'developer', 'guest']
+    const validRoles = [
+      'chef',
+      'client',
+      'staff',
+      'partner',
+      'admin',
+      'chef-b',
+      'developer',
+      'guest',
+    ]
     if (!role || !validRoles.includes(role)) {
       return json(res, { error: `Invalid role. Valid: ${validRoles.join(', ')}` }, 400)
     }
@@ -6793,14 +8026,22 @@ async function handleRequest(req, res) {
     try {
       const result = await new Promise((resolve, reject) => {
         let output = ''
-        const child = spawn('npx', ['tsx', join(PROJECT_ROOT, 'scripts', 'reset-developer-account.ts')], {
-          cwd: PROJECT_ROOT,
-          stdio: ['ignore', 'pipe', 'pipe'],
-          shell: true,
+        const child = spawn(
+          'npx',
+          ['tsx', join(PROJECT_ROOT, 'scripts', 'reset-developer-account.ts')],
+          {
+            cwd: PROJECT_ROOT,
+            stdio: ['ignore', 'pipe', 'pipe'],
+            shell: true,
+          }
+        )
+        child.stdout.on('data', (d) => {
+          output += d.toString()
         })
-        child.stdout.on('data', d => { output += d.toString() })
-        child.stderr.on('data', d => { output += d.toString() })
-        child.on('close', code => {
+        child.stderr.on('data', (d) => {
+          output += d.toString()
+        })
+        child.on('close', (code) => {
           if (code === 0) resolve(output)
           else reject(new Error(output || `Exit code ${code}`))
         })
@@ -6819,9 +8060,21 @@ async function handleRequest(req, res) {
     const DOCS_DIR = join(PROJECT_ROOT, 'docs')
     const files = [
       { key: 'main', label: 'Complete Audit', file: 'app-complete-audit.md' },
-      { key: 'cs-masterclass', label: 'CS Masterclass (Visual)', file: 'chefflow-cs-masterclass-visual.md' },
-      { key: 'developer-readiness', label: 'Developer Readiness Playbook', file: 'developer-readiness-playbook.md' },
-      { key: 'beta-proof-pack', label: 'Beta Proof Pack (2026-03-05)', file: 'beta-proof-pack-readiness-2026-03-05.md' },
+      {
+        key: 'cs-masterclass',
+        label: 'CS Masterclass (Visual)',
+        file: 'chefflow-cs-masterclass-visual.md',
+      },
+      {
+        key: 'developer-readiness',
+        label: 'Developer Readiness Playbook',
+        file: 'developer-readiness-playbook.md',
+      },
+      {
+        key: 'beta-proof-pack',
+        label: 'Beta Proof Pack (2026-03-05)',
+        file: 'beta-proof-pack-readiness-2026-03-05.md',
+      },
       { key: 'calendar', label: 'Calendar', file: 'ui-audit-calendar.md' },
       { key: 'settings', label: 'Settings', file: 'ui-audit-settings.md' },
       { key: 'network', label: 'Network & Community', file: 'ui-audit-network-community.md' },
@@ -6832,7 +8085,12 @@ async function handleRequest(req, res) {
     for (const f of files) {
       try {
         const content = await readFile(join(DOCS_DIR, f.file), 'utf-8')
-        results[f.key] = { label: f.label, content, size: content.length, lines: content.split('\n').length }
+        results[f.key] = {
+          label: f.label,
+          content,
+          size: content.length,
+          lines: content.split('\n').length,
+        }
       } catch (err) {
         results[f.key] = { label: f.label, content: '', size: 0, lines: 0, error: err.message }
       }
@@ -6877,7 +8135,10 @@ async function handleRequest(req, res) {
 
     // Read all eval reports (sorted newest first)
     try {
-      const files = (await readdir(EVAL_DIR)).filter(f => f.endsWith('.json')).sort().reverse()
+      const files = (await readdir(EVAL_DIR))
+        .filter((f) => f.endsWith('.json'))
+        .sort()
+        .reverse()
       for (const f of files.slice(0, 20)) {
         try {
           const raw = await readFile(join(EVAL_DIR, f), 'utf-8')
@@ -6892,9 +8153,13 @@ async function handleRequest(req, res) {
             categoryBreakdown: data.categoryBreakdown,
             weakAreas: data.weakAreas || [],
           })
-        } catch { /* skip malformed */ }
+        } catch {
+          /* skip malformed */
+        }
       }
-    } catch { /* no reports dir */ }
+    } catch {
+      /* no reports dir */
+    }
 
     return json(res, result)
   }
@@ -6931,7 +8196,11 @@ async function scanCodebase() {
   // Recursively find all page.tsx and route.ts files
   async function walk(dir) {
     let entries
-    try { entries = await readdir(dir, { withFileTypes: true }) } catch { return }
+    try {
+      entries = await readdir(dir, { withFileTypes: true })
+    } catch {
+      return
+    }
     for (const entry of entries) {
       const fullPath = join(dir, entry.name)
       if (entry.isDirectory()) {
@@ -6984,7 +8253,7 @@ async function scanCodebase() {
 
   // Stats
   const totalLines = pages.reduce((sum, p) => sum + p.lineCount, 0)
-  const proPages = pages.filter(p => p.proGated).length
+  const proPages = pages.filter((p) => p.proGated).length
   const allComponents = new Set()
   for (const p of pages) for (const c of p.components) allComponents.add(c)
 
@@ -7009,7 +8278,11 @@ async function scanCodebase() {
 
 async function analyzePage(filePath) {
   let content
-  try { content = await readFile(filePath, 'utf-8') } catch { content = '' }
+  try {
+    content = await readFile(filePath, 'utf-8')
+  } catch {
+    content = ''
+  }
   const relativePath = filePath.replace(PROJECT_ROOT, '').replace(/\\/g, '/')
   const routePath = deriveRoute(relativePath)
   const section = deriveSection(relativePath)
@@ -7058,7 +8331,11 @@ async function analyzePage(filePath) {
 
 async function analyzeApiRoute(filePath) {
   let content
-  try { content = await readFile(filePath, 'utf-8') } catch { content = '' }
+  try {
+    content = await readFile(filePath, 'utf-8')
+  } catch {
+    content = ''
+  }
   const relativePath = filePath.replace(PROJECT_ROOT, '').replace(/\\/g, '/')
   const routePath = deriveRoute(relativePath)
 
@@ -7114,30 +8391,30 @@ function deriveSection(filePath) {
 
     // For chef pages, derive from subdirectory
     const sectionMap = {
-      'dashboard': 'Dashboard',
-      'events': 'Events',
-      'clients': 'Clients',
-      'financials': 'Financials',
-      'culinary': 'Culinary',
-      'calendar': 'Calendar',
-      'inbox': 'Inbox',
-      'staff': 'Staff',
-      'analytics': 'Analytics',
-      'settings': 'Settings',
-      'marketing': 'Marketing',
-      'network': 'Network',
-      'loyalty': 'Loyalty',
-      'safety': 'Safety',
+      dashboard: 'Dashboard',
+      events: 'Events',
+      clients: 'Clients',
+      financials: 'Financials',
+      culinary: 'Culinary',
+      calendar: 'Calendar',
+      inbox: 'Inbox',
+      staff: 'Staff',
+      analytics: 'Analytics',
+      settings: 'Settings',
+      marketing: 'Marketing',
+      network: 'Network',
+      loyalty: 'Loyalty',
+      safety: 'Safety',
       'daily-ops': 'Daily Ops',
-      'activity': 'Activity',
-      'travel': 'Travel',
-      'reviews': 'Reviews',
-      'games': 'Games',
-      'help': 'Help',
-      'cannabis': 'Cannabis',
-      'blog': 'Blog',
+      activity: 'Activity',
+      travel: 'Travel',
+      reviews: 'Reviews',
+      games: 'Games',
+      help: 'Help',
+      cannabis: 'Cannabis',
+      blog: 'Blog',
       'dev-tools': 'Dev Tools',
-      'onboarding': 'Onboarding',
+      onboarding: 'Onboarding',
       'my-spending': 'Client Portal',
     }
     return sectionMap[subdir] || subdir.charAt(0).toUpperCase() + subdir.slice(1).replace(/-/g, ' ')
@@ -7154,7 +8431,18 @@ function extractImports(content) {
   const importRegex = /import\s+(?:{([^}]+)}|(\w+))\s+from\s+['"]([^'"]+)['"]/g
   let match
   while ((match = importRegex.exec(content)) !== null) {
-    const names = match[1] ? match[1].split(',').map(s => s.trim().split(/\s+as\s+/).pop().trim()).filter(Boolean) : [match[2]]
+    const names = match[1]
+      ? match[1]
+          .split(',')
+          .map((s) =>
+            s
+              .trim()
+              .split(/\s+as\s+/)
+              .pop()
+              .trim()
+          )
+          .filter(Boolean)
+      : [match[2]]
     const source = match[3]
     imports.push({ names, source })
   }
@@ -7206,10 +8494,11 @@ async function getGitInfoBatch() {
       if (lines.length < 2) continue
       const [hash, date, author, ...msgParts] = lines[0].split('|')
       const message = msgParts.join('|')
-      const files = lines.slice(1).filter(f => f.trim())
+      const files = lines.slice(1).filter((f) => f.trim())
       for (const file of files) {
         const f = file.trim().replace(/\\/g, '/')
-        if (!gitMap[f]) { // Only keep the most recent commit per file
+        if (!gitMap[f]) {
+          // Only keep the most recent commit per file
           gitMap[f] = { hash: hash?.slice(0, 8), date, author, message }
         }
       }
@@ -7250,7 +8539,8 @@ server.listen(PORT, '127.0.0.1', () => {
   initFileWatcher()
 
   // Auto-open in browser
-  const openCmd = process.platform === 'win32' ? 'start' : process.platform === 'darwin' ? 'open' : 'xdg-open'
+  const openCmd =
+    process.platform === 'win32' ? 'start' : process.platform === 'darwin' ? 'open' : 'xdg-open'
   exec(`${openCmd} http://localhost:${PORT}`)
 })
 
@@ -7270,7 +8560,9 @@ server.on('error', (err) => {
 process.on('SIGINT', () => {
   log('system', 'Mission Control shutting down...', 'info')
   if (devServerProcess) {
-    try { exec(`taskkill /PID ${devServerProcess.pid} /T /F`, { shell: 'cmd' }) } catch {}
+    try {
+      exec(`taskkill /PID ${devServerProcess.pid} /T /F`, { shell: 'cmd' })
+    } catch {}
   }
   server.close()
   process.exit(0)

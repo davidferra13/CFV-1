@@ -1,26 +1,20 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "plugins": []
+  },
   "include": [
-    "next-env.d.ts",
-    "middleware.ts",
-    "app/**/*.ts",
-    "app/**/*.tsx",
-    "components/**/*.ts",
-    "components/**/*.tsx",
-    "hooks/**/*.ts",
-    "hooks/**/*.tsx",
-    "i18n/**/*.ts",
-    "i18n/**/*.tsx",
-    "lib/**/*.ts",
-    "lib/**/*.tsx",
-    "pages/**/*.ts",
-    "pages/**/*.tsx",
+    "scripts/**/*.ts",
+    "scripts/**/*.tsx",
+    "tests/helpers/**/*.ts",
+    "tests/helpers/**/*.tsx",
+    "worker/**/*.ts",
+    "worker/**/*.tsx",
     "types/**/*.ts",
     "types/**/*.tsx"
   ],
   "exclude": [
     "node_modules",
-    "tests",
     ".auth",
     ".claude",
     ".constraints",
@@ -42,12 +36,10 @@
     "messages",
     "playwright-report",
     "public",
-    "scripts",
     "supabase",
     "test-screenshots",
     "tmp",
     "types/database.generated.d.ts",
-    "types/types",
-    "worker"
+    "types/types"
   ]
 }

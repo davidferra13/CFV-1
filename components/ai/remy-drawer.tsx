@@ -1032,7 +1032,7 @@ export function RemyDrawer() {
                         <Globe className="h-3 w-3" />
                         Web search enabled. Conversations stay in your browser. Press{' '}
                         <kbd className="bg-stone-700 dark:bg-stone-700 rounded px-1 py-0.5 text-[10px] font-mono">
-                          Ctrl+K
+                          Ctrl+J
                         </kbd>{' '}
                         anytime.
                       </p>

@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 
 async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -97,22 +98,55 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
           `[Follow-ups Cron] Email failed for inquiry ${inquiry.id} (non-fatal):`,
           emailErr
         )
+        await recordSideEffectFailure({
+          source: 'follow-ups-cron',
+          operation: 'send_follow_up_due_email',
+          severity: 'medium',
+          tenantId: inquiry.tenant_id,
+          entityType: 'inquiry',
+          entityId: inquiry.id,
+          errorMessage: emailErr instanceof Error ? emailErr.message : String(emailErr),
+        })
       }
 
       // Reschedule next follow-up using the tenant's configured interval
       const intervalMs = tenantSettings.follow_up_reminder_interval_hours * 60 * 60 * 1000
-      await supabase
+      const nextFollowUpDueAt = new Date(Date.now() + intervalMs).toISOString()
+      const { error: rescheduleError } = await supabase
         .from('inquiries')
         .update({
-          follow_up_due_at: new Date(Date.now() + intervalMs).toISOString(),
+          follow_up_due_at: nextFollowUpDueAt,
         })
         .eq('id', inquiry.id)
         .eq('tenant_id', inquiry.tenant_id)
+
+      if (rescheduleError) {
+        await recordSideEffectFailure({
+          source: 'follow-ups-cron',
+          operation: 'reschedule_follow_up',
+          severity: 'high',
+          tenantId: inquiry.tenant_id,
+          entityType: 'inquiry',
+          entityId: inquiry.id,
+          errorMessage: rescheduleError.message,
+          context: { nextFollowUpDueAt },
+        })
+        throw new Error(`Failed to reschedule follow-up: ${rescheduleError.message}`)
+      }
 
       notified++
     } catch (err) {
       const error = err as Error
       console.error(`[Follow-ups Cron] Failed for inquiry ${inquiry.id}:`, error.message)
+      await recordSideEffectFailure({
+        source: 'follow-ups-cron',
+        operation: 'process_follow_up',
+        severity: 'high',
+        tenantId: inquiry.tenant_id,
+        entityType: 'inquiry',
+        entityId: inquiry.id,
+        errorMessage: error.message,
+      })
       errors++
     }
   }

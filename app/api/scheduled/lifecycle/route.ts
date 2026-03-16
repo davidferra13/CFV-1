@@ -9,6 +9,35 @@ import { createServerClient } from '@/lib/supabase/server'
 import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
+
+async function throwLifecycleFailure(input: {
+  operation: string
+  error: { message: string } | null | undefined
+  tenantId?: string
+  entityType?: string
+  entityId?: string
+  severity?: 'critical' | 'high' | 'medium' | 'low'
+  context?: Record<string, unknown>
+  messagePrefix?: string
+}) {
+  if (!input.error) return
+
+  await recordSideEffectFailure({
+    source: 'lifecycle-cron',
+    operation: input.operation,
+    severity: input.severity ?? 'high',
+    tenantId: input.tenantId,
+    entityType: input.entityType,
+    entityId: input.entityId,
+    errorMessage: input.error.message,
+    context: input.context,
+  })
+
+  throw new Error(
+    input.messagePrefix ? `${input.messagePrefix}: ${input.error.message}` : input.error.message
+  )
+}
 
 async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -32,10 +61,17 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
   // Skipped for tenants with inquiry_auto_expiry_enabled = false.
 
   try {
-    const { data: candidateInquiries } = await supabase
+    const { data: candidateInquiries, error: candidateInquiriesError } = await supabase
       .from('inquiries')
       .select('id, tenant_id, updated_at, client:clients(id, full_name)')
       .eq('status', 'awaiting_client')
+
+    await throwLifecycleFailure({
+      operation: 'query_stale_inquiries',
+      error: candidateInquiriesError,
+      severity: 'high',
+      messagePrefix: 'Failed to query stale inquiries',
+    })
 
     if (candidateInquiries && candidateInquiries.length > 0) {
       for (const inquiry of candidateInquiries) {
@@ -57,7 +93,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           }
 
           // Transition to expired
-          await supabase
+          const { error: expireInquiryError } = await supabase
             .from('inquiries')
             .update({
               status: 'expired',
@@ -67,6 +103,16 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             })
             .eq('id', inquiry.id)
             .eq('tenant_id', inquiry.tenant_id)
+
+          await throwLifecycleFailure({
+            operation: 'expire_inquiry',
+            error: expireInquiryError,
+            tenantId: inquiry.tenant_id,
+            entityType: 'inquiry',
+            entityId: inquiry.id,
+            severity: 'high',
+            messagePrefix: 'Failed to expire inquiry',
+          })
 
           // Notify chef (non-blocking)
           try {
@@ -108,7 +154,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
   // Notifies both chef and client when a quote expires.
 
   try {
-    const { data: expiredQuotes } = await supabase
+    const { data: expiredQuotes, error: expiredQuotesError } = await supabase
       .from('quotes')
       .select(
         `
@@ -121,6 +167,13 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       .not('expires_at', 'is', null)
       .lt('expires_at', new Date().toISOString())
 
+    await throwLifecycleFailure({
+      operation: 'query_expired_quotes',
+      error: expiredQuotesError,
+      severity: 'high',
+      messagePrefix: 'Failed to query expired quotes',
+    })
+
     if (expiredQuotes && expiredQuotes.length > 0) {
       for (const quote of expiredQuotes) {
         try {
@@ -131,11 +184,21 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             continue
           }
 
-          await supabase
+          const { error: expireQuoteError } = await supabase
             .from('quotes')
             .update({ status: 'expired' })
             .eq('id', quote.id)
             .eq('tenant_id', quote.tenant_id)
+
+          await throwLifecycleFailure({
+            operation: 'expire_quote',
+            error: expireQuoteError,
+            tenantId: quote.tenant_id,
+            entityType: 'quote',
+            entityId: quote.id,
+            severity: 'high',
+            messagePrefix: 'Failed to expire quote',
+          })
 
           results.quotesExpired++
 
@@ -236,7 +299,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     tomorrow.setDate(tomorrow.getDate() + 1)
     const tomorrowDate = tomorrow.toISOString().split('T')[0]
 
-    const { data: upcomingEvents } = await supabase
+    const { data: upcomingEvents, error: upcomingEventsError } = await supabase
       .from('events')
       .select(
         `
@@ -248,6 +311,13 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       )
       .eq('event_date', tomorrowDate)
       .in('status', ['paid', 'confirmed', 'in_progress'])
+
+    await throwLifecycleFailure({
+      operation: 'query_upcoming_events',
+      error: upcomingEventsError,
+      severity: 'high',
+      messagePrefix: 'Failed to query upcoming events',
+    })
 
     if (upcomingEvents && upcomingEvents.length > 0) {
       const { sendEventReminderEmail, buildLocation } = await import('@/lib/email/notifications')
@@ -325,7 +395,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const sevenDaysOutDate = sevenDaysOut.toISOString().split('T')[0]
     const todayDate = today.toISOString().split('T')[0]
 
-    const { data: unpaidEvents } = await supabase
+    const { data: unpaidEvents, error: unpaidEventsError } = await supabase
       .from('events')
       .select(
         `
@@ -338,6 +408,13 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       .in('payment_status', ['unpaid', 'deposit_paid'])
       .gte('event_date', todayDate)
       .lte('event_date', sevenDaysOutDate)
+
+    await throwLifecycleFailure({
+      operation: 'query_unpaid_events',
+      error: unpaidEventsError,
+      severity: 'high',
+      messagePrefix: 'Failed to query unpaid events',
+    })
 
     const paymentReminderResults = { sent: 0, skipped: 0 }
 
@@ -411,11 +488,23 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
             // Mark as sent
             // Cast to any: new column not yet in generated types
-            await supabase
+            const reminderSentAt = new Date().toISOString()
+            const { error: paymentReminderMarkerError } = await supabase
               .from('events')
-              .update({ [threshold.column]: new Date().toISOString() })
+              .update({ [threshold.column]: reminderSentAt })
               .eq('id', event.id)
               .eq('tenant_id', event.tenant_id)
+
+            await throwLifecycleFailure({
+              operation: 'mark_payment_reminder_sent',
+              error: paymentReminderMarkerError,
+              tenantId: event.tenant_id,
+              entityType: 'event',
+              entityId: event.id,
+              severity: 'high',
+              context: { thresholdColumn: threshold.column, reminderSentAt },
+              messagePrefix: 'Failed to mark payment reminder sent',
+            })
 
             paymentReminderResults.sent++
             break // Only send the most-urgent threshold per cron run
@@ -481,7 +570,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const todayDate5 = today5.toISOString().split('T')[0]
     const thirtyDaysOutDate5 = thirtyDaysOut5.toISOString().split('T')[0]
 
-    const { data: upcomingEvents5 } = await supabase
+    const { data: upcomingEvents5, error: upcomingEvents5Error } = await supabase
       .from('events')
       .select(
         `
@@ -496,6 +585,13 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       .in('status', ['paid', 'confirmed', 'in_progress'])
       .gte('event_date', todayDate5)
       .lte('event_date', thirtyDaysOutDate5)
+
+    await throwLifecycleFailure({
+      operation: 'query_pre_event_reminders',
+      error: upcomingEvents5Error,
+      severity: 'high',
+      messagePrefix: 'Failed to query pre-event reminders',
+    })
 
     if (upcomingEvents5 && upcomingEvents5.length > 0) {
       const {
@@ -660,11 +756,23 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             }
 
             // Mark as sent
-            await supabase
+            const reminderSentAt = new Date().toISOString()
+            const { error: preEventMarkerError } = await supabase
               .from('events')
-              .update({ [threshold.column]: new Date().toISOString() })
+              .update({ [threshold.column]: reminderSentAt })
               .eq('id', event.id)
               .eq('tenant_id', event.tenant_id)
+
+            await throwLifecycleFailure({
+              operation: 'mark_pre_event_reminder_sent',
+              error: preEventMarkerError,
+              tenantId: event.tenant_id,
+              entityType: 'event',
+              entityId: event.id,
+              severity: 'high',
+              context: { thresholdColumn: threshold.column, reminderSentAt },
+              messagePrefix: 'Failed to mark pre-event reminder sent',
+            })
 
             results.eventReminders++
             break // Only send the most urgent threshold per cron run
@@ -687,7 +795,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const now6 = new Date()
     const fortyEightHoursOut6 = new Date(now6.getTime() + 48 * 60 * 60 * 1000)
 
-    const { data: expiringQuotes } = await supabase
+    const { data: expiringQuotes, error: expiringQuotesError } = await supabase
       .from('quotes')
       .select(
         `
@@ -702,6 +810,13 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       .lte('valid_until', fortyEightHoursOut6.toISOString())
       .is('expiry_warning_sent_at', null)
 
+    await throwLifecycleFailure({
+      operation: 'query_expiring_quotes',
+      error: expiringQuotesError,
+      severity: 'high',
+      messagePrefix: 'Failed to query expiring quotes',
+    })
+
     if (expiringQuotes && expiringQuotes.length > 0) {
       const { sendQuoteExpiringEmail } = await import('@/lib/email/notifications')
       const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
@@ -714,11 +829,21 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           if (!tenantSettings.client_event_reminders_enabled) continue
 
           // Fetch client
-          const { data: client } = await supabase
+          const { data: client, error: clientError } = await supabase
             .from('clients')
             .select('id, email, full_name, automated_emails_enabled')
             .eq('id', quote.client_id)
             .single()
+
+          await throwLifecycleFailure({
+            operation: 'load_quote_warning_client',
+            error: clientError,
+            tenantId: quote.tenant_id,
+            entityType: 'quote',
+            entityId: quote.id,
+            severity: 'medium',
+            messagePrefix: 'Failed to load quote warning client',
+          })
 
           if (!client?.email) continue
 
@@ -789,11 +914,23 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           })
 
           // Mark warning as sent
-          await supabase
+          const warningSentAt = new Date().toISOString()
+          const { error: quoteWarningMarkerError } = await supabase
             .from('quotes')
-            .update({ expiry_warning_sent_at: new Date().toISOString() })
+            .update({ expiry_warning_sent_at: warningSentAt })
             .eq('id', quote.id)
             .eq('tenant_id', quote.tenant_id)
+
+          await throwLifecycleFailure({
+            operation: 'mark_quote_expiry_warning_sent',
+            error: quoteWarningMarkerError,
+            tenantId: quote.tenant_id,
+            entityType: 'quote',
+            entityId: quote.id,
+            severity: 'high',
+            context: { warningSentAt },
+            messagePrefix: 'Failed to mark quote expiry warning sent',
+          })
 
           results.quoteExpiryWarnings++
         } catch (err) {
@@ -819,7 +956,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const tenDaysAgo = new Date(now7.getTime() - 10 * 86_400_000).toISOString().split('T')[0]
     const threeDaysAgo = new Date(now7.getTime() - 3 * 86_400_000).toISOString().split('T')[0]
 
-    const { data: completedEvents } = await supabase
+    const { data: completedEvents, error: completedEventsError } = await supabase
       .from('events')
       .select(
         `
@@ -832,6 +969,13 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       .is('review_request_sent_at', null)
       .gte('event_date', tenDaysAgo)
       .lte('event_date', threeDaysAgo)
+
+    await throwLifecycleFailure({
+      operation: 'query_review_requests',
+      error: completedEventsError,
+      severity: 'high',
+      messagePrefix: 'Failed to query review requests',
+    })
 
     if (completedEvents && completedEvents.length > 0) {
       for (const event of completedEvents) {
@@ -899,11 +1043,23 @@ ${chefName}`
           })
 
           // Mark as sent
-          await supabase
+          const reviewRequestSentAt = now7.toISOString()
+          const { error: reviewRequestMarkerError } = await supabase
             .from('events')
-            .update({ review_request_sent_at: now7.toISOString() })
+            .update({ review_request_sent_at: reviewRequestSentAt })
             .eq('id', event.id)
             .eq('tenant_id', event.tenant_id)
+
+          await throwLifecycleFailure({
+            operation: 'mark_review_request_sent',
+            error: reviewRequestMarkerError,
+            tenantId: event.tenant_id,
+            entityType: 'event',
+            entityId: event.id,
+            severity: 'high',
+            context: { reviewRequestSentAt },
+            messagePrefix: 'Failed to mark review request sent',
+          })
 
           reviewResults.sent++
         } catch (err) {

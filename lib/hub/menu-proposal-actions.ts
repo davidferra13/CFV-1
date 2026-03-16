@@ -4,6 +4,35 @@ import { createServerClient } from '@/lib/supabase/server'
 import { getCircleForContext, getChefHubProfileId } from './circle-lookup'
 import { generateMenuProposalMessage, type MenuOption } from '@/lib/templates/menu-proposal-message'
 
+type UntypedSupabaseClient = {
+  from: (table: string) => any
+}
+
+type ChefRow = {
+  display_name: string | null
+  business_name: string | null
+}
+
+type MenuRow = {
+  id: string
+  name: string
+  description: string | null
+}
+
+type MenuCourseRow = {
+  id: string
+  name: string
+  display_order: number | null
+}
+
+type MenuDishRow = {
+  name: string
+}
+
+type QueryResult<T> = {
+  data: T | null
+}
+
 // ---------------------------------------------------------------------------
 // Menu Proposal Actions
 // Share menu proposals to a Dinner Circle. Loads menus from the DB, builds
@@ -36,14 +65,16 @@ export async function shareMenuProposalToCircle(input: {
     return { success: false, error: 'Chef hub profile not found' }
   }
 
-  const supabase = createServerClient({ admin: true })
+  // Keep the result shapes explicit here so build type-checking does not
+  // expand the full generated Supabase query-builder types for every chain.
+  const supabase = createServerClient({ admin: true }) as unknown as UntypedSupabaseClient
 
   // Load chef first name
-  const { data: chef } = await supabase
+  const { data: chef } = (await supabase
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', circle.tenantId)
-    .single()
+    .single()) as QueryResult<ChefRow>
 
   const chefName = chef?.display_name || chef?.business_name || 'Chef'
   const chefFirstName = chefName.split(' ')[0]
@@ -52,33 +83,33 @@ export async function shareMenuProposalToCircle(input: {
   const menus: MenuOption[] = []
 
   for (const menuId of input.menuIds) {
-    const { data: menu } = await supabase
+    const { data: menu } = (await supabase
       .from('menus')
       .select('id, name, description')
       .eq('id', menuId)
       .eq('tenant_id', circle.tenantId)
-      .single()
+      .single()) as QueryResult<MenuRow>
 
     if (!menu) continue
 
-    const { data: courses } = await supabase
+    const { data: courses } = (await supabase
       .from('menu_courses')
       .select('id, name, display_order')
       .eq('menu_id', menuId)
-      .order('display_order', { ascending: true })
+      .order('display_order', { ascending: true })) as QueryResult<MenuCourseRow[]>
 
     const menuCourses: MenuOption['courses'] = []
 
     for (const course of courses ?? []) {
-      const { data: dishes } = await supabase
+      const { data: dishes } = (await supabase
         .from('menu_dishes')
         .select('name')
         .eq('course_id', course.id)
-        .order('display_order', { ascending: true })
+        .order('display_order', { ascending: true })) as QueryResult<MenuDishRow[]>
 
       menuCourses.push({
         name: course.name,
-        dishes: (dishes ?? []).map((d: { name: string }) => d.name),
+        dishes: (dishes ?? []).map((d) => d.name),
       })
     }
 

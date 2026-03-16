@@ -8,10 +8,69 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import type { Json } from '@/types/database'
 import type { AiQueueItem, AiTaskStatus, ApprovalTier, EnqueueInput, LlmEndpoint } from './types'
 import { OLLAMA_GUARD } from './types'
 import { getTaskDefinition } from './registry'
+
+async function recordQueueFailure(input: {
+  operation: string
+  errorMessage: string
+  tenantId?: string | null
+  entityId?: string
+  taskType?: string | null
+  severity?: 'critical' | 'high' | 'medium' | 'low'
+  context?: Record<string, unknown>
+}) {
+  await recordSideEffectFailure({
+    source: 'ai-queue',
+    operation: input.operation,
+    severity: input.severity ?? 'high',
+    tenantId: input.tenantId ?? undefined,
+    entityType: 'ai_task',
+    entityId: input.entityId,
+    errorMessage: input.errorMessage,
+    context: {
+      taskType: input.taskType ?? null,
+      ...input.context,
+    },
+  })
+}
+
+async function releaseClaimAfterIncrementFailure(input: {
+  supabase: any
+  taskId: string
+  tenantId: string
+  taskType: string
+  endpoint?: string | null
+  errorMessage: string
+}): Promise<void> {
+  const { error: releaseError } = await input.supabase
+    .from('ai_task_queue')
+    .update({
+      status: 'pending' as AiTaskStatus,
+      started_at: null,
+      last_error: input.errorMessage,
+    })
+    .eq('id', input.taskId)
+    .eq('status', 'processing')
+
+  if (!releaseError) return
+
+  await recordQueueFailure({
+    operation: 'release_claim_after_increment_failure',
+    severity: 'critical',
+    tenantId: input.tenantId,
+    entityId: input.taskId,
+    taskType: input.taskType,
+    errorMessage: releaseError.message,
+    context: {
+      endpoint: input.endpoint ?? null,
+      incrementError: input.errorMessage,
+    },
+  })
+}
 
 // ============================================
 // ENQUEUE — Add a task to the queue
@@ -33,11 +92,22 @@ export async function enqueueTask(
   const supabase: any = createAdminClient()
 
   // Queue depth guard — prevent runaway enqueuing
-  const { count } = await supabase
+  const { count, error: depthError } = await supabase
     .from('ai_task_queue')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', input.tenantId)
     .in('status', ['pending', 'processing'])
+
+  if (depthError) {
+    await recordQueueFailure({
+      operation: 'queue_depth_check',
+      tenantId: input.tenantId,
+      taskType: input.taskType,
+      errorMessage: depthError.message,
+      severity: 'medium',
+    })
+    return { error: `Failed to inspect queue depth: ${depthError.message}` }
+  }
 
   if ((count ?? 0) >= OLLAMA_GUARD.MAX_QUEUE_DEPTH_PER_TENANT) {
     return {
@@ -48,13 +118,24 @@ export async function enqueueTask(
   // Deduplication — don't enqueue the same task type if one is already pending/processing
   // (only for scheduled/reactive tasks, not on-demand)
   if ((input.priority ?? definition.defaultPriority) < 800) {
-    const { data: existing } = await supabase
+    const { data: existing, error: dedupeError } = await supabase
       .from('ai_task_queue')
       .select('id')
       .eq('tenant_id', input.tenantId)
       .eq('task_type', input.taskType)
       .in('status', ['pending', 'processing'])
       .limit(1)
+
+    if (dedupeError) {
+      await recordQueueFailure({
+        operation: 'dedupe_check',
+        tenantId: input.tenantId,
+        taskType: input.taskType,
+        errorMessage: dedupeError.message,
+        severity: 'medium',
+      })
+      return { error: `Failed to inspect existing queued work: ${dedupeError.message}` }
+    }
 
     if (existing && existing.length > 0) {
       return { id: existing[0].id } // Return existing task ID, don't duplicate
@@ -84,6 +165,13 @@ export async function enqueueTask(
 
   if (error) {
     console.error('[ai-queue] Enqueue failed:', error)
+    await recordQueueFailure({
+      operation: 'insert_task',
+      tenantId: input.tenantId,
+      taskType: input.taskType,
+      errorMessage: error.message,
+      severity: 'high',
+    })
     return { error: error.message }
   }
 
@@ -116,7 +204,16 @@ export async function claimNextTask(): Promise<AiQueueItem | null> {
     .order('scheduled_for', { ascending: true })
     .limit(1)
 
-  if (findError || !candidates || candidates.length === 0) {
+  if (findError) {
+    await recordQueueFailure({
+      operation: 'find_next_task',
+      errorMessage: findError.message,
+      severity: 'medium',
+    })
+    return null
+  }
+
+  if (!candidates || candidates.length === 0) {
     return null
   }
 
@@ -135,16 +232,45 @@ export async function claimNextTask(): Promise<AiQueueItem | null> {
     .select()
     .single()
 
-  if (claimError || !claimed) {
+  if (claimError) {
+    await recordQueueFailure({
+      operation: 'claim_task',
+      entityId: taskId,
+      errorMessage: claimError.message,
+      severity: 'medium',
+    })
+    return null
+  }
+
+  if (!claimed) {
     // Another worker claimed it first (race condition) — try again
     return null
   }
 
   // Increment attempts
-  await supabase
+  const { error: incrementError } = await supabase
     .from('ai_task_queue')
     .update({ attempts: (claimed.attempts ?? 0) + 1 })
     .eq('id', taskId)
+
+  if (incrementError) {
+    await recordQueueFailure({
+      operation: 'increment_attempts',
+      tenantId: claimed.tenant_id,
+      entityId: taskId,
+      taskType: claimed.task_type,
+      errorMessage: incrementError.message,
+      severity: 'high',
+    })
+    await releaseClaimAfterIncrementFailure({
+      supabase,
+      taskId,
+      tenantId: claimed.tenant_id,
+      taskType: claimed.task_type,
+      errorMessage: incrementError.message,
+    })
+    return null
+  }
 
   return claimed as AiQueueItem
 }
@@ -161,18 +287,36 @@ export async function completeTask(taskId: string, result: Record<string, unknow
   const supabase: any = createAdminClient()
 
   // Get the task to check its approval tier
-  const { data: task } = await supabase
+  const { data: task, error: loadError } = await supabase
     .from('ai_task_queue')
     .select('approval_tier, recurrence, tenant_id, task_type')
     .eq('id', taskId)
     .single()
 
-  if (!task) return
+  if (loadError) {
+    await recordQueueFailure({
+      operation: 'load_task_for_completion',
+      entityId: taskId,
+      errorMessage: loadError.message,
+      severity: 'high',
+    })
+    throw new Error(`Failed to load task for completion: ${loadError.message}`)
+  }
+
+  if (!task) {
+    await recordQueueFailure({
+      operation: 'load_task_for_completion',
+      entityId: taskId,
+      errorMessage: 'Task not found during completion',
+      severity: 'high',
+    })
+    throw new Error(`Task not found during completion: ${taskId}`)
+  }
 
   const finalStatus: AiTaskStatus =
     task.approval_tier === 'draft' ? 'awaiting_approval' : 'completed'
 
-  await supabase
+  const { error: completionError } = await supabase
     .from('ai_task_queue')
     .update({
       status: finalStatus,
@@ -181,6 +325,18 @@ export async function completeTask(taskId: string, result: Record<string, unknow
     })
     .eq('id', taskId)
 
+  if (completionError) {
+    await recordQueueFailure({
+      operation: 'complete_task',
+      tenantId: task.tenant_id,
+      entityId: taskId,
+      taskType: task.task_type,
+      errorMessage: completionError.message,
+      severity: 'high',
+    })
+    throw new Error(`Failed to mark task complete: ${completionError.message}`)
+  }
+
   // If recurring, schedule the next run
   if (task.recurrence && finalStatus === 'completed') {
     const definition = getTaskDefinition(task.task_type)
@@ -188,11 +344,22 @@ export async function completeTask(taskId: string, result: Record<string, unknow
       // Calculate next run time using the recurrence interval
       // PostgreSQL interval strings like '1 day', '1 week', '2 hours'
       const nextRun = calculateNextRun(task.recurrence)
-      await enqueueTask({
+      const enqueueResult = await enqueueTask({
         tenantId: task.tenant_id,
         taskType: task.task_type,
         scheduledFor: nextRun,
       })
+      if ('error' in enqueueResult) {
+        await recordQueueFailure({
+          operation: 'enqueue_recurring_task',
+          tenantId: task.tenant_id,
+          entityId: taskId,
+          taskType: task.task_type,
+          errorMessage: enqueueResult.error,
+          severity: 'high',
+          context: { nextRun: nextRun.toISOString() },
+        })
+      }
     }
   }
 }
@@ -208,19 +375,37 @@ export async function completeTask(taskId: string, result: Record<string, unknow
 export async function failTask(taskId: string, errorMessage: string): Promise<void> {
   const supabase: any = createAdminClient()
 
-  const { data: task } = await supabase
+  const { data: task, error: loadError } = await supabase
     .from('ai_task_queue')
     .select('attempts, max_attempts, tenant_id, task_type, payload')
     .eq('id', taskId)
     .single()
 
-  if (!task) return
+  if (loadError) {
+    await recordQueueFailure({
+      operation: 'load_task_for_failure',
+      entityId: taskId,
+      errorMessage: loadError.message,
+      severity: 'high',
+    })
+    throw new Error(`Failed to load task for failure: ${loadError.message}`)
+  }
+
+  if (!task) {
+    await recordQueueFailure({
+      operation: 'load_task_for_failure',
+      entityId: taskId,
+      errorMessage: 'Task not found during failure handling',
+      severity: 'high',
+    })
+    throw new Error(`Task not found during failure handling: ${taskId}`)
+  }
 
   const attempts = task.attempts ?? 1
 
   if (attempts >= task.max_attempts) {
     // Permanently failed — move to dead
-    await supabase
+    const { error: deadError } = await supabase
       .from('ai_task_queue')
       .update({
         status: 'dead' as AiTaskStatus,
@@ -229,8 +414,20 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
       })
       .eq('id', taskId)
 
+    if (deadError) {
+      await recordQueueFailure({
+        operation: 'mark_task_dead',
+        tenantId: task.tenant_id,
+        entityId: taskId,
+        taskType: task.task_type,
+        errorMessage: deadError.message,
+        severity: 'critical',
+      })
+      throw new Error(`Failed to mark task dead: ${deadError.message}`)
+    }
+
     // Push to DLQ for visibility
-    await supabase.from('dead_letter_queue').insert({
+    const { error: dlqError } = await supabase.from('dead_letter_queue').insert({
       tenant_id: task.tenant_id,
       job_type: `ai_queue:${task.task_type}`,
       job_id: taskId,
@@ -240,6 +437,18 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
       first_failed_at: new Date().toISOString(),
       last_failed_at: new Date().toISOString(),
     })
+
+    if (dlqError) {
+      await recordQueueFailure({
+        operation: 'insert_dead_letter',
+        tenantId: task.tenant_id,
+        entityId: taskId,
+        taskType: task.task_type,
+        errorMessage: dlqError.message,
+        severity: 'critical',
+      })
+      throw new Error(`Failed to insert dead letter entry: ${dlqError.message}`)
+    }
   } else {
     // Retry with exponential backoff
     const backoffMs = Math.min(
@@ -248,7 +457,7 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
     )
     const nextRetry = new Date(Date.now() + backoffMs)
 
-    await supabase
+    const { error: retryError } = await supabase
       .from('ai_task_queue')
       .update({
         status: 'pending' as AiTaskStatus,
@@ -258,6 +467,19 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
         started_at: null,
       })
       .eq('id', taskId)
+
+    if (retryError) {
+      await recordQueueFailure({
+        operation: 'schedule_retry',
+        tenantId: task.tenant_id,
+        entityId: taskId,
+        taskType: task.task_type,
+        errorMessage: retryError.message,
+        severity: 'high',
+        context: { nextRetryAt: nextRetry.toISOString() },
+      })
+      throw new Error(`Failed to schedule retry: ${retryError.message}`)
+    }
   }
 }
 
@@ -439,7 +661,17 @@ export async function claimNextTaskForEndpoint(endpoint: 'pc' | 'pi'): Promise<A
 
   const { data: candidates, error: findError } = await query
 
-  if (findError || !candidates || candidates.length === 0) {
+  if (findError) {
+    await recordQueueFailure({
+      operation: 'find_next_task_for_endpoint',
+      errorMessage: findError.message,
+      severity: 'medium',
+      context: { endpoint },
+    })
+    return null
+  }
+
+  if (!candidates || candidates.length === 0) {
     return null
   }
 
@@ -460,16 +692,48 @@ export async function claimNextTaskForEndpoint(endpoint: 'pc' | 'pi'): Promise<A
     .select()
     .single()
 
-  if (claimError || !claimed) {
+  if (claimError) {
+    await recordQueueFailure({
+      operation: 'claim_task_for_endpoint',
+      entityId: taskId,
+      errorMessage: claimError.message,
+      severity: 'medium',
+      context: { endpoint },
+    })
+    return null
+  }
+
+  if (!claimed) {
     // Another worker/slot claimed it — not an error
     return null
   }
 
   // Increment attempts
-  await supabase
+  const { error: incrementError } = await supabase
     .from('ai_task_queue')
     .update({ attempts: (claimed.attempts ?? 0) + 1 })
     .eq('id', taskId)
+
+  if (incrementError) {
+    await recordQueueFailure({
+      operation: 'increment_attempts_for_endpoint',
+      tenantId: claimed.tenant_id,
+      entityId: taskId,
+      taskType: claimed.task_type,
+      errorMessage: incrementError.message,
+      severity: 'high',
+      context: { endpoint },
+    })
+    await releaseClaimAfterIncrementFailure({
+      supabase,
+      taskId,
+      tenantId: claimed.tenant_id,
+      taskType: claimed.task_type,
+      endpoint,
+      errorMessage: incrementError.message,
+    })
+    return null
+  }
 
   return claimed as AiQueueItem
 }
@@ -525,7 +789,7 @@ async function recoverHungTasks(): Promise<void> {
   const supabase: any = createAdminClient()
   const cutoff = new Date(Date.now() - OLLAMA_GUARD.HUNG_TASK_TIMEOUT_MS).toISOString()
 
-  await supabase
+  const { error } = await supabase
     .from('ai_task_queue')
     .update({
       status: 'pending' as AiTaskStatus,
@@ -534,6 +798,16 @@ async function recoverHungTasks(): Promise<void> {
     })
     .eq('status', 'processing')
     .lt('started_at', cutoff)
+
+  if (error) {
+    await recordQueueFailure({
+      operation: 'recover_hung_tasks',
+      errorMessage: error.message,
+      severity: 'high',
+      context: { cutoff },
+    })
+    throw new Error(`Failed to recover hung tasks: ${error.message}`)
+  }
 }
 
 /**

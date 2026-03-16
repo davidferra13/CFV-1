@@ -4,26 +4,48 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import type { User } from '@supabase/supabase-js'
-import { hasPersistedAdminAccessForAuthUser } from '@/lib/auth/admin-access'
-import { signRoleCookie, verifyRoleCookie } from '@/lib/auth/signed-cookie'
-import {
-  isAdminRoutePath,
-  isApiSkipAuthPath,
-  isChefRoutePath,
-  isClientRoutePath,
-  isPublicUnauthenticatedPath,
-  isStaffRoutePath,
-} from '@/lib/auth/route-policy'
 
-/** Generate a short, URL-safe correlation ID for request tracing. */
-function generateRequestId(): string {
-  // crypto.randomUUID() is available in the Edge Runtime (middleware)
-  return crypto.randomUUID().replace(/-/g, '').slice(0, 16)
-}
-
-// Route policy lives in lib/auth/route-policy.ts.
-// Admin paths — require authentication but not a specific role (email check is in layout)
+// Routes that require chef role (route groups don't create URL segments)
+const chefPaths = [
+  '/dashboard',
+  '/queue',
+  '/leads',
+  '/clients',
+  '/events',
+  '/financials',
+  '/menus',
+  '/inquiries',
+  '/quotes',
+  '/expenses',
+  '/schedule',
+  '/settings',
+  '/aar',
+  '/recipes',
+  '/loyalty',
+  '/import',
+  '/chat',
+  '/network',
+]
+// Routes that require client role
+const clientPaths = [
+  '/my-events',
+  '/my-quotes',
+  '/my-chat',
+  '/my-profile',
+  '/my-rewards',
+  '/book-now',
+]
+// Paths that skip all auth processing
+const skipAuthPaths = [
+  '/pricing',
+  '/contact',
+  '/privacy',
+  '/terms',
+  '/unauthorized',
+  '/share',
+  '/chef',
+  '/partner-signup',
+]
 
 /**
  * Copy Supabase session cookies from the internal response onto a redirect response.
@@ -31,73 +53,38 @@ function generateRequestId(): string {
  */
 function redirectWithCookies(url: URL, sourceResponse: NextResponse): NextResponse {
   const redirectResponse = NextResponse.redirect(url)
-  sourceResponse.cookies.getAll().forEach(({ name, value, ...options }) => {
-    redirectResponse.cookies.set(name, value, options)
+  sourceResponse.cookies.getAll().forEach((cookie) => {
+    redirectResponse.cookies.set(cookie.name, cookie.value)
   })
   return redirectResponse
-}
-
-function hasSupabaseAuthCookie(request: NextRequest): boolean {
-  return request.cookies
-    .getAll()
-    .some((cookie) => cookie.name.startsWith('sb-') && cookie.name.endsWith('-auth-token'))
-}
-
-type SupabaseUserResult = { user: User | null }
-
-/**
- * getUser() occasionally fails under transient upstream conditions (timeouts / 429 / network reset).
- * Retry once when an auth cookie is present so valid sessions don't get bounced to sign-in.
- */
-async function getUserWithRetry(
-  supabase: ReturnType<typeof createServerClient>,
-  request: NextRequest
-): Promise<SupabaseUserResult> {
-  const first = await supabase.auth.getUser()
-  if (!first.error || first.data.user || !hasSupabaseAuthCookie(request)) {
-    return { user: first.data.user }
-  }
-
-  const retryable = /timeout|timed out|network|429|rate|fetch|socket|abort/i.test(
-    first.error.message ?? ''
-  )
-  if (!retryable) {
-    return { user: null }
-  }
-
-  const second = await supabase.auth.getUser()
-  return { user: second.data.user }
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Auth and technical API namespaces that intentionally bypass middleware auth routing.
-  if (isApiSkipAuthPath(pathname)) {
+  // Auth pages, webhooks, and Google/Gmail API routes - no processing needed
+  // /api/e2e/* endpoints establish test sessions — they must be reachable unauthenticated
+  if (
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/api/webhooks') ||
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api/gmail') ||
+    pathname.startsWith('/api/scheduled') ||
+    pathname.startsWith('/api/e2e')
+  ) {
     return NextResponse.next()
   }
 
   // Static public pages + /unauthorized - no auth check needed
   // /share paths use startsWith to allow /share/[token] subpaths
-  if (isPublicUnauthenticatedPath(pathname)) {
+  if (skipAuthPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))) {
     return NextResponse.next()
   }
-
-  // Build request headers with current pathname so server components can read it
-  // without an additional DB call or breaking the App Router server component model.
-  // Used by app/(chef)/layout.tsx for the onboarding gate.
-  //
-  // X-Request-ID: correlation ID for distributed tracing and log correlation.
-  // Reuses the incoming header if already set (e.g. by a proxy/load balancer).
-  const requestId = request.headers.get('x-request-id') ?? generateRequestId()
-  const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-pathname', pathname)
-  requestHeaders.set('x-request-id', requestId)
 
   // Create Supabase client for middleware with getAll/setAll cookie API
   let response = NextResponse.next({
     request: {
-      headers: requestHeaders,
+      headers: request.headers,
     },
   })
 
@@ -117,7 +104,7 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({
             request: {
-              headers: requestHeaders,
+              headers: request.headers,
             },
           })
           cookiesToSet.forEach(({ name, value, options }) => {
@@ -130,20 +117,19 @@ export async function middleware(request: NextRequest) {
   )
 
   // Get authenticated user (also refreshes session if token is expired)
-  const { user } = await getUserWithRetry(supabase, request)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   // Role cache cookie — avoids a DB round-trip on every navigation.
   // The layout's requireChef() / requireClient() remain the authoritative security check.
-  // HMAC-signed to prevent client-side tampering.
   const roleCookieName = 'chefflow-role-cache'
-  const rawCachedRole = request.cookies.get(roleCookieName)?.value
-  const cachedRole = rawCachedRole ? await verifyRoleCookie(rawCachedRole) : null
-  const roleIsKnown = cachedRole === 'chef' || cachedRole === 'client' || cachedRole === 'staff'
+  const cachedRole = request.cookies.get(roleCookieName)?.value
+  const roleIsKnown = cachedRole === 'chef' || cachedRole === 'client'
 
-  // Helper: write the HMAC-signed role cookie onto a response, mirroring the sessionOnly flag.
-  async function setRoleCookie(res: NextResponse, role: string) {
-    const signedValue = await signRoleCookie(role)
-    res.cookies.set(roleCookieName, signedValue, {
+  // Helper: write the role cookie onto a response, mirroring the sessionOnly flag.
+  function setRoleCookie(res: NextResponse, role: string) {
+    res.cookies.set(roleCookieName, role, {
       maxAge: sessionOnly ? undefined : 300, // 5 min persistent, or session-scoped
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -166,22 +152,21 @@ export async function middleware(request: NextRequest) {
         .eq('auth_user_id', user.id)
         .single()
       landingRole = roleData?.role
-      if (landingRole) await setRoleCookie(response, landingRole)
+      if (landingRole) setRoleCookie(response, landingRole)
     }
     if (landingRole === 'client') {
       return redirectWithCookies(new URL('/my-events', request.url), response)
-    }
-    if (landingRole === 'staff') {
-      return redirectWithCookies(new URL('/staff-dashboard', request.url), response)
-    }
-    if (landingRole === 'partner') {
-      return redirectWithCookies(new URL('/partner/dashboard', request.url), response)
     }
     return redirectWithCookies(new URL('/dashboard', request.url), response)
   }
 
   // All remaining routes require authentication
   if (!user) {
+    // API routes get a JSON 401 instead of a redirect to sign-in page.
+    // Without this, /api/nonexistent would redirect to /auth/signin and appear as 200.
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
     const redirectUrl = new URL('/auth/signin', request.url)
     redirectUrl.searchParams.set('redirect', pathname)
     return redirectWithCookies(redirectUrl, response)
@@ -189,30 +174,6 @@ export async function middleware(request: NextRequest) {
 
   // Get user role — served from cookie cache when fresh, DB otherwise
   let roleData: { role: string } | null = null
-
-  // Admin paths — defense-in-depth: check admin email list in middleware AND layout
-  const isAdminRoute = isAdminRoutePath(pathname)
-  if (isAdminRoute) {
-    const hasAdminAccess = await hasPersistedAdminAccessForAuthUser(supabase as any, user.id)
-    if (!hasAdminAccess) {
-      return redirectWithCookies(new URL('/unauthorized', request.url), response)
-    }
-    response.headers.set('x-request-id', requestId)
-    return response
-  }
-
-  // Enforce role-based routing using actual URL paths
-  const isChefRoute = isChefRoutePath(pathname)
-  const isClientRoute = isClientRoutePath(pathname)
-  const isStaffRoute = isStaffRoutePath(pathname)
-
-  // Most authenticated routes are protected by server layouts already.
-  // Only perform middleware role lookups where we want immediate redirects.
-  if (!isChefRoute && !isClientRoute && !isStaffRoute) {
-    response.headers.set('x-request-id', requestId)
-    return response
-  }
-
   if (roleIsKnown) {
     roleData = { role: cachedRole }
   } else {
@@ -222,12 +183,19 @@ export async function middleware(request: NextRequest) {
       .eq('auth_user_id', user.id)
       .single()
     roleData = data
-    if (roleData) await setRoleCookie(response, roleData.role)
+    if (roleData) setRoleCookie(response, roleData.role)
   }
 
   if (!roleData) {
-    return redirectWithCookies(new URL('/auth/role-selection', request.url), response)
+    // No role found - send to unauthorized (which is in skipAuthPaths to avoid loops)
+    return redirectWithCookies(new URL('/unauthorized', request.url), response)
   }
+
+  // Enforce role-based routing using actual URL paths
+  const isChefRoute = chefPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
+  const isClientRoute = clientPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  )
 
   if (isChefRoute && roleData.role !== 'chef') {
     return redirectWithCookies(new URL('/my-events', request.url), response)
@@ -237,16 +205,6 @@ export async function middleware(request: NextRequest) {
     return redirectWithCookies(new URL('/dashboard', request.url), response)
   }
 
-  if (isStaffRoute && roleData.role !== 'staff') {
-    // Non-staff users trying to access staff pages get redirected to their home
-    if (roleData.role === 'client') {
-      return redirectWithCookies(new URL('/my-events', request.url), response)
-    }
-    return redirectWithCookies(new URL('/dashboard', request.url), response)
-  }
-
-  // Propagate the correlation ID on every response so clients can include it in support requests
-  response.headers.set('x-request-id', requestId)
   return response
 }
 
@@ -254,9 +212,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except:
-     * - _next/* (all Next.js internals, including dev HMR websocket)
-     * - static assets in /public (images, manifests, robots, etc.)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
      */
-    '/((?!_next/|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|json|webmanifest)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

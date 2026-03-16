@@ -14,6 +14,8 @@ import {
   type VendorInput,
 } from '@/lib/vendors/actions'
 import { VENDOR_TYPE_LABELS } from '@/lib/vendors/constants'
+import { showUndoToast } from '@/components/ui/undo-toast'
+import { toast } from 'sonner'
 
 type Vendor = {
   id: string
@@ -92,15 +94,34 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
     setShowDeleteConfirm(true)
   }
 
-  async function handleConfirmedDelete() {
+  function handleConfirmedDelete() {
     if (!deleteTargetId) return
+    const targetId = deleteTargetId
+    const targetVendor = vendors.find((v) => v.id === targetId)
     setShowDeleteConfirm(false)
-    try {
-      await deleteVendor(deleteTargetId)
-      router.refresh()
-    } catch {
-      /* silent */
-    }
+
+    // Optimistically remove from UI, defer actual deletion
+    setVendors((prev) => prev.filter((v) => v.id !== targetId))
+
+    const timer = setTimeout(async () => {
+      try {
+        await deleteVendor(targetId)
+        router.refresh()
+      } catch {
+        // Restore on failure
+        if (targetVendor) setVendors((prev) => [...prev, targetVendor])
+        toast.error('Failed to delete vendor')
+      }
+    }, 8000)
+
+    showUndoToast(
+      `Vendor "${targetVendor?.name || 'vendor'}" deleted`,
+      () => {
+        clearTimeout(timer)
+        if (targetVendor) setVendors((prev) => [...prev, targetVendor])
+      },
+      8000
+    )
   }
 
   async function handleTogglePreferred(id: string, current: boolean) {

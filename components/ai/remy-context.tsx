@@ -163,10 +163,10 @@ export function RemyProvider({ children }: { children: React.ReactNode }) {
     [dispatchBody]
   )
 
-  // Keyboard shortcut: Ctrl+K / Cmd+K to toggle drawer
+  // Keyboard shortcut: Ctrl+J / Cmd+J to toggle drawer (Cmd+K reserved for command palette)
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
         e.preventDefault()
         toggleDrawer()
       }

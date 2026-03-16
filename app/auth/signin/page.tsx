@@ -1,16 +1,10 @@
 // Sign In Page
 'use client'
 
-import { useEffect, useState, useMemo, Suspense } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn, type SignInInput } from '@/lib/auth/actions'
-import { signInWithGoogle } from '@/lib/supabase/client'
-import {
-  isGoogleAuthButtonEnabled,
-  normalizeGoogleOAuthErrorMessage,
-} from '@/lib/auth/google-oauth-errors'
-import { Chrome } from '@/components/ui/icons'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -21,7 +15,7 @@ import { Alert } from '@/components/ui/alert'
 function safeRedirectPath(raw: string | null): string {
   if (!raw) return '/'
   try {
-    // Parse as if relative to localhost - rejects anything with an external host
+    // Parse as if relative to localhost — rejects anything with an external host
     const url = new URL(raw, 'http://localhost')
     if (url.origin !== 'http://localhost') return '/'
     return url.pathname + url.search
@@ -30,35 +24,19 @@ function safeRedirectPath(raw: string | null): string {
   }
 }
 
-function normalizeAuthErrorMessage(message: string): string {
-  const normalized = message.toLowerCase()
-  if (
-    normalized.includes('failed to fetch') ||
-    normalized.includes('fetch failed') ||
-    normalized.includes('networkerror') ||
-    normalized.includes('network request failed') ||
-    normalized.includes('load failed')
-  ) {
-    return 'Connection issue while signing in. Please confirm the app server is running and try again.'
-  }
-  return message
-}
-
 function SignInForm() {
   const router = useRouter()
-  const rawSearchParams = useSearchParams()
-  const searchParams = useMemo(() => rawSearchParams ?? new URLSearchParams(), [rawSearchParams])
+  const searchParams = useSearchParams() ?? new URLSearchParams()
   const [loading, setLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
 
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
   const [formData, setFormData] = useState<SignInInput>({
     email: '',
     password: '',
     rememberMe: true,
   })
-  const showGoogleAuth = isGoogleAuthButtonEnabled()
   const redirectPath = safeRedirectPath(searchParams.get('redirect'))
   useEffect(() => {
     const callbackError = searchParams.get('error')
@@ -67,10 +45,33 @@ function SignInForm() {
     setMessage(callbackMessage || null)
   }, [searchParams])
 
+  function validateForm(): boolean {
+    const errors: { email?: string; password?: string } = {}
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required'
+    } else if (!emailRegex.test(formData.email.trim())) {
+      errors.email = 'Please enter a valid email address'
+    }
+
+    if (!formData.password) {
+      errors.password = 'Password is required'
+    } else if (formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters'
+    }
+
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setMessage(null)
+
+    if (!validateForm()) return
+
     setLoading(true)
 
     try {
@@ -79,36 +80,18 @@ function SignInForm() {
       router.refresh()
     } catch (err) {
       const error = err as Error
-      setError(normalizeAuthErrorMessage(error.message))
+      setError(error.message)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleGoogleSignIn = async () => {
-    setError(null)
-    setMessage(null)
-    setGoogleLoading(true)
-    try {
-      await signInWithGoogle(redirectPath)
-      // signInWithGoogle redirects, so no navigation or state change is needed here on success
-    } catch (err) {
-      const error = err as Error
-      setError(normalizeGoogleOAuthErrorMessage(normalizeAuthErrorMessage(error.message)))
-      setGoogleLoading(false)
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Warm radial glow behind the card */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[600px] h-[600px] rounded-full bg-brand-500/[0.04] blur-[100px]" />
-      </div>
-      <div className="max-w-md w-full relative z-10">
+    <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
+      <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
-          <p className="text-stone-400 mt-2">Sign in to your account</p>
+          <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
+          <p className="text-stone-600 mt-2">Sign in to your account</p>
         </div>
 
         <Card>
@@ -125,41 +108,46 @@ function SignInForm() {
               <Input
                 type="email"
                 label="Email"
-                name="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value })
+                  if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }))
+                }}
+                error={fieldErrors.email}
                 required
                 autoComplete="email"
+                aria-invalid={!!fieldErrors.email}
               />
 
               <Input
                 type="password"
                 label="Password"
-                name="password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, password: e.target.value })
+                  if (fieldErrors.password)
+                    setFieldErrors((prev) => ({ ...prev, password: undefined }))
+                }}
+                error={fieldErrors.password}
                 required
                 autoComplete="current-password"
+                aria-invalid={!!fieldErrors.password}
               />
 
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor="remember-me"
-                  className="flex items-center gap-2 cursor-pointer select-none"
-                >
+                <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
-                    id="remember-me"
                     type="checkbox"
                     checked={formData.rememberMe}
                     onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                    className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
+                    className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
                   />
-                  <span className="text-sm text-stone-400">Stay signed in</span>
+                  <span className="text-sm text-stone-600">Stay signed in</span>
                 </label>
 
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-brand-500 hover:text-brand-400 font-medium"
+                  className="text-sm text-brand-600 hover:text-brand-700 font-medium"
                 >
                   Forgot password?
                 </Link>
@@ -171,42 +159,18 @@ function SignInForm() {
                 Sign In
               </Button>
 
-              {showGoogleAuth && (
-                <>
-                  <div className="relative my-2">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-stone-900 px-2 text-stone-400">Or continue with</span>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="w-full"
-                    onClick={handleGoogleSignIn}
-                    loading={googleLoading}
-                  >
-                    <Chrome className="mr-2 h-4 w-4" />
-                    Sign in with Google
-                  </Button>
-                </>
-              )}
-
-              <div className="text-sm text-center text-stone-400">
+              <div className="text-sm text-center text-stone-600">
                 Don&apos;t have an account?{' '}
                 <Link
                   href="/auth/signup"
-                  className="text-brand-500 hover:text-brand-400 font-medium"
+                  className="text-brand-600 hover:text-brand-700 font-medium"
                 >
                   Chef sign up
                 </Link>{' '}
                 or{' '}
                 <Link
                   href="/auth/client-signup"
-                  className="text-brand-500 hover:text-brand-400 font-medium"
+                  className="text-brand-600 hover:text-brand-700 font-medium"
                 >
                   Client sign up
                 </Link>
@@ -223,8 +187,8 @@ export default function SignInPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-stone-950 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500" />
+        <div className="min-h-screen bg-surface-muted flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
         </div>
       }
     >

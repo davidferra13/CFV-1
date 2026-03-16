@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { createEmergencyContact, deleteEmergencyContact } from '@/lib/contingency/actions'
+import { showUndoToast } from '@/components/ui/undo-toast'
+import { toast } from 'sonner'
 
 type Contact = {
   id: string
@@ -19,6 +21,7 @@ type Contact = {
 
 export function EmergencyContactsClient({ initialContacts }: { initialContacts: Contact[] }) {
   const router = useRouter()
+  const [contacts, setContacts] = useState(initialContacts)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,7 +50,7 @@ export function EmergencyContactsClient({ initialContacts }: { initialContacts: 
         phone: form.phone || undefined,
         email: form.email || undefined,
         notes: form.notes || undefined,
-        sort_order: initialContacts.length,
+        sort_order: contacts.length,
       })
       setForm({ name: '', relationship: '', phone: '', email: '', notes: '' })
       setShowForm(false)
@@ -64,24 +67,42 @@ export function EmergencyContactsClient({ initialContacts }: { initialContacts: 
     setShowRemoveConfirm(true)
   }
 
-  async function handleConfirmedDelete() {
+  function handleConfirmedDelete() {
     if (!removeTargetId) return
+    const targetId = removeTargetId
+    const targetContact = contacts.find((c) => c.id === targetId)
     setShowRemoveConfirm(false)
-    try {
-      await deleteEmergencyContact(removeTargetId)
-      router.refresh()
-    } catch {
-      /* silent */
-    }
+
+    // Optimistic removal with undo
+    setContacts((prev) => prev.filter((c) => c.id !== targetId))
+
+    const timer = setTimeout(async () => {
+      try {
+        await deleteEmergencyContact(targetId)
+        router.refresh()
+      } catch {
+        if (targetContact) setContacts((prev) => [...prev, targetContact])
+        toast.error('Failed to remove contact')
+      }
+    }, 8000)
+
+    showUndoToast(
+      `Contact "${targetContact?.name}" removed`,
+      () => {
+        clearTimeout(timer)
+        if (targetContact) setContacts((prev) => [...prev, targetContact])
+      },
+      8000
+    )
   }
 
   return (
     <div className="space-y-4">
-      {initialContacts.length === 0 && !showForm && (
+      {contacts.length === 0 && !showForm && (
         <p className="text-sm text-stone-500">No emergency contacts on file.</p>
       )}
 
-      {initialContacts.map((c) => (
+      {contacts.map((c) => (
         <Card key={c.id}>
           <CardContent className="pt-4 pb-4">
             <div className="flex items-start justify-between gap-2">

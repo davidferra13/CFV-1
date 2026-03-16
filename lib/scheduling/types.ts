@@ -172,39 +172,41 @@ export interface WidgetMeta {
 
 export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
   // Today & This Week
+  // Starter defaults: 10 essential widgets that answer "What do I need to do right now?"
+  // Power users can enable all 105 widgets via Settings > Dashboard.
   todays_schedule: { category: 'today', size: 'lg', defaultEnabled: true },
-  daily_plan: { category: 'today', size: 'lg', defaultEnabled: true },
-  next_action: { category: 'today', size: 'sm', defaultEnabled: true },
+  daily_plan: { category: 'today', size: 'lg', defaultEnabled: false },
+  next_action: { category: 'today', size: 'sm', defaultEnabled: false },
   week_strip: { category: 'today', size: 'lg', defaultEnabled: true },
-  quick_create: { category: 'today', size: 'lg', defaultEnabled: true },
-  client_lookup: { category: 'today', size: 'lg', defaultEnabled: true },
+  quick_create: { category: 'today', size: 'lg', defaultEnabled: false },
+  client_lookup: { category: 'today', size: 'lg', defaultEnabled: false },
 
   // Action Items
   priority_queue: { category: 'actions', size: 'lg', defaultEnabled: true },
-  scheduling_gaps: { category: 'actions', size: 'lg', defaultEnabled: true },
+  scheduling_gaps: { category: 'actions', size: 'lg', defaultEnabled: false },
   response_time: { category: 'actions', size: 'sm', defaultEnabled: true },
   pending_followups: { category: 'actions', size: 'sm', defaultEnabled: true },
-  stuck_events: { category: 'actions', size: 'sm', defaultEnabled: true },
-  next_best_actions: { category: 'actions', size: 'sm', defaultEnabled: true },
-  live_inbox: { category: 'actions', size: 'lg', defaultEnabled: true },
+  stuck_events: { category: 'actions', size: 'sm', defaultEnabled: false },
+  next_best_actions: { category: 'actions', size: 'sm', defaultEnabled: false },
+  live_inbox: { category: 'actions', size: 'lg', defaultEnabled: false },
   upcoming_calls: { category: 'actions', size: 'sm', defaultEnabled: false },
 
   // Schedule & Prep
-  dop_tasks: { category: 'prep', size: 'lg', defaultEnabled: true },
-  prep_prompts: { category: 'prep', size: 'lg', defaultEnabled: true },
-  shopping_window: { category: 'prep', size: 'sm', defaultEnabled: true },
-  active_shopping_list: { category: 'prep', size: 'sm', defaultEnabled: true },
-  quick_availability: { category: 'prep', size: 'sm', defaultEnabled: true },
+  dop_tasks: { category: 'prep', size: 'lg', defaultEnabled: false },
+  prep_prompts: { category: 'prep', size: 'lg', defaultEnabled: false },
+  shopping_window: { category: 'prep', size: 'sm', defaultEnabled: false },
+  active_shopping_list: { category: 'prep', size: 'sm', defaultEnabled: false },
+  quick_availability: { category: 'prep', size: 'sm', defaultEnabled: false },
   multi_event_days: { category: 'prep', size: 'sm', defaultEnabled: false },
 
   // Money & Payments
   payments_due: { category: 'money', size: 'sm', defaultEnabled: true },
-  expiring_quotes: { category: 'money', size: 'sm', defaultEnabled: true },
+  expiring_quotes: { category: 'money', size: 'sm', defaultEnabled: false },
   quick_expense: { category: 'money', size: 'sm', defaultEnabled: true },
-  invoice_pulse: { category: 'money', size: 'sm', defaultEnabled: true },
+  invoice_pulse: { category: 'money', size: 'sm', defaultEnabled: false },
   overdue_installments: { category: 'money', size: 'sm', defaultEnabled: false },
   revenue_comparison: { category: 'money', size: 'sm', defaultEnabled: false },
-  revenue_goal: { category: 'money', size: 'sm', defaultEnabled: false },
+  revenue_goal: { category: 'money', size: 'sm', defaultEnabled: true },
   pipeline_forecast: { category: 'money', size: 'sm', defaultEnabled: false },
   payout_summary: { category: 'money', size: 'sm', defaultEnabled: false },
   avg_hourly_rate: { category: 'money', size: 'sm', defaultEnabled: false },
@@ -212,7 +214,7 @@ export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
   food_cost_trend: { category: 'money', size: 'sm', defaultEnabled: false },
   yoy_comparison: { category: 'money', size: 'sm', defaultEnabled: false },
   booking_seasonality: { category: 'money', size: 'sm', defaultEnabled: false },
-  inline_aar: { category: 'money', size: 'lg', defaultEnabled: true },
+  inline_aar: { category: 'money', size: 'lg', defaultEnabled: false },
   business_snapshot: { category: 'money', size: 'sm', defaultEnabled: false },
   commerce_hub: { category: 'money', size: 'sm', defaultEnabled: false },
   payments_health: { category: 'money', size: 'sm', defaultEnabled: false },
@@ -222,9 +224,9 @@ export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
 
   // Clients & Relationships
   dietary_allergy_alerts: { category: 'clients', size: 'sm', defaultEnabled: true },
-  cooling_alerts: { category: 'clients', size: 'sm', defaultEnabled: true },
+  cooling_alerts: { category: 'clients', size: 'sm', defaultEnabled: false },
   client_birthdays: { category: 'clients', size: 'sm', defaultEnabled: false },
-  unread_hub_messages: { category: 'clients', size: 'sm', defaultEnabled: true },
+  unread_hub_messages: { category: 'clients', size: 'sm', defaultEnabled: false },
   loyalty_approaching: { category: 'clients', size: 'sm', defaultEnabled: false },
   dormant_clients_list: { category: 'clients', size: 'sm', defaultEnabled: false },
   active_clients_now: { category: 'clients', size: 'sm', defaultEnabled: false },
@@ -234,7 +236,7 @@ export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
 
   // Analytics & Intelligence
   business_health: { category: 'analytics', size: 'lg', defaultEnabled: true },
-  work_surface: { category: 'analytics', size: 'lg', defaultEnabled: true },
+  work_surface: { category: 'analytics', size: 'lg', defaultEnabled: false },
   business_insights: { category: 'analytics', size: 'sm', defaultEnabled: false },
   concentration_risk: { category: 'analytics', size: 'sm', defaultEnabled: false },
   insurance_health: { category: 'analytics', size: 'sm', defaultEnabled: false },
@@ -263,8 +265,8 @@ export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
 
   // System & Setup
   system_nerve_center: { category: 'system', size: 'lg', defaultEnabled: false },
-  onboarding_accelerator: { category: 'system', size: 'lg', defaultEnabled: true },
-  onboarding_checklist: { category: 'system', size: 'sm', defaultEnabled: true },
+  onboarding_accelerator: { category: 'system', size: 'lg', defaultEnabled: false },
+  onboarding_checklist: { category: 'system', size: 'sm', defaultEnabled: false },
   smart_hours: { category: 'system', size: 'sm', defaultEnabled: false },
   hours: { category: 'system', size: 'sm', defaultEnabled: false },
   activity: { category: 'system', size: 'lg', defaultEnabled: false },
