@@ -2,6 +2,40 @@
 
 Comprehensive, prioritized list of all identified tasks to improve performance, stability, security, and user experience. Derived from automated QA testing, codebase scanning, accessibility audit, SEO audit, and error handling review.
 
+## Completion Status
+
+| Task                          | Status                                                 | Commit               |
+| ----------------------------- | ------------------------------------------------------ | -------------------- |
+| S-1 Cron auth bypass          | DONE                                                   | `1f3c960`            |
+| S-2 Insurance crash risk      | DONE                                                   | `1f3c960`            |
+| S-3 CRON_SECRET in dev        | Needs developer input (.env.local)                     |                      |
+| C-1 /about page               | FALSE POSITIVE (no nav link exists)                    |                      |
+| C-2 /privacy-policy redirect  | DONE                                                   | `e8e8616`            |
+| C-3 Em dash removal           | DONE (1,079 files)                                     | `5bc5e9e`            |
+| C-4 Test credentials          | Needs developer input                                  |                      |
+| P-5 Health ping endpoint      | DONE                                                   | `94ea1c1`            |
+| P-6 Google Fonts              | Already using display:swap                             |                      |
+| Q-3 Form name attributes      | DONE (all auth forms)                                  | `94ea1c1`, `aa4cf12` |
+| A-2 Heading hierarchy         | DONE                                                   | `94ea1c1`            |
+| SEO-1 Pricing metadata        | DONE                                                   | `94ea1c1`            |
+| SEO-2 Contact metadata        | Already had metadata via layout                        |                      |
+| SEO-3 Blog metadata           | DONE                                                   | `94ea1c1`            |
+| SEO-4 FAQ JSON-LD             | Already had JSON-LD                                    |                      |
+| SEO-5 Pricing JSON-LD         | DONE                                                   | `7467fc0`            |
+| SEO-6 Canonical URLs          | DONE                                                   | `94ea1c1`            |
+| L-1 Chef loading states       | DONE (34 routes)                                       | `7467fc0`            |
+| L-2 Client loading states     | DONE (9 routes)                                        | `7467fc0`            |
+| Q-2 console.log cleanup       | DONE (3 high-impact files)                             | `7467fc0`            |
+| R-1 Sentry error context      | DONE                                                   | `aa4cf12`            |
+| F-4 Inquiry rate limiting     | Already had rate limiting                              |                      |
+| A-1 Color contrast            | Verified: brand-600 fails WCAG AA, needs visual review |                      |
+| P-1-P-4 Performance           | REMAINING                                              |                      |
+| A-3 Sign-in validation        | REMAINING                                              |                      |
+| Q-1 startTransition migration | REMAINING (ongoing)                                    |                      |
+| Q-4 API 404 handling          | REMAINING                                              |                      |
+| R-2 Uptime monitoring         | REMAINING (after P-5)                                  |                      |
+| F-1-F-3 Future enhancements   | REMAINING                                              |                      |
+
 ---
 
 ## TIER 0: Security (fix before any feature work)
