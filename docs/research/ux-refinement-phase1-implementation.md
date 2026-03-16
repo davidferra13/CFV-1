@@ -71,8 +71,37 @@ This is a sort-order change only. All sections still render regardless of time.
 - Keyboard shortcuts (Ctrl+K, /, ?, chord shortcuts)
 - Universal search across 12 data types
 
+### 4. Customizable Mobile Bottom Tabs (Phase 1d)
+
+**Date:** 2026-03-16
+
+**Files:**
+
+- `supabase/migrations/20260401000070_mobile_tab_preferences.sql` - adds `mobile_tab_hrefs` JSONB column
+- `lib/chef/layout-cache.ts` - fetches `mobile_tab_hrefs` from preferences
+- `lib/chef/actions.ts` - adds `mobile_tab_hrefs` to `UpdatePreferencesSchema`
+- `components/navigation/nav-config.tsx` - adds `MOBILE_TAB_OPTIONS` (14 choices), `resolveMobileTabs()` resolver
+- `components/navigation/chef-nav.tsx` - `ChefMobileNav` now accepts `mobileTabHrefs` prop, uses `resolveMobileTabs()`
+- `app/(chef)/layout.tsx` - passes `mobileTabHrefs` to `ChefMobileNav`
+- `components/settings/mobile-tab-form.tsx` - new client component for customizing tabs
+- `app/(chef)/settings/navigation/page.tsx` - includes `MobileTabForm` below the desktop nav form
+
+**How it works:**
+
+- Chef opens Settings > Navigation > "Mobile Bottom Tabs" section
+- Picks up to 5 tabs from 14 available options (Home, Daily Ops, Inbox, Events, Clients, Calendar, Inquiries, Menus, Recipes, Finance, Messaging, Documents, Queue, Settings)
+- Reorder with up/down arrows, remove with X, add from available grid
+- Save persists to `chef_preferences.mobile_tab_hrefs` via `updateChefPreferences()`
+- Layout cache revalidation ensures the mobile nav updates immediately
+- Focus Mode still overrides custom tabs (by design, for simplified UX)
+- Default remains: Home, Daily Ops, Inbox, Events, Clients
+
+### 5. Widget Count Reduction (Phase 2a) - Already Done
+
+The existing dashboard widget system already has `defaultEnabled` flags per widget in `DASHBOARD_WIDGET_META` (`lib/scheduling/types.ts`). Only 10 widgets are enabled by default out of 106 total. This matches the research recommendation of "8-12 starter widgets." Users can customize via Settings > Dashboard, which has per-category toggles, individual checkboxes, "Disable All", and "Reset to Defaults". No changes needed.
+
+---
+
 ## What's Next (Remaining Roadmap)
 
-- Phase 1d: Customizable Mobile Bottom Tabs
-- Phase 2a: Reduce Default Widget Count (8-12 starter set)
 - Phase 3: Tab-by-Tab Refinement (Inquiries > Events > Clients > Finance > Recipes)

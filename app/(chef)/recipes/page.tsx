@@ -12,6 +12,7 @@ import { getActiveMicroWindows, getEndingMicroWindows } from '@/lib/seasonal/hel
 import { SeasonalBanner } from '@/components/seasonal/seasonal-banner'
 import { RecipeLibraryClient } from './recipes-client'
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { DietaryTrendsBar } from '@/components/intelligence/dietary-trends-bar'
 
 export default async function RecipesPage({
@@ -50,9 +51,11 @@ export default async function RecipesPage({
       />
 
       {/* Dietary Intelligence */}
-      <Suspense fallback={null}>
-        <DietaryTrendsBar />
-      </Suspense>
+      <WidgetErrorBoundary name="Dietary Trends" compact>
+        <Suspense fallback={null}>
+          <DietaryTrendsBar />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       <RecipeLibraryClient recipes={recipes} />
     </div>

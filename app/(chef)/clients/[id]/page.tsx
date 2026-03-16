@@ -2,6 +2,7 @@
 // Shows client information, statistics, and event history
 
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
 import {
   getClientWithStats,
@@ -270,14 +271,18 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       {clientNBA && clientNBA.actionType !== 'none' && <NextBestActionCard action={clientNBA} />}
 
       {/* Potential Duplicates */}
-      <Suspense fallback={null}>
-        <DuplicatesSection clientId={client.id} clientName={client.full_name} />
-      </Suspense>
+      <WidgetErrorBoundary name="Duplicates" compact>
+        <Suspense fallback={null}>
+          <DuplicatesSection clientId={client.id} clientName={client.full_name} />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Relationship Intelligence */}
-      <Suspense fallback={null}>
-        <ClientIntelligencePanel clientId={client.id} />
-      </Suspense>
+      <WidgetErrorBoundary name="Intelligence" compact>
+        <Suspense fallback={null}>
+          <ClientIntelligencePanel clientId={client.id} />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Profile Completeness Meter */}
       {(() => {
@@ -863,9 +868,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </div>
         </CardHeader>
         <CardContent>
-          <Suspense fallback={<div className="text-sm text-stone-500">Loading events...</div>}>
-            <ClientEventsContent clientId={client.id} />
-          </Suspense>
+          <WidgetErrorBoundary name="Events" compact>
+            <Suspense fallback={<div className="text-sm text-stone-500">Loading events...</div>}>
+              <ClientEventsContent clientId={client.id} />
+            </Suspense>
+          </WidgetErrorBoundary>
         </CardContent>
       </Card>
 

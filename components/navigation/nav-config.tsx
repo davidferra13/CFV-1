@@ -1121,6 +1121,42 @@ export const mobileTabItems: NavItem[] = [
   { href: '/clients', label: 'Clients', icon: Users },
 ]
 
+// All available options for mobile tab customization.
+// Users can pick 5 from this list via Settings > Navigation.
+export const MOBILE_TAB_OPTIONS: NavItem[] = [
+  { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
+  { href: '/daily', label: 'Daily Ops', icon: ListChecks },
+  { href: '/inbox', label: 'Inbox', icon: Inbox },
+  { href: '/events', label: 'Events', icon: CalendarDays },
+  { href: '/clients', label: 'Clients', icon: Users },
+  { href: '/schedule', label: 'Calendar', icon: CalendarDays },
+  { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText },
+  { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
+  { href: '/recipes', label: 'Recipes', icon: BookOpen },
+  { href: '/financials', label: 'Finance', icon: DollarSign },
+  { href: '/chat', label: 'Messaging', icon: MessageCircle },
+  { href: '/documents', label: 'Documents', icon: FileText },
+  { href: '/queue', label: 'Queue', icon: Zap },
+  { href: '/settings', label: 'Settings', icon: Settings },
+]
+
+const MOBILE_TAB_BY_HREF = new Map(MOBILE_TAB_OPTIONS.map((t) => [t.href, t]))
+
+export function resolveMobileTabs(preferredHrefs?: string[] | null): NavItem[] {
+  if (!preferredHrefs || preferredHrefs.length === 0) return mobileTabItems
+  const seen = new Set<string>()
+  const resolved: NavItem[] = []
+  for (const href of preferredHrefs) {
+    if (seen.has(href)) continue
+    const option = MOBILE_TAB_BY_HREF.get(href)
+    if (!option) continue
+    seen.add(href)
+    resolved.push(option)
+    if (resolved.length >= 5) break
+  }
+  return resolved.length > 0 ? resolved : mobileTabItems
+}
+
 const settingsShortcutOptions: PrimaryShortcutOption[] = [
   { href: '/settings/modules', label: 'Modules', icon: Settings, context: 'Settings' },
   { href: '/settings/navigation', label: 'Navigation', icon: Settings, context: 'Settings' },

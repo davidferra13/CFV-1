@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 
@@ -200,15 +201,17 @@ export default async function EventsPage({
       </Card>
 
       {/* Events Table */}
-      <Suspense
-        fallback={
-          <Card className="p-8 text-center">
-            <p className="text-stone-500">Loading events...</p>
-          </Card>
-        }
-      >
-        <EventsList status={status} />
-      </Suspense>
+      <WidgetErrorBoundary name="Events List">
+        <Suspense
+          fallback={
+            <Card className="p-8 text-center">
+              <p className="text-stone-500">Loading events...</p>
+            </Card>
+          }
+        >
+          <EventsList status={status} />
+        </Suspense>
+      </WidgetErrorBoundary>
     </div>
   )
 }

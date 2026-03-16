@@ -6,7 +6,13 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react'
 import type { LucideIcon } from '@/components/ui/icons'
-import { navGroups, standaloneBottom, mobileTabItems, resolveStandaloneTop } from './nav-config'
+import {
+  navGroups,
+  standaloneBottom,
+  mobileTabItems,
+  resolveStandaloneTop,
+  resolveMobileTabs,
+} from './nav-config'
 import type { NavGroup, NavCollapsibleItem, NavSubItem, NavItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
@@ -1546,6 +1552,7 @@ function MobileBottomTabBar({
 // ─── Mobile Navigation ──────────────────────────────
 export function ChefMobileNav({
   primaryNavHrefs,
+  mobileTabHrefs,
   enabledModules,
   isAdmin,
   focusMode,
@@ -1553,6 +1560,7 @@ export function ChefMobileNav({
   tenantId,
 }: {
   primaryNavHrefs?: string[]
+  mobileTabHrefs?: string[]
   enabledModules?: string[]
   isAdmin?: boolean
   focusMode?: boolean
@@ -1586,8 +1594,8 @@ export function ChefMobileNav({
             ...item,
             label: item.href === '/dashboard' ? 'Home' : item.label,
           }))
-        : mobileTabItems,
-    [focusMode]
+        : resolveMobileTabs(mobileTabHrefs),
+    [focusMode, mobileTabHrefs]
   )
 
   // Filter nav groups by role + focus mode.

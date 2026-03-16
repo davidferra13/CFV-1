@@ -135,6 +135,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
   const profile = layoutData
   const primaryNavHrefs = layoutData.primary_nav_hrefs
+  const mobileTabHrefs = layoutData.mobile_tab_hrefs
   const enabledModules =
     layoutData.enabled_modules.length > 0 ? layoutData.enabled_modules : DEFAULT_ENABLED_MODULES
   const focusMode = layoutData.focus_mode
@@ -203,6 +204,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 {/* Mobile nav (top bar + bottom tabs) */}
                 <ChefMobileNav
                   primaryNavHrefs={primaryNavHrefs}
+                  mobileTabHrefs={mobileTabHrefs}
                   enabledModules={enabledModules}
                   isAdmin={effectiveAdmin}
                   focusMode={focusMode}

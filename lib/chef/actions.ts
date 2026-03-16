@@ -82,6 +82,7 @@ const UpdatePreferencesSchema = z.object({
   shop_day_before: z.boolean().optional(),
   dashboard_widgets: z.array(DashboardWidgetPreferenceSchema).optional(),
   primary_nav_hrefs: PrimaryNavHrefArraySchema.optional(),
+  mobile_tab_hrefs: z.array(z.string().trim().min(1).max(160)).max(5).optional(),
 })
 
 export type UpdatePreferencesInput = z.infer<typeof UpdatePreferencesSchema>

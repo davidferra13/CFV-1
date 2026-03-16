@@ -3,10 +3,11 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { PrimaryNavForm } from '@/components/settings/primary-nav-form'
+import { MobileTabForm } from '@/components/settings/mobile-tab-form'
 import { ArchetypePicker } from '@/components/settings/archetype-picker'
 import { getChefArchetype, hasCustomNavDefault } from '@/lib/archetypes/actions'
 
-export const metadata: Metadata = { title: 'Primary Navigation - ChefFlow' }
+export const metadata: Metadata = { title: 'Navigation Settings - ChefFlow' }
 
 export default async function NavigationSettingsPage() {
   await requireChef()
@@ -20,9 +21,10 @@ export default async function NavigationSettingsPage() {
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-stone-100">Primary Navigation</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Navigation Settings</h1>
           <p className="mt-1 text-stone-400">
-            Customize your always-visible bar without changing the underlying feature set.
+            Customize your sidebar and mobile bottom tabs without changing the underlying feature
+            set.
           </p>
         </div>
         <Link
@@ -38,8 +40,11 @@ export default async function NavigationSettingsPage() {
         <ArchetypePicker currentArchetype={currentArchetype} hasCustomDefault={hasCustom} />
       </div>
 
-      {/* Manual customization */}
+      {/* Desktop sidebar customization */}
       <PrimaryNavForm initialPrimaryNavHrefs={preferences.primary_nav_hrefs ?? []} />
+
+      {/* Mobile bottom tab customization */}
+      <MobileTabForm initialMobileTabHrefs={(preferences as any).mobile_tab_hrefs ?? []} />
     </div>
   )
 }

@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getInquiries } from '@/lib/inquiries/actions'
@@ -187,15 +188,17 @@ export default async function InquiriesPage({
       </Card>
 
       {/* Inquiry List */}
-      <Suspense
-        fallback={
-          <Card className="p-8 text-center">
-            <p className="text-stone-500">Loading inquiries...</p>
-          </Card>
-        }
-      >
-        <InquiryList filter={filter} />
-      </Suspense>
+      <WidgetErrorBoundary name="Inquiry List">
+        <Suspense
+          fallback={
+            <Card className="p-8 text-center">
+              <p className="text-stone-500">Loading inquiries...</p>
+            </Card>
+          }
+        >
+          <InquiryList filter={filter} />
+        </Suspense>
+      </WidgetErrorBoundary>
     </div>
   )
 }
