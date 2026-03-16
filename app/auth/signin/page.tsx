@@ -5,6 +5,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn, type SignInInput } from '@/lib/auth/actions'
+import { getLastActivePath, clearLastActivePath } from '@/lib/session/recovery'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -36,7 +37,8 @@ function SignInForm() {
     password: '',
     rememberMe: true,
   })
-  const redirectPath = safeRedirectPath(searchParams.get('redirect'))
+  const explicitRedirect = searchParams.get('redirect')
+  const redirectPath = safeRedirectPath(explicitRedirect || getLastActivePath())
   useEffect(() => {
     const callbackError = searchParams.get('error')
     const callbackMessage = searchParams.get('message')
@@ -52,6 +54,7 @@ function SignInForm() {
 
     try {
       await signIn(formData)
+      clearLastActivePath()
       router.push(redirectPath)
       router.refresh()
     } catch (err) {

@@ -70,6 +70,10 @@ const PresenceBeacon = dynamic(
   () => import('@/components/admin/presence-beacon').then((m) => m.PresenceBeacon),
   { ssr: false }
 )
+const RouteTracker = dynamic(
+  () => import('@/components/session/route-tracker').then((m) => m.RouteTracker),
+  { ssr: false }
+)
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   // Server-side role check - happens BEFORE any client code ships
@@ -244,6 +248,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
                 {/* Presence beacon -- authenticated user presence for live admin visibility */}
                 <PresenceBeacon />
+
+                {/* Route tracker -- stores last active path for session recovery */}
+                <RouteTracker />
               </div>
             </KeyboardShortcutsWrapper>
           </NotificationProvider>
