@@ -6,6 +6,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
+import { showUndoToast } from '@/components/ui/undo-toast'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -366,7 +367,7 @@ function LegCard({
       <ConfirmModal
         open={showDeleteConfirm}
         title="Delete this travel leg?"
-        description="This cannot be undone."
+        description="You'll have 8 seconds to undo."
         confirmLabel="Delete"
         variant="danger"
         onConfirm={() => {
@@ -432,16 +433,29 @@ export function TravelPlanClient({
   }
 
   const handleDelete = (id: string) => {
-    const previousLegs = legs
-    startTransition(async () => {
-      try {
-        await deleteTravelLeg(id)
-        setLegs((prev) => prev.filter((l) => l.id !== id))
-      } catch (err) {
+    const target = legs.find((l) => l.id === id)
+    const previousLegs = [...legs]
+    setLegs((prev) => prev.filter((l) => l.id !== id))
+
+    const timer = setTimeout(() => {
+      startTransition(async () => {
+        try {
+          await deleteTravelLeg(id)
+        } catch (err) {
+          setLegs(previousLegs)
+          toast.error('Failed to delete travel leg')
+        }
+      })
+    }, 8000)
+
+    showUndoToast(
+      `Travel leg "${target?.destination_label || 'trip'}" removed`,
+      () => {
+        clearTimeout(timer)
         setLegs(previousLegs)
-        toast.error('Failed to delete travel leg')
-      }
-    })
+      },
+      8000
+    )
   }
 
   const handleStatusChange = (id: string, status: string) => {

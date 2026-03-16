@@ -5,6 +5,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
+import { showUndoToast } from '@/components/ui/undo-toast'
 import {
   createIntakeForm,
   updateIntakeForm,
@@ -76,18 +77,29 @@ export function IntakeFormsClient({ forms: initialForms }: { forms: IntakeForm[]
   }
 
   function handleDelete(formId: string) {
-    if (!confirm('Delete this form? Existing responses will be kept.')) return
+    const target = forms.find((f) => f.id === formId)
     const previous = [...forms]
     setForms(forms.filter((f) => f.id !== formId))
 
-    startTransition(async () => {
-      try {
-        await deleteIntakeForm(formId)
-      } catch (err) {
+    const timer = setTimeout(() => {
+      startTransition(async () => {
+        try {
+          await deleteIntakeForm(formId)
+        } catch (err) {
+          setForms(previous)
+          toast.error(err instanceof Error ? err.message : 'Failed to delete form')
+        }
+      })
+    }, 8000)
+
+    showUndoToast(
+      `Form "${target?.name ?? 'Untitled'}" deleted`,
+      () => {
+        clearTimeout(timer)
         setForms(previous)
-        toast.error(err instanceof Error ? err.message : 'Failed to delete form')
-      }
-    })
+      },
+      8000
+    )
   }
 
   async function handleShare(formId: string) {

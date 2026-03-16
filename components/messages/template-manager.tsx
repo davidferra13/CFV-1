@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { toast } from 'sonner'
+import { useDeferredAction } from '@/hooks/use-deferred-action'
 
 type Template = {
   id: string
@@ -111,23 +113,29 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
     }
   }
 
+  const { execute: deferTemplateDelete } = useDeferredAction({
+    delay: 8000,
+    toastMessage: 'Template deleted',
+    onExecute: async () => {
+      if (deleteTemplateId) await deleteResponseTemplate(deleteTemplateId)
+      router.refresh()
+    },
+    onUndo: () => {
+      setDeleteTemplateId(null)
+    },
+    onError: (err) => {
+      setDeleteTemplateId(null)
+      toast.error(err instanceof Error ? err.message : 'Failed to delete template')
+    },
+  })
+
   function handleDelete(id: string) {
     setDeleteTemplateId(id)
   }
 
-  async function handleConfirmedDelete() {
+  function handleConfirmedDelete() {
     if (!deleteTemplateId) return
-    const id = deleteTemplateId
-    setDeleteTemplateId(null)
-    setLoading(true)
-    try {
-      await deleteResponseTemplate(id)
-      router.refresh()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete template')
-    } finally {
-      setLoading(false)
-    }
+    deferTemplateDelete()
   }
 
   async function handleSeedDefaults() {
@@ -272,7 +280,7 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
       <ConfirmModal
         open={deleteTemplateId !== null}
         title="Delete this template?"
-        description="This cannot be undone."
+        description="You'll have 8 seconds to undo."
         confirmLabel="Delete"
         variant="danger"
         loading={loading}

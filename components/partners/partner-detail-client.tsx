@@ -10,7 +10,8 @@ import { Card } from '@/components/ui/card'
 import { LocationForm } from '@/components/partners/location-form'
 import { deletePartnerLocation } from '@/lib/partners/actions'
 import { MapPin, ExternalLink, Users, Inbox, CalendarCheck } from '@/components/ui/icons'
-import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { toast } from 'sonner'
+import { useDeferredAction } from '@/hooks/use-deferred-action'
 
 type Location = {
   id: string
@@ -49,25 +50,27 @@ export function PartnerDetailClient({
 }) {
   const router = useRouter()
   const [showAddLocation, setShowAddLocation] = useState(false)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [deleteLocationId, setDeleteLocationId] = useState<string | null>(null)
+  const [deletedLocationId, setDeletedLocationId] = useState<string | null>(null)
+
+  const { execute: deferLocationDelete } = useDeferredAction({
+    delay: 8000,
+    toastMessage: 'Location removed',
+    onExecute: async () => {
+      if (deletedLocationId) await deletePartnerLocation(deletedLocationId)
+      router.refresh()
+    },
+    onUndo: () => {
+      setDeletedLocationId(null)
+    },
+    onError: (err) => {
+      setDeletedLocationId(null)
+      toast.error('Failed to remove location')
+    },
+  })
 
   function handleDeleteLocation(id: string) {
-    setDeleteLocationId(id)
-  }
-
-  async function handleConfirmedDeleteLocation() {
-    if (!deleteLocationId) return
-    setDeleteLocationId(null)
-    setDeletingId(deleteLocationId)
-    try {
-      await deletePartnerLocation(deleteLocationId)
-      router.refresh()
-    } catch {
-      alert('Failed to remove location')
-    } finally {
-      setDeletingId(null)
-    }
+    setDeletedLocationId(id)
+    deferLocationDelete()
   }
 
   function getLocationImages(locationId: string) {
@@ -138,11 +141,11 @@ export function PartnerDetailClient({
                   )}
                   <button
                     onClick={() => handleDeleteLocation(loc.id)}
-                    disabled={deletingId === loc.id}
+                    disabled={deletedLocationId === loc.id}
                     className="p-1.5 rounded hover:bg-red-950 text-stone-400 hover:text-red-600 text-xs"
                     title="Remove location"
                   >
-                    {deletingId === loc.id ? '...' : 'Remove'}
+                    {deletedLocationId === loc.id ? '...' : 'Remove'}
                   </button>
                 </div>
               </div>
@@ -213,17 +216,6 @@ export function PartnerDetailClient({
           + Add Location
         </Button>
       )}
-
-      <ConfirmModal
-        open={deleteLocationId !== null}
-        title="Remove this location?"
-        description="If it has linked inquiries or events, it will be deactivated instead."
-        confirmLabel="Remove"
-        variant="danger"
-        loading={deletingId !== null}
-        onConfirm={handleConfirmedDeleteLocation}
-        onCancel={() => setDeleteLocationId(null)}
-      />
     </div>
   )
 }

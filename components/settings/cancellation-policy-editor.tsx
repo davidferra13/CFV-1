@@ -150,7 +150,7 @@ function PolicyPreview({
 
 // ─── Main Editor ──────────────────────────────────────────────────────────────
 
-export function CancellationPolicyEditor() {
+export function CancellationPolicyEditor({ tenantId }: { tenantId: string }) {
   const [policy, setPolicy] = useState<CancellationPolicy | null>(null)
   const [tiers, setTiers] = useState<CancellationTier[]>([])
   const [gracePeriodHours, setGracePeriodHours] = useState(48)
@@ -159,7 +159,33 @@ export function CancellationPolicyEditor() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
-  const [hasChanges, setHasChanges] = useState(false)
+
+  // Baseline data (from server) for dirty detection
+  const [baselineData, setBaselineData] = useState<Record<string, unknown>>({
+    policyName: 'Standard Policy',
+    gracePeriodHours: 48,
+    notes: '',
+    tiers: '[]',
+  })
+
+  const currentData = useMemo(
+    () => ({
+      policyName,
+      gracePeriodHours,
+      notes,
+      tiers: JSON.stringify(tiers),
+    }),
+    [policyName, gracePeriodHours, notes, tiers]
+  )
+
+  const protection = useProtectedForm({
+    surfaceId: 'cancellation-policy',
+    recordId: policy?.id ?? null,
+    tenantId,
+    defaultData: baselineData,
+    currentData,
+    throttleMs: 10_000,
+  })
 
   // Load policy on mount
   useEffect(() => {
@@ -176,6 +202,13 @@ export function CancellationPolicyEditor() {
         setGracePeriodHours(p.gracePeriodHours)
         setPolicyName(p.name)
         setNotes(p.notes ?? '')
+        // Set baseline so form starts clean
+        setBaselineData({
+          policyName: p.name,
+          gracePeriodHours: p.gracePeriodHours,
+          notes: p.notes ?? '',
+          tiers: JSON.stringify(p.tiers),
+        })
       })
       .catch(() => {
         setLoadError('Could not load cancellation policy')
@@ -185,14 +218,25 @@ export function CancellationPolicyEditor() {
       })
   }, [])
 
+  function applyDraftData(data: Record<string, unknown>) {
+    if (typeof data.policyName === 'string') setPolicyName(data.policyName)
+    if (typeof data.gracePeriodHours === 'number') setGracePeriodHours(data.gracePeriodHours)
+    if (typeof data.notes === 'string') setNotes(data.notes)
+    if (typeof data.tiers === 'string') {
+      try {
+        setTiers(JSON.parse(data.tiers))
+      } catch {
+        /* ignore bad JSON */
+      }
+    }
+  }
+
   function updateTier(index: number, updated: CancellationTier) {
     setTiers((prev) => prev.map((t, i) => (i === index ? updated : t)))
-    setHasChanges(true)
   }
 
   function removeTier(index: number) {
     setTiers((prev) => prev.filter((_, i) => i !== index))
-    setHasChanges(true)
   }
 
   function addTier() {
@@ -200,7 +244,6 @@ export function CancellationPolicyEditor() {
       ...prev,
       { min_days: 0, max_days: null, refund_percent: 50, label: 'New tier' },
     ])
-    setHasChanges(true)
   }
 
   function handleSave() {
@@ -219,7 +262,9 @@ export function CancellationPolicyEditor() {
           return
         }
         toast.success('Cancellation policy saved')
-        setHasChanges(false)
+        // Update baseline and clear draft
+        setBaselineData({ ...currentData })
+        protection.markCommitted()
       } catch (err: any) {
         toast.error(err.message ?? 'Failed to save policy')
       }
@@ -249,98 +294,107 @@ export function CancellationPolicyEditor() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Policy name and grace period */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Cancellation Policy</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium">Policy name</label>
-            <input
-              type="text"
-              value={policyName}
-              onChange={(e) => {
-                setPolicyName(e.target.value)
-                setHasChanges(true)
-              }}
-              className="w-full rounded-md border px-3 py-2 text-sm bg-background mt-1"
-            />
-          </div>
+    <FormShield
+      guard={protection.guard}
+      showRestorePrompt={protection.showRestorePrompt}
+      lastSavedAt={protection.lastSavedAt}
+      onRestore={() => {
+        const d = protection.restoreDraft()
+        if (d) applyDraftData(d)
+      }}
+      onDiscard={protection.discardDraft}
+      saveState={protection.saveState}
+    >
+      <div className="space-y-6">
+        {/* Policy name and grace period */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Cancellation Policy</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Policy name</label>
+              <input
+                type="text"
+                value={policyName}
+                onChange={(e) => setPolicyName(e.target.value)}
+                aria-label="Policy name"
+                className="w-full rounded-md border px-3 py-2 text-sm bg-background mt-1"
+              />
+            </div>
 
-          <div>
-            <label className="text-sm font-medium">Grace period (hours after booking)</label>
-            <p className="text-xs text-muted-foreground mb-1">
-              Clients who cancel within this window after booking receive a full refund, no matter
-              how close the event is.
+            <div>
+              <label className="text-sm font-medium">Grace period (hours after booking)</label>
+              <p className="text-xs text-muted-foreground mb-1">
+                Clients who cancel within this window after booking receive a full refund, no matter
+                how close the event is.
+              </p>
+              <input
+                type="number"
+                min={0}
+                max={720}
+                value={gracePeriodHours}
+                onChange={(e) => setGracePeriodHours(parseInt(e.target.value) || 0)}
+                aria-label="Grace period hours"
+                className="w-32 rounded-md border px-3 py-2 text-sm bg-background"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Notes (internal)</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+                placeholder="Internal notes about this policy..."
+                className="w-full rounded-md border px-3 py-2 text-sm bg-background mt-1 resize-none"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tier editor */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Cancellation Tiers</CardTitle>
+              <Button variant="secondary" onClick={addTier}>
+                Add Tier
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-xs text-muted-foreground mb-3">
+              Define how much of the payment is refunded based on how many days before the event the
+              cancellation happens. Leave &quot;Max days&quot; empty for &quot;or more&quot;.
             </p>
-            <input
-              type="number"
-              min={0}
-              max={720}
-              value={gracePeriodHours}
-              onChange={(e) => {
-                setGracePeriodHours(parseInt(e.target.value) || 0)
-                setHasChanges(true)
-              }}
-              className="w-32 rounded-md border px-3 py-2 text-sm bg-background"
-            />
-          </div>
+            {tiers.map((tier, i) => (
+              <TierRow
+                key={i}
+                tier={tier}
+                index={i}
+                onUpdate={updateTier}
+                onRemove={removeTier}
+                canRemove={tiers.length > 1}
+              />
+            ))}
+          </CardContent>
+        </Card>
 
-          <div>
-            <label className="text-sm font-medium">Notes (internal)</label>
-            <textarea
-              value={notes}
-              onChange={(e) => {
-                setNotes(e.target.value)
-                setHasChanges(true)
-              }}
-              rows={2}
-              placeholder="Internal notes about this policy..."
-              className="w-full rounded-md border px-3 py-2 text-sm bg-background mt-1 resize-none"
-            />
-          </div>
-        </CardContent>
-      </Card>
+        {/* Preview */}
+        <PolicyPreview tiers={tiers} gracePeriodHours={gracePeriodHours} />
 
-      {/* Tier editor */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Cancellation Tiers</CardTitle>
-            <Button variant="secondary" onClick={addTier}>
-              Add Tier
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <p className="text-xs text-muted-foreground mb-3">
-            Define how much of the payment is refunded based on how many days before the event the
-            cancellation happens. Leave &quot;Max days&quot; empty for &quot;or more&quot;.
-          </p>
-          {tiers.map((tier, i) => (
-            <TierRow
-              key={i}
-              tier={tier}
-              index={i}
-              onUpdate={updateTier}
-              onRemove={removeTier}
-              canRemove={tiers.length > 1}
-            />
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Preview */}
-      <PolicyPreview tiers={tiers} gracePeriodHours={gracePeriodHours} />
-
-      {/* Save */}
-      <div className="flex justify-end">
-        <Button variant="primary" onClick={handleSave} disabled={isPending || !hasChanges}>
-          {isPending ? 'Saving...' : 'Save Policy'}
-        </Button>
+        {/* Save */}
+        <div className="flex justify-end">
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={isPending || !protection.isDirty}
+          >
+            {isPending ? 'Saving...' : 'Save Policy'}
+          </Button>
+        </div>
       </div>
-    </div>
+    </FormShield>
   )
 }

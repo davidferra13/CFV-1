@@ -9,7 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { toast } from 'sonner'
 import { TaskTemplateForm } from './task-template-form'
+import { useDeferredAction } from '@/hooks/use-deferred-action'
 import {
   deleteTemplate,
   generateTasksFromTemplate,
@@ -140,28 +142,49 @@ function TemplateCard({ template, staff }: { template: TaskTemplate; staff: Staf
   const [expanded, setExpanded] = useState(false)
   const [showGenerate, setShowGenerate] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [deleted, setDeleted] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+  const { execute: deferDelete } = useDeferredAction({
+    delay: 8000,
+    toastMessage: `Template "${template.name}" deleted`,
+    onExecute: async () => {
+      await deleteTemplate(template.id)
+      router.refresh()
+    },
+    onUndo: () => {
+      setDeleted(false)
+      setShowDeleteConfirm(false)
+    },
+    onError: (err) => {
+      setDeleted(false)
+      toast.error(err instanceof Error ? err.message : 'Failed to delete template')
+    },
+  })
 
   const badgeVariant = CATEGORY_BADGE_VARIANT[template.category] ?? 'default'
   const categoryLabel = TEMPLATE_CATEGORIES[template.category] ?? template.category
   const totalMinutes = template.items.reduce((sum, item) => sum + (item.estimated_minutes ?? 0), 0)
 
   function handleDelete() {
-    if (deleting) return
+    if (deleted) return
     setShowDeleteConfirm(true)
   }
 
-  async function handleConfirmedDelete() {
+  function handleConfirmedDelete() {
     setShowDeleteConfirm(false)
-    setDeleting(true)
-    try {
-      await deleteTemplate(template.id)
-      router.refresh()
-    } catch (err) {
-      console.error('Failed to delete template:', err)
-      setDeleting(false)
-    }
+    setDeleted(true)
+    deferDelete()
+  }
+
+  if (deleted) {
+    return (
+      <Card className="opacity-50">
+        <CardContent className="pt-4 pb-4 text-center text-sm text-stone-500 italic">
+          Deleted (undo in toast)
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -219,10 +242,10 @@ function TemplateCard({ template, staff }: { template: TaskTemplate; staff: Staf
               variant="ghost"
               size="sm"
               onClick={handleDelete}
-              disabled={deleting}
+              disabled={deleted}
               className="text-red-400 hover:text-red-300"
             >
-              {deleting ? '...' : 'Delete'}
+              {deleted ? '...' : 'Delete'}
             </Button>
           </div>
         </div>
@@ -273,10 +296,10 @@ function TemplateCard({ template, staff }: { template: TaskTemplate; staff: Staf
         <ConfirmModal
           open={showDeleteConfirm}
           title={`Delete template "${template.name}"?`}
-          description="This cannot be undone."
+          description="You'll have 8 seconds to undo."
           confirmLabel="Delete"
           variant="danger"
-          loading={deleting}
+          loading={deleted}
           onConfirm={handleConfirmedDelete}
           onCancel={() => setShowDeleteConfirm(false)}
         />

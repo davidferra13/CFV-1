@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { toast } from 'sonner'
+import { showUndoToast } from '@/components/ui/undo-toast'
 import {
   createStorageLocation,
   deleteStorageLocation,
@@ -40,8 +41,7 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
   const [locations, setLocations] = useState(initialLocations)
   const [showForm, setShowForm] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false)
-  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  // deleteTargetId and showDeactivateConfirm removed - using optimistic undo toast
 
   // Form state
   const [name, setName] = useState('')
@@ -90,21 +90,30 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
   }
 
   function handleDelete(id: string) {
-    setDeleteTargetId(id)
-    setShowDeactivateConfirm(true)
-  }
+    const target = locations.find((l: any) => l.id === id)
+    if (!target) return
 
-  function handleConfirmedDelete() {
-    if (!deleteTargetId) return
-    setShowDeactivateConfirm(false)
-    startTransition(async () => {
+    // Optimistic removal
+    const restore = [...locations]
+    setLocations((prev: any[]) => prev.filter((l: any) => l.id !== id))
+
+    const timer = setTimeout(async () => {
       try {
-        await deleteStorageLocation(deleteTargetId)
-        window.location.reload()
+        await deleteStorageLocation(id)
       } catch (err) {
-        console.error('Failed to delete location', err)
+        setLocations(restore)
+        toast.error('Failed to remove location')
       }
-    })
+    }, 8000)
+
+    showUndoToast(
+      `"${target.name}" removed`,
+      () => {
+        clearTimeout(timer)
+        setLocations(restore)
+      },
+      8000
+    )
   }
 
   return (
@@ -206,17 +215,6 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
           ))
         )}
       </div>
-
-      <ConfirmModal
-        open={showDeactivateConfirm}
-        title="Deactivate this storage location?"
-        description="This storage location will be deactivated."
-        confirmLabel="Deactivate"
-        variant="danger"
-        loading={isPending}
-        onConfirm={handleConfirmedDelete}
-        onCancel={() => setShowDeactivateConfirm(false)}
-      />
     </div>
   )
 }

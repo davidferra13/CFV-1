@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { toast } from 'sonner'
+import { useDeferredAction } from '@/hooks/use-deferred-action'
 
 // ── Reaction config ──────────────────────────────────────────
 export const REACTIONS: Array<{ type: ReactionType; emoji: string; label: string }> = [
@@ -423,7 +424,7 @@ export function SocialPostCard({
   const [showMenu, setShowMenu] = useState(false)
   const [copied, setCopied] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [deleted, setDeleted] = useState(false)
   const [, startTransition] = useTransition()
 
   const authorName = post.author.display_name ?? post.author.business_name
@@ -464,12 +465,34 @@ export function SocialPostCard({
     setShowDeleteConfirm(true)
   }
 
-  async function handleConfirmedDelete() {
+  const { execute: deferPostDelete } = useDeferredAction({
+    delay: 8000,
+    toastMessage: 'Post deleted',
+    onExecute: async () => {
+      await deleteSocialPost(post.id)
+      onDelete?.(post.id)
+    },
+    onUndo: () => {
+      setDeleted(false)
+    },
+    onError: () => {
+      setDeleted(false)
+      toast.error('Failed to delete post')
+    },
+  })
+
+  function handleConfirmedDelete() {
     setShowDeleteConfirm(false)
-    setDeleting(true)
-    await deleteSocialPost(post.id)
-    setDeleting(false)
-    onDelete?.(post.id)
+    setDeleted(true)
+    deferPostDelete()
+  }
+
+  if (deleted) {
+    return (
+      <article className="bg-stone-900/50 rounded-2xl border border-stone-800 p-6 text-center">
+        <p className="text-sm text-stone-500 italic">Post deleted (undo in toast)</p>
+      </article>
+    )
   }
 
   return (
@@ -646,10 +669,10 @@ export function SocialPostCard({
       <ConfirmModal
         open={showDeleteConfirm}
         title="Delete this post?"
-        description="This cannot be undone."
+        description="You'll have 8 seconds to undo."
         confirmLabel="Delete"
         variant="danger"
-        loading={deleting}
+        loading={deleted}
         onConfirm={handleConfirmedDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />

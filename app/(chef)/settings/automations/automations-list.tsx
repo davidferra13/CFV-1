@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { toast } from 'sonner'
+import { useDeferredAction } from '@/hooks/use-deferred-action'
 import { RuleBuilder } from '@/components/automations/rule-builder'
 import { BuiltInSettings } from '@/components/automations/built-in-settings'
 import { ExecutionLog } from '@/components/automations/execution-log'
@@ -31,7 +33,7 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
   const [showBuilder, setShowBuilder] = useState(false)
   const [editingRule, setEditingRule] = useState<AutomationRule | null>(null)
   const [toggling, setToggling] = useState<string | null>(null)
-  const [deleting, setDeleting] = useState<string | null>(null)
+  const [deletedId, setDeletedId] = useState<string | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
@@ -47,23 +49,32 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
     }
   }
 
+  const { execute: deferDelete } = useDeferredAction({
+    delay: 8000,
+    toastMessage: 'Automation rule deleted',
+    onExecute: async () => {
+      if (deleteTargetId) await deleteAutomationRule(deleteTargetId)
+      router.refresh()
+    },
+    onUndo: () => {
+      setDeletedId(null)
+    },
+    onError: () => {
+      setDeletedId(null)
+      toast.error('Failed to delete automation rule')
+    },
+  })
+
   const handleDelete = (ruleId: string) => {
     setDeleteTargetId(ruleId)
     setShowDeleteConfirm(true)
   }
 
-  const handleConfirmedDelete = async () => {
+  const handleConfirmedDelete = () => {
     if (!deleteTargetId) return
     setShowDeleteConfirm(false)
-    setDeleting(deleteTargetId)
-    try {
-      await deleteAutomationRule(deleteTargetId)
-      router.refresh()
-    } catch (err) {
-      console.error('Delete failed:', err)
-    } finally {
-      setDeleting(null)
-    }
+    setDeletedId(deleteTargetId)
+    deferDelete()
   }
 
   const handleEditClose = () => {
@@ -177,10 +188,10 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
                   <button
                     type="button"
                     onClick={() => handleDelete(rule.id)}
-                    disabled={deleting === rule.id}
+                    disabled={deletedId === rule.id}
                     className="text-xs text-red-400 hover:text-red-600 px-2 py-1"
                   >
-                    {deleting === rule.id ? '…' : 'Delete'}
+                    {deletedId === rule.id ? '…' : 'Delete'}
                   </button>
                 </div>
               </div>
@@ -192,10 +203,10 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
       <ConfirmModal
         open={showDeleteConfirm}
         title="Delete this automation rule?"
-        description="This cannot be undone."
+        description="You'll have 8 seconds to undo."
         confirmLabel="Delete"
         variant="danger"
-        loading={deleting !== null}
+        loading={deletedId !== null}
         onConfirm={handleConfirmedDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />

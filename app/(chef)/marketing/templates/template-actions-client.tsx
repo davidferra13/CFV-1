@@ -4,28 +4,44 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { toast } from 'sonner'
 import { deleteCampaignTemplate } from '@/lib/marketing/actions'
+import { useDeferredAction } from '@/hooks/use-deferred-action'
 
 export function TemplateActionsClient({ templateId }: { templateId: string }) {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleted, setDeleted] = useState(false)
+
+  const { execute: deferDelete, deleted } = useDeferredAction({
+    delay: 8000,
+    toastMessage: 'Template deleted',
+    onExecute: async () => {
+      await deleteCampaignTemplate(templateId)
+      router.refresh()
+    },
+    onUndo: () => {
+      setDeleted(false)
+      setShowDeleteConfirm(false)
+    },
+    onError: (err) => {
+      setDeleted(false)
+      toast.error(err instanceof Error ? err.message : 'Failed to delete template')
+    },
+  })
 
   function handleDelete() {
     setShowDeleteConfirm(true)
   }
 
-  async function handleConfirmedDelete() {
+  function handleConfirmedDelete() {
     setShowDeleteConfirm(false)
-    setLoading(true)
-    try {
-      await deleteCampaignTemplate(templateId)
-      router.refresh()
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false)
-    }
+    setDeleted(true)
+    deferDelete()
+  }
+
+  if (deleted) {
+    return <span className="text-xs text-stone-500 italic">Deleted (undo in toast)</span>
   }
 
   return (
@@ -34,18 +50,18 @@ export function TemplateActionsClient({ templateId }: { templateId: string }) {
         variant="ghost"
         size="sm"
         onClick={handleDelete}
-        disabled={loading}
+        disabled={deleted}
         className="shrink-0 text-stone-400 hover:text-red-600"
       >
-        {loading ? '…' : 'Delete'}
+        {deleted ? '…' : 'Delete'}
       </Button>
       <ConfirmModal
         open={showDeleteConfirm}
         title="Delete this template?"
-        description="This cannot be undone."
+        description="You'll have 8 seconds to undo."
         confirmLabel="Delete"
         variant="danger"
-        loading={loading}
+        loading={deleted}
         onConfirm={handleConfirmedDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
