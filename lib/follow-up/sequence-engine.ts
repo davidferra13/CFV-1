@@ -67,7 +67,7 @@ export async function schedulePostEventFollowUp(
     .eq('tenant_id', tenantId)
 
   if (count && count > 0) {
-    console.log('[follow-up] Sends already exist for event, skipping:', eventId)
+    console.info('[follow-up] Sends already exist for event, skipping:', eventId)
     return { scheduled: 0, error: 'Follow-up already scheduled' }
   }
 
@@ -133,7 +133,7 @@ export async function schedulePostEventFollowUp(
     return { scheduled: 0, error: insertError.message }
   }
 
-  console.log(`[follow-up] Scheduled ${sends.length} follow-up sends for event ${eventId}`)
+  console.info(`[follow-up] Scheduled ${sends.length} follow-up sends for event ${eventId}`)
   return { scheduled: sends.length }
 }
 
@@ -175,7 +175,7 @@ export async function cancelFollowUpSends(
     return { cancelled: 0 }
   }
 
-  console.log(`[follow-up] Cancelled ${ids.length} pending sends for client ${clientId}`)
+  console.info(`[follow-up] Cancelled ${ids.length} pending sends for client ${clientId}`)
   return { cancelled: ids.length }
 }
 
@@ -234,7 +234,7 @@ export async function processPendingSend(sendId: string): Promise<boolean> {
 
   // Double-check still pending (prevent double-send)
   if (typedSend.status !== 'pending') {
-    console.log('[follow-up] Send already processed, skipping:', sendId)
+    console.info('[follow-up] Send already processed, skipping:', sendId)
     return false
   }
 
@@ -310,7 +310,7 @@ export async function processPendingSend(sendId: string): Promise<boolean> {
         .from('follow_up_sends')
         .update({ status: 'sent', sent_at: new Date().toISOString() })
         .eq('id', sendId)
-      console.log(`[follow-up] Sent step ${typedSend.step_number} to ${clientName}`)
+      console.info(`[follow-up] Sent step ${typedSend.step_number} to ${clientName}`)
       return true
     } else {
       await supabase

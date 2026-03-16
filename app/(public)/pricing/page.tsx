@@ -110,9 +110,57 @@ function ComparisonPill({ cell }: { cell: ComparisonCell }) {
 export default function PricingPage() {
   const isBeta = LAUNCH_MODE === 'beta'
 
+  const pricingJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'ChefFlow',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: [
+      {
+        '@type': 'Offer',
+        name: 'Free',
+        price: '0',
+        priceCurrency: 'USD',
+        description:
+          'Core tools for solo operators. Inquiries, events, clients, quotes, and basic finance.',
+      },
+      {
+        '@type': 'Offer',
+        name: 'Pro',
+        price: '29',
+        priceCurrency: 'USD',
+        billingIncrement: 'P1M',
+        description:
+          'Full automation, advanced reporting, and premium features for growing chef businesses.',
+      },
+      {
+        '@type': 'Offer',
+        name: 'Scale',
+        price: '0',
+        priceCurrency: 'USD',
+        description: 'Custom pricing for multi-chef teams and enterprise operations.',
+        priceSpecification: {
+          '@type': 'PriceSpecification',
+          price: '0',
+          priceCurrency: 'USD',
+          valueAddedTaxIncluded: false,
+          eligibleTransactionVolume: {
+            '@type': 'PriceSpecification',
+            description: 'Contact for custom pricing',
+          },
+        },
+      },
+    ],
+  }
+
   return (
     <div>
       <PublicPageView pageName="pricing" properties={{ section: 'public_growth' }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingJsonLd) }}
+      />
       <section className="relative overflow-hidden border-b border-stone-700/50">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[780px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px]" />
         <div className="pointer-events-none absolute -right-16 top-8 h-[260px] w-[260px] rounded-full bg-brand-800/25 blur-[70px]" />

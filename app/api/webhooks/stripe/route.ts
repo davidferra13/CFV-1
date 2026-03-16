@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  console.log('[Stripe Webhook] Received:', event.type)
+  console.info('[Stripe Webhook] Received:', event.type)
 
   // Log webhook receipt for audit trail - fire-and-forget
   logWebhookEvent({
@@ -99,7 +99,7 @@ export async function POST(req: Request) {
       .single()
 
     if (existingEntry) {
-      console.log('[Stripe Webhook] Event already processed (idempotent):', event.id)
+      console.info('[Stripe Webhook] Event already processed (idempotent):', event.id)
       await logWebhookEvent({
         provider: 'stripe',
         eventType: event.type,
@@ -184,7 +184,7 @@ export async function POST(req: Request) {
         break
 
       default:
-        console.log('[Stripe Webhook] Unhandled event type:', event.type)
+        console.info('[Stripe Webhook] Unhandled event type:', event.type)
     }
 
     await logWebhookEvent({
@@ -227,7 +227,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
   const { payment_type, purchase_intent_id, tenant_id } = session.metadata ?? {}
 
   if (payment_type !== 'gift_card_purchase') {
-    console.log('[handleGiftCardPurchaseCompleted] Not a gift card purchase, skipping')
+    console.info('[handleGiftCardPurchaseCompleted] Not a gift card purchase, skipping')
     return
   }
 
@@ -236,7 +236,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
     return
   }
 
-  console.log(
+  console.info(
     '[handleGiftCardPurchaseCompleted] Processing gift card purchase:',
     purchase_intent_id
   )
@@ -257,7 +257,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
   }
 
   if (intent.status === 'paid') {
-    console.log(
+    console.info(
       '[handleGiftCardPurchaseCompleted] Already processed (idempotent):',
       purchase_intent_id
     )
@@ -325,7 +325,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
     } as any)
     .eq('id', purchase_intent_id) as any)
 
-  console.log('[handleGiftCardPurchaseCompleted] Gift card created:', code)
+  console.info('[handleGiftCardPurchaseCompleted] Gift card created:', code)
 
   // Send the gift card code to the recipient (non-blocking)
   try {
@@ -446,7 +446,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     throw new Error('Payment metadata does not match a known event for this tenant')
   }
 
-  console.log('[handlePaymentSucceeded] Processing payment for event:', event_id)
+  console.info('[handlePaymentSucceeded] Processing payment for event:', event_id)
 
   // Determine entry type based on payment_type metadata
   const entryType = payment_type === 'deposit' ? ('deposit' as const) : ('payment' as const)
@@ -466,7 +466,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
   })
 
   if (result.duplicate) {
-    console.log('[handlePaymentSucceeded] Duplicate entry (idempotent)')
+    console.info('[handlePaymentSucceeded] Duplicate entry (idempotent)')
     return
   }
 
@@ -550,7 +550,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       systemTransition: true, // Bypass permission checks
     })
 
-    console.log('[handlePaymentSucceeded] Event transitioned to paid:', event_id)
+    console.info('[handlePaymentSucceeded] Event transitioned to paid:', event_id)
 
     // Assign invoice number (non-blocking - idempotent if already set)
     try {
@@ -615,7 +615,6 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
       await circleFirstNotify({
         eventId: event_id,
-        tenantId: tenant_id,
         notificationType: 'payment_received',
         body: `${typeLabel} of $${amount} received. Thank you!`,
         metadata: {
@@ -810,7 +809,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
           requires_manual_review: true,
         },
       } as any)
-      console.log('[handlePaymentSucceeded] Audit trail inserted for failed transition:', event_id)
+      console.info('[handlePaymentSucceeded] Audit trail inserted for failed transition:', event_id)
     } catch (auditError: unknown) {
       console.error('[handlePaymentSucceeded] Failed to insert audit trail:', auditError)
     }
@@ -826,11 +825,11 @@ async function handlePaymentFailed(event: Stripe.Event) {
   const { event_id, tenant_id, client_id } = paymentIntent.metadata
 
   if (!event_id || !tenant_id || !client_id) {
-    console.log('[handlePaymentFailed] Missing metadata, skipping')
+    console.info('[handlePaymentFailed] Missing metadata, skipping')
     return
   }
 
-  console.log('[handlePaymentFailed] Payment failed for event:', event_id)
+  console.info('[handlePaymentFailed] Payment failed for event:', event_id)
 
   await appendLedgerEntryFromWebhook({
     tenant_id,
@@ -934,11 +933,11 @@ async function handlePaymentCanceled(event: Stripe.Event) {
   const { event_id, tenant_id, client_id } = paymentIntent.metadata
 
   if (!event_id || !tenant_id || !client_id) {
-    console.log('[handlePaymentCanceled] Missing metadata, skipping')
+    console.info('[handlePaymentCanceled] Missing metadata, skipping')
     return
   }
 
-  console.log('[handlePaymentCanceled] Payment canceled for event:', event_id)
+  console.info('[handlePaymentCanceled] Payment canceled for event:', event_id)
 
   await appendLedgerEntryFromWebhook({
     tenant_id,
@@ -1025,11 +1024,11 @@ async function handleRefund(event: Stripe.Event) {
   const { event_id, tenant_id, client_id } = charge.metadata
 
   if (!event_id || !tenant_id || !client_id) {
-    console.log('[handleRefund] Missing metadata, skipping')
+    console.info('[handleRefund] Missing metadata, skipping')
     return
   }
 
-  console.log('[handleRefund] Processing refund for event:', event_id)
+  console.info('[handleRefund] Processing refund for event:', event_id)
 
   await appendLedgerEntryFromWebhook({
     tenant_id,
@@ -1151,11 +1150,11 @@ async function handleDisputeCreated(event: Stripe.Event) {
   const { event_id, tenant_id, client_id } = charge.metadata
 
   if (!event_id || !tenant_id || !client_id) {
-    console.log('[handleDisputeCreated] Missing metadata, skipping')
+    console.info('[handleDisputeCreated] Missing metadata, skipping')
     return
   }
 
-  console.log('[handleDisputeCreated] Dispute opened for event:', event_id)
+  console.info('[handleDisputeCreated] Dispute opened for event:', event_id)
 
   await appendLedgerEntryFromWebhook({
     tenant_id,
@@ -1222,11 +1221,11 @@ async function handleDisputeFundsWithdrawn(event: Stripe.Event) {
   const { event_id, tenant_id, client_id } = charge.metadata
 
   if (!event_id || !tenant_id || !client_id) {
-    console.log('[handleDisputeFundsWithdrawn] Missing metadata, skipping')
+    console.info('[handleDisputeFundsWithdrawn] Missing metadata, skipping')
     return
   }
 
-  console.log('[handleDisputeFundsWithdrawn] Funds withdrawn for event:', event_id)
+  console.info('[handleDisputeFundsWithdrawn] Funds withdrawn for event:', event_id)
 
   await appendLedgerEntryFromWebhook({
     tenant_id,
@@ -1288,7 +1287,7 @@ async function handleDisputeFundsWithdrawn(event: Stripe.Event) {
  */
 async function handleAccountUpdated(event: Stripe.Event) {
   const account = event.data.object as Stripe.Account
-  console.log(
+  console.info(
     '[handleAccountUpdated] account:',
     account.id,
     'charges_enabled:',
@@ -1314,7 +1313,7 @@ async function handleAccountUpdated(event: Stripe.Event) {
 async function handleTransferEvent(event: Stripe.Event) {
   const transfer = event.data.object as Stripe.Transfer
 
-  console.log('[handleTransferEvent]', event.type, 'transfer:', transfer.id)
+  console.info('[handleTransferEvent]', event.type, 'transfer:', transfer.id)
 
   const supabase = createServerClient({ admin: true })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1337,7 +1336,7 @@ async function handleTransferEvent(event: Stripe.Event) {
       .update({ status: newStatus })
       .eq('stripe_transfer_id', transfer.id)
 
-    console.log('[handleTransferEvent] Updated transfer status:', transfer.id, '→', newStatus)
+    console.info('[handleTransferEvent] Updated transfer status:', transfer.id, '→', newStatus)
   } else {
     // Transfer wasn't recorded yet (e.g., handlePaymentSucceeded's recording failed).
     // Create a minimal record so we don't lose visibility.
@@ -1367,9 +1366,9 @@ async function handleTransferEvent(event: Stripe.Event) {
         netTransferCents: transfer.amount,
         status: newStatus,
       })
-      console.log('[handleTransferEvent] Created new transfer record:', transfer.id)
+      console.info('[handleTransferEvent] Created new transfer record:', transfer.id)
     } else {
-      console.log('[handleTransferEvent] No chef found for destination:', destination)
+      console.info('[handleTransferEvent] No chef found for destination:', destination)
     }
   }
 }
@@ -1381,7 +1380,7 @@ async function handleTransferEvent(event: Stripe.Event) {
  */
 async function handleApplicationFeeRefunded(event: Stripe.Event) {
   const feeRefund = event.data.object as Stripe.ApplicationFee
-  console.log('[handleApplicationFeeRefunded] fee:', feeRefund.id)
+  console.info('[handleApplicationFeeRefunded] fee:', feeRefund.id)
 
   const supabase = createServerClient({ admin: true })
 
@@ -1452,7 +1451,7 @@ async function handleApplicationFeeRefunded(event: Stripe.Event) {
       entryType: 'fee_refund',
     })
 
-    console.log(
+    console.info(
       '[handleApplicationFeeRefunded] Recorded fee refund:',
       refundedAmount,
       'cents for tenant:',
@@ -1475,7 +1474,7 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
     return
   }
 
-  console.log('[handleCommercePaymentSucceeded] Processing commerce payment for sale:', sale_id)
+  console.info('[handleCommercePaymentSucceeded] Processing commerce payment for sale:', sale_id)
 
   const supabase = createServerClient({ admin: true })
 
@@ -1520,7 +1519,7 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
   if (insertErr) {
     // Idempotency: duplicate key is fine
     if (insertErr.code === '23505') {
-      console.log(
+      console.info(
         '[handleCommercePaymentSucceeded] Duplicate payment (idempotent):',
         idempotencyKey
       )
@@ -1565,7 +1564,7 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
     }
   }
 
-  console.log('[handleCommercePaymentSucceeded] Commerce payment recorded for sale:', sale_id)
+  console.info('[handleCommercePaymentSucceeded] Commerce payment recorded for sale:', sale_id)
 }
 
 /**
@@ -1574,13 +1573,13 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
  */
 async function handlePayoutEvent(event: Stripe.Event) {
   const payout = event.data.object as Stripe.Payout
-  console.log('[handlePayoutEvent]', event.type, 'payout:', payout.id)
+  console.info('[handlePayoutEvent]', event.type, 'payout:', payout.id)
 
   // Find the tenant by their connected account
   // Payout events include the connected account in event.account
   const connectedAccountId = (event as any).account
   if (!connectedAccountId) {
-    console.log('[handlePayoutEvent] No connected account on payout event, skipping')
+    console.info('[handlePayoutEvent] No connected account on payout event, skipping')
     return
   }
 
@@ -1592,7 +1591,7 @@ async function handlePayoutEvent(event: Stripe.Event) {
     .single()
 
   if (!chef) {
-    console.log('[handlePayoutEvent] No chef found for account:', connectedAccountId)
+    console.info('[handlePayoutEvent] No chef found for account:', connectedAccountId)
     return
   }
 
@@ -1611,7 +1610,7 @@ async function handlePayoutEvent(event: Stripe.Event) {
           : undefined,
       },
     })
-    console.log('[handlePayoutEvent] Settlement mapping job dispatched for payout:', payout.id)
+    console.info('[handlePayoutEvent] Settlement mapping job dispatched for payout:', payout.id)
   } catch (err) {
     console.error('[handlePayoutEvent] Failed to dispatch settlement mapping job:', err)
   }

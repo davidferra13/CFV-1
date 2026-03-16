@@ -125,6 +125,7 @@ function SignInForm() {
               <Input
                 type="email"
                 label="Email"
+                name="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
@@ -134,6 +135,7 @@ function SignInForm() {
               <Input
                 type="password"
                 label="Password"
+                name="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required

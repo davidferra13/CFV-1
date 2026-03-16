@@ -102,7 +102,7 @@ let dualSlotEnabled = false
  */
 export function startWorker(): void {
   if (state.running) {
-    console.log('[ai-worker] Already running')
+    console.info('[ai-worker] Already running')
     return
   }
 
@@ -111,7 +111,7 @@ export function startWorker(): void {
   // Detect if Pi is configured for dual-slot mode
   dualSlotEnabled = !!process.env.OLLAMA_PI_URL
   if (dualSlotEnabled) {
-    console.log('[ai-worker] DUAL-SLOT MODE — processing on PC + Pi simultaneously')
+    console.info('[ai-worker] DUAL-SLOT MODE — processing on PC + Pi simultaneously')
   }
 
   // Reset slot states
@@ -120,7 +120,7 @@ export function startWorker(): void {
     slot.backoffUntil = null
   }
 
-  console.log('[ai-worker] Started — polling every', OLLAMA_GUARD.POLL_INTERVAL_MS, 'ms')
+  console.info('[ai-worker] Started — polling every', OLLAMA_GUARD.POLL_INTERVAL_MS, 'ms')
 
   // Periodic stats flush (every hour)
   if (!statsTimer) {
@@ -161,7 +161,7 @@ export function stopWorker(): void {
     console.error('[ai-worker] Failed to write final stats:', err)
   }
 
-  console.log('[ai-worker] Stopped — stats written to data/remy-stats/')
+  console.info('[ai-worker] Stopped — stats written to data/remy-stats/')
 }
 
 /**
@@ -173,7 +173,7 @@ export function stopWorker(): void {
 export function acquireInteractiveLock(): void {
   interactiveLockCount++
   state.interactiveLock = interactiveLockCount > 0
-  console.log(
+  console.info(
     `[ai-worker] Interactive lock acquired (depth: ${interactiveLockCount}) — pausing PC slot (Pi continues)`
   )
 }
@@ -186,9 +186,9 @@ export function releaseInteractiveLock(): void {
   interactiveLockCount = Math.max(0, interactiveLockCount - 1)
   state.interactiveLock = interactiveLockCount > 0
   if (interactiveLockCount === 0) {
-    console.log('[ai-worker] Interactive lock fully released — PC slot resuming')
+    console.info('[ai-worker] Interactive lock fully released — PC slot resuming')
   } else {
-    console.log(
+    console.info(
       `[ai-worker] Interactive lock released (depth: ${interactiveLockCount}) — PC slot still paused`
     )
   }
@@ -269,7 +269,7 @@ async function pollSlot(endpointName: 'pc' | 'pi'): Promise<void> {
   if (slot.backoffUntil && new Date() >= slot.backoffUntil) {
     slot.backoffUntil = null
     slot.consecutiveFailures = 0
-    console.log(`[ai-worker] [${endpointName}] Backoff ended — resuming`)
+    console.info(`[ai-worker] [${endpointName}] Backoff ended — resuming`)
   }
 
   // ── Guard 3: Slot already processing ──
@@ -313,7 +313,7 @@ async function pollSingleSlot(): Promise<void> {
   if (slot.backoffUntil && new Date() >= slot.backoffUntil) {
     slot.backoffUntil = null
     slot.consecutiveFailures = 0
-    console.log('[ai-worker] Backoff period ended — resuming')
+    console.info('[ai-worker] Backoff period ended — resuming')
   }
 
   // ── Guard 3: Check Ollama is actually reachable ──
@@ -361,7 +361,7 @@ async function processTask(task: AiQueueItem, forcedEndpoint?: 'pc' | 'pi'): Pro
 
   const startTime = Date.now()
 
-  console.log(
+  console.info(
     `[ai-worker] [${endpointName}] Processing: ${task.task_type} (priority=${task.priority}, ` +
       `tier=${task.approval_tier}, attempt=${task.attempts}/${task.max_attempts})`
   )
@@ -447,7 +447,7 @@ async function processTask(task: AiQueueItem, forcedEndpoint?: 'pc' | 'pi'): Pro
     state.tasksProcessed++
     slot.tasksProcessed++
     slot.consecutiveFailures = 0 // Reset per-slot circuit breaker
-    console.log(
+    console.info(
       `[ai-worker] [${resolvedEndpointName}] Completed: ${task.task_type} in ${durationMs}ms`
     )
 
