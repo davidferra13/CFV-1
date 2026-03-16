@@ -120,7 +120,7 @@ export function SignaturePad({ onChange, width = 500, height = 160 }: Props) {
         <canvas
           ref={canvasRef}
           className="block touch-none"
-          aria-label="Signature pad — draw your signature"
+          aria-label="Signature pad - draw your signature"
         />
         {!hasSignature && (
           <p className="absolute inset-0 flex items-center justify-center text-sm text-stone-400 pointer-events-none select-none">

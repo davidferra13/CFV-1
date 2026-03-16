@@ -28,7 +28,7 @@ export function SmartPricingHint({
       return
     }
 
-    // Debounce — wait 500ms after last change
+    // Debounce - wait 500ms after last change
     const timer = setTimeout(() => {
       startTransition(async () => {
         try {

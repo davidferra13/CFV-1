@@ -277,7 +277,7 @@ export function InquiryImport({ aiConfigured }: Props) {
                     Google Sheets or Excel export with columns like Name, Date, Occasion, Guests,
                     Budget
                   </li>
-                  <li>Any spreadsheet — we auto-detect columns</li>
+                  <li>Any spreadsheet - we auto-detect columns</li>
                 </ul>
               </Alert>
 
@@ -319,7 +319,7 @@ export function InquiryImport({ aiConfigured }: Props) {
             <>
               <Alert variant="info" title="Paste anything">
                 <p className="text-sm">
-                  Paste text messages, email threads, form submissions, notes — anything with
+                  Paste text messages, email threads, form submissions, notes - anything with
                   inquiry details. AI will parse them into structured records.
                 </p>
                 {!aiConfigured && (
@@ -497,7 +497,7 @@ export function InquiryImport({ aiConfigured }: Props) {
                 className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
               />
               <span className="text-sm text-stone-300">
-                Everything looks right — import these inquiries
+                Everything looks right - import these inquiries
               </span>
             </label>
           )}

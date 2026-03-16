@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Edit Product — ChefFlow' }
+export const metadata: Metadata = { title: 'Edit Product | ChefFlow' }
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   await requireChef()

@@ -164,13 +164,13 @@ export default async function GiftCardsPage() {
                             ? `${incentive.discount_percent}% off`
                             : incentive.amount_cents != null
                               ? formatCurrency(incentive.amount_cents)
-                              : '—'}
+                              : '-'}
                         </td>
                         <td className="py-3 pr-4 text-stone-300">
                           {isGiftCard && incentive.remaining_balance_cents != null ? (
                             formatCurrency(incentive.remaining_balance_cents)
                           ) : (
-                            <span className="text-stone-400">—</span>
+                            <span className="text-stone-400">-</span>
                           )}
                         </td>
                         <td className="py-3 pr-4 text-stone-300">

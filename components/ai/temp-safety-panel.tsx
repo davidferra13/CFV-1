@@ -104,7 +104,7 @@ export function TempSafetyPanel({ eventId }: { eventId: string }) {
                   className={`w-3 h-3 flex-shrink-0 ${v.severity === 'critical' ? 'text-red-500' : 'text-amber-500'}`}
                 />
                 <span className="text-xs font-medium text-stone-300">
-                  {v.item} — {v.tempF}°F at {v.loggedAt}
+                  {v.item} - {v.tempF}°F at {v.loggedAt}
                 </span>
               </div>
               <p className="text-xs text-stone-400">{v.issue}</p>

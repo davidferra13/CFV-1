@@ -1,6 +1,6 @@
 'use client'
 
-// Post-Event Summary — shows proposed menu, expense breakdown, timeline
+// Post-Event Summary - shows proposed menu, expense breakdown, timeline
 // Gives clients full transparency on what happened at their event.
 
 import { toast } from 'sonner'
@@ -99,7 +99,7 @@ export function PostEventSummaryClient({
   hasPhotos,
 }: PostEventSummaryClientProps) {
   const occasion = event.occasion || 'Private Chef Dinner'
-  const shareText = `Just had an incredible private chef dinner — ${occasion}! 🌟`
+  const shareText = `Just had an incredible private chef dinner - ${occasion}! 🌟`
 
   // Build timeline from transitions
   const timeline = transitions

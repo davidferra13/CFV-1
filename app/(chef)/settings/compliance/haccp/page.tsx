@@ -8,7 +8,7 @@ import { HACCPWizard } from '@/components/haccp/haccp-wizard'
 import { HACCPPageTabs } from './tabs-client'
 import type { HACCPPlanData } from '@/lib/haccp/types'
 
-export const metadata: Metadata = { title: 'HACCP Plan — ChefFlow' }
+export const metadata: Metadata = { title: 'HACCP Plan | ChefFlow' }
 
 export default async function HACCPPage() {
   await requireChef()

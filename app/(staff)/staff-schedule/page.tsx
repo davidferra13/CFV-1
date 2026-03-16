@@ -1,4 +1,4 @@
-// Staff Schedule View — Shows upcoming event assignments for this staff member
+// Staff Schedule View - Shows upcoming event assignments for this staff member
 // Read-only view with event name, date, times, role, and hours.
 
 import type { Metadata } from 'next'

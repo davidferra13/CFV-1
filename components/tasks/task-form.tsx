@@ -1,6 +1,6 @@
 'use client'
 
-// Task Form — Create or edit a task
+// Task Form - Create or edit a task
 // Fields: title, description, assignee, station, due date, due time, priority, notes, recurring rule
 
 import { useState } from 'react'

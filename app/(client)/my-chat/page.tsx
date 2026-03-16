@@ -1,4 +1,4 @@
-// Client Chat Inbox — View conversations with your chef
+// Client Chat Inbox - View conversations with your chef
 
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'

@@ -1,4 +1,4 @@
-// Admin Chef List — all chefs across the platform
+// Admin Chef List - all chefs across the platform
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformChefList, type PlatformChefRow } from '@/lib/admin/platform-stats'
@@ -116,9 +116,9 @@ export default async function AdminChefListPage() {
                 {chefs.map((chef) => (
                   <tr key={chef.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3 font-medium text-slate-900">
-                      {chef.business_name ?? '—'}
+                      {chef.business_name ?? '-'}
                     </td>
-                    <td className="px-4 py-3 text-stone-500 text-xs">{chef.email ?? '—'}</td>
+                    <td className="px-4 py-3 text-stone-500 text-xs">{chef.email ?? '-'}</td>
                     <td className="px-4 py-3 text-right text-stone-300">{chef.eventCount}</td>
                     <td className="px-4 py-3 text-right text-stone-300">{chef.clientCount}</td>
                     <td className="px-4 py-3 text-right font-medium text-slate-900">

@@ -42,7 +42,7 @@ export default async function ApprovedMenusPage() {
             {menus.length}
           </span>
         </div>
-        <p className="text-stone-500 mt-1">Menus locked after client approval — no further edits</p>
+        <p className="text-stone-500 mt-1">Menus locked after client approval - no further edits</p>
       </div>
 
       {menus.length === 0 ? (
@@ -88,13 +88,13 @@ export default async function ApprovedMenusPage() {
                   <TableCell className="text-stone-400 text-sm">
                     {menu.service_style
                       ? (SERVICE_STYLE_LABELS[menu.service_style] ?? menu.service_style)
-                      : '—'}
+                      : '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {menu.cuisine_type || '—'}
+                    {menu.cuisine_type || '-'}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">
-                    {menu.locked_at ? format(new Date(menu.locked_at), 'MMM d, yyyy') : '—'}
+                    {menu.locked_at ? format(new Date(menu.locked_at), 'MMM d, yyyy') : '-'}
                   </TableCell>
                   <TableCell>
                     <Link href={`/culinary/menus/${menu.id}`}>

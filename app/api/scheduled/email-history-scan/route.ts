@@ -1,6 +1,6 @@
 // Scheduled: Email Historical Scan
-// GET /api/scheduled/email-history-scan — health check (Vercel Cron sends GET)
-// POST /api/scheduled/email-history-scan — process a batch for each opted-in chef
+// GET /api/scheduled/email-history-scan - health check (Vercel Cron sends GET)
+// POST /api/scheduled/email-history-scan - process a batch for each opted-in chef
 //
 // Runs every 15 minutes. Finds chefs with historical_scan_enabled=true and
 // gmail_connected=true whose scan is not yet completed or paused, then runs
@@ -20,7 +20,7 @@ async function handleEmailHistoryScan(request: NextRequest): Promise<NextRespons
   const supabase = createServerClient({ admin: true })
 
   // Find chefs with active historical scans
-  // Status must NOT be completed or paused — idle and in_progress are eligible
+  // Status must NOT be completed or paused - idle and in_progress are eligible
   const { data: connections, error } = await supabase
     .from('google_connections')
     .select('chef_id, tenant_id, historical_scan_status')

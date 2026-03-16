@@ -1,6 +1,6 @@
 'use client'
 
-// PaymentPageClient — orchestrates gift card/voucher redemption + Stripe payment
+// PaymentPageClient - orchestrates gift card/voucher redemption + Stripe payment
 // Renders RedemptionCodeInput above the payment form.
 // When a credit is applied:
 //   - If event is fully covered: shows success (no Stripe needed)

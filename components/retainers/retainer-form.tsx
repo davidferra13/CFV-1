@@ -109,7 +109,7 @@ export function RetainerForm({ clients, mode, retainer }: RetainerFormProps) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            placeholder="e.g. Monthly Meal Prep — Johnson Family"
+            placeholder="e.g. Monthly Meal Prep - Johnson Family"
             className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>

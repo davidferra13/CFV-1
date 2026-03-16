@@ -1,4 +1,4 @@
-// Revenue Goals Dashboard — Finance sub-page
+// Revenue Goals Dashboard - Finance sub-page
 // Shows current goal status, YTD KPIs, progress, and gap-closing strategies
 
 import type { Metadata } from 'next'

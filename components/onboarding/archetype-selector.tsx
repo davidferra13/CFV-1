@@ -37,7 +37,7 @@ export function ArchetypeSelector() {
             We want to set up your portal perfectly. What type of chef are you?
           </p>
           <p className="text-stone-500 text-sm mt-2">
-            This just sets your starting layout — you can change everything anytime in Settings.
+            This just sets your starting layout - you can change everything anytime in Settings.
           </p>
         </div>
 
@@ -103,7 +103,7 @@ export function ArchetypeSelector() {
 
         {/* Nothing locked out reassurance */}
         <p className="text-stone-600 text-xs text-center mt-6">
-          Nothing is locked out. Every feature ChefFlow has is available to you — this just tailors
+          Nothing is locked out. Every feature ChefFlow has is available to you - this just tailors
           your sidebar so you see what matters most.
         </p>
       </div>

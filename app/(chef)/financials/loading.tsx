@@ -1,4 +1,4 @@
-// Financials Loading Skeleton — stat cards + ledger panels
+// Financials Loading Skeleton - stat cards + ledger panels
 import { ContextLoader } from '@/components/ui/context-loader'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 

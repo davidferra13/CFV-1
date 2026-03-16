@@ -196,7 +196,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
                       {event.serveTime || 'TBD'}
                     </span>
                     <span className="text-sm text-stone-700">
-                      <strong>{event.occasion || 'Event'}</strong> — {event.clientName}
+                      <strong>{event.occasion || 'Event'}</strong> - {event.clientName}
                       {event.guestCount ? ` (${event.guestCount} guests)` : ''}
                     </span>
                   </div>
@@ -259,7 +259,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
                 <p className="text-2xl font-bold text-stone-900">
-                  {content.avgResponseTimeHours ?? '—'}h
+                  {content.avgResponseTimeHours ?? '-'}h
                 </p>
                 <p className="text-xs text-stone-500">Avg Response Time</p>
               </div>
@@ -273,7 +273,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
               </div>
               <div>
                 <p className="text-2xl font-bold text-stone-900">
-                  {content.foodCostAvgPercent !== null ? `${content.foodCostAvgPercent}%` : '—'}
+                  {content.foodCostAvgPercent !== null ? `${content.foodCostAvgPercent}%` : '-'}
                 </p>
                 <p className="text-xs text-stone-500">
                   Food Cost{' '}
@@ -317,7 +317,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
                   </p>
                   {content.highIntentVisits.map((v, i) => (
                     <p key={i} className="text-sm text-stone-700">
-                      <strong>{v.clientName}</strong> —{' '}
+                      <strong>{v.clientName}</strong> -{' '}
                       {v.eventType.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                     </p>
                   ))}
@@ -338,7 +338,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
                     month: 'short',
                     day: 'numeric',
                   })}{' '}
-                  — {c.eventCount} events booked
+                  - {c.eventCount} events booked
                 </p>
               ))}
             </section>
@@ -352,7 +352,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
               </h3>
               {content.upcomingMilestones.map((m, i) => (
                 <p key={i} className="text-sm text-stone-700">
-                  <strong>{m.clientName}</strong> — {m.label}
+                  <strong>{m.clientName}</strong> - {m.label}
                 </p>
               ))}
             </section>
@@ -366,7 +366,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
               </h3>
               {content.dormantClients.map((c, i) => (
                 <p key={i} className="text-sm text-stone-700">
-                  <strong>{c.clientName}</strong> — {c.daysSinceLastEvent} days since last event
+                  <strong>{c.clientName}</strong> - {c.daysSinceLastEvent} days since last event
                 </p>
               ))}
             </section>
@@ -392,7 +392,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
                   <div>
                     <p className="text-sm font-medium text-stone-900">{a.label}</p>
                     <p className="text-xs text-stone-500">
-                      {a.clientName} — {a.description}
+                      {a.clientName} - {a.description}
                     </p>
                   </div>
                 </div>

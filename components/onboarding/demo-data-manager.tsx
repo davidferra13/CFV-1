@@ -1,6 +1,6 @@
 'use client'
 
-// DemoDataManager — Load or clear sample data from settings / onboarding.
+// DemoDataManager - Load or clear sample data from settings / onboarding.
 // Buttons trigger server actions. Shows status after each operation.
 
 import { useState, useTransition } from 'react'

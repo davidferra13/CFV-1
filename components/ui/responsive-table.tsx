@@ -14,7 +14,7 @@ interface ResponsiveTableProps<T> {
 }
 
 /**
- * Responsive table wrapper — renders a table on desktop, stacked cards on mobile.
+ * Responsive table wrapper - renders a table on desktop, stacked cards on mobile.
  *
  * Usage:
  *   <ResponsiveTable

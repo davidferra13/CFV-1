@@ -46,7 +46,7 @@ export default async function DraftMenusPage() {
             <Button>Create Menu</Button>
           </Link>
         </div>
-        <p className="text-stone-500 mt-1">Menus still being built — not yet shared with clients</p>
+        <p className="text-stone-500 mt-1">Menus still being built - not yet shared with clients</p>
       </div>
 
       {menus.length === 0 ? (
@@ -91,10 +91,10 @@ export default async function DraftMenusPage() {
                   <TableCell className="text-stone-400 text-sm">
                     {menu.service_style
                       ? (SERVICE_STYLE_LABELS[menu.service_style] ?? menu.service_style)
-                      : '—'}
+                      : '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {menu.cuisine_type || '—'}
+                    {menu.cuisine_type || '-'}
                   </TableCell>
                   <TableCell>
                     {menu.is_template ? (
@@ -102,7 +102,7 @@ export default async function DraftMenusPage() {
                         Template
                       </span>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">

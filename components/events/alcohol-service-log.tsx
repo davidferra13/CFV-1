@@ -102,7 +102,7 @@ export function AlcoholServiceLog({ eventId, log }: Props) {
           {log.last_call_at ? (
             <Badge variant="warning">
               <BellOff className="mr-1 h-3 w-3" />
-              Last Call Set —{' '}
+              Last Call Set -{' '}
               {new Date(log.last_call_at).toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
@@ -150,7 +150,7 @@ export function AlcoholServiceLog({ eventId, log }: Props) {
                   </td>
                   <td className="px-3 py-2 capitalize">{entry.drink_type}</td>
                   <td className="px-3 py-2">{entry.guests_served}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{entry.notes ?? '—'}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{entry.notes ?? '-'}</td>
                 </tr>
               ))}
             </tbody>

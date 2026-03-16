@@ -46,7 +46,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
           </Button>
         </div>
         <p className="text-xs text-stone-500 mt-1">
-          Full after-action report — what worked, what to improve, financial reflection, next-time
+          Full after-action report - what worked, what to improve, financial reflection, next-time
           list.
         </p>
       </div>

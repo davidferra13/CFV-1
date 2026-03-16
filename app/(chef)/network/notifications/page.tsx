@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArrowLeft, Bell } from '@/components/ui/icons'
 import { MarkAllReadButton } from './mark-all-read-button'
 
-export const metadata: Metadata = { title: 'Notifications — Chef Community' }
+export const metadata: Metadata = { title: 'Notifications | Chef Community' }
 
 const NOTIF_LABELS: Record<string, string> = {
   new_follower: 'started following you',

@@ -1,6 +1,6 @@
 'use client'
 
-// GiftCardPurchaseForm — client-side form for purchasing a gift card.
+// GiftCardPurchaseForm - client-side form for purchasing a gift card.
 // Props include tenantId + chefSlug (resolved by server page).
 // Calls initiateGiftCardPurchase() server action → redirects to Stripe Checkout.
 

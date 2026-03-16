@@ -36,6 +36,6 @@ export function EventStatusRealtimeSync({ eventId }: EventStatusRealtimeSyncProp
 
   useEventStatusSubscription(eventId, handleStatusChange)
 
-  // Renders nothing — purely a side-effect component
+  // Renders nothing - purely a side-effect component
   return null
 }

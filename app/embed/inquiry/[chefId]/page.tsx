@@ -1,4 +1,4 @@
-// Embeddable inquiry form page — loaded inside an iframe on external websites
+// Embeddable inquiry form page - loaded inside an iframe on external websites
 // No auth required. Resolves chef by ID, renders a clean booking form.
 // Submits to /api/embed/inquiry (CORS-enabled API route)
 

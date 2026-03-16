@@ -35,7 +35,7 @@ export default async function QualifiedLeadsPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Leads who have received a quote — confirmed as viable prospects
+          Leads who have received a quote - confirmed as viable prospects
         </p>
       </div>
 
@@ -67,7 +67,7 @@ export default async function QualifiedLeadsPage() {
               {inquiries.map((inquiry: any) => (
                 <TableRow key={inquiry.id}>
                   <TableCell className="font-medium">
-                    <p>{inquiry.client?.full_name ?? '—'}</p>
+                    <p>{inquiry.client?.full_name ?? '-'}</p>
                     {inquiry.client?.email && (
                       <p className="text-xs text-stone-400 mt-0.5">{inquiry.client.email}</p>
                     )}
@@ -76,15 +76,15 @@ export default async function QualifiedLeadsPage() {
                     {format(new Date(inquiry.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm capitalize">
-                    {inquiry.confirmed_occasion?.replace(/_/g, ' ') ?? '—'}
+                    {inquiry.confirmed_occasion?.replace(/_/g, ' ') ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {inquiry.confirmed_guest_count ?? '—'}
+                    {inquiry.confirmed_guest_count ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {inquiry.confirmed_date
                       ? format(new Date(inquiry.confirmed_date), 'MMM d, yyyy')
-                      : '—'}
+                      : '-'}
                   </TableCell>
                   <TableCell>
                     <Link href={`/inquiries/${inquiry.id}`}>

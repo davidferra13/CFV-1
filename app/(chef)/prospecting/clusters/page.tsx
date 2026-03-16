@@ -1,4 +1,4 @@
-// Prospecting Clusters — Geographic Grouping
+// Prospecting Clusters - Geographic Grouping
 // Groups prospects by region for efficient route-based outreach planning.
 
 import type { Metadata } from 'next'

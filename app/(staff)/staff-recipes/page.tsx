@@ -1,4 +1,4 @@
-// Staff Recipes View — Read-only recipe cards for the staff member
+// Staff Recipes View - Read-only recipe cards for the staff member
 // Shows recipes associated with the tenant (chef), with search filtering.
 
 import type { Metadata } from 'next'

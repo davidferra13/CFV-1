@@ -86,7 +86,7 @@ export default async function VendorNotesPage() {
                             <span className="text-stone-300 text-xs">no price</span>
                           )}
                           <span className="text-xs text-stone-400 capitalize">
-                            {ing.category?.replace(/_/g, ' ') ?? '—'}
+                            {ing.category?.replace(/_/g, ' ') ?? '-'}
                           </span>
                         </div>
                       </div>
@@ -101,7 +101,7 @@ export default async function VendorNotesPage() {
       {ingredients.filter((i: any) => !i.preferred_vendor).length > 0 && (
         <p className="text-xs text-stone-400">
           {ingredients.filter((i: any) => !i.preferred_vendor).length} ingredients without a vendor
-          assignment —{' '}
+          assignment -{' '}
           <Link href="/culinary/ingredients" className="text-brand-600 hover:underline">
             view all
           </Link>

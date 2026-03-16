@@ -51,7 +51,7 @@ export function AddManualTransactionForm() {
           category: form.category,
           date: form.date,
         })
-        trackAction('Added transaction', `$${form.amount} — ${form.description.trim()}`)
+        trackAction('Added transaction', `$${form.amount} - ${form.description.trim()}`)
         setForm({
           description: '',
           amount: '',

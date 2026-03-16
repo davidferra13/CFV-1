@@ -187,7 +187,7 @@ export function VendorPriceList({ vendorId, items }: VendorPriceListProps) {
                 {items.map((item) => (
                   <tr key={item.id} className="border-b border-stone-800">
                     <td className="py-2 pr-4 text-stone-200">{item.vendor_item_name}</td>
-                    <td className="py-2 pr-4 text-stone-400">{item.vendor_sku || '—'}</td>
+                    <td className="py-2 pr-4 text-stone-400">{item.vendor_sku || '-'}</td>
                     <td className="py-2 pr-4">
                       {editingId === item.id ? (
                         <div className="flex items-center gap-2">
@@ -230,8 +230,8 @@ export function VendorPriceList({ vendorId, items }: VendorPriceListProps) {
                         </button>
                       )}
                     </td>
-                    <td className="py-2 pr-4 text-stone-400">{item.unit_size || '—'}</td>
-                    <td className="py-2 pr-4 text-stone-400">{item.unit_measure || '—'}</td>
+                    <td className="py-2 pr-4 text-stone-400">{item.unit_size || '-'}</td>
+                    <td className="py-2 pr-4 text-stone-400">{item.unit_measure || '-'}</td>
                     <td className="py-2">
                       <Button
                         variant="ghost"

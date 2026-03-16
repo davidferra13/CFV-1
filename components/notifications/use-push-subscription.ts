@@ -39,10 +39,10 @@ export function usePushSubscription() {
       .then((reg) => reg.pushManager.getSubscription())
       .then((sub) => {
         if (sub) setState('subscribed')
-        // else: stay 'default' — browser knows about push but not subscribed yet
+        // else: stay 'default' - browser knows about push but not subscribed yet
       })
       .catch(() => {
-        // Service worker not ready yet — stay 'default'
+        // Service worker not ready yet - stay 'default'
       })
   }, [])
 

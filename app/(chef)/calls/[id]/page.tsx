@@ -1,4 +1,4 @@
-// Call detail page — prep panel, status actions, outcome logging
+// Call detail page - prep panel, status actions, outcome logging
 
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'

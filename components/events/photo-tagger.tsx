@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 'use client'
 
-// PhotoTagger — Photo grid with AI-suggested tag chips.
+// PhotoTagger - Photo grid with AI-suggested tag chips.
 // Displays photos with existing tags, lets the chef request tag suggestions
 // per photo via suggestPhotoTags(url), then confirm or reject each suggestion
 // via confirmPhotoTag(photoId, tags). Tags are displayed as chips below each photo.

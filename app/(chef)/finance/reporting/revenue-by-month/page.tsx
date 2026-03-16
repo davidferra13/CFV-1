@@ -103,7 +103,7 @@ export default async function RevenueByMonthPage() {
                   {formatCurrency(month.revenue)}
                 </TableCell>
                 <TableCell className="text-red-600 text-sm">
-                  {month.refunds > 0 ? `−${formatCurrency(month.refunds)}` : '—'}
+                  {month.refunds > 0 ? `−${formatCurrency(month.refunds)}` : '-'}
                 </TableCell>
                 <TableCell
                   className={`font-semibold text-sm ${month.revenue - month.refunds > 0 ? 'text-stone-100' : 'text-stone-400'}`}

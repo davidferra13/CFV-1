@@ -1,6 +1,6 @@
 // Root Layout Error Boundary
 // Catches errors that app/error.tsx cannot (e.g. errors in the root layout itself).
-// This is a standalone page — it cannot use the root layout's styles or components,
+// This is a standalone page - it cannot use the root layout's styles or components,
 // so it includes its own <html> and <body> tags with inline styles.
 'use client'
 
@@ -8,7 +8,7 @@ import { useEffect } from 'react'
 
 /**
  * Report an error to Sentry via the lightweight API route.
- * Non-blocking — failures are silently swallowed.
+ * Non-blocking - failures are silently swallowed.
  */
 function reportToSentry(error: Error & { digest?: string }) {
   try {
@@ -23,7 +23,7 @@ function reportToSentry(error: Error & { digest?: string }) {
         tags: { boundary: 'global-root' },
       }),
     }).catch(() => {
-      // Swallow — reporting must never affect the user
+      // Swallow - reporting must never affect the user
     })
   } catch {
     // Swallow

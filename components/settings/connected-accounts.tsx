@@ -1,4 +1,4 @@
-// Connected Accounts — Gmail connection management UI
+// Connected Accounts - Gmail connection management UI
 'use client'
 
 import { useState } from 'react'

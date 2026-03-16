@@ -133,7 +133,7 @@ export function StaffBriefingAIPanel({ eventId }: { eventId: string }) {
       )}
 
       <p className="text-[11px] text-stone-400">
-        Draft · Review before sharing with staff — edit allergen section with extra care
+        Draft · Review before sharing with staff - edit allergen section with extra care
       </p>
     </div>
   )

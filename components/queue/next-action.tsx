@@ -1,4 +1,4 @@
-// Next Action — Hero card for the single most important queue item
+// Next Action - Hero card for the single most important queue item
 // Server component. Prominent visual treatment to draw the chef's eye.
 
 import Link from 'next/link'

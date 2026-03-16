@@ -1,4 +1,4 @@
-// Activity Tracker — Client-side component for recording page views
+// Activity Tracker - Client-side component for recording page views
 // Fires a POST to /api/activity/track on mount. Non-blocking, fire-and-forget.
 'use client'
 
@@ -12,7 +12,12 @@ interface ActivityTrackerProps {
   metadata?: Record<string, unknown>
 }
 
-export function ActivityTracker({ eventType, entityType, entityId, metadata }: ActivityTrackerProps) {
+export function ActivityTracker({
+  eventType,
+  entityType,
+  entityId,
+  metadata,
+}: ActivityTrackerProps) {
   useEffect(() => {
     fetch('/api/activity/track', {
       method: 'POST',

@@ -3,7 +3,7 @@
 // Event Financial Summary View Component
 // Displays the complete financial picture for a single dinner.
 // 7 sections per spec: Header, Revenue, Costs, Margins, Time, Mileage, Comparison.
-// Not anxiety-inducing — neutral data presentation, no red/green grading on margins.
+// Not anxiety-inducing - neutral data presentation, no red/green grading on margins.
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
@@ -18,7 +18,7 @@ function formatCents(cents: number): string {
 }
 
 function formatMinutes(minutes: number | null): string {
-  if (!minutes || minutes === 0) return '—'
+  if (!minutes || minutes === 0) return '-'
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
   if (h === 0) return `${m}m`
@@ -76,7 +76,7 @@ export function FinancialSummaryView({ data }: Props) {
   const [, startTransition] = useTransition()
 
   const isDraft = pendingItems.length > 0
-  const statusLabel = isDraft ? `DRAFT — ${pendingItems.join(', ')}` : 'FINAL'
+  const statusLabel = isDraft ? `DRAFT - ${pendingItems.join(', ')}` : 'FINAL'
 
   const handleSaveMileage = () => {
     const miles = parseFloat(mileageInput)
@@ -146,7 +146,7 @@ export function FinancialSummaryView({ data }: Props) {
         />
         <DataRow
           label="Tip / gratuity"
-          value={revenue.tipCents > 0 ? formatCents(revenue.tipCents) : '—'}
+          value={revenue.tipCents > 0 ? formatCents(revenue.tipCents) : '-'}
         />
         <DataRow label="Total received" value={formatCents(revenue.totalReceivedCents)} />
         {revenue.varianceCents !== 0 && (
@@ -269,7 +269,7 @@ export function FinancialSummaryView({ data }: Props) {
             <DataRow label="Miles driven" value={`${mileage.miles} mi`} />
             <DataRow
               label="IRS deduction value"
-              value={mileage.deductionValueCents ? formatCents(mileage.deductionValueCents) : '—'}
+              value={mileage.deductionValueCents ? formatCents(mileage.deductionValueCents) : '-'}
               sub={`${mileage.miles} mi × $${(mileage.irsMileageRateCentsPerMile / 100).toFixed(2)}`}
             />
           </>

@@ -131,10 +131,10 @@ export default async function ChefMenusPage() {
                   <TableCell className="text-stone-400 text-sm">
                     {menu.service_style
                       ? (SERVICE_STYLE_LABELS[menu.service_style] ?? menu.service_style)
-                      : '—'}
+                      : '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {menu.cuisine_type || '—'}
+                    {menu.cuisine_type || '-'}
                   </TableCell>
                   <TableCell>
                     {menu.is_template ? (
@@ -142,7 +142,7 @@ export default async function ChefMenusPage() {
                         Template
                       </span>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">

@@ -1,6 +1,6 @@
 'use client'
 
-// Admin Direct Email Form — send a one-off email to any address
+// Admin Direct Email Form - send a one-off email to any address
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'

@@ -19,7 +19,7 @@ export function InboxUnreadBadge() {
         const n = await getUnreadThreadCount()
         if (mounted) setCount(n)
       } catch {
-        // Silently fail — badge is non-critical
+        // Silently fail - badge is non-critical
       }
     }
 

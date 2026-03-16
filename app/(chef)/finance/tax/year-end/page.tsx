@@ -116,7 +116,7 @@ export default async function YearEndTaxPage({
                   <div>
                     <p className="font-medium text-stone-200">Mileage Deduction</p>
                     <p className="text-xs text-stone-500">
-                      Line 9 — {taxData.mileage.totalMiles.toFixed(1)} mi × $
+                      Line 9 - {taxData.mileage.totalMiles.toFixed(1)} mi × $
                       {(taxData.mileage.irsRateCentsPerMile / 100).toFixed(2)}/mi
                     </p>
                   </div>
@@ -197,7 +197,7 @@ export default async function YearEndTaxPage({
             ))}
           </div>
           <div className="mt-4">
-            <Badge variant="warning">Estimates only — consult a licensed tax professional</Badge>
+            <Badge variant="warning">Estimates only - consult a licensed tax professional</Badge>
           </div>
         </CardContent>
       </Card>

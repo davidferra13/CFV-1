@@ -6,7 +6,7 @@ import { IntelligenceHubContent } from '@/components/intelligence/intelligence-h
 
 export const metadata: Metadata = {
   title: 'Intelligence Hub - ChefFlow',
-  description: 'Your business brain — 10 deterministic intelligence engines, zero AI dependency',
+  description: 'Your business brain - 10 deterministic intelligence engines, zero AI dependency',
 }
 
 function LoadingSkeleton() {
@@ -28,7 +28,7 @@ export default async function IntelligenceHubPage() {
         <div>
           <h1 className="text-2xl font-bold">Intelligence Hub</h1>
           <p className="text-muted-foreground mt-1">
-            Your business brain — 10 intelligence engines working for you. All deterministic, all
+            Your business brain - 10 intelligence engines working for you. All deterministic, all
             instant, all from your real data.
           </p>
         </div>

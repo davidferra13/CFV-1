@@ -1,4 +1,4 @@
-// Reviews Loading Skeleton — header + stacked review cards
+// Reviews Loading Skeleton - header + stacked review cards
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ContextLoader } from '@/components/ui/context-loader'
 

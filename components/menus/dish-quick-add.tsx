@@ -133,7 +133,7 @@ export function DishQuickAdd({ onDishAdded }: DishQuickAddProps) {
       </form>
       {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
       <p className="text-xs text-stone-600 mt-2">
-        Press Enter to add and keep typing — build your index from memory
+        Press Enter to add and keep typing - build your index from memory
       </p>
     </Card>
   )

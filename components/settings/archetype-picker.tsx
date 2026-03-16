@@ -72,7 +72,7 @@ export function ArchetypePicker({
       <div>
         <h3 className="text-lg font-semibold text-white mb-1">Portal Layout Presets</h3>
         <p className="text-sm text-stone-400 mb-4">
-          Switch your entire navigation layout to match your chef type. Nothing is locked out — this
+          Switch your entire navigation layout to match your chef type. Nothing is locked out - this
           just rearranges what you see by default.
         </p>
 

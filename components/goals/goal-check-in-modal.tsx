@@ -35,7 +35,7 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
         })
         trackAction(
           'Logged goal progress',
-          `+${parsedValue} ${unit}${parsedValue === 1 ? '' : 's'} — ${goal.label}`
+          `+${parsedValue} ${unit}${parsedValue === 1 ? '' : 's'} - ${goal.label}`
         )
         onClose()
       } catch (err) {

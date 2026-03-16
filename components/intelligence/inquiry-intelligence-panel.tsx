@@ -97,7 +97,7 @@ export async function InquiryIntelligencePanel(props: InquiryIntelligencePanelPr
             <div className="rounded-lg border border-stone-700/40 bg-stone-900 p-3">
               <p className="text-xs text-stone-500 mb-1">Avg Time to Convert</p>
               <p className="text-2xl font-bold text-stone-100">
-                {context.avgDaysToConvert ? `${context.avgDaysToConvert}d` : '—'}
+                {context.avgDaysToConvert ? `${context.avgDaysToConvert}d` : '-'}
               </p>
               <p className="text-xs text-stone-500 mt-0.5">
                 {context.avgDaysToConvert ? 'average for similar inquiries' : 'Not enough data yet'}

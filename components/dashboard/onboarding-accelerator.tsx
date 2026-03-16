@@ -36,7 +36,7 @@ export function OnboardingAccelerator({
       id: 'client',
       label: 'Import your contacts',
       detail:
-        'Drop a CSV from Google Contacts, iPhone, or any spreadsheet — or paste a brain dump.',
+        'Drop a CSV from Google Contacts, iPhone, or any spreadsheet - or paste a brain dump.',
       href: '/import?mode=csv',
       done: clientCount > 0,
     },
@@ -78,7 +78,7 @@ export function OnboardingAccelerator({
               Bring your business in
             </CardTitle>
             <p className="mt-1 text-sm text-stone-300">
-              Import your contacts and history first — then use ChefFlow for everything going
+              Import your contacts and history first - then use ChefFlow for everything going
               forward.
             </p>
           </div>

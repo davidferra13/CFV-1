@@ -1,6 +1,6 @@
 // Server component wrapper for BetaSurveyBanner.
 // Checks if there's an active survey the user hasn't submitted,
-// and renders the client banner if so. Non-blocking — fails silently.
+// and renders the client banner if so. Non-blocking - fails silently.
 
 import { getActiveSurvey, getMyBetaSurveyStatus } from '@/lib/beta-survey/actions'
 import { BetaSurveyBannerClient } from './beta-survey-banner'
@@ -20,13 +20,13 @@ export async function BetaSurveyBannerWrapper({ href }: BetaSurveyBannerWrapperP
       const status = await getMyBetaSurveyStatus(type)
       if (status.hasSubmitted) continue
 
-      // Found an active survey the user hasn't submitted — show banner
+      // Found an active survey the user hasn't submitted - show banner
       return (
         <BetaSurveyBannerClient surveySlug={survey.slug} surveyTitle={survey.title} href={href} />
       )
     }
   } catch {
-    // Non-blocking — if anything fails, don't show the banner
+    // Non-blocking - if anything fails, don't show the banner
   }
 
   return null

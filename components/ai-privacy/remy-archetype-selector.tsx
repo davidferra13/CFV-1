@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * RemyArchetypeSelector — lets chefs pick Remy's personality archetype.
+ * RemyArchetypeSelector - lets chefs pick Remy's personality archetype.
  * Shows a grid of archetype cards with emoji, name, tagline, and description.
  * The selected archetype is saved to ai_preferences.remy_archetype.
  */
@@ -48,7 +48,7 @@ export function RemyArchetypeSelector({ currentArchetype, onSaved }: Props) {
       <div>
         <h3 className="text-lg font-semibold text-stone-100">Remy&apos;s Personality</h3>
         <p className="text-sm text-stone-500 mt-1">
-          Choose how Remy talks to you. This changes tone and energy — not what Remy knows or can
+          Choose how Remy talks to you. This changes tone and energy - not what Remy knows or can
           do.
         </p>
       </div>

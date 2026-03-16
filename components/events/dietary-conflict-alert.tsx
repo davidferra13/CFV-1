@@ -1,6 +1,6 @@
 'use client'
 
-// DietaryConflictAlert — Warning banner for dietary conflicts on an event.
+// DietaryConflictAlert - Warning banner for dietary conflicts on an event.
 // Displays guest-allergy-dish conflicts grouped by severity.
 // Chef can acknowledge each conflict to indicate awareness.
 // Critical = red, Warning = amber, Info = blue.

@@ -65,13 +65,13 @@ export default async function StocksPage() {
           <AddComponentForm defaultCategory="base" dishes={dishes} />
         </div>
         <p className="text-stone-500 mt-1">
-          Stock, broth, fond, jus, and fumet — the foundations of your cooking
+          Stock, broth, fond, jus, and fumet - the foundations of your cooking
         </p>
       </div>
 
       <Card className="p-4 bg-stone-800 border-stone-700">
         <p className="text-sm text-stone-400">
-          Stocks are matched by name — any recipe or menu component containing &quot;stock&quot;,
+          Stocks are matched by name - any recipe or menu component containing &quot;stock&quot;,
           &quot;broth&quot;, &quot;fond&quot;, &quot;jus&quot;, or similar terms appears here.
         </p>
       </Card>
@@ -101,15 +101,15 @@ export default async function StocksPage() {
                       </Link>
                     </TableCell>
                     <TableCell className="text-stone-500 text-sm">
-                      {recipe.prep_time_minutes ? `${recipe.prep_time_minutes}m` : '—'}
+                      {recipe.prep_time_minutes ? `${recipe.prep_time_minutes}m` : '-'}
                     </TableCell>
                     <TableCell className="text-stone-500 text-sm">
-                      {recipe.cook_time_minutes ? `${recipe.cook_time_minutes}m` : '—'}
+                      {recipe.cook_time_minutes ? `${recipe.cook_time_minutes}m` : '-'}
                     </TableCell>
                     <TableCell className="text-stone-500 text-sm">
                       {recipe.total_cost_cents != null
                         ? formatCurrency(recipe.total_cost_cents)
-                        : '—'}
+                        : '-'}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -137,7 +137,7 @@ export default async function StocksPage() {
                   <TableRow key={comp.id}>
                     <TableCell className="font-medium text-stone-100">{comp.name}</TableCell>
                     <TableCell className="text-stone-500 text-sm">
-                      {comp.dish_name ?? '—'}
+                      {comp.dish_name ?? '-'}
                     </TableCell>
                     <TableCell className="text-stone-500 text-sm">
                       {comp.menu_id ? (
@@ -148,7 +148,7 @@ export default async function StocksPage() {
                           {comp.menu_name ?? 'View'}
                         </Link>
                       ) : (
-                        '—'
+                        '-'
                       )}
                     </TableCell>
                     <TableCell>

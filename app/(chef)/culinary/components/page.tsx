@@ -128,7 +128,7 @@ export default async function ComponentsPage() {
                       {comp.category}
                     </span>
                   </TableCell>
-                  <TableCell className="text-stone-400 text-sm">{comp.dish_name || '—'}</TableCell>
+                  <TableCell className="text-stone-400 text-sm">{comp.dish_name || '-'}</TableCell>
                   <TableCell className="text-stone-400 text-sm">
                     {comp.menu_id ? (
                       <Link
@@ -138,7 +138,7 @@ export default async function ComponentsPage() {
                         {comp.menu_name || 'View Menu'}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell>
@@ -161,7 +161,7 @@ export default async function ComponentsPage() {
                           : 'Make ahead'}
                       </span>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell>
@@ -172,7 +172,7 @@ export default async function ComponentsPage() {
                         {TRANSPORT_LABELS[comp.transport_category] ?? comp.transport_category}
                       </span>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                 </TableRow>

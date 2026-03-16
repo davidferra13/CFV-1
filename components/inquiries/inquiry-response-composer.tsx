@@ -183,7 +183,7 @@ export function InquiryResponseComposer({
         {draftState && (
           <div className="mt-4 bg-stone-800 rounded-lg p-4">
             <p className="text-xs text-stone-500 mb-2">
-              Preview only — cannot send without client email
+              Preview only - cannot send without client email
             </p>
             <p className="text-sm whitespace-pre-wrap">{draftState.draft}</p>
           </div>

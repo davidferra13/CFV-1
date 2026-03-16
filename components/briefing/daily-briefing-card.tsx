@@ -1,6 +1,6 @@
 'use client'
 
-// DailyBriefingCard — Morning summary card for the chef dashboard.
+// DailyBriefingCard - Morning summary card for the chef dashboard.
 // Shows events today, tasks due, weekly revenue, and upcoming deadlines.
 // If no briefing data is passed (null), shows a "Generate Briefing" button.
 // Calls generateDailyBriefing() from daily-actions.
@@ -47,7 +47,7 @@ export function DailyBriefingCard({ briefing: initialBriefing }: Props) {
     })
   }
 
-  // Empty state — no briefing generated yet
+  // Empty state - no briefing generated yet
   if (!briefing) {
     return (
       <Card className="border-dashed border-stone-300">
@@ -206,7 +206,7 @@ export function DailyBriefingCard({ briefing: initialBriefing }: Props) {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-stone-700 truncate">
                       {deadline.deadlineType}
-                      <span className="text-stone-400"> — </span>
+                      <span className="text-stone-400"> - </span>
                       <span className="text-stone-500">{deadline.occasion ?? 'Event'}</span>
                     </p>
                   </div>

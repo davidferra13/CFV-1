@@ -21,7 +21,7 @@ export default async function RetainersPage() {
     0
   )
 
-  // Count overdue periods across all retainers — would require a separate query,
+  // Count overdue periods across all retainers - would require a separate query,
   // but we can approximate from the retainer list view by noting which have billing issues.
   // For now, we surface the count of active retainers and MRR.
 

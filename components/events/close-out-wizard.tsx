@@ -32,7 +32,7 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
     <div className="mb-8">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium text-stone-400">
-          Step {current + 1} of {total} — {STEPS[current]}
+          Step {current + 1} of {total} - {STEPS[current]}
         </span>
         <span className="text-sm text-stone-400">{Math.round(((current + 1) / total) * 100)}%</span>
       </div>
@@ -136,7 +136,7 @@ function TipStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
 
   const { existingTip, event, financial } = data
 
-  // Already recorded — show confirmation
+  // Already recorded - show confirmation
   if (existingTip) {
     return (
       <div>
@@ -218,7 +218,7 @@ function TipStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
 
       {hasTip === null && (
         <div className="flex gap-3">
-          <Button onClick={() => setHasTip(true)}>Yes — enter amount</Button>
+          <Button onClick={() => setHasTip(true)}>Yes - enter amount</Button>
           <Button variant="secondary" onClick={onNext}>
             No tip tonight
           </Button>
@@ -272,7 +272,7 @@ function ReceiptsStep({ data, onNext }: { data: CloseOutData; onNext: () => void
       try {
         await logActualGroceryCost(event.id, Math.round(parseFloat(costStr) * 100))
       } catch {
-        // Non-blocking — don't stop the chef
+        // Non-blocking - don't stop the chef
       } finally {
         setLogPending(false)
       }
@@ -280,14 +280,14 @@ function ReceiptsStep({ data, onNext }: { data: CloseOutData; onNext: () => void
     onNext()
   }
 
-  // Grocery cost input — always shown regardless of receipts state
+  // Grocery cost input - always shown regardless of receipts state
   const groceryCostSection = (
     <div className="mt-6 border-t border-stone-800 pt-6">
       <label className="block text-sm font-medium text-stone-300 mb-1">
         What did you actually spend at the grocery store?
       </label>
       <p className="text-xs text-stone-400 mb-3">
-        Helps calibrate future grocery estimate accuracy. Optional — skip if you did not run a
+        Helps calibrate future grocery estimate accuracy. Optional - skip if you did not run a
         grocery quote.
       </p>
       <div className="relative w-48">
@@ -396,7 +396,7 @@ function ReceiptsStep({ data, onNext }: { data: CloseOutData; onNext: () => void
 
 // ─── Step 2: Mileage ──────────────────────────────────────────────────────────
 
-const IRS_RATE = 0.7 // $0.70/mile — keep in sync with financial-summary-actions.ts
+const IRS_RATE = 0.7 // $0.70/mile - keep in sync with financial-summary-actions.ts
 
 function MileageStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
   const { event, financial } = data
@@ -428,7 +428,7 @@ function MileageStep({ data, onNext }: { data: CloseOutData; onNext: () => void 
     <div>
       <h2 className="text-xl font-semibold text-stone-100 mb-2">Miles driven tonight</h2>
       <p className="text-stone-500 text-sm mb-6">
-        Round trip — home to store(s) to client and back. Used for your IRS deduction.
+        Round trip - home to store(s) to client and back. Used for your IRS deduction.
       </p>
 
       {error && (
@@ -464,7 +464,7 @@ function MileageStep({ data, onNext }: { data: CloseOutData; onNext: () => void 
           {event.mileageMiles !== null ? 'Update & Continue' : 'Save & Continue'}
         </Button>
         <Button variant="secondary" onClick={onNext} disabled={loading}>
-          0 miles — skip
+          0 miles - skip
         </Button>
       </div>
     </div>
@@ -657,7 +657,7 @@ function CelebrationAndFollowUp({
       {/* Follow-up prompt */}
       <div className="rounded-xl border border-stone-700 bg-stone-800 p-5 mb-6">
         <p className="text-sm font-semibold text-stone-200 mb-1">
-          One last thing — send {event.clientFirstName} a thank you
+          One last thing - send {event.clientFirstName} a thank you
         </p>
         <p className="text-sm text-stone-500 mb-4">
           A short message goes a long way. Marks your follow-up as done in the dashboard.
@@ -735,7 +735,7 @@ function CloseStep({ data }: { data: CloseOutData }) {
       await markFollowUpSent(event.id)
       setFollowUpSent(true)
     } catch {
-      // Non-blocking — don't stop the chef
+      // Non-blocking - don't stop the chef
     } finally {
       setFollowUpLoading(false)
     }
@@ -843,7 +843,7 @@ function CloseStep({ data }: { data: CloseOutData }) {
       {financial.outstandingBalanceCents > 0 && (
         <Alert variant="warning" className="mb-6">
           Outstanding balance of {formatCurrency(financial.outstandingBalanceCents)} is still
-          unpaid. You can still close the event — mark the balance separately when received.
+          unpaid. You can still close the event - mark the balance separately when received.
         </Alert>
       )}
 
@@ -899,14 +899,14 @@ export function CloseOutWizard({ data }: { data: CloseOutData }) {
         {step === 4 && <CloseStep data={data} />}
       </div>
 
-      {/* Do this later link — visible on all steps except the final */}
+      {/* Do this later link - visible on all steps except the final */}
       {step < TOTAL_STEPS - 1 && (
         <div className="mt-8 pt-6 border-t border-stone-800 text-center">
           <Link
             href={`/events/${data.event.id}`}
             className="text-sm text-stone-400 hover:text-stone-400"
           >
-            Finish later — go back to event
+            Finish later - go back to event
           </Link>
         </div>
       )}

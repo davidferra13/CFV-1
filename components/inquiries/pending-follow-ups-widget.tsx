@@ -1,4 +1,4 @@
-// Pending Follow-Ups Widget — shows stale inquiries needing a nudge
+// Pending Follow-Ups Widget - shows stale inquiries needing a nudge
 // Dashboard placement: surfaces inquiries where the client has gone quiet
 
 import Link from 'next/link'

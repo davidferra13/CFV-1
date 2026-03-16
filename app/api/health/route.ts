@@ -1,7 +1,7 @@
 /**
  * GET /api/health
  *
- * Public health check endpoint — no authentication required.
+ * Public health check endpoint - no authentication required.
  * Returns 200 when the application is running and can reach the database.
  * Returns 503 if any critical dependency is unavailable.
  *
@@ -38,10 +38,10 @@ const REQUIRED_ENV_VARS = [
 ]
 
 export const runtime = 'nodejs'
-// No caching — health checks must always be fresh
+// No caching - health checks must always be fresh
 export const dynamic = 'force-dynamic'
 
-// HEAD — lightweight connectivity check for offline detection (no DB query)
+// HEAD - lightweight connectivity check for offline detection (no DB query)
 export async function HEAD() {
   return new Response(null, {
     status: 200,
@@ -100,13 +100,13 @@ export async function GET(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
-    // Lightweight query — just fetch one row from a small, always-present table
+    // Lightweight query - just fetch one row from a small, always-present table
     const { error } = await supabase.from('chefs').select('id').limit(1).maybeSingle()
 
     latencyMs.database = Date.now() - dbStart
 
     if (error && error.code !== 'PGRST116') {
-      // PGRST116 = "no rows" — perfectly fine, DB is reachable
+      // PGRST116 = "no rows" - perfectly fine, DB is reachable
       checks.database = 'error'
       overallStatus = 'error'
     } else {
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
     overallStatus = 'error'
   }
 
-  // --- 3. Upstash Redis check (optional — only if configured) ---
+  // --- 3. Upstash Redis check (optional - only if configured) ---
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
     try {
       const redisStart = Date.now()

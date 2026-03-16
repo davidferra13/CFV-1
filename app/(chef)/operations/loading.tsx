@@ -19,7 +19,7 @@ export default function OperationsLoading() {
         ))}
       </div>
 
-      {/* Nav tiles — 2 columns */}
+      {/* Nav tiles - 2 columns */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[1, 2].map((i) => (
           <div key={i} className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">

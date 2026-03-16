@@ -1,9 +1,9 @@
 'use client'
 
-// BurnoutIndicatorCard — Wellbeing Check dashboard widget
+// BurnoutIndicatorCard - Wellbeing Check dashboard widget
 // Displays the chef's current workload health as a private, non-judgmental signal.
 // Labeled "Wellbeing Check" (not "burnout") to reduce stigma.
-// Only the chef ever sees this — it is never exposed to clients or staff.
+// Only the chef ever sees this - it is never exposed to clients or staff.
 
 import type { BurnoutLevel } from '@/lib/wellbeing/burnout-score'
 
@@ -59,7 +59,7 @@ export function BurnoutIndicatorCard({ level, suggestion }: Props) {
 
       <p className="text-sm text-stone-700 leading-snug">{suggestion}</p>
 
-      <p className="mt-2 text-xs text-stone-300 italic">Private — only you see this</p>
+      <p className="mt-2 text-xs text-stone-300 italic">Private - only you see this</p>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 // Scheduled Loyalty Expiry Cron Endpoint
-// GET /api/scheduled/loyalty-expiry — invoked by Vercel Cron Job
-// POST /api/scheduled/loyalty-expiry — invoked manually or by external schedulers
+// GET /api/scheduled/loyalty-expiry - invoked by Vercel Cron Job
+// POST /api/scheduled/loyalty-expiry - invoked manually or by external schedulers
 //
 // Enforces expiry on client_incentives (vouchers + gift cards).
 // Sets is_active = false on any incentive whose expires_at has passed.
@@ -40,7 +40,7 @@ async function handleLoyaltyExpiry(request: NextRequest): Promise<NextResponse> 
     .select('id')
 
   if (waitlistError) {
-    // Non-fatal — log and continue
+    // Non-fatal - log and continue
     console.error('[Loyalty Expiry Cron] Failed to expire waitlist entries:', waitlistError)
   }
 

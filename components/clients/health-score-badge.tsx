@@ -1,4 +1,4 @@
-// ClientHealthBadge — Score pill shown on client cards and the client detail page.
+// ClientHealthBadge - Score pill shown on client cards and the client detail page.
 
 import type { ClientHealthTier } from '@/lib/clients/health-score'
 import { TIER_LABELS, TIER_COLORS } from '@/lib/clients/health-score-utils'

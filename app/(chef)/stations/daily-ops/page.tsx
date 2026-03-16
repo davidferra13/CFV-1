@@ -1,5 +1,5 @@
-// Daily Ops Command Center — The ONE page the chef opens every morning.
-// Shows full kitchen state: stations, tasks, orders, alerts — all at a glance.
+// Daily Ops Command Center - The ONE page the chef opens every morning.
+// Shows full kitchen state: stations, tasks, orders, alerts - all at a glance.
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Daily Ops — ChefFlow' }
+export const metadata: Metadata = { title: 'Daily Ops | ChefFlow' }
 
 // ============================================
 // HELPERS
@@ -487,11 +487,11 @@ export default async function DailyOpsPage() {
         </section>
       )}
 
-      {/* No alerts — all clear */}
+      {/* No alerts - all clear */}
       {data.alerts.length === 0 && data.stations.length > 0 && (
         <Card>
           <CardContent className="py-6 text-center">
-            <p className="text-emerald-400 font-medium">All clear — no alerts today</p>
+            <p className="text-emerald-400 font-medium">All clear - no alerts today</p>
             <p className="text-sm text-stone-500 mt-1">
               No 86'd items, no expirations, and all stock levels are healthy.
             </p>

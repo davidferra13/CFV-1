@@ -711,7 +711,7 @@ export class ThinkingBlockFilter {
         }
         return before || ''
       }
-      // No think tag — might be partial "<thi" at end
+      // No think tag - might be partial "<thi" at end
       if (this.buffer.length > 7 && !this.buffer.endsWith('<')) {
         const safe = this.buffer.includes('<')
           ? this.buffer.substring(0, this.buffer.lastIndexOf('<'))
@@ -724,7 +724,7 @@ export class ThinkingBlockFilter {
       return out
     }
 
-    // Inside think block — look for closing tag
+    // Inside think block - look for closing tag
     const closeIdx = this.buffer.indexOf('</think>')
     if (closeIdx !== -1) {
       this.buffer = this.buffer.substring(closeIdx + '</think>'.length)

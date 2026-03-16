@@ -1,4 +1,4 @@
-// Partner Contribution Report — shared layout
+// Partner Contribution Report - shared layout
 // Used by:
 //   - app/(chef)/partners/[id]/report/page.tsx (chef, authenticated)
 //   - app/(public)/partner-report/[token]/page.tsx (partner, public)
@@ -192,7 +192,7 @@ export function PartnerContributionReport({
                           <td className="py-1.5 text-stone-300">
                             {format(new Date(evt.event_date), 'MMM d, yyyy')}
                           </td>
-                          <td className="py-1.5 text-stone-300">{evt.occasion || '—'}</td>
+                          <td className="py-1.5 text-stone-300">{evt.occasion || '-'}</td>
                           <td className="py-1.5 text-right text-stone-300">{evt.guest_count}</td>
                           <td className="py-1.5">
                             <Badge variant={evt.status === 'completed' ? 'success' : 'default'}>
@@ -231,7 +231,7 @@ export function PartnerContributionReport({
                   <td className="py-2 text-stone-300">
                     {format(new Date(evt.event_date), 'MMM d, yyyy')}
                   </td>
-                  <td className="py-2 text-stone-300">{evt.occasion || '—'}</td>
+                  <td className="py-2 text-stone-300">{evt.occasion || '-'}</td>
                   <td className="py-2 text-right text-stone-300">{evt.guest_count}</td>
                   <td className="py-2">
                     <Badge variant={evt.status === 'completed' ? 'success' : 'default'}>

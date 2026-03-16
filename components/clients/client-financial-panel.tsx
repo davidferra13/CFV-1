@@ -208,7 +208,7 @@ export function ClientFinancialPanel({ eventBreakdown, ledgerEntries, summary }:
                           )}
                         </td>
                         <td className="py-3 pr-4 text-stone-400 whitespace-nowrap">
-                          {event.eventDate ? format(new Date(event.eventDate), 'MMM d, yyyy') : '—'}
+                          {event.eventDate ? format(new Date(event.eventDate), 'MMM d, yyyy') : '-'}
                         </td>
                         <td className="py-3 pr-4">
                           <span className={`capitalize text-xs font-medium ${statusClass}`}>
@@ -218,19 +218,19 @@ export function ClientFinancialPanel({ eventBreakdown, ledgerEntries, summary }:
                         <td className="py-3 pr-4 text-right font-mono text-stone-300">
                           {event.quotedPriceCents > 0
                             ? formatCurrency(event.quotedPriceCents)
-                            : '—'}
+                            : '-'}
                         </td>
                         <td className="py-3 pr-4 text-right font-mono text-stone-400">
                           {event.depositAmountCents > 0
                             ? formatCurrency(event.depositAmountCents)
-                            : '—'}
+                            : '-'}
                         </td>
                         <td className="py-3 pr-4 text-right font-mono text-green-700">
-                          {event.totalPaidCents > 0 ? formatCurrency(event.totalPaidCents) : '—'}
+                          {event.totalPaidCents > 0 ? formatCurrency(event.totalPaidCents) : '-'}
                         </td>
                         <td className="py-3 pr-4 text-right font-mono">
                           {isCancelled ? (
-                            <span className="text-stone-400">—</span>
+                            <span className="text-stone-400">-</span>
                           ) : event.outstandingBalanceCents > 0 ? (
                             <span className="text-red-700 font-semibold">
                               {formatCurrency(event.outstandingBalanceCents)}
@@ -340,7 +340,7 @@ export function ClientFinancialPanel({ eventBreakdown, ledgerEntries, summary }:
                               {eventData.occasion || 'Event'}
                             </Link>
                           ) : (
-                            <span className="text-stone-400">—</span>
+                            <span className="text-stone-400">-</span>
                           )}
                         </td>
                         <td className="py-3 pr-4">
@@ -357,7 +357,7 @@ export function ClientFinancialPanel({ eventBreakdown, ledgerEntries, summary }:
                           {formatCurrency(Math.abs(entry.amount_cents))}
                         </td>
                         <td className="py-3 text-stone-400 max-w-[200px] truncate">
-                          {entry.description || '—'}
+                          {entry.description || '-'}
                         </td>
                       </tr>
                     )

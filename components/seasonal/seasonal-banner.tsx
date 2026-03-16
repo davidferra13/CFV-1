@@ -1,4 +1,4 @@
-// Seasonal Banner — Recipe Library Integration
+// Seasonal Banner - Recipe Library Integration
 // Shows the active season's notes and what ingredients are currently available.
 // Renders nothing if no active palette.
 

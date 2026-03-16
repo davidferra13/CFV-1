@@ -148,7 +148,7 @@ export default function GalagaGame() {
       e.preventDefault()
       const s = stateRef.current
 
-      // Game over — tap to restart
+      // Game over - tap to restart
       if (!s.running) {
         reset()
         return

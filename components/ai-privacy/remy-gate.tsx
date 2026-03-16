@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * RemyGate — wraps any Remy-powered UI.
+ * RemyGate - wraps any Remy-powered UI.
  * If the chef hasn't completed the AI onboarding, shows a prompt
  * directing them to the AI & Privacy settings page first.
  */
@@ -51,7 +51,7 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
         <h2 className="text-xl font-bold text-stone-100">Set Up Remy</h2>
         <p className="text-stone-500 text-sm leading-relaxed">
           Before using Remy, take a quick look at how it works. Remy runs on ChefFlow&apos;s private
-          infrastructure — your conversations are never sent to external AI services.
+          infrastructure - your conversations are never sent to external AI services.
         </p>
       </div>
 

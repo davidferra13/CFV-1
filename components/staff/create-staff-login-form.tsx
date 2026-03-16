@@ -74,7 +74,7 @@ export function CreateStaffLoginForm({ staffMemberId, currentEmail, hasLogin }: 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <p className="text-sm text-stone-400">
-        Create a login so this staff member can access the staff portal — view schedules, tasks,
+        Create a login so this staff member can access the staff portal - view schedules, tasks,
         recipes, and station clipboards.
       </p>
 

@@ -347,7 +347,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
         </button>
       </div>
 
-      {/* Smart Import — Input Phase */}
+      {/* Smart Import - Input Phase */}
       {mode === 'import' && phase === 'input' && (
         <Card>
           <CardHeader>
@@ -378,7 +378,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
         </Card>
       )}
 
-      {/* Smart Import — Review Phase */}
+      {/* Smart Import - Review Phase */}
       {mode === 'import' && phase === 'review' && parsed && (
         <div className="space-y-4">
           <div className="flex items-center gap-3">

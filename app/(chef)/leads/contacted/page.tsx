@@ -47,7 +47,7 @@ export default async function ContactedLeadsPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Website leads in active communication — claimed and being nurtured
+          Website leads in active communication - claimed and being nurtured
         </p>
       </div>
 
@@ -78,7 +78,7 @@ export default async function ContactedLeadsPage() {
               {inquiries.map((inquiry: any) => (
                 <TableRow key={inquiry.id}>
                   <TableCell className="font-medium">
-                    <p>{inquiry.client?.full_name ?? '—'}</p>
+                    <p>{inquiry.client?.full_name ?? '-'}</p>
                     {inquiry.client?.email && (
                       <p className="text-xs text-stone-400 mt-0.5">{inquiry.client.email}</p>
                     )}
@@ -87,10 +87,10 @@ export default async function ContactedLeadsPage() {
                     {format(new Date(inquiry.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm capitalize">
-                    {inquiry.confirmed_occasion?.replace(/_/g, ' ') ?? '—'}
+                    {inquiry.confirmed_occasion?.replace(/_/g, ' ') ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {inquiry.confirmed_guest_count ?? '—'}
+                    {inquiry.confirmed_guest_count ?? '-'}
                   </TableCell>
                   <TableCell>
                     <span

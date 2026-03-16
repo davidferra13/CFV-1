@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { BackupChefList } from '@/components/safety/backup-chef-list'
 
-export const metadata: Metadata = { title: 'Backup Chef Protocol — ChefFlow' }
+export const metadata: Metadata = { title: 'Backup Chef Protocol | ChefFlow' }
 
 export default async function BackupChefPage() {
   const chef = await requireChef()
@@ -33,7 +33,7 @@ export default async function BackupChefPage() {
         <p className="text-sm text-amber-900">
           <span className="font-medium">Best practice:</span> Confirm availability with each backup
           chef at least once per quarter. Provide them access to your prep notes and client
-          preferences in advance — not in the middle of a crisis.
+          preferences in advance - not in the middle of a crisis.
         </p>
       </div>
 

@@ -52,14 +52,14 @@ export function KeyboardShortcutProvider({ children }: { children: React.ReactNo
 
     // --- Single-key shortcuts ---
 
-    // Escape — close help panel
+    // Escape - close help panel
     if (e.key === 'Escape') {
       setHelpOpen(false)
       lastKeyRef.current = null
       return
     }
 
-    // '?' — show help panel
+    // '?' - show help panel
     if (e.key === '?') {
       e.preventDefault()
       setHelpOpen((prev) => !prev)
@@ -67,7 +67,7 @@ export function KeyboardShortcutProvider({ children }: { children: React.ReactNo
       return
     }
 
-    // '/' — open search (dispatch custom event for search components to listen to)
+    // '/' - open search (dispatch custom event for search components to listen to)
     if (e.key === '/') {
       e.preventDefault()
       window.dispatchEvent(new CustomEvent('open-search'))
@@ -75,7 +75,7 @@ export function KeyboardShortcutProvider({ children }: { children: React.ReactNo
       return
     }
 
-    // Cmd+K or Ctrl+K — open Remy drawer (search uses "/" shortcut)
+    // Cmd+K or Ctrl+K - open Remy drawer (search uses "/" shortcut)
     if (key === 'k' && (e.metaKey || e.ctrlKey)) {
       // Let the RemyProvider's keydown handler handle this
       return
@@ -87,7 +87,7 @@ export function KeyboardShortcutProvider({ children }: { children: React.ReactNo
     const elapsed = now - prevTime
 
     if (prevKey && elapsed <= 1000) {
-      // We have a candidate chord — check for a match
+      // We have a candidate chord - check for a match
       const chord = chordsRef.current.find((c) => c.first === prevKey && c.second === key)
       if (chord) {
         e.preventDefault()

@@ -1,6 +1,6 @@
 'use client'
 
-// Clock Panel — clock in/out interface for event day staff.
+// Clock Panel - clock in/out interface for event day staff.
 // Shows active timers with elapsed time, allows clocking in/out of staff members.
 
 import { useState, useEffect, useTransition } from 'react'

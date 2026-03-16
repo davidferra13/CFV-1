@@ -1,4 +1,4 @@
-// Client Preview Page — lets chefs see exactly what their clients experience.
+// Client Preview Page - lets chefs see exactly what their clients experience.
 // Two tabs: Public Profile (inline render) and Client Portal (live data, read-only).
 // NOTE: We render the public profile inline (not via iframe) because next.config.js
 // sets X-Frame-Options: DENY globally, which blocks iframes of our own pages.
@@ -22,7 +22,7 @@ export default async function ClientPreviewPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-stone-100">Client Preview</h1>
         <p className="text-stone-400 mt-1">
-          See exactly what your clients experience — your public profile and their portal.
+          See exactly what your clients experience - your public profile and their portal.
         </p>
       </div>
 

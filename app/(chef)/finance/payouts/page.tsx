@@ -44,7 +44,7 @@ export default async function PayoutsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Payouts</h1>
         <p className="text-stone-500 mt-1">
-          How you actually receive your money — Stripe automatic transfers and manual offline
+          How you actually receive your money - Stripe automatic transfers and manual offline
           payments
         </p>
       </div>

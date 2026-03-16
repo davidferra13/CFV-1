@@ -1,4 +1,4 @@
-// Google Business OAuth: Step 2 — Exchange code for tokens, store connection
+// Google Business OAuth: Step 2 - Exchange code for tokens, store connection
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'

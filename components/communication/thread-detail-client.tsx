@@ -223,7 +223,7 @@ export function ThreadDetailClient({
         </div>
       </div>
 
-      {/* Unified Timeline — messages + system events interleaved */}
+      {/* Unified Timeline - messages + system events interleaved */}
       <div className="space-y-3">
         {events.length === 0 && (systemEvents ?? []).length === 0 ? (
           <div className="rounded-lg border border-stone-700 bg-stone-800 px-4 py-8 text-center text-sm text-stone-500">
@@ -337,7 +337,7 @@ export function ThreadDetailClient({
         <div ref={bottomRef} />
       </div>
 
-      {/* Connections Panel — shown when thread is not linked or has pending suggestions */}
+      {/* Connections Panel - shown when thread is not linked or has pending suggestions */}
       {(suggestions.length > 0 || (!linked_inquiry && !linked_event && primaryEventId)) && (
         <div className="rounded-xl border border-stone-700 bg-stone-800 p-4 space-y-3">
           <div className="text-sm font-medium text-stone-300">Connect this thread</div>

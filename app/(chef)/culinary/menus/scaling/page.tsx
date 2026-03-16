@@ -28,7 +28,7 @@ export default async function MenuScalingPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Menu Scaling</h1>
         <p className="text-stone-500 mt-1">
-          Menus with target guest counts — reference for quantity adjustments
+          Menus with target guest counts - reference for quantity adjustments
         </p>
       </div>
 
@@ -77,7 +77,7 @@ export default async function MenuScalingPage() {
                       {menu.target_guest_count}
                     </TableCell>
                     <TableCell className="text-stone-500 text-sm capitalize">
-                      {menu.service_style?.replace(/_/g, ' ') ?? '—'}
+                      {menu.service_style?.replace(/_/g, ' ') ?? '-'}
                     </TableCell>
                     <TableCell>
                       <span className="text-xs px-2 py-0.5 rounded-full bg-stone-800 text-stone-400 capitalize">
@@ -101,7 +101,7 @@ export default async function MenuScalingPage() {
       {menus.filter((m: any) => m.target_guest_count == null).length > 0 && (
         <p className="text-xs text-stone-400">
           {menus.filter((m: any) => m.target_guest_count == null).length} menus without a target
-          guest count —{' '}
+          guest count -{' '}
           <Link href="/culinary/menus" className="text-brand-600 hover:underline">
             view all menus
           </Link>

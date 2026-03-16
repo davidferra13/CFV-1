@@ -1,6 +1,6 @@
 'use client'
 
-// Pre-Event Checklist — client confirms dietary prefs, kitchen access, guest count
+// Pre-Event Checklist - client confirms dietary prefs, kitchen access, guest count
 // before chef begins day-of prep. Addresses #1 client complaint: preference misalignment.
 
 import { useState, useTransition } from 'react'
@@ -202,7 +202,7 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
             </div>
             <div>
               <div className="text-stone-500 text-xs mb-0.5">Guest Count</div>
-              <div className="font-medium text-stone-100">{event.guest_count ?? '—'} guests</div>
+              <div className="font-medium text-stone-100">{event.guest_count ?? '-'} guests</div>
             </div>
             {event.location_city && (
               <div className="col-span-2">
@@ -338,7 +338,7 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
           disabled={isPending}
           className="w-full sm:w-auto px-8"
         >
-          {isPending ? 'Confirming...' : 'Everything Looks Good — Confirm Details'}
+          {isPending ? 'Confirming...' : 'Everything Looks Good - Confirm Details'}
         </Button>
         <p className="text-xs text-stone-400 mt-3">
           Need to make changes?{' '}

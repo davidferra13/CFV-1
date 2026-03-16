@@ -33,7 +33,7 @@ export default async function SubstitutionsPage() {
       <Card className="p-4 bg-stone-800 border-stone-700">
         <p className="text-sm text-stone-400">
           Substitutions in ChefFlow are stored in each recipe&apos;s <strong>Adaptations</strong>{' '}
-          field. Edit a recipe to document common swaps — dairy-free alternatives, gluten-free
+          field. Edit a recipe to document common swaps - dairy-free alternatives, gluten-free
           versions, seasonal ingredient changes, etc.
         </p>
       </Card>

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Animation Test Lab — admin-only page for triggering any holiday or
+ * Animation Test Lab - admin-only page for triggering any holiday or
  * milestone animation on demand. Fully self-contained: does not touch
  * or interfere with the real HolidayOverlay / MilestoneOverlay components.
  */
@@ -187,7 +187,7 @@ function AprilFoolsLayer({ durationMs }: { durationMs: number }) {
 }
 
 // ---------------------------------------------------------------------------
-// Animation layer — keyed by parent so remounting = replay
+// Animation layer - keyed by parent so remounting = replay
 // ---------------------------------------------------------------------------
 
 function AnimLayer({ cfg, onDone }: { cfg: PlayConfig; onDone: () => void }) {
@@ -521,10 +521,10 @@ export default function AnimationsTestPage() {
         ))}
       </section>
 
-      {/* Animation layer — remounted on each trigger via animKey */}
+      {/* Animation layer - remounted on each trigger via animKey */}
       {playing && active && <AnimLayer key={animKey} cfg={active} onDone={handleDone} />}
 
-      {/* Milestone label banner — only for milestone animations */}
+      {/* Milestone label banner - only for milestone animations */}
       {playing && active?.isMilestone && (
         <MilestoneLabelBanner key={`label-${animKey}`} cfg={active} />
       )}

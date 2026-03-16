@@ -1,5 +1,5 @@
 // Invoice View Component
-// Screen-only invoice display — not a PDF.
+// Screen-only invoice display - not a PDF.
 // Shared between chef portal (/events/[id]/invoice) and client portal (/my-events/[id]/invoice).
 // Renders the 6 invoice sections: header, chef info, client info, line item, payment history, balance.
 
@@ -143,12 +143,12 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                 <tr className="border-b border-stone-800">
                   <td className="px-4 py-3">
                     <p className="font-medium text-stone-100">
-                      Private dinner service{event.occasion ? ` — ${event.occasion}` : ''}
+                      Private dinner service{event.occasion ? ` - ${event.occasion}` : ''}
                     </p>
                     <p className="text-xs text-stone-500 mt-0.5">{pricingLabel}</p>
                   </td>
                   <td className="px-4 py-3 text-right font-semibold text-stone-100">
-                    {quotedPriceCents ? formatCents(quotedPriceCents) : '—'}
+                    {quotedPriceCents ? formatCents(quotedPriceCents) : '-'}
                   </td>
                 </tr>
                 {loyaltyAdjustments?.appliedRedemptions.map((adjustment) => (

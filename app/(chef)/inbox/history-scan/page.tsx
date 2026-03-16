@@ -1,4 +1,4 @@
-// Historical Email Scan — Review Page
+// Historical Email Scan - Review Page
 // Chef reviews findings surfaced by the background email scan.
 // Each card can be imported (creates an inquiry) or dismissed.
 
@@ -8,7 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getHistoricalFindings, getHistoricalScanStatus } from '@/lib/gmail/historical-scan-actions'
 import { HistoricalFindingsList } from '@/components/gmail/historical-findings-list'
 
-export const metadata: Metadata = { title: 'Email History Scan — ChefFlow' }
+export const metadata: Metadata = { title: 'Email History Scan | ChefFlow' }
 
 export default async function HistoryScanPage() {
   await requireChef()

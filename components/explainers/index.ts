@@ -1,5 +1,5 @@
 /**
- * Explainer video players — drop-in Remotion animations for confusing features.
+ * Explainer video players - drop-in Remotion animations for confusing features.
  *
  * Usage: import { EventLifecyclePlayer } from '@/components/explainers'
  *

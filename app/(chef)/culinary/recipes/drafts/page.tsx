@@ -43,7 +43,7 @@ export default async function IncompleteRecipesPage() {
   await requireChef()
   const allRecipes = await getRecipes()
 
-  // "Drafts" = recipes missing method or ingredients — not yet fully documented
+  // "Drafts" = recipes missing method or ingredients - not yet fully documented
   const incompleteRecipes = allRecipes.filter(
     (r) =>
       !r.method || r.method.trim() === '' || r.ingredient_count === null || r.ingredient_count === 0
@@ -62,7 +62,7 @@ export default async function IncompleteRecipesPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Recipes missing a method or ingredients — finish documenting these
+          Recipes missing a method or ingredients - finish documenting these
         </p>
       </div>
 

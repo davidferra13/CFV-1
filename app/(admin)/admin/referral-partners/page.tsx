@@ -1,4 +1,4 @@
-// Admin Referral Partners — platform-wide view of all referral partners across all tenants
+// Admin Referral Partners - platform-wide view of all referral partners across all tenants
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -187,7 +187,7 @@ export default async function AdminReferralPartnersPage() {
                         href={`/admin/users/${partner.tenant_id}`}
                         className="hover:text-blue-600 hover:underline"
                       >
-                        {chefMap[partner.tenant_id] ?? '—'}
+                        {chefMap[partner.tenant_id] ?? '-'}
                       </Link>
                     </td>
                     <td className="px-4 py-2.5 text-xs text-stone-400">
@@ -200,14 +200,14 @@ export default async function AdminReferralPartnersPage() {
                         {partner.status}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-slate-400">{partner.email ?? '—'}</td>
+                    <td className="px-4 py-2.5 text-xs text-slate-400">{partner.email ?? '-'}</td>
                     <td className="px-4 py-2.5 text-center">
                       {partner.is_showcase_visible ? (
                         <span title="Visible in showcase">
                           <Globe size={14} className="text-blue-500 mx-auto" />
                         </span>
                       ) : (
-                        <span className="text-slate-200">—</span>
+                        <span className="text-slate-200">-</span>
                       )}
                     </td>
                     <td className="px-4 py-2.5 text-xs text-slate-400">

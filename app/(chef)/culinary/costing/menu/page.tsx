@@ -168,17 +168,17 @@ export default async function MenuCostPage() {
                             )}
                           </span>
                         ) : (
-                          <span className="text-stone-300">—</span>
+                          <span className="text-stone-300">-</span>
                         )}
                       </TableCell>
                       <TableCell className="text-stone-500 text-sm">
-                        {menu.target_guest_count ?? <span className="text-stone-300">—</span>}
+                        {menu.target_guest_count ?? <span className="text-stone-300">-</span>}
                       </TableCell>
                       <TableCell className="text-stone-300 text-sm font-medium">
                         {costPerGuest != null ? (
                           `$${(costPerGuest / 100).toFixed(2)}`
                         ) : (
-                          <span className="text-stone-300">—</span>
+                          <span className="text-stone-300">-</span>
                         )}
                       </TableCell>
                     </TableRow>

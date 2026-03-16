@@ -1,4 +1,4 @@
-// CallStatusActions — confirm / cancel buttons for an active call
+// CallStatusActions - confirm / cancel buttons for an active call
 
 'use client'
 

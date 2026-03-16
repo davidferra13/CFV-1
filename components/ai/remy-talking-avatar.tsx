@@ -1,11 +1,11 @@
 'use client'
 
-// Remy Talking Avatar — Sprite sheet lip-sync animation.
+// Remy Talking Avatar - Sprite sheet lip-sync animation.
 //
 // Architecture:
 //   Single <div> with background-image pointing to a 4x4 sprite sheet.
 //   CSS background-position selects the active frame (viseme or emotion).
-//   Each frame is a complete Remy face — no clip-path needed.
+//   Each frame is a complete Remy face - no clip-path needed.
 //
 // Sprite: /images/remy/remy-sprite.png (1040x1024, 16 frames)
 
@@ -27,7 +27,7 @@ interface RemyTalkingAvatarProps {
   viseme: Viseme
   /** Whether Remy is currently speaking (enables lip-sync frames) */
   isSpeaking?: boolean
-  /** Current emotion — determines the rest-state face when not speaking */
+  /** Current emotion - determines the rest-state face when not speaking */
   emotion?: RemyEmotion
   /** Size variant */
   size?: 'sm' | 'md' | 'lg' | 'xl'

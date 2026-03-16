@@ -72,7 +72,7 @@ export default async function FoodCostPage() {
             <p
               className={`text-5xl font-bold ${foodCostPct != null ? pctColor(foodCostPct) : 'text-stone-300'}`}
             >
-              {foodCostPct != null ? `${foodCostPct.toFixed(1)}%` : '—'}
+              {foodCostPct != null ? `${foodCostPct.toFixed(1)}%` : '-'}
             </p>
             <p className="text-xs text-stone-400 mt-2">
               ${(totalFoodCostCents / 100).toFixed(2)} food spend ÷ $
@@ -83,15 +83,15 @@ export default async function FoodCostPage() {
             <div className="text-xs text-stone-500 space-y-1">
               <p>
                 <span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-1 align-middle" />
-                Under 28% — excellent
+                Under 28% - excellent
               </p>
               <p>
                 <span className="inline-block w-3 h-3 rounded-full bg-amber-400 mr-1 align-middle" />
-                28–35% — good
+                28–35% - good
               </p>
               <p>
                 <span className="inline-block w-3 h-3 rounded-full bg-red-400 mr-1 align-middle" />
-                Over 35% — review margins
+                Over 35% - review margins
               </p>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default async function FoodCostPage() {
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">
-            {avgRecipeCostCents > 0 ? `$${(avgRecipeCostCents / 100).toFixed(2)}` : '—'}
+            {avgRecipeCostCents > 0 ? `$${(avgRecipeCostCents / 100).toFixed(2)}` : '-'}
           </p>
           <p className="text-sm text-stone-500 mt-1">Avg recipe ingredient cost</p>
         </Card>

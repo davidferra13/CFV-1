@@ -1,4 +1,4 @@
-﻿// Public Availability API — /book/[chefSlug]/availability?year=2026&month=3
+﻿// Public Availability API - /book/[chefSlug]/availability?year=2026&month=3
 // Returns date availability for the booking calendar. No auth required.
 // Status: 'available' | 'blocked' | 'unavailable'
 

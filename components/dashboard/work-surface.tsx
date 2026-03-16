@@ -1,4 +1,4 @@
-// Dashboard Work Surface — Renders categorized preparable work
+// Dashboard Work Surface - Renders categorized preparable work
 // Server component. No client-side state.
 
 import Link from 'next/link'
@@ -193,7 +193,7 @@ export function DashboardWorkSurfaceView({ surface }: { surface: DashboardWorkSu
     <div className="space-y-6">
       <SummaryBar surface={surface} />
 
-      {/* Fragile items — top priority, always visible */}
+      {/* Fragile items - top priority, always visible */}
       {surface.fragile.length > 0 && (
         <WorkSection
           title="Fragile if Delayed"
@@ -203,7 +203,7 @@ export function DashboardWorkSurfaceView({ surface }: { surface: DashboardWorkSu
         />
       )}
 
-      {/* Preparable work — the main answer */}
+      {/* Preparable work - the main answer */}
       <WorkSection
         title="Preparable Now"
         description="Work you can safely do right now based on confirmed facts."
@@ -211,7 +211,7 @@ export function DashboardWorkSurfaceView({ surface }: { surface: DashboardWorkSu
         emptyMessage="Nothing to prepare right now. All active work is either blocked or optional."
       />
 
-      {/* Blocked work — what is waiting */}
+      {/* Blocked work - what is waiting */}
       <WorkSection
         title="Blocked"
         description="Waiting on missing information or external actions."
@@ -219,7 +219,7 @@ export function DashboardWorkSurfaceView({ surface }: { surface: DashboardWorkSu
         emptyMessage="Nothing is blocked. All facts are confirmed."
       />
 
-      {/* Optional early — stress reducers */}
+      {/* Optional early - stress reducers */}
       <WorkSection
         title="Stress Reducers"
         description="Optional early work that reduces future pressure."

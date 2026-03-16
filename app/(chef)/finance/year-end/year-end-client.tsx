@@ -70,7 +70,7 @@ export function YearEndClientControls({
     const sortedExpenses = Object.entries(pl.expensesByCategory).sort((a, b) => b[1] - a[1])
     for (const [category, amount] of sortedExpenses) {
       const pct =
-        pl.netRevenueCents > 0 ? `${Math.round((amount / pl.netRevenueCents) * 100)}%` : '—'
+        pl.netRevenueCents > 0 ? `${Math.round((amount / pl.netRevenueCents) * 100)}%` : '-'
       rows.push([category.replace(/_/g, ' '), centsToDollars(amount), pct])
     }
     rows.push(['TOTAL EXPENSES', centsToDollars(pl.totalExpensesCents)])

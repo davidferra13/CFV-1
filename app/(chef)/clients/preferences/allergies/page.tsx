@@ -46,7 +46,7 @@ export default async function AllergiesPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Food allergy records across your entire clientele — critical for event planning
+          Food allergy records across your entire clientele - critical for event planning
         </p>
       </div>
 

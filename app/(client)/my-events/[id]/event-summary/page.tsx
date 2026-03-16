@@ -1,4 +1,4 @@
-// Post-Event Summary Page — menu recap, expense breakdown, timeline
+// Post-Event Summary Page - menu recap, expense breakdown, timeline
 
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientEventById } from '@/lib/events/client-actions'

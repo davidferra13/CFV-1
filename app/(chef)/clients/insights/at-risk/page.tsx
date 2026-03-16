@@ -48,7 +48,7 @@ export default async function AtRiskClientsPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Clients with no booking in the past 90 days — worth a follow-up
+          Clients with no booking in the past 90 days - worth a follow-up
         </p>
       </div>
 
@@ -99,7 +99,7 @@ export default async function AtRiskClientsPage() {
                     <TableCell className="text-stone-400 text-sm">
                       {(client.totalSpentCents ?? 0) > 0
                         ? formatCurrency(client.totalSpentCents ?? 0)
-                        : '—'}
+                        : '-'}
                     </TableCell>
                     <TableCell>
                       <Link href={`/clients/${client.id}`}>

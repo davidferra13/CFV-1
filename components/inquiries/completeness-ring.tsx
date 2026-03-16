@@ -1,4 +1,4 @@
-// Completeness Ring — small SVG progress ring showing inquiry completeness %
+// Completeness Ring - small SVG progress ring showing inquiry completeness %
 
 import type { CompletenessScore } from '@/lib/leads/completeness'
 

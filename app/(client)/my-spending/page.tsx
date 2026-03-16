@@ -1,4 +1,4 @@
-// Client Spending Dashboard — aggregate financial history
+// Client Spending Dashboard - aggregate financial history
 
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'

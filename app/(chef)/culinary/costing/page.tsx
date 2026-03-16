@@ -99,7 +99,7 @@ export default async function CostingPage() {
                         {recipe.category}
                       </TableCell>
                       <TableCell className="text-stone-400 text-sm">
-                        {recipe.ingredient_count ?? '—'}
+                        {recipe.ingredient_count ?? '-'}
                       </TableCell>
                       <TableCell className="text-stone-100 font-medium text-sm">
                         {formatCurrency(recipe.total_cost_cents ?? 0)}
@@ -109,7 +109,7 @@ export default async function CostingPage() {
                           ? formatCurrency(
                               Math.round(recipe.total_cost_cents / recipe.yield_quantity)
                             )
-                          : '—'}
+                          : '-'}
                       </TableCell>
                       <TableCell>
                         {recipe.has_all_prices ? (
@@ -158,22 +158,22 @@ export default async function CostingPage() {
                       </Link>
                     </TableCell>
                     <TableCell className="text-stone-400 text-sm">
-                      {mc.total_component_count ?? '—'}
+                      {mc.total_component_count ?? '-'}
                     </TableCell>
                     <TableCell className="text-stone-100 font-medium text-sm">
                       {mc.total_recipe_cost_cents != null
                         ? formatCurrency(mc.total_recipe_cost_cents)
-                        : '—'}
+                        : '-'}
                     </TableCell>
                     <TableCell className="text-stone-400 text-sm">
                       {mc.cost_per_guest_cents != null
                         ? formatCurrency(mc.cost_per_guest_cents)
-                        : '—'}
+                        : '-'}
                     </TableCell>
                     <TableCell className="text-stone-400 text-sm">
                       {mc.food_cost_percentage != null
                         ? `${mc.food_cost_percentage.toFixed(1)}%`
-                        : '—'}
+                        : '-'}
                     </TableCell>
                     <TableCell>
                       {mc.has_all_recipe_costs ? (

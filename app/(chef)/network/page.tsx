@@ -403,7 +403,7 @@ async function ConnectionsTab({ chefId }: { chefId: string }) {
   )
 }
 
-// —— Collaboration Tab ————————————————————————————————————————————
+// -- Collaboration Tab --------------------------------------------
 async function CollabTab({ focusHandoffId }: { focusHandoffId: string | null }) {
   const [trustedCircle, collabInbox, availabilitySignals, collabMetrics] = await Promise.all([
     getTrustedCircle(),

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * DataFlowAnimated — Static comparison of "Other AI" vs "ChefFlow + Remy".
+ * DataFlowAnimated - Static comparison of "Other AI" vs "ChefFlow + Remy".
  *
  * Replaced the Remotion looping animation with a clean side-by-side
  * layout that's always visible and doesn't glitch or loop.
@@ -24,7 +24,7 @@ export function DataFlowAnimated() {
 
       {/* Side-by-side comparison */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Red side — Other AI Apps */}
+        {/* Red side - Other AI Apps */}
         <div className="rounded-xl border-2 border-red-200 bg-red-950/50 p-5 space-y-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-900 text-sm">
@@ -69,7 +69,7 @@ export function DataFlowAnimated() {
           </div>
         </div>
 
-        {/* Green side — ChefFlow + Remy */}
+        {/* Green side - ChefFlow + Remy */}
         <div className="rounded-xl border-2 border-emerald-200 bg-emerald-950/50 p-5 space-y-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-900 text-sm">
@@ -114,7 +114,7 @@ export function DataFlowAnimated() {
             {[
               "AI runs on ChefFlow's own servers",
               'Zero data sent to any company',
-              "Delete anytime — it's truly gone",
+              "Delete anytime - it's truly gone",
             ].map((text) => (
               <div key={text} className="flex items-start gap-2">
                 <Check className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
@@ -125,7 +125,7 @@ export function DataFlowAnimated() {
         </div>
       </div>
 
-      {/* What Remy CAN and CANNOT do — preserved from original */}
+      {/* What Remy CAN and CANNOT do - preserved from original */}
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-5">
         <h3 className="font-semibold text-stone-100 mb-4 text-center">
           What Remy Can &amp; Cannot Do

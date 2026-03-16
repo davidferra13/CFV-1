@@ -7,7 +7,7 @@
  * as HolidayOverlay. Detects crossed thresholds via a lightweight server
  * action and tracks shown milestones in localStorage.
  *
- * Mounted in app/(chef)/layout.tsx — chef-only, never shown to clients.
+ * Mounted in app/(chef)/layout.tsx - chef-only, never shown to clients.
  * Non-invasive: pointer-events-none on animation layer, replayable.
  */
 
@@ -76,7 +76,7 @@ function markSeen(id: string): void {
       localStorage.setItem(SEEN_KEY, JSON.stringify([...seen, id]))
     }
   } catch {
-    // localStorage unavailable — ignore
+    // localStorage unavailable - ignore
   }
 }
 
@@ -257,7 +257,7 @@ function StickerEmoji({ def }: { def: MilestoneDef }) {
   )
 }
 
-// Label banner — appears below the animation for all milestone types
+// Label banner - appears below the animation for all milestone types
 function MilestoneLabel({ def }: { def: MilestoneDef }) {
   return (
     <div
@@ -291,7 +291,7 @@ function MilestoneLabel({ def }: { def: MilestoneDef }) {
 }
 
 // ---------------------------------------------------------------------------
-// Animation layer — keyed so replay remounts it
+// Animation layer - keyed so replay remounts it
 // ---------------------------------------------------------------------------
 
 function MilestoneAnimLayer({ def, onDone }: { def: MilestoneDef; onDone: () => void }) {
@@ -304,7 +304,7 @@ function MilestoneAnimLayer({ def, onDone }: { def: MilestoneDef; onDone: () => 
 
   return (
     <>
-      {/* Animation canvas — pointer-events-none */}
+      {/* Animation canvas - pointer-events-none */}
       <div
         aria-hidden="true"
         style={{
@@ -321,7 +321,7 @@ function MilestoneAnimLayer({ def, onDone }: { def: MilestoneDef; onDone: () => 
         {def.type === 'sticker' && <StickerEmoji def={def} />}
       </div>
 
-      {/* Label banner — also pointer-events-none */}
+      {/* Label banner - also pointer-events-none */}
       <div style={{ pointerEvents: 'none' }}>
         <MilestoneLabel def={def} />
       </div>
@@ -405,7 +405,7 @@ export function MilestoneOverlay() {
 
       {playing && current && <MilestoneAnimLayer key={animKey} def={current} onDone={handleDone} />}
 
-      {/* Replay button — always interactive */}
+      {/* Replay button - always interactive */}
       <button
         onClick={replay}
         title={`Replay: ${lastShown.label}`}

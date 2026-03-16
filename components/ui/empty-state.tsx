@@ -1,4 +1,4 @@
-// EmptyState — reusable centered empty-content placeholder
+// EmptyState - reusable centered empty-content placeholder
 // Used on list pages when there are no items to display.
 // Shows Remy mascot by default for a branded, friendly feel.
 
@@ -17,7 +17,7 @@ const remyImages: Record<RemyMood, string> = {
 
 export interface EmptyStateProps {
   icon?: React.ReactNode
-  /** Branded SVG illustration — takes precedence over icon when provided */
+  /** Branded SVG illustration - takes precedence over icon when provided */
   illustration?: React.ReactNode
   /** Show Remy mascot instead of a generic icon. Defaults to 'pondering'. */
   remy?: RemyMood | false

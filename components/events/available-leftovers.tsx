@@ -1,6 +1,6 @@
 'use client'
 
-// AvailableLeftovers — Shows reusable carry-forward inventory from other recent events.
+// AvailableLeftovers - Shows reusable carry-forward inventory from other recent events.
 // Lets the chef click "Use in this event" to allocate a leftover to the current event,
 // which sets transferred_to_event_id via the transferUnusedToEvent server action.
 // Only shown when there are unallocated leftovers available.
@@ -51,7 +51,7 @@ export function AvailableLeftovers({ eventId, items: initialItems }: Props) {
           Available Carry-Forward ({items.length})
         </CardTitle>
         <p className="text-xs text-green-700 -mt-1">
-          Reusable leftovers from previous events — click to apply to this one
+          Reusable leftovers from previous events - click to apply to this one
         </p>
       </CardHeader>
       <CardContent>

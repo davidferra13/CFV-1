@@ -89,7 +89,7 @@ function parseTranscript(raw: string, clientName: string | null): ParsedMessage[
       continue
     }
 
-    // Regular line — append to current message
+    // Regular line - append to current message
     currentBody.push(line)
   }
 
@@ -187,7 +187,7 @@ export function TacTranscriptPaste({
                 boundaries, the whole text will be saved as a single note.
               </p>
               <p className="text-xs text-stone-300">
-                Messages will appear in the Communication Log on this inquiry's page — same place as
+                Messages will appear in the Communication Log on this inquiry's page - same place as
                 emails and notes. You can always add more later.
               </p>
             </>

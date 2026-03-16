@@ -1,6 +1,6 @@
 'use client'
 
-// Trial Banner UI — dismissable per session via sessionStorage.
+// Trial Banner UI - dismissable per session via sessionStorage.
 // Two states: 'expiring' (≤3 days left, amber) and 'expired' (orange).
 
 import { useState, useEffect } from 'react'

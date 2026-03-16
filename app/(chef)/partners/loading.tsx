@@ -1,4 +1,4 @@
-// Partners Loading Skeleton — partner cards with stats
+// Partners Loading Skeleton - partner cards with stats
 import { ContextLoader } from '@/components/ui/context-loader'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 

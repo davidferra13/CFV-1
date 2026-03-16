@@ -1,6 +1,6 @@
 'use client'
 
-// ParAlertPanel — Below-par inventory alerts grouped by vendor.
+// ParAlertPanel - Below-par inventory alerts grouped by vendor.
 // Shows items that need reordering with deficit amounts.
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'

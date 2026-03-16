@@ -1,4 +1,4 @@
-// Activity Loading Skeleton — resume section + filtered activity feed
+// Activity Loading Skeleton - resume section + filtered activity feed
 import { ContextLoader } from '@/components/ui/context-loader'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 

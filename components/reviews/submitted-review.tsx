@@ -1,4 +1,4 @@
-// Submitted Review Display — Shows when client has already left feedback
+// Submitted Review Display - Shows when client has already left feedback
 // Read-only view of their review with optional Google Review CTA
 
 'use client'

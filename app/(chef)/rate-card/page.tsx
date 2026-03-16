@@ -1,4 +1,4 @@
-// Rate Card — Quick-access pricing reference
+// Rate Card - Quick-access pricing reference
 // Pull this up on your phone mid-conversation to quote instantly.
 
 import type { Metadata } from 'next'

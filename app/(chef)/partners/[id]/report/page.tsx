@@ -1,4 +1,4 @@
-// Partner Report Page — Print-optimized monthly report
+// Partner Report Page - Print-optimized monthly report
 // Shows referral performance, events, and location breakdown
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -115,9 +115,9 @@ export default async function PartnerReportPage({ params }: { params: { id: stri
                     <td className="py-2 text-stone-100">
                       {format(new Date(evt.event_date), 'MMM d, yyyy')}
                     </td>
-                    <td className="py-2 text-stone-300">{evt.occasion || '—'}</td>
+                    <td className="py-2 text-stone-300">{evt.occasion || '-'}</td>
                     <td className="py-2 text-right text-stone-300">{evt.guest_count}</td>
-                    <td className="py-2 text-stone-300">{evt.location_name || '—'}</td>
+                    <td className="py-2 text-stone-300">{evt.location_name || '-'}</td>
                     <td className="py-2">
                       <Badge variant={evt.status === 'completed' ? 'success' : 'default'}>
                         {evt.status}

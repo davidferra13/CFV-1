@@ -1,4 +1,4 @@
-// Event Board Page — Kanban view of all events by FSM status
+// Event Board Page - Kanban view of all events by FSM status
 // Server component: fetches data, hands off to client board component.
 
 import type { Metadata } from 'next'
@@ -14,7 +14,7 @@ export default async function EventBoardPage() {
   await requireChef()
   const events = await getEvents()
 
-  // Map to lean KanbanEvent shape — only fields the board needs
+  // Map to lean KanbanEvent shape - only fields the board needs
   const boardEvents = events.map((e: any) => ({
     id: e.id,
     status: e.status,

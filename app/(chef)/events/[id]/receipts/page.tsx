@@ -1,4 +1,4 @@
-// Receipt Summary Page — per-event receipt digitization review
+// Receipt Summary Page - per-event receipt digitization review
 // Upload → OCR → review line items → approve → copies to expenses
 
 import { notFound } from 'next/navigation'

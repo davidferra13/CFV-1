@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       typeof rawRecord.otherChannelDigest === 'string'
         ? rawRecord.otherChannelDigest.slice(0, 600)
         : null
-    // Previous session topics — client-side summary of last conversation for continuity
+    // Previous session topics - client-side summary of last conversation for continuity
     const previousSessionTopics =
       rawRecord.previousSessionTopics &&
       typeof rawRecord.previousSessionTopics === 'object' &&
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
             lastActiveAt: string
           })
         : null
-    // Recent conversation summaries — cross-conversation memory (Phase 3C)
+    // Recent conversation summaries - cross-conversation memory (Phase 3C)
     const recentConversationSummaries = Array.isArray(rawRecord.recentConversationSummaries)
       ? (
           rawRecord.recentConversationSummaries as Array<{ summary: string; generatedAt: string }>
@@ -403,7 +403,7 @@ export async function POST(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders() })
     }
 
-    //  WEATHER PATH (6A: on-demand event weather forecasts — no Ollama needed)
+    //  WEATHER PATH (6A: on-demand event weather forecasts - no Ollama needed)
     const weatherRegex =
       /(?:weather|forecast)\s+(?:for|at|look\s+like\s+for)\s+(?:my|the|this|next|upcoming)\s+event/i
     if (weatherRegex.test(message)) {
@@ -422,14 +422,14 @@ export async function POST(req: NextRequest) {
           encodeSSE({ type: 'intent', data: 'question' }) +
           encodeSSE({
             type: 'token',
-            data: "Couldn't fetch weather data right now. The Open-Meteo API might be down — try again in a few minutes.",
+            data: "Couldn't fetch weather data right now. The Open-Meteo API might be down - try again in a few minutes.",
           }) +
           encodeSSE({ type: 'done', data: null })
         return new Response(body, { headers: sseHeaders() })
       }
     }
 
-    //  TRAVEL TIME PATH (6B: on-demand travel estimates — no Ollama needed)
+    //  TRAVEL TIME PATH (6B: on-demand travel estimates - no Ollama needed)
     const travelRegex =
       /(?:travel\s+time|driving\s+time|back.to.back|how\s+(?:long|far)\s+(?:between|to\s+get)|commute|drive\s+between)\s*(?:my\s+)?event/i
     if (travelRegex.test(message)) {
@@ -449,7 +449,7 @@ export async function POST(req: NextRequest) {
           encodeSSE({ type: 'intent', data: 'question' }) +
           encodeSSE({
             type: 'token',
-            data: "Couldn't calculate travel times right now. The routing API might be down — try again in a few minutes.",
+            data: "Couldn't calculate travel times right now. The routing API might be down - try again in a few minutes.",
           }) +
           encodeSSE({ type: 'done', data: null })
         return new Response(body, { headers: sseHeaders() })
@@ -624,7 +624,7 @@ export async function POST(req: NextRequest) {
       classification = { ...classification, intent: 'question' }
     }
 
-    //  INSTANT ANSWER PATH (Formula > AI — skip Ollama entirely for simple facts)
+    //  INSTANT ANSWER PATH (Formula > AI - skip Ollama entirely for simple facts)
     // For simple factual questions where the answer is already in the loaded context,
     // return an instant response without waiting 30-90s for Ollama.
     if (classification.intent === 'question') {
@@ -993,7 +993,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Phase 5B: Intent-aware context scoping — reduce prompt size for focused queries
+    // Phase 5B: Intent-aware context scoping - reduce prompt size for focused queries
     const contextScope = determineContextScope(message, classification.intent)
 
     const systemPrompt = buildRemySystemPrompt(

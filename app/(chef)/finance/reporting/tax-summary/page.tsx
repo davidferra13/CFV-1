@@ -51,7 +51,7 @@ export default async function TaxSummaryPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Tax Summary {currentYear}</h1>
         <p className="text-stone-500 mt-1">
-          Business income and deductible expense summary — consult your CPA for tax advice
+          Business income and deductible expense summary - consult your CPA for tax advice
         </p>
       </div>
 

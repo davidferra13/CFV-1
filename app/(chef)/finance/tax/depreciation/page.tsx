@@ -41,7 +41,7 @@ export default async function DepreciationPage({
           <div>
             <h1 className="text-3xl font-bold text-stone-100">Equipment Depreciation</h1>
             <p className="text-stone-500 mt-1">
-              Schedule C, Line 13 — Depreciation and Section 179 (Form 4562)
+              Schedule C, Line 13 - Depreciation and Section 179 (Form 4562)
             </p>
           </div>
           <div className="flex items-center gap-2">

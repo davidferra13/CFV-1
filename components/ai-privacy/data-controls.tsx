@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * DataControls — the "danger zone" panel where users can see their data
+ * DataControls - the "danger zone" panel where users can see their data
  * summary and delete specific categories or everything.
  * Also includes granular feature toggles for memory, suggestions, drafts.
  */
@@ -329,7 +329,7 @@ export function DataControls({
             ) : nuclearState === 'confirming' ? (
               <>
                 <Trash2 className="h-4 w-4" />
-                I&apos;m sure — delete everything
+                I&apos;m sure - delete everything
               </>
             ) : nuclearState === 'done' ? (
               <>
@@ -354,7 +354,7 @@ export function DataControls({
         </div>
         <p className="text-sm text-stone-500">
           Disable all AI features immediately. Your existing data is preserved until you choose to
-          delete it — we never delete your data without your explicit action.
+          delete it - we never delete your data without your explicit action.
         </p>
         <button
           onClick={handleDisableRemy}

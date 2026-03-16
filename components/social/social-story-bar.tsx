@@ -326,7 +326,7 @@ export function SocialStoryBar({
     return (
       <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm p-3 flex items-center gap-3 overflow-x-auto scrollbar-hide">
         <AddStoryButton onAdded={onRefresh} />
-        <p className="text-sm text-stone-400 italic">No stories yet — be the first to post one!</p>
+        <p className="text-sm text-stone-400 italic">No stories yet - be the first to post one!</p>
       </div>
     )
   }

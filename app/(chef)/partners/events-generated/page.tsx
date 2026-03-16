@@ -98,7 +98,7 @@ export default async function EventsGeneratedPage() {
                     {partner.completed_count}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {partner.guest_count > 0 ? partner.guest_count : '—'}
+                    {partner.guest_count > 0 ? partner.guest_count : '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
                     {formatCurrency(partner.revenue_cents)}

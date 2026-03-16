@@ -48,7 +48,7 @@ export default function KioskPage() {
         setView(data.config.require_staff_pin ? 'pin' : getWorkView(data.config))
       })
       .catch(() => {
-        // Network error — show form anyway with defaults
+        // Network error - show form anyway with defaults
         setConfig(null)
         setView('pin')
       })

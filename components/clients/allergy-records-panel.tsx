@@ -51,7 +51,7 @@ const SEVERITY_CONFIG = {
     icon: ShieldAlert,
     iconColor: 'text-red-600',
     bgColor: 'bg-red-950 border-red-200',
-    description: 'Life-threatening — must avoid completely',
+    description: 'Life-threatening - must avoid completely',
   },
   allergy: {
     label: 'Allergy',
@@ -59,7 +59,7 @@ const SEVERITY_CONFIG = {
     icon: AlertTriangle,
     iconColor: 'text-orange-600',
     bgColor: 'bg-orange-950 border-orange-200',
-    description: 'Immune response — must avoid',
+    description: 'Immune response - must avoid',
   },
   intolerance: {
     label: 'Intolerance',
@@ -67,7 +67,7 @@ const SEVERITY_CONFIG = {
     icon: AlertTriangle,
     iconColor: 'text-amber-600',
     bgColor: 'bg-amber-950 border-amber-200',
-    description: 'Causes discomfort — avoid where possible',
+    description: 'Causes discomfort - avoid where possible',
   },
   preference: {
     label: 'Preference',
@@ -75,13 +75,13 @@ const SEVERITY_CONFIG = {
     icon: Info,
     iconColor: 'text-blue-500',
     bgColor: 'bg-blue-950 border-blue-200',
-    description: 'Dislikes — accommodate if easy',
+    description: 'Dislikes - accommodate if easy',
   },
 }
 
 const SOURCE_LABELS: Record<AllergyRecord['source'], string> = {
   chef_entered: 'Chef entered',
-  ai_detected: 'Auto-detected — pending confirmation',
+  ai_detected: 'Auto-detected - pending confirmation',
   intake_form: 'Intake form',
   client_stated: 'Client stated',
 }

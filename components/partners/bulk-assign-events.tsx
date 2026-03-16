@@ -1,6 +1,6 @@
 // Bulk Assign Events to Partner
 // Lets a chef multi-select historical events and tag them to this partner + location.
-// No status restriction — intended for retroactive historical attribution.
+// No status restriction - intended for retroactive historical attribution.
 'use client'
 
 import { useState } from 'react'
@@ -142,7 +142,7 @@ export function BulkAssignEvents({
           </div>
 
           <p className="text-xs text-stone-500">
-            Select events you served at this partner&apos;s location. This tags them for reporting —
+            Select events you served at this partner&apos;s location. This tags them for reporting -
             it does not change their status or any other data.
           </p>
 
@@ -159,7 +159,7 @@ export function BulkAssignEvents({
                   return (
                     <option key={loc.id} value={loc.id}>
                       {loc.name}
-                      {cityState ? ` — ${cityState}` : ''}
+                      {cityState ? ` - ${cityState}` : ''}
                     </option>
                   )
                 })}

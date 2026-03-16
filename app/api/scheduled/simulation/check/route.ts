@@ -1,9 +1,9 @@
 // Simulation Due-Check Route
 // GET /api/scheduled/simulation/check
-// Returns { dueFor: string[] } — list of tenant IDs whose last simulation run
+// Returns { dueFor: string[] } - list of tenant IDs whose last simulation run
 // is older than 7 days (or who have never run one).
 //
-// Called by the auto-scheduler every 6 hours. Lightweight — no simulation work done here.
+// Called by the auto-scheduler every 6 hours. Lightweight - no simulation work done here.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   const supabase = createServerClient({ admin: true })
 
-  // Only include ACTIVE tenants — those with at least one event or inquiry
+  // Only include ACTIVE tenants - those with at least one event or inquiry
   // created in the last 6 months. This excludes demo, test, and empty accounts.
   const activeSince = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()
 

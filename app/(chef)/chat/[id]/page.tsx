@@ -1,4 +1,4 @@
-// Chef Chat View — Individual conversation with a client
+// Chef Chat View - Individual conversation with a client
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
@@ -23,7 +23,7 @@ export async function generateMetadata({
   const { id } = await params
   const conversation = await getConversation(id)
   return {
-    title: conversation ? `Chat — ChefFlow` : 'Chat — ChefFlow',
+    title: conversation ? `Chat | ChefFlow` : 'Chat | ChefFlow',
   }
 }
 

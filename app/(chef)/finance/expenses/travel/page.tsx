@@ -66,7 +66,7 @@ export default async function TravelExpensesPage() {
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-300">
-            {totalMiles > 0 ? `${totalMiles.toFixed(0)} mi` : '—'}
+            {totalMiles > 0 ? `${totalMiles.toFixed(0)} mi` : '-'}
           </p>
           <p className="text-sm text-stone-500 mt-1">Total miles logged</p>
         </Card>
@@ -105,7 +105,7 @@ export default async function TravelExpensesPage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">
-                    {expense.mileage_miles ? `${expense.mileage_miles} mi` : '—'}
+                    {expense.mileage_miles ? `${expense.mileage_miles} mi` : '-'}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {expense.event ? (
@@ -116,7 +116,7 @@ export default async function TravelExpensesPage() {
                         {expense.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-100 font-semibold text-sm">

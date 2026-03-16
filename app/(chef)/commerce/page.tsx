@@ -1,4 +1,4 @@
-// Commerce Hub — dashboard showing today's sales, active register, order queue
+// Commerce Hub - dashboard showing today's sales, active register, order queue
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { requireFocusAccess } from '@/lib/billing/require-focus-access'
@@ -23,7 +23,7 @@ import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
 import { listSales } from '@/lib/commerce/sale-actions'
 import { listProducts } from '@/lib/commerce/product-actions'
 
-export const metadata: Metadata = { title: 'Commerce — ChefFlow' }
+export const metadata: Metadata = { title: 'Commerce | ChefFlow' }
 
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
   try {

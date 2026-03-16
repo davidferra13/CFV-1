@@ -147,7 +147,7 @@ export default async function PushDinnerDetailPage({ params }: Props) {
             <CampaignDetailClient bookingUrl={bookingUrl} />
           </div>
           <p className="text-xs text-stone-400">
-            Share this link anywhere — Instagram story, text, DM. Clients tap it, see the dinner,
+            Share this link anywhere - Instagram story, text, DM. Clients tap it, see the dinner,
             and book in under 30 seconds. No account required.
           </p>
         </div>

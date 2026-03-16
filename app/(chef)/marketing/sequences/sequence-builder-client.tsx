@@ -15,9 +15,9 @@ type Step = {
 }
 
 const TRIGGER_OPTIONS = [
-  { value: 'birthday', label: 'Birthday — fires N days before client birthday' },
-  { value: 'dormant_90', label: 'Re-engagement — fires when client hits 90 days dormant' },
-  { value: 'post_event', label: 'Post-event — fires N days after event completes' },
+  { value: 'birthday', label: 'Birthday - fires N days before client birthday' },
+  { value: 'dormant_90', label: 'Re-engagement - fires when client hits 90 days dormant' },
+  { value: 'post_event', label: 'Post-event - fires N days after event completes' },
 ]
 
 export function SequenceBuilderClient() {

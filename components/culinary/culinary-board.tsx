@@ -40,7 +40,7 @@ export function CulinaryBoard({ userWords, isAdmin }: CulinaryBoardProps) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <p className="text-stone-400 mt-1">
-            {allWords.length} words across {11} categories — your complete culinary vocabulary
+            {allWords.length} words across {11} categories - your complete culinary vocabulary
           </p>
         </div>
 

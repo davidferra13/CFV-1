@@ -1,6 +1,6 @@
 'use client'
 
-// Task Board — Daily task view grouped by assigned person
+// Task Board - Daily task view grouped by assigned person
 // Displays task cards with status toggles, priority badges, and due times.
 // Click status to cycle: pending -> in_progress -> done
 

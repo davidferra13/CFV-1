@@ -62,7 +62,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
   const cancelledEvents = events.filter((e: any) => e.status === 'cancelled')
   const totalEvents = events.length
 
-  // Monthly revenue data — fill all 12 months
+  // Monthly revenue data - fill all 12 months
   const monthlyData = MONTH_NAMES.map((name, i) => {
     const key = `${validYear}-${String(i + 1).padStart(2, '0')}`
     return {
@@ -96,7 +96,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
           <div>
             <h1 className="text-3xl font-bold text-stone-100">Year-End Summary</h1>
             <p className="text-stone-500 mt-1">
-              Complete annual financial summary for {validYear} — ready for your accountant
+              Complete annual financial summary for {validYear} - ready for your accountant
             </p>
           </div>
           <YearEndClientControls
@@ -112,7 +112,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
       {/* Business Summary */}
       <Card className="p-5">
         <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-4">
-          Business Summary — {validYear}
+          Business Summary - {validYear}
         </h2>
         <div className="grid grid-cols-4 gap-6">
           <div>
@@ -258,7 +258,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
                   <TableCell className="text-stone-500 text-sm">
                     {pl.netRevenueCents > 0
                       ? `${Math.round((row.amount / pl.netRevenueCents) * 100)}%`
-                      : '—'}
+                      : '-'}
                   </TableCell>
                 </TableRow>
               ))}
@@ -270,7 +270,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
                 <TableCell className="text-stone-500 text-sm">
                   {pl.netRevenueCents > 0
                     ? `${Math.round((pl.totalExpensesCents / pl.netRevenueCents) * 100)}%`
-                    : '—'}
+                    : '-'}
                 </TableCell>
               </TableRow>
             </TableBody>

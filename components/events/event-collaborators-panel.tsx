@@ -338,9 +338,9 @@ function InviteChefForm({
               onChange={(e) => setRole(e.target.value as CollaboratorRole)}
               className="w-full rounded-md border border-stone-600 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
             >
-              <option value="co_host">Co-Host — full access except closing event</option>
-              <option value="sous_chef">Sous Chef — kitchen-side access only</option>
-              <option value="observer">Observer — read-only</option>
+              <option value="co_host">Co-Host - full access except closing event</option>
+              <option value="sous_chef">Sous Chef - kitchen-side access only</option>
+              <option value="observer">Observer - read-only</option>
             </select>
             <p className="mt-1 text-xs text-stone-500">
               You can adjust individual permissions after inviting.

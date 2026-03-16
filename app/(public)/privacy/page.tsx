@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — ChefFlow',
+  title: 'Privacy Policy | ChefFlow',
   description: 'Learn how ChefFlow collects, uses, and protects your personal information.',
 }
 
@@ -96,11 +96,11 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
             <li>
-              <strong>Supabase</strong> — our database and authentication provider. Your account
+              <strong>Supabase</strong> - our database and authentication provider. Your account
               data and chef/client records are stored on Supabase infrastructure.
             </li>
             <li>
-              <strong>Stripe</strong> — our payment processor. Client payment details are submitted
+              <strong>Stripe</strong> - our payment processor. Client payment details are submitted
               directly to Stripe and governed by{' '}
               <a
                 href="https://stripe.com/privacy"
@@ -113,11 +113,11 @@ export default function PrivacyPage() {
               .
             </li>
             <li>
-              <strong>Resend / email provider</strong> — used to deliver transactional emails. We
+              <strong>Resend / email provider</strong> - used to deliver transactional emails. We
               pass recipient email addresses and message content to this provider for delivery only.
             </li>
             <li>
-              <strong>Vercel</strong> — our hosting platform. Web requests pass through
+              <strong>Vercel</strong> - our hosting platform. Web requests pass through
               Vercel&apos;s infrastructure and are subject to their data processing terms.
             </li>
           </ul>
@@ -146,22 +146,22 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
             <li>
-              <strong>Access</strong> — request a copy of the personal data we hold about you
+              <strong>Access</strong> - request a copy of the personal data we hold about you
             </li>
             <li>
-              <strong>Correction</strong> — request that we correct inaccurate or incomplete
+              <strong>Correction</strong> - request that we correct inaccurate or incomplete
               information
             </li>
             <li>
-              <strong>Deletion</strong> — request deletion of your personal data (subject to legal
+              <strong>Deletion</strong> - request deletion of your personal data (subject to legal
               retention requirements)
             </li>
             <li>
-              <strong>Portability</strong> — request your data in a structured, machine-readable
+              <strong>Portability</strong> - request your data in a structured, machine-readable
               format
             </li>
             <li>
-              <strong>Objection</strong> — object to processing of your data in certain
+              <strong>Objection</strong> - object to processing of your data in certain
               circumstances
             </li>
           </ul>

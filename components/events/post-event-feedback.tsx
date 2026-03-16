@@ -32,7 +32,7 @@ const RATING_OPTIONS: {
   },
   {
     value: 'neutral',
-    icon: '—',
+    icon: '-',
     label: 'Neutral',
     activeClass: 'bg-stone-700 text-stone-300 border-stone-600',
   },

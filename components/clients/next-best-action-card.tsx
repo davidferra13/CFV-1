@@ -1,4 +1,4 @@
-// Next Best Action Card — shows the single recommended action for a client
+// Next Best Action Card - shows the single recommended action for a client
 // Displayed on the client detail page under the header.
 
 import Link from 'next/link'

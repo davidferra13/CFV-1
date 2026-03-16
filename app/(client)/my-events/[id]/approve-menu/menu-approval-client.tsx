@@ -283,7 +283,7 @@ export function MenuApprovalClient({
             disabled={loading}
             className="w-full py-3 text-base"
           >
-            {loading ? 'Approving...' : 'Looks Great — Approve Menu'}
+            {loading ? 'Approving...' : 'Looks Great - Approve Menu'}
           </Button>
           <Button
             variant="secondary"

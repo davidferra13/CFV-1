@@ -1,4 +1,4 @@
-// Conversion Funnel Analytics — Inquiry → Quote → Booking → Completed
+// Conversion Funnel Analytics - Inquiry → Quote → Booking → Completed
 // Shows conversion rates, decline reasons, channel performance, response time
 
 import type { Metadata } from 'next'

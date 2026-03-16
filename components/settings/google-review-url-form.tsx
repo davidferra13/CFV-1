@@ -1,4 +1,4 @@
-// Google Review URL Setting — Chef configures their Google Business review link
+// Google Review URL Setting - Chef configures their Google Business review link
 // Clients are redirected here after leaving internal feedback
 
 'use client'

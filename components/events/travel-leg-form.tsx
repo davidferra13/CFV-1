@@ -2,7 +2,7 @@
 
 // Travel Leg Form
 // Add or edit a travel leg for an event.
-// Sections are collapsible — chef opts in to detail level.
+// Sections are collapsible - chef opts in to detail level.
 
 import { useState, useTransition, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
@@ -597,7 +597,7 @@ export function TravelLegForm({
                   onChange={(e) => setDestType((e.target.value as TravelLocationType) || null)}
                   className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-stone-900"
                 >
-                  <option value="">— select —</option>
+                  <option value="">- select -</option>
                   {LOCATION_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>
                       {t.label}
@@ -680,7 +680,7 @@ export function TravelLegForm({
           Stops ({stops.length})
           {stops.length > 0 && (
             <span className="text-xs text-stone-400 font-normal">
-              — {formatMinutes(totals.stop)} on-site
+              - {formatMinutes(totals.stop)} on-site
             </span>
           )}
         </button>
@@ -744,7 +744,7 @@ export function TravelLegForm({
                       className="w-4 h-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
                     />
                     <span className="text-sm text-stone-300">
-                      {evt.occasion || 'Untitled event'} —{' '}
+                      {evt.occasion || 'Untitled event'} -{' '}
                       {new Date(evt.event_date).toLocaleDateString()}
                       {evt.client_name && (
                         <span className="text-stone-500"> ({evt.client_name})</span>

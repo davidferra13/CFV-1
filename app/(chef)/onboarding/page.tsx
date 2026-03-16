@@ -4,7 +4,7 @@ import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard'
 import { OnboardingHub } from '@/components/onboarding/onboarding-hub'
 
-export const metadata = { title: 'Setup — ChefFlow' }
+export const metadata = { title: 'Setup | ChefFlow' }
 
 export default async function OnboardingPage({
   searchParams,
@@ -30,15 +30,11 @@ export default async function OnboardingPage({
     const initialStep = isNaN(stepParam) || stepParam < 1 ? 1 : Math.min(stepParam, 5)
 
     return (
-      <OnboardingWizard
-        profile={profile}
-        connectStatus={connectStatus}
-        initialStep={initialStep}
-      />
+      <OnboardingWizard profile={profile} connectStatus={connectStatus} initialStep={initialStep} />
     )
   }
 
-  // Wizard done — show migration hub
+  // Wizard done - show migration hub
   const progress = await getOnboardingProgress()
 
   return <OnboardingHub progress={progress} />

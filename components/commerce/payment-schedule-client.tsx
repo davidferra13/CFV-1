@@ -1,4 +1,4 @@
-// Payment Schedule Client — mark paid / waive installments
+// Payment Schedule Client - mark paid / waive installments
 'use client'
 
 import { useTransition } from 'react'
@@ -65,7 +65,7 @@ export function PaymentScheduleClient({ installments }: Props) {
             <div className="flex items-center gap-3">
               <div>
                 <span className="text-stone-200 font-medium">
-                  #{inst.installment_number} — ${((inst.amount_cents ?? 0) / 100).toFixed(2)}
+                  #{inst.installment_number} - ${((inst.amount_cents ?? 0) / 100).toFixed(2)}
                 </span>
                 <p className="text-stone-400 text-sm">
                   Due: {dueDate.toLocaleDateString()}

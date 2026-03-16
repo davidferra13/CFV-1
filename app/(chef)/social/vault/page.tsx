@@ -18,7 +18,7 @@ export default async function SocialVaultPage() {
       <div>
         <h2 className="text-lg font-semibold text-stone-100">Media Vault</h2>
         <p className="text-sm text-stone-500 mt-0.5">
-          All your photos and videos — upload once, use across any post on any platform.
+          All your photos and videos - upload once, use across any post on any platform.
         </p>
       </div>
       <SocialVaultBrowser assets={assets} usageCounts={usageCounts} />

@@ -1,4 +1,4 @@
-// ClientPresenceMonitor — Full-page real-time client portal monitoring panel.
+// ClientPresenceMonitor - Full-page real-time client portal monitoring panel.
 // Expanded version of LivePresencePanel: shows engagement scores, entity context,
 // and a live activity stream. Subscribes to Supabase Realtime for instant updates.
 'use client'
@@ -357,7 +357,7 @@ function ClientPresenceRow({
         >
           {getLabel(client.event_type)}
           {client.entity_title && (
-            <span className="text-stone-300 font-normal"> — {client.entity_title}</span>
+            <span className="text-stone-300 font-normal"> - {client.entity_title}</span>
           )}
         </p>
       </div>
@@ -385,7 +385,7 @@ function StreamRow({ item }: { item: StreamItem }) {
       <div className="flex-1 min-w-0">
         <p className="text-sm text-stone-300 truncate">
           <span className="font-medium">{clientName}</span>
-          <span className="text-stone-300"> — </span>
+          <span className="text-stone-300"> - </span>
           {label}
         </p>
       </div>

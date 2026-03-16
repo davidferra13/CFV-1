@@ -26,11 +26,11 @@ function TierLegend() {
       </span>
       <span className="flex items-center gap-1.5">
         <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-500" />
-        Draft — needs your approval
+        Draft - needs your approval
       </span>
       <span className="flex items-center gap-1.5">
         <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500" />
-        Held — needs clarification
+        Held - needs clarification
       </span>
     </div>
   )
@@ -139,7 +139,7 @@ export function CommandCenterClient() {
         </p>
       </form>
 
-      {/* Quick prompts — shown only before first run */}
+      {/* Quick prompts - shown only before first run */}
       {!currentRun && !loading && (
         <div className="space-y-2">
           <p className="text-xs text-stone-500 uppercase tracking-wider">Quick start</p>

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ProductExplainerPlayer — Remotion Player wrapper for the landing page.
+ * ProductExplainerPlayer - Remotion Player wrapper for the landing page.
  *
  * Shows the 4-step workflow: Inquiry → Event → Quote → Payment.
  * Helps prospects understand what ChefFlow does in ~12 seconds.

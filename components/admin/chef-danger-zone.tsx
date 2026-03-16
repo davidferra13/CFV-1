@@ -1,6 +1,6 @@
 'use client'
 
-// Admin Chef Danger Zone — suspend or reactivate a chef account
+// Admin Chef Danger Zone - suspend or reactivate a chef account
 // Requires typing the chef name to confirm before suspending.
 
 import { useState, useTransition } from 'react'

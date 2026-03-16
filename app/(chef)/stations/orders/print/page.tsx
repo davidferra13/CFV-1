@@ -10,7 +10,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { PrintableDocument } from '@/components/print/printable-document'
 import { getDocumentContext } from '@/lib/print/actions'
 
-export const metadata: Metadata = { title: 'Print Order Sheet — ChefFlow' }
+export const metadata: Metadata = { title: 'Print Order Sheet | ChefFlow' }
 
 export default async function PrintOrderSheetPage({
   searchParams,
@@ -19,7 +19,7 @@ export default async function PrintOrderSheetPage({
 }) {
   const user = await requireChef()
   const supabase: any = createServerClient()
-  // Resolve all print context — attribution, default mode, custom footer
+  // Resolve all print context - attribution, default mode, custom footer
   const { generatedBy, printMode: defaultMode, customFooter } = await getDocumentContext()
   const printMode =
     searchParams.mode === 'thermal' ? ('thermal-80' as const) : (defaultMode ?? 'standard')
@@ -71,7 +71,7 @@ export default async function PrintOrderSheetPage({
       subtitle={`Generated: ${dateLabel}`}
       footer={
         customFooter ??
-        `ChefFlow Order Sheet — Printed ${new Date().toLocaleString()}\nBlank "Ordered" column for manual checkoff when calling vendors.`
+        `ChefFlow Order Sheet - Printed ${new Date().toLocaleString()}\nBlank "Ordered" column for manual checkoff when calling vendors.`
       }
       generatedBy={generatedBy}
       mode={printMode}
@@ -96,8 +96,8 @@ export default async function PrintOrderSheetPage({
             <tbody>
               {orderItems.map((order: any) => (
                 <tr key={order.id}>
-                  <td>{(order.stations as any)?.name ?? '—'}</td>
-                  <td>{(order.station_components as any)?.name ?? '—'}</td>
+                  <td>{(order.stations as any)?.name ?? '-'}</td>
+                  <td>{(order.station_components as any)?.name ?? '-'}</td>
                   <td style={{ fontWeight: 'bold' }}>{order.quantity}</td>
                   <td>{order.unit ?? (order.station_components as any)?.unit ?? ''}</td>
                   <td>{order.notes ?? ''}</td>
@@ -136,8 +136,8 @@ export default async function PrintOrderSheetPage({
             <tbody>
               {clipboardItems.map((item: any, i: number) => (
                 <tr key={i}>
-                  <td>{(item.stations as any)?.name ?? '—'}</td>
-                  <td>{(item.station_components as any)?.name ?? '—'}</td>
+                  <td>{(item.stations as any)?.name ?? '-'}</td>
+                  <td>{(item.station_components as any)?.name ?? '-'}</td>
                   <td style={{ fontWeight: 'bold' }}>{item.need_to_order}</td>
                   <td>{(item.station_components as any)?.unit ?? ''}</td>
                   <td>{item.notes ?? ''}</td>

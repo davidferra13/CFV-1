@@ -1,4 +1,4 @@
-// Thank-You Page — shown after a successful booking request or instant-book payment.
+// Thank-You Page - shown after a successful booking request or instant-book payment.
 // No authentication required.
 // Detects ?mode=instant for instant-book confirmation messaging.
 

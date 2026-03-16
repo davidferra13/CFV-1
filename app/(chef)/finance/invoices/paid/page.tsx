@@ -47,7 +47,7 @@ export default async function PaidInvoicesPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Events with accepted payment — paid, confirmed, in progress, and completed
+          Events with accepted payment - paid, confirmed, in progress, and completed
         </p>
       </div>
 
@@ -100,14 +100,14 @@ export default async function PaidInvoicesPage() {
                         {event.client.full_name}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm capitalize">
-                    {event.occasion?.replace(/_/g, ' ') ?? '—'}
+                    {event.occasion?.replace(/_/g, ' ') ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {event.guest_count ?? '—'}
+                    {event.guest_count ?? '-'}
                   </TableCell>
                   <TableCell>
                     <span
@@ -119,7 +119,7 @@ export default async function PaidInvoicesPage() {
                   <TableCell className="text-stone-100 font-semibold text-sm">
                     {event.quoted_price_cents != null
                       ? formatCurrency(event.quoted_price_cents)
-                      : '—'}
+                      : '-'}
                   </TableCell>
                   <TableCell>
                     <Link href={`/events/${event.id}`}>

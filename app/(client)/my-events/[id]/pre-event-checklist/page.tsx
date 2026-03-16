@@ -1,4 +1,4 @@
-// Pre-Event Checklist Page — client confirms dietary prefs and kitchen details
+// Pre-Event Checklist Page - client confirms dietary prefs and kitchen details
 
 import { requireClient } from '@/lib/auth/get-user'
 import { getPreEventChecklistData } from '@/lib/events/pre-event-checklist-actions'

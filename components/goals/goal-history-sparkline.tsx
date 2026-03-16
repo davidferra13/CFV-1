@@ -8,7 +8,7 @@ export function GoalHistorySparkline({ snapshots }: GoalHistorySparklineProps) {
   if (snapshots.length === 0) {
     return (
       <p className="text-sm text-stone-400 italic">
-        No history yet — check back after the next cron run.
+        No history yet - check back after the next cron run.
       </p>
     )
   }

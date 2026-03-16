@@ -99,7 +99,7 @@ export function ProcessRefundPanel({
               {formatCurrency(netPaidCents)} was collected for this event.{' '}
               {recommendation.refundAmountCents > 0
                 ? `Policy recommends a ${formatCurrency(recommendation.refundAmountCents)} refund.`
-                : 'Per policy, no refund is owed — but you can override.'}
+                : 'Per policy, no refund is owed - but you can override.'}
             </p>
           </div>
           <Button onClick={() => setIsOpen(true)} size="sm" variant="secondary">

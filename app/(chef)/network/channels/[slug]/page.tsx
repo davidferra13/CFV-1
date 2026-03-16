@@ -1,4 +1,4 @@
-// Channel feed page — posts within a specific topic channel
+// Channel feed page - posts within a specific topic channel
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -22,7 +22,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  return { title: `#${slug} — Chef Community` }
+  return { title: `#${slug} | Chef Community` }
 }
 
 export default async function ChannelPage({ params }: { params: Promise<{ slug: string }> }) {

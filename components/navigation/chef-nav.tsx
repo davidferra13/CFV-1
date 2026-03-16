@@ -1,4 +1,4 @@
-// Chef Portal Navigation — Collapsible sidebar with grouped nav + rail mode
+// Chef Portal Navigation - Collapsible sidebar with grouped nav + rail mode
 'use client'
 
 import Link from 'next/link'
@@ -880,7 +880,7 @@ export function ChefSidebar({
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
-            {/* Community — rail icon */}
+            {/* Community - rail icon */}
             <Link
               href="/network"
               title="Community"
@@ -921,7 +921,7 @@ export function ChefSidebar({
               )
             })}
 
-            {/* Sign Out — inside nav so it's above the Remy mascot */}
+            {/* Sign Out - inside nav so it's above the Remy mascot */}
             <button
               type="button"
               onClick={async () => {
@@ -1135,7 +1135,7 @@ export function ChefSidebar({
               </div>
             </div>
 
-            {/* Sign Out — inside nav so it's above the Remy mascot */}
+            {/* Sign Out - inside nav so it's above the Remy mascot */}
             <button
               type="button"
               onClick={async () => {
@@ -1492,7 +1492,7 @@ function MobileBottomTabBar({
   onMoreClick: () => void
   tabItems: NavItem[]
 }) {
-  // Ref for the "More" button — attaches a native onclick as backup
+  // Ref for the "More" button - attaches a native onclick as backup
   const moreRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -1515,7 +1515,7 @@ function MobileBottomTabBar({
               key={item.href}
               href={item.href}
               onClick={(e) => {
-                // Hard navigate — bypasses Next.js client router entirely.
+                // Hard navigate - bypasses Next.js client router entirely.
                 // This is intentional: the nav must NEVER silently fail.
                 e.preventDefault()
                 window.location.href = item.href
@@ -2005,7 +2005,7 @@ export function ChefMobileNav({
         </>
       )}
 
-      {/* Mobile bottom tab bar — uses native <a> tags so navigation works
+      {/* Mobile bottom tab bar - uses native <a> tags so navigation works
           even when React hydration fails. This is the MOST CRITICAL nav on mobile;
           it must never depend on React's event system being functional. */}
       <MobileBottomTabBar

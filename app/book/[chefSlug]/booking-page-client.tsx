@@ -1,6 +1,6 @@
 'use client'
 
-// BookingPageClient — client wrapper that coordinates calendar + form state.
+// BookingPageClient - client wrapper that coordinates calendar + form state.
 // Passes bookingConfig to BookingForm for dual-mode rendering.
 
 import { useState } from 'react'

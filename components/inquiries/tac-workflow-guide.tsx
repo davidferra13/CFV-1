@@ -1,4 +1,4 @@
-// TakeAChef Workflow Guide — collapsible 4-step overview shown on TAC inquiry detail pages.
+// TakeAChef Workflow Guide - collapsible 4-step overview shown on TAC inquiry detail pages.
 // Dismissible per-inquiry via localStorage. Helps chefs understand the full TakeAChef flow.
 'use client'
 
@@ -14,7 +14,7 @@ const STEPS = [
   {
     number: '1',
     label: 'Lead arrives',
-    detail: 'Address it — send your initial menu on TakeAChef, or decline',
+    detail: 'Address it - send your initial menu on TakeAChef, or decline',
     activeStatuses: ['new'],
   },
   {
@@ -32,7 +32,7 @@ const STEPS = [
   {
     number: '4',
     label: 'Build the final menu',
-    detail: 'The TakeAChef menu was a door-opener — now create the real one for the event',
+    detail: 'The TakeAChef menu was a door-opener - now create the real one for the event',
     activeStatuses: ['confirmed'],
   },
 ]

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 /**
  * Report an error to Sentry via the lightweight API route.
- * Non-blocking — failures are silently swallowed.
+ * Non-blocking - failures are silently swallowed.
  */
 function reportToSentry(error: Error & { digest?: string }) {
   try {
@@ -23,7 +23,7 @@ function reportToSentry(error: Error & { digest?: string }) {
         tags: { boundary: 'global' },
       }),
     }).catch(() => {
-      // Swallow — reporting must never affect the user
+      // Swallow - reporting must never affect the user
     })
   } catch {
     // Swallow

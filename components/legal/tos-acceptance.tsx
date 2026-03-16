@@ -12,7 +12,7 @@ interface TosAcceptanceProps {
 }
 
 /**
- * TosAcceptance — a checkbox + label used on signup and first-login forms.
+ * TosAcceptance - a checkbox + label used on signup and first-login forms.
  *
  * Usage:
  *   const [tosAccepted, setTosAccepted] = useState(false)

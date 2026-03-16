@@ -1,6 +1,6 @@
 'use client'
 
-// Cannabis Tier Badge — small indicator used in nav and headers
+// Cannabis Tier Badge - small indicator used in nav and headers
 
 export function CannabisTierBadge({ size = 'sm' }: { size?: 'xs' | 'sm' | 'md' }) {
   const styles = {

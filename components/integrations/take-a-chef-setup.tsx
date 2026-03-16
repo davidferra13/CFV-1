@@ -153,7 +153,7 @@ export function TakeAChefSetup({
     )
   }
 
-  // --- State 3: Not connected — setup wizard ---
+  // --- State 3: Not connected - setup wizard ---
   return (
     <Card>
       <CardHeader>
@@ -203,7 +203,7 @@ export function TakeAChefSetup({
             </div>
           </li>
 
-          {/* Step 3: Commission rate — not yet persisted to server */}
+          {/* Step 3: Commission rate - not yet persisted to server */}
           <li className="flex gap-4">
             <div className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-stone-700 text-stone-400 text-xs font-bold">
               3

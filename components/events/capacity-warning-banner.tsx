@@ -1,9 +1,9 @@
 'use client'
 
-// CapacityWarningBanner — Inline alert when adding an event would breach limits
+// CapacityWarningBanner - Inline alert when adding an event would breach limits
 // Shown in the event creation flow before the chef commits to the booking.
-// Dismissible — "I understand, continue anyway" clears the banner locally.
-// No server call on dismiss — it's purely informational.
+// Dismissible - "I understand, continue anyway" clears the banner locally.
+// No server call on dismiss - it's purely informational.
 
 import { useState } from 'react'
 import type { CapacityWarning } from '@/lib/scheduling/capacity-check'

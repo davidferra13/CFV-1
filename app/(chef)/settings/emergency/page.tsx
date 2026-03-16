@@ -7,7 +7,7 @@ import { listEmergencyContacts } from '@/lib/contingency/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { EmergencyContactsClient } from './emergency-contacts-client'
 
-export const metadata: Metadata = { title: 'Emergency Contacts — ChefFlow' }
+export const metadata: Metadata = { title: 'Emergency Contacts | ChefFlow' }
 
 export default async function EmergencyPage() {
   await requireChef()
@@ -18,7 +18,7 @@ export default async function EmergencyPage() {
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Emergency Contacts</h1>
         <p className="mt-1 text-sm text-stone-500">
-          People to call if you are unable to execute an event — a sous chef you trust, a business
+          People to call if you are unable to execute an event - a sous chef you trust, a business
           partner, or a peer chef who can step in.
         </p>
       </div>

@@ -1,4 +1,4 @@
-// ConfirmModal — reusable confirmation dialog to replace browser confirm().
+// ConfirmModal - reusable confirmation dialog to replace browser confirm().
 // Usage:
 //   const [showConfirm, setShowConfirm] = useState(false)
 //   <ConfirmModal

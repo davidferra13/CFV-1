@@ -63,7 +63,7 @@ function formatCurrency(cents: number): string {
 }
 
 function formatMinutes(minutes: number): string {
-  if (minutes === 0) return '—'
+  if (minutes === 0) return '-'
   if (minutes < 60) return `${minutes}m`
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
@@ -111,7 +111,7 @@ export function DinnerTimeChart({ data }: { data: DinnerTimeSlot[] }) {
   )
 }
 
-// Occasion breakdown (horizontal bar) — count as bar, revenue details in custom tooltip
+// Occasion breakdown (horizontal bar) - count as bar, revenue details in custom tooltip
 function OccasionTooltip({
   active,
   payload,
@@ -240,7 +240,7 @@ export function DietaryFrequencyChart({ data }: { data: DietaryFrequency[] }) {
 
 // ─── Tab 2: Seasons & Trends ─────────────────────────
 
-// Monthly volume: bars (events) + line (revenue) — dual Y axis
+// Monthly volume: bars (events) + line (revenue) - dual Y axis
 export function MonthlyVolumeChart({ data }: { data: MonthlyVolume[] }) {
   const hasData = data.some((d) => d.events > 0)
   if (!hasData) return <EmptyChart message="No event history yet" />

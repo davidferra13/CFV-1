@@ -1,6 +1,6 @@
-// Partner Portal — Profile Settings
+// Partner Portal - Profile Settings
 // Partners can edit their name, description, contact info, website, and booking URL.
-// The chef controls whether the profile is publicly visible — that toggle is read-only here.
+// The chef controls whether the profile is publicly visible - that toggle is read-only here.
 
 import { getPartnerPortalData, updatePartnerProfile } from '@/lib/partners/portal-actions'
 import { revalidatePath } from 'next/cache'
@@ -32,7 +32,7 @@ export default async function PartnerProfilePage() {
         </p>
       </div>
 
-      {/* Showcase visibility — read-only, chef controls this */}
+      {/* Showcase visibility - read-only, chef controls this */}
       <div
         className={`flex items-center gap-3 rounded-xl border p-4 ${
           partner.is_showcase_visible

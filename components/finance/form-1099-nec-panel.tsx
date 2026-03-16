@@ -198,7 +198,7 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
                     ) : r.requiresFiling ? (
                       <AlertTriangle className="h-4 w-4 text-red-500 mx-auto" />
                     ) : (
-                      <span className="text-stone-300">—</span>
+                      <span className="text-stone-300">-</span>
                     )}
                   </td>
                 </tr>
@@ -216,8 +216,8 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
       </Card>
 
       <p className="text-xs text-stone-400 text-center">
-        IRS Form 1099-NEC — Box 1 (Nonemployee Compensation). Contractors paid $600 or more in a
-        calendar year. This is a reference report only — consult your accountant or use IRS-approved
+        IRS Form 1099-NEC - Box 1 (Nonemployee Compensation). Contractors paid $600 or more in a
+        calendar year. This is a reference report only - consult your accountant or use IRS-approved
         software to file.
       </p>
     </div>

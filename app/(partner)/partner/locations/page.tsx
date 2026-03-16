@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-// Partner Portal — Locations list
+// Partner Portal - Locations list
 // Shows all locations the partner manages. Read-only overview;
 // click into a location for detail and event history.
 

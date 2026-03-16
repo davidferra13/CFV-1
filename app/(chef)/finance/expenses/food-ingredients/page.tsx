@@ -102,7 +102,7 @@ export default async function FoodIngredientsExpensesPage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">
-                    {expense.vendor_name ?? '—'}
+                    {expense.vendor_name ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {expense.event ? (
@@ -113,7 +113,7 @@ export default async function FoodIngredientsExpensesPage() {
                         {expense.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-100 font-semibold text-sm">

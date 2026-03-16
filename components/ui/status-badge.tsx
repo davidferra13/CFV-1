@@ -1,4 +1,4 @@
-// Universal Status Badge — Consistent status colors across all entities
+// Universal Status Badge - Consistent status colors across all entities
 'use client'
 
 import { HTMLAttributes } from 'react'

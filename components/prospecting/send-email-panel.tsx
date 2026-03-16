@@ -25,14 +25,14 @@ export function SendEmailPanel({
 }: SendEmailPanelProps) {
   const [isPending, startTransition] = useTransition()
   const [showForm, setShowForm] = useState(false)
-  const [subject, setSubject] = useState(`Introduction — Private Chef Services`)
+  const [subject, setSubject] = useState(`Introduction - Private Chef Services`)
   const [body, setBody] = useState(draftEmail ?? '')
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
   const router = useRouter()
 
   if (!recipientEmail) return null
 
-  // Gmail not connected — show guidance instead of Send button
+  // Gmail not connected - show guidance instead of Send button
   if (!gmailConnected) {
     return (
       <div className="flex items-center gap-2 text-xs text-stone-500">

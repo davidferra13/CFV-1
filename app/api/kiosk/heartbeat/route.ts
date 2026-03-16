@@ -1,4 +1,4 @@
-// Kiosk Heartbeat API — updates last_seen, logs events (rate-limited)
+// Kiosk Heartbeat API - updates last_seen, logs events (rate-limited)
 // Requires device token in Authorization header
 
 import { NextResponse } from 'next/server'

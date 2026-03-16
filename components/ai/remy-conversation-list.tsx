@@ -497,7 +497,7 @@ export function RemyConversationList({
         )}
       </div>
 
-      {/* Context Menu — Conversation */}
+      {/* Context Menu - Conversation */}
       {contextMenu && (
         <div
           ref={contextMenuRef}
@@ -576,7 +576,7 @@ export function RemyConversationList({
         </div>
       )}
 
-      {/* Context Menu — Project */}
+      {/* Context Menu - Project */}
       {projectContextMenu && (
         <div
           className="fixed z-50 bg-gray-800 border border-white/10 rounded-lg shadow-xl py-1 min-w-[180px] animate-in fade-in-0 zoom-in-95 duration-150"

@@ -52,7 +52,7 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
 
   if (!profileRes.ok) {
     const err = await profileRes.text()
-    // Increment error count — fetch current count first since RPC won't work inline
+    // Increment error count - fetch current count first since RPC won't work inline
     const { data: currentConn } = await supabase
       .from('social_connected_accounts')
       .select('error_count')
@@ -111,7 +111,7 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
       }
     }
   } catch {
-    // Insights may not be available for personal accounts — continue without them
+    // Insights may not be available for personal accounts - continue without them
   }
 
   const today = new Date().toISOString().slice(0, 10)

@@ -1,4 +1,4 @@
-// Admin Feature Flags — Per-chef feature flag management
+// Admin Feature Flags - Per-chef feature flag management
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getAllChefFlags } from '@/lib/admin/platform-stats'
@@ -6,7 +6,7 @@ import { FlagTogglePanel } from '@/components/admin/flag-toggle-panel'
 import { redirect } from 'next/navigation'
 import { ToggleLeft } from '@/components/ui/icons'
 
-// All known feature flags — add new flags here as features are built
+// All known feature flags - add new flags here as features are built
 const KNOWN_FLAGS = [
   {
     key: 'ai_pricing_suggestions',

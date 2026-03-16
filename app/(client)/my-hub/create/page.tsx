@@ -1,4 +1,4 @@
-// Create a new dinner event — stub + hub group
+// Create a new dinner event - stub + hub group
 
 import type { Metadata } from 'next'
 import Link from 'next/link'

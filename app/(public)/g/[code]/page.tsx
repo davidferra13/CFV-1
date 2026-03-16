@@ -1,4 +1,4 @@
-// Guest Landing Page — /g/[code]
+// Guest Landing Page - /g/[code]
 // Public, no auth required. Guests scan a QR code at a dinner event,
 // land here, and can express interest in booking their own event.
 
@@ -14,10 +14,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: 'Page Not Found' }
 
   return {
-    title: `${data.chefName} — Private Chef`,
+    title: `${data.chefName} | Private Chef`,
     description: `Enjoyed dinner by ${data.chefName}? Book your own private dining experience.`,
     openGraph: {
-      title: `${data.chefName} — Private Chef`,
+      title: `${data.chefName} | Private Chef`,
       description: `Book your own private dining experience with ${data.chefName}.`,
       type: 'website',
     },

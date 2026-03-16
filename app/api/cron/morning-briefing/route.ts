@@ -1,6 +1,6 @@
 // GET /api/cron/morning-briefing
 // Generates a morning briefing for each tenant and stores it as a remy_alert.
-// Called by Vercel Cron daily at 7 AM EST. Deterministic — no LLM.
+// Called by Vercel Cron daily at 7 AM EST. Deterministic - no LLM.
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'

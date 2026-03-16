@@ -1,4 +1,4 @@
-// Seasonal Sidebar — Schedule Integration
+// Seasonal Sidebar - Schedule Integration
 // Shows the active season's notes, available ingredients, and go-to dishes.
 
 import type { SeasonalPalette } from '@/lib/seasonal/types'

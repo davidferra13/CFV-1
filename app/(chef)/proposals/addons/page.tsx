@@ -1,4 +1,4 @@
-// Proposal Add-Ons — Manage upsell and add-on packages
+// Proposal Add-Ons - Manage upsell and add-on packages
 // Renders the AddonSelector for creating and editing add-on items
 
 import type { Metadata } from 'next'

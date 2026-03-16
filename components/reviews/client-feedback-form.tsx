@@ -1,4 +1,4 @@
-// Client Feedback Form — Inline on completed event detail page
+// Client Feedback Form - Inline on completed event detail page
 // Collects star rating, written feedback, and display consent.
 // After submission, shows Google Review CTA.
 

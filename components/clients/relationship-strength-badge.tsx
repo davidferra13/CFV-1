@@ -1,4 +1,4 @@
-// Relationship Strength Badge — visual tier indicator for a client
+// Relationship Strength Badge - visual tier indicator for a client
 // Maps health score tier to a human-friendly label and color.
 
 import type { ClientHealthTier } from '@/lib/clients/health-score'

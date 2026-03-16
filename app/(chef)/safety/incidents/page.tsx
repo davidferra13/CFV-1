@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { IncidentList } from '@/components/safety/incident-list'
 
-export const metadata: Metadata = { title: 'Incident Documentation — ChefFlow' }
+export const metadata: Metadata = { title: 'Incident Documentation | ChefFlow' }
 
 export default async function IncidentsPage() {
   const chef = await requireChef()
@@ -25,7 +25,7 @@ export default async function IncidentsPage() {
         <div>
           <h1 className="text-2xl font-bold text-stone-100">Incident Documentation</h1>
           <p className="mt-1 text-sm text-stone-500">
-            A complete log of safety incidents — foodborne illness concerns, injuries, equipment
+            A complete log of safety incidents - foodborne illness concerns, injuries, equipment
             failures, and near-misses. Accurate records protect you legally and help prevent
             recurrence.
           </p>

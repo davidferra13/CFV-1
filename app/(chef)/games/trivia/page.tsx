@@ -80,7 +80,7 @@ function LoadingState({ onCancel }: { onCancel: () => void }) {
       <p className="text-xs text-muted-foreground/60">{elapsed}s elapsed</p>
       {elapsed >= 10 && (
         <p className="text-xs text-muted-foreground/80">
-          Ollama is still generating — this can take up to a minute for detailed questions.
+          Ollama is still generating - this can take up to a minute for detailed questions.
         </p>
       )}
       <button
@@ -213,7 +213,7 @@ export default function TriviaGame() {
     }
   }, [gameMode, topic, customTopic, internalFocus, difficulty])
 
-  // timer — only runs when enabled
+  // timer - only runs when enabled
   useEffect(() => {
     if (phase !== 'playing' || showAnswer || !timerEnabled) return
     setTimeLeft(TIME_PER_QUESTION)
@@ -418,7 +418,7 @@ export default function TriviaGame() {
               <div className="text-sm font-medium">Timed Mode</div>
               <div className="text-xs text-muted-foreground">
                 {timerEnabled
-                  ? `${TIME_PER_QUESTION}s per question — earn time bonuses!`
+                  ? `${TIME_PER_QUESTION}s per question - earn time bonuses!`
                   : 'Take your time, no rush'}
               </div>
             </div>
@@ -577,7 +577,7 @@ export default function TriviaGame() {
         </div>
       )}
 
-      {/* RESULTS — Full Answer Review Report */}
+      {/* RESULTS - Full Answer Review Report */}
       {phase === 'result' && (
         <div className="space-y-6">
           {/* Score summary */}

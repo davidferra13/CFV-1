@@ -1,6 +1,6 @@
 'use client'
 
-// Tip Log Panel — records tips received per event (cash, Venmo, Zelle, etc.)
+// Tip Log Panel - records tips received per event (cash, Venmo, Zelle, etc.)
 
 import { useState } from 'react'
 import { format } from 'date-fns'

@@ -1,6 +1,6 @@
 'use client'
 
-// EventPhotoGallery — Chef-facing upload and management component.
+// EventPhotoGallery - Chef-facing upload and management component.
 // Renders a drag-and-drop upload zone plus an editable photo grid.
 // All mutations call server actions; state updates optimistically.
 
@@ -87,7 +87,7 @@ function PhotoCard({
 
   return (
     <div className="flex flex-col border border-stone-700 rounded-xl overflow-hidden bg-stone-900 shadow-sm hover:shadow-md transition-shadow">
-      {/* Thumbnail — click to preview full size */}
+      {/* Thumbnail - click to preview full size */}
       <div className="relative aspect-square bg-stone-800">
         <button
           type="button"
@@ -113,7 +113,7 @@ function PhotoCard({
             <span className="bg-black/60 text-white text-xs px-2 py-1 rounded">View</span>
           </div>
         </button>
-        {/* Reorder buttons — top-left overlay */}
+        {/* Reorder buttons - top-left overlay */}
         <div className="absolute top-1.5 left-1.5 flex flex-col gap-0.5">
           <button
             type="button"
@@ -148,7 +148,7 @@ function PhotoCard({
             </svg>
           </button>
         </div>
-        {/* Photo type badge — top-right */}
+        {/* Photo type badge - top-right */}
         <div className="absolute top-1.5 right-1.5 flex flex-col items-end gap-1">
           {photo.photo_type && (
             <span
@@ -161,7 +161,7 @@ function PhotoCard({
             {fileSizeLabel}
           </span>
         </div>
-        {/* Portfolio star — bottom-right overlay */}
+        {/* Portfolio star - bottom-right overlay */}
         <button
           type="button"
           onClick={(e) => {

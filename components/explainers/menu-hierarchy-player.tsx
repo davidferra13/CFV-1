@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * MenuHierarchyPlayer — Remotion Player wrapper for the menu hierarchy animation.
+ * MenuHierarchyPlayer - Remotion Player wrapper for the menu hierarchy animation.
  * Shows how Menu → Dish → Component → Recipe layers nest together.
  */
 

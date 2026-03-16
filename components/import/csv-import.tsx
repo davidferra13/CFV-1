@@ -1,6 +1,6 @@
 // CSV Client Import Component
 // Handles the full CSV import flow: upload/paste → column preview → review → save
-// Uses deterministic parsing — no AI required.
+// Uses deterministic parsing - no AI required.
 
 'use client'
 
@@ -174,7 +174,7 @@ export function CsvImport() {
           </div>
 
           <Textarea
-            placeholder={`Paste CSV content here, or upload a file above.\n\nExample:\nName,Email,Phone,Notes\nJohn Smith,john@example.com,555-1234,Regular client — nut allergy\nSarah Jones,sarah@example.com,555-5678,Prefers weekends`}
+            placeholder={`Paste CSV content here, or upload a file above.\n\nExample:\nName,Email,Phone,Notes\nJohn Smith,john@example.com,555-1234,Regular client - nut allergy\nSarah Jones,sarah@example.com,555-5678,Prefers weekends`}
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
             rows={10}
@@ -266,7 +266,7 @@ export function CsvImport() {
                               key={ci}
                               className="py-1.5 pr-4 text-stone-300 max-w-[200px] truncate"
                             >
-                              {row[m.index] || '—'}
+                              {row[m.index] || '-'}
                             </td>
                           ))}
                       </tr>
@@ -300,7 +300,7 @@ export function CsvImport() {
               title={`${duplicateCount} possible duplicate${duplicateCount !== 1 ? 's' : ''} detected`}
             >
               Clients marked below may already exist in your account. You can skip them or import
-              anyway — duplicates can be merged later.
+              anyway - duplicates can be merged later.
             </Alert>
           )}
 
@@ -313,7 +313,7 @@ export function CsvImport() {
               </h3>
               {parseResult.skippedRows > 0 && (
                 <span className="text-xs text-stone-500">
-                  ({parseResult.skippedRows} rows skipped — no name found)
+                  ({parseResult.skippedRows} rows skipped - no name found)
                 </span>
               )}
             </div>
@@ -369,7 +369,7 @@ export function CsvImport() {
                 className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
               />
               <span className="text-sm text-stone-300">
-                The column mapping looks right — import these clients
+                The column mapping looks right - import these clients
               </span>
             </label>
           )}
@@ -402,7 +402,7 @@ export function CsvImport() {
             <p>
               Successfully imported {importedCount} client
               {importedCount !== 1 ? 's' : ''}.
-              {failedCount > 0 && ` ${failedCount} failed — check for duplicate emails.`}
+              {failedCount > 0 && ` ${failedCount} failed - check for duplicate emails.`}
             </p>
           </Alert>
           <div className="flex gap-3">

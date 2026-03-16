@@ -1,12 +1,12 @@
 'use client'
 
 /**
- * DataFlowSchematic — pure React/SVG inline diagram.
+ * DataFlowSchematic - pure React/SVG inline diagram.
  * Shows the private loop: Chef → ChefFlow Private AI → Chef.
  * Clear "X" over any path to external servers or third parties.
  *
  * Simplified from the original two-column comparison to focus on
- * what actually happens — a closed loop within ChefFlow.
+ * what actually happens - a closed loop within ChefFlow.
  */
 
 import { Check, X, Shield, Server } from '@/components/ui/icons'
@@ -30,7 +30,7 @@ export function DataFlowSchematic() {
           </div>
           <div>
             <h3 className="font-semibold text-emerald-900">Remy Conversations</h3>
-            <p className="text-xs text-emerald-600">Private loop — nothing leaves ChefFlow</p>
+            <p className="text-xs text-emerald-600">Private loop - nothing leaves ChefFlow</p>
           </div>
         </div>
 
@@ -308,7 +308,7 @@ export function DataFlowSchematic() {
                 &#x2713;
               </text>
               <text x="22" y="12" className="fill-emerald-800 text-[9px]">
-                Delete anytime — it&apos;s truly gone
+                Delete anytime - it&apos;s truly gone
               </text>
             </g>
 

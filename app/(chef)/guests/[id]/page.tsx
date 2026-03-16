@@ -1,4 +1,4 @@
-// Guest Profile — Full guest detail with tags, comps, visits, reservations
+// Guest Profile - Full guest detail with tags, comps, visits, reservations
 // Part of the Guest CRM System
 
 import type { Metadata } from 'next'
@@ -14,7 +14,7 @@ import { VisitLog } from '@/components/guests/visit-log'
 import { ReservationForm } from '@/components/guests/reservation-form'
 import { redirect } from 'next/navigation'
 
-export const metadata: Metadata = { title: 'Guest Profile — ChefFlow' }
+export const metadata: Metadata = { title: 'Guest Profile | ChefFlow' }
 
 export default async function GuestProfilePage({ params }: { params: { id: string } }) {
   await requireChef()
@@ -74,10 +74,10 @@ export default async function GuestProfilePage({ params }: { params: { id: strin
                 <div>
                   <p className="text-xs text-stone-500 uppercase tracking-wide">First Visit</p>
                   <p className="text-sm font-medium text-stone-200">
-                    {guest.stats.firstVisit || '—'}
+                    {guest.stats.firstVisit || '-'}
                   </p>
                   <p className="text-xs text-stone-500 mt-0.5">
-                    Last: {guest.stats.lastVisit || '—'}
+                    Last: {guest.stats.lastVisit || '-'}
                   </p>
                 </div>
               </div>

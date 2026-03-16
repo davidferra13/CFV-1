@@ -1,4 +1,4 @@
-// Proposal Templates — Visual builder for proposal templates
+// Proposal Templates - Visual builder for proposal templates
 // Fetches templates and menus, renders the interactive builder
 
 import type { Metadata } from 'next'

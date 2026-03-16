@@ -1,4 +1,4 @@
-// Rate Card — Quick-access pricing reference for mid-conversation use
+// Rate Card - Quick-access pricing reference for mid-conversation use
 // Mobile-first, scannable, copy-to-clipboard per section
 'use client'
 

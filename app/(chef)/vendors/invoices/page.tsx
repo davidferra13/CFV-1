@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { InvoiceForm } from '@/components/vendors/invoice-form'
 import { InvoiceCsvUpload } from '@/components/vendors/invoice-csv-upload'
 
-export const metadata: Metadata = { title: 'Vendor Invoices — ChefFlow' }
+export const metadata: Metadata = { title: 'Vendor Invoices | ChefFlow' }
 
 export default async function VendorInvoicesPage({
   searchParams,

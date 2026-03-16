@@ -1,4 +1,4 @@
-// Admin Financials — Platform GMV, ledger entries, and payment issues
+// Admin Financials - Platform GMV, ledger entries, and payment issues
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformFinancialOverview, getPlatformLedgerEntries } from '@/lib/admin/platform-stats'
@@ -149,7 +149,7 @@ export default async function AdminFinancialsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-stone-400 text-xs max-w-[200px] truncate">
-                      {entry.description ?? '—'}
+                      {entry.description ?? '-'}
                     </td>
                     <td className="px-4 py-2.5 text-right font-medium text-slate-900">
                       {formatCents(entry.amount_cents ?? 0)}

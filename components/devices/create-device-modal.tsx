@@ -20,7 +20,7 @@ export function CreateDeviceModal({ onClose, onCreated }: CreateDeviceModalProps
   const [error, setError] = useState('')
   const [isPending, startTransition] = useTransition()
 
-  // After creation — show pairing display
+  // After creation - show pairing display
   const [pairingData, setPairingData] = useState<{
     pairingCode: string
     expiresAt: string

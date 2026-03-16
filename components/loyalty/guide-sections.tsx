@@ -1,6 +1,6 @@
 'use client'
 
-// Loyalty Guide — Reusable Section Components
+// Loyalty Guide - Reusable Section Components
 // Warm brand-themed collapsible sections for chef and client loyalty pages.
 // Follows the same architecture as cannabis about-sections.tsx but with ChefFlow branding.
 
@@ -205,7 +205,7 @@ export function GuideRankList({ items }: { items: GuideRankItem[] }) {
           </span>
           <div>
             <span className="text-sm font-medium text-stone-200">{item.label}</span>
-            <span className="text-sm text-stone-400"> — {item.description}</span>
+            <span className="text-sm text-stone-400"> - {item.description}</span>
           </div>
         </div>
       ))}

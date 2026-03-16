@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true })
   } catch {
-    // Never fail — this is a best-effort endpoint
+    // Never fail - this is a best-effort endpoint
     return NextResponse.json({ ok: false }, { status: 500 })
   }
 }

@@ -1,4 +1,4 @@
-// Cannabis Portal — About Page
+// Cannabis Portal - About Page
 // The full story: task force, legislation, credentials, and what's coming.
 // Every claim is source-linked. Every fact is verifiable. This is the receipts.
 
@@ -107,7 +107,7 @@ export default async function CannabisAboutPage() {
 
             <AboutMemberTable
               members={[
-                { name: 'Sam Tracy', organization: '—', seat: 'Expert on Cannabis Policy' },
+                { name: 'Sam Tracy', organization: '-', seat: 'Expert on Cannabis Policy' },
                 {
                   name: 'David Ferragamo',
                   organization: 'Private Chef',
@@ -120,7 +120,7 @@ export default async function CannabisAboutPage() {
                 },
                 {
                   name: 'Rose Mahoney',
-                  organization: '—',
+                  organization: '-',
                   seat: 'Adult Use Cannabis Consumer Interest',
                 },
                 {
@@ -170,7 +170,7 @@ export default async function CannabisAboutPage() {
                 },
                 {
                   name: 'Jennifer Kelley-Young',
-                  organization: 'City of Portland — Div. of Public Health',
+                  organization: 'City of Portland - Div. of Public Health',
                   seat: 'Public Health',
                 },
                 {
@@ -275,8 +275,8 @@ export default async function CannabisAboutPage() {
             </div>
           </AboutSection>
 
-          {/* ── Section 2.5: Inside the Meetings — 12 Hours Distilled ── */}
-          <AboutSection title="Inside the Meetings — 12 Hours Distilled" icon="🎙️">
+          {/* ── Section 2.5: Inside the Meetings - 12 Hours Distilled ── */}
+          <AboutSection title="Inside the Meetings - 12 Hours Distilled" icon="🎙️">
             <div
               className="rounded-lg p-4 mb-2"
               style={{
@@ -917,10 +917,10 @@ export default async function CannabisAboutPage() {
             </AboutParagraph>
             <ul className="space-y-1.5 pl-1">
               {[
-                'Insurance availability — no clear insurance pathway exists for cannabis hospitality businesses',
-                'Consumer demand — more data needed on whether demand justifies the regulatory infrastructure',
-                "Indoor smoking laws — potential conflict between cannabis consumption and Maine's existing indoor smoking prohibitions",
-                'Highway safety — cannabis was detected in 27% of fatal crash fatalities and 29% of surviving drivers in serious crashes (Maine Department of Public Safety data)',
+                'Insurance availability - no clear insurance pathway exists for cannabis hospitality businesses',
+                'Consumer demand - more data needed on whether demand justifies the regulatory infrastructure',
+                "Indoor smoking laws - potential conflict between cannabis consumption and Maine's existing indoor smoking prohibitions",
+                'Highway safety - cannabis was detected in 27% of fatal crash fatalities and 29% of surviving drivers in serious crashes (Maine Department of Public Safety data)',
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#6aaa6e' }}>
                   <span className="mt-0.5 shrink-0" style={{ color: '#4a7c4e' }}>
@@ -952,7 +952,7 @@ export default async function CannabisAboutPage() {
           </AboutSection>
 
           {/* ── Section 4: The Legislation ── */}
-          <AboutSection title="The Legislation — LD 1365" icon="&#x2696;">
+          <AboutSection title="The Legislation - LD 1365" icon="&#x2696;">
             <AboutParagraph>
               Following the task force&rsquo;s final report, legislation was introduced to establish
               cannabis hospitality in Maine.
@@ -984,7 +984,7 @@ export default async function CannabisAboutPage() {
             <ul className="space-y-1.5 pl-1">
               {[
                 'Defines a "cannabis consumption lounge" as a designated area within a licensed cannabis store that has been issued an endorsement for on-premises consumption, limited to individuals 21 years of age or older.',
-                'Requires municipal approval — municipalities must adopt local ordinances permitting cannabis hospitality establishments before any can operate.',
+                'Requires municipal approval - municipalities must adopt local ordinances permitting cannabis hospitality establishments before any can operate.',
                 'Mandates a cannabis server education course that must be completed by anyone involved in retail sales and management of cannabis lounges.',
                 "Creates a Cannabis Liability Act modeled on Maine's existing Liquor Liability Act, establishing legal liability for over-serving if a patron causes damages as a result of impairment.",
                 'Includes restrictions on consumption location, occupancy, and permitted activities within designated areas.',
@@ -1028,7 +1028,7 @@ export default async function CannabisAboutPage() {
                   date: 'February 4, 2026',
                   description: 'Divided Report from Committee',
                   detail:
-                    'The committee issued a divided report — no consensus reached. The bill remains in the legislative process.',
+                    'The committee issued a divided report - no consensus reached. The bill remains in the legislative process.',
                 },
               ]}
             />
@@ -1133,7 +1133,7 @@ export default async function CannabisAboutPage() {
                 href: 'https://legislature.maine.gov/backend/App/services/getDocument.aspx?documentId=107388',
               },
               {
-                label: 'Final Report — January 31, 2025',
+                label: 'Final Report - January 31, 2025',
                 href: 'https://www.maine.gov/dafs/ocp/sites/maine.gov.dafs.ocp/files/2025-01/Final%20Report%20-%20Cannabis%20Hospitality%20Task%20Force%201.31.25.pdf',
               },
             ]}
@@ -1143,19 +1143,19 @@ export default async function CannabisAboutPage() {
             title="Meeting Materials"
             links={[
               {
-                label: 'Meeting 1 — Agenda & Materials',
+                label: 'Meeting 1 - Agenda & Materials',
                 href: 'https://www.maine.gov/dafs/ocp/sites/maine.gov.dafs.ocp/files/inline-files/Agenda%20%26%20Materials%20-%20CHTF%20Meeting%201.pdf',
               },
               {
-                label: 'Meeting 2 — Agenda & Materials',
+                label: 'Meeting 2 - Agenda & Materials',
                 href: 'https://www.maine.gov/dafs/ocp/sites/maine.gov.dafs.ocp/files/inline-files/Agenda%20%26%20Materials%20-%20CHTF%20Meeting%202.pdf',
               },
               {
-                label: 'Meeting 3 — Agenda & Materials',
+                label: 'Meeting 3 - Agenda & Materials',
                 href: 'https://www.maine.gov/dafs/ocp/sites/maine.gov.dafs.ocp/files/inline-files/Agenda%20%26%20Materials%20-%20CHTF%20Meeting%203.pdf',
               },
               {
-                label: 'Meeting 4 — Agenda & Materials',
+                label: 'Meeting 4 - Agenda & Materials',
                 href: 'https://www.maine.gov/dafs/ocp/sites/maine.gov.dafs.ocp/files/inline-files/Agenda%20%26%20Materials%20-%20CHTF%20Meeting%204.pdf',
               },
               {
@@ -1192,10 +1192,10 @@ export default async function CannabisAboutPage() {
           <AboutLinkGroup
             title="Meeting Recordings"
             links={[
-              { label: 'Meeting 1 — YouTube', href: 'https://youtu.be/sDfvYLgstE8?t=35' },
-              { label: 'Meeting 2 — YouTube', href: 'https://youtu.be/gSy3_oFjPd0' },
-              { label: 'Meeting 3 — YouTube', href: 'https://youtu.be/qjldeoZ2AE0' },
-              { label: 'Meeting 4 — YouTube', href: 'https://youtu.be/aJ_Pma7dzSQ' },
+              { label: 'Meeting 1 - YouTube', href: 'https://youtu.be/sDfvYLgstE8?t=35' },
+              { label: 'Meeting 2 - YouTube', href: 'https://youtu.be/gSy3_oFjPd0' },
+              { label: 'Meeting 3 - YouTube', href: 'https://youtu.be/qjldeoZ2AE0' },
+              { label: 'Meeting 4 - YouTube', href: 'https://youtu.be/aJ_Pma7dzSQ' },
               {
                 label: 'Full Playlist',
                 href: 'https://www.youtube.com/playlist?list=PLdBrIirjKsezIN0zkfKawogPci7010WQY',
@@ -1214,19 +1214,19 @@ export default async function CannabisAboutPage() {
             title="News Coverage"
             links={[
               {
-                label: 'Maine Public — Task Force Offers Roadmap',
+                label: 'Maine Public - Task Force Offers Roadmap',
                 href: 'https://www.mainepublic.org/maine/2025-02-04/state-task-force-offers-roadmap-for-considering-on-site-cannabis-consumption-businesses',
               },
               {
-                label: 'Central Maine — Still a Long Way from Lounges',
+                label: 'Central Maine - Still a Long Way from Lounges',
                 href: 'https://www.centralmaine.com/2025/02/25/maine-inches-toward-allowing-cannabis-social-clubs/',
               },
               {
-                label: 'Spectrum News — Task Force Considers Lounges',
+                label: 'Spectrum News - Task Force Considers Lounges',
                 href: 'https://spectrumlocalnews.com/me/maine/business/2024/08/01/maine-task-force-considers-cannabis-lounges--other-on-site-options-as-industry-looks-for-areas-of-growth',
               },
               {
-                label: 'MaineBiz — Cannabis Hospitality Focus',
+                label: 'MaineBiz - Cannabis Hospitality Focus',
                 href: 'https://www.mainebiz.biz/article/cannabis-hospitality-will-be-the-focus-of-a-maine-task-force',
               },
             ]}

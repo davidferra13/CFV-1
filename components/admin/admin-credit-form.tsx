@@ -1,6 +1,6 @@
 'use client'
 
-// Admin Credit Form — issue a ledger adjustment (credit or debit) for a chef
+// Admin Credit Form - issue a ledger adjustment (credit or debit) for a chef
 // Appends an immutable 'adjustment' entry to ledger_entries.
 
 import { useState, useTransition } from 'react'

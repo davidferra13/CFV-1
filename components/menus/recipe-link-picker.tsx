@@ -1,6 +1,6 @@
 'use client'
 
-// RecipeLinkPicker — compact recipe search + link widget for the Menu Doc Editor.
+// RecipeLinkPicker - compact recipe search + link widget for the Menu Doc Editor.
 // Searches recipes by name with 300ms debounce, shows cost data, links on click.
 
 import { useState, useTransition, useCallback, useRef, useEffect } from 'react'

@@ -131,14 +131,14 @@ export default async function RevenueSummaryPage() {
                         {event.client.full_name}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm capitalize">
-                    {event.occasion?.replace(/_/g, ' ') ?? '—'}
+                    {event.occasion?.replace(/_/g, ' ') ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {event.guest_count ?? '—'}
+                    {event.guest_count ?? '-'}
                   </TableCell>
                   <TableCell>
                     <span
@@ -150,7 +150,7 @@ export default async function RevenueSummaryPage() {
                   <TableCell className="font-semibold text-stone-100 text-sm">
                     {event.quoted_price_cents != null
                       ? formatCurrency(event.quoted_price_cents)
-                      : '—'}
+                      : '-'}
                   </TableCell>
                 </TableRow>
               ))}

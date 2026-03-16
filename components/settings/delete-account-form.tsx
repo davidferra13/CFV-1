@@ -1,4 +1,4 @@
-// Delete Account Form — Client Component
+// Delete Account Form - Client Component
 // Includes pre-deletion checklist, data export prompt, confirmation mechanism,
 // and optional reason selector. Uses soft-delete with 30-day grace period.
 
@@ -100,7 +100,7 @@ export function DeleteAccountForm({ chefId }: Props) {
         <CardContent className="py-8 space-y-4">
           <Alert variant="success">
             <strong>Deletion scheduled.</strong> Your account will be deleted in 30 days. You still
-            have full access to your account during this time — export your data, wrap up any
+            have full access to your account during this time - export your data, wrap up any
             business, or cancel the deletion from this page.
           </Alert>
           <p className="text-sm text-stone-400">

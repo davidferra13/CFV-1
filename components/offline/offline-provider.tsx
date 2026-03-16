@@ -1,6 +1,6 @@
 'use client'
 
-// OfflineProvider — Central context for offline state management.
+// OfflineProvider - Central context for offline state management.
 // Wraps the chef portal so every component can check connectivity,
 // see pending queue size, and react to sync progress.
 
@@ -75,7 +75,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     return onSyncProgress((progress) => {
       setSyncProgress(progress)
       if (!progress.isSyncing) {
-        // Sync finished — refresh the count
+        // Sync finished - refresh the count
         refreshPendingCount()
       }
     })

@@ -224,7 +224,7 @@ export function ServiceTypeManager({
         <div className="rounded-lg border border-dashed border-stone-600 p-10 text-center space-y-2">
           <p className="text-stone-400 font-medium">No service types yet</p>
           <p className="text-sm text-stone-400">
-            Add the services you offer — tasting menus, family buffets, per-person dinners, etc. The
+            Add the services you offer - tasting menus, family buffets, per-person dinners, etc. The
             calculator will use these to tell you exactly what to book.
           </p>
         </div>
@@ -261,9 +261,9 @@ export function ServiceTypeManager({
                 onChange={(e) => set('pricingModel', e.target.value as ServiceTypePricingModel)}
                 className="w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 bg-stone-900"
               >
-                <option value="flat_rate">Flat rate — one price regardless of guest count</option>
-                <option value="per_person">Per person — price multiplied by guest count</option>
-                <option value="hybrid">Hybrid — base fee + per-person component</option>
+                <option value="flat_rate">Flat rate - one price regardless of guest count</option>
+                <option value="per_person">Per person - price multiplied by guest count</option>
+                <option value="hybrid">Hybrid - base fee + per-person component</option>
               </select>
             </div>
 
@@ -368,7 +368,7 @@ export function ServiceTypeManager({
             <div className="rounded-md bg-stone-800 border border-stone-700 px-3 py-2 text-sm">
               <span className="text-stone-500">Effective price: </span>
               <span className="font-semibold text-stone-100">
-                {previewEffective > 0 ? formatDollars(previewEffective) : '—'}
+                {previewEffective > 0 ? formatDollars(previewEffective) : '-'}
               </span>
               {form.pricingModel !== 'flat_rate' && (
                 <span className="text-stone-400 text-xs ml-1">(at {previewGuests} guests)</span>
@@ -410,7 +410,7 @@ export function ServiceTypeManager({
       <ConfirmModal
         open={!!deletingService}
         title={`Remove "${deletingService?.name}"?`}
-        description="This only affects future planning — it won't change past event data."
+        description="This only affects future planning - it won't change past event data."
         confirmLabel="Remove"
         variant="danger"
         loading={deletePending}

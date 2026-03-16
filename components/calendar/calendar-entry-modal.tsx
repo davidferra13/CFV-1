@@ -1,6 +1,6 @@
 'use client'
 
-// CalendarEntryModal — Modal for creating a new chef calendar entry.
+// CalendarEntryModal - Modal for creating a new chef calendar entry.
 // Supports all 13 entry types with contextual sections:
 // - Revenue section (for market, festival, class, etc.)
 // - Public signal section (for target_booking only)

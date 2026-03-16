@@ -1,4 +1,4 @@
-// Queue Empty — "All caught up" celebration state
+// Queue Empty - "All caught up" celebration state
 // Server component.
 
 import { Card } from '@/components/ui/card'

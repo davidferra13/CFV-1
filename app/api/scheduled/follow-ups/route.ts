@@ -1,6 +1,6 @@
 // Scheduled Follow-ups Cron Endpoint
-// GET /api/scheduled/follow-ups — invoked by Vercel Cron Job (Vercel sends GET)
-// POST /api/scheduled/follow-ups — invoked manually or by external schedulers
+// GET /api/scheduled/follow-ups - invoked by Vercel Cron Job (Vercel sends GET)
+// POST /api/scheduled/follow-ups - invoked manually or by external schedulers
 // Built-in: notifies chefs about overdue inquiry follow-ups.
 // Respects chef_automation_settings.follow_up_reminders_enabled per tenant.
 

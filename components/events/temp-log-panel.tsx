@@ -122,7 +122,7 @@ export function TempLogPanel({
                   {log.notes ? ` · ${log.notes}` : ''}
                 </p>
                 <p className="text-xs text-stone-400 italic">
-                  Safe range: {SAFE_TEMP_RANGES[log.phase]?.label ?? '—'}
+                  Safe range: {SAFE_TEMP_RANGES[log.phase]?.label ?? '-'}
                 </p>
               </div>
               <button
@@ -204,7 +204,7 @@ export function TempLogPanel({
           </div>
           {form.phase && (
             <p className="text-xs text-stone-400 italic">
-              Safe range: {SAFE_TEMP_RANGES[form.phase]?.label ?? '—'}
+              Safe range: {SAFE_TEMP_RANGES[form.phase]?.label ?? '-'}
             </p>
           )}
           {error && <p className="text-xs text-red-600">{error}</p>}

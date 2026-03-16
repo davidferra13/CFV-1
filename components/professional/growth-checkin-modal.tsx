@@ -93,9 +93,9 @@ export function GrowthCheckinModal({ onClose }: { onClose: () => void }) {
               className="w-full"
             />
             <div className="flex justify-between text-xs text-stone-500">
-              <span>1 — Struggling</span>
+              <span>1 - Struggling</span>
               <span className="text-lg font-bold text-stone-100">{satisfaction}</span>
-              <span>10 — Thriving</span>
+              <span>10 - Thriving</span>
             </div>
           </div>
         ) : (

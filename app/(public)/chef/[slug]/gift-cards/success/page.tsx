@@ -1,4 +1,4 @@
-// Gift Card Purchase Success — /chef/[slug]/gift-cards/success
+// Gift Card Purchase Success - /chef/[slug]/gift-cards/success
 // Shown after Stripe Checkout completes.
 // Reads session_id from query param, looks up the purchase intent, shows confirmation.
 
@@ -6,7 +6,7 @@ import { getGiftCardPurchaseBySession } from '@/lib/loyalty/gift-card-purchase-a
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'Gift Card Sent — ChefFlow' }
+export const metadata: Metadata = { title: 'Gift Card Sent | ChefFlow' }
 
 export default async function GiftCardSuccessPage({
   params,

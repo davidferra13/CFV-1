@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * PrivacySchematicPlayer — Remotion Player wrapper for the Remy privacy schematic.
+ * PrivacySchematicPlayer - Remotion Player wrapper for the Remy privacy schematic.
  * Shows the 6-scene animated explainer (55 seconds) of how conversations stay private.
  */
 

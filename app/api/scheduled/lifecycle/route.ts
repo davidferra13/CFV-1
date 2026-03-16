@@ -1,6 +1,6 @@
 // Scheduled Lifecycle Maintenance Cron Endpoint
-// GET /api/scheduled/lifecycle — invoked by Vercel Cron Job (Vercel sends GET)
-// POST /api/scheduled/lifecycle — invoked manually or by external schedulers
+// GET /api/scheduled/lifecycle - invoked by Vercel Cron Job (Vercel sends GET)
+// POST /api/scheduled/lifecycle - invoked manually or by external schedulers
 // Expires stale inquiries/quotes and sends client event reminders.
 // Respects chef_automation_settings per tenant and clients.automated_emails_enabled.
 
@@ -595,7 +595,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
                 eventId: event.id,
               })
             } else {
-              // 1-day reminder — reuse existing sendEventReminderEmail
+              // 1-day reminder - reuse existing sendEventReminderEmail
               await sendEventReminderEmail({
                 clientEmail: client.email,
                 clientName: client.full_name,
@@ -762,7 +762,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             })
           }
 
-          // In-app notification (non-blocking — silently skips if no portal account)
+          // In-app notification (non-blocking - silently skips if no portal account)
           await createClientNotification({
             tenantId: quote.tenant_id,
             clientId: client.id,
@@ -865,7 +865,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
           const body = `Hi ${firstName},
 
-I've been thinking about ${occasion} on ${eventDateLabel} — it was genuinely one of my favorite evenings.
+I've been thinking about ${occasion} on ${eventDateLabel} - it was genuinely one of my favorite evenings.
 
 If you have a moment, I'd love it if you left a quick review on Google. It means a lot and helps others find me.
 
@@ -875,11 +875,11 @@ ${chefName}`
 
           await sendEmail({
             to: client.email,
-            subject: `Thank you for having me — would you leave a quick review?`,
+            subject: `Thank you for having me - would you leave a quick review?`,
             react: React.default.createElement(CampaignEmail, {
               chefName,
               bodyText: body,
-              previewText: `It was a pleasure cooking for you — a quick review would mean a lot.`,
+              previewText: `It was a pleasure cooking for you - a quick review would mean a lot.`,
               unsubscribeUrl: '',
             }),
           })

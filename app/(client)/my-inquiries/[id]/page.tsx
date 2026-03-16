@@ -1,4 +1,4 @@
-// Client Inquiry Detail — /my-inquiries/[id]
+// Client Inquiry Detail - /my-inquiries/[id]
 // Read-only summary of a single inquiry for the client.
 // Budget channel remains internal; submitted budget intent is shown to clients.
 
@@ -54,7 +54,7 @@ export default async function ClientInquiryDetailPage({ params }: { params: { id
   const summaryData: InquirySummaryData = {
     id: inquiry.id,
     status: inquiry.status as InquiryStatus,
-    channel: null, // internal — not surfaced to clients
+    channel: null, // internal - not surfaced to clients
     confirmed_occasion: inquiry.confirmed_occasion,
     confirmed_date: inquiry.confirmed_date,
     confirmed_guest_count: inquiry.confirmed_guest_count,
@@ -93,7 +93,7 @@ export default async function ClientInquiryDetailPage({ params }: { params: { id
         Back to My Inquiries
       </Link>
 
-      {/* Journey stepper — partial view (steps up to current inquiry state) */}
+      {/* Journey stepper - partial view (steps up to current inquiry state) */}
       {inquiry.status !== 'declined' && inquiry.status !== 'expired' && (
         <Card className="overflow-hidden">
           <CardHeader>
@@ -108,7 +108,7 @@ export default async function ClientInquiryDetailPage({ params }: { params: { id
       {/* Beautiful inquiry summary */}
       <InquirySummary data={summaryData} variant="client" />
 
-      {/* Confirmed — link to the resulting event */}
+      {/* Confirmed - link to the resulting event */}
       {inquiry.converted_to_event_id && (
         <Card className="p-5">
           <p className="text-sm text-stone-400 mb-3">

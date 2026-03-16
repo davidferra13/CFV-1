@@ -1,6 +1,6 @@
 'use client'
 
-// RemyAnimatedMascot — 3-layer composited character renderer.
+// RemyAnimatedMascot - 3-layer composited character renderer.
 //
 // Architecture:
 //   Layer 1 (BODY):  Static mascot image with CSS breathing, or sprite sheet animation
@@ -46,7 +46,7 @@ interface RemyAnimatedMascotProps {
   emotion: RemyEmotion
   /** Called when a non-looping body animation completes */
   onAnimComplete: () => void
-  /** Display size in px (optional — fills container if omitted) */
+  /** Display size in px (optional - fills container if omitted) */
   size?: number
 }
 
@@ -314,7 +314,7 @@ export function RemyAnimatedMascot({
     >
       {/* === LAYER 1: BODY (with crossfade) === */}
 
-      {/* Outgoing state — fading out */}
+      {/* Outgoing state - fading out */}
       {isFading && outgoingState && (
         <BodyLayer
           bodyState={outgoingState}
@@ -328,7 +328,7 @@ export function RemyAnimatedMascot({
         />
       )}
 
-      {/* Current state — fading in (or full opacity if no crossfade) */}
+      {/* Current state - fading in (or full opacity if no crossfade) */}
       {/* Dim body when speaking so the lip-sync avatar is the dominant face */}
       <BodyLayer
         bodyState={bodyState}

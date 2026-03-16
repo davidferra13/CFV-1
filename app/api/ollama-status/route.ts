@@ -1,6 +1,6 @@
 // GET /api/ollama-status
 // Returns Ollama availability for dashboard badge polling.
-// No auth required — status is non-sensitive metadata only.
+// No auth required - status is non-sensitive metadata only.
 // `configured` = true when OLLAMA_BASE_URL is explicitly set in env.
 // The badge uses this to suppress itself when Ollama was never set up.
 //

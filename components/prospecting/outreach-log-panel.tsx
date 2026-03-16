@@ -69,7 +69,7 @@ export function OutreachLogPanel({ prospectId, log }: OutreachLogPanelProps) {
         setOutreachType('email')
         router.refresh()
       } catch {
-        // silently fail — user can retry
+        // silently fail - user can retry
       }
     })
   }

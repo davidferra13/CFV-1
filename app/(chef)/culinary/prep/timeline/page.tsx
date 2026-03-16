@@ -44,7 +44,7 @@ export default async function PrepTimelinePage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Make-ahead components ordered by lead time — longest prep first
+          Make-ahead components ordered by lead time - longest prep first
         </p>
       </div>
 

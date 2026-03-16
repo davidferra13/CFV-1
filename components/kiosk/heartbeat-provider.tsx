@@ -40,7 +40,7 @@ export function HeartbeatProvider({ token, onDeviceDisabled, children }: Heartbe
           return
         }
 
-        // Success — reset failure counter
+        // Success - reset failure counter
         failureCountRef.current = 0
         setOffline(false)
 
@@ -49,7 +49,7 @@ export function HeartbeatProvider({ token, onDeviceDisabled, children }: Heartbe
           onDeviceDisabled()
         }
       } catch {
-        // Network error — track consecutive failures
+        // Network error - track consecutive failures
         failureCountRef.current++
         if (failureCountRef.current >= MAX_CONSECUTIVE_FAILURES) {
           setOffline(true)
@@ -74,7 +74,7 @@ export function HeartbeatProvider({ token, onDeviceDisabled, children }: Heartbe
     <>
       {offline && (
         <div className="fixed inset-x-0 top-0 z-50 bg-red-900/90 px-4 py-2 text-center text-sm font-medium text-red-100">
-          Connection lost — submissions may fail until reconnected
+          Connection lost - submissions may fail until reconnected
         </div>
       )}
       {children}

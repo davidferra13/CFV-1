@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * MessagingGuidePlayer — Remotion Player wrapper for the messaging guide animation.
+ * MessagingGuidePlayer - Remotion Player wrapper for the messaging guide animation.
  * Shows the 4 messaging channels and when to use each.
  */
 

@@ -1,4 +1,4 @@
-// Queue Filters — Client component for domain and urgency filtering
+// Queue Filters - Client component for domain and urgency filtering
 'use client'
 
 import type { QueueItem, QueueDomain, QueueUrgency } from '@/lib/queue/types'

@@ -194,7 +194,7 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
               )
             })}
 
-            {/* Cannabis Tier — admin-only feature, hidden from client portal */}
+            {/* Cannabis Tier - admin-only feature, hidden from client portal */}
           </div>
         )}
       </nav>
@@ -311,7 +311,7 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                   </Link>
                 )
               })}
-              {/* Cannabis Tier — admin-only feature, hidden from client portal */}
+              {/* Cannabis Tier - admin-only feature, hidden from client portal */}
 
               <div className="pt-4 mt-4 border-t border-stone-800">
                 <p className="px-3 pb-2 text-xs text-stone-400 truncate">{userEmail}</p>

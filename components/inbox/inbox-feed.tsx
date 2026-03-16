@@ -1,4 +1,4 @@
-// Inbox Feed — Client component with source filters and chronological feed
+// Inbox Feed - Client component with source filters and chronological feed
 'use client'
 
 import { useState } from 'react'

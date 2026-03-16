@@ -50,7 +50,7 @@ export default async function PushDinnersPage() {
           <Utensils className="w-10 h-10 text-stone-300 mx-auto" />
           <h3 className="text-base font-medium text-stone-400">Push your first dinner</h3>
           <p className="text-sm text-stone-400 max-w-xs mx-auto">
-            Create a themed dinner — Halloween, Valentine's Day, anything — and invite past clients
+            Create a themed dinner - Halloween, Valentine's Day, anything - and invite past clients
             with personalised messages. Get a shareable booking link to fill your seats.
           </p>
           <Link href="/marketing/push-dinners/new">

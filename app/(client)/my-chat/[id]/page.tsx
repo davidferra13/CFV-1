@@ -1,4 +1,4 @@
-// Client Chat View — Individual conversation with your chef
+// Client Chat View - Individual conversation with your chef
 
 import { requireClient } from '@/lib/auth/get-user'
 import { redirect } from 'next/navigation'
@@ -11,11 +11,7 @@ import {
 import { ChatView } from '@/components/chat/chat-view'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 
-export default async function ClientChatViewPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function ClientChatViewPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireClient()
   const { id: conversationId } = await params
 

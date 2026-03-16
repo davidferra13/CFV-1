@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * EventOpsPlayer — Remotion Player wrapper for the event operations animation.
+ * EventOpsPlayer - Remotion Player wrapper for the event operations animation.
  * Shows staff assignments, temp logs, contingency plans, and menu modifications.
  */
 

@@ -1,4 +1,4 @@
-// Analytics Hub Loading Skeleton — shown instantly when navigating to /analytics
+// Analytics Hub Loading Skeleton - shown instantly when navigating to /analytics
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ContextLoader } from '@/components/ui/context-loader'
 

@@ -52,7 +52,7 @@ export default function KioskDisabledPage() {
           re-enable it.
         </p>
 
-        {/* Hidden reset — long press to reveal */}
+        {/* Hidden reset - long press to reveal */}
         <div
           className="mt-12 py-4"
           onMouseDown={handleTouchStart}

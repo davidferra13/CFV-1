@@ -14,7 +14,7 @@ const TABS: { id: EventDetailTab; label: string; icon: React.ReactNode }[] = [
 
 /**
  * Sticky in-page tab bar for event detail on mobile.
- * Hidden on md+ — desktop shows all sections as a full scroll.
+ * Hidden on md+ - desktop shows all sections as a full scroll.
  * Uses URL search params so tab state survives refresh and is linkable.
  */
 export function EventDetailMobileNav() {

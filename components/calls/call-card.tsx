@@ -1,4 +1,4 @@
-// CallCard — compact card for the calls list view
+// CallCard - compact card for the calls list view
 
 'use client'
 

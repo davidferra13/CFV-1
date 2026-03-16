@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import crypto from 'crypto'
 
-// DocuSign Connect webhook — receives envelope status updates.
+// DocuSign Connect webhook - receives envelope status updates.
 // Configured in DocuSign Admin → Connect → Add Configuration.
 // Handles: envelope completed (signed), declined, voided.
 
@@ -10,7 +10,7 @@ function verifyHmacSignature(payload: string, signature: string): boolean {
   const secret = process.env.DOCUSIGN_CONNECT_HMAC_KEY
   if (!secret) {
     // If no HMAC key configured, skip verification (dev mode)
-    console.warn('[docusign-webhook] No HMAC key configured — skipping signature verification')
+    console.warn('[docusign-webhook] No HMAC key configured - skipping signature verification')
     return true
   }
   const computed = crypto.createHmac('sha256', secret).update(payload).digest('base64')

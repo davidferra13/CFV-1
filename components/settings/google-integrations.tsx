@@ -115,7 +115,7 @@ function ServiceCard({
   )
 }
 
-// Diagnostic panel — shows when Google OAuth is misconfigured or after errors
+// Diagnostic panel - shows when Google OAuth is misconfigured or after errors
 function OAuthDiagnostics({
   redirectUri,
   errorMessage,
@@ -184,7 +184,7 @@ export function GoogleIntegrations({
         }
       })
       .catch(() => {
-        // Non-blocking — diagnostics are best-effort
+        // Non-blocking - diagnostics are best-effort
       })
   }, [connection.gmail.connected, connection.calendar.connected])
 

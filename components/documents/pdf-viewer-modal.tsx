@@ -1,6 +1,6 @@
-// PDF Viewer Modal — embeds a document API URL inside a full-height iframe
+// PDF Viewer Modal - embeds a document API URL inside a full-height iframe
 // Uses the browser's native PDF renderer. Auth cookies pass automatically.
-// No external PDF library needed — the API already returns Content-Disposition: inline
+// No external PDF library needed - the API already returns Content-Disposition: inline
 'use client'
 
 import { useRef, useEffect } from 'react'

@@ -1,4 +1,4 @@
-// Import Platform Review — Modal to manually log a review from any external platform
+// Import Platform Review - Modal to manually log a review from any external platform
 'use client'
 
 import { useState } from 'react'
@@ -233,7 +233,7 @@ export function ImportPlatformReview() {
                 helperText="Where did this review come from?"
               />
 
-              {/* Reviewer name — shown for all external platforms */}
+              {/* Reviewer name - shown for all external platforms */}
               {needsName && (
                 <div>
                   <label className="block text-sm font-medium text-stone-300 mb-1">
@@ -302,7 +302,7 @@ export function ImportPlatformReview() {
                 </div>
               </div>
 
-              {/* Source URL — dynamic placeholder per platform */}
+              {/* Source URL - dynamic placeholder per platform */}
               {platformMeta && (
                 <div>
                   <label className="block text-sm font-medium text-stone-300 mb-1">

@@ -114,7 +114,7 @@ function SuggestionModal({
       <div className="bg-stone-900 rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col">
         <div className="p-4 border-b flex items-center justify-between">
           <div>
-            <p className="font-semibold">Auto-schedule — {eventName}</p>
+            <p className="font-semibold">Auto-schedule - {eventName}</p>
             <p className="text-xs text-gray-500">
               Review suggestions, edit dates/times, then confirm.
             </p>
@@ -486,7 +486,7 @@ export function WeekPlannerClient({
           <div>
             <span className="font-semibold">Urgent: </span>
             <Link href={`/events/${gap.event_id}`} className="underline">
-              {gap.event_occasion || 'Event'} — {gap.client_name}
+              {gap.event_occasion || 'Event'} - {gap.client_name}
             </Link>{' '}
             (in {gap.days_until_event}d) missing:{' '}
             {gap.missing_block_types.map((t) => PREP_BLOCK_TYPE_LABELS[t]).join(', ')}
@@ -508,7 +508,7 @@ export function WeekPlannerClient({
         >
           <div>
             <span className="font-semibold">
-              {gap.event_occasion || 'Event'} — {gap.client_name}
+              {gap.event_occasion || 'Event'} - {gap.client_name}
             </span>{' '}
             (in {gap.days_until_event}d) missing:{' '}
             {gap.missing_block_types.map((t) => PREP_BLOCK_TYPE_LABELS[t]).join(', ')}
@@ -577,7 +577,7 @@ export function WeekPlannerClient({
                 {weatherByDate[day.date] && (
                   <div
                     className={`text-xs mt-0.5 ${isToday ? 'text-amber-200' : 'text-gray-500'}`}
-                    title={`${weatherByDate[day.date].description} — ${weatherByDate[day.date].tempMinF}°–${weatherByDate[day.date].tempMaxF}°F`}
+                    title={`${weatherByDate[day.date].description} - ${weatherByDate[day.date].tempMinF}°–${weatherByDate[day.date].tempMaxF}°F`}
                   >
                     {weatherByDate[day.date].emoji} {weatherByDate[day.date].tempMinF}°–
                     {weatherByDate[day.date].tempMaxF}°

@@ -184,7 +184,7 @@ export function PendingDeliveriesPanel({
   // Refresh by removing delivered/cancelled items from local state immediately
   // (page will revalidate in background via revalidatePath)
   function handleUpdate() {
-    // Optimistically remove — actual data refresh via server revalidation
+    // Optimistically remove - actual data refresh via server revalidation
     window.location.reload()
   }
 

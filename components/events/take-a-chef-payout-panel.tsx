@@ -147,7 +147,7 @@ export function TakeAChefPayoutPanel({ finance }: { finance: TakeAChefFinanceDat
         <Metric
           label="Gross booking"
           value={
-            finance.grossBookingCents != null ? formatCurrency(finance.grossBookingCents) : '—'
+            finance.grossBookingCents != null ? formatCurrency(finance.grossBookingCents) : '-'
           }
         />
         <Metric
@@ -155,13 +155,13 @@ export function TakeAChefPayoutPanel({ finance }: { finance: TakeAChefFinanceDat
           value={
             finance.expectedCommissionCents != null
               ? formatCurrency(finance.expectedCommissionCents)
-              : '—'
+              : '-'
           }
         />
         <Metric
           label="Logged commission"
           value={
-            finance.loggedCommissionCents > 0 ? formatCurrency(finance.loggedCommissionCents) : '—'
+            finance.loggedCommissionCents > 0 ? formatCurrency(finance.loggedCommissionCents) : '-'
           }
         />
         <Metric
@@ -169,13 +169,13 @@ export function TakeAChefPayoutPanel({ finance }: { finance: TakeAChefFinanceDat
           value={
             finance.expectedNetPayoutCents != null
               ? formatCurrency(finance.expectedNetPayoutCents)
-              : '—'
+              : '-'
           }
         />
         <Metric
           label="Recorded payout"
           value={
-            finance.payoutAmountCents != null ? formatCurrency(finance.payoutAmountCents) : '—'
+            finance.payoutAmountCents != null ? formatCurrency(finance.payoutAmountCents) : '-'
           }
         />
       </div>
@@ -304,13 +304,13 @@ export function TakeAChefPayoutPanel({ finance }: { finance: TakeAChefFinanceDat
             <strong className="text-stone-200">
               {finance.commissionGapCents != null
                 ? formatCurrency(finance.commissionGapCents)
-                : '—'}
+                : '-'}
             </strong>
           </span>
           <span>
             Payout variance:{' '}
             <strong className="text-stone-200">
-              {finance.netPayoutGapCents != null ? formatCurrency(finance.netPayoutGapCents) : '—'}
+              {finance.netPayoutGapCents != null ? formatCurrency(finance.netPayoutGapCents) : '-'}
             </strong>
           </span>
         </div>

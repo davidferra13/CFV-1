@@ -1,13 +1,13 @@
 'use client'
 
-// Recipe Scaling Calculator — Smart Portion Intelligence
+// Recipe Scaling Calculator - Smart Portion Intelligence
 // ──────────────────────────────────────────────────────────────────────────────
 // Replaces the simple "multiply everything by N" approach with real culinary
 // scaling logic:
 //
-//   1. Course position selector — tells the system what portion to expect
-//   2. Portion standard lookup — shows oz per guest, total to prepare, yield loss
-//   3. Smart scaling — sub-linear exponents for spices/aromatics (0.75–0.90 power)
+//   1. Course position selector - tells the system what portion to expect
+//   2. Portion standard lookup - shows oz per guest, total to prepare, yield loss
+//   3. Smart scaling - sub-linear exponents for spices/aromatics (0.75–0.90 power)
 //      vs. linear for proteins and base liquids (1.0)
 //   4. Scale factor derived from recipe base yield OR portion standard
 //   5. Clipboard output that prints like a chef's mise en place card
@@ -131,7 +131,7 @@ export function RecipeScalingCalculator({ recipe }: Props) {
       `×${effectiveScale.toFixed(2)} scale`,
     ]
       .filter(Boolean)
-      .join(' — ')
+      .join(' - ')
 
     const lines: string[] = [header, '']
 
@@ -255,7 +255,7 @@ export function RecipeScalingCalculator({ recipe }: Props) {
           {portionInfo && (
             <div className="rounded-lg border border-brand-700 bg-brand-950 p-4 space-y-2">
               <p className="text-xs font-semibold text-brand-400 uppercase tracking-wide">
-                Portion Standard —{' '}
+                Portion Standard -{' '}
                 {coursePosition && COURSE_POSITION_LABELS[coursePosition as CoursePosition]}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -270,7 +270,7 @@ export function RecipeScalingCalculator({ recipe }: Props) {
                   {portionInfo.rawTotalLabel && (
                     <p className="text-xs text-stone-500 mt-0.5">
                       Purchase: <strong>{portionInfo.rawTotalLabel}</strong>
-                      {portionInfo.rawNote && ` — ${portionInfo.rawNote}`}
+                      {portionInfo.rawNote && ` - ${portionInfo.rawNote}`}
                     </p>
                   )}
                 </div>
@@ -432,7 +432,7 @@ export function RecipeScalingCalculator({ recipe }: Props) {
               {/* Very small quantity warning */}
               {recipe.ingredients.some((ri) => getDisplayQty(ri) < 0.05) && (
                 <p className="text-xs text-amber-600">
-                  Some quantities are very small — verify these make sense for your batch size.
+                  Some quantities are very small - verify these make sense for your batch size.
                 </p>
               )}
 
@@ -440,7 +440,7 @@ export function RecipeScalingCalculator({ recipe }: Props) {
               <div className="flex items-center justify-between pt-1">
                 <p className="text-xs text-stone-400">
                   {Object.keys(overrides).length > 0
-                    ? `${Object.keys(overrides).length} quantity${Object.keys(overrides).length > 1 ? 'ies' : ''} adjusted — click ↺ to reset`
+                    ? `${Object.keys(overrides).length} quantity${Object.keys(overrides).length > 1 ? 'ies' : ''} adjusted - click ↺ to reset`
                     : smartMode
                       ? `Smart mode: spices/aromatics at 0.75–0.92×, proteins/liquids at 1.0×. Click any quantity to adjust.`
                       : 'Linear mode: all ingredients multiplied by the same factor. Click any quantity to adjust.'}
@@ -452,7 +452,7 @@ export function RecipeScalingCalculator({ recipe }: Props) {
             </div>
           )}
 
-          {/* No base yield — can still show portion reference */}
+          {/* No base yield - can still show portion reference */}
           {!effectiveScale && guests > 0 && !portionInfo && (
             <div className="text-sm text-stone-500 bg-stone-800 rounded p-3">
               Select a course type to see the portion standard for {guests} guests.

@@ -1,4 +1,4 @@
-// System Nerve Center — POST /api/system/heal
+// System Nerve Center - POST /api/system/heal
 // Execute fix actions or sweep-all. Admin-only.
 
 import { NextResponse } from 'next/server'

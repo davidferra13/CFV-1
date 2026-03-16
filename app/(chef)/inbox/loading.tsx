@@ -1,4 +1,4 @@
-// Inbox Loading Skeleton — tabbed communication inbox
+// Inbox Loading Skeleton - tabbed communication inbox
 import { Card, CardContent } from '@/components/ui/card'
 import { ContextLoader } from '@/components/ui/context-loader'
 

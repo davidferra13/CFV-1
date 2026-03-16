@@ -506,7 +506,7 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
     }
 
     try {
-      // Build the payload — only include non-empty values
+      // Build the payload - only include non-empty values
       const payload: Record<string, unknown> = {
         full_name: fullName.trim(),
       }
@@ -541,7 +541,7 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
           payload.pets = pets.filter((p) => p.name.trim())
         if (familyNotes.trim()) payload.family_notes = familyNotes.trim()
 
-        // Dietary (extended — allergies & restrictions already sent above)
+        // Dietary (extended - allergies & restrictions already sent above)
         if (dislikes.length > 0) payload.dislikes = dislikes
         if (spiceTolerance) payload.spice_tolerance = spiceTolerance
         if (favoriteCuisines.length > 0) payload.favorite_cuisines = favoriteCuisines
@@ -653,8 +653,8 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
         </button>
         <span className="text-xs text-stone-300 ml-2">
           {mode === 'quick'
-            ? 'Get them in the system fast — fill in details later'
-            : 'The complete client dossier — every field you could ever need'}
+            ? 'Get them in the system fast - fill in details later'
+            : 'The complete client dossier - every field you could ever need'}
         </span>
       </div>
 
@@ -722,7 +722,7 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
           />
         </div>
 
-        {/* Dietary — always on Quick Add because it's safety-critical */}
+        {/* Dietary - always on Quick Add because it's safety-critical */}
         <div className="space-y-3">
           <TagArrayInput
             label="Allergies"
@@ -743,7 +743,7 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
         {/* Quick notes field */}
         <Textarea
           label="Notes"
-          placeholder="Anything else from the first call — vibe, special requests, how they sounded..."
+          placeholder="Anything else from the first call - vibe, special requests, how they sounded..."
           value={vibeNotes}
           onChange={(e) => setVibeNotes(e.target.value)}
         />
@@ -848,11 +848,11 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
                 onChange={(e) => setSpiceTolerance(e.target.value)}
               >
                 <option value="">Select...</option>
-                <option value="none">None — no spice at all</option>
+                <option value="none">None - no spice at all</option>
                 <option value="mild">Mild</option>
                 <option value="medium">Medium</option>
                 <option value="hot">Hot</option>
-                <option value="very_hot">Very Hot — bring the heat</option>
+                <option value="very_hot">Very Hot - bring the heat</option>
               </Select>
               <TagArrayInput
                 label="Favorite Cuisines"
@@ -929,10 +929,10 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
                   onChange={(e) => setKitchenSize(e.target.value)}
                 >
                   <option value="">Select...</option>
-                  <option value="small">Small — limited counter/storage</option>
-                  <option value="medium">Medium — standard home kitchen</option>
-                  <option value="large">Large — spacious, multiple stations</option>
-                  <option value="professional">Professional — commercial-grade</option>
+                  <option value="small">Small - limited counter/storage</option>
+                  <option value="medium">Medium - standard home kitchen</option>
+                  <option value="large">Large - spacious, multiple stations</option>
+                  <option value="professional">Professional - commercial-grade</option>
                 </Select>
                 <div className="flex items-end gap-4 pb-1">
                   <label className="text-sm font-medium text-stone-300">Dishwasher?</label>
@@ -1094,7 +1094,7 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  label="Budget Range — Minimum ($)"
+                  label="Budget Range - Minimum ($)"
                   type="number"
                   placeholder="e.g. 500"
                   value={budgetMin}
@@ -1102,7 +1102,7 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
                   helperText="Per event minimum spend"
                 />
                 <Input
-                  label="Budget Range — Maximum ($)"
+                  label="Budget Range - Maximum ($)"
                   type="number"
                   placeholder="e.g. 2000"
                   value={budgetMax}
@@ -1117,10 +1117,10 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
               >
                 <option value="">Select...</option>
                 <option value="full_reset">
-                  Full Kitchen Reset — leave it cleaner than I found it
+                  Full Kitchen Reset - leave it cleaner than I found it
                 </option>
-                <option value="cooking_mess">Cooking Mess Only — clean what I used</option>
-                <option value="minimal">Minimal — they prefer to clean up themselves</option>
+                <option value="cooking_mess">Cooking Mess Only - clean what I used</option>
+                <option value="minimal">Minimal - they prefer to clean up themselves</option>
                 <option value="staff_handles">Their Staff Handles Cleanup</option>
               </Select>
               <Select
@@ -1129,8 +1129,8 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
                 onChange={(e) => setLeftoversPref(e.target.value)}
               >
                 <option value="">Select...</option>
-                <option value="package_all">Package Everything — they love leftovers</option>
-                <option value="portion_control">Portion Control — cook just enough</option>
+                <option value="package_all">Package Everything - they love leftovers</option>
+                <option value="portion_control">Portion Control - cook just enough</option>
                 <option value="staff_takes">Staff / Helper Takes Leftovers</option>
                 <option value="compost">Compost / Discard</option>
                 <option value="no_preference">No Preference</option>
@@ -1149,9 +1149,9 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
                 onChange={(e) => setFormalityLevel(e.target.value)}
               >
                 <option value="">Select...</option>
-                <option value="casual">Casual — first names, relaxed vibe</option>
-                <option value="semi_formal">Semi-Formal — friendly but professional</option>
-                <option value="formal">Formal — Mr./Mrs., white-glove service</option>
+                <option value="casual">Casual - first names, relaxed vibe</option>
+                <option value="semi_formal">Semi-Formal - friendly but professional</option>
+                <option value="formal">Formal - Mr./Mrs., white-glove service</option>
               </Select>
               <Textarea
                 label="Communication Style"
@@ -1192,7 +1192,7 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
               />
               <Textarea
                 label="Farewell Style"
-                placeholder="How they say goodbye — linger and chat? Quick exit?"
+                placeholder="How they say goodbye - linger and chat? Quick exit?"
                 value={farewellStyle}
                 onChange={(e) => setFarewellStyle(e.target.value)}
               />
@@ -1207,7 +1207,7 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
             {/* 8. Chef's Internal Assessment */}
             <Section
               title="Chef's Internal Assessment"
-              description="Business intelligence — referral potential, red flags, acquisition cost"
+              description="Business intelligence - referral potential, red flags, acquisition cost"
               badge="Chef Only"
             >
               <p className="text-xs text-stone-500 bg-stone-800 rounded-lg p-3">
@@ -1220,13 +1220,13 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
                 onChange={(e) => setReferralPotential(e.target.value)}
               >
                 <option value="">Select...</option>
-                <option value="high">High — connected, loves to recommend</option>
-                <option value="medium">Medium — would refer if asked</option>
-                <option value="low">Low — keeps to themselves</option>
+                <option value="high">High - connected, loves to recommend</option>
+                <option value="medium">Medium - would refer if asked</option>
+                <option value="low">Low - keeps to themselves</option>
               </Select>
               <Textarea
                 label="Red Flags"
-                placeholder="Anything to watch out for — late cancellations, boundary issues, unrealistic expectations"
+                placeholder="Anything to watch out for - late cancellations, boundary issues, unrealistic expectations"
                 value={redFlags}
                 onChange={(e) => setRedFlags(e.target.value)}
               />

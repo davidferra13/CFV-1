@@ -88,7 +88,7 @@ export default async function GuestAnalyticsPage() {
       <Card className="p-4">
         <h2 className="font-semibold text-stone-100 mb-1">Dinner Groups</h2>
         <p className="text-xs text-stone-500 mb-3">
-          Guests who frequently attend together — great for targeted invitations.
+          Guests who frequently attend together - great for targeted invitations.
         </p>
         {dinnerGroups.length === 0 ? (
           <p className="text-sm text-stone-500">

@@ -81,7 +81,7 @@ function CalendarData({ data }: { data: unknown }) {
   return (
     <div className="mt-1 text-sm">
       {d.available ? (
-        <p className="text-emerald-400 font-medium">{d.date} is available — no events booked.</p>
+        <p className="text-emerald-400 font-medium">{d.date} is available - no events booked.</p>
       ) : (
         <>
           <p className="text-amber-400 font-medium">
@@ -117,7 +117,7 @@ function EventListData({ data }: { data: unknown }) {
     <ul className="mt-1 space-y-1">
       {d.events.map((e) => (
         <li key={e.id} className="text-sm text-gray-200">
-          <span className="font-medium">{e.occasion ?? 'Event'}</span> — {e.clientName} &middot;{' '}
+          <span className="font-medium">{e.occasion ?? 'Event'}</span> - {e.clientName} &middot;{' '}
           {e.date?.split('T')[0] ?? 'TBD'}{' '}
           <span className="text-xs text-gray-500 capitalize">[{e.status}]</span>
         </li>

@@ -1,8 +1,8 @@
 'use client'
 
-// ClientEventPhotoGallery — Read-only photo gallery for the client event portal.
+// ClientEventPhotoGallery - Read-only photo gallery for the client event portal.
 // Shows dish/dinner photos uploaded by the chef.
-// Returns null if there are no photos — the section disappears entirely.
+// Returns null if there are no photos - the section disappears entirely.
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'

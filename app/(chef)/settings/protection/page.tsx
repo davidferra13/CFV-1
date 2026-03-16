@@ -1,4 +1,4 @@
-// Protection Hub — overview page showing status of all protection areas.
+// Protection Hub - overview page showing status of all protection areas.
 // Links to insurance, certifications, business health, NDA, continuity, and crisis response.
 
 import type { Metadata } from 'next'
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Shield, FileCheck, Award, FileText, Layers, AlertTriangle } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Protection Hub — ChefFlow' }
+export const metadata: Metadata = { title: 'Protection Hub | ChefFlow' }
 
 export default async function ProtectionHubPage() {
   const chef = await requireChef()
@@ -65,7 +65,7 @@ export default async function ProtectionHubPage() {
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Protection Hub</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Your business protection posture at a glance — insurance, certifications, continuity, and
+          Your business protection posture at a glance - insurance, certifications, continuity, and
           crisis preparedness.
         </p>
       </div>

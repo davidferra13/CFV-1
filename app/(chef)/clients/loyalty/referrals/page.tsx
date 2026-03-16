@@ -86,7 +86,7 @@ export default async function ReferralsPage() {
           <p className="text-xs text-stone-400 mt-0.5">
             {clients.length > 0
               ? `${Math.round((referralClients.length / clients.length) * 100)}% of all clients`
-              : '—'}
+              : '-'}
           </p>
         </Card>
         <Card className="p-4 text-center">
@@ -96,7 +96,7 @@ export default async function ReferralsPage() {
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">
-            {referralRevenueCents > 0 ? `$${(referralRevenueCents / 100).toLocaleString()}` : '—'}
+            {referralRevenueCents > 0 ? `$${(referralRevenueCents / 100).toLocaleString()}` : '-'}
           </p>
           <p className="text-sm text-stone-500 mt-1">Revenue from referrals</p>
         </Card>

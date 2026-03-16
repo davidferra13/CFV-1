@@ -1,6 +1,6 @@
 'use client'
 
-// DailyPlanView — Main client component for the Daily Ops page.
+// DailyPlanView - Main client component for the Daily Ops page.
 // Renders Remy's summary, 4 swim lanes, and the celebration state.
 
 import { useRouter } from 'next/navigation'
@@ -27,7 +27,7 @@ export function DailyPlanView({ plan }: Props) {
   }, [router])
 
   const handleItemUpdate = useCallback(() => {
-    // Soft refresh — revalidation happens via server action
+    // Soft refresh - revalidation happens via server action
     router.refresh()
   }, [router])
 

@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 
   // Fail-closed: reject if signing secret is not configured
   if (!webhookSecret) {
-    console.error('[resend-webhook] RESEND_WEBHOOK_SECRET not configured — rejecting all webhooks')
+    console.error('[resend-webhook] RESEND_WEBHOOK_SECRET not configured - rejecting all webhooks')
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 })
   }
 

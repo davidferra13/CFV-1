@@ -1,4 +1,4 @@
-// FOH Preview — returns HTML for any menu (no event required)
+// FOH Preview - returns HTML for any menu (no event required)
 // Uses the HTML-based generator which works with just a menuId.
 
 import { NextRequest, NextResponse } from 'next/server'

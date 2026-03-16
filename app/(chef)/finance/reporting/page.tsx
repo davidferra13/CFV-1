@@ -21,7 +21,7 @@ const REPORTS = [
     href: '/finance/reporting/revenue-by-month',
     label: 'Revenue by Month',
     icon: '📅',
-    description: '12-month rolling revenue trend — export CSV',
+    description: '12-month rolling revenue trend - export CSV',
   },
   {
     href: '/finance/reporting/revenue-by-event',
@@ -33,7 +33,7 @@ const REPORTS = [
     href: '/finance/reporting/revenue-by-client',
     label: 'Revenue by Client',
     icon: '👤',
-    description: 'Lifetime value and revenue per client — export CSV',
+    description: 'Lifetime value and revenue per client - export CSV',
   },
   {
     href: '/finance/reporting/profit-by-event',
@@ -90,7 +90,7 @@ export default async function ReportingPage() {
           </Link>
           <h1 className="text-3xl font-bold text-stone-100 mt-1">Reporting</h1>
           <p className="text-stone-500 mt-1">
-            Financial reports and summaries — export-ready insights for your business
+            Financial reports and summaries - export-ready insights for your business
           </p>
         </div>
         <a

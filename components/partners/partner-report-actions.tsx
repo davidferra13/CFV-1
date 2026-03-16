@@ -1,4 +1,4 @@
-// Partner Report Actions — Print and export buttons
+// Partner Report Actions - Print and export buttons
 'use client'
 
 import { Button } from '@/components/ui/button'

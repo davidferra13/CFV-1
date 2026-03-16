@@ -1,4 +1,4 @@
-// Public Review Showcase — displays unified reviews and stats on chef profile
+// Public Review Showcase - displays unified reviews and stats on chef profile
 // No authentication required. Shows consented reviews from all platforms.
 'use client'
 

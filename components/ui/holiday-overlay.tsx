@@ -395,7 +395,7 @@ function AprilFoolsOverlay({ durationMs }: { durationMs: number }) {
 }
 
 // ---------------------------------------------------------------------------
-// Animation layer — rendered as a keyed component so replay remounts it
+// Animation layer - rendered as a keyed component so replay remounts it
 // ---------------------------------------------------------------------------
 
 function AnimationLayer({ config, onDone }: { config: ActiveConfig; onDone: () => void }) {
@@ -469,7 +469,7 @@ export function HolidayOverlay() {
 
       {playing && <AnimationLayer key={animKey} config={config} onDone={handleDone} />}
 
-      {/* Replay button — always interactive, never covered by animation layer */}
+      {/* Replay button - always interactive, never covered by animation layer */}
       <button
         onClick={replay}
         title={`Replay ${config.label}`}

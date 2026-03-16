@@ -1,6 +1,6 @@
 'use client'
 
-// OfflineNavIndicator — Compact connectivity status for nav/sidebar.
+// OfflineNavIndicator - Compact connectivity status for nav/sidebar.
 // Green dot when online, red dot + "Offline" when offline,
 // animated sync icon when syncing, pending count when queued.
 
@@ -28,7 +28,7 @@ export function OfflineNavIndicator() {
     return (
       <div
         className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-stone-800 border border-stone-600 flex-shrink-0"
-        title={`Offline — ${pendingCount} action${pendingCount === 1 ? '' : 's'} saved locally, will sync when reconnected`}
+        title={`Offline - ${pendingCount} action${pendingCount === 1 ? '' : 's'} saved locally, will sync when reconnected`}
       >
         <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
         <span className="text-xs font-medium text-stone-300">Offline</span>
@@ -45,7 +45,7 @@ export function OfflineNavIndicator() {
     return (
       <div
         className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-950 border border-red-200 flex-shrink-0"
-        title="No internet connection — changes will sync when reconnected"
+        title="No internet connection - changes will sync when reconnected"
       >
         <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
         <span className="text-xs font-medium text-red-700">Offline</span>
@@ -66,6 +66,6 @@ export function OfflineNavIndicator() {
     )
   }
 
-  // Online, nothing pending — show nothing (don't clutter the UI)
+  // Online, nothing pending - show nothing (don't clutter the UI)
   return null
 }

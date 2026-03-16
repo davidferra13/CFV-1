@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * SeasonalPalettePlayer — Remotion Player wrapper for the seasonal palette animation.
+ * SeasonalPalettePlayer - Remotion Player wrapper for the seasonal palette animation.
  * Defines micro-windows, proven wins, creative thesis, and seasonal palettes.
  */
 

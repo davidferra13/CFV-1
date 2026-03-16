@@ -16,7 +16,7 @@ export function AdminWordList() {
         const data = await getAllUserWords()
         setWords(data)
       } catch {
-        // Not admin — silently ignore
+        // Not admin - silently ignore
       } finally {
         setLoading(false)
       }

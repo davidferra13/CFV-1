@@ -66,7 +66,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
           collapsed ? 'w-10 h-10' : 'w-8 h-8 p-1.5'
         }`}
       >
-        {/* Tiny dot — quiet, always there */}
+        {/* Tiny dot - quiet, always there */}
         <span className="relative flex items-center justify-center w-4 h-4">
           <span className="block w-2 h-2 rounded-full bg-emerald-500/80" />
         </span>

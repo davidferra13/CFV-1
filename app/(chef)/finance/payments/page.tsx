@@ -66,7 +66,7 @@ export default async function PaymentsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Payments</h1>
         <p className="text-stone-500 mt-1">
-          All payment activity — inbound receipts and outbound refunds
+          All payment activity - inbound receipts and outbound refunds
         </p>
       </div>
 

@@ -1,4 +1,4 @@
-// Seasonal Palette List — Client Component
+// Seasonal Palette List - Client Component
 // Displays the 4 fixed seasons as cards with active toggle and edit links.
 
 'use client'

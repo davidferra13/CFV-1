@@ -1,4 +1,4 @@
-// Clientele Intelligence — Client Wrapper
+// Clientele Intelligence - Client Wrapper
 // Manages tab state and renders the four insight panels
 'use client'
 
@@ -85,7 +85,7 @@ function formatCurrency(cents: number): string {
 }
 
 function formatMinutes(minutes: number): string {
-  if (minutes === 0) return '—'
+  if (minutes === 0) return '-'
   if (minutes < 60) return `${minutes}m`
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
@@ -143,7 +143,7 @@ function ClienteleTab({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard
           title="Preferred Dinner Time"
-          subtitle="When your clients like to eat — hour of first service"
+          subtitle="When your clients like to eat - hour of first service"
         >
           <DinnerTimeChart data={dinnerTime} />
         </ChartCard>
@@ -169,7 +169,7 @@ function ClienteleTab({
         <div className="lg:col-span-2">
           <ChartCard
             title="Dietary Restrictions Across Clientele"
-            subtitle="Frequency across client profiles and event bookings — top 15"
+            subtitle="Frequency across client profiles and event bookings - top 15"
           >
             <DietaryFrequencyChart data={dietary} />
           </ChartCard>
@@ -188,15 +188,15 @@ function SeasonsTab({
 }: Pick<InsightsClientProps, 'monthlyVolume' | 'dayOfWeek' | 'revenueTrend'>) {
   const busiestMonth = monthlyVolume.reduce(
     (max, m) => (m.events > max.events ? m : max),
-    monthlyVolume[0] ?? { month: '—', events: 0, revenue_cents: 0, completed: 0 }
+    monthlyVolume[0] ?? { month: '-', events: 0, revenue_cents: 0, completed: 0 }
   )
   const slowestMonth = monthlyVolume.reduce(
     (min, m) => (m.events < min.events ? m : min),
-    monthlyVolume[0] ?? { month: '—', events: 0, revenue_cents: 0, completed: 0 }
+    monthlyVolume[0] ?? { month: '-', events: 0, revenue_cents: 0, completed: 0 }
   )
   const busiestDay = dayOfWeek.reduce(
     (max, d) => (d.count > max.count ? d : max),
-    dayOfWeek[0] ?? { day: '—', count: 0 }
+    dayOfWeek[0] ?? { day: '-', count: 0 }
   )
 
   return (
@@ -222,14 +222,14 @@ function SeasonsTab({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard
           title="Monthly Event Volume"
-          subtitle="Events (bars) and revenue (line) by calendar month — all years combined"
+          subtitle="Events (bars) and revenue (line) by calendar month - all years combined"
         >
           <MonthlyVolumeChart data={monthlyVolume} />
         </ChartCard>
 
         <ChartCard
           title="Day of Week"
-          subtitle="Which days clients prefer to book — completed and confirmed events"
+          subtitle="Which days clients prefer to book - completed and confirmed events"
         >
           <DayOfWeekChart data={dayOfWeek} />
         </ChartCard>
@@ -237,7 +237,7 @@ function SeasonsTab({
         <div className="lg:col-span-2">
           <ChartCard
             title="18-Month Revenue Trend"
-            subtitle="Net revenue received per month — rolling 18 months"
+            subtitle="Net revenue received per month - rolling 18 months"
           >
             <RevenueTrendChart data={revenueTrend} />
           </ChartCard>
@@ -323,14 +323,14 @@ function OperationsTab({
         <StatCard
           label="Service Min / Guest"
           value={
-            phaseStats.avgServiceMinPerGuest > 0 ? `${phaseStats.avgServiceMinPerGuest}m` : '—'
+            phaseStats.avgServiceMinPerGuest > 0 ? `${phaseStats.avgServiceMinPerGuest}m` : '-'
           }
           sub="avg service time per guest"
         />
         <StatCard
           label="Avg Event Value"
           value={
-            financialStats.avgEventValue > 0 ? formatCurrency(financialStats.avgEventValue) : '—'
+            financialStats.avgEventValue > 0 ? formatCurrency(financialStats.avgEventValue) : '-'
           }
           sub="completed events only"
         />
@@ -351,7 +351,7 @@ function OperationsTab({
 
         <ChartCard
           title="Revenue by Occasion"
-          subtitle="Total and average revenue — completed events by occasion type"
+          subtitle="Total and average revenue - completed events by occasion type"
         >
           <RevenueByOccasionChart data={financialStats.revenueByOccasion} />
         </ChartCard>
@@ -373,7 +373,7 @@ function OperationsTab({
         <div className="lg:col-span-2">
           <ChartCard
             title="Quality Ratings Over Time"
-            subtitle="Calm, Preparation, and Execution scores from after-action reviews — 12 months"
+            subtitle="Calm, Preparation, and Execution scores from after-action reviews - 12 months"
           >
             <AARRatingTrendChart data={aarTrends.trend} />
           </ChartCard>
@@ -395,7 +395,7 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
         <p className="font-semibold text-stone-300 text-lg">No Take a Chef clients yet</p>
         <p className="text-stone-500 text-sm mt-2 max-w-md mx-auto">
           When you capture a Take a Chef booking via Smart Import, the ROI analytics will appear
-          here — showing how many platform clients have converted to direct bookings and how much
+          here - showing how many platform clients have converted to direct bookings and how much
           commission you&apos;ve saved.
         </p>
         <a
@@ -437,7 +437,7 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
           value={
             roi.estimatedCommissionPaidCents > 0
               ? formatCurrency(roi.estimatedCommissionPaidCents)
-              : '—'
+              : '-'
           }
           sub="tracked as business expenses"
         />
@@ -446,13 +446,13 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
           value={
             roi.estimatedCommissionSavedCents > 0
               ? formatCurrency(roi.estimatedCommissionSavedCents)
-              : '—'
+              : '-'
           }
           sub={`on direct repeat bookings (${roi.defaultCommissionPercent}% est.)`}
         />
         <StatCard
           label="Avg Event Value"
-          value={roi.avgEventValueCents > 0 ? formatCurrency(roi.avgEventValueCents) : '—'}
+          value={roi.avgEventValueCents > 0 ? formatCurrency(roi.avgEventValueCents) : '-'}
           sub="across all TAC client events"
         />
       </div>

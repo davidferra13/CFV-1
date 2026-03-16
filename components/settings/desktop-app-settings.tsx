@@ -62,7 +62,7 @@ export function DesktopAppSettings() {
       <div className="rounded-lg border border-stone-700 bg-stone-800 p-4">
         <p className="font-medium text-stone-100">ChefFlow Desktop App</p>
         <p className="mt-1 text-sm text-stone-400">
-          Run ChefFlow as a native app that lives in your system tray — always one click away, with
+          Run ChefFlow as a native app that lives in your system tray - always one click away, with
           desktop notifications and auto-start on login.
         </p>
         <p className="mt-3 text-sm text-stone-500">
@@ -79,7 +79,7 @@ export function DesktopAppSettings() {
     return <div className="h-16 animate-pulse rounded-lg bg-stone-800" />
   }
 
-  // Inside Tauri — show the real toggle
+  // Inside Tauri - show the real toggle
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between rounded-lg border border-stone-700 p-4">
@@ -110,7 +110,7 @@ export function DesktopAppSettings() {
 
       <div className="rounded-lg border border-stone-800 bg-stone-800 px-4 py-3">
         <p className="text-xs text-stone-500">
-          Running as desktop app — system tray is active. Close the window to minimize to tray.
+          Running as desktop app - system tray is active. Close the window to minimize to tray.
           Right-click the tray icon to open, start a new event or inquiry, or quit.
         </p>
       </div>

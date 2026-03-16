@@ -89,7 +89,7 @@ export function RaffleDrawReceipt({ receipt }: Props) {
             ))}
           </div>
         ) : (
-          /* Fallback for old receipts — single winner display */
+          /* Fallback for old receipts - single winner display */
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <p className="text-stone-500 text-xs">Winner</p>
@@ -124,14 +124,14 @@ export function RaffleDrawReceipt({ receipt }: Props) {
         {/* Provably fair seed */}
         <details className="text-xs">
           <summary className="cursor-pointer text-stone-500 hover:text-stone-400">
-            Provably fair — view draw seed
+            Provably fair - view draw seed
           </summary>
           <div className="mt-2 rounded bg-stone-800 p-2 font-mono text-stone-400 break-all">
             {receipt.draw_seed}
           </div>
           <p className="text-stone-600 mt-1">
             This cryptographic seed was used to randomly select the draw winner. The draw is fully
-            automated — no one can influence the result.
+            automated - no one can influence the result.
           </p>
         </details>
       </CardContent>

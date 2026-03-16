@@ -122,7 +122,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
     const pts = parseInt(raw || '0', 10)
     if (!pts || pts <= 0) return
     try {
-      await awardBonusPoints(clientId, pts, 'Opening balance — migrated from previous records')
+      await awardBonusPoints(clientId, pts, 'Opening balance - migrated from previous records')
       setSavedClients((prev) => new Set(prev).add(clientId))
       router.refresh()
     } catch (e) {
@@ -412,7 +412,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
               <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-amber-800">
                 The points ledger is append-only. Once saved, balances can only be corrected with an
-                additional adjustment transaction — not deleted. Enter each client&apos;s historical
+                additional adjustment transaction - not deleted. Enter each client&apos;s historical
                 balance carefully.
               </p>
             </div>

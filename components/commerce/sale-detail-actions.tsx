@@ -1,4 +1,4 @@
-// Commerce Sale Detail Actions — void, refund, receipt download
+// Commerce Sale Detail Actions - void, refund, receipt download
 'use client'
 
 import { useState, useTransition } from 'react'

@@ -1,6 +1,6 @@
 'use client'
 
-// WasteDashboard — Waste analytics dashboard with summary cards and charts.
+// WasteDashboard - Waste analytics dashboard with summary cards and charts.
 // Shows waste cost by reason (bar chart), monthly trend (line chart), and key metrics.
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'

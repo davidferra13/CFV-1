@@ -1,4 +1,4 @@
-// Unified Proposal Page — Client View
+// Unified Proposal Page - Client View
 // Single-scroll page showing event summary, menu, contract, and payment
 // State-machine driven: shows the right sections based on event status
 
@@ -63,7 +63,7 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
     outstandingBalanceCents > 0 &&
     (!contractExists || contractSigned)
 
-  // Terminal/post-active statuses — just show summary
+  // Terminal/post-active statuses - just show summary
   const isTerminalOrActive = ['in_progress', 'completed', 'cancelled'].includes(event.status)
 
   const locationParts = [
@@ -115,7 +115,7 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
               <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">
                 Occasion
               </div>
-              <div className="font-medium text-stone-100">{event.occasion || '—'}</div>
+              <div className="font-medium text-stone-100">{event.occasion || '-'}</div>
             </div>
 
             <div>
@@ -131,7 +131,7 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
               <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">
                 Guests
               </div>
-              <div className="font-medium text-stone-100">{event.guest_count ?? '—'}</div>
+              <div className="font-medium text-stone-100">{event.guest_count ?? '-'}</div>
             </div>
 
             <div className="sm:col-span-1">
@@ -139,7 +139,7 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
                 Location
               </div>
               <div className="font-medium text-stone-100">
-                {locationParts.length > 0 ? locationParts.join(', ') : '—'}
+                {locationParts.length > 0 ? locationParts.join(', ') : '-'}
               </div>
             </div>
 
@@ -319,7 +319,7 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
                 type="button"
                 className="w-full bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition"
               >
-                Proceed to Payment — {formatCurrency(outstandingBalanceCents)}
+                Proceed to Payment - {formatCurrency(outstandingBalanceCents)}
               </button>
             </Link>
           </CardContent>
@@ -339,7 +339,7 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
       {/* ── STATUS MESSAGES for paid / confirmed / in_progress / completed ── */}
       {event.status === 'paid' && (
         <Alert variant="success" className="mb-6">
-          <p className="font-medium">Payment received — awaiting chef confirmation</p>
+          <p className="font-medium">Payment received - awaiting chef confirmation</p>
           <p className="text-sm mt-1">
             Your payment has been processed. Your chef will confirm the booking shortly.
           </p>
@@ -348,7 +348,7 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
 
       {event.status === 'confirmed' && (
         <Alert variant="success" className="mb-6">
-          <p className="font-medium">All set — your event is confirmed!</p>
+          <p className="font-medium">All set - your event is confirmed!</p>
           <p className="text-sm mt-1">
             Your chef will be in touch with any final details before the big day.
           </p>

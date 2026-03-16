@@ -13,7 +13,7 @@ const games: {
     emoji: '\u{1F4A1}',
     title: 'Menu Muse',
     description:
-      "Break through writer's block. Your recipes, your heroes, your season, your spark — all in one place to fuel your next menu.",
+      "Break through writer's block. Your recipes, your heroes, your season, your spark - all in one place to fuel your next menu.",
     color: 'from-brand-500/20 to-amber-500/20',
     cta: 'Get inspired',
   },
@@ -30,7 +30,7 @@ const games: {
     emoji: '🐍',
     title: 'Chef Snake',
     description:
-      'Slither around collecting ingredients to complete recipes. The more you eat, the longer you get — and the faster it goes.',
+      'Slither around collecting ingredients to complete recipes. The more you eat, the longer you get - and the faster it goes.',
     color: 'from-orange-500/20 to-red-500/20',
   },
   {

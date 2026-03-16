@@ -1,6 +1,6 @@
 'use client'
 
-// RemyContext — Shared state between the persistent Remy mascot and the chat drawer.
+// RemyContext - Shared state between the persistent Remy mascot and the chat drawer.
 // Hoists lip-sync, drawer open/close, body state machine, and eye state so both
 // sibling components can communicate without being nested inside each other.
 //
@@ -20,7 +20,7 @@ import type { BodyState, BodyEvent } from '@/lib/ai/remy-body-state'
 import type { EyeState } from '@/lib/ai/remy-eye-blink'
 import type { Viseme, RemyEmotion } from '@/lib/ai/remy-visemes'
 
-// Legacy type — kept for backward compat during migration
+// Legacy type - kept for backward compat during migration
 type MascotState = 'idle' | 'thinking' | 'success' | 'nudge' | 'sleeping'
 
 interface RemyContextValue {
@@ -45,7 +45,7 @@ interface RemyContextValue {
   resetLipSync: () => void
   setEmotion: (e: RemyEmotion) => void
 
-  // Body animation state machine (new — 11 states)
+  // Body animation state machine (new - 11 states)
   bodyState: BodyState
   dispatchBody: (event: BodyEvent) => void
 
@@ -56,7 +56,7 @@ interface RemyContextValue {
   mascotState: MascotState
   setMascotState: (s: MascotState) => void
 
-  // Loading state — drawer and mascot chat tracked separately
+  // Loading state - drawer and mascot chat tracked separately
   isLoading: boolean
   setIsLoading: (l: boolean) => void
   isMascotLoading: boolean
@@ -111,13 +111,13 @@ export function RemyProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false)
   const [isMascotLoading, setIsMascotLoading] = useState(false)
 
-  // Body state machine — replaces the old simple mascotState
+  // Body state machine - replaces the old simple mascotState
   const { bodyState, dispatchBody } = useBodyState()
 
-  // Lip-sync engine — shared instance for both mascot and drawer avatars
+  // Lip-sync engine - shared instance for both mascot and drawer avatars
   const lipSync = useRemyLipSync()
 
-  // Auto-blink engine — eyes react to body state and emotion
+  // Auto-blink engine - eyes react to body state and emotion
   const eyeState = useAutoBlink({ bodyState, emotion: lipSync.currentEmotion })
 
   const openDrawer = useCallback(() => {

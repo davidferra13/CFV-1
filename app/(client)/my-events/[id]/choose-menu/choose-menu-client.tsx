@@ -402,7 +402,7 @@ export function ChooseMenuClient({ eventId, showcaseMenus, existingPreferences, 
         <textarea
           value={exactRequest}
           onChange={(e) => setExactRequest(e.target.value)}
-          placeholder="e.g., Burrata salad to start, hand-made pappardelle with wild boar ragu for main, and tiramisu for dessert. One guest is vegetarian — please have a veggie main option."
+          placeholder="e.g., Burrata salad to start, hand-made pappardelle with wild boar ragu for main, and tiramisu for dessert. One guest is vegetarian - please have a veggie main option."
           rows={5}
           className="w-full rounded-lg border border-stone-700 bg-stone-800 p-3 text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
         />

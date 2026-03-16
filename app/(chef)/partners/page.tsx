@@ -1,4 +1,4 @@
-// Partner Management — List all referral partners with stats
+// Partner Management - List all referral partners with stats
 // Shows partner name, type, status, referral count, revenue, and last activity
 
 import type { Metadata } from 'next'

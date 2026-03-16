@@ -430,7 +430,7 @@ export async function IntelligenceHubContent() {
                   <div>
                     <span className="font-medium">{t.title}</span>
                     <p className="text-xs text-muted-foreground">
-                      {t.clientName} — {t.eventDate}
+                      {t.clientName} - {t.eventDate}
                     </p>
                   </div>
                   <Badge
@@ -582,7 +582,7 @@ export async function IntelligenceHubContent() {
         <CardHeader>
           <CardTitle>Ingredient Consolidation</CardTitle>
           <CardDescription>
-            Batch planning for upcoming events — save trips and money
+            Batch planning for upcoming events - save trips and money
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -625,7 +625,7 @@ export async function IntelligenceHubContent() {
                     <span>{item.ingredientName}</span>
                     <span className="text-muted-foreground text-xs">
                       {item.eventCount} events
-                      {item.totalQuantity ? ` — ${item.totalQuantity} ${item.unit || ''}` : ''}
+                      {item.totalQuantity ? ` - ${item.totalQuantity} ${item.unit || ''}` : ''}
                     </span>
                   </div>
                 ))}
@@ -697,7 +697,7 @@ export async function IntelligenceHubContent() {
       </Card>
 
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      {/* TIER 2 — Operational Intelligence                                      */}
+      {/* TIER 2 - Operational Intelligence                                      */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
 
       {/* 11. Prep Time Estimator */}
@@ -993,7 +993,7 @@ export async function IntelligenceHubContent() {
       </Card>
 
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      {/* TIER 3 — Strategic Growth Intelligence                                 */}
+      {/* TIER 3 - Strategic Growth Intelligence                                 */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
 
       {/* 16. Untapped Markets */}
@@ -1182,7 +1182,7 @@ export async function IntelligenceHubContent() {
                 <div key={p.season} className="text-sm">
                   <span className="font-medium capitalize">{p.season}</span>
                   <span className="text-muted-foreground ml-2 text-xs">
-                    ({p.months}) — {p.eventCount} events, {formatCents(p.avgRevenueCents)} avg
+                    ({p.months}) - {p.eventCount} events, {formatCents(p.avgRevenueCents)} avg
                   </span>
                   {p.topDishes.length > 0 && (
                     <p className="text-xs text-muted-foreground ml-2">
@@ -1238,7 +1238,7 @@ export async function IntelligenceHubContent() {
                 <div key={s.stage} className="flex items-center justify-between text-sm">
                   <span className="capitalize">{s.stage.replace('_', ' ')}</span>
                   <span className="text-muted-foreground text-xs">
-                    {s.count} clients ({s.percent}%) — {formatCents(s.avgRevenueCents)} avg
+                    {s.count} clients ({s.percent}%) - {formatCents(s.avgRevenueCents)} avg
                   </span>
                 </div>
               ))}
@@ -1269,7 +1269,7 @@ export async function IntelligenceHubContent() {
       </Card>
 
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      {/* TIER 4 — Predictive & Advanced Analytics                               */}
+      {/* TIER 4 - Predictive & Advanced Analytics                               */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
 
       {/* 21. Churn Prevention */}

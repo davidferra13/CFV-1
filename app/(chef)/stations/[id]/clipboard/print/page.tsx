@@ -1,7 +1,7 @@
 // Print-Friendly Station Clipboard
-// Clean layout optimized for paper — no nav chrome, large cells, clear labels.
+// Clean layout optimized for paper - no nav chrome, large cells, clear labels.
 // Uses the shared print system from globals.css (print-standard, print-table, etc.)
-// Also works on 80mm thermal printers — the table auto-compresses.
+// Also works on 80mm thermal printers - the table auto-compresses.
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
@@ -9,7 +9,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { PrintableDocument } from '@/components/print/printable-document'
 import { getDocumentContext } from '@/lib/print/actions'
 
-export const metadata: Metadata = { title: 'Print Clipboard — ChefFlow' }
+export const metadata: Metadata = { title: 'Print Clipboard | ChefFlow' }
 
 export default async function PrintClipboardPage({
   params,
@@ -23,7 +23,7 @@ export default async function PrintClipboardPage({
 
   const date = searchParams.date ?? new Date().toISOString().split('T')[0]
 
-  // Resolve all print context — attribution, default mode, custom footer
+  // Resolve all print context - attribution, default mode, custom footer
   const { generatedBy, printMode: defaultMode, customFooter } = await getDocumentContext()
   const printMode =
     searchParams.mode === 'thermal' ? ('thermal-80' as const) : (defaultMode ?? 'standard')
@@ -75,7 +75,7 @@ export default async function PrintClipboardPage({
 
   return (
     <PrintableDocument
-      title={`${station.name} — Daily Clipboard`}
+      title={`${station.name} - Daily Clipboard`}
       subtitle={`Date: ${dateLabel}`}
       generatedBy={generatedBy}
       footer={customFooter ?? undefined}
@@ -121,17 +121,17 @@ export default async function PrintClipboardPage({
                   <td>{comp.menuItem}</td>
                   <td>{comp.name}</td>
                   <td>
-                    {comp.par_level ?? '—'} {comp.par_unit ?? comp.unit ?? ''}
+                    {comp.par_level ?? '-'} {comp.par_unit ?? comp.unit ?? ''}
                   </td>
                   <td>{e?.on_hand ?? ''}</td>
                   <td style={{ fontWeight: need > 0 ? 'bold' : 'normal' }}>
-                    {need > 0 ? need : '—'}
+                    {need > 0 ? need : '-'}
                   </td>
                   <td>{e?.made ?? ''}</td>
                   <td>{e?.need_to_order ?? ''}</td>
                   <td>{e?.waste_qty ?? ''}</td>
                   <td>
-                    {shelfDays ? `${shelfDays}d` : '—'}
+                    {shelfDays ? `${shelfDays}d` : '-'}
                     {isExpired && ' EXPIRED'}
                     {isExpiring && ' EXP TODAY'}
                   </td>

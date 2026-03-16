@@ -1,4 +1,4 @@
-// Admin Overview — Platform command center
+// Admin Overview - Platform command center
 // Cross-tenant KPIs, live session count widget, quick-action tiles
 
 import { requireAdmin } from '@/lib/auth/admin'

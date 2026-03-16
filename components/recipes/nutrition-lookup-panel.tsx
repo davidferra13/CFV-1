@@ -265,7 +265,7 @@ export function NutritionLookupPanel({ defaultQuery = '' }: NutritionLookupPanel
     <Card className="p-5">
       <h3 className="text-base font-semibold text-stone-100 mb-1">Nutrition Lookup</h3>
       <p className="text-xs text-stone-500 mb-4">
-        Per-100 g nutritional data from two free databases — no API key required
+        Per-100 g nutritional data from two free databases - no API key required
       </p>
 
       {/* Tab bar */}

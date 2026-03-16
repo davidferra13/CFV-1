@@ -1,4 +1,4 @@
-// Settings > Repertoire — Seasonal Palettes Overview
+// Settings > Repertoire - Seasonal Palettes Overview
 // List all seasons, set active, edit, create custom.
 
 import { requireChef } from '@/lib/auth/get-user'

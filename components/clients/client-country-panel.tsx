@@ -2,7 +2,7 @@
 
 // Shows enriched country details for a client.
 // Fetches currency, timezone, languages from REST Countries API.
-// Non-blocking — gracefully hides if lookup fails.
+// Non-blocking - gracefully hides if lookup fails.
 
 import { useState } from 'react'
 import { getCountryDetails, type CountryDetails } from '@/lib/geo/geo-actions'

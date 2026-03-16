@@ -1,4 +1,4 @@
-// Commerce Product Catalog — table with search, edit links, active toggle
+// Commerce Product Catalog - table with search, edit links, active toggle
 'use client'
 
 import { useState, useMemo, useTransition } from 'react'
@@ -120,7 +120,7 @@ export function ProductCatalog({ products }: Props) {
                       {product.category
                         ? (PRODUCT_CATEGORY_LABELS[product.category as ProductCategory] ??
                           product.category)
-                        : '—'}
+                        : '-'}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -130,7 +130,7 @@ export function ProductCatalog({ products }: Props) {
                   </TableCell>
                   <TableCell>
                     <span className="text-stone-400">
-                      {product.cost_cents ? `$${(product.cost_cents / 100).toFixed(2)}` : '—'}
+                      {product.cost_cents ? `$${(product.cost_cents / 100).toFixed(2)}` : '-'}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -147,7 +147,7 @@ export function ProductCatalog({ products }: Props) {
                         {margin}%
                       </span>
                     ) : (
-                      <span className="text-stone-500">—</span>
+                      <span className="text-stone-500">-</span>
                     )}
                   </TableCell>
                   <TableCell>

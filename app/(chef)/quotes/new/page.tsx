@@ -1,4 +1,4 @@
-// New Quote Page — Create a quote with pricing intelligence
+// New Quote Page - Create a quote with pricing intelligence
 // Can be navigated to directly or from an inquiry (with pre-filled data)
 
 import { requireChef } from '@/lib/auth/get-user'

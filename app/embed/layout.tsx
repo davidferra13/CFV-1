@@ -1,4 +1,4 @@
-// Minimal layout for embed pages — no header, no footer, no nav
+// Minimal layout for embed pages - no header, no footer, no nav
 // Designed to be loaded inside an iframe on external websites
 
 import type { Metadata } from 'next'

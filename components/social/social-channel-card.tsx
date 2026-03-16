@@ -8,7 +8,7 @@ import { joinChannel, leaveChannel } from '@/lib/social/chef-social-actions'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
-// Standalone join/leave button — use this when the full card chrome is already
+// Standalone join/leave button - use this when the full card chrome is already
 // rendered by the parent (e.g. the channel detail page header).
 export function ChannelJoinButton({
   channelId,

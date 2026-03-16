@@ -333,15 +333,15 @@ export function EmbedCodePanel({ chefId }: Props) {
             'Switch to the "Code" tab (not "Website Address").',
             'Paste your ChefFlow embed code (copied above) into the code box.',
             'Click "Update" to apply.',
-            'Resize the embed box by dragging its corners — make it at least 600px wide and 900px tall.',
+            'Resize the embed box by dragging its corners - make it at least 600px wide and 900px tall.',
             'Click "Publish" in the top right to make the changes live.',
             'Test by visiting your published page and submitting a test inquiry.',
           ]}
           tips={[
             'If the form appears cut off, increase the height of the embed box.',
-            'The embed box can be placed anywhere on your page — header, body, or a dedicated "Book Now" section.',
+            'The embed box can be placed anywhere on your page - header, body, or a dedicated "Book Now" section.',
             'For the popup button mode, place the code on your homepage so the button appears site-wide.',
-            'You only need to add the code once — it loads dynamically, so updates from ChefFlow appear automatically.',
+            'You only need to add the code once - it loads dynamically, so updates from ChefFlow appear automatically.',
           ]}
         />
 
@@ -364,7 +364,7 @@ export function EmbedCodePanel({ chefId }: Props) {
           tips={[
             'Squarespace code blocks work on all plan levels (Basic and above).',
             'If using "Code Injection" (popup mode), the floating button will appear on every page.',
-            'The inline form adapts to the width of its container — use a full-width section for best results.',
+            'The inline form adapts to the width of its container - use a full-width section for best results.',
           ]}
         />
 
@@ -384,7 +384,7 @@ export function EmbedCodePanel({ chefId }: Props) {
           ]}
           tips={[
             'If your theme has a page builder (Elementor, Divi, etc.), look for an "HTML" or "Code" widget to paste the embed code.',
-            "The script is lightweight (~4KB) and loads asynchronously — it won't slow down your page.",
+            "The script is lightweight (~4KB) and loads asynchronously - it won't slow down your page.",
             'WordPress.com free plans may block external scripts. You need a Business plan or self-hosted WordPress for custom HTML.',
           ]}
         />
@@ -397,12 +397,12 @@ export function EmbedCodePanel({ chefId }: Props) {
           steps={[
             'Open the HTML file for the page where you want the booking form.',
             'For inline mode: Paste the embed code where you want the form to appear in the <body> section.',
-            'For popup mode: Paste the embed code just before the closing </body> tag — the floating button will appear automatically.',
+            'For popup mode: Paste the embed code just before the closing </body> tag - the floating button will appear automatically.',
             'Save and deploy your changes.',
             'If your site uses a build system (React, Next.js, etc.), add the script tag to your component or layout template.',
           ]}
           tips={[
-            'The widget is self-contained — it creates its own iframe and styles. No CSS conflicts with your site.',
+            'The widget is self-contained - it creates its own iframe and styles. No CSS conflicts with your site.',
             'For React/Next.js apps, use a useEffect hook to dynamically add the script tag.',
             'The widget fires postMessage events you can listen for: "chefflow-inquiry-submitted" and "chefflow-widget-loaded".',
           ]}
@@ -436,7 +436,7 @@ export function EmbedCodePanel({ chefId }: Props) {
             'In your Shopify admin, go to Online Store > Pages.',
             'Create a new page or edit an existing one.',
             'In the content editor, click the "<>" (HTML) button to switch to HTML mode.',
-            'Paste the iframe alternative code (not the script — Shopify blocks external scripts in page content).',
+            'Paste the iframe alternative code (not the script - Shopify blocks external scripts in page content).',
             'Save the page.',
             'For site-wide popup: Go to Online Store > Themes > Actions > Edit Code > theme.liquid, and paste the script code before </body>.',
           ]}
@@ -471,7 +471,7 @@ export function EmbedCodePanel({ chefId }: Props) {
               I submitted a test but it didn&apos;t appear in ChefFlow
             </p>
             <p className="text-stone-500 mt-0.5">
-              Check your Inquiries page in ChefFlow — new submissions appear with channel
+              Check your Inquiries page in ChefFlow - new submissions appear with channel
               &quot;website&quot; and status &quot;new.&quot; Make sure you used a real email
               address (the form validates email format).
             </p>
@@ -502,7 +502,7 @@ export function EmbedCodePanel({ chefId }: Props) {
         </h2>
         <ol className="text-sm text-emerald-800 space-y-2 list-decimal list-inside">
           <li>
-            The visitor fills out the form on <strong>your website</strong> — they never leave your
+            The visitor fills out the form on <strong>your website</strong> - they never leave your
             site.
           </li>
           <li>
@@ -523,7 +523,7 @@ export function EmbedCodePanel({ chefId }: Props) {
             Remy runs <strong>AI lead scoring</strong> in the background to prioritize hot leads.
           </li>
           <li>
-            You review and respond from your ChefFlow dashboard — the full pipeline takes over.
+            You review and respond from your ChefFlow dashboard - the full pipeline takes over.
           </li>
         </ol>
       </div>

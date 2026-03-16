@@ -142,7 +142,7 @@ export function RetirementHealthPanel({
             <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
             <p className="text-sm text-blue-800">
               These are <strong>above-the-line deductions</strong> (Schedule 1) that reduce your
-              Adjusted Gross Income — separate from Schedule C business expenses. Report them to
+              Adjusted Gross Income - separate from Schedule C business expenses. Report them to
               your accountant alongside your Schedule C. They reduce your total tax bill beyond
               Schedule C deductions.
             </p>

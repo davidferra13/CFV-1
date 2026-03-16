@@ -104,7 +104,7 @@ export function ServiceMixCalculator({
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
-              {monthLabel} — already booked
+              {monthLabel} - already booked
             </p>
             <p className="text-2xl font-bold text-amber-900 mt-0.5">
               {formatDollars(alreadyBookedCents)}
@@ -118,7 +118,7 @@ export function ServiceMixCalculator({
               Gap remaining
             </p>
             <p className="text-2xl font-bold text-amber-900 mt-0.5">
-              {gapCents > 0 ? formatDollars(gapCents) : '—'}
+              {gapCents > 0 ? formatDollars(gapCents) : '-'}
             </p>
             <p className="text-xs text-amber-600 mt-0.5">Goal: {formatDollars(goal.targetValue)}</p>
           </div>
@@ -200,7 +200,7 @@ export function ServiceMixCalculator({
                       <p
                         className={`text-sm font-semibold ${qty > 0 ? 'text-brand-400' : 'text-stone-300'}`}
                       >
-                        {qty > 0 ? formatDollars(lineRevenue) : '—'}
+                        {qty > 0 ? formatDollars(lineRevenue) : '-'}
                       </p>
                       {qty > 1 && (
                         <p className="text-xs text-stone-300">

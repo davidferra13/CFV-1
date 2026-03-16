@@ -1,6 +1,6 @@
 'use client'
 
-// UnusedIngredients — Log and manage leftover/unused ingredients after an event.
+// UnusedIngredients - Log and manage leftover/unused ingredients after an event.
 // Extended to support storage location, use-by date, and expiry marking.
 
 import { useState } from 'react'

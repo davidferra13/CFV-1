@@ -1,4 +1,4 @@
-// Staff Portal Navigation — Top bar with links to staff pages
+// Staff Portal Navigation - Top bar with links to staff pages
 'use client'
 
 import { useState } from 'react'

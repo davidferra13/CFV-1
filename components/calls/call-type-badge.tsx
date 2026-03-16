@@ -1,4 +1,4 @@
-// CallTypeBadge — colored label for call type
+// CallTypeBadge - colored label for call type
 
 import type { CallType } from '@/lib/calls/actions'
 

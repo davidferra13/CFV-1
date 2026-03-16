@@ -10,9 +10,9 @@ const AUDIT_TYPES = [
   {
     value: 'full',
     label: 'Full Audit',
-    description: 'Count everything — comprehensive stock check',
+    description: 'Count everything - comprehensive stock check',
   },
-  { value: 'cycle', label: 'Cycle Count', description: 'Subset of items — routine verification' },
+  { value: 'cycle', label: 'Cycle Count', description: 'Subset of items - routine verification' },
   { value: 'spot', label: 'Spot Check', description: 'Quick check on specific items' },
   { value: 'pre_event', label: 'Pre-Event', description: 'Verify stock before an event' },
   { value: 'post_event', label: 'Post-Event', description: 'Check what remains after an event' },

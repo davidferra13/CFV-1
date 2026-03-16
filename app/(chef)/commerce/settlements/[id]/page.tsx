@@ -1,4 +1,4 @@
-// Settlement Detail Page — payout breakdown with linked payments
+// Settlement Detail Page - payout breakdown with linked payments
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Settlement Detail — ChefFlow' }
+export const metadata: Metadata = { title: 'Settlement Detail | ChefFlow' }
 
 export default async function SettlementDetailPage({
   params,

@@ -1,6 +1,6 @@
 'use client'
 
-// Labor Dashboard — labor cost analytics with chart and detail table.
+// Labor Dashboard - labor cost analytics with chart and detail table.
 // Shows labor cost vs revenue by month with a ratio target indicator.
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'

@@ -118,11 +118,11 @@ export default async function ProfitByEventPage() {
                           {row.client.full_name}
                         </Link>
                       ) : (
-                        '—'
+                        '-'
                       )}
                     </TableCell>
                     <TableCell className="text-stone-400 text-sm capitalize">
-                      {row.occasion?.replace(/_/g, ' ') ?? '—'}
+                      {row.occasion?.replace(/_/g, ' ') ?? '-'}
                     </TableCell>
                     <TableCell className="text-green-700 font-semibold text-sm">
                       <Link href={`/events/${row.id}`} className="hover:underline">
@@ -130,7 +130,7 @@ export default async function ProfitByEventPage() {
                       </Link>
                     </TableCell>
                     <TableCell className="text-red-600 text-sm">
-                      {row.directExpenses > 0 ? formatCurrency(row.directExpenses) : '—'}
+                      {row.directExpenses > 0 ? formatCurrency(row.directExpenses) : '-'}
                     </TableCell>
                     <TableCell
                       className={`font-semibold text-sm ${row.profit >= 0 ? 'text-stone-100' : 'text-red-600'}`}
@@ -138,7 +138,7 @@ export default async function ProfitByEventPage() {
                       {formatCurrency(row.profit)}
                     </TableCell>
                     <TableCell className="text-stone-500 text-sm">
-                      {margin !== null ? `${margin}%` : '—'}
+                      {margin !== null ? `${margin}%` : '-'}
                     </TableCell>
                   </TableRow>
                 )

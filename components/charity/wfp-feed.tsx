@@ -33,7 +33,7 @@ export function WfpFeed({ stories }: { stories: WfpStory[] }) {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm font-medium text-stone-300 flex items-center gap-2">
           <Globe className="w-4 h-4" />
-          World Food Programme — Latest
+          World Food Programme - Latest
         </h2>
         <a
           href="https://www.wfp.org/news"

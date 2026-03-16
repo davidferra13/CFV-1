@@ -144,7 +144,7 @@ export function TaxCenterClient({ year, mileage, quarterlyEstimates }: Props) {
       {/* Mileage summary */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base">Mileage Log — {year}</CardTitle>
+          <CardTitle className="text-base">Mileage Log - {year}</CardTitle>
           <div className="flex gap-2">
             <Button
               size="sm"

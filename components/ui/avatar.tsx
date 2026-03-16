@@ -25,7 +25,7 @@ export function AvatarImage({
   const [failed, setFailed] = useState(false)
   if (!src || failed) return null
 
-  // Optimize through Cloudinary CDN — falls back to original URL if env var missing
+  // Optimize through Cloudinary CDN - falls back to original URL if env var missing
   // Use the larger of width/height for avatar size, default 200px
   const size =
     Math.max(typeof width === 'number' ? width : 0, typeof height === 'number' ? height : 0) || 200

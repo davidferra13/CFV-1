@@ -74,7 +74,7 @@ export function TestimonialManager({ initialTestimonials, events }: Props) {
           prev.map((t) => (t.id === id ? { ...t, is_approved: approved } : t))
         )
       } catch {
-        // silently fail — user can retry
+        // silently fail - user can retry
       }
     })
   }

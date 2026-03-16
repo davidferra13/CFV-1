@@ -1,4 +1,4 @@
-// Minimal kiosk layout — no nav, no sidebar, no Remy, no portal links
+// Minimal kiosk layout - no nav, no sidebar, no Remy, no portal links
 // Full-screen, touch-optimized, designed for dedicated tablets
 
 import type { Metadata, Viewport } from 'next'

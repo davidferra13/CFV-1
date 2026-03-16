@@ -1,4 +1,4 @@
-// Quotes Loading Skeleton — status tabs + quote cards
+// Quotes Loading Skeleton - status tabs + quote cards
 import { Card, CardContent } from '@/components/ui/card'
 import { ContextLoader } from '@/components/ui/context-loader'
 

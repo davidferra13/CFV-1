@@ -1,4 +1,4 @@
-// Google Business OAuth: Step 1 — Redirect to Google authorization URL
+// Google Business OAuth: Step 1 - Redirect to Google authorization URL
 // Requires: GOOGLE_CLIENT_ID env var (from Google Cloud Console)
 // Scope: https://www.googleapis.com/auth/business.manage (Google My Business)
 

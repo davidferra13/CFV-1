@@ -1,5 +1,5 @@
 // TakeAChef Address Lead Prompt
-// For NEW TakeAChef inquiries — chef must acknowledge each lead, clearing the "untouched" state.
+// For NEW TakeAChef inquiries - chef must acknowledge each lead, clearing the "untouched" state.
 // Different from TacStatusPrompt which handles awaiting_chef status.
 'use client'
 
@@ -85,7 +85,7 @@ export function TacAddressLead({
         <div className="flex items-center gap-2 min-w-0">
           <Badge variant={isStale ? 'error' : 'warning'}>{isStale ? 'Stale' : 'Untouched'}</Badge>
           <p className="text-sm font-medium text-stone-800 truncate">
-            {displayName} — new TakeAChef lead
+            {displayName} - new TakeAChef lead
           </p>
           <span
             className={`text-xs shrink-0 ${
@@ -113,10 +113,10 @@ export function TacAddressLead({
       {/* Urgency context */}
       <p className="text-xs text-stone-600">
         {isStale
-          ? 'This lead is going cold. Address it now or decline it — waiting longer means losing the booking.'
+          ? 'This lead is going cold. Address it now or decline it - waiting longer means losing the booking.'
           : isUrgent
             ? "This lead has been waiting over 12 hours. Respond today or they'll move on to another chef."
-            : 'New lead — respond within 12 hours to stay competitive on TakeAChef.'}
+            : 'New lead - respond within 12 hours to stay competitive on TakeAChef.'}
       </p>
 
       {/* Quick actions */}
@@ -136,7 +136,7 @@ export function TacAddressLead({
           </Button>
         </div>
         <p className="text-[11px] text-stone-400">
-          "Send a Menu" marks this lead as addressed — then open TakeAChef to send your initial
+          "Send a Menu" marks this lead as addressed - then open TakeAChef to send your initial
           menu. "Not Interested" declines the lead.
         </p>
       </div>

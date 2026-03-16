@@ -9,7 +9,7 @@ import { RevenuePathPanel } from '@/components/goals/revenue-path-panel'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Revenue Path — ChefFlow' }
+export const metadata: Metadata = { title: 'Revenue Path | ChefFlow' }
 
 export default async function RevenuePathPage() {
   await requireChef()
@@ -32,7 +32,7 @@ export default async function RevenuePathPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100">Revenue Path</h1>
         <p className="text-stone-500 mt-1">
-          Build a concrete mix of services to hit your monthly revenue goal — no mystery, just math.
+          Build a concrete mix of services to hit your monthly revenue goal - no mystery, just math.
         </p>
       </div>
 

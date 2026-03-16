@@ -1,6 +1,6 @@
 // Inquiry Quick Capture Form
 // Designed for speed: only channel + client name required
-// Everything else optional — the chef is logging between tasks
+// Everything else optional - the chef is logging between tasks
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
@@ -485,7 +485,7 @@ export function InquiryForm({
                 label="Partner Location"
                 options={(partnerLocations[selectedPartnerId] || []).map((loc) => ({
                   value: loc.id,
-                  label: `${loc.name}${loc.city ? ` — ${loc.city}${loc.state ? `, ${loc.state}` : ''}` : ''}`,
+                  label: `${loc.name}${loc.city ? ` - ${loc.city}${loc.state ? `, ${loc.state}` : ''}` : ''}`,
                 }))}
                 value={selectedLocationId}
                 onChange={(e) => setSelectedLocationId(e.target.value)}

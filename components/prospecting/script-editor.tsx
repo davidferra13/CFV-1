@@ -125,7 +125,7 @@ export function ScriptEditor({ script, onSaved }: ScriptEditorProps) {
           <textarea
             value={scriptBody}
             onChange={(e) => setScriptBody(e.target.value)}
-            placeholder={`"Hi, this is [Chef Name] — I'm a private chef here in [Region]. I work with several [clubs/families/venues] in the area and I was reaching out because..."\n\nWrite your full cold-calling script here. Include:\n• Opening hook\n• Value proposition\n• Key talking points\n• Objection handling\n• Close / next step ask`}
+            placeholder={`"Hi, this is [Chef Name] - I'm a private chef here in [Region]. I work with several [clubs/families/venues] in the area and I was reaching out because..."\n\nWrite your full cold-calling script here. Include:\n• Opening hook\n• Value proposition\n• Key talking points\n• Objection handling\n• Close / next step ask`}
             rows={14}
             className="w-full rounded-lg border border-stone-700 px-3 py-2 text-sm font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />

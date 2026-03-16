@@ -1,4 +1,4 @@
-// New Conversation Button — Opens a client picker to start a new chat
+// New Conversation Button - Opens a client picker to start a new chat
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'

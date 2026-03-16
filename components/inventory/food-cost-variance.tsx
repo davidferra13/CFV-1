@@ -1,6 +1,6 @@
 'use client'
 
-// FoodCostVariance — Theoretical vs actual food cost comparison table.
+// FoodCostVariance - Theoretical vs actual food cost comparison table.
 // Shows per-event variance with color-coded indicators and a summary row.
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'

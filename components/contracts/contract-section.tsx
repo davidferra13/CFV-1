@@ -1,4 +1,4 @@
-// Contract Section — Chef Event Detail Page
+// Contract Section - Chef Event Detail Page
 // Server Component that shows the current contract state for an event.
 // Renders different UI based on contract status (no contract, draft, sent, signed, voided).
 // Client interactions (generate, send, void) are handled by the existing SendContractButton.
@@ -50,7 +50,7 @@ export async function ContractSection({ eventId, eventStatus }: Props) {
         )}
       </div>
 
-      {/* Contract body preview — shown for draft contracts */}
+      {/* Contract body preview - shown for draft contracts */}
       {contract?.status === 'draft' && contract.body_snapshot && (
         <div className="mb-4 rounded-lg border border-stone-700 bg-stone-800 p-3">
           <p className="text-xs text-stone-500 mb-1 font-medium">Contract preview</p>
@@ -68,7 +68,7 @@ export async function ContractSection({ eventId, eventStatus }: Props) {
         </p>
       )}
 
-      {/* Void reason — shown for voided contracts */}
+      {/* Void reason - shown for voided contracts */}
       {contract?.status === 'voided' && (contract as any).void_reason && (
         <p className="text-sm text-stone-500 mb-4">Reason: {(contract as any).void_reason}</p>
       )}
@@ -76,7 +76,7 @@ export async function ContractSection({ eventId, eventStatus }: Props) {
       {/* No contract yet */}
       {!contract && <p className="text-sm text-stone-500 mb-4">No contract generated yet.</p>}
 
-      {/* Interactive buttons — delegated to the existing client component */}
+      {/* Interactive buttons - delegated to the existing client component */}
       <SendContractButton
         eventId={eventId}
         templates={templates}

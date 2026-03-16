@@ -1,4 +1,4 @@
-// Analytics Client Wrapper — Renders charts (must be 'use client' for Recharts)
+// Analytics Client Wrapper - Renders charts (must be 'use client' for Recharts)
 'use client'
 
 import { Card } from '@/components/ui/card'

@@ -1,6 +1,6 @@
 'use client'
 
-// MenuModifications — Log and manage differences between proposed and served menu.
+// MenuModifications - Log and manage differences between proposed and served menu.
 // Extended with optional photo proof upload per modification record.
 
 import { useRef, useState, useTransition } from 'react'

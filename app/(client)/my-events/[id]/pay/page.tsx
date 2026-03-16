@@ -163,7 +163,7 @@ export default async function PaymentPage({ params }: { params: { id: string } }
         </CardContent>
       </Card>
 
-      {/* Cancellation Policy — shown before payment so client knows the terms */}
+      {/* Cancellation Policy - shown before payment so client knows the terms */}
       <div className="mb-6">
         <CancellationPolicyDisplay variant="compact" />
       </div>
@@ -190,7 +190,7 @@ export default async function PaymentPage({ params }: { params: { id: string } }
         </div>
       </div>
 
-      {/* Activity tracking — payment_page_visited is the highest-intent signal */}
+      {/* Activity tracking - payment_page_visited is the highest-intent signal */}
       <ActivityTracker
         eventType="payment_page_visited"
         entityType="event"

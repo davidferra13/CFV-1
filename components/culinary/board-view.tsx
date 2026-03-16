@@ -127,7 +127,7 @@ export function BoardView({ words }: BoardViewProps) {
             key={`${w.word}-${i}`}
             className="culinary-word-clickable inline-block transition-all duration-200 opacity-90 hover:opacity-100 hover:scale-110"
             style={w.style}
-            title={`${w.word} — ${w.category} — click me!`}
+            title={`${w.word} - ${w.category} - click me!`}
             data-word={w.word}
             onClick={handleClick}
           >

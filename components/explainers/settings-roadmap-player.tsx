@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * SettingsRoadmapPlayer — Remotion Player wrapper for the settings roadmap animation.
+ * SettingsRoadmapPlayer - Remotion Player wrapper for the settings roadmap animation.
  * Shows what settings to configure first, second, and optionally.
  */
 

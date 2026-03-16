@@ -49,20 +49,20 @@ function getCategoryLabel(category: ManualLaborCategory | null): string {
 
 function getEncouragementMessage(todayMinutes: number, hasWeekHistory: boolean): string {
   if (todayMinutes === 0 && !hasWeekHistory)
-    return 'Start building your labor log — every hour you track helps you understand your true value.'
+    return 'Start building your labor log - every hour you track helps you understand your true value.'
   if (todayMinutes === 0 && hasWeekHistory)
-    return "Add today's hours — even 30 minutes of planning or admin counts."
+    return "Add today's hours - even 30 minutes of planning or admin counts."
   if (todayMinutes < 60)
-    return 'Good start! Mental work counts too — log any planning, emails, or admin time.'
+    return 'Good start! Mental work counts too - log any planning, emails, or admin time.'
   if (todayMinutes < 240)
     return "You've been tracking well today. Keep capturing all the invisible work."
   return 'Great tracking today! Consistent logs reveal what your time is truly worth.'
 }
 
 function getStreakMilestoneLabel(streak: number): string {
-  if (streak >= 30) return `${streak} days in a row — one month of consistent tracking!`
-  if (streak >= 14) return `${streak} days in a row — two weeks strong!`
-  if (streak >= 7) return `${streak} days in a row — one full week!`
+  if (streak >= 30) return `${streak} days in a row - one month of consistent tracking!`
+  if (streak >= 14) return `${streak} days in a row - two weeks strong!`
+  if (streak >= 7) return `${streak} days in a row - one full week!`
   return `${streak} ${streak === 1 ? 'day' : 'days'} in a row`
 }
 
@@ -145,7 +145,7 @@ export function HoursLogWidget({
       setCategory('planning')
       setLoggedFor(today)
       setSuccess(
-        `Saved ${formatMinutesAsDuration(minutes)} — ${getCategoryLabel(category)} — for ${formatEntryDate(loggedFor)}.`
+        `Saved ${formatMinutesAsDuration(minutes)} - ${getCategoryLabel(category)} - for ${formatEntryDate(loggedFor)}.`
       )
       router.refresh()
     } catch (err) {
@@ -160,7 +160,7 @@ export function HoursLogWidget({
     trackingStreak === 0
       ? "Log today's hours to start a streak."
       : !todayLogged
-        ? `${trackingStreak} day streak — log today to keep it going!`
+        ? `${trackingStreak} day streak - log today to keep it going!`
         : getStreakMilestoneLabel(trackingStreak)
 
   return (

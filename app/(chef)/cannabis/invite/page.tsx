@@ -1,4 +1,4 @@
-// Cannabis Invite Page — Chef Portal
+// Cannabis Invite Page - Chef Portal
 // Submit an invitation request. All invites are routed through admin approval first.
 
 import { getMySentCannabisInvites } from '@/lib/chef/cannabis-actions'

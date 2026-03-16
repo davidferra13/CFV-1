@@ -1,6 +1,6 @@
 'use client'
 
-// Receipt Summary — Interactive per-receipt review UI
+// Receipt Summary - Interactive per-receipt review UI
 // One block per uploaded receipt: store info, photo thumbnail, line items table.
 // Chef can tag each line item (business/personal), edit descriptions, and approve.
 // On approval, business items are written to the expenses table.
@@ -15,7 +15,7 @@ import { updateLineItem, approveReceiptSummary, processReceiptOCR } from '@/lib/
 import { format } from 'date-fns'
 
 function formatCents(cents: number | null | undefined): string {
-  if (!cents && cents !== 0) return '—'
+  if (!cents && cents !== 0) return '-'
   return `$${(cents / 100).toFixed(2)}`
 }
 
@@ -26,7 +26,7 @@ function ConfidenceBadge({ score }: { score: number | null }) {
       ? 'High confidence'
       : score >= 0.5
         ? 'Medium confidence'
-        : 'Low confidence — review carefully'
+        : 'Low confidence - review carefully'
   const cls =
     score >= 0.8
       ? 'bg-green-900 text-green-700'
@@ -85,7 +85,7 @@ function LineItemRow({
           onChange={(e) => onUpdate(item.id, 'ingredientCategory', e.target.value || null)}
           className="text-xs border border-stone-700 rounded px-1 py-0.5 text-stone-400 bg-stone-900"
         >
-          <option value="">—</option>
+          <option value="">-</option>
           <option value="protein">Protein</option>
           <option value="produce">Produce</option>
           <option value="dairy">Dairy</option>
@@ -171,7 +171,7 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
     setProcessing(true)
     try {
       await processReceiptOCR(receipt.id)
-      // Refresh is handled by revalidatePath — page will re-render
+      // Refresh is handled by revalidatePath - page will re-render
       window.location.reload()
     } catch (err) {
       console.error(err)

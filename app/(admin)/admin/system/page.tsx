@@ -1,4 +1,4 @@
-// Admin System Health — DB row counts, error signals, external links
+// Admin System Health - DB row counts, error signals, external links
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getQolMetricsSummary, getSystemHealthStats } from '@/lib/admin/platform-stats'

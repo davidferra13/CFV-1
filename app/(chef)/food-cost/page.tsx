@@ -1,4 +1,4 @@
-// Food Cost Dashboard — Track food cost %, daily revenue vs purchases
+// Food Cost Dashboard - Track food cost %, daily revenue vs purchases
 // Part of the Vendor & Food Cost System
 
 import type { Metadata } from 'next'
@@ -13,7 +13,7 @@ import { DailyRevenueForm } from '@/components/vendors/daily-revenue-form'
 import { InvoiceForm } from '@/components/vendors/invoice-form'
 import { InvoiceCsvUpload } from '@/components/vendors/invoice-csv-upload'
 
-export const metadata: Metadata = { title: 'Food Cost Dashboard — ChefFlow' }
+export const metadata: Metadata = { title: 'Food Cost Dashboard | ChefFlow' }
 
 function getWeekRange(): { start: string; end: string } {
   const now = new Date()

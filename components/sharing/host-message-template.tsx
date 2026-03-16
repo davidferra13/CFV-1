@@ -59,7 +59,7 @@ export function HostMessageTemplate({ shareUrl, occasion, eventDate, chefName }:
         </button>
       </div>
       <p className="text-xs text-stone-500 mb-3">
-        Copy this message and send it to your client. They drop it in the group chat — done.
+        Copy this message and send it to your client. They drop it in the group chat - done.
       </p>
 
       {showPreview && (

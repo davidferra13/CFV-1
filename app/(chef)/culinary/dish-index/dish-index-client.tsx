@@ -155,7 +155,7 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
           </div>
         </div>
         <p className="text-stone-500 mt-1">
-          Every dish you&apos;ve ever served — searchable, linked, and analyzed
+          Every dish you&apos;ve ever served - searchable, linked, and analyzed
         </p>
       </div>
 

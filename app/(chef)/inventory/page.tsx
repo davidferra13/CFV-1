@@ -15,19 +15,19 @@ const SUB_PAGES = [
     href: '/inventory/transactions',
     label: 'Transaction Ledger',
     description:
-      'Every inventory movement in one append-only log — receiving, deductions, waste, transfers',
+      'Every inventory movement in one append-only log - receiving, deductions, waste, transfers',
     icon: 'ledger',
   },
   {
     href: '/inventory/locations',
     label: 'Storage Locations',
-    description: 'Manage fridges, freezers, pantries, and vehicles — see stock at each location',
+    description: 'Manage fridges, freezers, pantries, and vehicles - see stock at each location',
     icon: 'location',
   },
   {
     href: '/inventory/purchase-orders',
     label: 'Purchase Orders',
-    description: 'Create, submit, and receive POs — track every ingredient from order to shelf',
+    description: 'Create, submit, and receive POs - track every ingredient from order to shelf',
     icon: 'truck',
   },
   {
@@ -39,7 +39,7 @@ const SUB_PAGES = [
   {
     href: '/inventory/audits',
     label: 'Physical Audits',
-    description: 'Run full, cycle, or spot count audits — verify stock levels match your records',
+    description: 'Run full, cycle, or spot count audits - verify stock levels match your records',
     icon: 'audit',
   },
   {
@@ -75,7 +75,7 @@ const SUB_PAGES = [
   {
     href: '/inventory/expiry',
     label: 'Expiry Alerts',
-    description: 'Batches expiring soon — act before food goes to waste',
+    description: 'Batches expiring soon - act before food goes to waste',
     icon: 'clock',
   },
   {
@@ -112,12 +112,12 @@ export default async function InventoryPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Inventory</h1>
         <p className="text-stone-500 mt-1">
-          Your complete inventory command center — track every ingredient in and out, manage
+          Your complete inventory command center - track every ingredient in and out, manage
           purchase orders, run audits, and forecast demand.
         </p>
       </div>
 
-      {/* Par Alerts — shown prominently when items are below par */}
+      {/* Par Alerts - shown prominently when items are below par */}
       {(parAlerts as any[]).length > 0 && <ParAlertPanel alerts={parAlerts as any[]} />}
 
       {/* Sub-page navigation */}

@@ -1,6 +1,6 @@
 'use client'
 
-// Partner Portal Navigation — minimal sidebar for the showcase portal.
+// Partner Portal Navigation - minimal sidebar for the showcase portal.
 // Partners are a small, proud group. This nav is intentionally simple.
 
 import Link from 'next/link'

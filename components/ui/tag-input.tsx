@@ -1,4 +1,4 @@
-// Tag Input — reusable component for editing string arrays
+// Tag Input - reusable component for editing string arrays
 // Used for dietary_restrictions, allergies, favorite_cuisines, etc.
 
 'use client'

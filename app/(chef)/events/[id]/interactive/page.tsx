@@ -1,9 +1,9 @@
 // Interactive Document Viewer
 // Renders a live, tappable version of any operational PDF for use during prep / shopping / service.
-// State is localStorage-only per (eventId, docType) — no server roundtrip per item.
+// State is localStorage-only per (eventId, docType) - no server roundtrip per item.
 // Each document type calls its existing fetch*Data() function and converts the result
 // to a normalized InteractiveDocSpec via the converter in lib/documents/interactive-specs.ts.
-// Packing list is intentionally excluded — it has its own specialized page at /events/[id]/pack.
+// Packing list is intentionally excluded - it has its own specialized page at /events/[id]/pack.
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -138,7 +138,7 @@ export default async function InteractivePage({
         </Button>
       </div>
 
-      {/* Header pills — event, client, date, guests, etc. */}
+      {/* Header pills - event, client, date, guests, etc. */}
       {spec.headerPills.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {spec.headerPills.map((pill) => (

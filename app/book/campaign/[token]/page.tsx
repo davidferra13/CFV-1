@@ -1,4 +1,4 @@
-// Public Booking Page — /book/campaign/[token]
+// Public Booking Page - /book/campaign/[token]
 // No authentication required.
 // Shows the dinner concept and a lightweight "Count me in" booking form.
 

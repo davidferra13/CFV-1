@@ -53,7 +53,7 @@ export function PrintableCard({
         </div>
       </div>
 
-      {/* Card — optimized for 4x6 print */}
+      {/* Card - optimized for 4x6 print */}
       <div className="flex items-center justify-center p-8 print:p-0">
         <div
           className="bg-stone-900 rounded-2xl shadow-lg print:shadow-none print:rounded-none overflow-hidden"
@@ -84,7 +84,7 @@ export function PrintableCard({
             {(occasion || dateLabel) && (
               <p className="text-xs text-stone-400 mt-2">
                 {occasion}
-                {occasion && dateLabel ? ' — ' : ''}
+                {occasion && dateLabel ? ' - ' : ''}
                 {dateLabel}
               </p>
             )}

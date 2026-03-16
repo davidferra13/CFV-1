@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
-// Public iCal feed endpoint — no auth required.
+// Public iCal feed endpoint - no auth required.
 // URL: /api/feeds/calendar/{ical_feed_token}
 // Returns: .ics file with all upcoming events for the chef.
 // Compatible with Apple Calendar, Outlook, Google Calendar (subscribe by URL).
@@ -27,7 +27,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     return NextResponse.json({ error: 'Feed not found or disabled' }, { status: 404 })
   }
 
-  // Fetch events — include upcoming and recent past (30 days back)
+  // Fetch events - include upcoming and recent past (30 days back)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
   const { data: events } = await (supabase
@@ -67,7 +67,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
       'Content-Type': 'text/calendar; charset=utf-8',
       'Content-Disposition': 'inline; filename="chefflow-calendar.ics"',
       // SECURITY: 'private' prevents CDN/proxy caching of calendar data.
-      // The feed URL contains a secret token — if leaked, only the browser
+      // The feed URL contains a secret token - if leaked, only the browser
       // should cache the response, not shared intermediaries.
       'Cache-Control': 'private, max-age=300',
     },

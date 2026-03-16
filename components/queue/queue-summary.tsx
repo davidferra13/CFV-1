@@ -1,4 +1,4 @@
-// Queue Summary Bar — Stats cards showing urgency breakdown
+// Queue Summary Bar - Stats cards showing urgency breakdown
 // Server component.
 
 import { Card, CardContent } from '@/components/ui/card'

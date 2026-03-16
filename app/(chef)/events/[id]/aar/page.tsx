@@ -1,4 +1,4 @@
-// AAR Entry/Edit Page — Post-service review form
+// AAR Entry/Edit Page - Post-service review form
 // Loads event context and existing AAR (if editing)
 
 import { notFound, redirect } from 'next/navigation'

@@ -9,7 +9,7 @@ type AllergyPickerProps = {
   onChange: (allergies: string[]) => void
   /** Show a text input for custom allergens not in the list */
   allowCustom?: boolean
-  /** Compact mode — smaller spacing for inline use */
+  /** Compact mode - smaller spacing for inline use */
   compact?: boolean
 }
 
@@ -60,10 +60,10 @@ export function AllergyPicker({
 
   return (
     <div className="space-y-3">
-      {/* Big 9 — FDA required */}
+      {/* Big 9 - FDA required */}
       <div>
         <div className="text-xs font-medium text-stone-500 mb-1.5">
-          FDA Big 9 {compact ? '' : '— Major Allergens'}
+          FDA Big 9 {compact ? '' : '- Major Allergens'}
         </div>
         <div className="flex flex-wrap gap-1.5">
           {FDA_BIG_9.map((allergen) => (

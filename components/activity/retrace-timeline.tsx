@@ -1,4 +1,4 @@
-// Retrace Timeline — Step-by-step navigation history grouped by session.
+// Retrace Timeline - Step-by-step navigation history grouped by session.
 // Shows exactly where the chef went, in order, with timestamps.
 
 'use client'

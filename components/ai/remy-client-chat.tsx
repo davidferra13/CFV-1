@@ -1,7 +1,7 @@
 'use client'
 
-// Remy — Client Portal Chat Component
-// Inline chat panel for the client portal. Simpler than the chef drawer —
+// Remy - Client Portal Chat Component
+// Inline chat panel for the client portal. Simpler than the chef drawer -
 // no commands, no tasks, no memory management. Just conversational Q&A.
 
 import { useState, useRef, useEffect, useCallback } from 'react'
@@ -162,7 +162,7 @@ export function RemyClientChat() {
       }
     } catch (err: any) {
       if (err?.name !== 'AbortError') {
-        setError("Couldn't reach Remy — try again in a moment.")
+        setError("Couldn't reach Remy - try again in a moment.")
       }
     } finally {
       setIsStreaming(false)

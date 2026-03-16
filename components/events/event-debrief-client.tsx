@@ -173,7 +173,7 @@ function SaveFeedback({ state }: { state: 'idle' | 'saving' | 'saved' | 'error' 
   const map = {
     saving: 'Saving...',
     saved: '✓ Saved',
-    error: 'Failed to save — try again',
+    error: 'Failed to save - try again',
   }
   const colorMap = {
     saving: 'text-stone-500',

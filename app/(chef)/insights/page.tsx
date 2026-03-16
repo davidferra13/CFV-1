@@ -78,7 +78,7 @@ export default async function InsightsPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Clientele Insights</h1>
         <p className="text-stone-400 mt-1">
-          Patterns from your events, clients, and history — so you can work smarter
+          Patterns from your events, clients, and history - so you can work smarter
         </p>
       </div>
 

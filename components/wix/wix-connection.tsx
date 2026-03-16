@@ -1,4 +1,4 @@
-// Wix Connection — setup, status, and recent submissions UI
+// Wix Connection - setup, status, and recent submissions UI
 // Follows the same pattern as components/settings/connected-accounts.tsx (Gmail)
 'use client'
 

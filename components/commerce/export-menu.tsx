@@ -1,4 +1,4 @@
-// Commerce Export Menu — CSV download buttons for sales, payments, refunds, tax
+// Commerce Export Menu - CSV download buttons for sales, payments, refunds, tax
 'use client'
 
 import { useState, useTransition } from 'react'

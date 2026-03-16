@@ -1,4 +1,4 @@
-// Agenda View — shows only days with booked events
+// Agenda View - shows only days with booked events
 // Excludes empty days. Groups by month. Updates reactively with calendar state.
 
 'use client'

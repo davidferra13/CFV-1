@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { get941Summaries } from '@/lib/finance/payroll-actions'
 import { Form941Panel } from '@/components/finance/payroll/form-941-panel'
 
-export const metadata: Metadata = { title: 'Form 941 — ChefFlow' }
+export const metadata: Metadata = { title: 'Form 941 | ChefFlow' }
 
 export default async function Form941Page({ searchParams }: { searchParams: { year?: string } }) {
   await requireChef()
@@ -23,7 +23,7 @@ export default async function Form941Page({ searchParams }: { searchParams: { ye
           <Link href="/finance/payroll" className="text-sm text-stone-500 hover:text-stone-300">
             &larr; Payroll
           </Link>
-          <h1 className="text-3xl font-bold text-stone-100 mt-1">Form 941 — {taxYear}</h1>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Form 941 - {taxYear}</h1>
           <p className="text-stone-500 mt-1">
             Quarterly payroll tax summary. File via IRS-approved software.
           </p>

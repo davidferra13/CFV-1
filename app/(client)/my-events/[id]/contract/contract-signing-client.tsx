@@ -101,7 +101,7 @@ export function ContractSigningClient({
 
   return (
     <div className="space-y-6">
-      {/* Contract body — rendered as plain markdown text, readable without a parser */}
+      {/* Contract body - rendered as plain markdown text, readable without a parser */}
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-6">
         <pre className="whitespace-pre-wrap font-sans text-sm text-stone-200 leading-relaxed">
           {bodyMarkdown}

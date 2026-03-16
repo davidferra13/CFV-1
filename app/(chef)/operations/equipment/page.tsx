@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { listEquipment, getEquipmentDueForMaintenance, listRentals } from '@/lib/equipment/actions'
 import { EquipmentInventoryClient } from './equipment-inventory-client'
 
-export const metadata: Metadata = { title: 'Equipment — ChefFlow' }
+export const metadata: Metadata = { title: 'Equipment | ChefFlow' }
 
 export default async function EquipmentPage() {
   await requireChef()

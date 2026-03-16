@@ -1,4 +1,4 @@
-// Inbox Source Filters — Toggle which sources to show
+// Inbox Source Filters - Toggle which sources to show
 'use client'
 
 import type { InboxSource } from '@/lib/inbox/types'

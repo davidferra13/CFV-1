@@ -25,7 +25,7 @@ export function ClientEmailToggle({ clientId, initialEnabled }: ClientEmailToggl
         await setClientAutomatedEmails(clientId, newValue)
       } catch {
         setEnabled(!newValue) // revert on error
-        setError('Failed to save — try again')
+        setError('Failed to save - try again')
       }
     })
   }

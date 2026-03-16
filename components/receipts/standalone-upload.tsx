@@ -1,7 +1,7 @@
 'use client'
 
 // Standalone Receipt Upload
-// Allows chefs to upload a receipt from anywhere — no event required.
+// Allows chefs to upload a receipt from anywhere - no event required.
 // Event is optional (defaulted to provided eventId if given), client is optional.
 // Mirrors the quick-receipt-capture widget but without event-state restrictions
 // and with selectors to associate the receipt with any event or client.
@@ -29,7 +29,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
   const [error, setError] = useState<string | null>(null)
   const [receiptPhotoId, setReceiptPhotoId] = useState<string | null>(null)
 
-  // Association selectors — event defaults to provided id (usually the current event)
+  // Association selectors - event defaults to provided id (usually the current event)
   const [selectedEventId, setSelectedEventId] = useState<string>(defaultEventId ?? '')
   const [selectedClientId, setSelectedClientId] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
@@ -142,7 +142,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
       {/* Error */}
       {state === 'error' && error && <p className="text-sm text-red-600">{error}</p>}
 
-      {/* Association selectors — shown while previewing or after error */}
+      {/* Association selectors - shown while previewing or after error */}
       {(state === 'previewing' || state === 'error') && (
         <div className="space-y-3">
           {/* Event selector */}
@@ -155,7 +155,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
               onChange={(e) => setSelectedEventId(e.target.value)}
               className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-stone-900 text-stone-200"
             >
-              <option value="">— No event (standalone receipt) —</option>
+              <option value="">- No event (standalone receipt) -</option>
               {events.map((ev) => (
                 <option key={ev.id} value={ev.id}>
                   {ev.label}
@@ -174,7 +174,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
               onChange={(e) => setSelectedClientId(e.target.value)}
               className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-stone-900 text-stone-200"
             >
-              <option value="">— No client —</option>
+              <option value="">- No client -</option>
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}

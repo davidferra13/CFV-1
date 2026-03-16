@@ -1,4 +1,4 @@
-// Reconciliation Detail Actions — review report + resolve flags
+// Reconciliation Detail Actions - review report + resolve flags
 'use client'
 
 import { useState, useTransition } from 'react'

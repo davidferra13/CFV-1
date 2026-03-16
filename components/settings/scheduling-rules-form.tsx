@@ -1,8 +1,8 @@
 'use client'
 
-// SchedulingRulesForm — Chef availability rules editor.
+// SchedulingRulesForm - Chef availability rules editor.
 // Blocked days, max events per week/month, buffer time, lead time.
-// All fields are optional — rules only apply when configured.
+// All fields are optional - rules only apply when configured.
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -76,7 +76,7 @@ export function SchedulingRulesForm({ initialRules }: Props) {
       <div>
         <label className="block text-sm font-medium text-stone-300 mb-2">
           Blocked days of week{' '}
-          <span className="text-stone-400 font-normal">(hard block — cannot be overridden)</span>
+          <span className="text-stone-400 font-normal">(hard block - cannot be overridden)</span>
         </label>
         <div className="flex gap-2 flex-wrap">
           {DOW_LABELS.map((label, dow) => {
@@ -110,7 +110,7 @@ export function SchedulingRulesForm({ initialRules }: Props) {
         <label className="block text-sm font-medium text-stone-300 mb-2">
           Preferred days{' '}
           <span className="text-stone-400 font-normal">
-            (advisory only — shows warning if chef books outside these)
+            (advisory only - shows warning if chef books outside these)
           </span>
         </label>
         <div className="flex gap-2 flex-wrap">

@@ -461,10 +461,10 @@ export function RecipeDetailClient({ recipe }: Props) {
       {/* Scaling Calculator */}
       <RecipeScalingCalculator recipe={recipe} />
 
-      {/* Nutrition (on-demand — fetches USDA data when chef clicks) */}
+      {/* Nutrition (on-demand - fetches USDA data when chef clicks) */}
       <NutritionPanel recipeId={recipe.id} ingredientCount={recipe.ingredients.length} />
 
-      {/* Allergen Detection (on-demand — uses Edamam API when chef clicks) */}
+      {/* Allergen Detection (on-demand - uses Edamam API when chef clicks) */}
       <AllergenBadgePanel recipeId={recipe.id} ingredientCount={recipe.ingredients.length} />
 
       {/* Method */}

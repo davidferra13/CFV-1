@@ -11,7 +11,7 @@ export function SocialPostPreflight({ post }: Props) {
       <div className="flex items-center gap-2 text-sm text-emerald-700">
         <CheckCircle className="w-4 h-4 flex-shrink-0" />
         <span className="font-medium">Preflight ready</span>
-        <span className="text-emerald-500">— all checks passed</span>
+        <span className="text-emerald-500">- all checks passed</span>
       </div>
     )
   }

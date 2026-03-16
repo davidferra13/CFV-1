@@ -1,6 +1,6 @@
 'use client'
 
-// Template Page Client — client-side interactivity for the template management page
+// Template Page Client - client-side interactivity for the template management page
 // Handles: template list expansion, create form toggle, generate tasks modal, edit/delete
 
 import { useState } from 'react'

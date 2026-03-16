@@ -30,7 +30,7 @@ export function LoyaltyGuideContent() {
           <GuideStrong>the more you book with me, the more value you get back.</GuideStrong>
         </GuideParagraph>
         <GuideParagraph>
-          You&rsquo;ve been part of loyalty programs your whole life — coffee shop stamp cards,
+          You&rsquo;ve been part of loyalty programs your whole life - coffee shop stamp cards,
           airline miles, Amazon Prime. They all work on the same principle: make staying feel more
           rewarding than leaving.
         </GuideParagraph>
@@ -38,12 +38,12 @@ export function LoyaltyGuideContent() {
         <GuideSubHeader>How the terms relate</GuideSubHeader>
         <GuideBulletList>
           <GuideBullet>
-            <GuideStrong>Loyalty program</GuideStrong> is the big umbrella — any system designed to
+            <GuideStrong>Loyalty program</GuideStrong> is the big umbrella - any system designed to
             keep clients coming back. Includes points, memberships, VIP treatment, and more.
           </GuideBullet>
           <GuideBullet>
             <GuideStrong>Rewards program</GuideStrong> is a type of loyalty program where clients
-            earn something back for their patronage. Starbucks Stars, airline miles — these are
+            earn something back for their patronage. Starbucks Stars, airline miles - these are
             rewards programs.
           </GuideBullet>
           <GuideBullet>
@@ -53,7 +53,7 @@ export function LoyaltyGuideContent() {
         </GuideBulletList>
         <GuideParagraph>
           Think of it like nesting dolls. All points programs are rewards programs. All rewards
-          programs are loyalty programs. But not all loyalty programs use points — Amazon Prime and
+          programs are loyalty programs. But not all loyalty programs use points - Amazon Prime and
           Costco memberships are loyalty programs with no points at all.
         </GuideParagraph>
 
@@ -64,7 +64,7 @@ export function LoyaltyGuideContent() {
             ['Earn rate', 'How fast clients accumulate rewards (e.g., "10 pts per guest")'],
             [
               'Breakage',
-              'Percentage of earned rewards that are never redeemed — this is actually profit',
+              'Percentage of earned rewards that are never redeemed - this is actually profit',
             ],
             [
               'Redemption rate',
@@ -72,7 +72,7 @@ export function LoyaltyGuideContent() {
             ],
             [
               'CLV / LTV',
-              'Customer Lifetime Value — total revenue from one client over your whole relationship',
+              'Customer Lifetime Value - total revenue from one client over your whole relationship',
             ],
             ['Churn', 'Rate at which clients stop booking with you'],
           ]}
@@ -97,7 +97,7 @@ export function LoyaltyGuideContent() {
         <GuideParagraph>
           For private chefs, these numbers are even more impactful. Every lost client represents
           thousands of dollars in lifetime value, and finding a replacement costs real time and
-          money. A loyalty program doesn&rsquo;t just reward purchases — it deepens the relationship
+          money. A loyalty program doesn&rsquo;t just reward purchases - it deepens the relationship
           and makes your best clients feel recognized.
         </GuideParagraph>
 
@@ -112,7 +112,7 @@ export function LoyaltyGuideContent() {
       <GuideSection
         title="Types of Loyalty Programs"
         icon="🗂️"
-        summary="Points, punch cards, tiers, cashback, memberships — every model explained with pros, cons, and when each one works best."
+        summary="Points, punch cards, tiers, cashback, memberships - every model explained with pros, cons, and when each one works best."
       >
         <GuideSubHeader>Points-based</GuideSubHeader>
         <GuideParagraph>
@@ -123,7 +123,7 @@ export function LoyaltyGuideContent() {
         <GuideParagraph>
           <GuideStrong>Best for:</GuideStrong> Flexible businesses that want to tune earn rates and
           bonuses independently. <GuideStrong>Watch out for:</GuideStrong> Making the math too
-          complicated — if a client needs a calculator, the program will fail.
+          complicated - if a client needs a calculator, the program will fail.
         </GuideParagraph>
 
         <GuideSubHeader>Visit-based (punch card)</GuideSubHeader>
@@ -133,7 +133,7 @@ export function LoyaltyGuideContent() {
         </GuideParagraph>
         <GuideParagraph>
           <GuideStrong>Best for:</GuideStrong> Frequent, uniform-price purchases (coffee, haircuts).
-          <GuideStrong> Not ideal for:</GuideStrong> Private chefs — events vary widely in size and
+          <GuideStrong> Not ideal for:</GuideStrong> Private chefs - events vary widely in size and
           price, so a flat stamp misses the nuance.
         </GuideParagraph>
 
@@ -144,7 +144,7 @@ export function LoyaltyGuideContent() {
           airline programs, Marriott Bonvoy.
         </GuideParagraph>
         <GuideParagraph>
-          Tiers tap into something deeply human — the desire for status. Being called a &ldquo;Gold
+          Tiers tap into something deeply human - the desire for status. Being called a &ldquo;Gold
           client&rdquo; feels meaningful in ways that &ldquo;you have 847 points&rdquo;
           doesn&rsquo;t. Once someone achieves a high tier, leaving means losing that status.
         </GuideParagraph>
@@ -152,20 +152,20 @@ export function LoyaltyGuideContent() {
         <GuideSubHeader>Spend-based / cashback</GuideSubHeader>
         <GuideParagraph>
           Clients receive a percentage of spending back as credit. Everyone understands &ldquo;5%
-          back.&rdquo; <GuideStrong>Watch out:</GuideStrong> Creates transactional loyalty — clients
+          back.&rdquo; <GuideStrong>Watch out:</GuideStrong> Creates transactional loyalty - clients
           stay for the deal, not for you. If someone offers a better rate, they leave.
         </GuideParagraph>
 
         <GuideSubHeader>Paid membership (Amazon Prime model)</GuideSubHeader>
         <GuideParagraph>
-          Clients pay an annual fee for exclusive benefits. The psychology is powerful — once
+          Clients pay an annual fee for exclusive benefits. The psychology is powerful - once
           someone pays, they feel compelled to &ldquo;get their money&rsquo;s worth.&rdquo; Prime
           members spend <GuideStrong>2.3x more</GuideStrong> than non-members and renew at a
           <GuideStrong> 98% rate.</GuideStrong>
         </GuideParagraph>
 
         <GuideCallout type="tip">
-          The most successful real-world programs are <GuideStrong>hybrids</GuideStrong> — Starbucks
+          The most successful real-world programs are <GuideStrong>hybrids</GuideStrong> - Starbucks
           combines points + tiers + gamified challenges. ChefFlow uses points + tiers + milestone
           bonuses, which is the right combination for premium, relationship-driven services.
         </GuideCallout>
@@ -173,7 +173,7 @@ export function LoyaltyGuideContent() {
 
       {/* ─── 4. The Psychology ─── */}
       <GuideSection
-        title="The Psychology — Why They Work"
+        title="The Psychology - Why They Work"
         icon="🧠"
         summary="The behavioral science behind loyalty programs: the head start effect, loss aversion, the finish line effect, and the power of surprise."
       >
@@ -181,7 +181,7 @@ export function LoyaltyGuideContent() {
         <GuideParagraph>
           In a famous study, car wash customers who received a loyalty card with 2 free pre-stamps
           (needing 8 more) were <GuideStrong>nearly twice as likely</GuideStrong> to complete the
-          card as those starting from zero (also needing 8). The task was identical — but feeling
+          card as those starting from zero (also needing 8). The task was identical - but feeling
           like you&rsquo;ve already started is a powerful motivator.
         </GuideParagraph>
         <GuideParagraph>
@@ -205,14 +205,14 @@ export function LoyaltyGuideContent() {
         <GuideParagraph>
           People naturally speed up as they approach a goal. In a &ldquo;buy 10, get 1 free&rdquo;
           study, time between purchases <GuideStrong>decreased by about 20%</GuideStrong> as
-          customers approached their 10th stamp. This is why progress indicators matter — showing
+          customers approached their 10th stamp. This is why progress indicators matter - showing
           &ldquo;You&rsquo;re 2 events away from Gold status&rdquo; creates real behavioral change.
         </GuideParagraph>
 
         <GuideSubHeader>Status and recognition</GuideSubHeader>
         <GuideParagraph>
           Being categorized as &ldquo;Gold&rdquo; or &ldquo;VIP&rdquo; satisfies a deep human need.
-          For private chefs, this is especially powerful — your clients aren&rsquo;t anonymous
+          For private chefs, this is especially powerful - your clients aren&rsquo;t anonymous
           shoppers. Recognizing their loyalty with a tier title carries real emotional weight.
         </GuideParagraph>
 
@@ -221,7 +221,7 @@ export function LoyaltyGuideContent() {
           A planned reward (&ldquo;you earned 50 points&rdquo;) satisfies. A surprise reward
           (&ldquo;here&rsquo;s a complimentary appetizer course, just because you&rsquo;ve been a
           wonderful client&rdquo;) creates <GuideStrong>loyalty</GuideStrong>. The key is that
-          it&rsquo;s unexpected — not part of the standard earn-and-redeem cycle.
+          it&rsquo;s unexpected - not part of the standard earn-and-redeem cycle.
         </GuideParagraph>
       </GuideSection>
 
@@ -229,7 +229,7 @@ export function LoyaltyGuideContent() {
       <GuideSection
         title="What the Best Brands Do"
         icon="🏆"
-        summary="What Starbucks, Amazon, Sephora, and Marriott get right — and what every successful program has in common."
+        summary="What Starbucks, Amazon, Sephora, and Marriott get right - and what every successful program has in common."
       >
         <GuideTable
           headers={['Program', 'Key metric', 'What makes it work']}
@@ -242,12 +242,12 @@ export function LoyaltyGuideContent() {
             [
               'Amazon Prime',
               '2.3x spend from members',
-              'Sunk cost psychology — "I paid $139, I should use it"',
+              'Sunk cost psychology - "I paid $139, I should use it"',
             ],
             [
               'Sephora Beauty Insider',
               '80% of NA sales from members',
-              'Tier aspiration — Rouge customers get exclusive experiences',
+              'Tier aspiration - Rouge customers get exclusive experiences',
             ],
             [
               'Marriott Bonvoy',
@@ -261,35 +261,35 @@ export function LoyaltyGuideContent() {
           <GuideStrong>Marriott Bonvoy is the closest parallel to private chefs.</GuideStrong>{' '}
           Hotels and chefs share the same challenge: high-value transactions, low frequency,
           personal relationships. Marriott uses milestone recognition, experiential rewards, and
-          personal touch — not rapid-fire stamp cards.
+          personal touch - not rapid-fire stamp cards.
         </GuideCallout>
 
         <GuideSubHeader>7 traits of every successful program</GuideSubHeader>
         <GuideBulletList>
           <GuideBullet>
-            <GuideStrong>Simplicity</GuideStrong> — the earning mechanic is explainable in one
+            <GuideStrong>Simplicity</GuideStrong> - the earning mechanic is explainable in one
             sentence
           </GuideBullet>
           <GuideBullet>
-            <GuideStrong>Clear value</GuideStrong> — the client always knows what they&rsquo;re
+            <GuideStrong>Clear value</GuideStrong> - the client always knows what they&rsquo;re
             getting
           </GuideBullet>
           <GuideBullet>
-            <GuideStrong>Emotional connection</GuideStrong> — goes beyond transactions
+            <GuideStrong>Emotional connection</GuideStrong> - goes beyond transactions
           </GuideBullet>
           <GuideBullet>
-            <GuideStrong>Visible progress</GuideStrong> — clients see how close they are to the next
+            <GuideStrong>Visible progress</GuideStrong> - clients see how close they are to the next
             milestone
           </GuideBullet>
           <GuideBullet>
-            <GuideStrong>Personal recognition</GuideStrong> — birthdays, milestones, &ldquo;we
+            <GuideStrong>Personal recognition</GuideStrong> - birthdays, milestones, &ldquo;we
             remember you&rdquo;
           </GuideBullet>
           <GuideBullet>
-            <GuideStrong>Digital integration</GuideStrong> — balances and rewards accessible anytime
+            <GuideStrong>Digital integration</GuideStrong> - balances and rewards accessible anytime
           </GuideBullet>
           <GuideBullet>
-            <GuideStrong>Relevant rewards</GuideStrong> — things clients actually want, not things
+            <GuideStrong>Relevant rewards</GuideStrong> - things clients actually want, not things
             that are cheap to offer
           </GuideBullet>
         </GuideBulletList>
@@ -314,7 +314,7 @@ export function LoyaltyGuideContent() {
             {
               rank: 1,
               label: 'Recognition',
-              description: '"You\'re one of our Gold clients" — personal acknowledgment',
+              description: '"You\'re one of our Gold clients" - personal acknowledgment',
             },
             {
               rank: 2,
@@ -337,7 +337,7 @@ export function LoyaltyGuideContent() {
 
         <GuideCallout type="tip">
           A complimentary amuse-bouche course at their next dinner creates more loyalty than $50 off
-          ever will. Your clients can afford your services — what they value is being
+          ever will. Your clients can afford your services - what they value is being
           <GuideStrong> known, recognized, and given something special.</GuideStrong>
         </GuideCallout>
       </GuideSection>
@@ -391,7 +391,7 @@ export function LoyaltyGuideContent() {
             signup. Don&rsquo;t be one of those programs.
           </GuideBullet>
           <GuideBullet>
-            Regular updates — &ldquo;You have 150 points, 50 from a free appetizer course&rdquo; —
+            Regular updates - &ldquo;You have 150 points, 50 from a free appetizer course&rdquo; -
             keep it alive.
           </GuideBullet>
           <GuideBullet>
@@ -436,7 +436,7 @@ export function LoyaltyGuideContent() {
       <GuideSection
         title="Common Mistakes to Avoid"
         icon="🚫"
-        summary="The eight things that kill loyalty programs — from making it too complicated to going silent after signup."
+        summary="The eight things that kill loyalty programs - from making it too complicated to going silent after signup."
       >
         <GuideBulletList>
           <GuideBullet>
@@ -475,7 +475,7 @@ export function LoyaltyGuideContent() {
 
         <GuideCallout type="tip">
           The most effective loyalty gesture for a private chef might simply be: &ldquo;I remember
-          you love wild mushrooms — I found an incredible local source this season and I&rsquo;m
+          you love wild mushrooms - I found an incredible local source this season and I&rsquo;m
           setting some aside for your next dinner.&rdquo; No points required.
         </GuideCallout>
       </GuideSection>
@@ -496,7 +496,7 @@ export function LoyaltyGuideContent() {
             ['Welcome bonus', 'Points on signup to give new clients a head start', 'Yes'],
             [
               'Manual bonus',
-              'You award points anytime — referrals, birthdays, anything',
+              'You award points anytime - referrals, birthdays, anything',
               'No (your call)',
             ],
           ]}
@@ -506,7 +506,7 @@ export function LoyaltyGuideContent() {
         <GuideParagraph>
           Clients progress through four tiers based on{' '}
           <GuideStrong>lifetime points earned</GuideStrong> (not current balance). Tiers never go
-          down — even after redeeming points, a client keeps their tier status.
+          down - even after redeeming points, a client keeps their tier status.
         </GuideParagraph>
         <GuideTable
           headers={['Tier', 'Default threshold', 'What it represents']}
@@ -520,7 +520,7 @@ export function LoyaltyGuideContent() {
 
         <GuideSubHeader>Service-denominated rewards</GuideSubHeader>
         <GuideParagraph>
-          Your rewards are always <GuideStrong>service-denominated</GuideStrong> — you&rsquo;re
+          Your rewards are always <GuideStrong>service-denominated</GuideStrong> - you&rsquo;re
           offering your time, talent, and creativity. A complimentary course costs you ingredients
           and effort, but to your client, it feels like a gift that only you can give.
         </GuideParagraph>
@@ -538,17 +538,17 @@ export function LoyaltyGuideContent() {
         <GuideSubHeader>Redemption flow</GuideSubHeader>
         <GuideBulletList>
           <GuideBullet>
-            Client redeems a reward from their portal — points deducted immediately
+            Client redeems a reward from their portal - points deducted immediately
           </GuideBullet>
           <GuideBullet>
             The reward enters your <GuideStrong>Pending Deliveries</GuideStrong> queue
           </GuideBullet>
           <GuideBullet>You deliver the reward at their next event</GuideBullet>
-          <GuideBullet>You mark it as delivered — you always stay in control</GuideBullet>
+          <GuideBullet>You mark it as delivered - you always stay in control</GuideBullet>
         </GuideBulletList>
 
         <GuideCallout type="tip">
-          Everything is customizable from your <GuideStrong>Loyalty Settings</GuideStrong> page —
+          Everything is customizable from your <GuideStrong>Loyalty Settings</GuideStrong> page -
           earn rates, tier thresholds, milestones, and rewards. You can also turn the entire program
           on or off anytime with a single toggle.
         </GuideCallout>

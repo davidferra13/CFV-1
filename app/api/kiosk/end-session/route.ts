@@ -1,4 +1,4 @@
-// Kiosk End Session API — ends a staff session (idle timeout or manual)
+// Kiosk End Session API - ends a staff session (idle timeout or manual)
 // Requires device token in Authorization header
 
 import { NextResponse } from 'next/server'

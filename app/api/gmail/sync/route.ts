@@ -1,6 +1,6 @@
 // Gmail Sync Cron Endpoint
-// GET /api/gmail/sync — invoked by Vercel Cron Job (Vercel sends GET)
-// POST /api/gmail/sync — invoked manually or by external schedulers
+// GET /api/gmail/sync - invoked by Vercel Cron Job (Vercel sends GET)
+// POST /api/gmail/sync - invoked manually or by external schedulers
 // Both methods run identical logic secured with CRON_SECRET bearer token.
 
 import { NextResponse, type NextRequest } from 'next/server'
@@ -29,7 +29,7 @@ async function handleGmailSync(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ message: 'No connected accounts', synced: 0 })
   }
 
-  // Sync each chef independently — one failure does not block others
+  // Sync each chef independently - one failure does not block others
   const results: Array<{
     chefId: string
     email: string | null
@@ -66,6 +66,6 @@ async function handleGmailSync(request: NextRequest): Promise<NextResponse> {
   })
 }
 
-// Vercel Cron Jobs send GET — export GET so cron fires correctly
+// Vercel Cron Jobs send GET - export GET so cron fires correctly
 // POST remains for manual or external scheduler calls
 export { handleGmailSync as GET, handleGmailSync as POST }

@@ -2,7 +2,7 @@
 
 // Readiness Gate Panel
 // Surfaces the pre-transition checklist on the event detail page.
-// Shows which gates are passed, pending, or overridden — with actions
+// Shows which gates are passed, pending, or overridden - with actions
 // for the chef to mark gates complete or override with a reason.
 
 import { useState, useTransition } from 'react'
@@ -214,7 +214,7 @@ export function ReadinessGatePanel({ eventId, readiness, targetLabel }: Readines
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">
-            {allReady ? `Ready to ${targetLabel}` : `Readiness Check — ${targetLabel}`}
+            {allReady ? `Ready to ${targetLabel}` : `Readiness Check - ${targetLabel}`}
           </CardTitle>
           <div className="flex items-center gap-2">
             {passedCount > 0 && (
@@ -244,7 +244,7 @@ export function ReadinessGatePanel({ eventId, readiness, targetLabel }: Readines
         )}
         {overriddenCount > 0 && !hardBlocked && (
           <p className="text-xs text-amber-700 mt-1">
-            {overriddenCount} item{overriddenCount > 1 ? 's' : ''} bypassed — recorded in the event
+            {overriddenCount} item{overriddenCount > 1 ? 's' : ''} bypassed - recorded in the event
             audit trail.
           </p>
         )}

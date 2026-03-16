@@ -1,6 +1,6 @@
 'use client'
 
-// ProductLookupPanel — Search Open Food Facts for packaged ingredient details.
+// ProductLookupPanel - Search Open Food Facts for packaged ingredient details.
 // Shows product name, brand, allergens, and nutrition highlights.
 // Helps chefs track allergens when adding ingredients to recipes.
 
@@ -15,7 +15,7 @@ import { toast } from 'sonner'
 interface ProductLookupPanelProps {
   /** Pre-fill the search with the ingredient name */
   defaultQuery?: string
-  /** Callback when allergens are found — parent can use for warnings */
+  /** Callback when allergens are found - parent can use for warnings */
   onAllergensFound?: (allergens: string[]) => void
 }
 

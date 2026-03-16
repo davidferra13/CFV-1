@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service — ChefFlow',
+  title: 'Terms of Service | ChefFlow',
   description: 'Read the terms and conditions governing your use of the ChefFlow platform.',
 }
 
@@ -11,7 +11,7 @@ export default function TermsPage() {
     <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
       <div className="mb-10 border-b border-stone-700 pb-8">
         <h1 className="text-4xl font-bold tracking-tight text-stone-100">Terms of Service</h1>
-        <p className="mt-3 text-sm text-stone-500">Last updated: March 5, 2026 — Version 2.0</p>
+        <p className="mt-3 text-sm text-stone-500">Last updated: March 5, 2026 - Version 2.0</p>
       </div>
 
       {/* Table of Contents */}
@@ -107,7 +107,7 @@ export default function TermsPage() {
               ],
               [
                 'Private AI',
-                "ChefFlow's private AI (Ollama) running on ChefFlow's own infrastructure. Conversation content is processed privately and never stored on ChefFlow's servers — it stays in the Chef's browser.",
+                "ChefFlow's private AI (Ollama) running on ChefFlow's own infrastructure. Conversation content is processed privately and never stored on ChefFlow's servers - it stays in the Chef's browser.",
               ],
               [
                 'Manual Payment',
@@ -337,7 +337,7 @@ export default function TermsPage() {
           <p className="leading-relaxed">
             Clients use ChefFlow to interact with their Chef. The service contract for culinary
             services is between the Client and the Chef. ChefFlow is a payment processing
-            intermediary and software tool — not a party to, or guarantor of, culinary service
+            intermediary and software tool - not a party to, or guarantor of, culinary service
             agreements.
           </p>
 
@@ -504,7 +504,7 @@ export default function TermsPage() {
             ChefFlow provides communication logs, event records, Quote history, and payment records
             that both parties may use to support dispute resolution. ChefFlow does{' '}
             <strong>not</strong> adjudicate whether a culinary service met the Client&apos;s quality
-            expectations — that is a matter between the Chef and Client. ChefFlow may refer parties
+            expectations - that is a matter between the Chef and Client. ChefFlow may refer parties
             to an independent mediation provider upon request; mediation costs are borne by the
             requesting party.
           </p>
@@ -786,13 +786,13 @@ export default function TermsPage() {
             Remy conversations are processed by ChefFlow&apos;s private AI infrastructure (Ollama)
             and are <strong>never stored on ChefFlow&apos;s servers</strong>. Conversation history
             lives in the Chef&apos;s browser (IndexedDB) and never leaves their device. ChefFlow
-            collects only anonymous usage metrics (counts and categories — never conversation
+            collects only anonymous usage metrics (counts and categories - never conversation
             content).
           </p>
           <p className="mb-6 leading-relaxed">
             Some non-conversation features use external APIs for item-level data: Spoonacular
             (nutrition), Kroger and MealMe (grocery pricing), and Instacart (cart links). These
-            services receive ingredient or product names only — never client PII, conversation
+            services receive ingredient or product names only - never client PII, conversation
             content, or personally identifiable information. If Ollama is offline, private AI
             features display an error rather than fall back to any external AI service.
           </p>
@@ -901,7 +901,7 @@ export default function TermsPage() {
             <li>
               <strong>Some features use external APIs for non-sensitive data.</strong> Grocery
               pricing (Spoonacular, Kroger, MealMe) and cart links (Instacart) send item-level data
-              only (e.g., &ldquo;broccoli price&rdquo;) — never client PII or conversation content.
+              only (e.g., &ldquo;broccoli price&rdquo;) - never client PII or conversation content.
             </li>
             <li>
               <strong>Ollama offline behavior.</strong> If Ollama is not running, private AI

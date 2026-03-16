@@ -1,4 +1,4 @@
-// Station Clipboard — Station List & Management Hub
+// Station Clipboard - Station List & Management Hub
 // Chef views all stations, creates new ones, and navigates to detail views.
 
 import type { Metadata } from 'next'
@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Stations — ChefFlow' }
+export const metadata: Metadata = { title: 'Stations | ChefFlow' }
 
 export default async function StationsPage() {
   await requireChef()
@@ -37,7 +37,7 @@ export default async function StationsPage() {
         </Link>
       </div>
 
-      {/* 86'd banner — shows all currently 86'd items across all stations */}
+      {/* 86'd banner - shows all currently 86'd items across all stations */}
       {eightySixedItems.length > 0 && <EightySixBanner items={eightySixedItems} />}
 
       {/* Station grid */}

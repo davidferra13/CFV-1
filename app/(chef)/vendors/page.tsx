@@ -1,4 +1,4 @@
-// Vendor Directory — List all vendors with contact info, status, delivery days
+// Vendor Directory - List all vendors with contact info, status, delivery days
 // Part of the Vendor & Food Cost System
 
 import type { Metadata } from 'next'
@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { VendorForm } from '@/components/vendors/vendor-form'
 
-export const metadata: Metadata = { title: 'Vendors — ChefFlow' }
+export const metadata: Metadata = { title: 'Vendors | ChefFlow' }
 
 const DAY_LABELS: Record<string, string> = {
   monday: 'Mon',

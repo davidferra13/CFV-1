@@ -1,4 +1,4 @@
-// Next Best Actions Widget — shows top 5 client actions needed on the dashboard
+// Next Best Actions Widget - shows top 5 client actions needed on the dashboard
 
 import Link from 'next/link'
 import {

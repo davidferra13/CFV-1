@@ -297,7 +297,7 @@ export function DeviceList({ initialDevices }: DeviceListProps) {
                       <td className="px-4 py-3 text-stone-300">
                         {flowLabels[device.kiosk_flow] || device.kiosk_flow}
                       </td>
-                      <td className="px-4 py-3 text-stone-400">{device.location_name || '—'}</td>
+                      <td className="px-4 py-3 text-stone-400">{device.location_name || '-'}</td>
                       <td className="px-4 py-3">
                         {device.active_staff_name ? (
                           <span className="inline-flex items-center gap-1.5 text-sm text-green-400">
@@ -305,7 +305,7 @@ export function DeviceList({ initialDevices }: DeviceListProps) {
                             {device.active_staff_name}
                           </span>
                         ) : (
-                          <span className="text-stone-600">—</span>
+                          <span className="text-stone-600">-</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-stone-400">{timeAgo(device.last_seen_at)}</td>

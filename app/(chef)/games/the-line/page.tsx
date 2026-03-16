@@ -222,7 +222,7 @@ const REMY = {
   perfect: ['HEARD! Beautiful.', 'Money.', "That's how it's done.", 'Textbook.', "Chef's kiss."],
   good: ['Solid.', 'Plated.', 'Good enough. Send it.', 'On the pass.'],
   overcooked: ['Little dark on that one.', "It'll pass... barely.", 'Pushing it, chef.'],
-  undercooked: ["That's raw, chef. Send it back.", 'Not yet — back on.', 'Needs more time.'],
+  undercooked: ["That's raw, chef. Send it back.", 'Not yet - back on.', 'Needs more time.'],
   burnt: ['86 that.', 'Burnt. Shake it off.', 'Gone. Move on.', 'Smoke alarm incoming.'],
   streak3: ["You're on fire! 🔥", 'Three in a row!', 'Keep that energy!'],
   streak5: ['FIVE STRAIGHT. Yes, Chef!', 'Dialed in!', 'Machine mode!'],
@@ -484,7 +484,7 @@ export default function TheLineGame() {
 
     // Set up dish pool
     if (eventItems && eventItems.length >= 2) {
-      // Prep mode — use chef's own dishes, backfill if needed
+      // Prep mode - use chef's own dishes, backfill if needed
       const customPool: DishDef[] = eventItems.map((item) => {
         const baseDish = DISH_POOL.find((d) => d.station === item.station) ?? DISH_POOL[0]
         return {
@@ -524,7 +524,7 @@ export default function TheLineGame() {
       const cy = rect.y + rect.h / 2
 
       if (progress < item.perfectStart) {
-        // Undercooked — send it back
+        // Undercooked - send it back
         s.stations[station] = null
         showRemy('undercooked')
         addScorePopup(cx, cy, 'RAW!', '#fbbf24')
@@ -1197,7 +1197,7 @@ export default function TheLineGame() {
       for (const f of s.flyingItems) {
         const t = easeOut(f.progress)
         const x = lerp(f.fromX, f.toX, t)
-        // Arc path — y goes up then down
+        // Arc path - y goes up then down
         const baseY = lerp(f.fromY, f.toY, t)
         const arcHeight = -60 * Math.sin(f.progress * Math.PI)
         const y = baseY + arcHeight
@@ -1467,19 +1467,19 @@ export default function TheLineGame() {
               🔥 Rush Mode
             </button>
 
-            {/* Prep mode events — easter egg */}
+            {/* Prep mode events - easter egg */}
             {!loadingPrep &&
               prepEvents.map((event) => (
                 <button
                   key={event.id}
                   onClick={() => {
-                    stateRef.current.prepEventName = `${event.name} — ${event.date}`
+                    stateRef.current.prepEventName = `${event.name} - ${event.date}`
                     startGame(event.items)
                   }}
                   className="w-full rounded-xl border border-border bg-card px-6 py-3 text-sm font-medium text-foreground transition-all hover:border-brand-500/50 hover:bg-card/80"
                 >
                   <span className="mr-2">📋</span>
-                  {event.name} — {event.date}
+                  {event.name} - {event.date}
                   <span className="ml-2 text-xs text-muted-foreground">
                     {event.guestCount} guests • {event.items.length} dishes
                   </span>

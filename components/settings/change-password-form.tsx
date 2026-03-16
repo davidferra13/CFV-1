@@ -1,4 +1,4 @@
-// Change Password Form — Client Component
+// Change Password Form - Client Component
 // Validates inputs and calls server action to update password
 
 'use client'

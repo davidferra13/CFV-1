@@ -26,7 +26,7 @@ const CAPABILITIES: CapabilityCategory[] = [
   {
     icon: <Search className="h-4 w-4" />,
     title: 'Look Up & Search',
-    subtitle: 'Instant — no approval needed',
+    subtitle: 'Instant - no approval needed',
     color: 'text-emerald-600 bg-emerald-950 dark:bg-emerald-950/50',
     items: [
       'Search for clients by name',
@@ -46,7 +46,7 @@ const CAPABILITIES: CapabilityCategory[] = [
   {
     icon: <Plus className="h-4 w-4" />,
     title: 'Create & Build',
-    subtitle: 'Shows preview — needs your approval',
+    subtitle: 'Shows preview - needs your approval',
     color: 'text-blue-600 bg-blue-950 dark:bg-blue-950/50',
     items: [
       'Create clients from a description',
@@ -64,7 +64,7 @@ const CAPABILITIES: CapabilityCategory[] = [
   {
     icon: <Pencil className="h-4 w-4" />,
     title: 'Update & Change',
-    subtitle: 'Shows before/after — needs your approval',
+    subtitle: 'Shows before/after - needs your approval',
     color: 'text-amber-600 bg-amber-950 dark:bg-amber-950/50',
     items: [
       'Update client profiles (dietary, contact, status)',
@@ -78,7 +78,7 @@ const CAPABILITIES: CapabilityCategory[] = [
   {
     icon: <ArrowRight className="h-4 w-4" />,
     title: 'Move Forward',
-    subtitle: 'Shows warnings — needs your approval',
+    subtitle: 'Shows warnings - needs your approval',
     color: 'text-purple-600 bg-purple-950 dark:bg-purple-950/50',
     items: [
       'Transition events (draft → proposed → accepted → ...)',
@@ -90,7 +90,7 @@ const CAPABILITIES: CapabilityCategory[] = [
   {
     icon: <Mail className="h-4 w-4" />,
     title: 'Draft Communications',
-    subtitle: 'Draft only — you copy & send manually',
+    subtitle: 'Draft only - you copy & send manually',
     color: 'text-sky-600 bg-sky-950 dark:bg-sky-950/50',
     items: [
       'Follow-up emails & thank-you notes',
@@ -190,7 +190,7 @@ export function RemyCapabilitiesPanel({ onClose }: RemyCapabilitiesPanelProps) {
         <div className="rounded-lg bg-brand-950 dark:bg-brand-950/30 border border-brand-700 dark:border-brand-800 p-3 mt-3">
           <p className="text-xs text-brand-300 dark:text-brand-200">
             <strong>Tip:</strong> Just tell Remy what you need in plain language. "Add a client
-            named Sarah" or "Create an event for 12 guests on March 20" — Remy will figure out the
+            named Sarah" or "Create an event for 12 guests on March 20" - Remy will figure out the
             rest and ask you to confirm before doing anything.
           </p>
         </div>

@@ -79,7 +79,7 @@ export function CreateRaffleForm({ monthStart, monthEnd }: Props) {
             </p>
           </div>
 
-          {/* Bonus prizes — collapsible section */}
+          {/* Bonus prizes - collapsible section */}
           {!showBonus ? (
             <button
               type="button"

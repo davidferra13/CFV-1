@@ -105,7 +105,7 @@ export default async function SoftwareExpensesPage() {
                   </TableCell>
                   <TableCell className="text-stone-100 text-sm">{expense.description}</TableCell>
                   <TableCell className="text-stone-500 text-sm">
-                    {expense.vendor_name ?? '—'}
+                    {expense.vendor_name ?? '-'}
                   </TableCell>
                   <TableCell>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-stone-800 text-stone-400 capitalize">

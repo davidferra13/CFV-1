@@ -103,14 +103,14 @@ export default async function RevenueByEventPage() {
                         {event.client.full_name}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm capitalize">
-                    {event.occasion?.replace(/_/g, ' ') ?? '—'}
+                    {event.occasion?.replace(/_/g, ' ') ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {event.guest_count ?? '—'}
+                    {event.guest_count ?? '-'}
                   </TableCell>
                   <TableCell>
                     <span

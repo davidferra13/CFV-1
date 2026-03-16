@@ -1,6 +1,6 @@
-// Partner Portal — Events
+// Partner Portal - Events
 // Full event history across all of the partner's locations.
-// No client PII — occasion, date, guest count, location, status only.
+// No client PII - occasion, date, guest count, location, status only.
 
 import { getPartnerPortalData } from '@/lib/partners/portal-actions'
 import { format } from 'date-fns'
@@ -28,7 +28,7 @@ export default async function PartnerEventsPage() {
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Events</h1>
         <p className="mt-1 text-sm text-stone-500">
-          All events hosted at your locations — {recentEvents.length} total.
+          All events hosted at your locations - {recentEvents.length} total.
         </p>
       </div>
 
@@ -64,12 +64,12 @@ export default async function PartnerEventsPage() {
                     <td className="px-4 py-3 text-stone-300">
                       {format(new Date(evt.event_date), 'MMM d, yyyy')}
                     </td>
-                    <td className="px-4 py-3 text-stone-300">{evt.occasion ?? '—'}</td>
+                    <td className="px-4 py-3 text-stone-300">{evt.occasion ?? '-'}</td>
                     <td className="px-4 py-3 text-stone-500 hidden md:table-cell">
-                      {loc?.name ?? '—'}
+                      {loc?.name ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-right text-stone-300 hidden sm:table-cell">
-                      {evt.guest_count ?? '—'}
+                      {evt.guest_count ?? '-'}
                     </td>
                     <td className="px-4 py-3">
                       <span

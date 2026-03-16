@@ -1,4 +1,4 @@
-// Dashboard Intelligence Section — streams in with business health + proactive alerts
+// Dashboard Intelligence Section - streams in with business health + proactive alerts
 // Powered by the 25-engine intelligence system. Zero AI dependency.
 
 import { getBusinessHealthSummary } from '@/lib/intelligence/business-health-summary'

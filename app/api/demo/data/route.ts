@@ -35,18 +35,18 @@ import {
 
 export async function POST(req: NextRequest) {
   if (process.env.NODE_ENV === 'production') {
-    return new NextResponse('Forbidden — demo endpoints are not available in production', {
+    return new NextResponse('Forbidden - demo endpoints are not available in production', {
       status: 403,
     })
   }
   if (process.env.DEMO_MODE_ENABLED !== 'true') {
-    return new NextResponse('Forbidden — DEMO_MODE_ENABLED is not set', { status: 403 })
+    return new NextResponse('Forbidden - DEMO_MODE_ENABLED is not set', { status: 403 })
   }
 
-  // Require Origin header to match — blocks cross-origin CSRF
+  // Require Origin header to match - blocks cross-origin CSRF
   const origin = req.headers.get('origin')
   if (origin && !origin.includes('localhost') && !origin.includes('127.0.0.1')) {
-    return new NextResponse('Forbidden — cross-origin request', { status: 403 })
+    return new NextResponse('Forbidden - cross-origin request', { status: 403 })
   }
 
   let action: 'load' | 'clear'
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     action = body.action
     if (action !== 'load' && action !== 'clear') throw new Error('Invalid action')
   } catch {
-    return new NextResponse('Bad Request — expected { action: "load" | "clear" }', { status: 400 })
+    return new NextResponse('Bad Request - expected { action: "load" | "clear" }', { status: 400 })
   }
 
   let demoChef: { chefId: string; tenantId: string; authUserId: string }
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       .select('id')
     totalDeleted += calData?.length ?? 0
 
-    // Clients — preserve demo client account
+    // Clients - preserve demo client account
     if (demoClient.clientId) {
       const { data: clientData } = await admin
         .from('clients')

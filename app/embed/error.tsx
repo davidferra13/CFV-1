@@ -1,6 +1,6 @@
 'use client'
 
-// Embed error boundary — uses INLINE STYLES only (no Tailwind)
+// Embed error boundary - uses INLINE STYLES only (no Tailwind)
 // This runs inside iframes on external websites where Tailwind is not available.
 
 import { useEffect } from 'react'

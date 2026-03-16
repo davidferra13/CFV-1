@@ -1,6 +1,6 @@
 // Scheduled Push Subscription Cleanup Cron Endpoint
-// GET /api/scheduled/push-cleanup — invoked by Vercel Cron Job (daily at 4 AM UTC)
-// POST /api/scheduled/push-cleanup — invoked manually or by external schedulers
+// GET /api/scheduled/push-cleanup - invoked by Vercel Cron Job (daily at 4 AM UTC)
+// POST /api/scheduled/push-cleanup - invoked manually or by external schedulers
 //
 // Two jobs in one:
 //
@@ -42,7 +42,7 @@ async function handlePushCleanup(request: NextRequest): Promise<NextResponse> {
 
   if (deactivateError) {
     console.error('[Push Cleanup Cron] Failed to deactivate failed subscriptions:', deactivateError)
-    // Non-fatal — continue to next step
+    // Non-fatal - continue to next step
   }
 
   // ── 1b. Hard-delete old inactive subscriptions ───────────────────────────
@@ -59,7 +59,7 @@ async function handlePushCleanup(request: NextRequest): Promise<NextResponse> {
 
   if (deleteError) {
     console.error('[Push Cleanup Cron] Failed to delete old inactive subscriptions:', deleteError)
-    // Non-fatal — continue to SMS cleanup
+    // Non-fatal - continue to SMS cleanup
   }
 
   // ── 2. SMS send log cleanup ──────────────────────────────────────────────

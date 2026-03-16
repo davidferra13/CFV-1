@@ -1,4 +1,4 @@
-// @agent Kilo — review-pending
+// @agent Kilo - review-pending
 // POST /api/ai/wake
 // Wake, ping, and manage Ollama endpoints.
 // Admin-only endpoint for controlling AI infrastructure.
@@ -277,7 +277,7 @@ async function handleDiagnose(endpoint: 'pc' | 'pi' | 'all', timestamp: string):
   })
 }
 
-// GET endpoint for quick status check — admin only (exposes internal LAN IPs)
+// GET endpoint for quick status check - admin only (exposes internal LAN IPs)
 export async function GET() {
   try {
     await requireAdmin()

@@ -1,4 +1,4 @@
-// Demand Forecast — Seasonal heatmap of booking patterns
+// Demand Forecast - Seasonal heatmap of booking patterns
 // Helps chefs plan capacity and marketing around busy/quiet periods
 
 import type { Metadata } from 'next'

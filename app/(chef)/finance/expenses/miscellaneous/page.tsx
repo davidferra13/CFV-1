@@ -122,7 +122,7 @@ export default async function MiscellaneousExpensesPage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">
-                    {expense.vendor_name ?? '—'}
+                    {expense.vendor_name ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-100 font-semibold text-sm">
                     {formatCurrency(expense.amount_cents)}

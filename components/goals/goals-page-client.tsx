@@ -90,7 +90,7 @@ export function GoalsPageClient({ dashboard }: { dashboard: GoalsDashboard }) {
         />
       )}
 
-      {/* Life Balance Wheel — only when 3+ categories active and has goals */}
+      {/* Life Balance Wheel - only when 3+ categories active and has goals */}
       {hasMultipleCategories && hasAnyGoals && (
         <div className="rounded-xl border border-stone-700 bg-stone-900 p-5">
           <LifeBalanceWheel
@@ -101,7 +101,7 @@ export function GoalsPageClient({ dashboard }: { dashboard: GoalsDashboard }) {
         </div>
       )}
 
-      {/* Goals list — empty state or category sections */}
+      {/* Goals list - empty state or category sections */}
       {!hasAnyGoals ? (
         <GoalsEmptyState />
       ) : (

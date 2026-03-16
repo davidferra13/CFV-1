@@ -1,4 +1,4 @@
-// Website Leads — Unclaimed contact form submissions
+// Website Leads - Unclaimed contact form submissions
 // Any chef can view the shared pool and claim leads into their inquiry pipeline.
 // Manual leads bypass this page and go straight to the inquiry form.
 

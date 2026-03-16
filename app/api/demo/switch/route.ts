@@ -8,12 +8,12 @@ import { readFileSync } from 'fs'
 
 export async function POST(req: NextRequest) {
   if (process.env.NODE_ENV === 'production') {
-    return new NextResponse('Forbidden — demo endpoints are not available in production', {
+    return new NextResponse('Forbidden - demo endpoints are not available in production', {
       status: 403,
     })
   }
   if (process.env.DEMO_MODE_ENABLED !== 'true') {
-    return new NextResponse('Forbidden — DEMO_MODE_ENABLED is not set', { status: 403 })
+    return new NextResponse('Forbidden - DEMO_MODE_ENABLED is not set', { status: 403 })
   }
 
   let target: 'chef' | 'client'
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     target = body.target
     if (target !== 'chef' && target !== 'client') throw new Error('Invalid target')
   } catch {
-    return new NextResponse('Bad Request — expected { target: "chef" | "client" }', { status: 400 })
+    return new NextResponse('Bad Request - expected { target: "chef" | "client" }', { status: 400 })
   }
 
   // Read credentials from .auth files

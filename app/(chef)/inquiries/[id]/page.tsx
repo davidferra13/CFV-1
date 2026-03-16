@@ -334,7 +334,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         </Card>
       )}
 
-      {/* Lead Score Factors — visible breakdown for mobile users */}
+      {/* Lead Score Factors - visible breakdown for mobile users */}
       {leadScore && leadScore.lead_score_factors.length > 0 && (
         <LeadScoreFactors factors={leadScore.lead_score_factors} />
       )}
@@ -356,7 +356,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         </div>
       )}
 
-      {/* Inquiry Summary — visual snapshot */}
+      {/* Inquiry Summary - visual snapshot */}
       <InquirySummary data={summaryData} variant="chef" />
 
       {/* Conversion Intelligence */}
@@ -403,7 +403,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         </Card>
       )}
 
-      {/* TakeAChef workflow guide — collapsible overview for first-time users */}
+      {/* TakeAChef workflow guide - collapsible overview for first-time users */}
       {inquiry.channel === 'take_a_chef' && <TacWorkflowGuide inquiryStatus={inquiry.status} />}
 
       {tacPageCapture && (
@@ -488,7 +488,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         </Card>
       )}
 
-      {/* TakeAChef-specific panels — only for take_a_chef channel */}
+      {/* TakeAChef-specific panels - only for take_a_chef channel */}
       {inquiry.channel === 'take_a_chef' && inquiry.status === 'new' && (
         <TacAddressLead
           inquiryId={inquiry.id}
@@ -781,7 +781,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         />
       )}
 
-      {/* TakeAChef transcript prompt — encourage pasting the TAC conversation */}
+      {/* TakeAChef transcript prompt - encourage pasting the TAC conversation */}
       {inquiry.channel === 'take_a_chef' &&
         (inquiry.status === 'awaiting_chef' || inquiry.status === 'quoted') && (
           <TacTranscriptPrompt
@@ -820,7 +820,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         availableRecipes={availableRecipes}
       />
 
-      {/* Dinner Photos — shown when this inquiry was converted to an event with photos */}
+      {/* Dinner Photos - shown when this inquiry was converted to an event with photos */}
       {convertedEventId && (
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -838,7 +838,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         </div>
       )}
 
-      {/* Documents — shown when this inquiry was converted to an event */}
+      {/* Documents - shown when this inquiry was converted to an event */}
       {convertedEventId && docReadiness ? (
         <div className="space-y-3">
           <div className="flex justify-end">

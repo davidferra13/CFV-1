@@ -100,7 +100,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-      {/* Form — left panel (3/5) */}
+      {/* Form - left panel (3/5) */}
       <div className="lg:col-span-3 space-y-5">
         <Card>
           <CardHeader>
@@ -297,7 +297,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
         </Card>
       </div>
 
-      {/* Client list — right panel (2/5) */}
+      {/* Client list - right panel (2/5) */}
       <div className="lg:col-span-2 space-y-4">
         <Card>
           <CardHeader>
@@ -309,7 +309,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
           <CardContent>
             {clients.length === 0 ? (
               <p className="text-sm text-stone-400 text-center py-6">
-                No clients yet — add your first one.
+                No clients yet - add your first one.
               </p>
             ) : (
               <ul className="divide-y divide-stone-800">

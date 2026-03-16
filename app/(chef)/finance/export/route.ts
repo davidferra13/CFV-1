@@ -1,4 +1,4 @@
-// GET /finance/export — Downloads all ledger entries as a CSV file.
+// GET /finance/export - Downloads all ledger entries as a CSV file.
 // Accepts ?year=YYYY to filter by year (default: current year).
 
 import { NextResponse } from 'next/server'

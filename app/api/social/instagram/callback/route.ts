@@ -1,4 +1,4 @@
-// Instagram OAuth: Step 2 — Handle callback, exchange code for token, store connection
+// Instagram OAuth: Step 2 - Handle callback, exchange code for token, store connection
 // Called by Instagram after user grants permissions
 
 import { NextRequest, NextResponse } from 'next/server'

@@ -1,4 +1,4 @@
-// CompletionCelebration — Shown when all daily plan items are completed or dismissed.
+// CompletionCelebration - Shown when all daily plan items are completed or dismissed.
 // The chef's reward: "Go cook. You've earned it."
 
 export function CompletionCelebration() {

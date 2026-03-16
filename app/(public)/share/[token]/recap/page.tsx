@@ -1,6 +1,6 @@
 // Event Recap Page - Shareable keepsake for guests after event completion
 // Shows highlights: menu served, guest messages, photos, chef info
-// Public — no auth required
+// Public - no auth required
 
 import { getEventShareByToken } from '@/lib/sharing/actions'
 import { getEventMessages } from '@/lib/guest-messages/actions'
@@ -17,10 +17,10 @@ export async function generateMetadata({ params }: { params: { token: string } }
   if (!eventData) return { title: 'Event Recap' }
 
   return {
-    title: `${eventData.occasion || 'Private Dinner'} — Event Recap`,
+    title: `${eventData.occasion || 'Private Dinner'} | Event Recap`,
     description: `A look back at ${eventData.occasion || 'our private dinner'}${eventData.chefName ? ` with ${eventData.chefName}` : ''}.`,
     openGraph: {
-      title: `${eventData.occasion || 'Private Dinner'} — Event Recap`,
+      title: `${eventData.occasion || 'Private Dinner'} | Event Recap`,
       description: `A look back at ${eventData.occasion || 'our private dinner'}${eventData.chefName ? ` with ${eventData.chefName}` : ''}.`,
     },
   }
@@ -111,7 +111,7 @@ export default async function RecapPage({ params }: { params: { token: string } 
                     {msg.emoji && <span className="mr-1 not-italic">{msg.emoji}</span>}
                     &ldquo;{msg.message}&rdquo;
                   </p>
-                  <p className="text-sm text-stone-500 mt-2">— {msg.guest_name}</p>
+                  <p className="text-sm text-stone-500 mt-2">- {msg.guest_name}</p>
                 </div>
               ))}
             </div>

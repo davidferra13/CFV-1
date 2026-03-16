@@ -6,8 +6,8 @@ import { PublicFooter } from '@/components/navigation/public-footer'
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-clip bg-gradient-to-b from-[#1a1210] via-[#141110] to-stone-950">
-      {/* Skip link removed — root layout.tsx already provides one */}
-      {/* Ambient glow — warm brand radiance behind the page */}
+      {/* Skip link removed - root layout.tsx already provides one */}
+      {/* Ambient glow - warm brand radiance behind the page */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -top-20 left-1/2 h-[400px] w-[700px] -translate-x-1/2 rounded-full bg-brand-800/30 blur-[80px]" />
         <div className="absolute top-[50%] -left-20 h-[300px] w-[300px] rounded-full bg-brand-900/35 blur-[60px]" />

@@ -477,7 +477,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                   <p className="text-xl font-bold text-stone-100 mt-0.5">
                     {profitabilityHistory.avgFoodCostPercent !== null
                       ? `${profitabilityHistory.avgFoodCostPercent}%`
-                      : '—'}
+                      : '-'}
                   </p>
                 </div>
                 <div>
@@ -485,7 +485,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                   <p className="text-xl font-bold text-stone-100 mt-0.5">
                     {profitabilityHistory.avgHourlyRateCents !== null
                       ? `${formatCurrency(profitabilityHistory.avgHourlyRateCents)}`
-                      : '—'}
+                      : '-'}
                   </p>
                 </div>
               </div>
@@ -521,7 +521,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                       return (
                         <div
                           key={e.eventId}
-                          title={`${e.occasion || 'Event'} — ${e.marginPercent}% margin`}
+                          title={`${e.occasion || 'Event'} | ${e.marginPercent}% margin`}
                           className={`flex-1 rounded-sm min-w-2 ${heightClass} ${color}`}
                         />
                       )
@@ -548,7 +548,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </Card>
       )}
 
-      {/* Culinary History — menus/dishes served to this client */}
+      {/* Culinary History - menus/dishes served to this client */}
       {menuHistory && <MenuHistoryPanel history={menuHistory} />}
 
       {/* Direct Outreach */}
@@ -702,7 +702,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         }}
       />
 
-      {/* Country Details — currency, timezone, languages for international clients */}
+      {/* Country Details - currency, timezone, languages for international clients */}
       <ClientCountryPanel />
 
       {/* Pets */}
@@ -776,7 +776,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         }))}
       />
 
-      {/* Fun Q&A — client's personality answers */}
+      {/* Fun Q&A - client's personality answers */}
       <FunQADisplay answers={funQAAnswers} clientName={client.full_name} />
 
       {/* Allergy & Dietary Records */}

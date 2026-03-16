@@ -1,4 +1,4 @@
-// UpcomingCallsWidget — dashboard widget showing next N calls
+// UpcomingCallsWidget - dashboard widget showing next N calls
 
 import Link from 'next/link'
 import { format, formatDistanceToNow } from 'date-fns'

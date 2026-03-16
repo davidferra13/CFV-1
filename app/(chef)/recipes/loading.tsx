@@ -1,4 +1,4 @@
-// Recipes Loading Skeleton — seasonal banner + searchable recipe grid
+// Recipes Loading Skeleton - seasonal banner + searchable recipe grid
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ContextLoader } from '@/components/ui/context-loader'
 

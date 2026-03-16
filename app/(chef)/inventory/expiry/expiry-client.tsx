@@ -11,7 +11,7 @@ const URGENCY_COLORS: Record<string, 'error' | 'warning' | 'success' | 'default'
 }
 
 function formatCents(cents: number | null) {
-  if (cents == null) return '—'
+  if (cents == null) return '-'
   return `$${(cents / 100).toFixed(2)}`
 }
 
@@ -82,7 +82,7 @@ export function ExpiryClient({ initialAlerts }: Props) {
                     </td>
                     <td className="px-4 py-3 text-stone-100 font-medium">{alert.ingredientName}</td>
                     <td className="px-4 py-3 text-stone-300">
-                      {alert.expiryDate ? new Date(alert.expiryDate).toLocaleDateString() : '—'}
+                      {alert.expiryDate ? new Date(alert.expiryDate).toLocaleDateString() : '-'}
                     </td>
                     <td className="px-4 py-3 text-right text-stone-300">
                       {Number(alert.remainingQty ?? 0).toFixed(2)}
@@ -91,7 +91,7 @@ export function ExpiryClient({ initialAlerts }: Props) {
                     <td className="px-4 py-3 text-right text-stone-300">
                       {formatCents(alert.atRiskCostCents)}
                     </td>
-                    <td className="px-4 py-3 text-stone-500">{alert.locationName || '—'}</td>
+                    <td className="px-4 py-3 text-stone-500">{alert.locationName || '-'}</td>
                   </tr>
                 ))}
               </tbody>

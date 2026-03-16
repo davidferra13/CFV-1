@@ -196,7 +196,7 @@ export function RemyDrawer() {
     [handleSend]
   )
 
-  // Voice input — merge transcript into input field
+  // Voice input - merge transcript into input field
   const voiceInput = useVoiceInput(
     useCallback((text: string) => {
       setInput((prev) => {
@@ -207,7 +207,7 @@ export function RemyDrawer() {
   )
   const { isListening, supportsVoice, toggleVoiceInput } = voiceInput
 
-  // Kitchen Mode — continuous listening with wake word "Hey Remy"
+  // Kitchen Mode - continuous listening with wake word "Hey Remy"
   const kitchenModeHook = useKitchenMode({
     onMessage: handleSend,
     isLoading: loading,
@@ -258,7 +258,7 @@ export function RemyDrawer() {
     }
   }, [open])
 
-  // Ollama health check — detect limited mode
+  // Ollama health check - detect limited mode
   const [ollamaOnline, setOllamaOnline] = useState(true)
   useEffect(() => {
     if (!open) return
@@ -319,7 +319,7 @@ export function RemyDrawer() {
     }
   }, [loading, speakingId, stopSpeaking])
 
-  // Memory decay — run once per session when drawer first opens
+  // Memory decay - run once per session when drawer first opens
   useEffect(() => {
     if (open && !hasDecayedThisSession) {
       setHasDecayedThisSession(true)
@@ -495,13 +495,13 @@ export function RemyDrawer() {
       const imgReader = new FileReader()
       imgReader.onload = (ev) => {
         const dataUrl = ev.target?.result as string
-        // Strip the data:image/...;base64, prefix — Ollama wants raw base64
+        // Strip the data:image/...;base64, prefix - Ollama wants raw base64
         const base64 = dataUrl.replace(/^data:image\/\w+;base64,/, '')
         pendingImageRef.current = { base64, intent: 'auto' }
         setInput((prev) => `${prev ? prev + '\n\n' : ''}[Image attached: ${file.name}] Scan this`)
       }
       imgReader.readAsDataURL(file)
-      toast.success(`Attached ${file.name} — send a message to analyze it`)
+      toast.success(`Attached ${file.name} - send a message to analyze it`)
     } else {
       toast.error('Unsupported file type. Try text, markdown, CSV, JSON, or image files.')
     }
@@ -562,7 +562,7 @@ export function RemyDrawer() {
         </div>
       )}
 
-      {/* Floating chat window — positioned bottom-right, page remains interactive */}
+      {/* Floating chat window - positioned bottom-right, page remains interactive */}
       {open && !collapsed && (
         <div
           data-remy-root
@@ -657,7 +657,7 @@ export function RemyDrawer() {
                       }`}
                       title={
                         kitchenMode
-                          ? 'Kitchen Mode on — say "Hey Remy"'
+                          ? 'Kitchen Mode on - say "Hey Remy"'
                           : 'Kitchen Mode (hands-free)'
                       }
                       aria-label={kitchenMode ? 'Disable Kitchen Mode' : 'Enable Kitchen Mode'}
@@ -695,7 +695,7 @@ export function RemyDrawer() {
                   </button>
                 </>
               )}
-              {/* View tabs — icon buttons for 5 views */}
+              {/* View tabs - icon buttons for 5 views */}
               <div className="flex items-center gap-0.5 border-l border-white/20 ml-1 pl-1">
                 {[
                   { view: 'chat' as const, icon: MessageSquare, title: 'Chat' },
@@ -969,7 +969,7 @@ export function RemyDrawer() {
                         </>
                       ) : (
                         <>
-                          <strong>Kitchen Mode</strong> — say &quot;Hey Remy&quot; to ask a question
+                          <strong>Kitchen Mode</strong> - say &quot;Hey Remy&quot; to ask a question
                         </>
                       )}
                     </span>
@@ -989,7 +989,7 @@ export function RemyDrawer() {
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200">
                     <VolumeX className="h-3.5 w-3.5 text-amber-400 shrink-0" />
                     <span>
-                      <strong>Limited mode</strong> — Ollama is offline. I can still answer common
+                      <strong>Limited mode</strong> - Ollama is offline. I can still answer common
                       questions instantly, but complex queries need Ollama running.
                     </span>
                   </div>
@@ -1026,7 +1026,7 @@ export function RemyDrawer() {
                       <p className="text-sm text-stone-300 dark:text-stone-300">
                         Hey chef! I&apos;m <span className="font-semibold">Remy</span>, your kitchen
                         companion. I can check your schedule, look up clients, draft messages,
-                        crunch numbers, <strong>search the web</strong> — whatever you need.
+                        crunch numbers, <strong>search the web</strong> - whatever you need.
                       </p>
                       <p className="text-xs text-stone-300 mt-2 flex items-center gap-1">
                         <Globe className="h-3 w-3" />
@@ -1395,7 +1395,7 @@ export function RemyDrawer() {
                       Remy can make mistakes. Please double-check important info.
                     </p>
                     <p className="text-[10px] text-stone-500 italic">
-                      Responses may take a moment — Remy runs on a private, local AI.
+                      Responses may take a moment - Remy runs on a private, local AI.
                     </p>
                   </div>
                   <span

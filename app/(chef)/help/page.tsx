@@ -1,4 +1,4 @@
-// Help Center — index page
+// Help Center - index page
 // Displays category cards and a search box.
 // All content is static; no DB queries beyond auth.
 
@@ -9,7 +9,7 @@ import { HelpSearch } from '@/components/help/help-search'
 import { BookOpen, Calendar, DollarSign, Users, Settings, ChefHat } from '@/components/ui/icons'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Help Center — ChefFlow' }
+export const metadata: Metadata = { title: 'Help Center | ChefFlow' }
 
 const HELP_CATEGORIES = [
   {

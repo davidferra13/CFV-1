@@ -8,12 +8,12 @@ import { createServerClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   if (process.env.NODE_ENV === 'production') {
-    return new NextResponse('Forbidden — demo endpoints are not available in production', {
+    return new NextResponse('Forbidden - demo endpoints are not available in production', {
       status: 403,
     })
   }
   if (process.env.DEMO_MODE_ENABLED !== 'true') {
-    return new NextResponse('Forbidden — DEMO_MODE_ENABLED is not set', { status: 403 })
+    return new NextResponse('Forbidden - DEMO_MODE_ENABLED is not set', { status: 403 })
   }
 
   let tier: 'pro' | 'free'
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     tier = body.tier
     if (tier !== 'pro' && tier !== 'free') throw new Error('Invalid tier')
   } catch {
-    return new NextResponse('Bad Request — expected { tier: "pro" | "free" }', { status: 400 })
+    return new NextResponse('Bad Request - expected { tier: "pro" | "free" }', { status: 400 })
   }
 
   let demoChef: { chefId: string }

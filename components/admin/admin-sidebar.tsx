@@ -1,6 +1,6 @@
 'use client'
 
-// Admin Portal Sidebar — standalone nav separate from the chef sidebar
+// Admin Portal Sidebar - standalone nav separate from the chef sidebar
 // Minimal, always-expanded, dark theme to distinguish from chef portal
 
 import Link from 'next/link'

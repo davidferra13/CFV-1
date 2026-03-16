@@ -51,7 +51,7 @@ export function ScrubForm() {
           pollRef.current = null
         }
       } catch {
-        // Ignore polling errors — the main action will handle real failures
+        // Ignore polling errors - the main action will handle real failures
       }
     }, 3000)
   }, [])
@@ -273,7 +273,7 @@ export function ScrubForm() {
           </div>
         )}
 
-        {/* How It Works — always visible */}
+        {/* How It Works - always visible */}
         <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-3">
           <h4 className="text-sm font-medium text-stone-300">
             {mode === 'competitor' ? 'How Competitor Intel Works' : 'How AI Scrub Works'}
@@ -290,8 +290,8 @@ export function ScrubForm() {
               <div className="space-y-1">
                 <p className="font-medium text-stone-200">2. Deep Enrich</p>
                 <p>
-                  Crawls the prospect&apos;s website — homepage, contact page, events page, about
-                  page — extracting phone, email, social profiles, and upcoming events.
+                  Crawls the prospect&apos;s website - homepage, contact page, events page, about
+                  page - extracting phone, email, social profiles, and upcoming events.
                 </p>
               </div>
               <div className="space-y-1">

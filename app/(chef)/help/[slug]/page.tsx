@@ -1,4 +1,4 @@
-// Help Article Page — renders static content for a given slug.
+// Help Article Page - renders static content for a given slug.
 // No DB queries beyond auth. Content is maintained in HELP_CONTENT below.
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -16,7 +16,7 @@ Go to Events > New Event. Fill in client, date, guest count, location, and occas
 ## Event States
 Draft > Proposed > Accepted > Paid > Confirmed > In Progress > Completed
 
-Any non-terminal state can be moved to Cancelled. Completed and Cancelled are terminal — they cannot be changed.
+Any non-terminal state can be moved to Cancelled. Completed and Cancelled are terminal - they cannot be changed.
 
 ## Day-Of Protocol (DOP)
 On event day, open the event and go to the "Schedule" tab. Work through each phase in order. Tasks with an automatic flag (document readiness, timestamps) are tracked by the system. Tasks requiring manual confirmation have a checkbox.
@@ -52,7 +52,7 @@ All client notes are private (chef-only). Notes are timestamped and append-only.
   finance: {
     title: 'Finance & Payments',
     content: `## Recording Revenue
-Revenue is automatically recorded via the immutable ledger when events transition states. Never manually enter event revenue — always use the event lifecycle.
+Revenue is automatically recorded via the immutable ledger when events transition states. Never manually enter event revenue - always use the event lifecycle.
 
 ## Expenses
 Go to Finance > Expenses > New Expense. Choose a category, enter amount and vendor. Mark as Business or Personal for tax separation. Attach receipt photos from the Expenses page.
@@ -92,7 +92,7 @@ Culinary > Vendors. Track specialty suppliers, their contact info, lead times, a
 Settings > Automations. Toggle built-in rules (e.g., "Send follow-up 48 hours after event") or create custom Trigger > Condition > Action rules.
 
 ## Stripe Connect
-Settings > Payments. Connect your Stripe account to accept deposits and final payments from clients. ChefFlow uses Stripe Connect — you keep your own Stripe account.
+Settings > Payments. Connect your Stripe account to accept deposits and final payments from clients. ChefFlow uses Stripe Connect - you keep your own Stripe account.
 
 ## API Keys
 Settings > API Keys. Generate API keys to connect ChefFlow to external tools (spreadsheets, Zapier, custom scripts).
@@ -120,7 +120,7 @@ Events: The core unit. Each service is an event with its own lifecycle from draf
 
 Clients: Scoped entirely to your account. Clients and their data are never shared or visible to other chefs.
 
-Ledger: All money movements are recorded immutably. You cannot edit or delete ledger entries. This is intentional — it ensures an accurate financial record.
+Ledger: All money movements are recorded immutably. You cannot edit or delete ledger entries. This is intentional - it ensures an accurate financial record.
 
 DOP: The Day-Of Protocol keeps your service on track. It's a living checklist that the system pre-populates based on your event and preferences.
 
@@ -136,7 +136,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = HELP_CONTENT[params.slug]
   return {
-    title: article ? `${article.title} — ChefFlow Help` : 'Help — ChefFlow',
+    title: article ? `${article.title} | ChefFlow Help` : 'Help | ChefFlow',
   }
 }
 

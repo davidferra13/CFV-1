@@ -1,5 +1,5 @@
 // Template Library Page
-// Reusable message templates — system-seeded starters + chef-created.
+// Reusable message templates - system-seeded starters + chef-created.
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { TemplateActionsClient } from './template-actions-client'
 import { CreateTemplateClient } from './create-template-client'
 
-export const metadata: Metadata = { title: 'Templates — ChefFlow' }
+export const metadata: Metadata = { title: 'Templates | ChefFlow' }
 
 export default async function TemplatesPage() {
   await requireChef()

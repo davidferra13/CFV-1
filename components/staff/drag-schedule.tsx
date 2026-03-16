@@ -1,6 +1,6 @@
 'use client'
 
-// Drag Schedule — week view staff scheduling grid.
+// Drag Schedule - week view staff scheduling grid.
 // 7-column layout (Mon-Sun) with event cards showing assigned staff.
 // Uses click-to-assign pattern (no drag-and-drop library required).
 

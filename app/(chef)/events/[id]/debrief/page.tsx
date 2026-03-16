@@ -51,7 +51,7 @@ export default async function EventDebriefPage({ params }: { params: { id: strin
         )}
       </div>
 
-      {/* Intro blurb — shown only before debrief is complete */}
+      {/* Intro blurb - shown only before debrief is complete */}
       {!blanks.event.debriefCompletedAt && (
         <div className="text-sm text-stone-400 bg-stone-800 border border-stone-700 rounded-lg px-4 py-3">
           You just finished a dinner. Capture what you learned while it&#39;s fresh &#8212; client
@@ -59,7 +59,7 @@ export default async function EventDebriefPage({ params }: { params: { id: strin
         </div>
       )}
 
-      {/* Main debrief form — client component handles all interactivity */}
+      {/* Main debrief form - client component handles all interactivity */}
       <EventDebriefClient eventId={params.id} blanks={blanks} initialPhotos={existingPhotos} />
     </div>
   )

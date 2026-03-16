@@ -1,11 +1,11 @@
 'use client'
 
-// FoodPlaceholderImage — displays a stock food photo with proper attribution.
+// FoodPlaceholderImage - displays a stock food photo with proper attribution.
 // Used on recipe and menu pages when no user-uploaded photo exists.
 //
 // Two sizes:
-//   - "hero" — large banner image for detail pages (aspect-ratio 21:9)
-//   - "thumb" — small square thumbnail for list/table rows
+//   - "hero" - large banner image for detail pages (aspect-ratio 21:9)
+//   - "thumb" - small square thumbnail for list/table rows
 //
 // Falls back to a CSS gradient if no image is available.
 // Attribution is required by Unsplash/Pexels TOS and always displayed.
@@ -94,7 +94,7 @@ export function FoodPlaceholderImage({ image, size, className }: FoodPlaceholder
           unoptimized
         />
       </div>
-      {/* Attribution — required by Unsplash/Pexels TOS */}
+      {/* Attribution - required by Unsplash/Pexels TOS */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
         <p className="text-xs text-white/70">
           Photo by{' '}

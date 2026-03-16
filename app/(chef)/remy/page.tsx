@@ -26,7 +26,7 @@ export default async function RemyHistoryPage() {
         <div>
           <h1 className="text-2xl font-bold text-stone-100 dark:text-stone-100">Remy History</h1>
           <p className="text-sm text-stone-500 dark:text-stone-400">
-            Everything Remy has created for you — nothing goes into the abyss.
+            Everything Remy has created for you - nothing goes into the abyss.
           </p>
         </div>
       </div>

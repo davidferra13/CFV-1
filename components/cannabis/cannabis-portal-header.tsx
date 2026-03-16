@@ -32,7 +32,7 @@ export function CannabisPortalHeader({
         boxShadow: '0 0 40px rgba(74, 124, 78, 0.15), inset 0 1px 0 rgba(168, 230, 171, 0.05)',
       }}
     >
-      {/* Green radiant glow — the signature atmospheric effect */}
+      {/* Green radiant glow - the signature atmospheric effect */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{

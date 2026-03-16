@@ -1,4 +1,4 @@
-// Recently Visited Pages — collapsible sidebar section
+// Recently Visited Pages - collapsible sidebar section
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -9,7 +9,7 @@ import { useRecentPages, type RecentPage } from '@/hooks/use-recent-pages'
 const COLLAPSED_KEY = 'cf:recent-collapsed'
 
 /**
- * Simple relative time formatter — avoids importing date-fns.
+ * Simple relative time formatter - avoids importing date-fns.
  * Returns "just now", "2m", "1h", "3d", "2w", "1mo", etc.
  */
 function relativeTime(isoString: string): string {

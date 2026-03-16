@@ -1,4 +1,4 @@
-// Prospecting Hub — Main prospect database
+// Prospecting Hub - Main prospect database
 // Admin-only. Shows all prospects with stats, filtering, and search.
 
 import type { Metadata } from 'next'
@@ -173,7 +173,7 @@ export default async function ProspectingPage({
         </CardContent>
       </Card>
 
-      {/* Getting Started Guide — only shows when database is empty */}
+      {/* Getting Started Guide - only shows when database is empty */}
       {stats.total === 0 && (
         <Card className="border-brand-700 bg-gradient-to-br from-brand-50/50 to-white">
           <CardHeader>

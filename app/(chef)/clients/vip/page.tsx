@@ -27,7 +27,7 @@ export default async function VipClientsPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Your most valued clients — high-frequency and high-value bookings
+          Your most valued clients - high-frequency and high-value bookings
         </p>
       </div>
 

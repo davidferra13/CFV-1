@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export const runtime = 'edge'
-export const alt = 'Chef Profile — ChefFlow'
+export const alt = 'Chef Profile | ChefFlow'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -50,7 +50,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
   }
 
   const subtitle =
-    chef.tagline || chef.bio?.slice(0, 100) || 'Private Chef — Book your next dining experience'
+    chef.tagline || chef.bio?.slice(0, 100) || 'Private Chef - Book your next dining experience'
   const initials = chef.display_name
     .split(' ')
     .map((w: string) => w[0])
@@ -81,7 +81,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
         }}
       />
 
-      {/* Left side — Chef photo or initials */}
+      {/* Left side - Chef photo or initials */}
       <div
         style={{
           width: '400px',
@@ -124,7 +124,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
         )}
       </div>
 
-      {/* Right side — Text content */}
+      {/* Right side - Text content */}
       <div
         style={{
           flex: 1,

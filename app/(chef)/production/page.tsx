@@ -1,5 +1,5 @@
 // Production Calendar
-// Monthly overview of all events — shows status, guest count, revenue, and client at a glance.
+// Monthly overview of all events - shows status, guest count, revenue, and client at a glance.
 // Navigation via ?month=YYYY-MM query param. Defaults to current month.
 
 import Link from 'next/link'
@@ -135,7 +135,7 @@ export default async function ProductionCalendarPage({
         <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wider mb-1">Projected Revenue</p>
           <p className="text-2xl font-bold text-stone-100">
-            {projectedRevenue > 0 ? formatCurrency(projectedRevenue) : '—'}
+            {projectedRevenue > 0 ? formatCurrency(projectedRevenue) : '-'}
           </p>
         </div>
       </div>
@@ -270,7 +270,7 @@ export default async function ProductionCalendarPage({
                         {e.occasion ?? 'Event'}
                       </p>
                       <p className="text-xs text-stone-500">
-                        {e.event_date ? format(parseISO(e.event_date), 'MMM d') : '—'}
+                        {e.event_date ? format(parseISO(e.event_date), 'MMM d') : '-'}
                         {(e as any).client?.full_name ? ` · ${(e as any).client.full_name}` : ''}
                         {e.guest_count ? ` · ${e.guest_count} guests` : ''}
                       </p>

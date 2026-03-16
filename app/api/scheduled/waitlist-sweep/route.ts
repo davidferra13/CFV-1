@@ -1,6 +1,6 @@
 // Scheduled Waitlist Sweep Cron Endpoint
-// GET /api/scheduled/waitlist-sweep — invoked by Vercel Cron Job (daily at 8 AM UTC)
-// POST /api/scheduled/waitlist-sweep — invoked manually or by external schedulers
+// GET /api/scheduled/waitlist-sweep - invoked by Vercel Cron Job (daily at 8 AM UTC)
+// POST /api/scheduled/waitlist-sweep - invoked manually or by external schedulers
 //
 // Sweeps active waitlist entries and notifies clients when their requested date
 // has no confirmed event blocking it (i.e., the chef may be available).
@@ -76,7 +76,7 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
         continue
       }
 
-      // Check for ANY availability block on the requested date — auto (confirmed event)
+      // Check for ANY availability block on the requested date - auto (confirmed event)
       // or manual (personal day, holiday, etc.). Either way, the date is not open.
       const { data: block } = await supabase
         .from('chef_availability_blocks')
@@ -86,12 +86,12 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
         .maybeSingle()
 
       if (block) {
-        // Date is blocked — skip
+        // Date is blocked - skip
         skipped++
         continue
       }
 
-      // Date appears open — look up chef's auth_user_id to find the client's recipient id
+      // Date appears open - look up chef's auth_user_id to find the client's recipient id
       const { data: clientRole } = await supabase
         .from('user_roles')
         .select('auth_user_id')

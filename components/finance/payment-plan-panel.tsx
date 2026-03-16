@@ -1,6 +1,6 @@
 'use client'
 
-// Payment Plan Panel — shows installments for an event with add/mark-paid controls.
+// Payment Plan Panel - shows installments for an event with add/mark-paid controls.
 
 import { useState } from 'react'
 import { toast } from 'sonner'

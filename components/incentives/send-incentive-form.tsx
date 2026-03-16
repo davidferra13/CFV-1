@@ -1,6 +1,6 @@
 'use client'
 
-// SendIncentiveForm — Chef sends an existing voucher/gift card code to a recipient by email
+// SendIncentiveForm - Chef sends an existing voucher/gift card code to a recipient by email
 // Wraps the existing sendVoucherOrGiftCardToAnyone() server action.
 
 import { useState } from 'react'

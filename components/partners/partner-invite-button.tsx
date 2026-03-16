@@ -1,6 +1,6 @@
 'use client'
 
-// Partner Invite Button — shown on the chef's partner detail page.
+// Partner Invite Button - shown on the chef's partner detail page.
 // Calls generatePartnerInvite() server action to create a one-time link,
 // then shows it for the chef to copy and send to their partner.
 

@@ -157,7 +157,7 @@ export function EventNLForm({ clients }: Props) {
       if (result.success && result.event) {
         trackAction(
           'Created event',
-          `${occasion || 'Untitled'} — ${guestCount} guests on ${eventDate}`
+          `${occasion || 'Untitled'} - ${guestCount} guests on ${eventDate}`
         )
         router.push(`/events/${result.event.id}`)
       } else {
@@ -179,11 +179,11 @@ export function EventNLForm({ clients }: Props) {
       <Card className="p-6 space-y-4">
         <Textarea
           label="Describe the event"
-          placeholder={`e.g. "Private dinner for the Hendersons — 8 guests, Saturday March 28th at 7pm, their home in Pacific Heights. Quoting $2,800 with a $500 deposit."`}
+          placeholder={`e.g. "Private dinner for the Hendersons - 8 guests, Saturday March 28th at 7pm, their home in Pacific Heights. Quoting $2,800 with a $500 deposit."`}
           value={rawText}
           onChange={(e) => setRawText(e.target.value)}
           rows={5}
-          helperText="Write naturally — include the client name, date, time, guests, location, and pricing."
+          helperText="Write naturally - include the client name, date, time, guests, location, and pricing."
         />
 
         {parseError && (
@@ -242,7 +242,7 @@ export function EventNLForm({ clients }: Props) {
           )}
 
           <div className="space-y-4">
-            {/* Client selector — required, pre-filtered by parsed name */}
+            {/* Client selector - required, pre-filtered by parsed name */}
             <Select
               label="Client"
               required

@@ -62,7 +62,7 @@ export default async function UpcomingTouchpointsPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Scheduled events in the next 60 days — planned client touchpoints
+          Scheduled events in the next 60 days - planned client touchpoints
         </p>
       </div>
 
@@ -136,14 +136,14 @@ export default async function UpcomingTouchpointsPage() {
                           {event.client.full_name}
                         </Link>
                       ) : (
-                        '—'
+                        '-'
                       )}
                     </TableCell>
                     <TableCell className="text-stone-400 text-sm capitalize">
-                      {event.occasion?.replace(/_/g, ' ') ?? '—'}
+                      {event.occasion?.replace(/_/g, ' ') ?? '-'}
                     </TableCell>
                     <TableCell className="text-stone-400 text-sm">
-                      {event.guest_count ?? '—'}
+                      {event.guest_count ?? '-'}
                     </TableCell>
                     <TableCell>
                       <span

@@ -1,4 +1,4 @@
-// Event Financial Summary Page — Standalone financial close view
+// Event Financial Summary Page - Standalone financial close view
 // Shows complete P&L picture for one event: revenue, costs, margins, time, mileage, comparison.
 // Separate from the event detail page so it can be bookmarked and shared with an accountant.
 

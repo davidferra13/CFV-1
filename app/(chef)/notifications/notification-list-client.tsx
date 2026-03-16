@@ -226,7 +226,7 @@ export function NotificationListClient() {
 
       let data: Notification[]
       if (readFilter === 'unread' && activeFilter === 'all') {
-        // Unread-only mode, no category filter — use dedicated server query
+        // Unread-only mode, no category filter - use dedicated server query
         data = await getUnreadNotifications(PAGE_SIZE, offset)
       } else if (activeFilter === 'all') {
         data = await getNotifications(PAGE_SIZE, offset)
@@ -459,7 +459,7 @@ export function NotificationListClient() {
                           <IconComponent className="w-5 h-5" />
                         </div>
 
-                        {/* Content — clickable */}
+                        {/* Content - clickable */}
                         <button
                           type="button"
                           onClick={() => handleNavigate(notification)}

@@ -87,7 +87,7 @@ export async function ClientIntelligencePanel({ clientId }: ClientIntelligencePa
                 <p className="text-xs text-stone-500 mt-0.5">predicted until next booking</p>
               </>
             ) : (
-              <p className="text-lg font-bold text-stone-400">—</p>
+              <p className="text-lg font-bold text-stone-400">-</p>
             )}
             {context.rebookingPrediction.seasonalPattern && (
               <p className="text-xs text-stone-500 mt-1">

@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { SaveTemplateButton } from './save-template-button'
 
-export const metadata: Metadata = { title: 'Campaign Details — ChefFlow' }
+export const metadata: Metadata = { title: 'Campaign Details | ChefFlow' }
 
 interface CampaignDetailPageProps {
   params: { id: string }

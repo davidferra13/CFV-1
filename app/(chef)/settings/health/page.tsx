@@ -1,4 +1,4 @@
-// System Health Page — Shows connection and service statuses at a glance.
+// System Health Page - Shows connection and service statuses at a glance.
 // Chef can see if Stripe, Gmail, Google Calendar, and DOP tasks are healthy.
 
 import type { Metadata } from 'next'
@@ -94,7 +94,7 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Stripe Payments',
       status: 'error',
-      detail: 'Not connected — clients cannot pay online',
+      detail: 'Not connected - clients cannot pay online',
       actionHref: '/settings',
       actionLabel: 'Connect Stripe →',
     })
@@ -102,7 +102,7 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Stripe Payments',
       status: 'warning',
-      detail: 'Connected but charges not yet enabled — complete Stripe onboarding',
+      detail: 'Connected but charges not yet enabled - complete Stripe onboarding',
       actionHref: '/settings',
       actionLabel: 'Fix in Settings →',
     })
@@ -125,7 +125,7 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Gmail Integration',
       status: 'warning',
-      detail: 'Not connected — email scanning and auto drafts unavailable',
+      detail: 'Not connected - email scanning and auto drafts unavailable',
       actionHref: '/settings',
       actionLabel: 'Connect Gmail →',
     })
@@ -133,7 +133,7 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Gmail Integration',
       status: 'warning',
-      detail: `${gmailStatus.gmail.errorCount} sync error${gmailStatus.gmail.errorCount === 1 ? '' : 's'} — check your Google connection`,
+      detail: `${gmailStatus.gmail.errorCount} sync error${gmailStatus.gmail.errorCount === 1 ? '' : 's'} - check your Google connection`,
       actionHref: '/settings',
       actionLabel: 'Review →',
     })
@@ -159,14 +159,14 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Google Calendar',
       status: 'warning',
-      detail: "Not connected — confirmed events won't sync to your calendar",
+      detail: "Not connected - confirmed events won't sync to your calendar",
       actionHref: '/settings',
       actionLabel: 'Connect Calendar →',
     })
   } else {
     const lastSync = calendarStatus.lastSync
       ? `Last synced ${formatDistanceToNow(new Date(calendarStatus.lastSync), { addSuffix: true })}`
-      : 'Connected — sync fires on event confirmation'
+      : 'Connected - sync fires on event confirmation'
     checks.push({
       label: 'Google Calendar',
       status: 'ok',
@@ -185,7 +185,7 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'DOP Tasks',
       status: 'error',
-      detail: `${dopDigest.overdueCount} overdue task${dopDigest.overdueCount === 1 ? '' : 's'} — action required`,
+      detail: `${dopDigest.overdueCount} overdue task${dopDigest.overdueCount === 1 ? '' : 's'} - action required`,
       actionHref: '/dashboard',
       actionLabel: 'View Tasks →',
     })
@@ -204,7 +204,7 @@ export default async function SystemHealthPage() {
       detail:
         dopDigest.totalIncomplete === 0
           ? 'All tasks complete'
-          : `${dopDigest.totalIncomplete} upcoming — nothing overdue`,
+          : `${dopDigest.totalIncomplete} upcoming - nothing overdue`,
     })
   }
 

@@ -1,8 +1,8 @@
 'use client'
 
-// Module toggle grid — lets chefs choose which feature areas appear in their sidebar.
+// Module toggle grid - lets chefs choose which feature areas appear in their sidebar.
 // Each module card shows name, description, tier badge, and a toggle switch.
-// Focus Mode toggle at top — when ON, only core modules shown. Admin sees status registry.
+// Focus Mode toggle at top - when ON, only core modules shown. Admin sees status registry.
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -189,7 +189,7 @@ export function ModulesClient({
         )}
       </div>
 
-      {/* Module grid — shown when Focus Mode is OFF */}
+      {/* Module grid - shown when Focus Mode is OFF */}
       {!focusMode && (
         <>
           {/* Quick actions */}

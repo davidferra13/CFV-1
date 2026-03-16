@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ClientJourneyPlayer — Remotion Player wrapper for the client journey animation.
+ * ClientJourneyPlayer - Remotion Player wrapper for the client journey animation.
  * Shows what clients see at each step of the event lifecycle.
  */
 

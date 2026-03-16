@@ -112,9 +112,9 @@ export function ZapierSettings({ initialSubscriptions }: { initialSubscriptions:
           await import('@/lib/integrations/zapier/zapier-webhooks')
         const result = await testWebhookSubscription(id)
         if (result.success) {
-          toast.success(`Test ping sent — HTTP ${result.status}`)
+          toast.success(`Test ping sent - HTTP ${result.status}`)
         } else {
-          toast.error(`Test ping failed — HTTP ${result.status}`)
+          toast.error(`Test ping failed - HTTP ${result.status}`)
         }
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Test failed')

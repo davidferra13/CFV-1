@@ -1,4 +1,4 @@
-// TrackedDownloadLink — fires a document_downloaded activity event on click,
+// TrackedDownloadLink - fires a document_downloaded activity event on click,
 // then lets the download proceed normally. Fire-and-forget; never blocks the download.
 'use client'
 

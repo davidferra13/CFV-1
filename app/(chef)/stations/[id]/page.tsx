@@ -1,4 +1,4 @@
-// Station Detail — Shows station info, menu items, components, and links to clipboard/shifts/ops log
+// Station Detail - Shows station info, menu items, components, and links to clipboard/shifts/ops log
 // Serves as the hub for a single station.
 
 import type { Metadata } from 'next'
@@ -18,7 +18,7 @@ import {
   removeComponent,
 } from '@/lib/stations/actions'
 
-export const metadata: Metadata = { title: 'Station Detail — ChefFlow' }
+export const metadata: Metadata = { title: 'Station Detail | ChefFlow' }
 
 export default async function StationDetailPage({ params }: { params: { id: string } }) {
   await requireChef()

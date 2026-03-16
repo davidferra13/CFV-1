@@ -25,7 +25,7 @@ export default async function AwaitingClientReplyPage() {
   await requireChef()
 
   const allInquiries = await getInquiries()
-  // Same underlying status as "Sent to Client" — the ball is in the client's court
+  // Same underlying status as "Sent to Client" - the ball is in the client's court
   const inquiries = allInquiries.filter((i: any) => i.status === 'awaiting_client')
 
   return (

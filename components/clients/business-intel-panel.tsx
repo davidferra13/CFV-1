@@ -172,9 +172,9 @@ export function BusinessIntelPanel({ clientId, ...initial }: Props) {
           onChange={(e) => setReferralPotential(e.target.value)}
         >
           <option value="">Select...</option>
-          <option value="high">High — connected, loves to recommend</option>
-          <option value="medium">Medium — would refer if asked</option>
-          <option value="low">Low — keeps to themselves</option>
+          <option value="high">High - connected, loves to recommend</option>
+          <option value="medium">Medium - would refer if asked</option>
+          <option value="low">Low - keeps to themselves</option>
         </Select>
         <Textarea
           label="Red Flags"

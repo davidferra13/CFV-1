@@ -164,7 +164,7 @@ export function AdminPresencePanel() {
         {displaySessions.length === 0 ? (
           <div className="py-12 text-center text-slate-400 text-sm">
             {total === 0
-              ? 'No active sessions. Presence updates in real-time — try opening the site in another tab.'
+              ? 'No active sessions. Presence updates in real-time - try opening the site in another tab.'
               : 'No sessions match your current filter.'}
           </div>
         ) : (
@@ -221,7 +221,7 @@ export function AdminPresencePanel() {
                       {formatDuration(Math.max(0, session.durationSeconds))}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-400 max-w-[200px] truncate">
-                      {session.referrer || '—'}
+                      {session.referrer || '-'}
                     </td>
                   </tr>
                 ))}

@@ -1,4 +1,4 @@
-// Admin Client List — all clients across every chef tenant
+// Admin Client List - all clients across every chef tenant
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformClientList, type PlatformClientRow } from '@/lib/admin/platform-stats'
@@ -81,10 +81,10 @@ export default async function AdminClientListPage() {
               <tbody className="divide-y divide-slate-100">
                 {clients.map((client) => (
                   <tr key={client.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-slate-900">{client.name ?? '—'}</td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">{client.email ?? '—'}</td>
+                    <td className="px-4 py-3 font-medium text-slate-900">{client.name ?? '-'}</td>
+                    <td className="px-4 py-3 text-slate-500 text-xs">{client.email ?? '-'}</td>
                     <td className="px-4 py-3 text-xs text-slate-500">
-                      {client.chefBusinessName ?? '—'}
+                      {client.chefBusinessName ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-right text-slate-700">{client.eventCount}</td>
                     <td className="px-4 py-3 text-right font-medium text-slate-900">

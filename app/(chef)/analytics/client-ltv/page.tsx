@@ -1,4 +1,4 @@
-// Client Lifetime Value — Rank clients by total revenue contribution
+// Client Lifetime Value - Rank clients by total revenue contribution
 // Helps identify top clients for retention and VIP treatment
 
 import type { Metadata } from 'next'

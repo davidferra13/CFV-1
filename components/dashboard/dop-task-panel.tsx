@@ -1,4 +1,4 @@
-// DOPTaskPanel — Dashboard widget showing all outstanding DOP tasks across upcoming events.
+// DOPTaskPanel - Dashboard widget showing all outstanding DOP tasks across upcoming events.
 // Grouped by event, overdue in red, due-today in amber, upcoming neutral.
 // Chef can check tasks directly from the dashboard via DOPTaskCheckbox.
 
@@ -134,7 +134,7 @@ export function DOPTaskPanel({ digest, weatherByEventId }: Props) {
               <Link href={first.eventHref} className="flex items-center justify-between mb-2 group">
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-stone-200 group-hover:text-brand-600 truncate">
-                    {first.eventOccasion ?? 'Private Event'} — {first.clientName}
+                    {first.eventOccasion ?? 'Private Event'} - {first.clientName}
                   </p>
                   <p
                     className={`text-xs mt-0.5 flex items-center gap-1.5 flex-wrap ${hasOverdue ? 'text-red-500 font-medium' : 'text-stone-400'}`}
@@ -183,7 +183,7 @@ export function DOPTaskPanel({ digest, weatherByEventId }: Props) {
                       task.isOverdue ? 'bg-red-950 border border-red-100' : ''
                     }`}
                   >
-                    {/* Checkbox — optimistic, calls toggleDOPTaskCompletion */}
+                    {/* Checkbox - optimistic, calls toggleDOPTaskCompletion */}
                     <div className="mt-0.5 shrink-0">
                       <DOPTaskCheckbox
                         eventId={task.eventId}

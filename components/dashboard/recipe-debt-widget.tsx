@@ -1,6 +1,6 @@
 // Recipe Debt Widget
 // Shows unrecorded dish components across all events.
-// Appears on the dashboard when debt > 0 — daily habit trigger.
+// Appears on the dashboard when debt > 0 - daily habit trigger.
 
 import Link from 'next/link'
 import { BookOpen, ArrowRight, AlertCircle } from '@/components/ui/icons'
@@ -18,7 +18,7 @@ export function RecipeDebtWidget({ debt }: Props) {
         <BookOpen className="h-5 w-5 text-emerald-600 shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-green-900">
-            Recipe Book up to date — {debt.totalRecipes} recipe{debt.totalRecipes !== 1 ? 's' : ''}{' '}
+            Recipe Book up to date - {debt.totalRecipes} recipe{debt.totalRecipes !== 1 ? 's' : ''}{' '}
             recorded
           </p>
         </div>

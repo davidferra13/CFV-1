@@ -41,7 +41,7 @@ export default async function SentToClientPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Your response has been sent — waiting for the client to get back to you
+          Your response has been sent - waiting for the client to get back to you
         </p>
       </div>
 

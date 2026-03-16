@@ -1,4 +1,4 @@
-// Weekly Schedule View — 7-day overview with events, prep days, and warnings
+// Weekly Schedule View - 7-day overview with events, prep days, and warnings
 // Client component for week navigation.
 
 'use client'

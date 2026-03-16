@@ -1,4 +1,4 @@
-// Mini Calendar — small month grid for quick date navigation
+// Mini Calendar - small month grid for quick date navigation
 // Like Google Calendar's left sidebar calendar.
 
 'use client'

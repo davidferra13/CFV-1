@@ -45,7 +45,7 @@ function formatQty(qty: number) {
 }
 
 function formatCost(cents: number | null) {
-  if (cents == null) return '—'
+  if (cents == null) return '-'
   return `$${(cents / 100).toFixed(2)}`
 }
 
@@ -158,7 +158,7 @@ export function TransactionLedgerClient({ initialTransactions, initialTotal }: P
                       {formatCost(tx.costCents)}
                     </td>
                     <td className="px-4 py-3 text-stone-500 max-w-[200px] truncate">
-                      {tx.notes || '—'}
+                      {tx.notes || '-'}
                     </td>
                   </tr>
                 ))

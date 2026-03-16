@@ -1,4 +1,4 @@
-// Chef Inquiry Pipeline — Smart Priority Inbox
+// Chef Inquiry Pipeline - Smart Priority Inbox
 // Groups inquiries by urgency to reduce overwhelm after Gmail sync floods
 // Sections: Needs Response → Follow-Up Due → Awaiting Client → Everything Else
 
@@ -185,9 +185,9 @@ function InquiryRow({
             {isTacNew && (
               <Badge variant={isStale ? 'error' : isUrgent ? 'warning' : 'info'}>
                 {isStale
-                  ? `Stale — ${Math.floor(ageHours / 24)}d`
+                  ? `Stale - ${Math.floor(ageHours / 24)}d`
                   : isUrgent
-                    ? `Untouched — ${ageHours}h`
+                    ? `Untouched - ${ageHours}h`
                     : 'Untouched'}
               </Badge>
             )}
@@ -372,13 +372,13 @@ async function InquiryList({
 
   // --- Smart Priority Grouping (only for "all" view) ---
   if (filter === 'all') {
-    // Group 1: Needs Your Response — new + awaiting_chef with no outbound message
+    // Group 1: Needs Your Response - new + awaiting_chef with no outbound message
     const needsResponse = inquiries.filter((i: any) => {
       const u = urgencyMap.get(i.id)
       return (i.status === 'new' || i.status === 'awaiting_chef') && u && !u.hasResponse
     })
 
-    // Group 2: Follow-Up Due — awaiting_client for 3+ days
+    // Group 2: Follow-Up Due - awaiting_client for 3+ days
     const followUpDue = inquiries.filter((i: any) => {
       if (i.status !== 'awaiting_client' && i.status !== 'quoted') return false
       const u = urgencyMap.get(i.id)
@@ -389,7 +389,7 @@ async function InquiryList({
       return daysSinceUpdate >= 3
     })
 
-    // Group 3: Active — everything else that's open
+    // Group 3: Active - everything else that's open
     const needsResponseIds = new Set(needsResponse.map((i: any) => i.id))
     const followUpIds = new Set(followUpDue.map((i: any) => i.id))
     const activeOpen = inquiries.filter(
@@ -406,7 +406,7 @@ async function InquiryList({
 
     return (
       <div className="space-y-6">
-        {/* Needs Response — most urgent */}
+        {/* Needs Response - most urgent */}
         {needsResponse.length > 0 && (
           <section>
             <div className="flex items-center gap-2 mb-3">
@@ -440,7 +440,7 @@ async function InquiryList({
           </section>
         )}
 
-        {/* Active — on track */}
+        {/* Active - on track */}
         {activeOpen.length > 0 && (
           <section>
             <div className="flex items-center gap-2 mb-3">
@@ -457,7 +457,7 @@ async function InquiryList({
           </section>
         )}
 
-        {/* Closed — collapsed */}
+        {/* Closed - collapsed */}
         {closed.length > 0 && (
           <details className="group">
             <summary className="flex items-center gap-2 mb-3 cursor-pointer select-none">
@@ -566,7 +566,7 @@ export default async function InquiriesPage({
 
       {/* View wrapper: manages list/kanban toggle */}
       <InquiriesViewWrapper inquiries={kanbanInquiries}>
-        {/* Status Tabs + List — unchanged, passed as children slot */}
+        {/* Status Tabs + List - unchanged, passed as children slot */}
         <div className="space-y-4">
           <Card className="p-4">
             <InquiriesFilterTabs

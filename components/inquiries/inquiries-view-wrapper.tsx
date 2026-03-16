@@ -1,4 +1,4 @@
-// InquiriesViewWrapper — Client component that manages list/kanban view toggle
+// InquiriesViewWrapper - Client component that manages list/kanban view toggle
 // The existing list (server component) is passed as children; kanban data is a prop.
 'use client'
 

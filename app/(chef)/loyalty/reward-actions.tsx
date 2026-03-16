@@ -1,6 +1,6 @@
 'use client'
 
-// Reward management actions — inline edit form + deactivate
+// Reward management actions - inline edit form + deactivate
 // Appears on each row of the Rewards Catalog on the loyalty dashboard.
 
 import { useState, useTransition } from 'react'
@@ -28,7 +28,7 @@ export function RewardActions({ reward }: { reward: LoyaltyReward }) {
   const [error, setError] = useState<string | null>(null)
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
 
-  // Edit form state — pre-populated from current reward
+  // Edit form state - pre-populated from current reward
   const [name, setName] = useState(reward.name)
   const [description, setDescription] = useState(reward.description || '')
   const [points, setPoints] = useState(reward.points_required)

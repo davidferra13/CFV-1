@@ -2,7 +2,7 @@
 
 // Interactive Document Client
 // 3-state per-item toggle: 0 = untouched, 1 = working on (amber →), 2 = done (green ✓ strikethrough)
-// State is localStorage-only — no server roundtrip per tap. Works offline.
+// State is localStorage-only - no server roundtrip per tap. Works offline.
 // Reset clears localStorage back to initialState defaults (e.g. pre-sourced items re-cross).
 
 import { useState, useEffect, useCallback } from 'react'
@@ -170,7 +170,7 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
 
   const [stateMap, setStateMap] = useState<StateMap>(() => buildInitialState(spec))
 
-  // Merge saved localStorage on mount — user's explicit taps override initialState defaults
+  // Merge saved localStorage on mount - user's explicit taps override initialState defaults
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
@@ -222,14 +222,14 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
 
   return (
     <div className="space-y-4">
-      {/* Alert banners — allergy / safety warnings */}
+      {/* Alert banners - allergy / safety warnings */}
       {spec.alerts.map((alert, i) => (
         <div key={i} className="bg-red-950 border border-red-300 rounded-lg px-4 py-3">
           <p className="text-sm font-semibold text-red-800">{alert}</p>
         </div>
       ))}
 
-      {/* Overall progress bar — only when there are checkable items */}
+      {/* Overall progress bar - only when there are checkable items */}
       {totalCheckable > 0 && (
         <div className="bg-stone-900 border border-stone-700 rounded-lg px-4 py-3">
           <div className="flex items-center justify-between mb-2">
@@ -261,7 +261,7 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
         <Section key={section.id} section={section} stateMap={stateMap} onToggle={toggle} />
       ))}
 
-      {/* Legend + reset — only shown when there are checkable items */}
+      {/* Legend + reset - only shown when there are checkable items */}
       {totalCheckable > 0 ? (
         <div className="pt-2 space-y-3">
           <div className="flex items-center gap-4 justify-center text-xs text-stone-500">
@@ -300,9 +300,9 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
           </button>
         </div>
       ) : (
-        /* Reference-only docs: no checkboxes — show a clear note instead */
+        /* Reference-only docs: no checkboxes - show a clear note instead */
         <p className="pt-2 text-xs text-stone-300 text-center">
-          Reference view — tap Open PDF ↗ to print.
+          Reference view - tap Open PDF ↗ to print.
         </p>
       )}
     </div>

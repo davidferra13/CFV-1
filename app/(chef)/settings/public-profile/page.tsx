@@ -1,4 +1,4 @@
-// Public Profile Settings — Set slug, tagline, manage showcase partners
+// Public Profile Settings - Set slug, tagline, manage showcase partners
 
 import { requireChef } from '@/lib/auth/get-user'
 import { getMyDiscoveryProfile } from '@/lib/discovery/actions'

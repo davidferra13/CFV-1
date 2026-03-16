@@ -198,7 +198,7 @@ export function InitiateRefundModal({
             </p>
           </div>
 
-          {/* Deposit override — only show if deposit was paid and is non-refundable */}
+          {/* Deposit override - only show if deposit was paid and is non-refundable */}
           {depositPaidCents > 0 && recommendation.depositNonRefundableWarning && (
             <div className="flex items-center gap-3">
               <input
@@ -209,7 +209,7 @@ export function InitiateRefundModal({
                 className="h-4 w-4 text-brand-600 rounded border-stone-600"
               />
               <label htmlFor="refundDeposit" className="text-sm text-stone-300">
-                Also refund deposit ({formatCurrency(depositPaidCents)}) — chef discretion override
+                Also refund deposit ({formatCurrency(depositPaidCents)}) - chef discretion override
               </label>
             </div>
           )}
@@ -224,7 +224,7 @@ export function InitiateRefundModal({
               onChange={(e) => setReason(e.target.value)}
               rows={3}
               className="w-full px-3 py-2 border border-stone-600 rounded-md text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
-              placeholder="e.g. Client cancelled 20 days before event — full balance refund per policy"
+              placeholder="e.g. Client cancelled 20 days before event - full balance refund per policy"
               required
             />
           </div>

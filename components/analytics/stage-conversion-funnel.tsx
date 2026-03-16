@@ -1,4 +1,4 @@
-// Stage Conversion Funnel — visualizes how records progress through
+// Stage Conversion Funnel - visualizes how records progress through
 // the inquiry pipeline and event pipeline with drop-off rates.
 
 import type { StageConversionData } from '@/lib/analytics/stage-conversion'

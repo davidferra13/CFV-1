@@ -109,15 +109,15 @@ export default async function CashFlowPage() {
               <TableRow key={m.key}>
                 <TableCell className="font-medium text-stone-300">{m.label}</TableCell>
                 <TableCell className="text-green-700 text-sm">
-                  {m.revenue > 0 ? formatCurrency(m.revenue) : '—'}
+                  {m.revenue > 0 ? formatCurrency(m.revenue) : '-'}
                 </TableCell>
                 <TableCell className="text-red-600 text-sm">
-                  {m.expenses > 0 ? formatCurrency(m.expenses) : '—'}
+                  {m.expenses > 0 ? formatCurrency(m.expenses) : '-'}
                 </TableCell>
                 <TableCell
                   className={`text-sm font-semibold ${m.net > 0 ? 'text-stone-100' : m.net < 0 ? 'text-red-700' : 'text-stone-400'}`}
                 >
-                  {m.net !== 0 ? formatCurrency(m.net) : '—'}
+                  {m.net !== 0 ? formatCurrency(m.net) : '-'}
                 </TableCell>
               </TableRow>
             ))}

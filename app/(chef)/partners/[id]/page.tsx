@@ -1,4 +1,4 @@
-// Partner Detail Page — Profile, stats, locations, service history, attribution tools
+// Partner Detail Page - Profile, stats, locations, service history, attribution tools
 // Shows comprehensive view of a single referral partner
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -93,7 +93,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
               <Button>Edit Partner</Button>
             </Link>
           </div>
-          {/* Partner portal invite — shown when partner hasn't claimed their account yet */}
+          {/* Partner portal invite - shown when partner hasn't claimed their account yet */}
           <PartnerInviteButton
             partnerId={partner.id}
             isClaimed={!!(partner as any).claimed_at}
@@ -194,7 +194,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
         </Card>
       </div>
 
-      {/* Acquisition origin — captures the client→event→partner story */}
+      {/* Acquisition origin - captures the client→event→partner story */}
       {((partner as any).origin_client_id || (partner as any).acquisition_source) && (
         <Card className="p-6">
           <h2 className="text-base font-semibold text-stone-100 mb-3">Partnership Origin</h2>
@@ -312,7 +312,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
                         <td className="px-3 py-2 text-stone-300">
                           {format(new Date(evt.event_date), 'MMM d, yyyy')}
                         </td>
-                        <td className="px-3 py-2 text-stone-300">{evt.occasion || '—'}</td>
+                        <td className="px-3 py-2 text-stone-300">{evt.occasion || '-'}</td>
                         <td className="px-3 py-2 text-right text-stone-300">{evt.guest_count}</td>
                         <td className="px-3 py-2">
                           <Badge variant={evt.status === 'completed' ? 'success' : 'default'}>
@@ -369,7 +369,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
                       <td className="px-3 py-2 text-stone-300">
                         {format(new Date(evt.event_date), 'MMM d, yyyy')}
                       </td>
-                      <td className="px-3 py-2 text-stone-300">{evt.occasion || '—'}</td>
+                      <td className="px-3 py-2 text-stone-300">{evt.occasion || '-'}</td>
                       <td className="px-3 py-2 text-right text-stone-300">{evt.guest_count}</td>
                       <td className="px-3 py-2">
                         <Badge variant={evt.status === 'completed' ? 'success' : 'default'}>

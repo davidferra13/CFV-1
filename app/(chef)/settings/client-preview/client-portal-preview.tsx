@@ -1,4 +1,4 @@
-// Client Portal Preview — renders the client portal UI with chef-fetched data.
+// Client Portal Preview - renders the client portal UI with chef-fetched data.
 // All interactive elements are visually present but non-functional (preview mode).
 
 import type { ReactNode } from 'react'
@@ -164,7 +164,7 @@ function ClientPortalSidebar({ clientName }: { clientName: string }) {
           {clientName}
         </p>
       </div>
-      {/* Book Now — primary CTA */}
+      {/* Book Now - primary CTA */}
       <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-stone-900 text-white text-sm font-semibold cursor-not-allowed select-none mb-2">
         {icons.plus}
         Book Now
@@ -259,7 +259,7 @@ function PortalContent({ portalData }: { portalData: PortalData }) {
                                 d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
                               />
                             </svg>
-                            <span>{event.guest_count ?? '—'} guests</span>
+                            <span>{event.guest_count ?? '-'} guests</span>
                           </div>
                           {loc && (
                             <div className="flex items-center gap-2">
@@ -359,7 +359,7 @@ function PortalContent({ portalData }: { portalData: PortalData }) {
         )}
       </section>
 
-      {/* My Quotes (pending only shown — same as action-needed section in client portal) */}
+      {/* My Quotes (pending only shown - same as action-needed section in client portal) */}
       {pendingQuotes.length > 0 && (
         <section>
           <h2 className="text-2xl font-bold text-stone-100 mb-4">My Quotes</h2>

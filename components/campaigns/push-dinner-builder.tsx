@@ -1,6 +1,6 @@
 'use client'
 
-// Push Dinner Builder — 5-step wizard
+// Push Dinner Builder - 5-step wizard
 // Step 1: The Dinner (concept + AI pitch)
 // Step 2: The Menu  (optional menu template attachment)
 // Step 3: Who to Invite (segment picker + open slots)
@@ -583,7 +583,7 @@ export function PushDinnerBuilder() {
           <div>
             <label className="text-xs text-stone-500 font-medium uppercase tracking-wide">
               Campaign name{' '}
-              <span className="normal-case font-normal">(optional — auto-named from occasion)</span>
+              <span className="normal-case font-normal">(optional - auto-named from occasion)</span>
             </label>
             <input
               type="text"
@@ -601,7 +601,7 @@ export function PushDinnerBuilder() {
             className="w-full gap-2"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {saving ? 'Saving...' : 'Next — Choose a Menu'}
+            {saving ? 'Saving...' : 'Next - Choose a Menu'}
             {!saving && <ChevronRight className="w-4 h-4" />}
           </Button>
         </div>
@@ -613,7 +613,7 @@ export function PushDinnerBuilder() {
           <div>
             <h2 className="text-lg font-semibold text-stone-200">Attach a menu</h2>
             <p className="text-sm text-stone-500 mt-0.5">
-              Clients will see course names (not costs) on the booking page. Optional — skip if you
+              Clients will see course names (not costs) on the booking page. Optional - skip if you
               prefer to describe it yourself.
             </p>
           </div>
@@ -632,7 +632,7 @@ export function PushDinnerBuilder() {
               Back
             </Button>
             <Button variant="primary" onClick={handleStep2Next} className="flex-1 gap-1">
-              Next — Who to Invite
+              Next - Who to Invite
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
@@ -796,7 +796,7 @@ export function PushDinnerBuilder() {
               {saving
                 ? 'Saving...'
                 : selectedClients.length > 0
-                  ? `Next — Review ${selectedClients.length} Draft${selectedClients.length !== 1 ? 's' : ''}`
+                  ? `Next - Review ${selectedClients.length} Draft${selectedClients.length !== 1 ? 's' : ''}`
                   : 'Next (no recipients)'}
               {!saving && <ChevronRight className="w-4 h-4" />}
             </Button>
@@ -810,7 +810,7 @@ export function PushDinnerBuilder() {
           <div>
             <h2 className="text-lg font-semibold text-stone-200">Review personalised drafts</h2>
             <p className="text-sm text-stone-500 mt-0.5">
-              Drafts a unique message for each client based on your history together. You approve —
+              Drafts a unique message for each client based on your history together. You approve -
               nothing sends without your OK.
             </p>
           </div>
@@ -823,7 +823,7 @@ export function PushDinnerBuilder() {
                 <p className="text-sm font-medium text-amber-800">Ollama is not running</p>
                 <p className="text-xs text-amber-700 mt-0.5">
                   Start Ollama to generate personalised drafts. Or write each message manually below
-                  — click Edit on any card.
+                  - click Edit on any card.
                 </p>
               </div>
             </div>
@@ -889,7 +889,7 @@ export function PushDinnerBuilder() {
               <ChevronLeft className="w-4 h-4" /> Back
             </Button>
             <Button variant="primary" onClick={() => setStep(5)} className="flex-1 gap-1">
-              Next — Launch
+              Next - Launch
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
@@ -972,7 +972,7 @@ export function PushDinnerBuilder() {
                       <div className="text-sm font-medium text-stone-200">Client portal banner</div>
                       <div className="text-xs text-stone-500 mt-0.5">
                         A quiet banner appears on each client's ChefFlow dashboard next time they
-                        log in. Non-invasive — they discover it on their own time. No email.
+                        log in. Non-invasive - they discover it on their own time. No email.
                       </div>
                     </div>
                     <Badge variant="info" className="shrink-0">
@@ -1006,7 +1006,7 @@ export function PushDinnerBuilder() {
                     <div>
                       <div className="text-sm font-medium text-stone-200">Shareable link only</div>
                       <div className="text-xs text-stone-500 mt-0.5">
-                        You get a link + QR code to share however you want — Instagram story, text,
+                        You get a link + QR code to share however you want - Instagram story, text,
                         DM. You control who sees it.
                       </div>
                     </div>

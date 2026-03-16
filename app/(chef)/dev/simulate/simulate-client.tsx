@@ -55,7 +55,7 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
           setRunSuccess(true)
           router.refresh()
         } else {
-          setRunError(result.error ?? 'Simulation failed — check that Ollama is running.')
+          setRunError(result.error ?? 'Simulation failed - check that Ollama is running.')
         }
       } catch (err) {
         toast.error('Simulation failed unexpectedly')
@@ -85,7 +85,7 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
               <div
                 className={`text-2xl font-bold ${allTimePassPct !== null && allTimePassPct >= 80 ? 'text-emerald-600' : allTimePassPct !== null && allTimePassPct >= 60 ? 'text-amber-600' : 'text-red-600'}`}
               >
-                {allTimePassPct !== null ? `${allTimePassPct}%` : '—'}
+                {allTimePassPct !== null ? `${allTimePassPct}%` : '-'}
               </div>
               <div className="text-xs text-stone-500 mt-0.5">all-time pass rate</div>
             </CardContent>
@@ -209,7 +209,7 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
           )}
           {runSuccess && (
             <div className="rounded-lg border border-emerald-200 bg-emerald-950 px-3 py-2 text-sm text-emerald-800">
-              Simulation complete — results updated below.
+              Simulation complete - results updated below.
             </div>
           )}
 

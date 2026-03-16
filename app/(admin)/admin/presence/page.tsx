@@ -1,4 +1,4 @@
-// Admin Presence Page — Real-time view of every visitor on the site
+// Admin Presence Page - Real-time view of every visitor on the site
 // The AdminPresencePanel client component handles the Supabase Realtime subscription
 
 import { requireAdmin } from '@/lib/auth/admin'
@@ -22,7 +22,7 @@ export default async function AdminPresencePage() {
         <div>
           <h1 className="text-xl font-bold text-slate-900">Live Presence</h1>
           <p className="text-sm text-slate-500">
-            Everyone on the site right now — anonymous visitors, logged-in chefs and clients
+            Everyone on the site right now - anonymous visitors, logged-in chefs and clients
           </p>
         </div>
         {/* Live indicator */}

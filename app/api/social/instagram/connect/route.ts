@@ -1,4 +1,4 @@
-// Instagram OAuth: Step 1 — Redirect to Instagram authorization URL
+// Instagram OAuth: Step 1 - Redirect to Instagram authorization URL
 // Requires: INSTAGRAM_APP_ID env var (from Meta Developer App)
 // The app must have instagram_basic, instagram_manage_insights permissions
 

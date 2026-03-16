@@ -29,7 +29,7 @@ export default function NewCallPage({ searchParams }: Props) {
         </Link>
         <h1 className="text-2xl font-bold text-stone-100">Schedule a Call</h1>
         <p className="text-sm text-stone-400 mt-1">
-          Set the time, contact, and prep agenda — all in one place.
+          Set the time, contact, and prep agenda - all in one place.
         </p>
       </div>
 

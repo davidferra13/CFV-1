@@ -1,4 +1,4 @@
-// AccountabilityPanel — Dashboard widget for weekly operational accountability.
+// AccountabilityPanel - Dashboard widget for weekly operational accountability.
 // Shows events completed, follow-ups sent, receipts uploaded, closures on-time.
 // Also displays closure streak with flame emoji milestone celebration.
 
@@ -21,7 +21,7 @@ export function AccountabilityPanel({ weeklyStats, closureStreak, overdueFollowU
     closedOnTimeCount,
   } = weeklyStats
 
-  // Nothing to show — no events completed this week
+  // Nothing to show - no events completed this week
   if (
     eventsCompletedThisWeek === 0 &&
     overdueFollowUpCount === 0 &&
@@ -51,7 +51,7 @@ export function AccountabilityPanel({ weeklyStats, closureStreak, overdueFollowU
               </span>
               {closureStreak.milestoneMessage && (
                 <span className="text-xs text-emerald-600 font-medium hidden sm:inline">
-                  — {closureStreak.milestoneMessage}
+                  - {closureStreak.milestoneMessage}
                 </span>
               )}
             </div>

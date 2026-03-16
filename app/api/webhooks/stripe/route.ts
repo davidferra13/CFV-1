@@ -62,7 +62,7 @@ export async function POST(req: Request) {
 
   console.log('[Stripe Webhook] Received:', event.type)
 
-  // Log webhook receipt for audit trail — fire-and-forget
+  // Log webhook receipt for audit trail - fire-and-forget
   logWebhookEvent({
     provider: 'stripe',
     eventType: event.type,
@@ -218,7 +218,7 @@ export async function POST(req: Request) {
  * Reads purchase_intent_id from session metadata to create the client_incentives record,
  * sends the gift card code to the recipient, and confirms the buyer.
  *
- * Idempotency: Checks gift_card_purchase_intents.status — if already 'paid', returns early.
+ * Idempotency: Checks gift_card_purchase_intents.status - if already 'paid', returns early.
  */
 async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: any) {
   const session = event.data.object as Stripe.Checkout.Session
@@ -285,7 +285,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
       tenant_id,
       type: 'gift_card',
       code,
-      title: `Gift Card — ${chefName} ($${amountDollars})`,
+      title: `Gift Card - ${chefName} ($${amountDollars})`,
       currency_code: intent.currency_code || 'USD',
       amount_cents: intent.amount_cents,
       // remaining_balance_cents initialized automatically by trigger
@@ -296,7 +296,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
         typeof session.payment_intent === 'string' ? session.payment_intent : null,
       purchased_by_user_id: intent.buyer_user_id || null,
       purchased_by_email: intent.buyer_email,
-      // Webhook-created gift cards use 'system' role — buyer may be a guest (no auth account).
+      // Webhook-created gift cards use 'system' role - buyer may be a guest (no auth account).
       // Admin client bypasses RLS; 'system' satisfies the creator_role_shape CHECK constraint
       // (see migration 20260228000002 which made created_by_user_id nullable for system rows).
       created_by_user_id: null,
@@ -337,7 +337,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
       recipientName: intent.recipient_name,
       senderName: intent.buyer_email, // Buyer's email as sender identifier
       incentiveType: 'gift_card',
-      title: (incentive as any).title || `Gift Card — ${chefName}`,
+      title: (incentive as any).title || `Gift Card - ${chefName}`,
       code,
       valueLabel: `$${amountDollars} gift card value`,
       expiresAt: expiresAtLabel,
@@ -429,7 +429,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
   // Security: verify the metadata actually maps to a real event owned by that tenant.
   // This prevents crafted PaymentIntents (with arbitrary metadata) from writing
-  // to the ledger for an event they don't own — even if RLS has a gap.
+  // to the ledger for an event they don't own - even if RLS has a gap.
   const supabaseAdmin = createServerClient({ admin: true })
   const { data: ownershipCheck } = await supabaseAdmin
     .from('events')
@@ -439,7 +439,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     .single()
 
   if (!ownershipCheck) {
-    console.error('[handlePaymentSucceeded] Metadata mismatch — event_id not owned by tenant_id', {
+    console.error('[handlePaymentSucceeded] Metadata mismatch - event_id not owned by tenant_id', {
       event_id,
       tenant_id,
     })
@@ -552,7 +552,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
     console.log('[handlePaymentSucceeded] Event transitioned to paid:', event_id)
 
-    // Assign invoice number (non-blocking — idempotent if already set)
+    // Assign invoice number (non-blocking - idempotent if already set)
     try {
       const { assignInvoiceNumber } = await import('@/lib/events/invoice-actions')
       await assignInvoiceNumber(event_id)
@@ -732,7 +732,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       }
     }
 
-    // Enqueue Remy reactive AI task — payment confirmation (non-blocking)
+    // Enqueue Remy reactive AI task - payment confirmation (non-blocking)
     try {
       const { onPaymentReceived } = await import('@/lib/ai/reactive/hooks')
       await onPaymentReceived(tenant_id, event_id, client_id, paymentIntent.amount)
@@ -743,7 +743,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       )
     }
 
-    // Push notification — payment received (non-blocking)
+    // Push notification - payment received (non-blocking)
     try {
       const { getChefAuthUserId } = await import('@/lib/notifications/actions')
       const chefUserId = await getChefAuthUserId(tenant_id)
@@ -777,7 +777,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       console.error('[handlePaymentSucceeded] Zapier dispatch failed (non-blocking):', zapierErr)
     }
 
-    // Cache invalidation — financial pages, invoice, dashboard (non-blocking)
+    // Cache invalidation - financial pages, invoice, dashboard (non-blocking)
     try {
       revalidatePath(`/events/${event_id}`)
       revalidatePath(`/events/${event_id}/financial`)
@@ -1014,7 +1014,7 @@ async function handleRefund(event: Stripe.Event) {
   const refund = event.data.object as Stripe.Refund
   const stripe = getStripe()
 
-  // Safely handle refund.charge — can be null in edge cases
+  // Safely handle refund.charge - can be null in edge cases
   if (!refund.charge || typeof refund.charge !== 'string') {
     console.error('[handleRefund] No charge ID on refund object:', refund.id)
     return
@@ -1161,7 +1161,7 @@ async function handleDisputeCreated(event: Stripe.Event) {
     tenant_id,
     client_id,
     entry_type: 'adjustment',
-    amount_cents: 0, // No money moved yet — funds_withdrawn handles that
+    amount_cents: 0, // No money moved yet - funds_withdrawn handles that
     payment_method: 'card',
     description: `Dispute opened for event ${event_id}`,
     event_id,
@@ -1206,7 +1206,7 @@ async function handleDisputeCreated(event: Stripe.Event) {
 
 /**
  * Handle dispute funds withdrawn
- * Log to ledger as negative adjustment — money has been clawed back by the bank
+ * Log to ledger as negative adjustment - money has been clawed back by the bank
  */
 async function handleDisputeFundsWithdrawn(event: Stripe.Event) {
   const dispute = event.data.object as Stripe.Dispute
@@ -1283,7 +1283,7 @@ async function handleDisputeFundsWithdrawn(event: Stripe.Event) {
 /**
  * Handle Stripe Connect account.updated
  * Updates stripe_onboarding_complete when Stripe confirms charges_enabled.
- * This is the production-safe, async path for Connect status — it keeps the
+ * This is the production-safe, async path for Connect status - it keeps the
  * DB in sync even if the chef closes the browser before the callback fires.
  */
 async function handleAccountUpdated(event: Stripe.Event) {
@@ -1496,7 +1496,7 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
   const idempotencyKey = `stripe_${event.id}`
   const txnRef = `commerce_${paymentIntent.id}`
 
-  // Insert into commerce_payments — DB trigger handles ledger entry
+  // Insert into commerce_payments - DB trigger handles ledger entry
   const { error: insertErr } = await (supabase.from('commerce_payments').insert({
     tenant_id,
     sale_id,

@@ -1,4 +1,4 @@
-// Receipt Scanner Component — OCR.space Integration
+// Receipt Scanner Component - OCR.space Integration
 // Drag & drop or click to upload a receipt image.
 // Calls the server action for OCR, shows parsed data, and lets the chef
 // confirm before creating an expense entry.

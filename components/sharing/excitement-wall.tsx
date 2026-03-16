@@ -41,7 +41,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
       const data = await getEventMessages(shareToken)
       setMessages(data)
     } catch {
-      // Silently fail — wall is non-critical
+      // Silently fail - wall is non-critical
     } finally {
       setLoading(false)
     }

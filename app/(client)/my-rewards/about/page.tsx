@@ -1,6 +1,6 @@
 // Client-Facing Loyalty Program About Page
 // Designed to make clients excited about participating in the loyalty program.
-// Warm, inviting, and aspirational — shows what they can earn and why it matters.
+// Warm, inviting, and aspirational - shows what they can earn and why it matters.
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -29,7 +29,7 @@ export default async function LoyaltyAboutPage() {
       </div>
 
       <p className="text-center text-xs text-stone-600 mt-8 pb-8">
-        Questions about your rewards? Ask your chef — they&rsquo;ll be happy to help.
+        Questions about your rewards? Ask your chef - they&rsquo;ll be happy to help.
       </p>
     </div>
   )

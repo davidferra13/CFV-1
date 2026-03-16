@@ -1,4 +1,4 @@
-// Leads List — Client component for viewing and claiming contact form submissions
+// Leads List - Client component for viewing and claiming contact form submissions
 'use client'
 
 import { useState, useTransition } from 'react'

@@ -1,6 +1,6 @@
 'use client'
 
-// Cannabis Event Card — used in the cannabis events list
+// Cannabis Event Card - used in the cannabis events list
 // Styled for the cannabis portal aesthetic
 
 import Link from 'next/link'

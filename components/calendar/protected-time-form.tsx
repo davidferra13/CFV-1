@@ -1,6 +1,6 @@
 'use client'
 
-// ProtectedTimeForm — Create a personal rest or protected-time block
+// ProtectedTimeForm - Create a personal rest or protected-time block
 // Adds a block to the chef's calendar that signals unavailability.
 // Used from the calendar page or settings to block off personal time.
 

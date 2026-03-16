@@ -154,7 +154,7 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
                   </span>
                 </td>
                 <td className="py-3 px-3 text-stone-400">
-                  {[p.city, p.state].filter(Boolean).join(', ') || p.region || '—'}
+                  {[p.city, p.state].filter(Boolean).join(', ') || p.region || '-'}
                 </td>
                 <td className="py-3 px-3">
                   <div className="flex flex-col gap-0.5">
@@ -190,7 +190,7 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
                   {p.call_count > 0 ? (
                     <span className="text-xs">{p.call_count}x</span>
                   ) : (
-                    <span className="text-xs text-stone-400">—</span>
+                    <span className="text-xs text-stone-400">-</span>
                   )}
                 </td>
                 <td className="py-3 px-3">

@@ -16,7 +16,7 @@ import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { isFounderEmail } from '@/lib/platform/owner-account'
 
 export const metadata = {
-  title: 'Admin — ChefFlow',
+  title: 'Admin | ChefFlow',
 }
 
 const RemyWrapper = dynamic(

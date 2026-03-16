@@ -3,7 +3,7 @@
 // Take a Chef "Convert to Direct" Banner
 // Shows on completed TakeaChef-sourced events.
 // Gives the chef a pre-written message + direct booking link to send to the client.
-// Dismissable via localStorage — never nags.
+// Dismissable via localStorage - never nags.
 
 import { useState, useCallback, useEffect } from 'react'
 
@@ -39,7 +39,7 @@ export function TakeAChefConvertBanner({ clientName, directBookingUrl, eventId }
     setVisible(false)
   }, [dismissKey])
 
-  const suggestedMessage = `Hey ${clientName || 'there'}! It was such a pleasure cooking for you. For your next dinner, you can book me directly at ${directBookingUrl} — same experience, and I can be even more flexible on custom menus. Looking forward to cooking for you again!`
+  const suggestedMessage = `Hey ${clientName || 'there'}! It was such a pleasure cooking for you. For your next dinner, you can book me directly at ${directBookingUrl} - same experience, and I can be even more flexible on custom menus. Looking forward to cooking for you again!`
 
   const handleCopy = useCallback(async () => {
     try {
@@ -47,7 +47,7 @@ export function TakeAChefConvertBanner({ clientName, directBookingUrl, eventId }
       setCopied(true)
       setTimeout(() => setCopied(false), 2500)
     } catch {
-      // fallback — select text
+      // fallback - select text
     }
   }, [suggestedMessage])
 
@@ -72,7 +72,7 @@ export function TakeAChefConvertBanner({ clientName, directBookingUrl, eventId }
               {clientName
                 ? `Send ${clientName} your direct booking link`
                 : 'Send your client the direct booking link'}{' '}
-              — they can skip the platform fee next time.
+              - they can skip the platform fee next time.
             </p>
 
             {/* Pre-written message */}

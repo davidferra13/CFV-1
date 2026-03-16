@@ -1,6 +1,6 @@
 'use client'
 
-// PlanLane — A single swim lane in the daily plan.
+// PlanLane - A single swim lane in the daily plan.
 // Renders a header with time estimate and a list of items.
 
 import { Zap, ChefHat, Palette, Users } from '@/components/ui/icons'

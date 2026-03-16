@@ -1,4 +1,4 @@
-// Expense Actions — Delete button with confirmation
+// Expense Actions - Delete button with confirmation
 'use client'
 
 import { useState } from 'react'

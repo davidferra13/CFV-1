@@ -631,7 +631,7 @@ export default async function EventDetailPage({
 
       {/* ============================================ */}
       {/* ============================================ */}
-      {/* TAB: OVERVIEW — Event details, client, comms */}
+      {/* TAB: OVERVIEW - Event details, client, comms */}
       {/* ============================================ */}
       <EventDetailOverviewTab
         activeTab={activeTab}
@@ -678,7 +678,7 @@ export default async function EventDetailPage({
       />
 
       {/* ============================================ */}
-      {/* TAB: OPS — Staff, temps, docs, transitions   */}
+      {/* TAB: OPS - Staff, temps, docs, transitions   */}
       {/* ============================================ */}
       <EventDetailOpsTab
         activeTab={activeTab}

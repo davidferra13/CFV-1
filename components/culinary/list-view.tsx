@@ -81,7 +81,7 @@ export function ListView({ words }: ListViewProps) {
                 <span
                   key={`${w.word}-${i}`}
                   className={`culinary-word-clickable inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border ${TIER_BADGE_COLORS[w.tier]}`}
-                  title={`Tier ${w.tier}: ${TIER_LABELS[w.tier]} — click me!`}
+                  title={`Tier ${w.tier}: ${TIER_LABELS[w.tier]} - click me!`}
                   data-word={w.word}
                   onClick={handleClick}
                 >

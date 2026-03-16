@@ -1,4 +1,4 @@
-// Loyalty Loading Skeleton — tier stat cards + rewards catalog
+// Loyalty Loading Skeleton - tier stat cards + rewards catalog
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ContextLoader } from '@/components/ui/context-loader'
 

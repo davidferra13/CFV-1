@@ -98,14 +98,14 @@ export default async function ReconciliationPage() {
                         {formatCurrency(chef.deferredCents)}
                       </span>
                     ) : (
-                      <span className="text-stone-400">—</span>
+                      <span className="text-stone-400">-</span>
                     )}
                   </TableCell>
                   <TableCell className="text-sm">
                     {chef.refundedCents > 0 ? (
                       <span className="text-red-600">{formatCurrency(chef.refundedCents)}</span>
                     ) : (
-                      <span className="text-stone-400">—</span>
+                      <span className="text-stone-400">-</span>
                     )}
                   </TableCell>
                   <TableCell>

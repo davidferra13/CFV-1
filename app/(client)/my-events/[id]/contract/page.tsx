@@ -17,7 +17,7 @@ export default async function ContractSigningPage({ params }: { params: { id: st
     notFound()
   }
 
-  // Cast to any — contracts table added in migration 20260303000003 after last type generation
+  // Cast to any - contracts table added in migration 20260303000003 after last type generation
   const contract = contractRaw as any
 
   // Record that client viewed the contract (idempotent for signed/voided)

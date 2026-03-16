@@ -1,4 +1,4 @@
-// Dashboard Schedule Section — streams in independently
+// Dashboard Schedule Section - streams in independently
 // Covers: today's schedule, week strip, prep prompts, DOP tasks
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -80,7 +80,7 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
     safe('shoppingList', () => getActiveShoppingList(5), emptyShoppingList),
   ])
 
-  // Weather fetch — collects event IDs from DOP tasks
+  // Weather fetch - collects event IDs from DOP tasks
   const weatherByEventId = await safe<Record<string, InlineWeather>>(
     'weather',
     async () => {

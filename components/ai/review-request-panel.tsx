@@ -125,7 +125,7 @@ export function ReviewRequestPanel({ eventId }: { eventId: string }) {
         Best platform: <span className="font-medium">{result.reviewPlatformSuggestion}</span>
       </div>
       <p className="text-[11px] text-stone-400">
-        Auto draft · Review before sending — personalize if needed
+        Auto draft · Review before sending - personalize if needed
       </p>
     </div>
   )

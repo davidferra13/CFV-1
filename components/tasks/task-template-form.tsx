@@ -1,6 +1,6 @@
 'use client'
 
-// Task Template Form — Create or edit a task template
+// Task Template Form - Create or edit a task template
 // Fields: name, description, category, and a dynamic item list
 
 import { useState } from 'react'

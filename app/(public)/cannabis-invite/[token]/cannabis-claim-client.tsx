@@ -1,6 +1,6 @@
 'use client'
 
-// The Dispensary Door — full-screen cannabis invite claim experience.
+// The Dispensary Door - full-screen cannabis invite claim experience.
 // When you receive this link, it feels like you're being let into something special.
 
 import { useState, useEffect } from 'react'
@@ -105,14 +105,14 @@ export function CannabisClaimClient({ invite, token }: Props) {
     )
   }
 
-  // The Door — initial view before entering
+  // The Door - initial view before entering
   if (phase === 'door') {
     return (
       <div
         className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden"
         style={{ background: '#080d08' }}
       >
-        {/* Ambient green glow — the "dispensary atmosphere" */}
+        {/* Ambient green glow - the "dispensary atmosphere" */}
         <div
           className="absolute inset-0 pointer-events-none transition-all duration-[2200ms]"
           style={{

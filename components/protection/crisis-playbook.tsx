@@ -9,7 +9,7 @@ const PLAYBOOKS = [
     icon: AlertTriangle,
     steps: [
       'Stop service immediately and secure all affected food.',
-      'Check on anyone who may be affected — prioritize their wellbeing.',
+      'Check on anyone who may be affected - prioritize their wellbeing.',
       'Document everything: what was served, when, batch/lot numbers, temperatures.',
       'Notify affected clients within 2 hours with honest, calm communication.',
       'Contact your insurance provider within 24 hours.',
@@ -21,7 +21,7 @@ const PLAYBOOKS = [
     title: 'Client Complaint',
     icon: MessageSquareWarning,
     steps: [
-      'Acknowledge the complaint promptly — within 4 hours during business hours.',
+      'Acknowledge the complaint promptly - within 4 hours during business hours.',
       'Listen fully before responding. Do not get defensive.',
       'Apologize for their experience (not necessarily for fault).',
       'Offer a concrete resolution: discount, redo, refund as appropriate.',

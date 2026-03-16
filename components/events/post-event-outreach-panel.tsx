@@ -123,7 +123,7 @@ export function PostEventOutreachPanel({ eventId }: { eventId: string }) {
               <div className="mt-1 space-y-0.5 max-h-32 overflow-y-auto">
                 {draft.recipients.map((r, i) => (
                   <p key={i}>
-                    {r.name} — {r.email}
+                    {r.name} - {r.email}
                   </p>
                 ))}
               </div>

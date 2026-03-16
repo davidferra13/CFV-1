@@ -59,7 +59,7 @@ export function SimulationResultsPanel({ run, results }: Props) {
                     (new Date(run.completedAt).getTime() - new Date(run.startedAt).getTime()) /
                       60000
                   ) + 'm'
-                : '—'}
+                : '-'}
             </div>
             <div className="text-xs text-stone-500">duration</div>
           </div>

@@ -56,7 +56,7 @@ export function HubPollCard({ poll, profileToken, isOwnerOrAdmin, onVoted }: Hub
         })
         onVoted?.()
       } catch {
-        // Revert not needed — will refresh
+        // Revert not needed - will refresh
       }
     })
   }

@@ -48,7 +48,7 @@ export default async function SharedElementsPage() {
           <AddComponentForm dishes={dishes} />
         </div>
         <p className="text-stone-500 mt-1">
-          Components with linked recipes — reusable building blocks across your menus
+          Components with linked recipes - reusable building blocks across your menus
         </p>
       </div>
 
@@ -98,7 +98,7 @@ export default async function SharedElementsPage() {
                       {comp.category}
                     </span>
                   </TableCell>
-                  <TableCell className="text-stone-500 text-sm">{comp.dish_name ?? '—'}</TableCell>
+                  <TableCell className="text-stone-500 text-sm">{comp.dish_name ?? '-'}</TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {comp.menu_id ? (
                       <Link
@@ -108,7 +108,7 @@ export default async function SharedElementsPage() {
                         {comp.menu_name ?? 'View'}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell>

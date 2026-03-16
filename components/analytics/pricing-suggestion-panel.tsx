@@ -7,7 +7,7 @@ import type { PricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 
 interface PricingSuggestionPanelProps {
   suggestion: PricingSuggestion | null
-  /** GOLDMINE benchmark fallback — shown when chef has no pricing history */
+  /** GOLDMINE benchmark fallback - shown when chef has no pricing history */
   benchmarkHint?: string | null
 }
 
@@ -93,7 +93,7 @@ export function PricingSuggestionPanel({ suggestion, benchmarkHint }: PricingSug
               </p>
 
               <p className="text-xs text-stone-400 italic">
-                Suggestion only — final pricing is your decision.
+                Suggestion only - final pricing is your decision.
               </p>
             </>
           )}

@@ -1,4 +1,4 @@
-// Seasonal Palette Form — Client Component
+// Seasonal Palette Form - Client Component
 // Simple edit form: season notes, seasonal ingredients, go-to dishes.
 
 'use client'
@@ -104,7 +104,7 @@ export function SeasonalPaletteForm({
         <CardHeader>
           <CardTitle>Season Notes</CardTitle>
           <p className="text-sm text-stone-500 mt-1">
-            General notes about {palette.season_name} — what flavors you lean into, what approach
+            General notes about {palette.season_name} - what flavors you lean into, what approach
             you take, anything to remember.
           </p>
         </CardHeader>

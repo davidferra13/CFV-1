@@ -1,4 +1,4 @@
-// Inngest API Route — Webhook endpoint for background job execution
+// Inngest API Route - Webhook endpoint for background job execution
 // Inngest's servers call this endpoint to invoke registered functions.
 // Must be reachable without authentication (added to middleware bypass).
 

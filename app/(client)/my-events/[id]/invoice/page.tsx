@@ -1,6 +1,6 @@
 // Client Invoice Page
 // Client-facing view of their invoice for a specific event.
-// Scoped to the client's own entity — no cross-client access.
+// Scoped to the client's own entity - no cross-client access.
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'

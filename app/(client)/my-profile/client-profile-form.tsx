@@ -1,4 +1,4 @@
-// Client Profile Form — self-service editing of personal info and preferences
+// Client Profile Form - self-service editing of personal info and preferences
 
 'use client'
 
@@ -102,7 +102,7 @@ const DIETARY_PROTOCOLS = [
   {
     value: 'carnivore',
     label: 'Carnivore',
-    description: 'Animal products only — meat, eggs, some dairy',
+    description: 'Animal products only - meat, eggs, some dairy',
   },
   {
     value: 'intermittent_fasting',
@@ -285,7 +285,7 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
             suggestions={DIETARY_SUGGESTIONS}
           />
 
-          {/* Dietary Protocols — fixed set, toggled as pills */}
+          {/* Dietary Protocols - fixed set, toggled as pills */}
           <div>
             <label className="block text-sm font-medium text-stone-300 mb-2">
               Dietary Protocols

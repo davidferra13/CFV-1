@@ -1,6 +1,6 @@
 'use client'
 
-// Shelf Life Indicators — Reusable badge showing expiration status
+// Shelf Life Indicators - Reusable badge showing expiration status
 // Green = 3+ days, Yellow = 1-2 days, Red = expired
 
 import { Badge } from '@/components/ui/badge'

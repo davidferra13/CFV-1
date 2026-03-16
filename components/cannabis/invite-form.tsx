@@ -1,6 +1,6 @@
 'use client'
 
-// Cannabis Invite Form — used in app/(chef)/cannabis/invite/page.tsx
+// Cannabis Invite Form - used in app/(chef)/cannabis/invite/page.tsx
 // Submitting goes to the admin approval queue, not directly to the invitee.
 
 import { useState } from 'react'

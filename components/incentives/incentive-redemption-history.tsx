@@ -1,4 +1,4 @@
-// IncentiveRedemptionHistory — Chef view of all code redemptions in their tenant
+// IncentiveRedemptionHistory - Chef view of all code redemptions in their tenant
 // Shows who redeemed what, when, against which event, and how much was applied.
 
 import { formatCurrency } from '@/lib/utils/currency'
@@ -61,7 +61,7 @@ export function IncentiveRedemptionHistory({ redemptions }: Props) {
                 {r.client?.full_name || <span className="text-stone-400">Unknown</span>}
               </td>
               <td className="py-3 pr-4 text-stone-300">
-                {r.event?.occasion || <span className="text-stone-400">—</span>}
+                {r.event?.occasion || <span className="text-stone-400">-</span>}
               </td>
               <td className="py-3 pr-4 text-right font-medium text-green-700">
                 −{formatCurrency(r.applied_amount_cents)}
@@ -70,7 +70,7 @@ export function IncentiveRedemptionHistory({ redemptions }: Props) {
                 {r.balance_after_cents != null ? (
                   formatCurrency(r.balance_after_cents)
                 ) : (
-                  <span className="text-stone-400">—</span>
+                  <span className="text-stone-400">-</span>
                 )}
               </td>
             </tr>

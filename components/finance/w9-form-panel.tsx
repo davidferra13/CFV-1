@@ -50,7 +50,7 @@ function formatCents(cents: number): string {
 }
 
 function tinDisplay(tin: string | null): string {
-  if (!tin) return '—'
+  if (!tin) return '-'
   if (tin.length >= 4) return `***-**-${tin.slice(-4)}`
   return '***'
 }
@@ -119,7 +119,7 @@ export function W9FormPanel({ staffMembers }: Props) {
                   {missing
                     .map((m) => `${m.name} (${formatCents(m.ytdPaymentsCents)} YTD)`)
                     .join(', ')}{' '}
-                  — received $600+ this year and have no W-9 on file.
+                  - received $600+ this year and have no W-9 on file.
                 </p>
               </div>
             </div>
@@ -199,7 +199,7 @@ export function W9FormPanel({ staffMembers }: Props) {
         <Card className="border-stone-600">
           <CardHeader>
             <CardTitle className="text-base">
-              W-9 Information — {staffMembers.find((s) => s.id === selected)?.name}
+              W-9 Information - {staffMembers.find((s) => s.id === selected)?.name}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

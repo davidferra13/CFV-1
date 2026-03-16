@@ -38,7 +38,7 @@ export default async function ClientLayout({ children }: { children: React.React
           >
             Skip to main content
           </a>
-          {/* Beta survey banner — non-blocking, shows when an active survey hasn't been submitted */}
+          {/* Beta survey banner - non-blocking, shows when an active survey hasn't been submitted */}
           <Suspense fallback={null}>
             <BetaSurveyBannerWrapper href="/beta-survey" />
           </Suspense>

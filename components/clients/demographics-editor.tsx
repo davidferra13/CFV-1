@@ -55,7 +55,7 @@ export function DemographicsEditor({ clientId, ...initial }: Props) {
   }
 
   function formatDate(d: string | null) {
-    if (!d) return '—'
+    if (!d) return '-'
     return new Date(d + 'T00:00:00').toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
@@ -120,7 +120,7 @@ export function DemographicsEditor({ clientId, ...initial }: Props) {
                 <span className="text-stone-500">Referral Source</span>
                 <span className="text-stone-200 capitalize">
                   {referralSource.replace(/_/g, ' ')}
-                  {referralDetail ? ` — ${referralDetail}` : ''}
+                  {referralDetail ? ` - ${referralDetail}` : ''}
                 </span>
               </>
             )}

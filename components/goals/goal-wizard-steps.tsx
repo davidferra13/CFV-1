@@ -536,7 +536,7 @@ function StepReview({
           <div className="flex justify-between">
             <span className="text-stone-500">Name</span>
             <span className="font-medium text-stone-100 text-right max-w-[60%] truncate">
-              {label || '—'}
+              {label || '-'}
             </span>
           </div>
           <div className="flex justify-between">

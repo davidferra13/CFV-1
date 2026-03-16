@@ -1,6 +1,6 @@
 'use client'
 
-// Portal Link Manager — lets the chef generate and share a client portal magic link
+// Portal Link Manager - lets the chef generate and share a client portal magic link
 // Shown on the client detail page under the header.
 
 import { useState } from 'react'

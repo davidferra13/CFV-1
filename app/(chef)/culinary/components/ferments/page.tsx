@@ -67,7 +67,7 @@ export default async function FermentsPage() {
 
       <Card className="p-4 bg-stone-800 border-stone-700">
         <p className="text-sm text-stone-400">
-          Ferments are matched by name — recipes and components containing &quot;ferment&quot;,
+          Ferments are matched by name - recipes and components containing &quot;ferment&quot;,
           &quot;pickle&quot;, &quot;kimchi&quot;, &quot;miso&quot;, &quot;lacto&quot;,
           &quot;cured&quot;, or similar terms appear here.
         </p>
@@ -129,7 +129,7 @@ export default async function FermentsPage() {
                       <TableRow key={comp.id}>
                         <TableCell className="font-medium text-stone-100">{comp.name}</TableCell>
                         <TableCell className="text-stone-500 text-sm">
-                          {comp.dish_name ?? '—'}
+                          {comp.dish_name ?? '-'}
                         </TableCell>
                         <TableCell className="text-stone-500 text-sm">
                           {comp.menu_id ? (
@@ -140,7 +140,7 @@ export default async function FermentsPage() {
                               {comp.menu_name ?? 'View'}
                             </Link>
                           ) : (
-                            '—'
+                            '-'
                           )}
                         </TableCell>
                       </TableRow>

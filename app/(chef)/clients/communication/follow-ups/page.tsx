@@ -66,7 +66,7 @@ export default async function FollowUpsPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Past clients worth reaching out to — sorted by time since last event
+          Past clients worth reaching out to - sorted by time since last event
         </p>
       </div>
 
@@ -136,7 +136,7 @@ export default async function FollowUpsPage() {
                     <TableCell className="text-stone-400 text-sm">
                       {(client.totalSpentCents ?? 0) > 0
                         ? formatCurrency(client.totalSpentCents ?? 0)
-                        : '—'}
+                        : '-'}
                     </TableCell>
                     <TableCell>
                       <span

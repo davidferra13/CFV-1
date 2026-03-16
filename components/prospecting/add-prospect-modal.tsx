@@ -88,7 +88,7 @@ function AddProspectForm({ onClose }: { onClose: () => void }) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Name — required */}
+          {/* Name - required */}
           <div>
             <label className="text-xs font-medium text-stone-400 block mb-1">
               Name <span className="text-red-500">*</span>

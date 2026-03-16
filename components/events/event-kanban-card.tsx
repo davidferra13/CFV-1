@@ -1,4 +1,4 @@
-// Event Kanban Card — single draggable event card
+// Event Kanban Card - single draggable event card
 'use client'
 
 import { useDraggable } from '@dnd-kit/core'

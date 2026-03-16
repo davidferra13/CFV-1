@@ -15,7 +15,7 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
   const menu = await getMenuById(params.id)
   if (!menu) notFound()
 
-  // Menus don't have their own photo — use a stock placeholder based on
+  // Menus don't have their own photo - use a stock placeholder based on
   // menu name + cuisine type for a more relevant image.
   const searchQuery = [menu.name, menu.cuisine_type].filter(Boolean).join(' ')
   const placeholderImage = await getPlaceholderImage(searchQuery)

@@ -1,4 +1,4 @@
-// Cannabis Ledger — Chef Portal
+// Cannabis Ledger - Chef Portal
 // All ledger entries scoped to cannabis events.
 
 import { getCannabisLedger } from '@/lib/chef/cannabis-actions'
@@ -12,7 +12,7 @@ function formatCents(cents: number) {
 }
 
 function formatDate(dateStr: string | null) {
-  if (!dateStr) return '—'
+  if (!dateStr) return '-'
   return new Date(dateStr).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -134,7 +134,7 @@ export default async function CannabisLedgerPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-xs" style={{ color: '#6aaa6e' }}>
-                      {(entry.event_info as any)?.occasion ?? '—'}
+                      {(entry.event_info as any)?.occasion ?? '-'}
                     </td>
                     <td
                       className="px-4 py-3 text-sm font-medium"

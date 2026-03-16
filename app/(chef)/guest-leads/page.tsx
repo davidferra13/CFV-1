@@ -1,4 +1,4 @@
-// Guest Leads Dashboard — /guest-leads
+// Guest Leads Dashboard - /guest-leads
 // Shows all guest pipeline leads captured via event QR codes.
 // Chef can filter, convert leads to clients, and track status.
 

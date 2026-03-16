@@ -54,7 +54,7 @@ export default async function DietaryFlagsPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Recipes with dietary labels — essential for client accommodation
+          Recipes with dietary labels - essential for client accommodation
         </p>
       </div>
 
@@ -127,7 +127,7 @@ export default async function DietaryFlagsPage() {
 
       {unflagged.length > 0 && (
         <p className="text-xs text-stone-400">
-          {unflagged.length} recipe{unflagged.length > 1 ? 's' : ''} without dietary flags —{' '}
+          {unflagged.length} recipe{unflagged.length > 1 ? 's' : ''} without dietary flags -{' '}
           <Link href="/culinary/recipes" className="text-brand-600 hover:underline">
             view all recipes
           </Link>

@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { SchedulingInsightsBar } from '@/components/intelligence/scheduling-insights-bar'
 import { CapacitySeasonalBar } from '@/components/intelligence/capacity-seasonal-bar'
 
-export const metadata: Metadata = { title: 'Calendar — ChefFlow' }
+export const metadata: Metadata = { title: 'Calendar | ChefFlow' }
 
 export default async function CalendarPage({
   searchParams,
@@ -42,7 +42,7 @@ export default async function CalendarPage({
         <div>
           <h1 className="text-2xl font-bold text-stone-100">Calendar</h1>
           <p className="mt-1 text-sm text-stone-500">
-            Your complete schedule — events, prep, personal commitments, and goals.
+            Your complete schedule - events, prep, personal commitments, and goals.
           </p>
         </div>
         <div className="flex gap-2">

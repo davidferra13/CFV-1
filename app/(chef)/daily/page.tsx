@@ -1,4 +1,4 @@
-// Daily Ops — "Open App -> Approve -> Go Cook"
+// Daily Ops - "Open App -> Approve -> Go Cook"
 // The chef's structured daily plan. Pulls from all existing systems
 // (queue, DOP, NBA, follow-ups, todos, recipe debt, calls) and organizes
 // everything into 4 swim lanes: Quick Admin, Event Prep, Creative, Relationship.

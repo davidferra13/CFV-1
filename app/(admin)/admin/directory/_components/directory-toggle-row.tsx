@@ -54,7 +54,7 @@ export function DirectoryToggleRow({ chef }: { chef: DirectoryCandidate }) {
         <p className="text-xs text-stone-400 truncate">{chef.email}</p>
         {!hasSlug && (
           <p className="text-xs text-amber-600 mt-0.5">
-            No slug set — won&apos;t appear even if approved
+            No slug set - won&apos;t appear even if approved
           </p>
         )}
       </div>

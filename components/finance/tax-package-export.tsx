@@ -15,7 +15,7 @@ export function TaxPackageExport({ taxData, taxYear }: { taxData: TaxPackage; ta
     // Header
     row(esc(`CHEFFLOW ${taxYear} ANNUAL TAX PACKAGE`))
     row(esc(`Generated: ${new Date().toLocaleDateString()}`))
-    row(esc('For informational purposes only — consult a licensed tax professional'))
+    row(esc('For informational purposes only - consult a licensed tax professional'))
     blank()
 
     // Revenue

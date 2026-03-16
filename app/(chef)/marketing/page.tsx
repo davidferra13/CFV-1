@@ -1,4 +1,4 @@
-// Marketing Hub — Tabbed command center for campaigns, sequences, and templates.
+// Marketing Hub - Tabbed command center for campaigns, sequences, and templates.
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -12,7 +12,7 @@ import { format } from 'date-fns'
 import { CampaignBuilderClient } from './campaign-builder-client'
 import { TestimonialPanel } from '@/components/ai/testimonial-panel'
 
-export const metadata: Metadata = { title: 'Marketing — ChefFlow' }
+export const metadata: Metadata = { title: 'Marketing | ChefFlow' }
 
 const STATUS_BADGE: Record<
   string,
@@ -42,7 +42,7 @@ export default async function MarketingPage() {
         <div>
           <h1 className="text-2xl font-bold text-stone-100">Marketing</h1>
           <p className="mt-1 text-sm text-stone-500">
-            Reach clients by email, SMS, or personal note — in bulk or one-by-one.
+            Reach clients by email, SMS, or personal note - in bulk or one-by-one.
           </p>
         </div>
         <div className="flex gap-2">

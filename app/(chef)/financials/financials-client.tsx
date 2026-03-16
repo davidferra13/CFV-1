@@ -499,7 +499,7 @@ export function FinancialsClient({
         </>
       )}
 
-      {/* Other Income — market/class/festival revenue */}
+      {/* Other Income - market/class/festival revenue */}
       {marketIncome &&
         marketIncome.length > 0 &&
         (() => {
@@ -515,7 +515,7 @@ export function FinancialsClient({
           return (
             <Card>
               <CardHeader>
-                <CardTitle>Other Income — Markets &amp; Classes</CardTitle>
+                <CardTitle>Other Income - Markets &amp; Classes</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Summary strip */}
@@ -581,7 +581,7 @@ export function FinancialsClient({
                             entry.expected_revenue_cents != null ? (
                               formatCurrency(entry.expected_revenue_cents)
                             ) : (
-                              <span className="text-stone-300">—</span>
+                              <span className="text-stone-300">-</span>
                             )}
                           </td>
                           <td className="px-3 py-2 text-sm text-right font-medium">
@@ -590,7 +590,7 @@ export function FinancialsClient({
                                 {formatCurrency(entry.actual_revenue_cents)}
                               </span>
                             ) : (
-                              <span className="text-stone-300">—</span>
+                              <span className="text-stone-300">-</span>
                             )}
                           </td>
                           <td className="px-3 py-2 text-sm">

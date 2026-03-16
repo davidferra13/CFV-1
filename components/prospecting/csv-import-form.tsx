@@ -152,7 +152,7 @@ export function CSVImportForm() {
                       <tr key={i} className="border-t border-stone-800">
                         {row.map((cell, j) => (
                           <td key={j} className="px-3 py-1.5 text-stone-300 max-w-[200px] truncate">
-                            {cell || '—'}
+                            {cell || '-'}
                           </td>
                         ))}
                       </tr>

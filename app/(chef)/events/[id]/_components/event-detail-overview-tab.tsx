@@ -305,7 +305,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
                 rel="noopener noreferrer"
                 className="inline-block text-xs text-brand-600 hover:underline"
               >
-                Open share page â†—
+                Open share page â†-
               </a>
             </div>
           </div>

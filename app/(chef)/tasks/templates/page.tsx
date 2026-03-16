@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { TemplatePageClient } from '@/components/tasks/template-page-client'
 
-export const metadata: Metadata = { title: 'Task Templates — ChefFlow' }
+export const metadata: Metadata = { title: 'Task Templates | ChefFlow' }
 
 export default async function TaskTemplatesPage() {
   await requireChef()

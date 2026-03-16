@@ -1,6 +1,6 @@
 'use client'
 
-// WasteLogForm — Quick waste logging form for post-event or day-to-day waste tracking.
+// WasteLogForm - Quick waste logging form for post-event or day-to-day waste tracking.
 // Captures ingredient, quantity, estimated cost, reason, and optional notes.
 
 import { useState, useTransition } from 'react'

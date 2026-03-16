@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * TierVsModulePlayer — Remotion Player wrapper for the tier vs module animation.
+ * TierVsModulePlayer - Remotion Player wrapper for the tier vs module animation.
  * Explains the difference between Free/Pro tiers and module visibility toggles.
  */
 

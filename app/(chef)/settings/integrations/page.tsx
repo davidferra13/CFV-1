@@ -71,7 +71,7 @@ export default async function IntegrationsSettingsPage() {
         </p>
       </div>
 
-      {/* TakeAChef Integration — featured prominently since 80% of business flows through it */}
+      {/* TakeAChef Integration - featured prominently since 80% of business flows through it */}
       <TakeAChefSetup
         gmailConnected={gmailConn?.gmail_connected ?? false}
         lastSyncAt={gmailConn?.gmail_last_sync_at ?? null}

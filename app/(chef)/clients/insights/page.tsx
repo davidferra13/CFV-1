@@ -75,7 +75,7 @@ export default async function ClientInsightsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Client Insights</h1>
         <p className="text-stone-500 mt-1">
-          Intelligence on your clientele — who&apos;s valuable, who&apos;s frequent, who needs
+          Intelligence on your clientele - who&apos;s valuable, who&apos;s frequent, who needs
           attention
         </p>
       </div>

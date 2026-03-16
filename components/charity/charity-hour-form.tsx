@@ -78,7 +78,7 @@ export function CharityHourForm({
         setIsVerified(true)
       }
     } catch {
-      // Non-blocking — form works without ProPublica
+      // Non-blocking - form works without ProPublica
     } finally {
       setEnriching(false)
     }

@@ -3,7 +3,7 @@ import { ArrowLeft } from '@/components/ui/icons'
 import { getRecipes } from '@/lib/recipes/actions'
 import { RecipeEntryForm } from '@/components/onboarding/recipe-entry-form'
 
-export const metadata = { title: 'Recipe Library — ChefFlow Setup' }
+export const metadata = { title: 'Recipe Library | ChefFlow Setup' }
 
 export default async function OnboardingRecipesPage() {
   const recipes = await getRecipes().catch(() => [])
@@ -21,7 +21,7 @@ export default async function OnboardingRecipesPage() {
           </Link>
           <h1 className="text-3xl font-bold text-stone-100">Recipe Library</h1>
           <p className="text-stone-400 mt-2 max-w-xl">
-            Build your recipe book. Add as many as you want — you can always add more later from the
+            Build your recipe book. Add as many as you want - you can always add more later from the
             Culinary section.
           </p>
         </div>

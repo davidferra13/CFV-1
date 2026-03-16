@@ -1,4 +1,4 @@
-// ClientIncentiveList — Shows a client's received gift cards and vouchers
+// ClientIncentiveList - Shows a client's received gift cards and vouchers
 // Used on /my-rewards page to display codes they've received or own.
 
 import { formatCurrency } from '@/lib/utils/currency'

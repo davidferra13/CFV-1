@@ -1,11 +1,11 @@
-// Order Queue Page — board view of order-ahead items
+// Order Queue Page - board view of order-ahead items
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { getActiveOrders } from '@/lib/commerce/order-queue-actions'
 import { OrderQueueBoard } from '@/components/commerce/order-queue-board'
 
-export const metadata: Metadata = { title: 'Order Queue — ChefFlow' }
+export const metadata: Metadata = { title: 'Order Queue | ChefFlow' }
 
 export default async function OrdersPage() {
   await requireChef()

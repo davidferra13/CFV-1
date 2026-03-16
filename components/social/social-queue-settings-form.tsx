@@ -243,7 +243,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
             </div>
           ))}
           {slots.length === 0 && (
-            <p className="text-sm text-stone-400 italic">No slots configured — add at least one.</p>
+            <p className="text-sm text-stone-400 italic">No slots configured - add at least one.</p>
           )}
         </div>
       </div>
@@ -275,7 +275,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
           <span className="font-bold text-stone-100">{estimatedTotal}</span> posts for {targetYear}.
           {estimatedTotal >= 250 && (
             <span className="text-emerald-600 ml-1">
-              That&apos;s {Math.round((estimatedTotal / 52) * 10) / 10} posts/week — a full content
+              That&apos;s {Math.round((estimatedTotal / 52) * 10) / 10} posts/week - a full content
               planner on autopilot.
             </span>
           )}

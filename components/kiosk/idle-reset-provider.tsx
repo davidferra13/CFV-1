@@ -46,7 +46,7 @@ export function IdleResetProvider({
     // Treat tab becoming hidden as immediate idle on a kiosk (shouldn't switch apps)
     function handleVisibilityChange() {
       if (document.hidden) {
-        // Tab hidden — trigger idle reset immediately
+        // Tab hidden - trigger idle reset immediately
         onReset()
       }
     }

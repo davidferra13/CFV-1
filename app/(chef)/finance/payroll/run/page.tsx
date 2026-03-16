@@ -5,7 +5,7 @@ import { listEmployees, getPayrollRecords } from '@/lib/finance/payroll-actions'
 import { PayrollEntryForm } from '@/components/finance/payroll/payroll-entry-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Run Payroll — ChefFlow' }
+export const metadata: Metadata = { title: 'Run Payroll | ChefFlow' }
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
@@ -61,7 +61,7 @@ export default async function RunPayrollPage() {
                 {records.slice(0, 10).map((r) => (
                   <tr key={r.id} className="hover:bg-stone-800">
                     <td className="px-6 py-3 font-medium text-stone-200">
-                      {r.employeeName ?? '—'}
+                      {r.employeeName ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-stone-500 text-xs">
                       {r.payPeriodStart} → {r.payPeriodEnd}

@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
-  // Hard gate — never available in production, regardless of env vars
+  // Hard gate - never available in production, regardless of env vars
   if (process.env.NODE_ENV === 'production') {
     return new NextResponse('Forbidden', { status: 403 })
   }
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Bad Request', { status: 400 })
   }
 
-  // Use the standard SSR server client — it handles cookie setting automatically
+  // Use the standard SSR server client - it handles cookie setting automatically
   const supabase = createServerClient()
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })

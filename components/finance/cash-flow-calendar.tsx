@@ -1,4 +1,4 @@
-// Cash Flow Calendar — shows income, expenses, and events on a monthly grid.
+// Cash Flow Calendar - shows income, expenses, and events on a monthly grid.
 
 import Link from 'next/link'
 import type { CashFlowCalendarData } from '@/lib/finance/cash-flow-calendar'

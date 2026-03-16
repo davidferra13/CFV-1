@@ -1,6 +1,6 @@
 'use client'
 
-// CocktailBrowserPanel — Search TheCocktailDB for cocktail recipes.
+// CocktailBrowserPanel - Search TheCocktailDB for cocktail recipes.
 // Shows cocktail name, thumbnail, glass type, ingredients, and instructions.
 // Used in the menu editor sidebar to help chefs pair cocktails with courses.
 
@@ -280,7 +280,7 @@ export function CocktailBrowserPanel({ onSelectCocktail }: CocktailBrowserPanelP
         </ul>
       )}
 
-      {/* Ingredient search results (simplified — need lookup for detail) */}
+      {/* Ingredient search results (simplified - need lookup for detail) */}
       {mode === 'ingredient' && ingredientResults.length > 0 && !selected && (
         <ul className="divide-y divide-stone-800 border border-stone-700 rounded-md overflow-hidden max-h-72 overflow-y-auto">
           {ingredientResults.map((c) => (

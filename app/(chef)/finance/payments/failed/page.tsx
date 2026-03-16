@@ -22,7 +22,7 @@ export default async function FailedPaymentsPage() {
 
   const now = new Date()
 
-  // Events in "accepted" state are awaiting payment — if past event date they're stalled
+  // Events in "accepted" state are awaiting payment - if past event date they're stalled
   const stalled = events
     .filter((e: any) => e.status === 'accepted')
     .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
@@ -47,7 +47,7 @@ export default async function FailedPaymentsPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Events in accepted state awaiting payment — past-due events may indicate stalled or failed
+          Events in accepted state awaiting payment - past-due events may indicate stalled or failed
           payments
         </p>
       </div>
@@ -69,7 +69,7 @@ export default async function FailedPaymentsPage() {
               {pastDue.length}
             </span>
             <span className="text-sm text-stone-500">
-              — event date passed, payment not recorded
+              - event date passed, payment not recorded
             </span>
           </div>
 
@@ -110,16 +110,16 @@ export default async function FailedPaymentsPage() {
                             {event.client.full_name}
                           </Link>
                         ) : (
-                          '—'
+                          '-'
                         )}
                       </TableCell>
                       <TableCell className="text-stone-400 text-sm capitalize">
-                        {event.occasion?.replace(/_/g, ' ') ?? '—'}
+                        {event.occasion?.replace(/_/g, ' ') ?? '-'}
                       </TableCell>
                       <TableCell className="text-stone-100 font-semibold text-sm">
                         {event.quoted_price_cents != null
                           ? formatCurrency(event.quoted_price_cents)
-                          : '—'}
+                          : '-'}
                       </TableCell>
                       <TableCell>
                         <Link href={`/events/${event.id}`}>
@@ -140,7 +140,7 @@ export default async function FailedPaymentsPage() {
       {upcoming.length > 0 && (
         <>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-stone-100">Upcoming — Awaiting Payment</h2>
+            <h2 className="text-lg font-semibold text-stone-100">Upcoming - Awaiting Payment</h2>
             <span className="bg-amber-900 text-amber-700 text-xs px-2 py-0.5 rounded-full">
               {upcoming.length}
             </span>
@@ -171,16 +171,16 @@ export default async function FailedPaymentsPage() {
                           {event.client.full_name}
                         </Link>
                       ) : (
-                        '—'
+                        '-'
                       )}
                     </TableCell>
                     <TableCell className="text-stone-400 text-sm capitalize">
-                      {event.occasion?.replace(/_/g, ' ') ?? '—'}
+                      {event.occasion?.replace(/_/g, ' ') ?? '-'}
                     </TableCell>
                     <TableCell className="text-stone-100 font-semibold text-sm">
                       {event.quoted_price_cents != null
                         ? formatCurrency(event.quoted_price_cents)
-                        : '—'}
+                        : '-'}
                     </TableCell>
                     <TableCell>
                       <Link href={`/events/${event.id}`}>

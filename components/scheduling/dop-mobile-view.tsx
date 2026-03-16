@@ -1,6 +1,6 @@
 'use client'
 
-// DopMobileView — Mobile-optimized day-of protocol view.
+// DopMobileView - Mobile-optimized day-of protocol view.
 // Step-by-step progression with large touch targets.
 // Works with the existing DOPSchedule / task_key completion model.
 
@@ -163,7 +163,7 @@ export function DopMobileView({
         </div>
       </div>
 
-      {/* Current task — large, touch-friendly */}
+      {/* Current task - large, touch-friendly */}
       {currentTask ? (
         <div className="p-4 flex-1">
           <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-6">
@@ -195,7 +195,7 @@ export function DopMobileView({
                     : 'bg-stone-900 text-white hover:bg-stone-800'
                 }`}
               >
-                {isTaskComplete(currentTask) ? '✓ Completed — tap to undo' : 'Mark Complete'}
+                {isTaskComplete(currentTask) ? '✓ Completed - tap to undo' : 'Mark Complete'}
               </button>
             )}
           </div>
@@ -228,7 +228,7 @@ export function DopMobileView({
             <div className="mt-4 bg-amber-950 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-amber-800 font-medium">
-                Compressed timeline — less than 48 hours notice. Day-before steps may be skipped.
+                Compressed timeline - less than 48 hours notice. Day-before steps may be skipped.
               </p>
             </div>
           )}

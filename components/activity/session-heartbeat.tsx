@@ -1,4 +1,4 @@
-// SessionHeartbeat — fires periodic session_heartbeat events while a client is
+// SessionHeartbeat - fires periodic session_heartbeat events while a client is
 // actively on a high-value page. Enables time-on-page tracking for engagement scoring.
 // Fire-and-forget; never blocks the UI.
 'use client'

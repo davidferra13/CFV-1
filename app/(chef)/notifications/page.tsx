@@ -1,4 +1,4 @@
-// Notifications Page — Full notification history for the chef
+// Notifications Page - Full notification history for the chef
 // Server component with metadata. Renders the client-side notification list
 // which handles filtering, pagination, and mark-as-read interactions.
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 export default async function NotificationsPage() {
-  // Auth gate — requireChef ensures only authenticated chefs can access
+  // Auth gate - requireChef ensures only authenticated chefs can access
   await requireChef()
 
   return (

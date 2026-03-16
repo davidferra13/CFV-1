@@ -1,6 +1,6 @@
 'use client'
 
-// Performance Board — sortable table showing staff performance metrics.
+// Performance Board - sortable table showing staff performance metrics.
 // Displays on-time rate, cancellations, avg rating, and total events.
 
 import { useState } from 'react'

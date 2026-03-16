@@ -40,7 +40,7 @@ export default async function HomeOfficePage({
           <div>
             <h1 className="text-3xl font-bold text-stone-100">Home Office Deduction</h1>
             <p className="text-stone-500 mt-1">
-              Schedule C, Line 30 — Exclusive business use of home
+              Schedule C, Line 30 - Exclusive business use of home
             </p>
           </div>
           <div className="flex items-center gap-2">

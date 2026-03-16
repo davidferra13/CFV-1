@@ -1,6 +1,6 @@
 'use client'
 
-// Station Form — Create or edit a station
+// Station Form - Create or edit a station
 // Used on the stations list page and station detail page.
 
 import { useState } from 'react'

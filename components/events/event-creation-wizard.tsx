@@ -1,6 +1,6 @@
 'use client'
 
-// Stub — EventCreationWizard to be implemented
+// Stub - EventCreationWizard to be implemented
 // Accepts the client list and guides through multi-step event creation
 
 interface Props {

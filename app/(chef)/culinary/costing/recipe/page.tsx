@@ -48,20 +48,20 @@ export default async function RecipeCostPage() {
             {withCost.length} priced
           </span>
         </div>
-        <p className="text-stone-500 mt-1">Recipes sorted by ingredient cost — highest to lowest</p>
+        <p className="text-stone-500 mt-1">Recipes sorted by ingredient cost - highest to lowest</p>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">
-            {withCost.length > 0 ? `$${(maxCostCents / 100).toFixed(2)}` : '—'}
+            {withCost.length > 0 ? `$${(maxCostCents / 100).toFixed(2)}` : '-'}
           </p>
           <p className="text-sm text-stone-500 mt-1">Most expensive recipe</p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">
-            {avgCostCents > 0 ? `$${(avgCostCents / 100).toFixed(2)}` : '—'}
+            {avgCostCents > 0 ? `$${(avgCostCents / 100).toFixed(2)}` : '-'}
           </p>
           <p className="text-sm text-stone-500 mt-1">Average recipe cost</p>
         </Card>
@@ -109,7 +109,7 @@ export default async function RecipeCostPage() {
                     </Link>
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm capitalize">
-                    {recipe.category?.replace(/_/g, ' ') ?? '—'}
+                    {recipe.category?.replace(/_/g, ' ') ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {recipe.ingredient_count ?? 0}

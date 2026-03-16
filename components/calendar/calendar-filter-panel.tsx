@@ -1,6 +1,6 @@
 'use client'
 
-// CalendarFilterPanel — Pill toggle bar for filtering calendar categories.
+// CalendarFilterPanel - Pill toggle bar for filtering calendar categories.
 // Includes built-in saved views (Calendar Sets) for one-click context switching.
 // Saves filter state to localStorage keyed by a storage key (chef-scoped).
 // Calls onFiltersChange whenever the user toggles a category.
@@ -122,7 +122,7 @@ export function CalendarFilterPanel({ storageKey, onChange, initialFilters }: Pr
   function toggle(key: keyof CalendarFilters) {
     const next = { ...filters, [key]: !filters[key] }
     setFilters(next)
-    setActiveViewId(null) // custom state — no longer matches any built-in view
+    setActiveViewId(null) // custom state - no longer matches any built-in view
     try {
       localStorage.setItem(storageKey, JSON.stringify(next))
     } catch {

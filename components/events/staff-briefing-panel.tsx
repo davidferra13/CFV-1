@@ -30,7 +30,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function buildPlainText(b: StaffBriefingData): string {
   const lines: string[] = []
-  lines.push(`STAFF BRIEFING — ${b.occasion ?? 'Private Event'}`)
+  lines.push(`STAFF BRIEFING - ${b.occasion ?? 'Private Event'}`)
   if (b.eventDate) lines.push(b.eventDate)
   lines.push('')
 
@@ -76,7 +76,7 @@ function buildPlainText(b: StaffBriefingData): string {
     b.staff.forEach((s) => {
       const hrs = s.scheduledHours ? ` (${s.scheduledHours}h)` : ''
       const phone = s.phone ? ` | ${s.phone}` : ''
-      lines.push(`  ${s.name} — ${s.role}${hrs}${phone}`)
+      lines.push(`  ${s.name} - ${s.role}${hrs}${phone}`)
     })
   }
 
@@ -132,7 +132,7 @@ export function StaffBriefingPanel({ eventId, hasStaff }: Props) {
     return (
       <div className="space-y-2">
         <p className="text-sm text-stone-400">
-          Generate a one-page briefing with timeline, menu, allergies, and staff roles — ready to
+          Generate a one-page briefing with timeline, menu, allergies, and staff roles - ready to
           paste into a group text or print.
         </p>
         <Button size="sm" variant="secondary" onClick={handleGenerate} loading={isPending}>
@@ -211,7 +211,7 @@ export function StaffBriefingPanel({ eventId, hasStaff }: Props) {
 
         {/* Dietary / Allergies */}
         {briefing.dietaryRestrictions.length > 0 && (
-          <Section title="Dietary / Allergies — MUST KNOW">
+          <Section title="Dietary / Allergies - MUST KNOW">
             <ul className="space-y-0.5">
               {briefing.dietaryRestrictions.map((item, i) => (
                 <li key={i} className="flex items-center gap-1.5">
@@ -245,7 +245,7 @@ export function StaffBriefingPanel({ eventId, hasStaff }: Props) {
                 <div key={i} className="flex items-center justify-between text-sm">
                   <span>
                     <span className="font-medium">{s.name}</span>
-                    <span className="text-stone-500"> — {s.role}</span>
+                    <span className="text-stone-500"> - {s.role}</span>
                     {s.scheduledHours && (
                       <span className="text-stone-400"> ({s.scheduledHours}h)</span>
                     )}

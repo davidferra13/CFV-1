@@ -1,6 +1,6 @@
 'use client'
 
-// Admin Announcement Form — set or clear the platform-wide banner
+// Admin Announcement Form - set or clear the platform-wide banner
 // Calls setAnnouncement / clearAnnouncement server actions.
 
 import { useState, useTransition } from 'react'

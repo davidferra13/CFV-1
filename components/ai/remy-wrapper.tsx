@@ -1,6 +1,6 @@
 'use client'
 
-// RemyWrapper — Combines the persistent Remy mascot (bottom-left),
+// RemyWrapper - Combines the persistent Remy mascot (bottom-left),
 // quick chat (above mascot), and the full chat window (bottom-right)
 // inside a shared context provider. Both chat interfaces can be open
 // simultaneously. Used in the chef portal layout.

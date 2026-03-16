@@ -1,6 +1,6 @@
 'use client'
 
-// PriceCascadePreview — Shows the impact of updating an ingredient price
+// PriceCascadePreview - Shows the impact of updating an ingredient price
 // across all affected recipes before the chef confirms the change.
 
 import { useState, useTransition } from 'react'

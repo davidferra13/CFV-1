@@ -1,6 +1,6 @@
 'use client'
 
-// Platform Announcement Banner — shown at the top of the chef portal when set by admin.
+// Platform Announcement Banner - shown at the top of the chef portal when set by admin.
 // Dismissable per session (stored in sessionStorage).
 
 import { useState, useEffect } from 'react'

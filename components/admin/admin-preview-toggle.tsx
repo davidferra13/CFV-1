@@ -39,7 +39,7 @@ export function AdminPreviewToggle({ initialPreview }: Props) {
           : 'bg-stone-800 text-stone-300 hover:bg-stone-700 border border-stone-600'
       }`}
       title={
-        preview ? 'Viewing as chef — click to return to admin view' : 'Click to preview as chef'
+        preview ? 'Viewing as chef - click to return to admin view' : 'Click to preview as chef'
       }
     >
       {preview ? (

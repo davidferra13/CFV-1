@@ -171,7 +171,7 @@ async function writeGoalSnapshotsForTenant(
 
   const goalList = goals as GoalRow[]
 
-  // Pre-compute revenue snapshot once if any revenue goals exist — avoids
+  // Pre-compute revenue snapshot once if any revenue goals exist - avoids
   // calling getRevenueGoalSnapshotForTenantAdmin once per revenue goal row.
   const hasRevenueGoal = goalList.some(
     (g) =>
@@ -234,7 +234,7 @@ async function writeGoalSnapshotsForTenant(
           ? Math.min(999, Math.round((currentValue / goal.target_value) * 100))
           : 0
 
-      // upsert with ignoreDuplicates: true is idempotent — re-running the cron
+      // upsert with ignoreDuplicates: true is idempotent - re-running the cron
       // on the same day will not overwrite an existing snapshot.
       await supabase.from('goal_snapshots').upsert(
         {

@@ -22,7 +22,7 @@ const domainSchema = z.enum([
 ])
 
 export async function GET(request: NextRequest) {
-  // Require authentication — this endpoint returns sensitive activity logs
+  // Require authentication - this endpoint returns sensitive activity logs
   try {
     await requireChef()
   } catch (err) {

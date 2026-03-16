@@ -1,6 +1,6 @@
 'use client'
 
-// Clipboard Grid — The Excel-like daily prep tracking grid
+// Clipboard Grid - The Excel-like daily prep tracking grid
 // Core view of the Station Clipboard System. Editable cells for on_hand, made,
 // need_to_make, need_to_order, waste_qty, notes. Keyboard-friendly with tab navigation.
 

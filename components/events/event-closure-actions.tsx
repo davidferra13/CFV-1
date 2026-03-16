@@ -1,4 +1,4 @@
-// Event Closure Actions — Mark reset complete, follow-up sent
+// Event Closure Actions - Mark reset complete, follow-up sent
 'use client'
 
 import { useState } from 'react'

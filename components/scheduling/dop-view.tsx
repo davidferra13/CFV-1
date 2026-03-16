@@ -1,4 +1,4 @@
-// DOP View Component — shows Default Operating Procedure status
+// DOP View Component - shows Default Operating Procedure status
 // Server component. Passes eventId + manual completion keys to client
 // DOPTaskCheckbox for tasks that can't be auto-detected.
 

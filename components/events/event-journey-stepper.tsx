@@ -18,7 +18,7 @@ function ShareButton({ shareText, label }: { shareText: string; label: string })
       try {
         await navigator.share(shareData)
       } catch {
-        // User cancelled share — no-op
+        // User cancelled share - no-op
       }
     } else {
       // Fallback: copy to clipboard

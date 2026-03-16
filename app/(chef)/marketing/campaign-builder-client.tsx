@@ -191,7 +191,7 @@ export function CampaignBuilderClient() {
               <ChannelRow
                 icon="💬"
                 count={smsCount}
-                label="prefer text — see SMS queue below"
+                label="prefer text - see SMS queue below"
                 color="text-emerald-600"
               />
               <div className="ml-6 pl-2 border-l border-stone-700">
@@ -210,7 +210,7 @@ export function CampaignBuilderClient() {
               <ChannelRow
                 icon="📞"
                 count={callCount}
-                label="prefer phone calls — call list:"
+                label="prefer phone calls - call list:"
                 color="text-amber-600"
               />
               <div className="ml-6 pl-2 border-l border-stone-700">
@@ -227,7 +227,7 @@ export function CampaignBuilderClient() {
               <ChannelRow
                 icon="📸"
                 count={instaCount}
-                label="prefer Instagram — DM copy ready:"
+                label="prefer Instagram - DM copy ready:"
                 color="text-purple-600"
               />
               <div className="ml-6 pl-2 border-l border-stone-700">
@@ -242,7 +242,7 @@ export function CampaignBuilderClient() {
           )}
           {noMethodCount > 0 && (
             <ChannelRow
-              icon="—"
+              icon="-"
               count={noMethodCount}
               label="no preference set → defaulting to email"
               color="text-stone-400"
@@ -278,7 +278,7 @@ export function CampaignBuilderClient() {
 
         {smsCount > 0 || callCount > 0 || instaCount > 0 ? (
           <p className="text-xs text-stone-400">
-            Non-email clients require manual outreach — their preferred channels are shown above.
+            Non-email clients require manual outreach - their preferred channels are shown above.
           </p>
         ) : null}
 
@@ -369,7 +369,7 @@ export function CampaignBuilderClient() {
           <Input
             value={form.subject}
             onChange={(e) => update('subject', e.target.value)}
-            placeholder="Spring is here — let's plan your next dinner"
+            placeholder="Spring is here - let's plan your next dinner"
             required
           />
         </div>
@@ -401,7 +401,7 @@ export function CampaignBuilderClient() {
             required
           />
           <p className="text-xs text-stone-400 mt-1">
-            Use tokens like <code className="bg-stone-800 px-1 rounded">{'{{first_name}}'}</code> —
+            Use tokens like <code className="bg-stone-800 px-1 rounded">{'{{first_name}}'}</code> -
             they get replaced with each client&apos;s real name before sending.
           </p>
         </div>

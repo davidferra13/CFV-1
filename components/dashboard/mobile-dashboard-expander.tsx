@@ -9,14 +9,14 @@ interface MobileDashboardExpanderProps {
 
 /**
  * On phones (< md / 768px): shows a "Show more" button that reveals analytics sections.
- * On tablet/desktop (md+): renders children normally — transparent passthrough.
+ * On tablet/desktop (md+): renders children normally - transparent passthrough.
  */
 export function MobileDashboardExpander({ children }: MobileDashboardExpanderProps) {
   const [expanded, setExpanded] = useState(false)
 
   return (
     <>
-      {/* Mobile toggle button — hidden on tablet+ */}
+      {/* Mobile toggle button - hidden on tablet+ */}
       <div className="md:hidden">
         <button
           onClick={() => setExpanded(!expanded)}

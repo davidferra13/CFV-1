@@ -48,8 +48,8 @@ export function BusinessModeToggle({
             <p className="font-medium text-stone-100">Business Mode</p>
             <p className="text-sm text-stone-500 mt-0.5">
               {localEnabled
-                ? 'Enabled — business tools are unlocked. Tax workflow, legal name, compliance settings, and invoicing are available.'
-                : "Disabled — you're running as an individual chef. Enable to access tax workflow, legal name registration, business address, and compliance tools."}
+                ? 'Enabled - business tools are unlocked. Tax workflow, legal name, compliance settings, and invoicing are available.'
+                : "Disabled - you're running as an individual chef. Enable to access tax workflow, legal name registration, business address, and compliance tools."}
             </p>
           </div>
           <button

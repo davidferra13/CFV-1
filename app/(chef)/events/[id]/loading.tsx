@@ -1,5 +1,5 @@
 // Event Detail Loading Skeleton
-// Matches the real event detail page layout — header, action buttons, and section cards.
+// Matches the real event detail page layout - header, action buttons, and section cards.
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 

@@ -1,6 +1,6 @@
 'use client'
 
-// Client Spending Dashboard — lifetime spend, this year, average event cost, history
+// Client Spending Dashboard - lifetime spend, this year, average event cost, history
 
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
@@ -120,7 +120,7 @@ export function SpendingDashboardClient({ summary }: SpendingDashboardClientProp
           <CardContent className="p-4 text-center">
             <div className="text-xs text-stone-500 mb-1">Avg. Per Event</div>
             <div className="text-xl font-bold text-stone-100">
-              {eventsAttended > 0 ? formatCurrency(averageEventCents) : '—'}
+              {eventsAttended > 0 ? formatCurrency(averageEventCents) : '-'}
             </div>
           </CardContent>
         </Card>

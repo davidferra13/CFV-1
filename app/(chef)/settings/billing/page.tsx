@@ -3,13 +3,13 @@
 // plan features, and upgrade / manage CTAs.
 //
 // This page is the canonical place for chefs to understand and manage their
-// ChefFlow subscription — distinct from Stripe Connect (client payment routing).
+// ChefFlow subscription - distinct from Stripe Connect (client payment routing).
 
 import { requireChef } from '@/lib/auth/get-user'
 import { getSubscriptionStatus } from '@/lib/stripe/subscription'
 import { BillingClient } from './billing-client'
 
-export const metadata = { title: 'Subscription & Billing — ChefFlow' }
+export const metadata = { title: 'Subscription & Billing | ChefFlow' }
 
 export default async function BillingPage({
   searchParams,

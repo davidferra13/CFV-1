@@ -67,7 +67,7 @@ export function RaffleRoundActions({ round, category }: Props) {
         </div>
       )}
 
-      {/* Cancel — only for active rounds, and only when no specific category is passed */}
+      {/* Cancel - only for active rounds, and only when no specific category is passed */}
       {round.status === 'active' && !category && (
         <>
           {showConfirm ? (
@@ -97,7 +97,7 @@ export function RaffleRoundActions({ round, category }: Props) {
         </>
       )}
 
-      {/* Mark Delivered — per-category for completed rounds */}
+      {/* Mark Delivered - per-category for completed rounds */}
       {round.status === 'completed' && !isDelivered && (
         <Button variant="secondary" size="sm" onClick={handleMarkDelivered} disabled={isPending}>
           {isPending ? 'Updating...' : 'Mark Delivered'}

@@ -1,4 +1,4 @@
-// CallOutcomeForm — log what happened after a call ends
+// CallOutcomeForm - log what happened after a call ends
 
 'use client'
 
@@ -95,7 +95,7 @@ export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
           id="call_notes"
           value={callNotes}
           onChange={(e) => setCallNotes(e.target.value)}
-          placeholder="Anything else worth capturing — preferences, concerns, ideas discussed…"
+          placeholder="Anything else worth capturing - preferences, concerns, ideas discussed…"
           rows={4}
           maxLength={5000}
           disabled={isTerminal}

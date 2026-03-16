@@ -11,7 +11,7 @@ interface AnalyticsIdentifyProps {
 
 /**
  * Client component that identifies the current user for PostHog analytics.
- * Renders nothing — purely a side-effect component.
+ * Renders nothing - purely a side-effect component.
  *
  * Place inside any authenticated layout to associate analytics events
  * with the logged-in user.

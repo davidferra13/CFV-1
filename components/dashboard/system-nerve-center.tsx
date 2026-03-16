@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
-// System Nerve Center — Dashboard Panel
+// System Nerve Center - Dashboard Panel
 // Monitors all ChefFlow services, shows health at a glance,
 // and provides one-click fix buttons for auto-fixable issues.
-// Admin-only — renders nothing for non-admins.
+// Admin-only - renders nothing for non-admins.
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import {
@@ -86,7 +86,7 @@ export default function SystemNerveCenter() {
       const data: SweepResult = await res.json()
       setSweep(data)
     } catch {
-      // Network error — don't crash, just keep last known state
+      // Network error - don't crash, just keep last known state
     } finally {
       setLoading(false)
     }
@@ -151,7 +151,7 @@ export default function SystemNerveCenter() {
         toast.success(`All ${data.healthyCount} services healthy`)
       }
     } catch {
-      toast.error('Sweep failed — check console')
+      toast.error('Sweep failed - check console')
     } finally {
       setSweeping(false)
     }

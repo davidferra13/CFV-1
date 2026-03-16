@@ -1,5 +1,5 @@
-// Charity Hub — aggregates all charity-related entities across the system.
-// Read-only visibility layer. No new data creation — just surfaces existing records
+// Charity Hub - aggregates all charity-related entities across the system.
+// Read-only visibility layer. No new data creation - just surfaces existing records
 // that match charity keywords (charity, nonprofit, fundraiser, donation, etc.)
 
 import Link from 'next/link'
@@ -48,7 +48,7 @@ function formatCents(cents: number): string {
 }
 
 function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '—'
+  if (!dateStr) return '-'
   return new Date(dateStr).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',

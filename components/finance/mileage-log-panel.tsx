@@ -1,6 +1,6 @@
 'use client'
 
-// Mileage Log Panel — per-event or standalone mileage tracker.
+// Mileage Log Panel - per-event or standalone mileage tracker.
 
 import { useState } from 'react'
 import { format } from 'date-fns'

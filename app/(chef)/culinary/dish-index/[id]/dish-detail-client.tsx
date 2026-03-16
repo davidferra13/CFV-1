@@ -170,7 +170,7 @@ export function DishDetailClient({
           <p className="text-xs text-stone-500">Times Served</p>
         </Card>
         <Card className="p-3 text-center">
-          <p className="text-2xl font-bold text-stone-200">{avgRating || '—'}</p>
+          <p className="text-2xl font-bold text-stone-200">{avgRating || '-'}</p>
           <p className="text-xs text-stone-500">Avg Rating</p>
         </Card>
         <Card className="p-3 text-center">
@@ -180,7 +180,7 @@ export function DishDetailClient({
                   month: 'short',
                   year: 'numeric',
                 })
-              : '—'}
+              : '-'}
           </p>
           <p className="text-xs text-stone-500">First Served</p>
         </Card>
@@ -191,7 +191,7 @@ export function DishDetailClient({
                   month: 'short',
                   year: 'numeric',
                 })
-              : '—'}
+              : '-'}
           </p>
           <p className="text-xs text-stone-500">Last Served</p>
         </Card>

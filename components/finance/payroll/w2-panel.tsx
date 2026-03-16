@@ -33,7 +33,7 @@ export function W2Panel({ taxYear, summaries }: Props) {
   function handleExportCSV() {
     // Trigger a fetch of the CSV export action
     const rows = [
-      '# W-2 Reference Data — NOT for filing. File W-2s via SSA-approved software.',
+      '# W-2 Reference Data - NOT for filing. File W-2s via SSA-approved software.',
       `# Tax Year: ${taxYear}`,
       '',
       'Employee,Box 1 Wages,Box 2 Federal Tax,Box 3 SS Wages,Box 4 SS Tax,Box 5 Medicare Wages,Box 6 Medicare Tax,Box 17 State Tax',
@@ -71,7 +71,7 @@ export function W2Panel({ taxYear, summaries }: Props) {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>W-2 Summaries — {taxYear}</CardTitle>
+            <CardTitle>W-2 Summaries - {taxYear}</CardTitle>
             <div className="flex gap-2">
               <Button size="sm" variant="secondary" onClick={handleGenerate} loading={isPending}>
                 Regenerate
@@ -118,7 +118,7 @@ export function W2Panel({ taxYear, summaries }: Props) {
                 {summaries.map((s) => (
                   <tr key={s.id} className="hover:bg-stone-800">
                     <td className="px-6 py-3 font-medium text-stone-100">
-                      {s.employeeName ?? '—'}
+                      {s.employeeName ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-right">{formatCurrency(s.box1WagesCents)}</td>
                     <td className="px-4 py-3 text-right text-stone-400">
@@ -163,7 +163,7 @@ export function W2Panel({ taxYear, summaries }: Props) {
 
       <p className="text-xs text-stone-400">
         Generated:{' '}
-        {summaries[0]?.generatedAt ? new Date(summaries[0].generatedAt).toLocaleDateString() : '—'}
+        {summaries[0]?.generatedAt ? new Date(summaries[0].generatedAt).toLocaleDateString() : '-'}
       </p>
     </div>
   )

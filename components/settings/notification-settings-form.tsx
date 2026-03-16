@@ -1,7 +1,7 @@
 ﻿'use client'
 // Notification Settings Form
 // Per-category channel toggles (email, push, SMS) + SMS phone setup.
-// Mounted on /settings/notifications. Uses optimistic UI — saves on toggle.
+// Mounted on /settings/notifications. Uses optimistic UI - saves on toggle.
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
@@ -257,7 +257,7 @@ export function NotificationSettingsForm({
             )}
             {pushState === 'denied' && (
               <p className="text-sm text-red-600">
-                Blocked by browser — open browser settings to re-allow.
+                Blocked by browser - open browser settings to re-allow.
               </p>
             )}
             {pushState === 'unsupported' && (

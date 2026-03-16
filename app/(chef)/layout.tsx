@@ -79,7 +79,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     redirect('/auth/signin?portal=chef')
   }
 
-  // Onboarding gate — redirect new chefs to wizard before they can access any page.
+  // Onboarding gate - redirect new chefs to wizard before they can access any page.
   // x-pathname is set by middleware so we can check the current path server-side
   // without an additional round-trip or breaking the App Router server component model.
   const pathname = headers().get('x-pathname') ?? ''
@@ -89,7 +89,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       redirect('/onboarding')
     }
   }
-  // Parallelized — all calls are independent. All 6 use unstable_cache (60s TTL)
+  // Parallelized - all calls are independent. All 6 use unstable_cache (60s TTL)
   // so navigating between pages costs ~0ms for these after the first load.
   const [
     layoutData,
@@ -99,17 +99,17 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     chefArchetype,
     deletionStatus,
   ] = await Promise.all([
-    // Cached for 60s — slug and nav prefs change rarely, keyed per chef
+    // Cached for 60s - slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
-    // Platform announcement (non-fatal — fail open)
+    // Platform announcement (non-fatal - fail open)
     getAnnouncement().catch(() => null),
-    // Cannabis tier check — kept in Promise.all to avoid reindexing, but unused (cannabis is admin-only now)
+    // Cannabis tier check - kept in Promise.all to avoid reindexing, but unused (cannabis is admin-only now)
     getCachedCannabisAccess(user.id, user.email ?? '').catch(() => false),
-    // Admin check — cached 60s, env-based (no DB call)
+    // Admin check - cached 60s, env-based (no DB call)
     getCachedIsAdmin(user.email ?? '').catch(() => false),
-    // Archetype — cached 60s, null means chef hasn't picked one yet (show selector)
+    // Archetype - cached 60s, null means chef hasn't picked one yet (show selector)
     getCachedChefArchetype(user.entityId).catch(() => null),
-    // Deletion status — cached 60s, non-fatal, fail closed (no banner)
+    // Deletion status - cached 60s, non-fatal, fail closed (no banner)
     getCachedDeletionStatus(user.entityId).catch(() => ({
       isPending: false,
       scheduledFor: null,
@@ -118,7 +118,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       reason: null,
     })),
   ])
-  // Archetype gate — new chefs pick their persona before seeing the portal.
+  // Archetype gate - new chefs pick their persona before seeing the portal.
   // Admins skip this (they have full access and don't need a preset).
   // Also skip on settings pages so they can manually configure if needed.
   if (
@@ -170,18 +170,18 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 >
                   Skip to main content
                 </a>
-                {/* Platform announcement banner — shown when admin sets one */}
+                {/* Platform announcement banner - shown when admin sets one */}
                 {announcement && (
                   <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
                 )}
                 {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && <EnvironmentBadge />}
-                {/* Trial / subscription banner — shown when trial is expiring (≤3 days) or expired */}
+                {/* Trial / subscription banner - shown when trial is expiring (≤3 days) or expired */}
                 <TrialBanner chefId={user.entityId} />
-                {/* Beta survey banner — non-blocking, shows when an active survey hasn't been submitted */}
+                {/* Beta survey banner - non-blocking, shows when an active survey hasn't been submitted */}
                 <Suspense fallback={null}>
                   <BetaSurveyBannerWrapper href="/beta-survey" />
                 </Suspense>
-                {/* Account deletion pending banner — shown during 30-day grace period */}
+                {/* Account deletion pending banner - shown during 30-day grace period */}
                 {deletionStatus.isPending &&
                   deletionStatus.scheduledFor &&
                   deletionStatus.daysRemaining != null && (
@@ -209,26 +209,26 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   tenantId={user.tenantId ?? user.entityId}
                 />
 
-                {/* Main content — offset adjusts dynamically based on sidebar state */}
+                {/* Main content - offset adjusts dynamically based on sidebar state */}
                 <ChefMainContent>
                   <ChefTourWrapper>{children}</ChefTourWrapper>
                 </ChefMainContent>
 
-                {/* Push notification permission prompt — appears after 5s if not subscribed */}
+                {/* Push notification permission prompt - appears after 5s if not subscribed */}
                 <PushPermissionPrompt />
 
                 {showFeedbackNudge && <FeedbackNudgeModal />}
 
-                {/* Offline connectivity bar — shows status, queue count, sync progress */}
+                {/* Offline connectivity bar - shows status, queue count, sync progress */}
                 <OfflineStatusBar />
 
-                {/* Remy — AI companion chatbot, Pro tier + admins */}
+                {/* Remy - AI companion chatbot, Pro tier + admins */}
                 {shouldRenderRemy && <RemyWrapper />}
 
-                {/* Mobile quick capture FAB — mobile-only, hidden on desktop */}
+                {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
                 <QuickCapture />
 
-                {/* Breadcrumb tracker — silent navigation tracking for retrace mode */}
+                {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
                 <BreadcrumbTracker />
 
                 <MilestoneOverlay />

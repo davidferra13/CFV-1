@@ -1,6 +1,6 @@
 'use client'
 
-// Survey Progress Bar — Thin progress indicator shown in the mascot chat header
+// Survey Progress Bar - Thin progress indicator shown in the mascot chat header
 // during the "Get to Know You" survey. Shows answered/total and a colored bar.
 
 import { SURVEY_TOTAL_QUESTIONS } from '@/lib/ai/remy-survey-constants'

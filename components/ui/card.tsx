@@ -36,7 +36,7 @@ export const CardHeader = forwardRef<HTMLDivElement, CardProps>(
 CardHeader.displayName = 'CardHeader'
 
 interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
-  /** Heading level — defaults to h2 for correct heading hierarchy under page h1 */
+  /** Heading level - defaults to h2 for correct heading hierarchy under page h1 */
   as?: 'h2' | 'h3' | 'h4'
 }
 

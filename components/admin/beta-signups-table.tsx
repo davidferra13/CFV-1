@@ -167,14 +167,14 @@ function SignupRow({ signup, onDelete }: { signup: BetaSignup; onDelete: (id: st
           <CopyInviteLinkButton email={signup.email} />
         </div>
       </td>
-      <td className="px-4 py-3 text-slate-400 text-xs">{signup.phone || '—'}</td>
-      <td className="px-4 py-3 text-slate-300 text-xs">{signup.business_name || '—'}</td>
-      <td className="px-4 py-3 text-slate-400 text-xs">{signup.cuisine_type || '—'}</td>
-      <td className="px-4 py-3 text-slate-400 text-xs">{signup.years_in_business || '—'}</td>
+      <td className="px-4 py-3 text-slate-400 text-xs">{signup.phone || '-'}</td>
+      <td className="px-4 py-3 text-slate-300 text-xs">{signup.business_name || '-'}</td>
+      <td className="px-4 py-3 text-slate-400 text-xs">{signup.cuisine_type || '-'}</td>
+      <td className="px-4 py-3 text-slate-400 text-xs">{signup.years_in_business || '-'}</td>
       <td className="px-4 py-3 text-slate-400 text-xs">
         {signup.referral_source
           ? REFERRAL_LABELS[signup.referral_source] || signup.referral_source
-          : '—'}
+          : '-'}
       </td>
       <td className="px-4 py-3">
         <select

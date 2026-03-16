@@ -32,7 +32,7 @@ export async function DietaryTrendsBar() {
       {/* Growing trends callout */}
       {growing.length > 0 && (
         <p className="text-xs text-stone-500">
-          Growing dietary needs: {growing.map((g) => g.restriction).join(', ')} — consider expanding
+          Growing dietary needs: {growing.map((g) => g.restriction).join(', ')} - consider expanding
           menu options
         </p>
       )}

@@ -64,7 +64,7 @@ function getStatusBadge(status: EventStatus) {
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const event = await getClientEventById(params.id)
-  return { title: event ? `${event.occasion || 'Event'} — ChefFlow` : 'Event — ChefFlow' }
+  return { title: event ? `${event.occasion || 'Event'} | ChefFlow` : 'Event | ChefFlow' }
 }
 
 export default async function EventDetailPage({ params }: { params: { id: string } }) {
@@ -245,7 +245,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
             )}
           </div>
 
-          {/* Calendar add buttons — shown when event is locked in */}
+          {/* Calendar add buttons - shown when event is locked in */}
           {['paid', 'confirmed', 'in_progress'].includes(event.status) && (
             <div className="mt-4 pt-4 border-t border-stone-800">
               <CalendarAddButtons
@@ -360,10 +360,10 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </Card>
       )}
 
-      {/* Dinner Photos — visible on completed events that have photos */}
+      {/* Dinner Photos - visible on completed events that have photos */}
       <ClientEventPhotoGallery photos={eventPhotos} />
 
-      {/* Menu Section — smart status card */}
+      {/* Menu Section - smart status card */}
       {event.status !== 'cancelled' && event.status !== 'draft' && (
         <Card className="mb-6">
           <CardHeader>
@@ -381,7 +381,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
             </div>
           </CardHeader>
           <CardContent>
-            {/* No menu attached yet — show CTA or preference status */}
+            {/* No menu attached yet - show CTA or preference status */}
             {(!event.menus || event.menus.length === 0) && !(event as any).menu_approval_status && (
               <div className="text-center py-6 space-y-3">
                 <div className="w-12 h-12 rounded-full bg-brand-950 flex items-center justify-center mx-auto">
@@ -454,7 +454,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
                 </div>
               )}
 
-            {/* Menu approved — show the menu with celebration */}
+            {/* Menu approved - show the menu with celebration */}
             {event.menus &&
               event.menus.length > 0 &&
               (event as any).menu_approval_status === 'approved' && (
@@ -488,7 +488,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </Card>
       )}
 
-      {/* Printable Guest Menu — available once event is confirmed */}
+      {/* Printable Guest Menu - available once event is confirmed */}
       {event.menus &&
         event.menus.length > 0 &&
         ['confirmed', 'in_progress', 'completed'].includes(event.status) && (
@@ -521,7 +521,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
           </Card>
         )}
 
-      {/* Cancellation policy — shown on paid/confirmed events so clients understand terms */}
+      {/* Cancellation policy - shown on paid/confirmed events so clients understand terms */}
       {['accepted', 'paid', 'confirmed', 'in_progress'].includes(event.status) && (
         <div className="mb-4">
           <CancellationPolicyDisplay variant="compact" />

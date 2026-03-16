@@ -1,6 +1,6 @@
 // Chef Invoice Page
 // Displays the computed invoice for an event.
-// Invoice is NOT a separate table — it's derived from event + ledger_entries + chefs.
+// Invoice is NOT a separate table - it's derived from event + ledger_entries + chefs.
 // Screen-only view (not a PDF). Chef can share the URL or use as a reference.
 
 import { notFound } from 'next/navigation'

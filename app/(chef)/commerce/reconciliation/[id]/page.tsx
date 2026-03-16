@@ -1,4 +1,4 @@
-// Reconciliation Report Detail — review, resolve flags
+// Reconciliation Report Detail - review, resolve flags
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
@@ -11,7 +11,7 @@ import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 import { ReconciliationActions } from '@/components/commerce/reconciliation-actions-client'
 
-export const metadata: Metadata = { title: 'Reconciliation Detail — ChefFlow' }
+export const metadata: Metadata = { title: 'Reconciliation Detail | ChefFlow' }
 
 export default async function ReconciliationDetailPage({
   params,

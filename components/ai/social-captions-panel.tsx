@@ -79,7 +79,7 @@ export function SocialCaptionsPanel({ eventId }: { eventId: string }) {
           </div>
         </div>
         <p className="text-xs text-stone-500 mt-1">
-          Instagram, Facebook, and Twitter captions — no client details included.
+          Instagram, Facebook, and Twitter captions - no client details included.
         </p>
       </div>
     )

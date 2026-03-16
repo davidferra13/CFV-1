@@ -1,6 +1,6 @@
 'use client'
 
-// VendorInvoiceMatcher — Side-by-side invoice item matching UI.
+// VendorInvoiceMatcher - Side-by-side invoice item matching UI.
 // Lets chefs match invoice line items to known ingredients and flags price changes.
 
 import { useState, useTransition } from 'react'

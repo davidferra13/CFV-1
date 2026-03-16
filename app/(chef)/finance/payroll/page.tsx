@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Users, DollarSign, FileText, FileCheck } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Payroll — ChefFlow' }
+export const metadata: Metadata = { title: 'Payroll | ChefFlow' }
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
@@ -137,7 +137,7 @@ export default async function PayrollPage() {
                 className="flex items-center justify-between py-3 px-4 rounded-lg border border-stone-800 bg-stone-800"
               >
                 <div>
-                  <p className="text-sm font-medium text-stone-200">{r.employeeName ?? '—'}</p>
+                  <p className="text-sm font-medium text-stone-200">{r.employeeName ?? '-'}</p>
                   <p className="text-xs text-stone-500">
                     {r.payPeriodStart} → {r.payPeriodEnd} · Paid {r.payDate}
                   </p>

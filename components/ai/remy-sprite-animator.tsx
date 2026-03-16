@@ -1,6 +1,6 @@
 'use client'
 
-// RemySpriteAnimator — Generic sprite sheet playback component.
+// RemySpriteAnimator - Generic sprite sheet playback component.
 // Plays a sprite sheet using requestAnimationFrame with delta timing.
 //
 // Features:
@@ -111,7 +111,7 @@ export function RemySpriteAnimator({
     lastFrameTimeRef.current = 0
 
     function tick(timestamp: number) {
-      // First frame — just record the time
+      // First frame - just record the time
       if (lastFrameTimeRef.current === 0) {
         lastFrameTimeRef.current = timestamp
         rafRef.current = requestAnimationFrame(tick)

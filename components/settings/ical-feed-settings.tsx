@@ -54,7 +54,7 @@ export function ICalFeedSettings({
       try {
         const result = await regenerateICalFeedToken()
         setFeedUrl(result.feedUrl)
-        toast.success('Feed token regenerated — update your calendar subscriptions')
+        toast.success('Feed token regenerated - update your calendar subscriptions')
       } catch {
         toast.error('Failed to regenerate feed token')
       }
@@ -77,7 +77,7 @@ export function ICalFeedSettings({
       <CardContent className="space-y-4">
         <p className="text-sm text-stone-400">
           Generate a subscribe-by-URL calendar feed that works with Apple Calendar, Outlook, and
-          Google Calendar. Your events automatically sync — no manual exports needed.
+          Google Calendar. Your events automatically sync - no manual exports needed.
         </p>
 
         <div className="flex gap-2">

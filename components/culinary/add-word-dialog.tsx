@@ -104,10 +104,10 @@ export function AddWordDialog({ onAdded }: AddWordDialogProps) {
             onChange={(e) => setTier(Number(e.target.value) as WordTier)}
             className="w-full px-3 py-2 border border-stone-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           >
-            <option value={1}>Tier 1 — Foundational (huge on board)</option>
-            <option value={2}>Tier 2 — Essential (large)</option>
-            <option value={3}>Tier 3 — Core (medium)</option>
-            <option value={4}>Tier 4 — Advanced (small)</option>
+            <option value={1}>Tier 1 - Foundational (huge on board)</option>
+            <option value={2}>Tier 2 - Essential (large)</option>
+            <option value={3}>Tier 3 - Core (medium)</option>
+            <option value={4}>Tier 4 - Advanced (small)</option>
           </select>
         </div>
 

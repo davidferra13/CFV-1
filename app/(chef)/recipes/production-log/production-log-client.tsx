@@ -83,7 +83,7 @@ export function ProductionLogClient({ entries }: Props) {
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Production Log</h1>
           <p className="text-stone-400 mt-1">
-            Every recipe production across your kitchen — who made what, when, and shelf life.
+            Every recipe production across your kitchen - who made what, when, and shelf life.
           </p>
         </div>
         <Link href="/recipes">

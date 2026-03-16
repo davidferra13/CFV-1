@@ -1,4 +1,4 @@
-// Year-Over-Year Cards — three metric cards comparing current vs prior year.
+// Year-Over-Year Cards - three metric cards comparing current vs prior year.
 // Used on the dashboard Business Snapshot section.
 
 import { TrendingUp, TrendingDown, Minus } from '@/components/ui/icons'
@@ -54,7 +54,7 @@ function YoYCard({ metric, isCurrency = false }: { metric: YoYMetric; isCurrency
       <div className={`flex items-center gap-1 mt-1 ${trendColor}`}>
         <TrendIcon className="h-3 w-3 shrink-0" />
         <span className="text-[10px] font-medium">
-          {metric.changePercent !== null ? `${metric.changePercent}%` : '—'}
+          {metric.changePercent !== null ? `${metric.changePercent}%` : '-'}
         </span>
       </div>
       <p className="text-[10px] text-stone-400 mt-0.5 truncate">

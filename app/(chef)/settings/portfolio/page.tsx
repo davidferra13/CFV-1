@@ -1,4 +1,4 @@
-// Portfolio Settings — Manage portfolio gallery items
+// Portfolio Settings - Manage portfolio gallery items
 // Showcases dishes, plating, and event photos for the public profile
 
 import type { Metadata } from 'next'

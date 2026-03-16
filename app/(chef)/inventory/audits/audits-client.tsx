@@ -17,7 +17,7 @@ function formatLabel(s: string) {
 }
 
 function formatCents(cents: number | null) {
-  if (cents == null) return '—'
+  if (cents == null) return '-'
   const abs = Math.abs(cents)
   const sign = cents < 0 ? '-' : cents > 0 ? '+' : ''
   return `${sign}$${(abs / 100).toFixed(2)}`

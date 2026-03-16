@@ -77,7 +77,7 @@ export function StaffMemberForm({ member, onDone }: Props) {
         trackAction('Updated staff member', form.name)
       } else {
         await createStaffMember(input)
-        trackAction('Added staff member', `${form.name} — ${form.role}`)
+        trackAction('Added staff member', `${form.name} - ${form.role}`)
       }
       router.refresh()
       onDone?.()

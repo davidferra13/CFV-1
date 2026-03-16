@@ -6,7 +6,7 @@ import { PDFLayout } from '@/lib/documents/pdf-layout'
 import { renderQuote, type QuoteDocumentData } from '@/lib/documents/generate-quote'
 
 // Client-facing quote PDF.
-// Reuses the same renderQuote() renderer as the chef route — only the
+// Reuses the same renderQuote() renderer as the chef route - only the
 // data fetch differs: we scope by client_id instead of tenant_id.
 
 async function fetchQuoteDataForClient(
@@ -91,7 +91,7 @@ async function fetchQuoteDataForClient(
         allergies: event.allergies ?? [],
       }
 
-      // Fetch menu courses (FOH only — no recipe details)
+      // Fetch menu courses (FOH only - no recipe details)
       const { data: menus } = await supabase
         .from('menus')
         .select('id')

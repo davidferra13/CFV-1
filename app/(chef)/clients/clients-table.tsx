@@ -204,7 +204,7 @@ export function ClientsTable({ clients, healthMap, churnMap }: ClientsTableProps
                     return (
                       <span
                         className={`text-xs font-medium ${CHURN_COLORS[churn.riskLevel] || 'text-amber-400'}`}
-                        title={`Churn risk: ${churn.riskScore}/100 — ${churn.suggestedAction}`}
+                        title={`Churn risk: ${churn.riskScore}/100 - ${churn.suggestedAction}`}
                       >
                         {churn.riskLevel === 'critical' ? '⚠' : '↓'}
                       </span>

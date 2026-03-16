@@ -1,4 +1,4 @@
-// Activity Feed — Recent client/system actions for chef dashboard
+// Activity Feed - Recent client/system actions for chef dashboard
 import Link from 'next/link'
 import type { ActivityEvent } from '@/lib/activity/types'
 

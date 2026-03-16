@@ -1,6 +1,6 @@
 'use client'
 
-// Order Handoff — Compiled order list from all stations
+// Order Handoff - Compiled order list from all stations
 // Table of components that need ordering, with batch actions for marking as ordered/received.
 
 import { useState } from 'react'

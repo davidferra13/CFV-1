@@ -1,4 +1,4 @@
-// Payment Schedules Page — installment plan management
+// Payment Schedules Page - installment plan management
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PaymentScheduleClient } from '@/components/commerce/payment-schedule-client'
 
-export const metadata: Metadata = { title: 'Payment Schedules — ChefFlow' }
+export const metadata: Metadata = { title: 'Payment Schedules | ChefFlow' }
 
 export default async function PaymentSchedulesPage() {
   await requireChef()

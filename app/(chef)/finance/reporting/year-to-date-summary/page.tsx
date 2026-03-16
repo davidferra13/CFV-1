@@ -57,7 +57,7 @@ export default async function YearToDateSummaryPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Year-to-Date Summary</h1>
         <p className="text-stone-500 mt-1">
-          Financial overview for {currentYear} — Jan 1 through today (
+          Financial overview for {currentYear} - Jan 1 through today (
           {format(new Date(), 'MMM d, yyyy')})
         </p>
       </div>

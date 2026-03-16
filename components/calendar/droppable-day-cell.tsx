@@ -4,7 +4,7 @@ import { useDroppable } from '@dnd-kit/core'
 import type { ReactNode } from 'react'
 
 type Props = {
-  date: string // YYYY-MM-DD — used as the droppable ID
+  date: string // YYYY-MM-DD - used as the droppable ID
   children: ReactNode
 }
 

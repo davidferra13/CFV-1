@@ -1,4 +1,4 @@
-// Client Quote Detail — View and respond to a single quote
+// Client Quote Detail - View and respond to a single quote
 
 import { redirect } from 'next/navigation'
 import Link from 'next/link'

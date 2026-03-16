@@ -84,7 +84,7 @@ export default function CulinaryProfilePage() {
 
       <p className="text-stone-400 mb-6">
         Help Remy understand your food identity. These answers shape how Remy talks about food,
-        suggests dishes, and understands your style. Answer as many or as few as you like — you can
+        suggests dishes, and understands your style. Answer as many or as few as you like - you can
         always come back.
       </p>
 

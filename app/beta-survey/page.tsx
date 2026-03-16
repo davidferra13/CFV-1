@@ -21,7 +21,7 @@ export default async function BetaSurveyPage() {
 
   const redirectTo = user.role === 'chef' ? '/dashboard' : '/my-events'
 
-  // Find the active survey — check pre-beta first, then post-beta
+  // Find the active survey - check pre-beta first, then post-beta
   let survey = await getActiveSurvey('pre_beta')
   let type: 'pre_beta' | 'post_beta' = 'pre_beta'
 

@@ -1,5 +1,5 @@
-// KanbanBoard — Visual pipeline view for the Inquiry Pipeline page
-// No drag-and-drop — clicking a card navigates to the inquiry detail page.
+// KanbanBoard - Visual pipeline view for the Inquiry Pipeline page
+// No drag-and-drop - clicking a card navigates to the inquiry detail page.
 'use client'
 
 import { useState } from 'react'
@@ -23,7 +23,7 @@ interface KanbanBoardProps {
   inquiries: KanbanBoardInquiry[]
 }
 
-// Column definitions — order matters (pipeline left-to-right)
+// Column definitions - order matters (pipeline left-to-right)
 interface ColumnDef {
   id: string
   label: string
@@ -138,7 +138,7 @@ function KanbanColumn({ column, cards }: KanbanColumnProps) {
         </div>
       )}
 
-      {/* Collapsed summary — show count only */}
+      {/* Collapsed summary - show count only */}
       {collapsed && cards.length > 0 && (
         <div className="px-3 py-2">
           <p className="text-xs text-stone-500 text-center">

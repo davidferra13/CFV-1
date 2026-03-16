@@ -75,7 +75,7 @@ export default async function GarnishesPage() {
               {garnishes.map((comp) => (
                 <TableRow key={comp.id}>
                   <TableCell className="font-medium text-stone-100">{comp.name}</TableCell>
-                  <TableCell className="text-stone-500 text-sm">{comp.dish_name ?? '—'}</TableCell>
+                  <TableCell className="text-stone-500 text-sm">{comp.dish_name ?? '-'}</TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {comp.menu_id ? (
                       <Link
@@ -85,7 +85,7 @@ export default async function GarnishesPage() {
                         {comp.menu_name ?? 'View Menu'}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell>

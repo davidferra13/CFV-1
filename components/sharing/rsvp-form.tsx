@@ -454,7 +454,7 @@ export function RSVPForm({
         </>
       )}
 
-      {/* Declined — still allow a note */}
+      {/* Declined - still allow a note */}
       {rsvpStatus === 'declined' && (
         <div>
           <label htmlFor="notes" className="block text-sm font-medium text-stone-300 mb-1">
@@ -471,7 +471,7 @@ export function RSVPForm({
         </div>
       )}
 
-      {/* Photo consent — simple, friendly, not creepy */}
+      {/* Photo consent - simple, friendly, not creepy */}
       {rsvpStatus !== 'declined' && (
         <div className="flex items-center gap-3">
           <input

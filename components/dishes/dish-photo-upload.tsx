@@ -1,11 +1,11 @@
 'use client'
 
-// DishPhotoUpload — single hero photo upload for a recipe or a dish.
+// DishPhotoUpload - single hero photo upload for a recipe or a dish.
 //
 // Two modes:
-//   compact (default false) — full-width hero for the recipe detail page.
+//   compact (default false) - full-width hero for the recipe detail page.
 //     Shows a dashed "Add photo" nudge when empty; image with hover controls when filled.
-//   compact=true — small 64×64 thumbnail for the menu doc editor.
+//   compact=true - small 64×64 thumbnail for the menu doc editor.
 //     Shows a camera icon when empty; thumbnail with hover-replace overlay when filled.
 
 import { useRef, useState, useTransition } from 'react'
@@ -19,7 +19,7 @@ import {
 } from '@/lib/dishes/photo-actions'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 
-// ─── Camera icon (inline — no external icon dependency) ──────────────────────
+// ─── Camera icon (inline - no external icon dependency) ──────────────────────
 
 function CameraIcon({ className }: { className?: string }) {
   return (
@@ -133,7 +133,7 @@ export function DishPhotoUpload({
     })
   }
 
-  // ─── Compact mode — menu doc editor ────────────────────────────────────────
+  // ─── Compact mode - menu doc editor ────────────────────────────────────────
 
   if (compact) {
     return (
@@ -176,7 +176,7 @@ export function DishPhotoUpload({
     )
   }
 
-  // ─── Full mode — recipe detail page ────────────────────────────────────────
+  // ─── Full mode - recipe detail page ────────────────────────────────────────
 
   if (photoUrl) {
     return (
@@ -240,7 +240,7 @@ export function DishPhotoUpload({
     )
   }
 
-  // No photo yet — full prompt
+  // No photo yet - full prompt
   return (
     <div>
       <input

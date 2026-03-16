@@ -154,7 +154,7 @@ export default async function GlobalTravelPage() {
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Travel Planning</h1>
         <p className="text-sm text-stone-500 mt-1">
-          All upcoming trips across all events — next 90 days
+          All upcoming trips across all events - next 90 days
         </p>
       </div>
 

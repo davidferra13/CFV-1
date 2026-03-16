@@ -1,12 +1,12 @@
-// Branded SVG Illustrations — warm, culinary-themed empty state visuals
+// Branded SVG Illustrations - warm, culinary-themed empty state visuals
 // Uses only brand palette colors: #eda86b, #e88f47, #d47530, #fef9f3, #f5f3ef, #f8ddc0
-// No external dependencies — pure inline SVG React components.
+// No external dependencies - pure inline SVG React components.
 
 interface IllustrationProps {
   className?: string
 }
 
-/** Checkmark in a warm circle — for "all caught up" / inbox zero states */
+/** Checkmark in a warm circle - for "all caught up" / inbox zero states */
 export function AllCaughtUpIllustration({ className = '' }: IllustrationProps) {
   return (
     <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">
@@ -25,7 +25,7 @@ export function AllCaughtUpIllustration({ className = '' }: IllustrationProps) {
   )
 }
 
-/** Calendar with a warm accent — for empty events lists */
+/** Calendar with a warm accent - for empty events lists */
 export function NoEventsIllustration({ className = '' }: IllustrationProps) {
   return (
     <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">
@@ -55,7 +55,7 @@ export function NoEventsIllustration({ className = '' }: IllustrationProps) {
   )
 }
 
-/** Person silhouette with a warm glow — for empty clients lists */
+/** Person silhouette with a warm glow - for empty clients lists */
 export function NoClientsIllustration({ className = '' }: IllustrationProps) {
   return (
     <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">
@@ -70,7 +70,7 @@ export function NoClientsIllustration({ className = '' }: IllustrationProps) {
   )
 }
 
-/** Open recipe book — for empty recipe lists */
+/** Open recipe book - for empty recipe lists */
 export function NoRecipesIllustration({ className = '' }: IllustrationProps) {
   return (
     <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">
@@ -131,7 +131,7 @@ export function NoRecipesIllustration({ className = '' }: IllustrationProps) {
   )
 }
 
-/** Inbox tray with warm glow — for empty inquiry pipeline */
+/** Inbox tray with warm glow - for empty inquiry pipeline */
 export function NoInquiriesIllustration({ className = '' }: IllustrationProps) {
   return (
     <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">
@@ -170,7 +170,7 @@ export function NoInquiriesIllustration({ className = '' }: IllustrationProps) {
   )
 }
 
-/** Bullseye target with warm accent — for empty goals state */
+/** Bullseye target with warm accent - for empty goals state */
 export function NoGoalsIllustration({ className = '' }: IllustrationProps) {
   return (
     <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">
@@ -194,7 +194,7 @@ export function NoGoalsIllustration({ className = '' }: IllustrationProps) {
   )
 }
 
-/** Menu/document with warm lines — for empty menus list */
+/** Menu/document with warm lines - for empty menus list */
 export function NoMenusIllustration({ className = '' }: IllustrationProps) {
   return (
     <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">
@@ -225,7 +225,7 @@ export function NoMenusIllustration({ className = '' }: IllustrationProps) {
   )
 }
 
-/** Star/sparkles — for empty search results or generic "no data" */
+/** Star/sparkles - for empty search results or generic "no data" */
 export function SearchEmptyIllustration({ className = '' }: IllustrationProps) {
   return (
     <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">
@@ -249,7 +249,7 @@ export function SearchEmptyIllustration({ className = '' }: IllustrationProps) {
   )
 }
 
-/** Stars and sparkle — for getting started / onboarding states */
+/** Stars and sparkle - for getting started / onboarding states */
 export function GettingStartedIllustration({ className = '' }: IllustrationProps) {
   return (
     <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">
@@ -271,7 +271,7 @@ export function GettingStartedIllustration({ className = '' }: IllustrationProps
   )
 }
 
-/** Quote document with price tag — for empty quotes list */
+/** Quote document with price tag - for empty quotes list */
 export function NoQuotesIllustration({ className = '' }: IllustrationProps) {
   return (
     <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">
@@ -309,7 +309,7 @@ export function NoQuotesIllustration({ className = '' }: IllustrationProps) {
   )
 }
 
-/** Clipboard with checkmarks — for empty reviews / AAR */
+/** Clipboard with checkmarks - for empty reviews / AAR */
 export function NoReviewsIllustration({ className = '' }: IllustrationProps) {
   return (
     <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">

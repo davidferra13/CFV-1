@@ -218,7 +218,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
           <p className="text-stone-500 text-sm">
             {search
               ? 'No assets match your search.'
-              : 'Your vault is empty — upload some media to get started.'}
+              : 'Your vault is empty - upload some media to get started.'}
           </p>
         </div>
       ) : (

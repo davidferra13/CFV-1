@@ -1,6 +1,6 @@
 'use client'
 
-// InventoryCountForm — Mobile-friendly inventory count form.
+// InventoryCountForm - Mobile-friendly inventory count form.
 // Allows chefs to update on-hand quantities with par-level indicators.
 
 import { useState, useTransition } from 'react'
@@ -110,7 +110,7 @@ export function InventoryCountForm({ items }: { items: InventoryCount[] }) {
                   </p>
                 </div>
 
-                {/* Count input — large for mobile */}
+                {/* Count input - large for mobile */}
                 <div className="flex items-center gap-2">
                   <div className="w-28">
                     <Input

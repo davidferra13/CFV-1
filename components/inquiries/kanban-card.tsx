@@ -1,4 +1,4 @@
-// KanbanCard — A single inquiry card for the kanban board view
+// KanbanCard - A single inquiry card for the kanban board view
 'use client'
 
 import { useRouter } from 'next/navigation'
@@ -119,7 +119,7 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
       {isStuck && daysSinceUpdate !== null && daysSinceUpdate >= 14 && (
         <div className="flex items-center gap-1 mt-1.5 text-xs text-red-600">
           <Clock className="h-3 w-3 shrink-0" />
-          <span>Stuck — no movement in {daysSinceUpdate} days</span>
+          <span>Stuck - no movement in {daysSinceUpdate} days</span>
         </div>
       )}
     </button>

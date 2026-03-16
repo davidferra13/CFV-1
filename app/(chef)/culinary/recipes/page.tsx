@@ -133,15 +133,15 @@ export default async function ChefRecipesPage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {recipe.cook_time_minutes ? `${recipe.cook_time_minutes}m` : '—'}
+                    {recipe.cook_time_minutes ? `${recipe.cook_time_minutes}m` : '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
                     {recipe.yield_quantity && recipe.yield_unit
                       ? `${recipe.yield_quantity} ${recipe.yield_unit}`
-                      : '—'}
+                      : '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {recipe.ingredient_count ?? '—'}
+                    {recipe.ingredient_count ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
                     {recipe.total_cost_cents != null ? (
@@ -150,7 +150,7 @@ export default async function ChefRecipesPage() {
                         {!recipe.has_all_prices && <span className="text-xs ml-1">est.</span>}
                       </span>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">{recipe.times_cooked}</TableCell>

@@ -3,7 +3,7 @@ import { ArrowLeft } from '@/components/ui/icons'
 import { getImportedClients } from '@/lib/clients/import-actions'
 import { ClientImportForm } from '@/components/onboarding/client-import-form'
 
-export const metadata = { title: 'Import Clients — ChefFlow Setup' }
+export const metadata = { title: 'Import Clients | ChefFlow Setup' }
 
 export default async function OnboardingClientsPage() {
   const clients = await getImportedClients()
@@ -21,7 +21,7 @@ export default async function OnboardingClientsPage() {
           </Link>
           <h1 className="text-3xl font-bold text-stone-100">Import Your Client List</h1>
           <p className="text-stone-400 mt-2 max-w-xl">
-            Add each existing client. They won&apos;t receive any emails — this is a direct import.
+            Add each existing client. They won&apos;t receive any emails - this is a direct import.
             You can send portal invitations later from the Clients section.
           </p>
         </div>

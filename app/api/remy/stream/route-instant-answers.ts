@@ -1,10 +1,10 @@
-// Remy — Deterministic Instant Answers (Formula > AI)
+// Remy - Deterministic Instant Answers (Formula > AI)
 //
 // For simple factual questions where the answer is already in the loaded context,
 // this module returns an instant response WITHOUT calling Ollama at all.
 // Saves 30-90 seconds per question. Zero cost, zero latency, always correct.
 //
-// The loaded RemyContext already has all the data — we just need to recognize
+// The loaded RemyContext already has all the data - we just need to recognize
 // the question pattern and format the answer in Remy's voice.
 
 import type { RemyContext } from '@/lib/ai/remy-types'
@@ -26,8 +26,8 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => ({
       text:
         ctx.clientCount === 0
-          ? "You don't have any clients yet. Let's fix that — head to Clients → New Client to add your first one. 🔥"
-          : `You have **${ctx.clientCount} client${ctx.clientCount !== 1 ? 's' : ''}** in your book.${ctx.repeatClientRatio ? ` ${ctx.repeatClientRatio.ratio}% are repeat clients.` : ''} ${ctx.clientCount < 5 ? 'Still building — every great kitchen started with the first plate. 🍽️' : 'Solid roster, chef! 💪'}`,
+          ? "You don't have any clients yet. Let's fix that - head to Clients → New Client to add your first one. 🔥"
+          : `You have **${ctx.clientCount} client${ctx.clientCount !== 1 ? 's' : ''}** in your book.${ctx.repeatClientRatio ? ` ${ctx.repeatClientRatio.ratio}% are repeat clients.` : ''} ${ctx.clientCount < 5 ? 'Still building - every great kitchen started with the first plate. 🍽️' : 'Solid roster, chef! 💪'}`,
       navSuggestions: [{ label: 'Client Directory', href: '/clients' }],
     }),
   },
@@ -48,12 +48,12 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => ({
       text:
         ctx.openInquiryCount === 0
-          ? 'No open inquiries right now. Your pipeline is clear — great time for proactive outreach. 📬'
+          ? 'No open inquiries right now. Your pipeline is clear - great time for proactive outreach. 📬'
           : `You have **${ctx.openInquiryCount} open inquir${ctx.openInquiryCount !== 1 ? 'ies' : 'y'}** in the pipeline.${
               ctx.staleInquiries && ctx.staleInquiries.length > 0
                 ? ` ⚠️ ${ctx.staleInquiries.length} need follow-up (${ctx.staleInquiries
                     .slice(0, 2)
-                    .map((i) => `${i.leadName} — ${i.daysSinceContact}d`)
+                    .map((i) => `${i.leadName} - ${i.daysSinceContact}d`)
                     .join(', ')}).`
                 : ''
             } ${ctx.inquiryVelocity ? `This week: ${ctx.inquiryVelocity.thisWeek} new vs ${ctx.inquiryVelocity.lastWeek} last week.` : ''}`,
@@ -81,8 +81,8 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
         const progress = dayOfMonth / daysInMonth
         const expected = ctx.revenuePattern.monthlyAvgCents * progress
         const pct = expected > 0 ? Math.round((ctx.monthRevenueCents / expected) * 100) : 0
-        if (pct > 120) pacing = ` You're **${pct}% of target** — ahead of pace! 🔥`
-        else if (pct < 80 && pct > 0) pacing = ` That's **${pct}% of target** — a bit behind pace.`
+        if (pct > 120) pacing = ` You're **${pct}% of target** - ahead of pace! 🔥`
+        else if (pct < 80 && pct > 0) pacing = ` That's **${pct}% of target** - a bit behind pace.`
       }
       let ytd = ''
       if (ctx.yearlyStats) {
@@ -101,7 +101,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.upcomingEvents || ctx.upcomingEvents.length === 0) {
         return {
-          text: 'Nothing on the board right now. Light schedule — good time for menu development, client outreach, or recipe work. 🧑‍🍳',
+          text: 'Nothing on the board right now. Light schedule - good time for menu development, client outreach, or recipe work. 🧑‍🍳',
           navSuggestions: [{ label: 'Schedule', href: '/schedule' }],
         }
       }
@@ -113,9 +113,9 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       })
       const lines: string[] = []
       if (thisWeek.length === 0) {
-        lines.push('No events this week — lighter schedule. 📋')
+        lines.push('No events this week - lighter schedule. 📋')
       } else if (thisWeek.length >= 3) {
-        lines.push(`**${thisWeek.length} events this week** — full rail, chef! 🔥\n`)
+        lines.push(`**${thisWeek.length} events this week** - full rail, chef! 🔥\n`)
       } else {
         lines.push(`**${thisWeek.length} event${thisWeek.length !== 1 ? 's' : ''} this week:**\n`)
       }
@@ -124,7 +124,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
           ? new Date(e.date).toLocaleDateString('en-US', { weekday: 'long' })
           : '(TBD)'
         lines.push(
-          `- **${day}** — ${e.occasion ?? 'Event'} for ${e.clientName} (${e.guestCount ?? '?'} guests, ${e.status})`
+          `- **${day}** - ${e.occasion ?? 'Event'} for ${e.clientName} (${e.guestCount ?? '?'} guests, ${e.status})`
         )
       }
       if (ctx.upcomingEvents.length > thisWeek.length) {
@@ -153,7 +153,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
           .join(', ')}`
       }
       return {
-        text: `Your conversion rate is **${cr.rate}%** — ${cr.converted} of ${cr.total} inquiries became events.${channelInfo}${cr.rate >= 40 ? "\n\nThat's strong — above industry average. 🎯" : cr.rate >= 25 ? "\n\nDecent, but there's room to improve. Focus on faster follow-ups." : "\n\nThat's on the lower side — let's look at your follow-up speed and lead quality."}`,
+        text: `Your conversion rate is **${cr.rate}%** - ${cr.converted} of ${cr.total} inquiries became events.${channelInfo}${cr.rate >= 40 ? "\n\nThat's strong - above industry average. 🎯" : cr.rate >= 25 ? "\n\nDecent, but there's room to improve. Focus on faster follow-ups." : "\n\nThat's on the lower side - let's look at your follow-up speed and lead quality."}`,
         navSuggestions: [{ label: 'Inquiries', href: '/inquiries' }],
       }
     },
@@ -165,7 +165,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (!ctx.profitabilityStats) return null
       const ps = ctx.profitabilityStats
       return {
-        text: `**Average margin:** ${ps.avgMargin}% across ${ps.eventCount} events\n- Best: ${ps.bestMargin}%\n- Worst: ${ps.worstMargin}%\n- Avg profit/event: $${(ps.avgProfitCents / 100).toFixed(0)}\n\n${ps.avgMargin >= 55 ? "Strong margins — you're cooking with gas 🎯" : ps.avgMargin >= 40 ? 'Decent margins. Look for cost savings on your lower-margin events.' : "Margins are tight. Let's dig into your expense categories and find some savings."}`,
+        text: `**Average margin:** ${ps.avgMargin}% across ${ps.eventCount} events\n- Best: ${ps.bestMargin}%\n- Worst: ${ps.worstMargin}%\n- Avg profit/event: $${(ps.avgProfitCents / 100).toFixed(0)}\n\n${ps.avgMargin >= 55 ? "Strong margins - you're cooking with gas 🎯" : ps.avgMargin >= 40 ? 'Decent margins. Look for cost savings on your lower-margin events.' : "Margins are tight. Let's dig into your expense categories and find some savings."}`,
         navSuggestions: [{ label: 'Financials', href: '/financials' }],
       }
     },
@@ -182,7 +182,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       const lines = ['**Your top clients this year:**\n']
       for (const c of ctx.yearlyStats.topClients.slice(0, 5)) {
         lines.push(
-          `- **${c.name}** — $${(c.revenueCents / 100).toLocaleString()} across ${c.eventCount} event${c.eventCount !== 1 ? 's' : ''}`
+          `- **${c.name}** - $${(c.revenueCents / 100).toLocaleString()} across ${c.eventCount} event${c.eventCount !== 1 ? 's' : ''}`
         )
       }
       return {
@@ -191,14 +191,14 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       }
     },
   },
-  // "What's the weather?" — plain weather is small talk, but event weather is handled async
+  // "What's the weather?" - plain weather is small talk, but event weather is handled async
   // Note: "weather for my events" / "event weather" bypasses instant answers and hits the
   // async weather path in the stream route. This only catches generic weather questions.
   {
     pattern:
       /^what'?s?\s+the\s+weather(?!\s+(?:for|at|look|like\s+for)\s+(?:my|the|this|next)\s+event)/i,
     answer: () => ({
-      text: 'For general weather, check your phone 😄 But I **can** check the forecast for your upcoming events — try asking "weather for my events" and I\'ll pull real forecasts!',
+      text: 'For general weather, check your phone 😄 But I **can** check the forecast for your upcoming events - try asking "weather for my events" and I\'ll pull real forecasts!',
       navSuggestions: [{ label: 'Calendar', href: '/calendar' }],
     }),
   },
@@ -206,10 +206,10 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
   {
     pattern: /^(?:what\s+can\s+you\s+do|help|what\s+are\s+(?:you|your)\s+capabilit)/i,
     answer: () => ({
-      text: `Here's what I can help with, chef 🔪\n\n**Quick answers:** Client counts, revenue, margins, schedules, conversion rates — instant from your data\n**Drafts:** Thank-you notes, follow-ups, payment reminders, cover letters, re-engagement emails\n**Lookups:** Client search, dietary/allergy checks, recipe search, calendar availability\n**Analysis:** Break-even, cost optimization, client LTV, profitability\n**Ops:** Packing lists, prep timelines, portion scaling, cross-contamination checks\n**Memory:** "Remember that..." to teach me your preferences\n\nJust ask naturally — I'll figure out what you need. 🎯`,
+      text: `Here's what I can help with, chef 🔪\n\n**Quick answers:** Client counts, revenue, margins, schedules, conversion rates - instant from your data\n**Drafts:** Thank-you notes, follow-ups, payment reminders, cover letters, re-engagement emails\n**Lookups:** Client search, dietary/allergy checks, recipe search, calendar availability\n**Analysis:** Break-even, cost optimization, client LTV, profitability\n**Ops:** Packing lists, prep timelines, portion scaling, cross-contamination checks\n**Memory:** "Remember that..." to teach me your preferences\n\nJust ask naturally - I'll figure out what you need. 🎯`,
     }),
   },
-  // "Good morning" / "Hey" / greetings — warm but brief, with proactive context
+  // "Good morning" / "Hey" / greetings - warm but brief, with proactive context
   {
     pattern:
       /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)(?:\s+remy)?\s*[!.?]?$/i,
@@ -218,7 +218,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       const greeting = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'
       const lines: string[] = [`${greeting}, chef! 👨‍🍳`]
 
-      // Proactive context — what's most relevant right now
+      // Proactive context - what's most relevant right now
       const nuggets: string[] = []
       if (ctx.upcomingEvents && ctx.upcomingEvents.length > 0) {
         const now = Date.now()
@@ -229,7 +229,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
         })
         if (today.length > 0) {
           nuggets.push(
-            `You've got **${today.length} event${today.length !== 1 ? 's' : ''} today** — game time 🔥`
+            `You've got **${today.length} event${today.length !== 1 ? 's' : ''} today** - game time 🔥`
           )
         } else {
           const next = ctx.upcomingEvents[0]
@@ -331,7 +331,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (!ctx.guestCountTrend) return null
       const gc = ctx.guestCountTrend
       return {
-        text: `Recent average: **${gc.recentAvg} guests/event** (previous: ${gc.previousAvg}).\n\nTrend: **${gc.direction}** ${gc.direction === 'growing' ? '📈 Events are getting bigger — consider scaling your pricing and staffing accordingly.' : gc.direction === 'shrinking' ? '📉 Events are getting smaller — could mean more intimate bookings or a shift in clientele.' : '➡️ Stable guest counts.'}`,
+        text: `Recent average: **${gc.recentAvg} guests/event** (previous: ${gc.previousAvg}).\n\nTrend: **${gc.direction}** ${gc.direction === 'growing' ? '📈 Events are getting bigger - consider scaling your pricing and staffing accordingly.' : gc.direction === 'shrinking' ? '📉 Events are getting smaller - could mean more intimate bookings or a shift in clientele.' : '➡️ Stable guest counts.'}`,
       }
     },
   },
@@ -343,7 +343,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (!ctx.avgLeadTime) return null
       const lt = ctx.avgLeadTime
       return {
-        text: `Clients book an average of **${lt.avgDays} days ahead** (median: ${lt.medianDays}d).\n\nRange: ${lt.shortestDays}–${lt.longestDays} days.\n\nUse this for capacity planning — start marketing for slow periods at least ${lt.avgDays} days out.`,
+        text: `Clients book an average of **${lt.avgDays} days ahead** (median: ${lt.medianDays}d).\n\nRange: ${lt.shortestDays}–${lt.longestDays} days.\n\nUse this for capacity planning - start marketing for slow periods at least ${lt.avgDays} days out.`,
       }
     },
   },
@@ -354,7 +354,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.staffRoster || ctx.staffRoster.length === 0) {
         return {
-          text: "No staff members on your roster yet. Head to Staff to add your first team member — even if it's just you. 🧑‍🍳",
+          text: "No staff members on your roster yet. Head to Staff to add your first team member - even if it's just you. 🧑‍🍳",
           navSuggestions: [{ label: 'Staff', href: '/staff' }],
         }
       }
@@ -399,7 +399,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.activeGoals || ctx.activeGoals.length === 0) {
         return {
-          text: 'No active goals set. Having clear targets keeps you focused — head to Goals to set your first one. 🎯',
+          text: 'No active goals set. Having clear targets keeps you focused - head to Goals to set your first one. 🎯',
           navSuggestions: [{ label: 'Goals', href: '/goals' }],
         }
       }
@@ -407,7 +407,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
         `**${ctx.activeGoals.length} active goal${ctx.activeGoals.length !== 1 ? 's' : ''}:**\n`,
       ]
       for (const g of ctx.activeGoals) {
-        const progress = g.progress != null ? ` — ${g.progress}%` : ''
+        const progress = g.progress != null ? ` - ${g.progress}%` : ''
         const deadline = g.targetDate
           ? ` (due ${new Date(g.targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`
           : ''
@@ -438,7 +438,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.activeTodos || ctx.activeTodos.length === 0) {
         return {
-          text: 'Your task list is clear — nothing pending. 🙌 Focus on what matters most today.',
+          text: 'Your task list is clear - nothing pending. 🙌 Focus on what matters most today.',
         }
       }
       const today = new Date().toISOString().split('T')[0]
@@ -483,13 +483,13 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
         items.push(`📅 **${ctx.upcomingPaymentDeadlines.length} due this week:**`)
         for (const p of ctx.upcomingPaymentDeadlines) {
           items.push(
-            `- ${p.clientName} — ${p.occasion}: $${(p.amountCents / 100).toLocaleString()} (${p.daysUntilDue === 0 ? 'today' : `in ${p.daysUntilDue}d`})`
+            `- ${p.clientName} - ${p.occasion}: $${(p.amountCents / 100).toLocaleString()} (${p.daysUntilDue === 0 ? 'today' : `in ${p.daysUntilDue}d`})`
           )
         }
       }
       if (items.length === 0) {
         return {
-          text: 'No payment deadlines coming up — all clear on the money front. 💰',
+          text: 'No payment deadlines coming up - all clear on the money front. 💰',
           navSuggestions: [{ label: 'Financials', href: '/financials' }],
         }
       }
@@ -519,10 +519,10 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       ]
       for (const q of ctx.expiringQuotes) {
         lines.push(
-          `- **${q.clientName}** — ${q.occasion}: $${(q.totalCents / 100).toLocaleString()} (expires ${q.daysUntilExpiry === 0 ? 'today ⚠️' : `in ${q.daysUntilExpiry}d`})`
+          `- **${q.clientName}** - ${q.occasion}: $${(q.totalCents / 100).toLocaleString()} (expires ${q.daysUntilExpiry === 0 ? 'today ⚠️' : `in ${q.daysUntilExpiry}d`})`
         )
       }
-      lines.push('\nFollow up before they expire — a quick nudge can close the deal. 🎯')
+      lines.push('\nFollow up before they expire - a quick nudge can close the deal. 🎯')
       return {
         text: lines.join('\n'),
         navSuggestions: [{ label: 'Quotes', href: '/quotes' }],
@@ -551,7 +551,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.clientReengagement || ctx.clientReengagement.length === 0) {
         return {
-          text: "All your clients are within their normal booking patterns — no one's overdue for a touchpoint. 👍",
+          text: "All your clients are within their normal booking patterns - no one's overdue for a touchpoint. 👍",
           navSuggestions: [{ label: 'Clients', href: '/clients' }],
         }
       }
@@ -560,7 +560,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       ]
       for (const c of ctx.clientReengagement.slice(0, 5)) {
         lines.push(
-          `- **${c.clientName}** — usually books every ~${c.avgIntervalDays}d, last booked ${c.daysSinceLastBooking}d ago (${c.eventCount} events total)`
+          `- **${c.clientName}** - usually books every ~${c.avgIntervalDays}d, last booked ${c.daysSinceLastBooking}d ago (${c.eventCount} events total)`
         )
       }
       lines.push(
@@ -631,8 +631,8 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
         const dt = new Date(e.date)
         const daysUntil = Math.ceil((dt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
         lines[0] += ` on ${dt.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}`
-        if (daysUntil <= 1) lines[0] += " — **that's tomorrow!** 🔥"
-        else if (daysUntil <= 3) lines[0] += ` — **${daysUntil} days away**`
+        if (daysUntil <= 1) lines[0] += " - **that's tomorrow!** 🔥"
+        else if (daysUntil <= 3) lines[0] += ` - **${daysUntil} days away**`
       }
       lines.push(`- Status: ${e.status}`)
       if (e.guestCount) lines.push(`- Guests: ${e.guestCount}`)
@@ -700,7 +700,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       const stale = ctx.staleInquiries ?? []
       if (unread.length === 0 && stale.length === 0) {
         return {
-          text: 'Inbox is clear — no unread messages or stale inquiries. 📬',
+          text: 'Inbox is clear - no unread messages or stale inquiries. 📬',
           navSuggestions: [{ label: 'Inquiries', href: '/inquiries' }],
         }
       }
@@ -714,7 +714,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
         lines.push(
           `**${stale.length} inquir${stale.length !== 1 ? 'ies' : 'y'}** going cold (${stale
             .slice(0, 3)
-            .map((i) => `${i.leadName} — ${i.daysSinceContact}d`)
+            .map((i) => `${i.leadName} - ${i.daysSinceContact}d`)
             .join(', ')}).`
         )
       }
@@ -792,7 +792,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.pendingMenuApprovals || ctx.pendingMenuApprovals.length === 0) {
         return {
-          text: 'No pending menu approvals — all menus are either approved or not yet sent. 🍽️',
+          text: 'No pending menu approvals - all menus are either approved or not yet sent. 🍽️',
         }
       }
       const lines = [
@@ -858,7 +858,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.recentAARInsights || ctx.recentAARInsights.length === 0) {
         return {
-          text: 'No after-action reviews yet. After your next event, do a quick debrief — it compounds fast. 📝',
+          text: 'No after-action reviews yet. After your next event, do a quick debrief - it compounds fast. 📝',
         }
       }
       const lines = [
@@ -939,7 +939,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
           hour: 'numeric',
           minute: '2-digit',
         })
-        lines.push(`- **${c.clientName}** — ${c.purpose ?? 'call'} (${when})`)
+        lines.push(`- **${c.clientName}** - ${c.purpose ?? 'call'} (${when})`)
       }
       return { text: lines.join('\n') }
     },
@@ -975,7 +975,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
             })
           : '$0'
       return {
-        text: `**${new Date().getFullYear()} Year-to-Date:**\n\n- Revenue: **${rev}**\n- Expenses: ${exp}\n- Profit: **${profit}** (${margin}% margin)\n- Events: ${ys.totalEventsThisYear} total (${ys.completedEventsThisYear} completed)\n- Avg revenue/event: ${avgEvent}\n\n${margin >= 50 ? 'Strong margins — your year is on track. 🔥' : margin >= 30 ? 'Decent margins. Keep an eye on expenses.' : 'Margins are tight — worth reviewing your cost structure.'}`,
+        text: `**${new Date().getFullYear()} Year-to-Date:**\n\n- Revenue: **${rev}**\n- Expenses: ${exp}\n- Profit: **${profit}** (${margin}% margin)\n- Events: ${ys.totalEventsThisYear} total (${ys.completedEventsThisYear} completed)\n- Avg revenue/event: ${avgEvent}\n\n${margin >= 50 ? 'Strong margins - your year is on track. 🔥' : margin >= 30 ? 'Decent margins. Keep an eye on expenses.' : 'Margins are tight - worth reviewing your cost structure.'}`,
         navSuggestions: [
           { label: 'Financials', href: '/financials' },
           { label: 'Analytics', href: '/analytics' },
@@ -992,12 +992,12 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       const cf = ctx.cashFlowProjection
       if (cf.eventCount === 0) {
         return {
-          text: 'No upcoming events with projected revenue. Pipeline is empty — time for some outreach. 📬',
+          text: 'No upcoming events with projected revenue. Pipeline is empty - time for some outreach. 📬',
           navSuggestions: [{ label: 'Inquiries', href: '/inquiries' }],
         }
       }
       return {
-        text: `**Cash flow outlook:** ${(cf.expectedCents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })} expected from **${cf.eventCount} upcoming event${cf.eventCount !== 1 ? 's' : ''}**.\n\n${ctx.overduePayments && ctx.overduePayments.length > 0 ? `⚠️ Plus ${ctx.overduePayments.length} overdue payment${ctx.overduePayments.length !== 1 ? 's' : ''} outstanding.` : 'No overdue payments — clean pipeline. ✅'}`,
+        text: `**Cash flow outlook:** ${(cf.expectedCents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })} expected from **${cf.eventCount} upcoming event${cf.eventCount !== 1 ? 's' : ''}**.\n\n${ctx.overduePayments && ctx.overduePayments.length > 0 ? `⚠️ Plus ${ctx.overduePayments.length} overdue payment${ctx.overduePayments.length !== 1 ? 's' : ''} outstanding.` : 'No overdue payments - clean pipeline. ✅'}`,
         navSuggestions: [{ label: 'Financials', href: '/financials' }],
       }
     },
@@ -1014,11 +1014,11 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       const thisWeek = (ctx.upcomingEvents ?? []).length
       const status =
         thisWeek >= 5
-          ? "You're packed — consider blocking time for prep and self-care."
+          ? "You're packed - consider blocking time for prep and self-care."
           : thisWeek >= 3
             ? 'Steady week ahead. Manageable load.'
             : thisWeek > 0
-              ? 'Light week — good time for admin, outreach, or creative work.'
+              ? 'Light week - good time for admin, outreach, or creative work.'
               : 'Clear calendar. Perfect for planning ahead.'
       return {
         text: `**Workload snapshot:**\n\n- Today: **${todayEvents} event${todayEvents !== 1 ? 's' : ''}**\n- This week: **${thisWeek} event${thisWeek !== 1 ? 's' : ''}**\n- Total upcoming: **${upcoming}**\n\n${status}`,
@@ -1033,7 +1033,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.clientReengagement || ctx.clientReengagement.length === 0) {
         return {
-          text: 'All your clients are booking on schedule — no one dormant right now. Nice work. 💪',
+          text: 'All your clients are booking on schedule - no one dormant right now. Nice work. 💪',
         }
       }
       const lines = [
@@ -1041,7 +1041,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       ]
       for (const c of ctx.clientReengagement.slice(0, 5)) {
         lines.push(
-          `- **${c.clientName}** — last booked ${c.daysSinceLastBooking}d ago (usually every ${c.avgIntervalDays}d, ${c.eventCount} events total)`
+          `- **${c.clientName}** - last booked ${c.daysSinceLastBooking}d ago (usually every ${c.avgIntervalDays}d, ${c.eventCount} events total)`
         )
       }
       if (ctx.clientReengagement.length > 5) {
@@ -1068,7 +1068,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
           currency: 'USD',
         })
         lines.push(
-          `- **${q.clientName}** (${q.occasion}) — ${amt}, expires in ${q.daysUntilExpiry}d`
+          `- **${q.clientName}** (${q.occasion}) - ${amt}, expires in ${q.daysUntilExpiry}d`
         )
       }
       lines.push('\nFollow up before they lapse!')
@@ -1096,7 +1096,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
             style: 'currency',
             currency: 'USD',
           })
-          lines.push(`- **${p.clientName}** — ${amt} (${p.daysOverdue}d overdue)`)
+          lines.push(`- **${p.clientName}** - ${amt} (${p.daysOverdue}d overdue)`)
         }
         lines.push('')
       }
@@ -1107,7 +1107,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
             style: 'currency',
             currency: 'USD',
           })
-          lines.push(`- **${p.clientName}** (${p.occasion}) — ${amt} due in ${p.daysUntilDue}d`)
+          lines.push(`- **${p.clientName}** (${p.occasion}) - ${amt} due in ${p.daysUntilDue}d`)
         }
       }
       return {
@@ -1125,7 +1125,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       const iv = ctx.inquiryVelocity
       const trend =
         iv.thisWeek > iv.lastWeek
-          ? `Up from ${iv.lastWeek} last week — momentum building! 🔥`
+          ? `Up from ${iv.lastWeek} last week - momentum building! 🔥`
           : iv.thisWeek < iv.lastWeek
             ? `Down from ${iv.lastWeek} last week. Time for some outreach?`
             : `Same as last week (${iv.lastWeek}). Steady pipeline.`
@@ -1159,7 +1159,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
         currency: 'USD',
       })
       return {
-        text: `**Profitability across ${ps.eventCount} events:**\n\n- Average margin: **${ps.avgMargin}%**\n- Best margin: ${ps.bestMargin}%\n- Worst margin: ${ps.worstMargin}%\n- Average profit/event: ${avgProfit}\n\n${ps.avgMargin >= 50 ? 'Strong margins — well-priced. 💰' : ps.avgMargin >= 30 ? 'Decent margins. Room to optimize costs.' : 'Thin margins — review your pricing or food costs.'}`,
+        text: `**Profitability across ${ps.eventCount} events:**\n\n- Average margin: **${ps.avgMargin}%**\n- Best margin: ${ps.bestMargin}%\n- Worst margin: ${ps.worstMargin}%\n- Average profit/event: ${avgProfit}\n\n${ps.avgMargin >= 50 ? 'Strong margins - well-priced. 💰' : ps.avgMargin >= 30 ? 'Decent margins. Room to optimize costs.' : 'Thin margins - review your pricing or food costs.'}`,
         navSuggestions: [{ label: 'Analytics', href: '/analytics' }],
       }
     },
@@ -1189,10 +1189,10 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       const gt = ctx.guestCountTrend
       const trend =
         gt.direction === 'up'
-          ? 'Trending up — your events are getting bigger! 📈'
+          ? 'Trending up - your events are getting bigger! 📈'
           : gt.direction === 'down'
-            ? 'Trending down — smaller, more intimate events lately.'
-            : 'Holding steady — consistent event sizes.'
+            ? 'Trending down - smaller, more intimate events lately.'
+            : 'Holding steady - consistent event sizes.'
       return {
         text: `**Guest count trend:**\n\n- Recent average: **${gt.recentAvg} guests**\n- Previous average: ${gt.previousAvg} guests\n\n${trend}`,
       }
@@ -1206,7 +1206,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (!ctx.menuApprovalStats) return null
       const ma = ctx.menuApprovalStats
       return {
-        text: `**Menu approval turnaround:**\n\n- Average: **${ma.avgDays} days**\n- Median: ${ma.medianDays} days\n- Fastest: ${ma.fastestDays} days\n- Slowest: ${ma.slowestDays} days\n\n${ma.avgDays <= 3 ? 'Quick turnaround — clients trust your menus. 🍽️' : 'Consider a follow-up at the 3-day mark to speed things up.'}`,
+        text: `**Menu approval turnaround:**\n\n- Average: **${ma.avgDays} days**\n- Median: ${ma.medianDays} days\n- Fastest: ${ma.fastestDays} days\n- Slowest: ${ma.slowestDays} days\n\n${ma.avgDays <= 3 ? 'Quick turnaround - clients trust your menus. 🍽️' : 'Consider a follow-up at the 3-day mark to speed things up.'}`,
       }
     },
   },
@@ -1298,7 +1298,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
         currency: 'USD',
       })
       return {
-        text: `**Average revenue per guest: ${formatted}**\n\nBased on ${ctx.yearlyStats.totalEventsThisYear} events with ~${avgGuests} avg guests each.\n\n${costPerGuest >= 15000 ? 'Premium pricing — you command top rates. 🔥' : costPerGuest >= 7500 ? 'Solid mid-range pricing.' : 'Room to adjust your per-head pricing up.'}`,
+        text: `**Average revenue per guest: ${formatted}**\n\nBased on ${ctx.yearlyStats.totalEventsThisYear} events with ~${avgGuests} avg guests each.\n\n${costPerGuest >= 15000 ? 'Premium pricing - you command top rates. 🔥' : costPerGuest >= 7500 ? 'Solid mid-range pricing.' : 'Room to adjust your per-head pricing up.'}`,
       }
     },
   },
@@ -1322,7 +1322,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
           month: 'short',
           day: 'numeric',
         })
-        lines.push(`- **${d}** — ${b.reason} (${b.type})`)
+        lines.push(`- **${d}** - ${b.reason} (${b.type})`)
       }
       return { text: lines.join('\n'), navSuggestions: [{ label: 'Calendar', href: '/calendar' }] }
     },
@@ -1347,7 +1347,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
           month: 'short',
           day: 'numeric',
         })
-        lines.push(`- **${w.clientName}** — ${w.occasion} on ${d} (${w.status})`)
+        lines.push(`- **${w.clientName}** - ${w.occasion} on ${d} (${w.status})`)
       }
       return { text: lines.join('\n') }
     },
@@ -1359,7 +1359,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.recentArtifacts || ctx.recentArtifacts.length === 0) {
         return {
-          text: "I haven't created any artifacts yet this session. Ask me to draft something — a bio, contract, or message — and it'll show up here.",
+          text: "I haven't created any artifacts yet this session. Ask me to draft something - a bio, contract, or message - and it'll show up here.",
         }
       }
       const lines = [`**Recent artifacts:**\n`]
@@ -1368,7 +1368,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
           month: 'short',
           day: 'numeric',
         })
-        lines.push(`- **${a.title}** (${a.type}) — ${date}`)
+        lines.push(`- **${a.title}** (${a.type}) - ${date}`)
       }
       return { text: lines.join('\n') }
     },
@@ -1389,7 +1389,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       ]
       for (const s of ctx.staffRoster) {
         lines.push(
-          `- **${s.name}** — ${s.role}${s.activeAssignments > 0 ? ` (${s.activeAssignments} active)` : ''}`
+          `- **${s.name}** - ${s.role}${s.activeAssignments > 0 ? ` (${s.activeAssignments} active)` : ''}`
         )
       }
       return { text: lines.join('\n'), navSuggestions: [{ label: 'Staff', href: '/staff' }] }
@@ -1416,7 +1416,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.activeGoals || ctx.activeGoals.length === 0) {
         return {
-          text: 'No active goals set. Head to Goals to create one — having a target changes everything.',
+          text: 'No active goals set. Head to Goals to create one - having a target changes everything.',
           navSuggestions: [{ label: 'Goals', href: '/goals' }],
         }
       }
@@ -1426,7 +1426,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       for (const g of ctx.activeGoals) {
         const progress = g.progress !== null ? ` (${g.progress}%)` : ''
         const target = g.targetDate
-          ? ` — due ${new Date(g.targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+          ? ` - due ${new Date(g.targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
           : ''
         lines.push(`- **${g.title}**${progress}${target}`)
       }
@@ -1446,7 +1446,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       ]
       for (const t of ctx.activeTodos.slice(0, 8)) {
         const due = t.dueDate
-          ? ` — due ${new Date(t.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+          ? ` - due ${new Date(t.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
           : ''
         const pri = t.priority === 'high' ? ' ⚡' : t.priority === 'urgent' ? ' 🔴' : ''
         lines.push(`- ${t.title}${pri}${due}`)
@@ -1464,14 +1464,14 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.staleInquiries || ctx.staleInquiries.length === 0) {
         return {
-          text: "No stale inquiries — you're responding promptly. ✅",
+          text: "No stale inquiries - you're responding promptly. ✅",
           navSuggestions: [{ label: 'Inquiries', href: '/inquiries' }],
         }
       }
       const lines = [`**${ctx.staleInquiries.length} inquiries going cold:**\n`]
       for (const i of ctx.staleInquiries) {
         const score = i.leadScore >= 60 ? ' 🔥 hot lead' : i.leadScore >= 30 ? ' warm lead' : ''
-        lines.push(`- **${i.leadName}** — ${i.daysSinceContact}d without response${score}`)
+        lines.push(`- **${i.leadName}** - ${i.daysSinceContact}d without response${score}`)
       }
       lines.push('\nRespond to the hottest leads first!')
       return {
@@ -1501,7 +1501,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
           currency: 'USD',
         })
         totalOverdue += p.amountCents
-        lines.push(`- **${p.clientName}** — ${amt} (${p.daysOverdue}d overdue)`)
+        lines.push(`- **${p.clientName}** - ${amt} (${p.daysOverdue}d overdue)`)
       }
       const total = (totalOverdue / 100).toLocaleString('en-US', {
         style: 'currency',
@@ -1521,7 +1521,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     answer: (ctx) => {
       if (!ctx.clientVibeNotes || ctx.clientVibeNotes.length === 0) {
         return {
-          text: 'No client vibe notes recorded yet. Add notes from the client profile — the more you know, the better you cook.',
+          text: 'No client vibe notes recorded yet. Add notes from the client profile - the more you know, the better you cook.',
         }
       }
       const lines = [
@@ -1563,7 +1563,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
             })
           : 'TBD'
         lines.push(
-          `- **${e.occasion ?? 'Event'}** for ${e.clientName} (${date}) — needs: ${missing.join(', ')}`
+          `- **${e.occasion ?? 'Event'}** for ${e.clientName} (${date}) - needs: ${missing.join(', ')}`
         )
       }
       return { text: lines.join('\n'), navSuggestions: [{ label: 'Events', href: '/events' }] }
@@ -1631,7 +1631,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       navSuggestions: [{ label: 'Events', href: '/events' }],
     }),
   },
-  // "Cost per guest trend" (different from "cost per guest" — uses expense data)
+  // "Cost per guest trend" (different from "cost per guest" - uses expense data)
   {
     pattern:
       /^(?:(?:where\s+(?:is|does)\s+my\s+money\s+go|expense\s+(?:categories|distribution)|spending\s+breakdown))/i,
@@ -1693,7 +1693,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (!ctx.repeatClientRatio) return null
       const rc = ctx.repeatClientRatio
       return {
-        text: `**${rc.repeatClients}** of your **${rc.totalClients}** clients are repeat bookers (**${rc.ratio}%**).\n\n${rc.ratio >= 40 ? 'Excellent retention — your clients love you. Keep nurturing those relationships. 💛' : rc.ratio >= 20 ? "Solid foundation of repeats. Focus on re-engagement for clients who've gone quiet." : 'Low repeat rate — consider a post-event follow-up sequence to bring clients back.'}`,
+        text: `**${rc.repeatClients}** of your **${rc.totalClients}** clients are repeat bookers (**${rc.ratio}%**).\n\n${rc.ratio >= 40 ? 'Excellent retention - your clients love you. Keep nurturing those relationships. 💛' : rc.ratio >= 20 ? "Solid foundation of repeats. Focus on re-engagement for clients who've gone quiet." : 'Low repeat rate - consider a post-event follow-up sequence to bring clients back.'}`,
         navSuggestions: [
           { label: 'Clients', href: '/clients' },
           { label: 'Loyalty', href: '/loyalty' },
@@ -1709,21 +1709,21 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
  * or null if Ollama is needed.
  *
  * This function runs AFTER context is loaded but BEFORE the Ollama call.
- * It only handles simple factual questions — anything requiring analysis,
+ * It only handles simple factual questions - anything requiring analysis,
  * judgment, or multi-step reasoning still goes to the LLM.
  */
 // ─── Contextual Follow-Up Intelligence ──────────────────────────────────────
 // After answering a factual question, Remy proactively suggests the most
 // relevant next action based on the chef's current state. This turns every
-// instant answer into a mini-consultation — one nugget, max, to avoid noise.
+// instant answer into a mini-consultation - one nugget, max, to avoid noise.
 
 function buildContextualFollowUp(ctx: RemyContext, answeredTopic: string): string | null {
-  // Don't suggest follow-ups for greetings/thanks — those already have proactive context
+  // Don't suggest follow-ups for greetings/thanks - those already have proactive context
   if (answeredTopic === 'greeting' || answeredTopic === 'thanks') return null
 
   // Priority 1: Urgent items the chef might not know about
   if (answeredTopic !== 'payments' && ctx.overduePayments && ctx.overduePayments.length > 0) {
-    return `\n\n💡 *Heads up:* ${ctx.overduePayments.length} overdue payment${ctx.overduePayments.length !== 1 ? 's' : ''} need attention — ask me "payment deadlines" for details.`
+    return `\n\n💡 *Heads up:* ${ctx.overduePayments.length} overdue payment${ctx.overduePayments.length !== 1 ? 's' : ''} need attention - ask me "payment deadlines" for details.`
   }
 
   if (
@@ -1732,25 +1732,25 @@ function buildContextualFollowUp(ctx: RemyContext, answeredTopic: string): strin
     ctx.staleInquiries.some((i) => i.leadScore >= 60)
   ) {
     const hot = ctx.staleInquiries.filter((i) => i.leadScore >= 60)
-    return `\n\n💡 *Quick note:* ${hot.length} high-value lead${hot.length !== 1 ? 's' : ''} going cold — ask me about stale inquiries.`
+    return `\n\n💡 *Quick note:* ${hot.length} high-value lead${hot.length !== 1 ? 's' : ''} going cold - ask me about stale inquiries.`
   }
 
   // Priority 2: Contextual nudges based on what they asked about
   if (answeredTopic === 'revenue' && ctx.conversionRate && ctx.conversionRate.rate < 25) {
-    return `\n\n💡 *Tip:* Your conversion rate is ${ctx.conversionRate.rate}% — faster follow-ups on new inquiries could boost revenue.`
+    return `\n\n💡 *Tip:* Your conversion rate is ${ctx.conversionRate.rate}% - faster follow-ups on new inquiries could boost revenue.`
   }
 
   if (answeredTopic === 'clients' && ctx.clientReengagement && ctx.clientReengagement.length > 0) {
-    return `\n\n💡 *Tip:* ${ctx.clientReengagement.length} client${ctx.clientReengagement.length !== 1 ? 's are' : ' is'} overdue for a booking — ask me "who should I re-engage?"`
+    return `\n\n💡 *Tip:* ${ctx.clientReengagement.length} client${ctx.clientReengagement.length !== 1 ? 's are' : ' is'} overdue for a booking - ask me "who should I re-engage?"`
   }
 
   if (answeredTopic === 'events' && ctx.expiringQuotes && ctx.expiringQuotes.length > 0) {
-    return `\n\n💡 *Tip:* ${ctx.expiringQuotes.length} quote${ctx.expiringQuotes.length !== 1 ? 's are' : ' is'} expiring soon — follow up before they lapse.`
+    return `\n\n💡 *Tip:* ${ctx.expiringQuotes.length} quote${ctx.expiringQuotes.length !== 1 ? 's are' : ' is'} expiring soon - follow up before they lapse.`
   }
 
   if (answeredTopic === 'schedule' && ctx.upcomingCalls && ctx.upcomingCalls.length > 0) {
     const nextCall = ctx.upcomingCalls[0]
-    return `\n\n💡 *Also:* You have a call with ${nextCall.clientName} coming up — ask me "upcoming calls" for the full list.`
+    return `\n\n💡 *Also:* You have a call with ${nextCall.clientName} coming up - ask me "upcoming calls" for the full list.`
   }
 
   return null
@@ -1844,7 +1844,7 @@ function getAnswerTopic(pattern: RegExp): string {
  * or null if Ollama is needed.
  *
  * This function runs AFTER context is loaded but BEFORE the Ollama call.
- * It only handles simple factual questions — anything requiring analysis,
+ * It only handles simple factual questions - anything requiring analysis,
  * judgment, or multi-step reasoning still goes to the LLM.
  */
 export function tryInstantAnswer(message: string, context: RemyContext): InstantAnswer | null {

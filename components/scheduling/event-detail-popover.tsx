@@ -1,4 +1,4 @@
-// Event Detail Popover — appears on calendar event click
+// Event Detail Popover - appears on calendar event click
 // Shows event summary with quick actions.
 
 'use client'

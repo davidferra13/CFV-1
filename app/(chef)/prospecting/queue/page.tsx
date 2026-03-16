@@ -1,4 +1,4 @@
-// Prospecting Hub — Daily Call Queue
+// Prospecting Hub - Daily Call Queue
 // Admin-only. Build a queue of N prospects and work through them.
 
 import type { Metadata } from 'next'
@@ -27,7 +27,7 @@ export default async function QueuePage() {
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Daily Call Queue</h1>
           <p className="text-stone-400 mt-1">
-            Build your call list, work through it, log outcomes — every call is tracked.
+            Build your call list, work through it, log outcomes - every call is tracked.
           </p>
         </div>
       </div>

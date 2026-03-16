@@ -1,4 +1,4 @@
-// Favorite Chefs — Celebrate the culinary heroes who inspire your craft
+// Favorite Chefs - Celebrate the culinary heroes who inspire your craft
 // Settings sub-page for managing the chef's list of favorite chefs
 
 import type { Metadata } from 'next'
@@ -27,7 +27,7 @@ export default async function FavoriteChefsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Favorite Chefs</h1>
         <p className="text-stone-400 mt-1">
-          Celebrate the chefs who inspire you — mentors, idols, and culinary heroes. Share your list
+          Celebrate the chefs who inspire you - mentors, idols, and culinary heroes. Share your list
           on social media to show clients what drives your craft.
         </p>
       </div>

@@ -28,7 +28,7 @@ export default async function AcceptedQuotesPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Quotes accepted by the client — ready to become events
+          Quotes accepted by the client - ready to become events
         </p>
       </div>
 

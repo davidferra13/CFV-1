@@ -1,4 +1,4 @@
-// Chef Quote Pipeline — List all quotes with status tabs
+// Chef Quote Pipeline - List all quotes with status tabs
 // Follows the same pattern as inquiries pipeline
 
 import type { Metadata } from 'next'

@@ -1,4 +1,4 @@
-// Automations List — Client component for managing rules
+// Automations List - Client component for managing rules
 'use client'
 
 import { useState } from 'react'
@@ -104,7 +104,7 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
             <div className="text-center py-8 space-y-3">
               <p className="text-sm text-stone-400">No custom rules yet.</p>
               <p className="text-xs text-stone-400 max-w-sm mx-auto">
-                Custom rules let you build additional automations on top of the built-ins above —
+                Custom rules let you build additional automations on top of the built-ins above -
                 like getting a special alert for large-party inquiries, or logging a note whenever
                 an event is confirmed.
               </p>

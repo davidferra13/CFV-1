@@ -89,7 +89,7 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
     <Card>
       <CardHeader>
         <CardTitle className="text-base">
-          {employee ? `Edit — ${employee.name}` : 'Add W-2 Employee'}
+          {employee ? `Edit - ${employee.name}` : 'Add W-2 Employee'}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

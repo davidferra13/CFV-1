@@ -1,6 +1,6 @@
 'use client'
 
-// Admin Cannabis Client — interactive management panel
+// Admin Cannabis Client - interactive management panel
 
 import { useState } from 'react'
 import { ConfirmModal } from '@/components/ui/confirm-modal'

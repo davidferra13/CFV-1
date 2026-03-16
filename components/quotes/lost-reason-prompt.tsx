@@ -51,7 +51,7 @@ export function LostReasonPrompt({ quoteId, onDismiss }: LostReasonPromptProps) 
     <div className="rounded-xl border border-stone-700 bg-stone-800 p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-medium text-stone-200">
-          Quick feedback — why did this quote not convert?
+          Quick feedback - why did this quote not convert?
           <span className="ml-1 font-normal text-stone-500">(optional)</span>
         </p>
         <button

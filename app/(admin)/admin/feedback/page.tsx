@@ -52,7 +52,7 @@ export default async function AdminFeedbackPage() {
       <div>
         <h1 className="text-2xl font-bold text-white">User Feedback</h1>
         <p className="text-slate-400 text-sm mt-1">
-          All feedback submitted by chefs and clients — newest first.
+          All feedback submitted by chefs and clients - newest first.
         </p>
       </div>
 
@@ -63,11 +63,11 @@ export default async function AdminFeedbackPage() {
             key={key}
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${color}`}
           >
-            {emoji} {label} — {counts[key] ?? 0}
+            {emoji} {label} - {counts[key] ?? 0}
           </span>
         ))}
         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-slate-700 text-slate-200">
-          Total — {feedback.length}
+          Total - {feedback.length}
         </span>
       </div>
 
@@ -115,11 +115,11 @@ export default async function AdminFeedbackPage() {
                       {row.anonymous ? (
                         <span className="italic text-stone-500">Anonymous</span>
                       ) : (
-                        <span className="capitalize">{row.user_role ?? '—'}</span>
+                        <span className="capitalize">{row.user_role ?? '-'}</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-stone-500 text-xs font-mono truncate max-w-[140px]">
-                      {row.page_context ?? '—'}
+                      {row.page_context ?? '-'}
                     </td>
                   </tr>
                 )

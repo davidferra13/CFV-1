@@ -1,5 +1,5 @@
-// TakeAChef Dashboard Widget — Actionable command center, not just stats.
-// Server component — data is fetched at render time, no client JS needed.
+// TakeAChef Dashboard Widget - Actionable command center, not just stats.
+// Server component - data is fetched at render time, no client JS needed.
 
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
@@ -96,10 +96,10 @@ export async function TacDashboardWidget() {
       </CardHeader>
 
       <CardContent className="px-4 py-3 space-y-3">
-        {/* First-run guide — dismissible */}
+        {/* First-run guide - dismissible */}
         <TacWelcomeGuide />
 
-        {/* Untouched Leads — action required */}
+        {/* Untouched Leads - action required */}
         {actionable.untouched.length > 0 && (
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ export async function TacDashboardWidget() {
                 {actionable.untouched.length} Untouched
               </Badge>
               <span className="text-xs text-stone-500">
-                Send a menu or decline — don't leave them hanging
+                Send a menu or decline - don't leave them hanging
               </span>
             </div>
             <div className="space-y-1">

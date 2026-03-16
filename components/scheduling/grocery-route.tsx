@@ -1,9 +1,9 @@
 'use client'
 
-// GroceryRoute — Store route display for grocery shopping trips.
+// GroceryRoute - Store route display for grocery shopping trips.
 // Shows a numbered list of stores in the suggested visit order,
 // with each store's item checklist and item count summary.
-// Simple list layout — no map integration needed.
+// Simple list layout - no map integration needed.
 
 import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'

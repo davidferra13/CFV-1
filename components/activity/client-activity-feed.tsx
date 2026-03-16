@@ -25,7 +25,7 @@ const EVENT_DESCRIPTIONS: Record<string, string> = {
   rewards_viewed: 'Browsed rewards',
 }
 
-// Never shown in display feeds — written to DB for engagement scoring only
+// Never shown in display feeds - written to DB for engagement scoring only
 const HIDDEN_FROM_FEED = new Set(['session_heartbeat'])
 
 export function ClientActivityFeed({ events }: ClientActivityFeedProps) {
@@ -120,7 +120,7 @@ function buildMetadataParts(event: ActivityEvent): string[] {
     if (formatted) parts.push(formatted)
   } else if (totalQuotedCents) {
     const formatted = formatCents(totalQuotedCents)
-    if (formatted) parts.push(formatted + (isPending ? ' — needs response' : ''))
+    if (formatted) parts.push(formatted + (isPending ? ' - needs response' : ''))
   }
   if (documentType === 'receipt') parts.push('Receipt')
   else if (documentType === 'foh_menu') parts.push('Menu PDF')

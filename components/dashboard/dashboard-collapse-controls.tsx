@@ -7,7 +7,7 @@ import { DASHBOARD_WIDGET_IDS } from '@/lib/scheduling/types'
 import { Button } from '@/components/ui/button'
 
 // ============================================
-// Context — shared collapse state for all dashboard widgets
+// Context - shared collapse state for all dashboard widgets
 // ============================================
 
 interface CollapseContextValue {
@@ -28,7 +28,7 @@ export function useCollapseContext() {
 }
 
 // ============================================
-// Provider — wraps the dashboard widget area
+// Provider - wraps the dashboard widget area
 // ============================================
 
 export function DashboardCollapseProvider({ children }: { children: React.ReactNode }) {
@@ -38,7 +38,7 @@ export function DashboardCollapseProvider({ children }: { children: React.ReactN
 }
 
 // ============================================
-// Controls — Collapse All / Expand All buttons
+// Controls - Collapse All / Expand All buttons
 // ============================================
 
 export function DashboardCollapseControls() {

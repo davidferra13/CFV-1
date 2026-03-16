@@ -1,6 +1,6 @@
 'use client'
 
-// SourceBadge — Color-coded channel badge with icon.
+// SourceBadge - Color-coded channel badge with icon.
 // Used everywhere: inbox cards, inquiry list, analytics, thread detail.
 // All styling comes from lib/communication/channel-meta.ts.
 

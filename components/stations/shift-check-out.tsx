@@ -1,6 +1,6 @@
 'use client'
 
-// Shift Check-Out — End of shift for a station
+// Shift Check-Out - End of shift for a station
 // Saves a snapshot of the current clipboard state and handoff notes.
 
 import { useState } from 'react'

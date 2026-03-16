@@ -22,7 +22,7 @@ export default async function StaffMealsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Staff Meals</h1>
         <p className="text-stone-500 mt-1">
-          Log every staff meal — track ingredient usage, cost per meal, and monthly totals.
+          Log every staff meal - track ingredient usage, cost per meal, and monthly totals.
         </p>
       </div>
 

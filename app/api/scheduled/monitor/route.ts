@@ -1,6 +1,6 @@
 // Cron Health Monitor Endpoint
-// GET /api/scheduled/monitor — check that all crons have run recently
-// POST /api/scheduled/monitor — same (supports manual invocation)
+// GET /api/scheduled/monitor - check that all crons have run recently
+// POST /api/scheduled/monitor - same (supports manual invocation)
 //
 // For each registered cron, checks whether a heartbeat exists in
 // cron_executions within 2x the expected schedule interval.
@@ -19,26 +19,26 @@ import { verifyCronAuth } from '@/lib/auth/cron-auth'
 // Expected max interval (minutes) for each cron, derived from vercel.json schedules.
 // We alert if the last heartbeat is older than 2x this value.
 const CRON_EXPECTED_INTERVALS: Record<string, number> = {
-  // 5-minute crons — alert if stale > 10 min
+  // 5-minute crons - alert if stale > 10 min
   'gmail-sync': 10,
   'integrations-pull': 10,
   'wix-process': 10,
   'social-publish': 10,
-  // 15-minute crons — alert if stale > 30 min
+  // 15-minute crons - alert if stale > 30 min
   automations: 30,
   copilot: 30,
   'email-history-scan': 30,
-  // 30-minute crons — alert if stale > 60 min
+  // 30-minute crons - alert if stale > 60 min
   'call-reminders': 60,
-  // Hourly crons — alert if stale > 2 hours
+  // Hourly crons - alert if stale > 2 hours
   'integrations-retry': 120,
   campaigns: 120,
-  // 6-hour crons — alert if stale > 12 hours
+  // 6-hour crons - alert if stale > 12 hours
   'revenue-goals': 720,
   'follow-ups': 720,
   'reviews-sync': 720,
   'wellbeing-signals': 720,
-  // Daily crons — alert if stale > 48 hours (some may be skipped on weekends or holidays)
+  // Daily crons - alert if stale > 48 hours (some may be skipped on weekends or holidays)
   lifecycle: 2880,
   sequences: 2880,
   'activity-cleanup': 2880,
@@ -100,7 +100,7 @@ async function handleMonitor(request: NextRequest): Promise<NextResponse> {
     const latest = latestByName.get(cronName)
 
     if (!latest) {
-      // Never recorded — either newly deployed or heartbeat not added yet
+      // Never recorded - either newly deployed or heartbeat not added yet
       cronStatuses.push({
         cronName,
         status: 'missing',
@@ -136,7 +136,7 @@ async function handleMonitor(request: NextRequest): Promise<NextResponse> {
         lastStatus: latest.status,
         minutesSinceLastRun: minutesSince,
         maxExpectedMinutes: maxMinutes,
-        message: `OK — last run ${minutesSince} minutes ago.`,
+        message: `OK - last run ${minutesSince} minutes ago.`,
       })
     }
   }
@@ -168,7 +168,7 @@ async function handleMonitor(request: NextRequest): Promise<NextResponse> {
     console.log('[CronMonitor] All crons healthy.', result.summary)
   }
 
-  // Return 200 even if unhealthy — the caller interprets result.healthy
+  // Return 200 even if unhealthy - the caller interprets result.healthy
   // Returning non-200 would cause Vercel to retry the monitor itself
   return NextResponse.json(result)
 }

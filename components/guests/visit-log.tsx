@@ -155,13 +155,13 @@ export function VisitLog({ guestId, visits, totalSpendCents }: VisitLogProps) {
                 {visits.map((v) => (
                   <tr key={v.id} className="border-b border-stone-800">
                     <td className="py-2 pr-4 text-stone-300">{v.visit_date}</td>
-                    <td className="py-2 pr-4 text-stone-400">{v.party_size || '—'}</td>
+                    <td className="py-2 pr-4 text-stone-400">{v.party_size || '-'}</td>
                     <td className="py-2 pr-4 text-stone-200">
-                      {v.spend_cents ? `$${(v.spend_cents / 100).toFixed(2)}` : '—'}
+                      {v.spend_cents ? `$${(v.spend_cents / 100).toFixed(2)}` : '-'}
                     </td>
-                    <td className="py-2 pr-4 text-stone-400">{v.server_id || '—'}</td>
+                    <td className="py-2 pr-4 text-stone-400">{v.server_id || '-'}</td>
                     <td className="py-2 text-stone-500 text-xs truncate max-w-[200px]">
-                      {v.notes || '—'}
+                      {v.notes || '-'}
                     </td>
                   </tr>
                 ))}

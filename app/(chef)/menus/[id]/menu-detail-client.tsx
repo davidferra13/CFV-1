@@ -866,7 +866,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
             </CardContent>
           </Card>
 
-          {/* Cocktail Browser — draft/shared menus only */}
+          {/* Cocktail Browser - draft/shared menus only */}
           {(menu.status === 'draft' || menu.status === 'shared') && <CocktailBrowserPanel />}
 
           {/* Linked Event */}

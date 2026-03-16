@@ -1,4 +1,4 @@
-// Staff Clipboard View — Simplified clipboard for staff members
+// Staff Clipboard View - Simplified clipboard for staff members
 // Staff can update on_hand, waste_qty, waste_reason, and notes.
 // Other fields (made, need_to_make, need_to_order) are read-only for staff.
 'use client'

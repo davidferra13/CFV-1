@@ -1,4 +1,4 @@
-// Onboarding Checklist Widget — shows setup completion status for new chefs
+// Onboarding Checklist Widget - shows setup completion status for new chefs
 // Displayed on dashboard until all 5 phases are complete.
 // Drives the chef to /onboarding to complete any missing steps.
 

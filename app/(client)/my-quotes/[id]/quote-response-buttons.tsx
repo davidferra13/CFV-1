@@ -1,4 +1,4 @@
-// Quote Response Buttons — Client accepts or rejects a quote
+// Quote Response Buttons - Client accepts or rejects a quote
 // Follows the same modal confirmation pattern as accept-proposal-button
 
 'use client'

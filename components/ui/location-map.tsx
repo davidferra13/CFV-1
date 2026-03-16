@@ -83,7 +83,7 @@ function GoogleMapEmbed({ lat, lng, zoom, className = '' }: LocationMapProps) {
   )
 }
 
-// ─── Public component — picks implementation based on env config ──────────
+// ─── Public component - picks implementation based on env config ──────────
 
 export function LocationMap({ lat, lng, zoom = 15, className = '' }: LocationMapProps) {
   if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {

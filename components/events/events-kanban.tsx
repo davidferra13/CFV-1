@@ -2,7 +2,7 @@
 
 // Events Kanban View
 // Displays events grouped into FSM-state columns.
-// Read-only — cards link to the event detail page.
+// Read-only - cards link to the event detail page.
 
 import Link from 'next/link'
 import { format } from 'date-fns'

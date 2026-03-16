@@ -109,7 +109,7 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
                   {threshold
                     .map((t) => `${t.staffName} (${formatCents(t.ytdPaymentsCents)})`)
                     .join(', ')}{' '}
-                  — these contractors have received $600+ this year.
+                  - these contractors have received $600+ this year.
                 </p>
               </div>
             </div>

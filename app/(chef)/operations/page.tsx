@@ -1,5 +1,5 @@
 // Operations Hub Page
-// Landing page for the /operations section — nav tiles to equipment and kitchen rentals.
+// Landing page for the /operations section - nav tiles to equipment and kitchen rentals.
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -8,7 +8,7 @@ import { listEquipment, getEquipmentDueForMaintenance, listRentals } from '@/lib
 import { listKitchenRentals } from '@/lib/kitchen-rentals/actions'
 import { Card, CardContent } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Operations — ChefFlow' }
+export const metadata: Metadata = { title: 'Operations | ChefFlow' }
 
 export default async function OperationsHubPage() {
   await requireChef()
@@ -36,7 +36,7 @@ export default async function OperationsHubPage() {
     {
       href: '/operations/kitchen-rentals',
       label: 'Kitchen Rentals',
-      description: 'Log commercial kitchen bookings — hours, costs, and event linkages',
+      description: 'Log commercial kitchen bookings - hours, costs, and event linkages',
       icon: '🏠',
       badge: `${kitchenRentals.length} booking${kitchenRentals.length !== 1 ? 's' : ''}`,
       badgeColor: 'text-stone-500 bg-stone-800',

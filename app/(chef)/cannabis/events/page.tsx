@@ -1,4 +1,4 @@
-// Cannabis Events — Chef Portal
+// Cannabis Events - Chef Portal
 // All events where cannabis_preference = true, with their details.
 
 import { getCannabisEvents } from '@/lib/chef/cannabis-actions'

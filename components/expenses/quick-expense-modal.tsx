@@ -17,7 +17,7 @@ function todayISO() {
 }
 
 /**
- * Minimal expense entry modal — amount, category, vendor, date, description.
+ * Minimal expense entry modal - amount, category, vendor, date, description.
  * Stays open after save for rapid entry. "Done" closes it.
  */
 export function QuickExpenseModal({ open, onClose }: QuickExpenseModalProps) {

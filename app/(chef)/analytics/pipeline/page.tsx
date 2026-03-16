@@ -1,4 +1,4 @@
-// Pipeline Forecast — Revenue pipeline analysis
+// Pipeline Forecast - Revenue pipeline analysis
 // Projects future revenue based on active inquiries, quotes, and confirmed events
 
 import type { Metadata } from 'next'

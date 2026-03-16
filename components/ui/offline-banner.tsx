@@ -1,6 +1,6 @@
 'use client'
 
-// OfflineBanner — Displays a fixed top bar when the browser goes offline.
+// OfflineBanner - Displays a fixed top bar when the browser goes offline.
 // Shows a brief "Back online" confirmation for 3 seconds on reconnection.
 // Renders nothing when online and not in the reconnected window.
 
@@ -55,7 +55,7 @@ export function OfflineBanner() {
       ) : (
         <span className="flex items-center justify-center gap-2">
           <WifiOff className="h-4 w-4" />
-          You&apos;re offline — some features may be unavailable
+          You&apos;re offline - some features may be unavailable
         </span>
       )}
     </div>

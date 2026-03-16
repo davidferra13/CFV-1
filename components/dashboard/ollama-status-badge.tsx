@@ -1,6 +1,6 @@
 'use client'
 
-// Ollama Status Badge — Clickable Control Panel
+// Ollama Status Badge - Clickable Control Panel
 // Shows AI endpoint status at a glance. Click to open a popover with
 // per-endpoint ping, wake/restart toggle, and model loading controls.
 //
@@ -256,7 +256,7 @@ export function OllamaStatusBadge() {
 
   const allOnline = endpoints.every((e) => e.online && e.modelReady)
   const anyOnline = endpoints.some((e) => e.online)
-  // PC is the primary endpoint — if it's healthy, AI is functional
+  // PC is the primary endpoint - if it's healthy, AI is functional
   const pcEndpoint = endpoints.find((e) => e.name === 'pc')
   const pcHealthy = pcEndpoint?.online && pcEndpoint?.modelReady
 
@@ -274,7 +274,7 @@ export function OllamaStatusBadge() {
       badgeLabel = `${ep.name === 'pi' ? 'Pi' : 'Local'} · ${ep.latencyMs ?? '?'}ms`
     }
   } else if (pcHealthy) {
-    // PC is fine, Pi is down — still green, Pi is a bonus not a requirement
+    // PC is fine, Pi is down - still green, Pi is a bonus not a requirement
     badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-700'
     badgeDot = 'bg-emerald-500 animate-pulse'
     badgeLabel =
@@ -282,7 +282,7 @@ export function OllamaStatusBadge() {
         ? `PC · ${pcEndpoint.latencyMs ?? '?'}ms | Pi Off`
         : `Local · ${pcEndpoint.latencyMs ?? '?'}ms`
   } else if (anyOnline) {
-    // PC is down but Pi is up — amber, degraded
+    // PC is down but Pi is up - amber, degraded
     badgeClass = 'border-amber-200 bg-amber-950 text-amber-700'
     badgeDot = 'bg-amber-500 animate-pulse'
     badgeLabel =
@@ -375,9 +375,9 @@ export function OllamaStatusBadge() {
 
                   <div className="text-[11px] text-stone-500 mb-2">
                     {ep.model}
-                    {ep.online && ep.modelReady && ' — ready'}
-                    {ep.online && !ep.modelReady && ' — not loaded'}
-                    {!ep.online && ep.error && ` — ${ep.error}`}
+                    {ep.online && ep.modelReady && ' - ready'}
+                    {ep.online && !ep.modelReady && ' - not loaded'}
+                    {!ep.online && ep.error && ` - ${ep.error}`}
                   </div>
 
                   <div className="flex flex-wrap gap-1.5">
@@ -446,7 +446,7 @@ export function OllamaStatusBadge() {
 
           <div className="px-4 py-2 border-t border-stone-800 bg-stone-950/50">
             <div className="text-[10px] text-stone-600">
-              Private AI — data stays on your devices
+              Private AI - data stays on your devices
             </div>
           </div>
         </div>

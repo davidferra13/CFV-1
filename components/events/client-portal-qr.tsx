@@ -1,5 +1,5 @@
-// ClientPortalQR — displays a scannable QR code for the client's event portal URL.
-// Uses QR Server (https://api.qrserver.com) — free, no API key required.
+// ClientPortalQR - displays a scannable QR code for the client's event portal URL.
+// Uses QR Server (https://api.qrserver.com) - free, no API key required.
 
 interface ClientPortalQRProps {
   eventId: string

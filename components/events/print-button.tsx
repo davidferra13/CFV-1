@@ -1,6 +1,6 @@
 'use client'
 
-// PrintButton — client component so window.print() can be called from an event handler.
+// PrintButton - client component so window.print() can be called from an event handler.
 // Extracted from the invoice page (which is a server component) to avoid the RSC
 // "functions cannot be passed to Client Component props" error.
 

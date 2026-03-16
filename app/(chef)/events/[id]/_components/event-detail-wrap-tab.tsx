@@ -44,7 +44,7 @@ export function EventDetailWrapTab({
 }: EventDetailWrapTabProps) {
   return (
     <EventDetailSection tab="wrap" activeTab={activeTab}>
-      {/* File AAR button — prominent, for completed events without AAR */}
+      {/* File AAR button - prominent, for completed events without AAR */}
       {eventStatus === 'completed' && !hasAAR && !hasClosureStatus && (
         <Card className="p-6 border-brand-700 bg-brand-950">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -61,7 +61,7 @@ export function EventDetailWrapTab({
         </Card>
       )}
 
-      {/* Post-Event Debrief CTA — capture what you learned while it's fresh */}
+      {/* Post-Event Debrief CTA - capture what you learned while it's fresh */}
       {eventStatus === 'completed' && !debriefCompletedAt && (
         <Card className="p-6 border-amber-200 bg-amber-950">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -122,7 +122,7 @@ export function EventDetailWrapTab({
         </Card>
       )}
 
-      {/* AI AAR Generator — for completed events without a filed review */}
+      {/* AI AAR Generator - for completed events without a filed review */}
       {eventStatus === 'completed' && !hasAAR && <AARGeneratorPanel eventId={eventId} />}
 
       {/* AI Review Request Drafter */}

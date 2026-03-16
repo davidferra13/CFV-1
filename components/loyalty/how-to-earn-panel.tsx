@@ -1,4 +1,4 @@
-// How-to-Earn Panel — Client-facing
+// How-to-Earn Panel - Client-facing
 // Explains every way a client can earn loyalty points.
 // All data is config-driven from the chef's loyalty_config.
 
@@ -52,18 +52,18 @@ export function HowToEarnPanel({ config }: Props) {
             />
           )}
 
-          {/* Base earn — varies by earn mode */}
+          {/* Base earn - varies by earn mode */}
           {(!config.earn_mode || config.earn_mode === 'per_guest') && (
             <EarnRow
               emoji="🍽️"
-              label={`Each guest you bring to a dinner — ${config.points_per_guest} pts per guest`}
+              label={`Each guest you bring to a dinner - ${config.points_per_guest} pts per guest`}
               points={`${config.points_per_guest} pts / guest`}
             />
           )}
           {config.earn_mode === 'per_dollar' && (
             <EarnRow
               emoji="💰"
-              label={`For every dollar spent on your event — ${config.points_per_dollar ?? 1} pts per dollar`}
+              label={`For every dollar spent on your event - ${config.points_per_dollar ?? 1} pts per dollar`}
               points={`${config.points_per_dollar ?? 1} pts / $1`}
             />
           )}
@@ -79,7 +79,7 @@ export function HowToEarnPanel({ config }: Props) {
           {config.bonus_large_party_threshold && (config.bonus_large_party_points ?? 0) > 0 && (
             <EarnRow
               emoji="🎉"
-              label={`Large party bonus — when you bring ${config.bonus_large_party_threshold}+ guests`}
+              label={`Large party bonus - when you bring ${config.bonus_large_party_threshold}+ guests`}
               points={`+${config.bonus_large_party_points} bonus`}
             />
           )}
@@ -114,7 +114,7 @@ export function HowToEarnPanel({ config }: Props) {
           <p className="text-xs text-stone-500 leading-relaxed">
             Points are awarded automatically when your chef marks an event as completed. They appear
             in your transaction history within minutes. Your tier is based on your{' '}
-            <span className="font-medium">lifetime points earned</span> — it never goes down, even
+            <span className="font-medium">lifetime points earned</span> - it never goes down, even
             when you redeem rewards.
           </p>
         </div>

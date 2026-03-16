@@ -1,4 +1,4 @@
-// Automation Rule Builder — Create and edit automation rules
+// Automation Rule Builder - Create and edit automation rules
 // Improvements over original:
 // - Condition field picker: dropdown of known fields per trigger (no raw text needed)
 // - Template picker: dropdown of chef's templates (no UUID paste)
@@ -60,7 +60,7 @@ const QUICK_START_TEMPLATES: QuickStartTemplate[] = [
       action_type: 'create_follow_up_task',
       action_config: {
         description:
-          'Send a follow-up to {{client_name}} — no response in {{days_since_last_contact}} days',
+          'Send a follow-up to {{client_name}} - no response in {{days_since_last_contact}} days',
         due_hours: '4',
       },
     },
@@ -131,14 +131,14 @@ const QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     label: 'Payment received → thank-you draft',
     description: 'Create a follow-up task to send a thank-you note when an event is paid.',
     rule: {
-      name: 'Payment received — thank-you task',
+      name: 'Payment received - thank-you task',
       description:
         'Creates a follow-up task to draft a thank-you message after deposit or full payment is received.',
       trigger_event: 'event_status_changed',
       conditions: [{ field: 'new_status', op: 'eq', value: 'paid' }],
       action_type: 'create_follow_up_task',
       action_config: {
-        description: 'Send thank-you note to {{client_name}} for {{occasion}} — payment received',
+        description: 'Send thank-you note to {{client_name}} for {{occasion}} - payment received',
         due_hours: '4',
       },
     },
@@ -153,7 +153,7 @@ const QUICK_START_TEMPLATES: QuickStartTemplate[] = [
       conditions: [{ field: 'new_status', op: 'eq', value: 'completed' }],
       action_type: 'create_follow_up_task',
       action_config: {
-        description: 'Request a review from {{client_name}} — 24h after {{occasion}}',
+        description: 'Request a review from {{client_name}} - 24h after {{occasion}}',
         due_hours: '24',
       },
     },
@@ -289,7 +289,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
       {showQuickStart && !isEditing && (
         <div className="px-4 py-3 bg-amber-950 border-b border-amber-100">
           <p className="text-xs font-medium text-stone-400 mb-2">
-            Start with a pre-built rule — you can customise it after:
+            Start with a pre-built rule - you can customise it after:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {QUICK_START_TEMPLATES.map((tpl) => (
@@ -311,7 +311,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
             onClick={() => setShowQuickStart(false)}
             className="mt-2 text-xs text-stone-400 hover:text-stone-400"
           >
-            Skip — build from scratch
+            Skip - build from scratch
           </button>
         </div>
       )}
@@ -382,13 +382,13 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
           </div>
           {conditions.length === 0 ? (
             <p className="text-xs text-stone-400 border border-dashed border-stone-700 rounded px-3 py-2">
-              No filter — rule fires every time the trigger happens
+              No filter - rule fires every time the trigger happens
             </p>
           ) : (
             <div className="space-y-2">
               {conditions.map((cond, i) => (
                 <div key={i} className="flex gap-2 items-center">
-                  {/* Field picker — dropdown of known context fields */}
+                  {/* Field picker - dropdown of known context fields */}
                   <select
                     aria-label={`Condition ${i + 1} field`}
                     value={cond.field}
@@ -577,7 +577,7 @@ function ActionConfigForm({
       return (
         <div className="pl-3 border-l-2 border-purple-200 space-y-2">
           <p className="text-xs text-stone-500">
-            Creates a <strong>draft</strong> message from your template — you review and send it.
+            Creates a <strong>draft</strong> message from your template - you review and send it.
             Nothing goes out automatically.
           </p>
           <div>

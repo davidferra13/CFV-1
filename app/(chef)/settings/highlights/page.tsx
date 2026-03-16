@@ -1,4 +1,4 @@
-// Profile Highlights — Manage featured achievements and credentials
+// Profile Highlights - Manage featured achievements and credentials
 // Displayed prominently on the chef's public profile
 
 import type { Metadata } from 'next'

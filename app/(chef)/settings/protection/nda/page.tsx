@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { Card, CardContent } from '@/components/ui/card'
 import { FileText } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'NDA & Permissions — ChefFlow' }
+export const metadata: Metadata = { title: 'NDA & Permissions | ChefFlow' }
 
 export default async function NdaPermissionsPage() {
   await requireChef()

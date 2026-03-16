@@ -50,7 +50,7 @@ export default async function ManualPaymentsPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          All recorded payment ledger entries — cash, Venmo, Zelle, card, and other methods
+          All recorded payment ledger entries - cash, Venmo, Zelle, card, and other methods
         </p>
       </div>
 
@@ -113,7 +113,7 @@ export default async function ManualPaymentsPage() {
                         {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">{entry.description}</TableCell>

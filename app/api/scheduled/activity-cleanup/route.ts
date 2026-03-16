@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Cleanup failed' }, { status: 500 })
   }
 
-  // sms_send_log cleanup — owned by push-cleanup cron, not this handler
+  // sms_send_log cleanup - owned by push-cleanup cron, not this handler
   const smsCount = 0
 
   const result = {

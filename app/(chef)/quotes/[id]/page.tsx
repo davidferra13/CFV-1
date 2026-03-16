@@ -1,4 +1,4 @@
-// Quote Detail Page — Full view of a single quote with transitions
+// Quote Detail Page - Full view of a single quote with transitions
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'

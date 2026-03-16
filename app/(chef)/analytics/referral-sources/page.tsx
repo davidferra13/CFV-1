@@ -1,5 +1,5 @@
 // Referral Source Analytics Page
-// Dedicated analytics page showing referral source performance —
+// Dedicated analytics page showing referral source performance -
 // which sources bring the most clients, highest-value events, and best conversion rates
 
 import type { Metadata } from 'next'

@@ -5,7 +5,7 @@ import { DollarSign } from '@/components/ui/icons'
 import { QuickExpenseModal } from './quick-expense-modal'
 
 /**
- * Quick Expense trigger — FAB on mobile, keyboard shortcut on desktop.
+ * Quick Expense trigger - FAB on mobile, keyboard shortcut on desktop.
  * Renders the modal when activated.
  *
  * Keyboard: Ctrl+Shift+E (or Cmd+Shift+E on Mac)
@@ -27,7 +27,7 @@ export function QuickExpenseTrigger() {
 
   return (
     <>
-      {/* Mobile FAB — fixed bottom-right, hidden on desktop */}
+      {/* Mobile FAB - fixed bottom-right, hidden on desktop */}
       <button
         type="button"
         onClick={() => setOpen(true)}

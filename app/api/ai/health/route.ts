@@ -100,7 +100,7 @@ async function checkEndpoint(
       result.activeGeneration = activeModels.length > 0
     }
   } catch {
-    // Non-critical — /api/ps failure just means we can't detect busy state
+    // Non-critical - /api/ps failure just means we can't detect busy state
   }
 
   return result
@@ -111,7 +111,7 @@ async function checkEndpoint(
 // ============================================
 
 export async function GET(req: Request) {
-  // Gate behind cron secret — exposes internal LAN IPs and model details
+  // Gate behind cron secret - exposes internal LAN IPs and model details
   const authError = verifyCronAuth(req.headers.get('authorization'))
   if (authError) return authError
 
@@ -146,7 +146,7 @@ export async function GET(req: Request) {
     }
   }
 
-  // Redact internal LAN IPs from the response — expose only the endpoint name
+  // Redact internal LAN IPs from the response - expose only the endpoint name
   // Even though this endpoint is auth-gated, defense-in-depth means we don't
   // leak network topology if the CRON_SECRET is compromised.
   const sanitizedEndpoints = endpoints.map((ep) => ({

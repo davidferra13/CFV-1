@@ -46,7 +46,7 @@ export default async function FavoriteDishesPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Dishes and flavors each client loves — helpful for menu planning
+          Dishes and flavors each client loves - helpful for menu planning
         </p>
       </div>
 

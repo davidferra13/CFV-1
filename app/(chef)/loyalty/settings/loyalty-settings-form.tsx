@@ -64,7 +64,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
   const [programMode, setProgramMode] = useState<ProgramMode>(config.program_mode ?? 'full')
   const [earnMode, setEarnMode] = useState<EarnMode>(config.earn_mode ?? 'per_guest')
 
-  // Program toggle (legacy — mapped from program_mode)
+  // Program toggle (legacy - mapped from program_mode)
   const isActive = programMode !== 'off'
 
   // Earn rates
@@ -200,10 +200,10 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
         </div>
         <Badge variant={isActive ? 'success' : 'default'} className="mt-3">
           {programMode === 'full'
-            ? 'Active — full points + tiers + rewards'
+            ? 'Active - full points + tiers + rewards'
             : programMode === 'lite'
-              ? 'Active — recognition tiers only'
-              : 'Disabled — hidden from clients'}
+              ? 'Active - recognition tiers only'
+              : 'Disabled - hidden from clients'}
         </Badge>
       </section>
 
@@ -256,7 +256,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
                 ))}
               </div>
 
-              {/* Earn rate fields — conditional on earn mode */}
+              {/* Earn rate fields - conditional on earn mode */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {earnMode === 'per_guest' && (
                   <NumberField
@@ -307,7 +307,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
                   onChange={setReferralPoints}
                   min={0}
                   suffix="pts"
-                  hint="Reference value for manual referral awards — not applied automatically."
+                  hint="Reference value for manual referral awards - not applied automatically."
                 />
               </div>
             </section>

@@ -1,4 +1,4 @@
-// Kiosk Status API — returns device status + config
+// Kiosk Status API - returns device status + config
 // Used by kiosk to check if device is still active
 // Requires device token in Authorization header
 

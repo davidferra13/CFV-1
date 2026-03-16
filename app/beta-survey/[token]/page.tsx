@@ -1,4 +1,4 @@
-// Public Beta Survey Page — token-based access for external testers.
+// Public Beta Survey Page - token-based access for external testers.
 // No authentication required. Token validated server-side.
 
 import type { Metadata } from 'next'

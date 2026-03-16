@@ -1,5 +1,5 @@
-// Remy — Client Layer Streaming API
-// AUTHENTICATED — for clients in the client portal.
+// Remy - Client Layer Streaming API
+// AUTHENTICATED - for clients in the client portal.
 // PRIVACY: Client data = PII → must use Ollama. No cloud models. EVER.
 // Scoped to the authenticated client's own data only.
 
@@ -55,7 +55,7 @@ function buildClientSystemPrompt(contextBlock: string): string {
 
   parts.push(`\nRESPONSE FORMAT:
 Write your reply in natural language with markdown formatting (bold, bullets, etc.).
-Keep responses concise — 1-3 paragraphs max.
+Keep responses concise - 1-3 paragraphs max.
 When relevant, suggest the client navigate to the appropriate page in their portal.
 If you want to suggest page navigation links, end your response with a line containing only:
 NAV_SUGGESTIONS: [{"label":"Page Name","href":"/route"}]
@@ -79,7 +79,7 @@ function formatHistory(history: Array<{ role: string; content: string }>): strin
 
 export async function POST(req: NextRequest) {
   try {
-    // Auth — must be an authenticated client
+    // Auth - must be an authenticated client
     const user = await requireClient()
 
     let rawBody: unknown
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
     if (!validated) {
       return new Response(
         JSON.stringify({
-          error: 'Invalid request body — message field is required and must be a non-empty string',
+          error: 'Invalid request body - message field is required and must be a non-empty string',
         }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
     if (!inputCheck.allowed) {
       const clientRefusal =
         inputCheck.category === 'dangerous_content' || inputCheck.category === 'abuse'
-          ? "I'm here to help with your events and dining — let's keep it on topic!"
+          ? "I'm here to help with your events and dining - let's keep it on topic!"
           : inputCheck.refusal
       return new Response(encodeSSE({ type: 'error', data: clientRefusal }), {
         status: 400,
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
       return new Response(
         encodeSSE({
           type: 'error',
-          data: 'Whoa, slow down — I can only handle 12 messages a minute. Try again shortly.',
+          data: 'Whoa, slow down - I can only handle 12 messages a minute. Try again shortly.',
         }),
         {
           status: 429,
@@ -141,12 +141,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Check Ollama availability — client data = PII, must use Ollama
+    // Check Ollama availability - client data = PII, must use Ollama
     if (!isOllamaEnabled()) {
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm taking a quick break — check back in a few minutes!",
+          data: "I'm taking a quick break - check back in a few minutes!",
         }),
         { headers: sseHeaders() }
       )
@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
 
     // Stream response
     const abortController = new AbortController()
-    const timeout = setTimeout(() => abortController.abort(), 180_000) // 3 min — 30b model can be slow
+    const timeout = setTimeout(() => abortController.abort(), 180_000) // 3 min - 30b model can be slow
 
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
               encoder.encode(
                 encodeSSE({
                   type: 'error',
-                  data: 'Response took too long — try a shorter question!',
+                  data: 'Response took too long - try a shorter question!',
                 })
               )
             )
@@ -214,7 +214,7 @@ export async function POST(req: NextRequest) {
               encoder.encode(
                 encodeSSE({
                   type: 'error',
-                  data: "Something went wrong — I'll be back shortly!",
+                  data: "Something went wrong - I'll be back shortly!",
                 })
               )
             )
@@ -240,7 +240,7 @@ export async function POST(req: NextRequest) {
     return new Response(
       encodeSSE({
         type: 'error',
-        data: 'Something went wrong — please try again!',
+        data: 'Something went wrong - please try again!',
       }),
       { headers: sseHeaders() }
     )

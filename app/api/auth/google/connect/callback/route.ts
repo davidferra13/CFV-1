@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
         userMessage = errJson.error_description
       }
     } catch {
-      // Not JSON — use the raw text if short enough
+      // Not JSON - use the raw text if short enough
       if (errText.length < 200) userMessage = errText
     }
 

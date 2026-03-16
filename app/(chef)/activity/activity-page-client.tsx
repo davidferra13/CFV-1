@@ -285,7 +285,7 @@ export function ActivityPageClient({
 
       <ResumeSection items={resumeItems} />
 
-      {/* View Mode Toggle — Summary vs Retrace */}
+      {/* View Mode Toggle - Summary vs Retrace */}
       <div className="flex items-center gap-2">
         <div className="flex gap-1 bg-stone-800 rounded-lg p-1">
           <button
@@ -490,8 +490,8 @@ function ActivityLogToggle({ enabled }: { enabled: boolean }) {
         <p className="text-sm font-medium text-stone-200">Activity Tracking</p>
         <p className="text-xs text-stone-500 mt-0.5">
           {localEnabled
-            ? 'Enabled — your actions are being recorded to this timeline.'
-            : 'Disabled — actions are not being recorded. Existing history is preserved.'}
+            ? 'Enabled - your actions are being recorded to this timeline.'
+            : 'Disabled - actions are not being recorded. Existing history is preserved.'}
         </p>
         {toggleError && <p className="text-xs text-red-600 mt-1">{toggleError}</p>}
       </div>

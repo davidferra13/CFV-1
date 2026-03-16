@@ -1,4 +1,4 @@
-// Add New Partner — Form for creating a referral partner
+// Add New Partner - Form for creating a referral partner
 
 import { requireChef } from '@/lib/auth/get-user'
 import { PartnerForm } from '@/components/partners/partner-form'

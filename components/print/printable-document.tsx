@@ -1,6 +1,6 @@
 'use client'
 
-// PrintableDocument — Dual-mode wrapper for print pages.
+// PrintableDocument - Dual-mode wrapper for print pages.
 // Renders a screen preview + print-optimized layout.
 // Supports standard (Letter/A4), thermal 80mm, and thermal 58mm.
 //
@@ -22,7 +22,7 @@ type Props = {
   title: string
   subtitle?: string
   footer?: string
-  /** Who generated this document — shown as a subtle attribution line */
+  /** Who generated this document - shown as a subtle attribution line */
   generatedBy?: string
   mode?: PrintMode
 }
@@ -42,7 +42,7 @@ export function PrintableDocument({
   mode = 'standard',
 }: Props) {
   const classes = MODE_CLASSES[mode]
-  const defaultFooter = `ChefFlow — Printed ${new Date().toLocaleString()}`
+  const defaultFooter = `ChefFlow - Printed ${new Date().toLocaleString()}`
 
   return (
     <div className={`${classes.preview} ${classes.print} p-4`}>
@@ -68,7 +68,7 @@ export function PrintableDocument({
       {/* Document body */}
       {children}
 
-      {/* Generated-by attribution — subtle line above the footer */}
+      {/* Generated-by attribution - subtle line above the footer */}
       {generatedBy && (
         <div
           className="print-meta"

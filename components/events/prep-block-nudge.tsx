@@ -1,6 +1,6 @@
 'use client'
 
-// PrepBlockNudgeBanner — shown on confirmed events with zero prep blocks.
+// PrepBlockNudgeBanner - shown on confirmed events with zero prep blocks.
 // Offers one-click auto-scheduling via the rule-based engine.
 
 import { useState } from 'react'

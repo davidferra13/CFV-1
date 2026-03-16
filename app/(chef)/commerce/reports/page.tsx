@@ -1,4 +1,4 @@
-// Commerce Reports Hub — shift reports, daily summary, product & channel breakdowns
+// Commerce Reports Hub - shift reports, daily summary, product & channel breakdowns
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button'
 import type { SaleChannel } from '@/lib/commerce/constants'
 import { ReportsDatePicker } from '@/components/commerce/reports-page-client'
 
-export const metadata: Metadata = { title: 'Commerce Reports — ChefFlow' }
+export const metadata: Metadata = { title: 'Commerce Reports | ChefFlow' }
 
 export default async function CommerceReportsPage({
   searchParams,

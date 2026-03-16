@@ -86,7 +86,7 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
         {contract && <ContractStatusBadge status={contract.status} />}
       </div>
 
-      {/* No contract yet — generate one */}
+      {/* No contract yet - generate one */}
       {!contract && (
         <div className="flex flex-wrap items-center gap-2">
           {templates.length > 1 && (
@@ -109,7 +109,7 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
         </div>
       )}
 
-      {/* Draft — ready to send */}
+      {/* Draft - ready to send */}
       {contract?.status === 'draft' && (
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" onClick={handleSend} disabled={loading}>
@@ -134,12 +134,12 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
         </div>
       )}
 
-      {/* Sent or Viewed — can resend or void */}
+      {/* Sent or Viewed - can resend or void */}
       {(contract?.status === 'sent' || contract?.status === 'viewed') && (
         <div className="space-y-2">
           <p className="text-xs text-stone-500">
             {contract.status === 'viewed'
-              ? 'Client has viewed the contract — awaiting signature.'
+              ? 'Client has viewed the contract - awaiting signature.'
               : `Sent ${contract.sent_at ? new Date(contract.sent_at).toLocaleDateString() : ''}. Awaiting client review.`}
           </p>
           <div className="flex flex-wrap items-center gap-2">
@@ -166,7 +166,7 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
         </div>
       )}
 
-      {/* Signed — read-only with PDF download */}
+      {/* Signed - read-only with PDF download */}
       {contract?.status === 'signed' && (
         <div className="flex items-center gap-3">
           <p className="text-sm text-green-700">
@@ -183,7 +183,7 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
         </div>
       )}
 
-      {/* Voided — can generate new one */}
+      {/* Voided - can generate new one */}
       {contract?.status === 'voided' && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-stone-500">Previous contract voided.</span>

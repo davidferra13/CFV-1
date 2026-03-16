@@ -41,7 +41,7 @@ export async function PipelineSummaryBar() {
                 : 'text-stone-100'
           }`}
         >
-          {summary.historicalConversionRate > 0 ? `${summary.historicalConversionRate}%` : '—'}
+          {summary.historicalConversionRate > 0 ? `${summary.historicalConversionRate}%` : '-'}
         </p>
         {summary.avgDaysToConvert && (
           <p className="text-xs text-stone-500">~{summary.avgDaysToConvert}d avg to convert</p>

@@ -1,6 +1,6 @@
 'use client'
 
-// Compliance placeholder notes — saved locally, to be wired to DB in Phase 2.
+// Compliance placeholder notes - saved locally, to be wired to DB in Phase 2.
 // Uses localStorage so notes persist across sessions without a server round-trip.
 
 import { useState, useEffect } from 'react'

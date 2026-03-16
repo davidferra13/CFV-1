@@ -1,4 +1,4 @@
-// Twilio Inbound Webhook — receives SMS and WhatsApp messages
+// Twilio Inbound Webhook - receives SMS and WhatsApp messages
 // Stores them in the messages table for the unified inbox
 // URL: POST /api/webhooks/twilio (configure in Twilio console)
 
@@ -37,28 +37,28 @@ export async function POST(request: NextRequest) {
     const text = await request.text()
     const params = Object.fromEntries(new URLSearchParams(text))
 
-    // Validate Twilio signature — reject forged requests
+    // Validate Twilio signature - reject forged requests
     const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
     const twilioSignature = request.headers.get('x-twilio-signature')
     if (twilioAuthToken && twilioSignature) {
       const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'}/api/webhooks/twilio`
       if (!validateTwilioSignature(twilioAuthToken, webhookUrl, params, twilioSignature)) {
-        console.warn('[twilio-webhook] Invalid signature — rejecting forged request')
+        console.warn('[twilio-webhook] Invalid signature - rejecting forged request')
         return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
           headers: { 'Content-Type': 'text/xml' },
           status: 403,
         })
       }
     } else if (twilioAuthToken && !twilioSignature) {
-      // Auth token configured but no signature header — reject
-      console.warn('[twilio-webhook] Missing X-Twilio-Signature header — rejecting')
+      // Auth token configured but no signature header - reject
+      console.warn('[twilio-webhook] Missing X-Twilio-Signature header - rejecting')
       return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
         headers: { 'Content-Type': 'text/xml' },
         status: 403,
       })
     } else {
       // Fail-closed: reject if TWILIO_AUTH_TOKEN is not configured
-      console.error('[twilio-webhook] TWILIO_AUTH_TOKEN not configured — rejecting all webhooks')
+      console.error('[twilio-webhook] TWILIO_AUTH_TOKEN not configured - rejecting all webhooks')
       return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
         headers: { 'Content-Type': 'text/xml' },
         status: 503,
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     const msg = parseInboundWebhook(params)
 
     if (!msg.body && msg.numMedia === 0) {
-      // Empty message — acknowledge but don't store
+      // Empty message - acknowledge but don't store
       return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
         headers: { 'Content-Type': 'text/xml' },
       })
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Store the message (even if we can't match a client — it'll show as unlinked)
+    // Store the message (even if we can't match a client - it'll show as unlinked)
     await (supabase as any).from('messages').insert({
       tenant_id: tenantId,
       client_id: clientId,

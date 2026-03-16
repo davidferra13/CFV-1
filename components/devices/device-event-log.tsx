@@ -54,7 +54,7 @@ export function DeviceEventLog({ deviceId, deviceName }: DeviceEventLogProps) {
 
   function handleToggle() {
     if (!expanded && events === null) {
-      // First open — fetch events
+      // First open - fetch events
       startTransition(async () => {
         try {
           const data = await listDeviceEvents(deviceId)
@@ -74,7 +74,7 @@ export function DeviceEventLog({ deviceId, deviceName }: DeviceEventLogProps) {
         onClick={handleToggle}
         className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800/50"
       >
-        <span>Activity Log — {deviceName}</span>
+        <span>Activity Log - {deviceName}</span>
         <svg
           className={`h-4 w-4 text-stone-500 transition-transform ${expanded ? 'rotate-180' : ''}`}
           fill="none"

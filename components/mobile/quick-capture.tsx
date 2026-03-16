@@ -1,6 +1,6 @@
 'use client'
 
-// QuickCapture — Floating Action Button for mobile quick capture.
+// QuickCapture - Floating Action Button for mobile quick capture.
 // Only visible on small screens (sm:hidden). Provides fast access to:
 //   1. Camera receipt capture (triggers native camera)
 //   2. Quick expense entry (amount + description modal)
@@ -84,7 +84,7 @@ export function QuickCapture() {
         }}
       />
 
-      {/* FAB — only shown on mobile */}
+      {/* FAB - only shown on mobile */}
       <button
         onClick={() => setOpen(!open)}
         className="fixed bottom-6 right-4 z-40 w-14 h-14 bg-stone-900 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-stone-700 transition-all active:scale-95 sm:hidden"

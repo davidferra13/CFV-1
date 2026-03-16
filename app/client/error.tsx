@@ -2,7 +2,7 @@
 
 // Public Client Portal Error Boundary
 // Shown when a runtime error occurs while loading a client portal page.
-// No auth context — visitor is accessing via magic link token.
+// No auth context - visitor is accessing via magic link token.
 
 import { useEffect } from 'react'
 import * as Sentry from '@sentry/nextjs'

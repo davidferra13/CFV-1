@@ -1,4 +1,4 @@
-// Queue Icon — Maps icon name strings to Lucide components
+// Queue Icon - Maps icon name strings to Lucide components
 // Avoids dynamic imports while keeping providers decoupled from React.
 
 import {

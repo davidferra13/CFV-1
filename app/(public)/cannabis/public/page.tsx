@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Cannabis Dining — What to Expect | ChefFlow',
+  title: 'Cannabis Dining - What to Expect | ChefFlow',
   description: 'Education-first overview of ChefFlow cannabis dining structure.',
   robots: { index: true, follow: true },
 }

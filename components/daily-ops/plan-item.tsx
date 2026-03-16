@@ -1,6 +1,6 @@
 'use client'
 
-// PlanItem — Single actionable item in the daily plan.
+// PlanItem - Single actionable item in the daily plan.
 // Supports: checkbox complete, one-tap approve (drafts), deep link, dismiss.
 
 import { useState, useTransition } from 'react'

@@ -320,7 +320,7 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
                       {formatCurrency(r.amountRemittedCents)}
                     </td>
                     <td className="px-4 py-3 text-stone-500 font-mono text-xs">
-                      {r.confirmationNumber || '—'}
+                      {r.confirmationNumber || '-'}
                     </td>
                   </tr>
                 ))}

@@ -3,7 +3,7 @@
 
 import { ReactivateAccountClient } from './reactivate-client'
 
-export const metadata = { title: 'Reactivate Account — ChefFlow' }
+export const metadata = { title: 'Reactivate Account | ChefFlow' }
 
 export default function ReactivateAccountPage() {
   return (

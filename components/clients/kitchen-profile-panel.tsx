@@ -375,7 +375,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                 </div>
               ) : (
                 <p className="text-sm text-stone-400">
-                  No kitchen notes yet. Add notes after your first walkthrough — they&apos;ll appear
+                  No kitchen notes yet. Add notes after your first walkthrough - they&apos;ll appear
                   on every event at this location.
                 </p>
               )}

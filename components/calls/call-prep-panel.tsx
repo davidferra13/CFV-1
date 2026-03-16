@@ -1,4 +1,4 @@
-// CallPrepPanel — agenda checklist + prep notes for a scheduled call
+// CallPrepPanel - agenda checklist + prep notes for a scheduled call
 
 'use client'
 

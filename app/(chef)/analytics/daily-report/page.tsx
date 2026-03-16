@@ -1,4 +1,4 @@
-// Daily Report Page — view today's report + browse past days
+// Daily Report Page - view today's report + browse past days
 
 import {
   getDailyReport,
@@ -27,7 +27,7 @@ export default async function DailyReportPage() {
       <div>
         <h1 className="text-2xl font-bold text-stone-900">Daily Report</h1>
         <p className="text-sm text-stone-500">
-          Your daily business snapshot — emailed every morning at 7 AM
+          Your daily business snapshot - emailed every morning at 7 AM
         </p>
       </div>
 

@@ -1,4 +1,4 @@
-// Prospecting Pipeline — Kanban View
+// Prospecting Pipeline - Kanban View
 // Drag-and-drop pipeline board for tracking prospect outreach stages.
 
 import type { Metadata } from 'next'

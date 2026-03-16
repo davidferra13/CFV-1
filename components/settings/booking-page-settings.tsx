@@ -1,6 +1,6 @@
 'use client'
 
-// BookingPageSettings — configure the public /book/[slug] page.
+// BookingPageSettings - configure the public /book/[slug] page.
 // Enable/disable, set slug, headline, bio, and dual booking model (inquiry vs instant-book).
 
 import { useState } from 'react'

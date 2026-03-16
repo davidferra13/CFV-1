@@ -85,7 +85,7 @@ export default async function LoyaltyDashboardPage() {
         </div>
       </div>
 
-      {/* Off mode — CTA to enable */}
+      {/* Off mode - CTA to enable */}
       {isOff && (
         <Card className="p-8 text-center">
           <p className="text-lg font-semibold text-stone-200">Ready to reward your clients?</p>
@@ -101,10 +101,10 @@ export default async function LoyaltyDashboardPage() {
         </Card>
       )}
 
-      {/* Full mode: Pending Deliveries — shown at top so it's not missed */}
+      {/* Full mode: Pending Deliveries - shown at top so it's not missed */}
       {isFull && <PendingDeliveriesPanel deliveries={pendingDeliveries as any} />}
 
-      {/* Overview Stats — shown for full + lite */}
+      {/* Overview Stats - shown for full + lite */}
       {!isOff && (
         <div className={`grid grid-cols-1 ${isFull ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6`}>
           <Card>
@@ -142,7 +142,7 @@ export default async function LoyaltyDashboardPage() {
         </div>
       )}
 
-      {/* Tier Breakdown — shown for full + lite */}
+      {/* Tier Breakdown - shown for full + lite */}
       {!isOff && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Tier Breakdown</h2>
@@ -173,7 +173,7 @@ export default async function LoyaltyDashboardPage() {
         </Card>
       )}
 
-      {/* Approaching Milestones — outreach opportunities (full + lite) */}
+      {/* Approaching Milestones - outreach opportunities (full + lite) */}
       {!isOff &&
         (overview.clientsApproachingTierUpgrade.length > 0 || approachingRewards.length > 0) && (
           <Card className="p-6 border-brand-700 bg-brand-950">
@@ -251,7 +251,7 @@ export default async function LoyaltyDashboardPage() {
           </Card>
         )}
 
-      {/* Top Clients — shown for full + lite */}
+      {/* Top Clients - shown for full + lite */}
       {!isOff && overview.topClients.length > 0 && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Top Clients</h2>
@@ -290,7 +290,7 @@ export default async function LoyaltyDashboardPage() {
         </Card>
       )}
 
-      {/* Rewards Catalog + Recent Awards — full mode only */}
+      {/* Rewards Catalog + Recent Awards - full mode only */}
       {isFull && (
         <>
           <Card className="p-6">
@@ -366,7 +366,7 @@ export default async function LoyaltyDashboardPage() {
         </>
       )}
 
-      {/* Program Settings Summary — shown for full + lite */}
+      {/* Program Settings Summary - shown for full + lite */}
       {!isOff && (
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
@@ -405,7 +405,7 @@ export default async function LoyaltyDashboardPage() {
                 <div>
                   <p className="text-sm font-medium text-stone-500">Large Party Bonus</p>
                   <p className="text-lg font-bold text-stone-100 mt-1">
-                    {config.bonus_large_party_points || '—'}{' '}
+                    {config.bonus_large_party_points || '-'}{' '}
                     {config.bonus_large_party_points
                       ? `pts (${config.bonus_large_party_threshold}+ guests)`
                       : ''}

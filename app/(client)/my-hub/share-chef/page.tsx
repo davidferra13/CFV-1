@@ -1,4 +1,4 @@
-// Share a Chef — recommend chefs to friends
+// Share a Chef - recommend chefs to friends
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -34,7 +34,7 @@ export default async function ShareChefPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-stone-100">Share a Chef</h1>
         <p className="mt-1 text-stone-400">
-          Recommend your favorite chefs to friends — help them discover great dining experiences
+          Recommend your favorite chefs to friends - help them discover great dining experiences
         </p>
       </div>
 

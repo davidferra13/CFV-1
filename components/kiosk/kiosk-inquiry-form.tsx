@@ -92,7 +92,7 @@ export function KioskInquiryForm({ token, staffSession, onSubmitted }: KioskInqu
       resetForm()
       onSubmitted()
     } catch {
-      // Network failure — queue for later submission
+      // Network failure - queue for later submission
       enqueueInquiry(token, {
         full_name: fullName.trim(),
         email: email.trim() || undefined,
@@ -109,7 +109,7 @@ export function KioskInquiryForm({ token, staffSession, onSubmitted }: KioskInqu
     }
   }
 
-  // Get today's date as minimum for date picker (memoized — only changes once per day)
+  // Get today's date as minimum for date picker (memoized - only changes once per day)
   const minDate = useMemo(() => {
     const today = new Date()
     return today.toISOString().split('T')[0]
@@ -219,7 +219,7 @@ export function KioskInquiryForm({ token, staffSession, onSubmitted }: KioskInqu
 
       {queuedCount > 0 && (
         <p className="text-center text-xs text-yellow-500">
-          {queuedCount} inquiry(s) queued — will auto-submit when connection restores
+          {queuedCount} inquiry(s) queued - will auto-submit when connection restores
         </p>
       )}
     </form>

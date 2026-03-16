@@ -1,4 +1,4 @@
-// Daily Report Cron — generates and emails daily reports for all chefs
+// Daily Report Cron - generates and emails daily reports for all chefs
 // Schedule: 0 11 * * * (7 AM ET)
 
 import { NextResponse } from 'next/server'
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
       // Send email
       const emailSent = await sendEmail({
         to: authUser.user.email,
-        subject: `Daily Report — ${new Date(today + 'T00:00:00Z').toLocaleDateString('en-US', {
+        subject: `Daily Report - ${new Date(today + 'T00:00:00Z').toLocaleDateString('en-US', {
           weekday: 'long',
           month: 'long',
           day: 'numeric',

@@ -99,7 +99,7 @@ export function EventsBulkTable({ events }: EventsBulkTableProps) {
             {event.weather && (
               <span
                 className="ml-1.5 text-xs text-stone-400"
-                title={`${event.weather.description} — ${event.weather.tempMinF}\u00B0\u2013${event.weather.tempMaxF}\u00B0F`}
+                title={`${event.weather.description} - ${event.weather.tempMinF}\u00B0\u2013${event.weather.tempMaxF}\u00B0F`}
               >
                 {event.weather.emoji} {event.weather.tempMinF}&deg;&ndash;
                 {event.weather.tempMaxF}&deg;

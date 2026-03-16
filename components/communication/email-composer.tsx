@@ -27,7 +27,7 @@ const EMAIL_TEMPLATES = [
   {
     label: 'Booking Confirmation',
     subject: 'Your event is confirmed!',
-    body: 'Hi {{name}},\n\nExciting news — your event is officially confirmed...',
+    body: 'Hi {{name}},\n\nExciting news - your event is officially confirmed...',
   },
 ]
 

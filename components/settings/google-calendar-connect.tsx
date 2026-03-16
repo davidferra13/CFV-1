@@ -1,6 +1,6 @@
 'use client'
 
-// Google Calendar Connect — Settings card for managing the chef's Google Calendar integration.
+// Google Calendar Connect - Settings card for managing the chef's Google Calendar integration.
 // Mirrors the ConnectedAccounts (Gmail) card pattern.
 // Backend is fully wired: confirmed events auto-sync, cancelled events auto-delete.
 
@@ -110,7 +110,7 @@ export function GoogleCalendarConnect({ connection }: GoogleCalendarConnectProps
                   </p>
                 ) : (
                   <p className="text-xs text-stone-400 mt-1">
-                    No events synced yet — sync happens automatically when events are confirmed.
+                    No events synced yet - sync happens automatically when events are confirmed.
                   </p>
                 )}
               </div>

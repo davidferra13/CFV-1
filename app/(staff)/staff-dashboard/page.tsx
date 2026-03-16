@@ -1,4 +1,4 @@
-// Staff Dashboard — Staff home page
+// Staff Dashboard - Staff home page
 // Shows welcome message, today's tasks, upcoming assignments, and station links.
 
 import type { Metadata } from 'next'

@@ -1,4 +1,4 @@
-// Vendor Detail — Vendor info, price list, invoice history
+// Vendor Detail - Vendor info, price list, invoice history
 // Part of the Vendor & Food Cost System
 
 import type { Metadata } from 'next'
@@ -20,7 +20,7 @@ import { VendorPriceAlertSettings } from '@/components/vendors/vendor-price-aler
 import { InvoiceForm } from '@/components/vendors/invoice-form'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Vendor Detail — ChefFlow' }
+export const metadata: Metadata = { title: 'Vendor Detail | ChefFlow' }
 
 const DAY_LABELS: Record<string, string> = {
   monday: 'Monday',
@@ -187,12 +187,12 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
                   {invoices.map((inv: any) => (
                     <tr key={inv.id} className="border-b border-stone-800">
                       <td className="py-2 pr-4 text-stone-300">{inv.invoice_date}</td>
-                      <td className="py-2 pr-4 text-stone-400">{inv.invoice_number || '—'}</td>
+                      <td className="py-2 pr-4 text-stone-400">{inv.invoice_number || '-'}</td>
                       <td className="py-2 pr-4 text-stone-200 font-medium">
                         ${(inv.total_cents / 100).toFixed(2)}
                       </td>
                       <td className="py-2 text-stone-500 text-xs truncate max-w-[200px]">
-                        {inv.notes || '—'}
+                        {inv.notes || '-'}
                       </td>
                     </tr>
                   ))}

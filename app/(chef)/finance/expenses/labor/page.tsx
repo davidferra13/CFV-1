@@ -80,7 +80,7 @@ export default async function LaborExpensesPage() {
                   </TableCell>
                   <TableCell className="text-stone-100 text-sm">{expense.description}</TableCell>
                   <TableCell className="text-stone-500 text-sm">
-                    {expense.vendor_name ?? '—'}
+                    {expense.vendor_name ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {expense.event ? (
@@ -91,7 +91,7 @@ export default async function LaborExpensesPage() {
                         {expense.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell>

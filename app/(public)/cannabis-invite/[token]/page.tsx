@@ -1,4 +1,4 @@
-// Cannabis Invite Claim Page — The Dispensary Door
+// Cannabis Invite Claim Page - The Dispensary Door
 // Full-screen, atmospheric, exclusive feel.
 // A direct link to this page from the approved invitation email.
 

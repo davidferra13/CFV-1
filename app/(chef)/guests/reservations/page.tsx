@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-export const metadata: Metadata = { title: 'Reservations — ChefFlow' }
+export const metadata: Metadata = { title: 'Reservations | ChefFlow' }
 
 export default async function ReservationsPage() {
   const user = await requireChef()

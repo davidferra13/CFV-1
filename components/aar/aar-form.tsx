@@ -1,4 +1,4 @@
-// AAR Entry Form — Optimized for post-service capture
+// AAR Entry Form - Optimized for post-service capture
 // Quick ratings first (two taps), forgotten items second, text notes optional
 'use client'
 

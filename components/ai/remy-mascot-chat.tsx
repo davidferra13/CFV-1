@@ -1,7 +1,7 @@
 'use client'
 
-// Remy Mascot Chat — Compact inline chat panel above the mascot avatar.
-// Ephemeral (session-only) — no IndexedDB persistence, no conversation management.
+// Remy Mascot Chat - Compact inline chat panel above the mascot avatar.
+// Ephemeral (session-only) - no IndexedDB persistence, no conversation management.
 // The "quick chat" channel: fast, conversational, person-like.
 // For deeper work, the chef uses the full drawer (Ctrl+K).
 // Supports "Get to Know You" survey mode when activated.
@@ -81,7 +81,7 @@ export function RemyMascotChat() {
           setSurveyActive(true)
         }
       } catch {
-        // Non-critical — survey is optional
+        // Non-critical - survey is optional
       }
     })
   }, [isMascotChatOpen])
@@ -98,7 +98,7 @@ export function RemyMascotChat() {
     }
   }, [isMascotChatOpen])
 
-  // Click outside to close — but NOT when clicking the mascot button or the
+  // Click outside to close - but NOT when clicking the mascot button or the
   // chat window toggle (both should coexist with quick chat)
   useEffect(() => {
     if (!isMascotChatOpen) return
@@ -209,7 +209,7 @@ export function RemyMascotChat() {
           <div className="py-4 text-center">
             <p className="text-xs text-stone-400 mb-3">What can I help with?</p>
             <div className="flex flex-col gap-1.5">
-              {/* Survey starter — "Get to know me better" */}
+              {/* Survey starter - "Get to know me better" */}
               {showSurveyStart && (
                 <button
                   onClick={handleStartSurvey}
@@ -334,7 +334,7 @@ export function RemyMascotChat() {
           )}
         </div>
         <p className="mt-1 text-center text-[9px] text-stone-600">
-          {surveyActive ? 'Optional — skip any question or stop anytime' : 'Quick chat'}
+          {surveyActive ? 'Optional - skip any question or stop anytime' : 'Quick chat'}
         </p>
       </div>
     </div>

@@ -5,9 +5,9 @@ import { RemyHubDashboard } from '@/components/ai/remy-hub-dashboard'
 import { isFounderEmail } from '@/lib/platform/owner-account'
 
 export const metadata: Metadata = {
-  title: 'Remy — ChefFlow',
+  title: 'Remy | ChefFlow',
   description:
-    'Your AI assistant. Commands, conversations, history, memory, and privacy — all in one place.',
+    'Your AI assistant. Commands, conversations, history, memory, and privacy - all in one place.',
 }
 
 export default async function CommandsPage() {

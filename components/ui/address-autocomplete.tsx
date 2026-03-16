@@ -1,5 +1,5 @@
 // Google Places Address Autocomplete
-// Drop-in replacement for text inputs — returns structured address + lat/lng
+// Drop-in replacement for text inputs - returns structured address + lat/lng
 'use client'
 
 import { useRef, useCallback } from 'react'

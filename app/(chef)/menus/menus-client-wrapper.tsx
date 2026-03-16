@@ -752,7 +752,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                           <p className="text-xs text-stone-400">
                             {format(new Date(quickViewData.linkedEvent.eventDate), 'MMM d, yyyy')}
                             {quickViewData.linkedEvent.clientName &&
-                              ` — ${quickViewData.linkedEvent.clientName}`}
+                              ` - ${quickViewData.linkedEvent.clientName}`}
                           </p>
                           <Badge variant="default" className="mt-1 capitalize">
                             {quickViewData.linkedEvent.status.replace('_', ' ')}

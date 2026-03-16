@@ -1,4 +1,4 @@
-// Station Daily Clipboard — The core prep tracking view
+// Station Daily Clipboard - The core prep tracking view
 // Shows an Excel-like grid of all components for this station on a given date.
 
 import type { Metadata } from 'next'
@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-export const metadata: Metadata = { title: 'Daily Clipboard — ChefFlow' }
+export const metadata: Metadata = { title: 'Daily Clipboard | ChefFlow' }
 
 export default async function ClipboardPage({
   params,
@@ -61,7 +61,7 @@ export default async function ClipboardPage({
             <span className="text-stone-300">Clipboard</span>
           </div>
           <h1 className="text-2xl font-bold text-stone-100 mt-1">
-            {station.name} — Daily Clipboard
+            {station.name} - Daily Clipboard
           </h1>
         </div>
         <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ export default async function ClipboardPage({
         </Card>
       </div>
 
-      {/* The clipboard grid — the core view */}
+      {/* The clipboard grid - the core view */}
       <ClipboardGrid
         stationId={params.id}
         stationName={station.name}

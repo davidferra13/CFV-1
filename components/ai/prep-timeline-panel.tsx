@@ -47,7 +47,7 @@ export function PrepTimelinePanel({ eventId }: { eventId: string }) {
           </Button>
         </div>
         <p className="text-xs text-stone-500 mt-1">
-          Backward-scheduled prep plan — from service time through all recipe prep needs.
+          Backward-scheduled prep plan - from service time through all recipe prep needs.
         </p>
       </div>
     )

@@ -25,7 +25,7 @@ export default async function MenuDraftingPage() {
   await requireChef()
 
   const allInquiries = await getInquiries()
-  // "Menu Drafting" = inquiries in the quoted stage — a quote has been sent, now finalizing menu details
+  // "Menu Drafting" = inquiries in the quoted stage - a quote has been sent, now finalizing menu details
   const inquiries = allInquiries.filter((i: any) => i.status === 'quoted')
 
   return (
@@ -41,7 +41,7 @@ export default async function MenuDraftingPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Inquiries in the quoted stage — actively working on menu details
+          Inquiries in the quoted stage - actively working on menu details
         </p>
       </div>
 

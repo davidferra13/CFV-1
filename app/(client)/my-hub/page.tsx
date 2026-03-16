@@ -1,4 +1,4 @@
-// Client Hub Dashboard — Groups, friends, chef sharing
+// Client Hub Dashboard - Groups, friends, chef sharing
 
 import type { Metadata } from 'next'
 import Image from 'next/image'
@@ -105,7 +105,7 @@ export default async function MyHubPage() {
           </div>
           <h2 className="text-xl font-semibold text-stone-200">No dinner groups yet</h2>
           <p className="mx-auto mt-2 max-w-md text-stone-400">
-            Plan a dinner with friends — pick a date, invite your crew, and coordinate everything
+            Plan a dinner with friends - pick a date, invite your crew, and coordinate everything
             from menus to allergies in one shared space.
           </p>
           <Link href="/my-hub/create" className="mt-6">

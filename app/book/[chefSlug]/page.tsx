@@ -1,4 +1,4 @@
-// Public Chef Booking Page — /book/[chefSlug]
+// Public Chef Booking Page - /book/[chefSlug]
 // No authentication required.
 // Shows chef headline, availability calendar, then booking form on date select.
 // Supports dual booking model: inquiry-first or instant-book.

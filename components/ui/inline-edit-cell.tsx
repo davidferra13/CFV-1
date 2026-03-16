@@ -1,6 +1,6 @@
 'use client'
 
-// InlineEditCell — Double-click to edit a table cell value in place.
+// InlineEditCell - Double-click to edit a table cell value in place.
 // Calls onSave() with the new string when the user presses Enter or blurs.
 // Pressing Escape cancels and restores the original value.
 
@@ -20,7 +20,7 @@ export function InlineEditCell({
   value,
   onSave,
   type = 'text',
-  placeholder = '—',
+  placeholder = '-',
   className = '',
   displayValue,
 }: InlineEditCellProps) {
@@ -61,7 +61,7 @@ export function InlineEditCell({
   async function commit() {
     const trimmed = draft.trim()
 
-    // No change — just exit edit mode without calling onSave
+    // No change - just exit edit mode without calling onSave
     if (trimmed === rawValue.trim()) {
       setEditing(false)
       return
@@ -140,7 +140,7 @@ export function InlineEditCell({
       className={`group relative inline-flex items-center gap-1.5 cursor-text rounded px-1 -mx-1 hover:bg-stone-700 transition-colors select-none ${className}`}
     >
       <span className={rawValue ? '' : 'text-stone-400 italic'}>{shown}</span>
-      {/* Pencil icon — visible on hover */}
+      {/* Pencil icon - visible on hover */}
       <svg
         className="w-3.5 h-3.5 text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
         fill="none"

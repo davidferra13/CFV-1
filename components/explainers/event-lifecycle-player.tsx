@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * EventLifecyclePlayer — Remotion Player wrapper for the event lifecycle animation.
+ * EventLifecyclePlayer - Remotion Player wrapper for the event lifecycle animation.
  * Shows the 8-state event journey with triggers for each transition.
  */
 

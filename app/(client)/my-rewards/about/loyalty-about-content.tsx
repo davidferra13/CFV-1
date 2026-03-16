@@ -36,10 +36,10 @@ export function LoyaltyAboutContent() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <GuideBrandCard icon="✨" title="Earn Automatically">
           Points are awarded every time your chef completes an event. No cards to scan, no codes to
-          remember — it just happens.
+          remember - it just happens.
         </GuideBrandCard>
         <GuideBrandCard icon="🎁" title="Redeem Your Way">
-          Choose from a curated menu of rewards — complimentary courses, discounts, upgrades, and
+          Choose from a curated menu of rewards - complimentary courses, discounts, upgrades, and
           more. Redeem when you&rsquo;re ready.
         </GuideBrandCard>
         <GuideBrandCard icon="🏅" title="Rise Through the Ranks">
@@ -77,7 +77,7 @@ export function LoyaltyAboutContent() {
             [
               'Special bonuses',
               'Your chef may award bonus points for referrals, birthdays, and more',
-              'Varies — a personal touch',
+              'Varies - a personal touch',
             ],
           ]}
         />
@@ -92,7 +92,7 @@ export function LoyaltyAboutContent() {
       <GuideSection
         title="Your Tier Journey"
         icon="📈"
-        summary="Progress through four tiers based on your lifetime dining history. Higher tiers mean greater recognition — and your tier never goes down."
+        summary="Progress through four tiers based on your lifetime dining history. Higher tiers mean greater recognition - and your tier never goes down."
       >
         <div className="space-y-3">
           <div className="rounded-lg p-4 border border-amber-900/30 bg-amber-950/20">
@@ -110,7 +110,7 @@ export function LoyaltyAboutContent() {
               <span className="text-sm font-semibold text-stone-200">Silver</span>
             </div>
             <p className="text-sm text-stone-400">
-              A developing relationship. You&rsquo;re becoming a regular — and your chef notices.
+              A developing relationship. You&rsquo;re becoming a regular - and your chef notices.
             </p>
           </div>
           <div className="rounded-lg p-4 border border-yellow-700/30 bg-yellow-950/20">
@@ -129,14 +129,14 @@ export function LoyaltyAboutContent() {
               <span className="text-sm font-semibold text-indigo-200">Platinum</span>
             </div>
             <p className="text-sm text-stone-400">
-              The inner circle. You&rsquo;re among your chef&rsquo;s most valued clients — and
+              The inner circle. You&rsquo;re among your chef&rsquo;s most valued clients - and
               you&rsquo;re recognized for it.
             </p>
           </div>
         </div>
 
         <GuideCallout type="tip">
-          <GuideStrong>Your tier never goes down.</GuideStrong> Once you reach Gold, you stay Gold —
+          <GuideStrong>Your tier never goes down.</GuideStrong> Once you reach Gold, you stay Gold -
           even after redeeming points. Tiers are based on your lifetime history with your chef, not
           your current balance.
         </GuideCallout>
@@ -146,7 +146,7 @@ export function LoyaltyAboutContent() {
       <GuideSection
         title="What You Can Earn"
         icon="🎁"
-        summary="Your chef offers a curated menu of rewards — from complimentary courses to full dinner experiences. Every reward is a personal touch."
+        summary="Your chef offers a curated menu of rewards - from complimentary courses to full dinner experiences. Every reward is a personal touch."
       >
         <GuideParagraph>
           Unlike a coffee shop giving you a free latte, your rewards are{' '}
@@ -160,10 +160,10 @@ export function LoyaltyAboutContent() {
           rows={[
             [
               'Complimentary course',
-              "An extra course added to your dinner — appetizer, dessert, or chef's choice",
+              "An extra course added to your dinner - appetizer, dessert, or chef's choice",
             ],
             ['Discount', 'A fixed amount or percentage off your next event'],
-            ['Service upgrade', "An elevated dining experience — like a chef's tasting menu"],
+            ['Service upgrade', "An elevated dining experience - like a chef's tasting menu"],
             ['Complimentary dinner', 'A full dinner on the house'],
           ]}
         />
@@ -211,7 +211,7 @@ export function LoyaltyAboutContent() {
             <div>
               <p className="text-sm font-medium text-stone-200">Your chef delivers</p>
               <p className="text-sm text-stone-400">
-                At your next event, your reward is fulfilled — a personal touch, not an automated
+                At your next event, your reward is fulfilled - a personal touch, not an automated
                 coupon.
               </p>
             </div>
@@ -249,14 +249,14 @@ export function LoyaltyAboutContent() {
             <p className="text-sm font-medium text-stone-200">Can my tier go down?</p>
             <p className="text-sm text-stone-400 mt-1">
               No. Tiers are based on your lifetime dining history and never decrease. Once you reach
-              Gold, you stay Gold — even after redeeming points.
+              Gold, you stay Gold - even after redeeming points.
             </p>
           </div>
           <div>
             <p className="text-sm font-medium text-stone-200">Do I earn points on every event?</p>
             <p className="text-sm text-stone-400 mt-1">
               Points are awarded automatically when your chef marks an event as completed. You
-              don&rsquo;t need to do anything extra — no codes, no cards, no check-ins.
+              don&rsquo;t need to do anything extra - no codes, no cards, no check-ins.
             </p>
           </div>
           <div>

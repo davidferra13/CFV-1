@@ -47,7 +47,7 @@ export default async function DevicesSettingsPage() {
         <h2 className="mb-4 text-lg font-semibold text-stone-100">Kiosk Permissions</h2>
         <p className="mb-4 text-sm text-stone-400">
           Staff using kiosk devices have a strictly limited set of actions. This is enforced at the
-          server level — the kiosk UI simply cannot access anything outside this list.
+          server level - the kiosk UI simply cannot access anything outside this list.
         </p>
 
         <div className="grid gap-6 md:grid-cols-2">

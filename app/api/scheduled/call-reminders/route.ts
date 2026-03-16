@@ -1,6 +1,6 @@
 // Call Reminder Cron Endpoint
-// GET /api/scheduled/call-reminders — invoked by Vercel Cron (every 30 min)
-// POST /api/scheduled/call-reminders — manual invocation
+// GET /api/scheduled/call-reminders - invoked by Vercel Cron (every 30 min)
+// POST /api/scheduled/call-reminders - manual invocation
 //
 // Sends chef reminder emails for calls happening in the next 24h or next 1h.
 // Tracks sent reminders with reminder_24h_sent_at and reminder_1h_sent_at

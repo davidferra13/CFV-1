@@ -15,7 +15,7 @@ type BetaSurveyFormProps = {
   survey: BetaSurveyDefinition
   /** For authenticated submissions */
   mode: 'authenticated' | 'public'
-  /** For public mode — invite token */
+  /** For public mode - invite token */
   inviteToken?: string
   /** Pre-filled respondent info (from invite) */
   prefillName?: string

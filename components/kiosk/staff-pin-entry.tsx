@@ -25,7 +25,7 @@ function playClickSound() {
     // Clean up after sound finishes
     setTimeout(() => ctx.close(), 100)
   } catch {
-    // Audio not available — ignore silently
+    // Audio not available - ignore silently
   }
 }
 
@@ -227,7 +227,7 @@ export function StaffPinEntry({ token, onVerified }: StaffPinEntryProps) {
         })}
       </div>
 
-      {/* Submit button — for 4-5 digit PINs (6-digit auto-submits) */}
+      {/* Submit button - for 4-5 digit PINs (6-digit auto-submits) */}
       <button
         type="button"
         onClick={() => handleSubmit()}

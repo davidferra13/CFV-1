@@ -1,4 +1,4 @@
-// Chef Activity Log — Full Page
+// Chef Activity Log - Full Page
 // "What did I do last?" + "Where should I pick up?"
 // Two modes: Summary (key actions) and Retrace (step-by-step navigation trail)
 

@@ -98,7 +98,7 @@ export default async function LoyaltyPointsPage() {
                         {client.loyalty_tier as string}
                       </span>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-100 font-semibold text-sm">

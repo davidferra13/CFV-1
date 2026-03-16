@@ -1,6 +1,6 @@
 'use client'
 
-// Recipe Capture Prompt — Post-Event Banner
+// Recipe Capture Prompt - Post-Event Banner
 // Shown on event detail when components have no recipe.
 // Upgraded from quiet card to prominent, action-oriented banner.
 // Also supports quick in-place capture for single dishes.
@@ -40,7 +40,7 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  // All caught up — show a quiet success state
+  // All caught up - show a quiet success state
   if (components.length === 0) {
     return (
       <div className="flex items-center gap-3 bg-green-950 border border-green-200 rounded-lg px-4 py-3">
@@ -106,7 +106,7 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
 
   return (
     <div className="border-2 border-amber-400 rounded-lg overflow-hidden">
-      {/* Banner header — always visible */}
+      {/* Banner header - always visible */}
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -143,7 +143,7 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
           {success && <Alert variant="success">{success}</Alert>}
 
           <p className="text-xs text-stone-500">
-            Record while the dinner is fresh. Paste a quick description — we'll structure it.
+            Record while the dinner is fresh. Paste a quick description - we'll structure it.
           </p>
 
           {components.map((comp) => (

@@ -1,4 +1,4 @@
-// CallForm — schedule a new call or edit an existing one
+// CallForm - schedule a new call or edit an existing one
 
 'use client'
 
@@ -259,7 +259,7 @@ export function CallForm({
         />
       </div>
 
-      {/* Notify client toggle — only if this is a client call */}
+      {/* Notify client toggle - only if this is a client call */}
       {clientId && (
         <div className="flex items-center gap-3">
           <Switch id="notify_client" checked={notifyClient} onCheckedChange={setNotifyClient} />

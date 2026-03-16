@@ -1,4 +1,4 @@
-// System Nerve Center — GET /api/system/health
+// System Nerve Center - GET /api/system/health
 // Full health sweep of all services. Admin-only.
 
 import { NextResponse } from 'next/server'

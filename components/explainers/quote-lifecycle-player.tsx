@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * QuoteLifecyclePlayer — Remotion Player wrapper for the quote lifecycle animation.
+ * QuoteLifecyclePlayer - Remotion Player wrapper for the quote lifecycle animation.
  * Shows draft → sent → accepted/rejected/expired with deposit explanation.
  */
 

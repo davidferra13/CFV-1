@@ -62,7 +62,7 @@ export function PairingDisplay({ pairingCode, expiresAt, onClose }: PairingDispl
         margin: 2,
         color: { dark: '#1c1917', light: '#ffffff' },
       }).catch(() => {
-        // Silently fail — code is still visible as text
+        // Silently fail - code is still visible as text
       })
     }
   }, [pairingUrl])
@@ -130,7 +130,7 @@ export function PairingDisplay({ pairingCode, expiresAt, onClose }: PairingDispl
             </div>
           </div>
 
-          {/* QR code — generated locally, no external API */}
+          {/* QR code - generated locally, no external API */}
           <div>
             <p className="mb-2 text-sm text-stone-400">Or scan this QR code</p>
             <div className="flex justify-center">
@@ -141,7 +141,7 @@ export function PairingDisplay({ pairingCode, expiresAt, onClose }: PairingDispl
           {/* Expiry timer */}
           <div className={`text-sm ${expired ? 'text-red-400' : 'text-stone-400'}`}>
             {expired ? (
-              'Code expired — generate a new one'
+              'Code expired - generate a new one'
             ) : (
               <>
                 Expires in <span className="font-mono font-medium">{timeLeft}</span>

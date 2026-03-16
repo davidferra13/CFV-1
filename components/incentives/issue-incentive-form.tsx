@@ -1,6 +1,6 @@
 'use client'
 
-// IssueIncentiveForm — Chef creates a new voucher or gift card
+// IssueIncentiveForm - Chef creates a new voucher or gift card
 // Wraps the existing createVoucherOrGiftCard() server action.
 
 import { useState } from 'react'
@@ -249,7 +249,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
       <div>
         <label htmlFor="customCode" className="block text-sm font-medium text-stone-300 mb-1">
           Custom Code{' '}
-          <span className="text-stone-400 font-normal">(optional — auto-generated if blank)</span>
+          <span className="text-stone-400 font-normal">(optional - auto-generated if blank)</span>
         </label>
         <input
           id="customCode"

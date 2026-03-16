@@ -1,4 +1,4 @@
-// Commerce Product Form — create/edit products
+// Commerce Product Form - create/edit products
 'use client'
 
 import { useState, useTransition } from 'react'

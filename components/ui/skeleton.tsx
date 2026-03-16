@@ -1,4 +1,4 @@
-// Skeleton — Content-shaped loading placeholder.
+// Skeleton - Content-shaped loading placeholder.
 // Use as Suspense fallback or while async data loads client-side.
 
 import { cn } from '@/lib/utils'

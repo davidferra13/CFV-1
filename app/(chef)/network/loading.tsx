@@ -1,4 +1,4 @@
-// Network Loading Skeleton — multi-section social hub
+// Network Loading Skeleton - multi-section social hub
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ContextLoader } from '@/components/ui/context-loader'
 

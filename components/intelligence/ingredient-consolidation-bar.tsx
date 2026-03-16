@@ -20,7 +20,7 @@ export async function IngredientConsolidationBar() {
               <div>
                 <p className="text-sm font-medium text-emerald-300">{opp.title}</p>
                 <p className="text-xs text-emerald-400/70">
-                  ~{opp.estimatedSavingsPercent}% savings — {opp.description}
+                  ~{opp.estimatedSavingsPercent}% savings - {opp.description}
                 </p>
               </div>
             </div>

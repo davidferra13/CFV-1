@@ -1,4 +1,4 @@
-// Staff Detail Page — Full profile for a single staff member
+// Staff Detail Page - Full profile for a single staff member
 // Shows: contact info, assignment history, onboarding, agreements, performance
 
 import type { Metadata } from 'next'
@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { StaffMemberForm } from '@/components/staff/staff-member-form'
 import { CreateStaffLoginForm } from '@/components/staff/create-staff-login-form'
 
-export const metadata: Metadata = { title: 'Staff Profile — ChefFlow' }
+export const metadata: Metadata = { title: 'Staff Profile | ChefFlow' }
 
 const ROLE_LABELS: Record<string, string> = {
   sous_chef: 'Sous Chef',
@@ -132,7 +132,7 @@ export default async function StaffDetailPage({ params }: { params: { id: string
                 <p className="text-lg font-semibold text-stone-100">
                   {member.performance.on_time_rate != null
                     ? `${Math.round(member.performance.on_time_rate * 100)}%`
-                    : '—'}
+                    : '-'}
                 </p>
               </div>
               <div>
@@ -146,7 +146,7 @@ export default async function StaffDetailPage({ params }: { params: { id: string
                 <p className="text-lg font-semibold text-stone-100">
                   {member.performance.avg_rating != null
                     ? `${Number(member.performance.avg_rating).toFixed(1)} / 5`
-                    : '—'}
+                    : '-'}
                 </p>
               </div>
               <div>

@@ -88,7 +88,7 @@ export default async function InvoicesPage() {
           </Link>
         </div>
         <p className="text-stone-500 mt-1">
-          Event invoices organized by status — invoices are per-event in ChefFlow
+          Event invoices organized by status - invoices are per-event in ChefFlow
         </p>
       </div>
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { logStaffMeal } from '@/lib/inventory/staff-meal-actions'
 
 function formatCents(cents: number | null) {
-  if (cents == null) return '—'
+  if (cents == null) return '-'
   return `$${(cents / 100).toFixed(2)}`
 }
 
@@ -85,7 +85,7 @@ export function StaffMealsClient({ initialMeals }: Props) {
           <p className="text-2xl font-bold text-stone-100">
             {initialMeals.length > 0
               ? formatCents(Math.round(totalCost / initialMeals.length))
-              : '—'}
+              : '-'}
           </p>
           <p className="text-xs text-stone-500">Avg Cost/Meal</p>
         </Card>
@@ -224,7 +224,7 @@ export function StaffMealsClient({ initialMeals }: Props) {
                 initialMeals.map((meal: any) => (
                   <tr key={meal.id} className="border-b border-stone-800 hover:bg-stone-800/50">
                     <td className="px-4 py-3 text-stone-300 whitespace-nowrap">
-                      {meal.mealDate ? new Date(meal.mealDate).toLocaleDateString() : '—'}
+                      {meal.mealDate ? new Date(meal.mealDate).toLocaleDateString() : '-'}
                     </td>
                     <td className="px-4 py-3 text-stone-100 font-medium">{meal.description}</td>
                     <td className="px-4 py-3 text-right text-stone-300">{meal.staffCount}</td>
@@ -232,7 +232,7 @@ export function StaffMealsClient({ initialMeals }: Props) {
                       {formatCents(meal.totalCostCents)}
                     </td>
                     <td className="px-4 py-3 text-stone-500 max-w-[200px] truncate">
-                      {meal.notes || '—'}
+                      {meal.notes || '-'}
                     </td>
                   </tr>
                 ))

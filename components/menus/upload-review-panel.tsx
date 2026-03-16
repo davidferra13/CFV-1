@@ -86,7 +86,7 @@ export function UploadReviewPanel({
         <div>
           <h3 className="text-lg font-semibold text-stone-200">Review Parsed Dishes</h3>
           <p className="text-sm text-stone-500">
-            {dishes.length} dish{dishes.length !== 1 ? 'es' : ''} found — edit, remove, or add
+            {dishes.length} dish{dishes.length !== 1 ? 'es' : ''} found - edit, remove, or add
             before approving
           </p>
         </div>

@@ -1,4 +1,4 @@
-// TakeAChef Welcome Guide — dismissible first-run explanation
+// TakeAChef Welcome Guide - dismissible first-run explanation
 // Shown inside the dashboard widget until the chef dismisses it.
 'use client'
 
@@ -15,7 +15,7 @@ export function TacWelcomeGuide() {
         setDismissed(false)
       }
     } catch {
-      // Private browsing — show the guide anyway
+      // Private browsing - show the guide anyway
       setDismissed(false)
     }
   }, [])
@@ -44,12 +44,12 @@ export function TacWelcomeGuide() {
       </div>
       <ol className="text-[11px] text-blue-700 space-y-0.5 list-decimal list-inside">
         <li>New leads from TakeAChef appear here automatically from your Gmail</li>
-        <li>Address each lead — send a menu to start the conversation, or decline</li>
+        <li>Address each lead - send a menu to start the conversation, or decline</li>
         <li>
-          Save your TakeAChef conversations by pasting them into ChefFlow — we can't grab them
+          Save your TakeAChef conversations by pasting them into ChefFlow - we can't grab them
           automatically, and TakeAChef locks transcripts when inquiries close
         </li>
-        <li>When a booking confirms, we auto-create the event — you just build the final menu</li>
+        <li>When a booking confirms, we auto-create the event - you just build the final menu</li>
       </ol>
       <button
         type="button"

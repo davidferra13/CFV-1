@@ -1,4 +1,4 @@
-// Staff Task Checkbox — Toggle task completion from the staff portal
+// Staff Task Checkbox - Toggle task completion from the staff portal
 'use client'
 
 import { useState } from 'react'

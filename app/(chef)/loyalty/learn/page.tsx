@@ -1,4 +1,4 @@
-// Loyalty Program Guide — Chef-Facing Educational Page
+// Loyalty Program Guide - Chef-Facing Educational Page
 // Everything a chef needs to understand about loyalty programs:
 // what they are, why they work, what the best brands do, and how ChefFlow's system works.
 
@@ -23,7 +23,7 @@ export default function LoyaltyLearnPage() {
       <div className="mt-4 mb-6">
         <h1 className="text-2xl font-bold text-stone-100">Understanding Loyalty Programs</h1>
         <p className="text-sm text-stone-400 mt-1">
-          Everything you need to know — from the fundamentals to what the best brands in the world
+          Everything you need to know - from the fundamentals to what the best brands in the world
           do, and how to make your program work for your clients.
         </p>
       </div>

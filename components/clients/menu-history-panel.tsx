@@ -1,6 +1,6 @@
 'use client'
 
-// MenuHistoryPanel — Shows all menus/dishes served to this client across past events.
+// MenuHistoryPanel - Shows all menus/dishes served to this client across past events.
 // Helps chef avoid repeating menus and surfaces culinary patterns per relationship.
 
 import { useState } from 'react'
@@ -73,7 +73,7 @@ function EventMenuRow({ entry }: { entry: MenuHistoryEntry }) {
               <div key={i}>
                 <p className="text-xs font-medium text-stone-400 uppercase tracking-wide">
                   {dish.courseName}
-                  {dish.dishName ? ` — ${dish.dishName}` : ''}
+                  {dish.dishName ? ` - ${dish.dishName}` : ''}
                 </p>
                 {dish.componentNames.length > 0 ? (
                   <p className="text-xs text-stone-500 mt-0.5">{dish.componentNames.join(', ')}</p>
@@ -118,7 +118,7 @@ export function MenuHistoryPanel({ history }: { history: ClientMenuHistory }) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-stone-500">
-            No completed events yet — menu history will appear here after the first dinner.
+            No completed events yet - menu history will appear here after the first dinner.
           </p>
         </CardContent>
       </Card>
@@ -131,7 +131,7 @@ export function MenuHistoryPanel({ history }: { history: ClientMenuHistory }) {
         <CardTitle className="text-lg">Culinary History</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Aggregates — what's been served most */}
+        {/* Aggregates - what's been served most */}
         {history.topComponents.length > 0 && (
           <div>
             <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-1.5">

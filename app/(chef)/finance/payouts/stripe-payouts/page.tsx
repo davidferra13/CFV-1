@@ -129,7 +129,7 @@ export default async function StripePayoutsPage() {
                       </Link>
                     ) : (
                       <span className="text-stone-400">
-                        {transfer.isDeferred ? 'Deferred' : '—'}
+                        {transfer.isDeferred ? 'Deferred' : '-'}
                       </span>
                     )}
                   </TableCell>
@@ -139,7 +139,7 @@ export default async function StripePayoutsPage() {
                   <TableCell className="text-stone-500 text-sm">
                     {transfer.platformFeeCents > 0
                       ? `-${formatCurrency(transfer.platformFeeCents)}`
-                      : '—'}
+                      : '-'}
                   </TableCell>
                   <TableCell className="text-green-700 font-semibold text-sm">
                     {formatCurrency(transfer.netTransferCents)}

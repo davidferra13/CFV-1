@@ -23,7 +23,7 @@ type Props = {
 }
 
 function formatCents(cents: number | null) {
-  if (cents === null || cents === undefined) return '—'
+  if (cents === null || cents === undefined) return '-'
   return `$${(cents / 100).toLocaleString()}`
 }
 
@@ -272,7 +272,7 @@ export function ServiceDefaultsPanel({ clientId, ...initial }: Props) {
           <option value="">Select...</option>
           <option value="full_reset">Full Kitchen Reset</option>
           <option value="cooking_mess">Cooking Mess Only</option>
-          <option value="minimal">Minimal — they clean up</option>
+          <option value="minimal">Minimal - they clean up</option>
           <option value="staff_handles">Their Staff Handles It</option>
         </Select>
         <Select

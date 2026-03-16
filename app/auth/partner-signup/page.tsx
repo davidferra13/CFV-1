@@ -1,6 +1,6 @@
 'use client'
 
-// Partner Signup — Claim a partner account via chef-generated invite link.
+// Partner Signup - Claim a partner account via chef-generated invite link.
 // URL format: /auth/partner-signup?token=<uuid>
 //
 // Flow:
@@ -92,7 +92,7 @@ function PartnerSignupForm() {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-stone-100">Claim your partner account</h1>
           <p className="mt-2 text-sm text-stone-400">
-            Create an account to access your partner showcase — see stats, photos, and event history
+            Create an account to access your partner showcase - see stats, photos, and event history
             from your space.
           </p>
         </div>

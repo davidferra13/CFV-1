@@ -23,7 +23,7 @@ export default async function TransactionsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Transaction Ledger</h1>
         <p className="text-stone-500 mt-1">
-          Every inventory movement — receiving, deductions, waste, transfers, adjustments — all in
+          Every inventory movement - receiving, deductions, waste, transfers, adjustments - all in
           one append-only log.
         </p>
       </div>

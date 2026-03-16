@@ -1,7 +1,7 @@
 'use client'
 
 // Translates menu dish names and descriptions into a selected language.
-// Uses LibreTranslate (free, no key). Non-blocking — fails gracefully.
+// Uses LibreTranslate (free, no key). Non-blocking - fails gracefully.
 
 import { useState } from 'react'
 import { toast } from 'sonner'

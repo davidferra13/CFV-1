@@ -1,6 +1,6 @@
 // Past Events Import Component
 // Lets a chef log historical events (pre-ChefFlow gigs) in bulk.
-// Events are created directly in `completed` status — no FSM traversal needed.
+// Events are created directly in `completed` status - no FSM traversal needed.
 // Supports two input modes:
 //   - Manual: fill a row-per-event form
 //   - CSV: paste a spreadsheet, auto-detect columns, populate rows
@@ -37,7 +37,7 @@ type EventRow = {
 }
 
 const SERVICE_STYLES = [
-  { value: '', label: '— Service style —' },
+  { value: '', label: '- Service style -' },
   { value: 'plated', label: 'Plated' },
   { value: 'family_style', label: 'Family Style' },
   { value: 'buffet', label: 'Buffet' },
@@ -94,7 +94,7 @@ function rowToInput(row: EventRow): HistoricalEventInput {
 
 // ============================================
 // MAIN COMPONENT
-// existingClients is fetched server-side and passed as a prop — no useEffect needed.
+// existingClients is fetched server-side and passed as a prop - no useEffect needed.
 // ============================================
 
 export function PastEventsImport({
@@ -288,7 +288,7 @@ export function PastEventsImport({
         {inputMode === 'manual' && (
           <div className="space-y-4">
             <Alert variant="info" title="Log your past events">
-              Fill in your historical gigs. Only date + client are required — everything else is
+              Fill in your historical gigs. Only date + client are required - everything else is
               optional. These events are logged as done and won&apos;t go through your normal
               booking workflow.
             </Alert>
@@ -331,7 +331,7 @@ export function PastEventsImport({
                         className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
 
-                      {/* Client — select or type */}
+                      {/* Client - select or type */}
                       <div>
                         {existingClients.length > 0 ? (
                           <select
@@ -439,7 +439,7 @@ export function PastEventsImport({
                     </button>
                   </div>
 
-                  {/* Notes — secondary row */}
+                  {/* Notes - secondary row */}
                   <div className="mt-2 ml-7 sm:ml-8">
                     <input
                       type="text"
@@ -487,7 +487,7 @@ export function PastEventsImport({
     return (
       <div className="space-y-5">
         <Alert variant="info" title="Review before saving">
-          These events will be logged as done — they won&apos;t go through your booking workflow.
+          These events will be logged as done - they won&apos;t go through your booking workflow.
           {withPayment.length > 0 &&
             ` Payment records will be saved for ${withPayment.length} event${withPayment.length !== 1 ? 's' : ''}.`}
         </Alert>
@@ -514,13 +514,13 @@ export function PastEventsImport({
               {inputs.map((input, i) => (
                 <tr key={i} className="border-b border-stone-800">
                   <td className="py-2 pr-4 text-stone-100 whitespace-nowrap">{input.event_date}</td>
-                  <td className="py-2 pr-4 text-stone-100">{input.client_name || '—'}</td>
-                  <td className="py-2 pr-4 text-stone-400">{input.occasion || '—'}</td>
-                  <td className="py-2 pr-4 text-stone-400">{input.guest_count ?? '—'}</td>
+                  <td className="py-2 pr-4 text-stone-100">{input.client_name || '-'}</td>
+                  <td className="py-2 pr-4 text-stone-400">{input.occasion || '-'}</td>
+                  <td className="py-2 pr-4 text-stone-400">{input.guest_count ?? '-'}</td>
                   <td className="py-2 pr-4 text-stone-100">
                     {input.amount_paid_cents
                       ? `$${(input.amount_paid_cents / 100).toFixed(2)}`
-                      : '—'}
+                      : '-'}
                   </td>
                 </tr>
               ))}
@@ -590,7 +590,7 @@ export function PastEventsImport({
       <Alert variant="success" title="Events added">
         <p>
           {succeeded.length} event{succeeded.length !== 1 ? 's' : ''} added to your history.
-          {failed.length > 0 && ` ${failed.length} couldn't be saved — see below.`}
+          {failed.length > 0 && ` ${failed.length} couldn't be saved - see below.`}
         </p>
       </Alert>
 

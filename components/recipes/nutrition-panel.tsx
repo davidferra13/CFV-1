@@ -1,6 +1,6 @@
 'use client'
 
-// Recipe Nutrition Panel — shows aggregated USDA nutrition data for a recipe.
+// Recipe Nutrition Panel - shows aggregated USDA nutrition data for a recipe.
 // On-demand: chef clicks "Show Nutrition" to trigger API lookups.
 // Displays per-serving macros (calories, protein, fat, carbs, fiber, sodium)
 // plus a collapsible per-ingredient breakdown.
@@ -36,7 +36,7 @@ export function NutritionPanel({ recipeId, ingredientCount }: Props) {
     })
   }
 
-  // Not yet loaded — show the trigger button
+  // Not yet loaded - show the trigger button
   if (!data && !error) {
     return (
       <Card>
@@ -96,7 +96,7 @@ export function NutritionPanel({ recipeId, ingredientCount }: Props) {
     )
   }
 
-  // Loaded — show the nutrition summary
+  // Loaded - show the nutrition summary
   const totals: NutritionTotals = viewMode === 'serving' ? data!.perServing : data!.wholeRecipe
   const matchedCount = data!.ingredients.filter((i) => i.matched).length
 

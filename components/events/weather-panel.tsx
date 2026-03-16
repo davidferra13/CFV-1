@@ -1,4 +1,4 @@
-// WeatherPanel — server component
+// WeatherPanel - server component
 // Fetches Open-Meteo forecast (or historical data) for the event date/location.
 // Shows nothing when weather is unavailable or too far in the future (>16 days).
 

@@ -16,7 +16,7 @@ export default async function SocialConnectionsPage({ searchParams }: Props) {
       <div>
         <h2 className="text-lg font-semibold text-stone-100">Platform Connections</h2>
         <p className="text-sm text-stone-500 mt-0.5">
-          Connect your social accounts once — ChefFlow handles all the posting automatically.
+          Connect your social accounts once | ChefFlow handles all the posting automatically.
         </p>
       </div>
 
@@ -39,7 +39,7 @@ function errorMessage(code: string, platform?: string): string {
   const name = platform ? ` for ${platform.replace('_', ' ')}` : ''
   switch (code) {
     case 'access_denied':
-      return `Connection${name} was cancelled — you denied access. You can try again any time.`
+      return `Connection${name} was cancelled - you denied access. You can try again any time.`
     case 'invalid_state':
       return `OAuth session expired${name}. Please try connecting again.`
     case 'token_exchange_failed':

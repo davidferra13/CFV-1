@@ -1,4 +1,4 @@
-// Client Portal Monitoring — /clients/presence
+// Client Portal Monitoring - /clients/presence
 // Real-time view of who's on the portal, what they're doing, and their engagement level.
 
 import type { Metadata } from 'next'

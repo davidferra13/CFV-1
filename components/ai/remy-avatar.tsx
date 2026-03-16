@@ -1,8 +1,8 @@
 'use client'
 
-// RemyAvatar — Simple static image avatar for Remy.
+// RemyAvatar - Simple static image avatar for Remy.
 // Replaces the animation system (lip-sync, sprite sheets, visemes) with a
-// single friendly image. The animation system is archived — not deleted — in:
+// single friendly image. The animation system is archived - not deleted - in:
 //   components/ai/remy-talking-avatar.tsx
 //   components/ai/remy-animated-mascot.tsx
 //   components/ai/remy-sprite-animator.tsx

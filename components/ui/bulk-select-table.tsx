@@ -1,6 +1,6 @@
 'use client'
 
-// BulkSelectTable — adds checkbox selection and a floating bulk-action bar
+// BulkSelectTable - adds checkbox selection and a floating bulk-action bar
 // to any data table. Generic over items that have a string `id` field.
 
 import { useState, useCallback } from 'react'

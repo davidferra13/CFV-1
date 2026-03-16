@@ -2,7 +2,7 @@
 
 // Historical Email Scan Section
 // Rendered inside the Gmail settings block. Uses a deliberate two-step
-// confirmation flow instead of a toggle — users should feel in control,
+// confirmation flow instead of a toggle - users should feel in control,
 // not pressured. Heavy emphasis on privacy: we FILTER OUT junk, we don't
 // read your emails.
 
@@ -135,7 +135,7 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
           </Button>
         )}
 
-        {/* Confirmation step — requires typing "scan" */}
+        {/* Confirmation step - requires typing "scan" */}
         {showConfirm && (
           <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 space-y-3">
             <p className="text-sm text-stone-200">

@@ -117,7 +117,7 @@ export function ContingencyPanel({
                     {contact && (
                       <p className="text-xs text-stone-400 mt-0.5">
                         Backup: {contact.name} ({contact.relationship})
-                        {contact.phone ? ` — ${contact.phone}` : ''}
+                        {contact.phone ? ` - ${contact.phone}` : ''}
                       </p>
                     )}
                     <button
@@ -156,7 +156,7 @@ export function ContingencyPanel({
                             setForm((p) => ({ ...p, backup_contact_id: e.target.value }))
                           }
                         >
-                          <option value="">— None —</option>
+                          <option value="">- None -</option>
                           {emergencyContacts.map((c) => (
                             <option key={c.id} value={c.id}>
                               {c.name} ({c.relationship})

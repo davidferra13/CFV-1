@@ -52,7 +52,7 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
   if (logged) {
     return (
       <div className="p-4 rounded-lg border border-green-200 bg-green-950 text-green-800 text-sm">
-        <span className="font-medium">{prospect.name}</span> — call logged!
+        <span className="font-medium">{prospect.name}</span> - call logged!
       </div>
     )
   }
@@ -101,7 +101,7 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
             )}
             {prospect.call_count > 0 && (
               <span>
-                Called {prospect.call_count}x — Last: {prospect.last_outcome}
+                Called {prospect.call_count}x - Last: {prospect.last_outcome}
               </span>
             )}
           </div>

@@ -19,7 +19,7 @@ export default async function GoalHistoryPage({ params }: { params: Promise<{ id
   await requireChef()
   const { id: goalId } = await params
 
-  // getGoalById works for any status — archived/paused goals can still have history viewed
+  // getGoalById works for any status - archived/paused goals can still have history viewed
   const goal = await getGoalById(goalId)
 
   if (!goal) {
@@ -115,7 +115,7 @@ export default async function GoalHistoryPage({ params }: { params: Promise<{ id
                         {snap.gapValue > 0 ? formatGoalValue(snap.gapValue, goal.goalType) : '✓'}
                       </td>
                       {revenue && (
-                        <td className="py-2 text-stone-300">{snap.eventsNeeded ?? '—'}</td>
+                        <td className="py-2 text-stone-300">{snap.eventsNeeded ?? '-'}</td>
                       )}
                     </tr>
                   )

@@ -1,4 +1,4 @@
-// Edit Quote Page — Only for draft quotes
+// Edit Quote Page - Only for draft quotes
 
 import { notFound, redirect } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'

@@ -1,13 +1,13 @@
 // Print & Document Settings
 // Controls attribution line, default print mode, custom footer text.
-// Smart defaults — works out of the box, chef can customize if they want.
+// Smart defaults - works out of the box, chef can customize if they want.
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPrintPreferences } from '@/lib/print/actions'
 import { PrintSettingsForm } from '@/components/settings/print-settings-form'
 
-export const metadata: Metadata = { title: 'Print & Documents — ChefFlow' }
+export const metadata: Metadata = { title: 'Print & Documents | ChefFlow' }
 
 export default async function PrintSettingsPage() {
   await requireChef()

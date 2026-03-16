@@ -1,4 +1,4 @@
-// DailyPlanBanner — Compact summary for the dashboard.
+// DailyPlanBanner - Compact summary for the dashboard.
 // Shows item counts per lane and links to the Daily Ops page.
 
 import Link from 'next/link'

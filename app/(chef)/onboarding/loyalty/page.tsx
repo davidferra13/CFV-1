@@ -4,7 +4,7 @@ import { getLoyaltyConfig, getRewards } from '@/lib/loyalty/actions'
 import { getImportedClients } from '@/lib/clients/import-actions'
 import { LoyaltySetup } from '@/components/onboarding/loyalty-setup'
 
-export const metadata = { title: 'Loyalty Program Setup — ChefFlow Setup' }
+export const metadata = { title: 'Loyalty Program Setup | ChefFlow Setup' }
 
 export default async function OnboardingLoyaltyPage() {
   const [config, rewards, clients] = await Promise.all([
@@ -27,7 +27,7 @@ export default async function OnboardingLoyaltyPage() {
           <h1 className="text-3xl font-bold text-stone-100">Loyalty Program</h1>
           <p className="text-stone-400 mt-2 max-w-xl">
             Configure your tier thresholds, build your reward catalog, then enter each client&apos;s
-            historical point balance. Get this right — the ledger is append-only.
+            historical point balance. Get this right - the ledger is append-only.
           </p>
         </div>
 

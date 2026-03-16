@@ -47,7 +47,7 @@ export function RemovalTaskTracker({ request }: { request: RemovalRequest }) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">
-            Removal Tasks {request.client_name && `— ${request.client_name}`}
+            Removal Tasks {request.client_name && `- ${request.client_name}`}
           </CardTitle>
           <Badge
             variant={

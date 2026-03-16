@@ -17,12 +17,12 @@ export async function InquiryTriageBar() {
           <span className="text-amber-400 text-sm mt-0.5">!</span>
           <div>
             <p className="text-sm font-medium text-amber-300">
-              {cadence.pipelineAtRisk} inquiries at risk — client went silent
+              {cadence.pipelineAtRisk} inquiries at risk - client went silent
             </p>
             <p className="text-xs text-amber-400/70">
               {cadence.openInquiriesWithoutReply > 0
                 ? `${cadence.openInquiriesWithoutReply} awaiting your reply`
-                : 'All replied — waiting on client responses'}
+                : 'All replied - waiting on client responses'}
             </p>
           </div>
         </div>

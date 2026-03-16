@@ -55,7 +55,7 @@ export function StageHistoryPanel({ history }: StageHistoryPanelProps) {
               </span>
               {entry.notes && (
                 <span className="text-stone-400 truncate max-w-[200px]" title={entry.notes}>
-                  — {entry.notes}
+                  - {entry.notes}
                 </span>
               )}
             </div>

@@ -32,7 +32,7 @@ export function ConcentrationWarningCard({ risk }: ConcentrationWarningCardProps
       bg: 'bg-emerald-950 border-emerald-200',
       title: 'Revenue Well Diversified',
       titleColor: 'text-emerald-800',
-      body: `Your largest client accounts for ${topClientRevenuePct}% of revenue — healthy diversification.`,
+      body: `Your largest client accounts for ${topClientRevenuePct}% of revenue - healthy diversification.`,
       bodyColor: 'text-emerald-700',
     },
     moderate: {

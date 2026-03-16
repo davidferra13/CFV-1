@@ -1,4 +1,4 @@
-// Client hub group detail — wraps existing HubGroupView in client layout
+// Client hub group detail - wraps existing HubGroupView in client layout
 
 import { notFound } from 'next/navigation'
 import { requireClient } from '@/lib/auth/get-user'
@@ -43,7 +43,7 @@ export default async function ClientHubGroupPage({ params }: Props) {
     getGroupEvents(group.id),
   ])
 
-  // Pass profileToken as a prop — the HubGroupView will set the cookie client-side
+  // Pass profileToken as a prop - the HubGroupView will set the cookie client-side
   return (
     <div className="mx-auto max-w-4xl">
       <HubGroupView

@@ -238,7 +238,7 @@ export default async function SettingsPage() {
               >
                 <p className="font-semibold text-brand-200">Client Preview</p>
                 <p className="text-sm text-brand-400 mt-1">
-                  See your public profile and client portal exactly as your clients do — with real
+                  See your public profile and client portal exactly as your clients do - with real
                   data.
                 </p>
               </Link>
@@ -629,7 +629,7 @@ export default async function SettingsPage() {
         {/* ── 12. Appearance ───────────────────────────────────── */}
         <SettingsCategory
           title="Appearance"
-          description="Customize how ChefFlow looks — theme and color mode."
+          description="Customize how ChefFlow looks - theme and color mode."
           icon="Sun"
         >
           <Link
@@ -739,7 +739,7 @@ export default async function SettingsPage() {
             >
               <p className="font-semibold text-amber-200">Protection Hub</p>
               <p className="text-sm text-amber-400 mt-1">
-                Insurance, certifications, NDA, business continuity, and crisis response — all in
+                Insurance, certifications, NDA, business continuity, and crisis response - all in
                 one dashboard.
               </p>
             </Link>
@@ -776,7 +776,7 @@ export default async function SettingsPage() {
             >
               <p className="font-medium text-stone-100">Emergency Contacts</p>
               <p className="text-sm text-stone-500 mt-1">
-                Backup contacts for event or service disruption — a partner, lead, or peer who can
+                Backup contacts for event or service disruption - a partner, lead, or peer who can
                 step in.
               </p>
             </Link>

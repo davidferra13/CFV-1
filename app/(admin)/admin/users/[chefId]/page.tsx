@@ -1,4 +1,4 @@
-// Admin Chef Detail — full view of a single chef's account
+// Admin Chef Detail - full view of a single chef's account
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -174,7 +174,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
           <Activity size={14} className="text-stone-500" />
           <h2 className="text-sm font-semibold text-stone-300">
-            Chef Health Score — {healthScore.score}/100 ({CHEF_TIER_LABELS[healthScore.tier]})
+            Chef Health Score - {healthScore.score}/100 ({CHEF_TIER_LABELS[healthScore.tier]})
           </h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-0 divide-x divide-y divide-slate-100">
@@ -237,7 +237,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                 {events.map((event: any) => (
                   <tr key={event.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2.5 text-slate-900 font-medium">
-                      {event.occasion ?? '—'}
+                      {event.occasion ?? '-'}
                     </td>
                     <td className="px-4 py-2.5">
                       <span
@@ -247,10 +247,10 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-xs text-slate-400">
-                      {event.event_date ? new Date(event.event_date).toLocaleDateString() : '—'}
+                      {event.event_date ? new Date(event.event_date).toLocaleDateString() : '-'}
                     </td>
                     <td className="px-4 py-2.5 text-right text-stone-300">
-                      {event.quoted_price_cents ? formatCents(event.quoted_price_cents) : '—'}
+                      {event.quoted_price_cents ? formatCents(event.quoted_price_cents) : '-'}
                     </td>
                   </tr>
                 ))}
@@ -275,7 +275,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                   <p className="text-sm font-medium text-slate-900">
                     {(client as { full_name?: string | null }).full_name ?? 'Unnamed'}
                   </p>
-                  <p className="text-xs text-slate-400">{client.email ?? '—'}</p>
+                  <p className="text-xs text-slate-400">{client.email ?? '-'}</p>
                 </div>
                 <p className="text-xs text-slate-400">
                   {new Date(client.created_at).toLocaleDateString()}
@@ -318,7 +318,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-stone-400 text-xs">
-                      {entry.description ?? '—'}
+                      {entry.description ?? '-'}
                     </td>
                     <td
                       className={`px-4 py-2.5 text-right font-medium ${(entry.amount_cents ?? 0) < 0 ? 'text-red-600' : 'text-slate-900'}`}

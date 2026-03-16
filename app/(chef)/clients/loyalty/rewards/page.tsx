@@ -117,7 +117,7 @@ export default async function RewardsPage() {
                       ? formatCurrency(incentive.amount_cents)
                       : incentive.discount_percent != null
                         ? `${incentive.discount_percent}% off`
-                        : '—'}
+                        : '-'}
                   </TableCell>
                   <TableCell>
                     {(() => {
@@ -137,7 +137,7 @@ export default async function RewardsPage() {
                   <TableCell className="text-stone-500 text-sm">
                     {incentive.expires_at
                       ? format(new Date(incentive.expires_at), 'MMM d, yyyy')
-                      : '—'}
+                      : '-'}
                   </TableCell>
                 </TableRow>
               ))}

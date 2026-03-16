@@ -1,4 +1,4 @@
-// Response Time SLA Widget — shows urgency counts + avg response time
+// Response Time SLA Widget - shows urgency counts + avg response time
 // Sits on the dashboard to surface "you have N inquiries waiting"
 
 import Link from 'next/link'
@@ -51,7 +51,7 @@ export function ResponseTimeWidget({ summary }: ResponseTimeWidgetProps) {
                   {needsAttention > 0
                     ? `${needsAttention} inquiry${needsAttention !== 1 ? 'ies' : ''} awaiting response`
                     : summary.ok > 0
-                      ? `${summary.ok} new inquiry${summary.ok !== 1 ? 'ies' : ''} — all fresh`
+                      ? `${summary.ok} new inquiry${summary.ok !== 1 ? 'ies' : ''} - all fresh`
                       : 'All inquiries responded to'}
                 </p>
                 <div className="flex items-center gap-3 mt-1 text-xs text-stone-400">

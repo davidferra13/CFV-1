@@ -1,6 +1,6 @@
 'use client'
 
-// Client Tags — inline tag manager on the client detail page.
+// Client Tags - inline tag manager on the client detail page.
 // Shows existing tags as removable pills, plus an add-tag input with
 // autocomplete suggestions from the chef's existing tag vocabulary.
 

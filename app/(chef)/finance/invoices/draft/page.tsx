@@ -90,14 +90,14 @@ export default async function DraftInvoicesPage() {
                         {event.client.full_name}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm capitalize">
-                    {event.occasion?.replace(/_/g, ' ') ?? '—'}
+                    {event.occasion?.replace(/_/g, ' ') ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {event.guest_count ?? '—'}
+                    {event.guest_count ?? '-'}
                   </TableCell>
                   <TableCell>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-stone-800 text-stone-400 capitalize">
@@ -107,7 +107,7 @@ export default async function DraftInvoicesPage() {
                   <TableCell className="text-stone-100 font-semibold text-sm">
                     {event.quoted_price_cents != null
                       ? formatCurrency(event.quoted_price_cents)
-                      : '—'}
+                      : '-'}
                   </TableCell>
                   <TableCell>
                     <Link href={`/events/${event.id}`}>

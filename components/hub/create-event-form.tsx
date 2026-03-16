@@ -56,9 +56,9 @@ export function CreateEventForm({ profileToken }: CreateEventFormProps) {
           createGroup: true,
         })
 
-        // The stub has a hub_group_id — fetch the group token to redirect
+        // The stub has a hub_group_id - fetch the group token to redirect
         if (stub.hub_group_id) {
-          // Redirect to the hub dashboard — the new group will appear there
+          // Redirect to the hub dashboard - the new group will appear there
           router.push('/my-hub')
           router.refresh()
         } else {

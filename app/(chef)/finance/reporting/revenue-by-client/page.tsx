@@ -87,7 +87,7 @@ export default async function RevenueByClientPage() {
           <Card className="p-4">
             <p className="text-lg font-bold text-stone-100 truncate">{topClient.name}</p>
             <p className="text-sm text-stone-500 mt-1">
-              Top client — {formatCurrency(topClient.totalRevenue)}
+              Top client - {formatCurrency(topClient.totalRevenue)}
             </p>
           </Card>
         )}

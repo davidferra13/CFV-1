@@ -27,7 +27,7 @@ export function SocialFeedClient({
   myName,
   myAvatar,
   showSidebar = true,
-  // When provided, the feed is scoped to this channel — mode tabs are hidden
+  // When provided, the feed is scoped to this channel - mode tabs are hidden
   // and all load/refresh operations use getChannelFeed instead of getSocialFeed.
   channelSlug,
   defaultChannelId,
@@ -119,7 +119,7 @@ export function SocialFeedClient({
         {/* Story bar */}
         <SocialStoryBar groups={stories} onRefresh={reloadStories} />
 
-        {/* Composer — defaults to posting in the current channel when channelSlug is set */}
+        {/* Composer - defaults to posting in the current channel when channelSlug is set */}
         <SocialPostComposer
           myName={myName}
           myAvatar={myAvatar}
@@ -166,10 +166,10 @@ export function SocialFeedClient({
               <div className="py-12 text-center">
                 <p className="text-stone-400 text-sm">
                   {isChannelFeed
-                    ? 'No posts in this channel yet — be the first!'
+                    ? 'No posts in this channel yet - be the first!'
                     : mode === 'following'
                       ? 'Follow some chefs to see their posts here'
-                      : 'No posts yet — be the first!'}
+                      : 'No posts yet - be the first!'}
                 </p>
               </div>
             ) : (

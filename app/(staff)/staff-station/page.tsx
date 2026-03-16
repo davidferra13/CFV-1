@@ -1,4 +1,4 @@
-// Staff Station View — Station clipboard for the staff member
+// Staff Station View - Station clipboard for the staff member
 // Shows the station's clipboard grid, allows check-in/check-out,
 // and lets staff update on_hand and waste fields.
 

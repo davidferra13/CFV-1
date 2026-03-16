@@ -1,9 +1,9 @@
 'use client'
 
-// Campaign Booking Form — "Count Me In" style
+// Campaign Booking Form - "Count Me In" style
 // Intentionally minimal. The whole point is that clients should be able
 // to say "that sounds fun" and commit in under 30 seconds.
-// Name, email, guest count — that's it. Everything else follows.
+// Name, email, guest count - that's it. Everything else follows.
 
 import { useState } from 'react'
 import { Minus, Plus, Check, Loader2 } from '@/components/ui/icons'
@@ -72,7 +72,7 @@ export function CampaignBookingForm({ token, dinner }: Props) {
             {dinner.chef_name} will reach out shortly to confirm your reservation.
           </p>
           <p className="text-xs text-stone-400 mt-3">
-            Check your email — a confirmation is on its way to {email}.
+            Check your email - a confirmation is on its way to {email}.
           </p>
         </div>
       </div>
@@ -81,7 +81,7 @@ export function CampaignBookingForm({ token, dinner }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Guest count — the most fun part */}
+      {/* Guest count - the most fun part */}
       <div>
         <label className="text-xs text-stone-500 font-medium uppercase tracking-wide block mb-2">
           How many guests?

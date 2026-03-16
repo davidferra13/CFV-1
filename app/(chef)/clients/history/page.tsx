@@ -17,7 +17,7 @@ const VIEWS = [
   {
     href: '/clients/history/past-menus',
     label: 'Past Menus',
-    description: 'Menus you have served to clients — searchable by client or dish',
+    description: 'Menus you have served to clients - searchable by client or dish',
     icon: '🍽️',
   },
   {

@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     })
   }
 
-  // Auth failed — determine appropriate error message based on intended flow
+  // Auth failed - determine appropriate error message based on intended flow
   const isPasswordReset = next === '/auth/reset-password'
   const errorMessage = isPasswordReset
     ? 'Password reset link is invalid or has expired. Please request a new one.'

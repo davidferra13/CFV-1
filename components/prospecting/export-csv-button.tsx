@@ -24,7 +24,7 @@ export function ExportCSVButton() {
         document.body.removeChild(link)
         URL.revokeObjectURL(url)
       } catch {
-        // silently fail — user can retry
+        // silently fail - user can retry
       }
     })
   }

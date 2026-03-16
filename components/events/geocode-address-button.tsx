@@ -20,7 +20,7 @@ export function GeocodeAddressButton({ eventId }: GeocodeAddressButtonProps) {
         const result = await geocodeEventAddress(eventId)
         if (result.success) {
           setStatus('success')
-          setMessage('Map location set — reload to see the map.')
+          setMessage('Map location set - reload to see the map.')
         } else {
           setStatus('error')
           setMessage(result.error ?? 'Could not geocode address')

@@ -1,6 +1,6 @@
 'use client'
 
-// Client Preview Tabs — manages tab state, device frame toggle, client selector,
+// Client Preview Tabs - manages tab state, device frame toggle, client selector,
 // and async data loading. Delegates rendering to sub-components.
 
 import { useState, useTransition } from 'react'
@@ -192,9 +192,9 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
       <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-950 px-4 py-2.5 text-sm text-amber-800">
         <Eye className="w-4 h-4 flex-shrink-0 mt-0.5" />
         <span>
-          <strong>Preview Mode</strong> — This is exactly what your clients see.
+          <strong>Preview Mode</strong> - This is exactly what your clients see.
           {activeTab === 'portal' &&
-            ' Buttons are shown but disabled — no actions can be taken from here.'}
+            ' Buttons are shown but disabled - no actions can be taken from here.'}
         </span>
       </div>
 

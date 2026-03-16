@@ -1,6 +1,6 @@
 'use client'
 
-// Shift Check-In — Start of shift for a station
+// Shift Check-In - Start of shift for a station
 // Shows the last shift handoff summary and allows a staff member to check in.
 
 import { useState } from 'react'

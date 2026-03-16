@@ -132,7 +132,7 @@ export function EventForm({
   const [conflictError, setConflictError] = useState<ConflictErrorPayload | null>(null)
   const [latestConflictData, setLatestConflictData] = useState<EventFormData | null>(null)
 
-  // Two-step state — edit mode starts on step 1 (both steps accessible via Back)
+  // Two-step state - edit mode starts on step 1 (both steps accessible via Back)
   const [step, setStep] = useState<1 | 2>(1)
 
   useEffect(() => {
@@ -363,7 +363,7 @@ export function EventForm({
     }
 
     return {
-      // Keep as YYYY-MM-DD string — toISOString() shifts dates by timezone offset
+      // Keep as YYYY-MM-DD string - toISOString() shifts dates by timezone offset
       event_date: eventDate,
       serve_time: serveTime,
       guest_count: guestCountNum,
@@ -465,7 +465,7 @@ export function EventForm({
     setLocationLng(data.lng)
   }
 
-  // Step 1 validation before advancing (async — checks availability conflicts)
+  // Step 1 validation before advancing (async - checks availability conflicts)
   const handleContinue = async () => {
     setError(null)
     if (!clientId) {
@@ -573,7 +573,7 @@ export function EventForm({
       if (mode === 'create') {
         const input: CreateEventInput & { idempotency_key?: string } = {
           client_id: clientId,
-          // Keep as YYYY-MM-DD string — toISOString() shifts dates by timezone offset
+          // Keep as YYYY-MM-DD string - toISOString() shifts dates by timezone offset
           event_date: eventDate,
           serve_time: serveTime,
           guest_count: guestCountNum,
@@ -748,7 +748,7 @@ export function EventForm({
               onChange={(e) => setGuestCount(e.target.value)}
             />
 
-            {/* Prep time estimate — appears when guest count is entered */}
+            {/* Prep time estimate - appears when guest count is entered */}
             {parseInt(guestCount) > 0 && (
               <PrepTimeEstimateHint guestCount={parseInt(guestCount)} occasion={occasion || null} />
             )}
@@ -805,7 +805,7 @@ export function EventForm({
                     className="rounded border-amber-400 text-amber-600 focus:ring-amber-500"
                   />
                   <span className="text-sm text-amber-800 font-medium">
-                    I understand — create the event anyway
+                    I understand - create the event anyway
                   </span>
                 </label>
               </div>
@@ -868,7 +868,7 @@ export function EventForm({
                   depositDefaults.type === 'percentage' &&
                   newTotal
                 ) {
-                  // First time entering a price with percentage defaults — auto-fill
+                  // First time entering a price with percentage defaults - auto-fill
                   const price = parseFloat(newTotal)
                   if (!isNaN(price) && price > 0) {
                     const computed = ((price * depositDefaults.percentage) / 100).toFixed(2)

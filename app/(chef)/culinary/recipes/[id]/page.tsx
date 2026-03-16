@@ -25,7 +25,7 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
 
   return (
     <div className="space-y-6">
-      {/* Hero image — own photo or stock placeholder */}
+      {/* Hero image - own photo or stock placeholder */}
       {hasOwnPhoto ? (
         <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: '21/9' }}>
           <Image
@@ -171,7 +171,7 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
         </Card>
       </div>
 
-      {/* Nutrition Lookup — Open Food Facts */}
+      {/* Nutrition Lookup - Open Food Facts */}
       <NutritionLookupPanel defaultQuery={r.name} />
 
       {/* AI Recipe Scaling */}

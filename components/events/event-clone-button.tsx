@@ -1,6 +1,6 @@
 'use client'
 
-// EventCloneButton — One-click event clone with date picker and optional client selector.
+// EventCloneButton - One-click event clone with date picker and optional client selector.
 // Opens an inline modal, lets the chef pick a new date and optionally reassign the client,
 // then calls cloneEvent(sourceEventId, newDate, newClientId?) from clone-actions.
 // Redirects to the new event detail page on success.
@@ -48,7 +48,7 @@ export function EventCloneButton({ sourceEventId, sourceEventName }: Props) {
         setClients(mapped)
       })
       .catch(() => {
-        // Non-critical — client selector just won't populate
+        // Non-critical - client selector just won't populate
         setClients([])
       })
       .finally(() => setLoadingClients(false))

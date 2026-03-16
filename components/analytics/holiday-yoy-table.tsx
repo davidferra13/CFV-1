@@ -9,7 +9,7 @@ interface HolidayYoYTableProps {
 }
 
 function formatCents(cents: number): string {
-  if (cents === 0) return '—'
+  if (cents === 0) return '-'
   return `$${(cents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
 }
 
@@ -44,7 +44,7 @@ export function HolidayYoYTable({ rows, currentYear }: HolidayYoYTableProps) {
   return (
     <div className="rounded-xl border border-stone-700 bg-stone-900 overflow-hidden">
       <div className="px-5 py-4 border-b border-stone-800">
-        <h3 className="text-sm font-semibold text-stone-100">Holiday Bookings — Year Over Year</h3>
+        <h3 className="text-sm font-semibold text-stone-100">Holiday Bookings - Year Over Year</h3>
         <p className="text-xs text-stone-500 mt-0.5">
           Events within ±3 weeks of each holiday. High-relevance holidays only.
         </p>
@@ -98,7 +98,7 @@ export function HolidayYoYTable({ rows, currentYear }: HolidayYoYTableProps) {
                             </div>
                           </div>
                         ) : (
-                          <span className="text-stone-300 text-xs">—</span>
+                          <span className="text-stone-300 text-xs">-</span>
                         )}
                       </td>
                     )

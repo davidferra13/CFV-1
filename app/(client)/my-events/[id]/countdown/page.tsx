@@ -1,4 +1,4 @@
-// Event Countdown — Client-facing countdown to their upcoming event
+// Event Countdown - Client-facing countdown to their upcoming event
 // Shows days remaining, event details, and preparation milestones
 
 import type { Metadata } from 'next'

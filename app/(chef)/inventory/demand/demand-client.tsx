@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 function formatCents(cents: number | null) {
-  if (cents == null) return '—'
+  if (cents == null) return '-'
   return `$${(cents / 100).toFixed(2)}`
 }
 
@@ -95,7 +95,7 @@ export function DemandClient({ initialForecast }: Props) {
                       <td className="px-4 py-3 text-stone-300 whitespace-nowrap">
                         {item.firstEventDate
                           ? new Date(item.firstEventDate).toLocaleDateString()
-                          : '—'}
+                          : '-'}
                       </td>
                     </tr>
                   )

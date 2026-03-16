@@ -1,6 +1,6 @@
 'use client'
 
-// Remy Concierge Section — Inline chat on the landing page
+// Remy Concierge Section - Inline chat on the landing page
 // The marketing hook: "Tell me your bottleneck."
 // Visitors type their pain point → Remy maps it to a ChefFlow feature → aha moment.
 // Falls back to a static FAQ accordion if Ollama is offline.
@@ -184,7 +184,7 @@ export function RemyConciergeSection() {
                   <div className="border-t border-stone-800 bg-stone-800 px-5 py-4">
                     <p className="text-sm leading-relaxed text-stone-400">{feature.solution}</p>
                     <p className="mt-3 text-xs font-medium text-brand-400">
-                      {feature.featureName} — {feature.tier === 'free' ? 'included free' : 'Pro'}
+                      {feature.featureName} - {feature.tier === 'free' ? 'included free' : 'Pro'}
                     </p>
                   </div>
                 )}
@@ -220,7 +220,7 @@ export function RemyConciergeSection() {
         </div>
 
         <div className="mx-auto max-w-2xl">
-          {/* Starter pills — only show before first message */}
+          {/* Starter pills - only show before first message */}
           {!hasConversation && (
             <div className="mb-6 flex flex-wrap justify-center gap-2">
               {starters.map((s) => (

@@ -1,4 +1,4 @@
-// Prospecting Import — CSV Upload
+// Prospecting Import - CSV Upload
 // Upload a CSV/spreadsheet of prospects to import them into the database.
 
 import type { Metadata } from 'next'

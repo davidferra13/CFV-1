@@ -1,5 +1,5 @@
-// Timeline View Component — displays a day-of event timeline
-// Server component — no client-side state needed.
+// Timeline View Component - displays a day-of event timeline
+// Server component - no client-side state needed.
 
 import type { EventTimeline } from '@/lib/scheduling/types'
 

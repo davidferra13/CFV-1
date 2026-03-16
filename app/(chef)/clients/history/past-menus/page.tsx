@@ -114,10 +114,10 @@ export default async function PastMenusPage() {
                   <TableCell className="text-stone-400 text-sm">
                     {menu.service_style
                       ? (SERVICE_STYLE_LABELS[menu.service_style] ?? menu.service_style)
-                      : '—'}
+                      : '-'}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {menu.cuisine_type || '—'}
+                    {menu.cuisine_type || '-'}
                   </TableCell>
                   <TableCell>
                     <span

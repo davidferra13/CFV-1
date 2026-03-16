@@ -1,6 +1,6 @@
 'use client'
 
-// SwRegister — Registers the ChefFlow service worker for offline caching.
+// SwRegister - Registers the ChefFlow service worker for offline caching.
 // On update, prompts the new SW to activate immediately via SKIP_WAITING.
 
 import { useEffect } from 'react'
@@ -42,7 +42,7 @@ export function SwRegister() {
 
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New version available — activate it
+              // New version available - activate it
               newWorker.postMessage({ type: 'SKIP_WAITING' })
               console.info('[SW] New service worker activated')
             }

@@ -1,5 +1,5 @@
 // Public API endpoint for embeddable inquiry widget submissions
-// CORS-enabled — accepts POST from any external website
+// CORS-enabled - accepts POST from any external website
 // Rate-limited by IP to prevent spam
 // Creates: client + inquiry + draft event in one shot
 
@@ -39,13 +39,13 @@ const EmbedInquirySchema = z.object({
   allergies_food_restrictions: z.string().max(2000).optional().or(z.literal('')),
   favorite_ingredients_dislikes: z.string().max(2000).optional().or(z.literal('')),
   additional_notes: z.string().max(5000).optional().or(z.literal('')),
-  // Honeypot — must be empty (bots fill this in)
+  // Honeypot - must be empty (bots fill this in)
   website_url: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
   // UTM source attribution
   utm_source: z.string().max(200).optional().or(z.literal('')),
   utm_medium: z.string().max(200).optional().or(z.literal('')),
   utm_campaign: z.string().max(200).optional().or(z.literal('')),
-  // Cloudflare Turnstile CAPTCHA token (optional — graceful bypass when not configured)
+  // Cloudflare Turnstile CAPTCHA token (optional - graceful bypass when not configured)
   turnstile_token: z.string().max(4096).optional().or(z.literal('')),
 })
 
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     const data = parseResult.data
 
-    // Honeypot check — bots fill hidden fields
+    // Honeypot check - bots fill hidden fields
     if (data.website_url && data.website_url.length > 0) {
       // Silently accept but don't create anything (don't reveal bot detection)
       return NextResponse.json(
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Email validation (local-only — no external API call during form submission)
+    // Email validation (local-only - no external API call during form submission)
     try {
       const emailCheck = validateEmailLocal(data.email)
       if (!emailCheck.isValid) {
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
         )
       }
     } catch (err) {
-      // Non-blocking — if the validator itself fails, let the inquiry through
+      // Non-blocking - if the validator itself fails, let the inquiry through
       console.error('[embed-inquiry] Email validation failed (non-blocking):', err)
     }
 
@@ -262,7 +262,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 5. Create draft event (non-blocking — if it fails, inquiry is still saved)
+    // 5. Create draft event (non-blocking - if it fails, inquiry is still saved)
     try {
       const { data: event } = await supabase
         .from('events')
@@ -310,7 +310,6 @@ export async function POST(request: NextRequest) {
       const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
       const circle = await createInquiryCircle({
         inquiryId: inquiry.id,
-        tenantId,
         clientName,
         clientEmail,
         occasion: data.occasion.trim(),
@@ -321,7 +320,6 @@ export async function POST(request: NextRequest) {
       await postFirstCircleMessage({
         groupId: circle.groupId,
         inquiryId: inquiry.id,
-        tenantId,
       })
     } catch (circleErr) {
       console.error('[embed-inquiry] Circle creation failed (non-blocking):', circleErr)

@@ -1,4 +1,4 @@
-// Admin Analytics — Platform-wide growth and revenue trends
+// Admin Analytics - Platform-wide growth and revenue trends
 
 import { requireAdmin } from '@/lib/auth/admin'
 import {

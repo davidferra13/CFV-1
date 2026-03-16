@@ -1,4 +1,4 @@
-// Chef Health Badge — used in admin chef list and detail views
+// Chef Health Badge - used in admin chef list and detail views
 
 import {
   computeChefHealthScore,

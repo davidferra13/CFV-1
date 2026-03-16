@@ -40,7 +40,7 @@ const PHASES: Phase[] = [
     key: 'clients',
     label: 'Client List',
     description:
-      'Import every existing client — their contact info, dietary restrictions, allergies, and service history.',
+      'Import every existing client - their contact info, dietary restrictions, allergies, and service history.',
     icon: Users,
     href: '/onboarding/clients',
     ctaLabel: 'Import Clients',
@@ -61,7 +61,7 @@ const PHASES: Phase[] = [
     key: 'recipes',
     label: 'Recipe Library',
     description:
-      'Build your recipe book — methods, timing, dietary tags, and yield for every dish you cook.',
+      'Build your recipe book - methods, timing, dietary tags, and yield for every dish you cook.',
     icon: BookOpen,
     href: '/onboarding/recipes',
     ctaLabel: 'Add Recipes',
@@ -72,7 +72,7 @@ const PHASES: Phase[] = [
     key: 'staff',
     label: 'Staff Roster',
     description:
-      'Add team members you work with — sous chefs, servers, assistants — and their rates.',
+      'Add team members you work with - sous chefs, servers, assistants - and their rates.',
     icon: Users2,
     href: '/onboarding/staff',
     ctaLabel: 'Add Staff',

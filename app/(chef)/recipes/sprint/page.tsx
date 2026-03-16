@@ -1,4 +1,4 @@
-// Recipe Sprint Mode — Backfill capture page
+// Recipe Sprint Mode - Backfill capture page
 // Loads all dish components with no recipe, sorted most-recent first.
 // Chef works through the queue: paste → AI parse → save → next.
 
@@ -9,7 +9,7 @@ import { RecipeSprintClient } from '@/components/recipes/recipe-sprint-client'
 import Link from 'next/link'
 import { BookOpen } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Recipe Sprint — ChefFlow' }
+export const metadata: Metadata = { title: 'Recipe Sprint | ChefFlow' }
 
 export default async function RecipeSprintPage() {
   await requireChef()
@@ -29,7 +29,7 @@ export default async function RecipeSprintPage() {
           </div>
           <p className="text-stone-400 mt-1">
             {items.length > 0
-              ? `${items.length} dish${items.length !== 1 ? 'es' : ''} from past events with no recipe recorded — let's fix that.`
+              ? `${items.length} dish${items.length !== 1 ? 'es' : ''} from past events with no recipe recorded - let's fix that.`
               : 'All dish components have recipes recorded.'}
           </p>
         </div>
@@ -41,7 +41,7 @@ export default async function RecipeSprintPage() {
       {!aiConfigured && items.length > 0 && (
         <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
           <strong>Auto-parsing not configured.</strong> Set GEMINI_API_KEY in your environment for
-          automatic ingredient and method extraction. Descriptions will be saved as method text —
+          automatic ingredient and method extraction. Descriptions will be saved as method text -
           you can edit the full recipe after.
         </div>
       )}

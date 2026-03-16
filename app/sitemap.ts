@@ -144,7 +144,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...inquiryRoutes,
     ]
   } catch {
-    // If DB is unavailable, return static routes only — don't break the build
+    // If DB is unavailable, return static routes only - don't break the build
     return STATIC_ROUTES
   }
 }

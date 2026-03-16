@@ -123,7 +123,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
 
   return (
     <div>
-      {/* Row header — always visible */}
+      {/* Row header - always visible */}
       <button
         onClick={onToggle}
         className="w-full flex items-start gap-3 px-5 py-4 text-left hover:bg-amber-900/60 transition-colors"
@@ -320,7 +320,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
           ) : (
             <div className="rounded-lg bg-stone-900 border border-amber-100 px-4 py-3">
               <p className="text-sm text-stone-500">
-                No past clients found near this holiday — this is a fresh opportunity to build the
+                No past clients found near this holiday - this is a fresh opportunity to build the
                 tradition with new clients.
               </p>
             </div>
@@ -426,7 +426,7 @@ function ClientOutreachRow({ client, holidayName, outreachHook }: ClientOutreach
             className="w-full rounded border border-stone-700 px-2 py-1.5 text-sm resize-none"
           />
           {status === 'error' && (
-            <p className="text-xs text-red-600">Send failed — check client contact info.</p>
+            <p className="text-xs text-red-600">Send failed - check client contact info.</p>
           )}
           <div className="flex gap-2">
             <button
@@ -473,7 +473,7 @@ function OutreachHookBlock({ hook, holidayName }: OutreachHookBlockProps) {
     <div className="rounded-lg bg-stone-900 border border-amber-200 px-4 py-3">
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1.5">
-          Outreach Message — {holidayName}
+          Outreach Message - {holidayName}
         </p>
         <button
           onClick={handleCopy}

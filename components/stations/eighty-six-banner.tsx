@@ -1,6 +1,6 @@
 'use client'
 
-// 86 Banner — Shows all currently 86'd items across ALL stations
+// 86 Banner - Shows all currently 86'd items across ALL stations
 // Prominent red banner displayed at the top of the stations page.
 
 import { useState } from 'react'

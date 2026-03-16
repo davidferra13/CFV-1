@@ -1,6 +1,6 @@
 'use client'
 
-// Recipe Sprint Mode — Queue-based backfill capture
+// Recipe Sprint Mode - Queue-based backfill capture
 // Chef works through all unrecorded components one at a time.
 // Designed for maximum speed: paste description → AI parses → confirm → next.
 
@@ -115,7 +115,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
           <p className="text-stone-300 mt-2">
             {doneCount > 0
               ? `You just captured ${doneCount} recipe${doneCount !== 1 ? 's' : ''}. Your future self will thank you.`
-              : 'Nothing left to record — all dishes have recipes.'}
+              : 'Nothing left to record - all dishes have recipes.'}
           </p>
         </div>
         <div className="flex justify-center gap-3">
@@ -151,7 +151,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
       {/* Success flash */}
       {lastSaved && !error && (
         <Alert variant="success">
-          Saved: <strong>{lastSaved}</strong> — recipe recorded and linked.
+          Saved: <strong>{lastSaved}</strong> - recipe recorded and linked.
         </Alert>
       )}
 
@@ -194,7 +194,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
             <div>
               <label className="block text-sm font-medium text-stone-300 mb-1">
                 {aiConfigured
-                  ? 'Describe how you make it — ingredients, method, anything you remember'
+                  ? 'Describe how you make it - ingredients, method, anything you remember'
                   : 'Describe the method (will save as-is)'}
               </label>
               <Textarea
@@ -207,7 +207,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
               />
               {aiConfigured && (
                 <p className="text-xs text-stone-300 mt-1">
-                  Your description will be parsed into a structured recipe — review it on the recipe
+                  Your description will be parsed into a structured recipe - review it on the recipe
                   page after saving.
                 </p>
               )}
@@ -240,7 +240,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
         </Card>
       )}
 
-      {/* Queue preview — next 3 items */}
+      {/* Queue preview - next 3 items */}
       {queue.length > 1 && (
         <div className="space-y-1">
           <p className="text-xs font-semibold text-stone-300 uppercase tracking-wide">Up next</p>

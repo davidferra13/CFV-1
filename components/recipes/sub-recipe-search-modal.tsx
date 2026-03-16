@@ -251,7 +251,7 @@ export function SubRecipeSearchModal({
           </>
         )}
 
-        {/* Selected Recipe — Quantity/Unit Form */}
+        {/* Selected Recipe - Quantity/Unit Form */}
         {selectedRecipe && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 p-3 bg-stone-800 rounded-md">

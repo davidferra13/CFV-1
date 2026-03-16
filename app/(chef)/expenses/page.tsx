@@ -163,7 +163,7 @@ export default async function ExpensesPage({
         </Card>
       )}
 
-      {/* Filter Bar — Grouped */}
+      {/* Filter Bar - Grouped */}
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2 items-center">
           <Link href="/expenses">

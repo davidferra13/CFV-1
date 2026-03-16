@@ -1,4 +1,4 @@
-// Station Orders — Unified order sheet across all stations
+// Station Orders - Unified order sheet across all stations
 // Aggregates all "need to order" requests grouped by component.
 
 import type { Metadata } from 'next'
@@ -8,7 +8,7 @@ import { OrderHandoff } from '@/components/stations/order-handoff'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Order Sheet — ChefFlow' }
+export const metadata: Metadata = { title: 'Order Sheet | ChefFlow' }
 
 export default async function OrdersPage({
   searchParams,

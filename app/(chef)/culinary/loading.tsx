@@ -19,7 +19,7 @@ export default function CulinaryLoading() {
         ))}
       </div>
 
-      {/* Nav tiles — 3 columns × 2 rows */}
+      {/* Nav tiles - 3 columns × 2 rows */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div key={i} className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">

@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { CrisisPlaybook } from '@/components/protection/crisis-playbook'
 
-export const metadata: Metadata = { title: 'Crisis Response — ChefFlow' }
+export const metadata: Metadata = { title: 'Crisis Response | ChefFlow' }
 
 export default async function CrisisResponsePage() {
   await requireChef()

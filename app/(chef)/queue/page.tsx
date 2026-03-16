@@ -1,4 +1,4 @@
-// Priority Queue — Full Page View
+// Priority Queue - Full Page View
 // Shows all actionable items with full filtering and summary stats.
 // Protected by layout via requireChef()
 

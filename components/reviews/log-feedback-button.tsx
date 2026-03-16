@@ -1,4 +1,4 @@
-// Log Feedback Button — Opens a form to capture verbal/external feedback
+// Log Feedback Button - Opens a form to capture verbal/external feedback
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -51,7 +51,7 @@ export function LogFeedbackButton() {
     getClients()
       .then((data) => setClients(data as Client[]))
       .catch(() => {
-        // Non-critical — client selector just won't populate
+        // Non-critical - client selector just won't populate
         console.error('[non-blocking] Failed to load clients for feedback form')
       })
       .finally(() => setLoading(false))

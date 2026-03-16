@@ -1,4 +1,4 @@
-// Daily Ops — Quick Action Bar (client component)
+// Daily Ops - Quick Action Bar (client component)
 // Handles the "Generate Opening Tasks" button which calls a server action.
 
 'use client'

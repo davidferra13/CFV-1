@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 import { format, parseISO } from 'date-fns'
 
 /**
- * Fetch weather for the event — non-blocking, returns null on any failure.
+ * Fetch weather for the event - non-blocking, returns null on any failure.
  * Coordinates come from the events table (location_lat, location_lng).
  */
 async function fetchEventWeather(eventId: string, tenantId: string): Promise<EventWeather | null> {
@@ -80,7 +80,7 @@ export default async function PackPage({ params }: { params: { id: string } }) {
         </Button>
       </div>
 
-      {/* Departure callout — most urgent info, immediately visible */}
+      {/* Departure callout - most urgent info, immediately visible */}
       {(event.departure_time_display || event.access_instructions) && (
         <Card className="p-4 bg-amber-950 border-amber-200">
           {event.departure_time_display && (

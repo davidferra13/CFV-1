@@ -7,7 +7,7 @@ import { computeSurveyStats } from '@/lib/surveys/survey-utils'
 import { Badge } from '@/components/ui/badge'
 
 function StarDisplay({ value }: { value: number | null }) {
-  if (value === null) return <span className="text-stone-400 text-sm">—</span>
+  if (value === null) return <span className="text-stone-400 text-sm">-</span>
   return (
     <span className="text-amber-500 font-semibold text-sm">
       {'★'.repeat(value)}
@@ -49,18 +49,18 @@ export default async function SurveysPage() {
           <StatCard label="Surveys sent" value={stats.total} />
           <StatCard
             label="Response rate"
-            value={stats.total > 0 ? `${Math.round((stats.submitted / stats.total) * 100)}%` : '—'}
+            value={stats.total > 0 ? `${Math.round((stats.submitted / stats.total) * 100)}%` : '-'}
           />
           <StatCard
             label="Avg. overall"
-            value={stats.averageOverall !== null ? `${stats.averageOverall} / 5` : '—'}
+            value={stats.averageOverall !== null ? `${stats.averageOverall} / 5` : '-'}
           />
           <StatCard
             label="Would book again"
             value={
               stats.submitted > 0
                 ? `${Math.round((stats.wouldBookAgainYes / stats.submitted) * 100)}%`
-                : '—'
+                : '-'
             }
           />
         </div>
@@ -148,7 +148,7 @@ export default async function SurveysPage() {
                   </>
                 ) : (
                   <p className="text-sm text-stone-400">
-                    Survey link sent — awaiting client response.
+                    Survey link sent - awaiting client response.
                   </p>
                 )}
               </div>

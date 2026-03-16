@@ -1,4 +1,4 @@
-// Commerce Reports Client Wrapper — adds date range picker + export menu
+// Commerce Reports Client Wrapper - adds date range picker + export menu
 'use client'
 
 import { useState } from 'react'

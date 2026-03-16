@@ -1,4 +1,4 @@
-// Charity Hub Loading Skeleton — header + stat cards + 4 collapsible sections
+// Charity Hub Loading Skeleton - header + stat cards + 4 collapsible sections
 import { ContextLoader } from '@/components/ui/context-loader'
 import { Card } from '@/components/ui/card'
 

@@ -78,7 +78,7 @@ const BUDGET_RANGE_OPTIONS = [
 
 const ALLERGY_FLAG_OPTIONS = [
   { value: 'none', label: 'No known allergies or restrictions' },
-  { value: 'yes', label: "Yes — I'll describe below" },
+  { value: 'yes', label: "Yes - I'll describe below" },
   { value: 'unknown', label: 'Not sure yet' },
 ]
 

@@ -249,12 +249,12 @@ export function SurveyResultsClient({
                         className="border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer"
                       >
                         <td className="px-4 py-2.5 text-slate-300">
-                          {r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : '—'}
+                          {r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : '-'}
                         </td>
                         <td className="px-4 py-2.5 text-slate-200">
-                          {r.respondent_name || r.respondent_email || '—'}
+                          {r.respondent_name || r.respondent_email || '-'}
                         </td>
-                        <td className="px-4 py-2.5 text-slate-400">{r.respondent_role || '—'}</td>
+                        <td className="px-4 py-2.5 text-slate-400">{r.respondent_role || '-'}</td>
                         <td className="px-4 py-2.5">
                           {r.nps_score !== null ? (
                             <span
@@ -269,14 +269,14 @@ export function SurveyResultsClient({
                               {r.nps_score}
                             </span>
                           ) : (
-                            '—'
+                            '-'
                           )}
                         </td>
                         <td className="px-4 py-2.5 text-slate-300">
-                          {r.overall_satisfaction ?? '—'}
+                          {r.overall_satisfaction ?? '-'}
                         </td>
                         <td className="px-4 py-2.5 text-slate-300">
-                          {r.would_pay === null ? '—' : r.would_pay ? 'Yes' : 'No'}
+                          {r.would_pay === null ? '-' : r.would_pay ? 'Yes' : 'No'}
                         </td>
                         <td className="px-4 py-2.5">
                           <span

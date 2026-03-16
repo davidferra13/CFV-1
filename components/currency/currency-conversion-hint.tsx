@@ -2,7 +2,7 @@
 
 // Shows a secondary currency amount below a USD price.
 // e.g., "$2,500.00 USD (~£1,980.00 GBP)"
-// Non-blocking — silently hides if conversion fails.
+// Non-blocking - silently hides if conversion fails.
 
 import { useState } from 'react'
 import { convertQuoteAmount } from '@/lib/currency/currency-actions'

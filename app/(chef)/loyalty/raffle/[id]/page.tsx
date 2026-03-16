@@ -112,7 +112,7 @@ export default async function RaffleDetailPage({ params }: { params: Promise<{ i
               <p className="text-xs font-medium uppercase tracking-wider text-emerald-400">
                 🎲 Random Draw
               </p>
-              <p className="text-xl font-bold text-stone-100">{winnerName || '—'}</p>
+              <p className="text-xl font-bold text-stone-100">{winnerName || '-'}</p>
               {round.winner_alias && (
                 <p className="text-sm text-stone-400">{round.winner_alias} Player</p>
               )}
@@ -130,7 +130,7 @@ export default async function RaffleDetailPage({ params }: { params: Promise<{ i
                 <p className="text-xs font-medium uppercase tracking-wider text-amber-400">
                   🏆 Top Scorer
                 </p>
-                <p className="text-xl font-bold text-stone-100">{topScorerName || '—'}</p>
+                <p className="text-xl font-bold text-stone-100">{topScorerName || '-'}</p>
                 {round.top_scorer_alias && (
                   <p className="text-sm text-stone-400">
                     {round.top_scorer_alias} Player · Score:{' '}
@@ -150,7 +150,7 @@ export default async function RaffleDetailPage({ params }: { params: Promise<{ i
                 <p className="text-xs font-medium uppercase tracking-wider text-orange-400">
                   🔥 Most Dedicated
                 </p>
-                <p className="text-xl font-bold text-stone-100">{mostDedicatedName || '—'}</p>
+                <p className="text-xl font-bold text-stone-100">{mostDedicatedName || '-'}</p>
                 {round.most_dedicated_alias && (
                   <p className="text-sm text-stone-400">
                     {round.most_dedicated_alias} Player · {round.most_dedicated_entry_count} days
@@ -165,7 +165,7 @@ export default async function RaffleDetailPage({ params }: { params: Promise<{ i
         </div>
       )}
 
-      {/* Draw details — seed + timestamp (completed rounds) */}
+      {/* Draw details - seed + timestamp (completed rounds) */}
       {round.status === 'completed' && round.drawn_at && (
         <Card>
           <CardHeader>
@@ -268,7 +268,7 @@ export default async function RaffleDetailPage({ params }: { params: Promise<{ i
         </Card>
       )}
 
-      {/* Actions (for active rounds — cancel) */}
+      {/* Actions (for active rounds - cancel) */}
       {round.status === 'active' && <RaffleRoundActions round={round} />}
     </div>
   )

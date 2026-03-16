@@ -1,4 +1,4 @@
-// Client Quote List — View all quotes sent to this client
+// Client Quote List - View all quotes sent to this client
 
 import type { Metadata } from 'next'
 import Link from 'next/link'

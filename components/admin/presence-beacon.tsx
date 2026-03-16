@@ -1,6 +1,6 @@
 'use client'
 
-// Presence Beacon — silently broadcasts this visitor's presence to the site:presence Realtime channel.
+// Presence Beacon - silently broadcasts this visitor's presence to the site:presence Realtime channel.
 // Runs on every page for every visitor (anonymous and authenticated).
 // The admin dashboard subscribes to this channel to see who's online in real-time.
 
@@ -98,8 +98,8 @@ export function PresenceBeacon() {
 
       const payload: PresencePayload = {
         sessionId,
-        userId: null, // stripped from broadcast — admin resolves via server action
-        email: null, // stripped from broadcast — prevents PII leakage via channel
+        userId: null, // stripped from broadcast - admin resolves via server action
+        email: null, // stripped from broadcast - prevents PII leakage via channel
         role: info.role,
         page: pathname ?? '/',
         joinedAt,

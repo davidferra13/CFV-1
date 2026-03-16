@@ -11,7 +11,7 @@ import { SalesTaxPanel } from '@/components/finance/sales-tax-panel'
 import { Badge } from '@/components/ui/badge'
 import { Settings } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Sales Tax — ChefFlow' }
+export const metadata: Metadata = { title: 'Sales Tax | ChefFlow' }
 
 export default async function SalesTaxPage() {
   await requireChef()
@@ -66,7 +66,7 @@ export default async function SalesTaxPage() {
       {settings?.enabled && (
         <div className="flex flex-wrap gap-3 text-sm">
           <span className="bg-stone-800 rounded-full px-3 py-1 text-stone-400">
-            State: <strong>{settings.state ?? '—'}</strong>
+            State: <strong>{settings.state ?? '-'}</strong>
           </span>
           <span className="bg-stone-800 rounded-full px-3 py-1 text-stone-400">
             Combined Rate:{' '}

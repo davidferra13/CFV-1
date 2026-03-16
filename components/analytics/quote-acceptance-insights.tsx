@@ -19,7 +19,7 @@ export function QuoteAcceptanceInsightsPanel({ data }: QuoteAcceptanceInsightsPa
         </Link>
       </div>
 
-      {/* Expiring soon — always shown when present */}
+      {/* Expiring soon - always shown when present */}
       {data.expiringThisWeek.length > 0 && (
         <div className="mb-4 space-y-1">
           <p className="text-xs font-medium text-amber-700 mb-1">Expiring this week:</p>

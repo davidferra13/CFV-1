@@ -280,7 +280,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
         )}
       </div>
 
-      {/* Footer — View all link */}
+      {/* Footer - View all link */}
       <div className="border-t border-stone-800 px-4 py-2">
         <button
           type="button"

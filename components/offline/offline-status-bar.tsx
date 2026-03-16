@@ -1,6 +1,6 @@
 'use client'
 
-// OfflineStatusBar — Smart connectivity indicator.
+// OfflineStatusBar - Smart connectivity indicator.
 // Shows nothing when online. When offline, shows a compact bar with queue count.
 // During sync, shows progress. On reconnection, shows brief success.
 
@@ -43,7 +43,7 @@ export function OfflineStatusBar() {
     )
   }
 
-  // Just reconnected — brief success bar
+  // Just reconnected - brief success bar
   if (justReconnected) {
     return (
       <div
@@ -69,7 +69,7 @@ export function OfflineStatusBar() {
       >
         <span className="flex items-center justify-center gap-2">
           <WifiOff className="h-4 w-4" />
-          You&apos;re offline — your work is being saved locally
+          You&apos;re offline - your work is being saved locally
           {pendingCount > 0 && (
             <span className="inline-flex items-center gap-1 bg-red-900/30 rounded-full px-2 py-0.5 text-xs">
               <CloudUpload className="h-3 w-3" />
@@ -81,6 +81,6 @@ export function OfflineStatusBar() {
     )
   }
 
-  // Online and not recently reconnected — render nothing
+  // Online and not recently reconnected - render nothing
   return null
 }

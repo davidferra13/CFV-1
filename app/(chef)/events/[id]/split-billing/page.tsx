@@ -1,4 +1,4 @@
-// Split Billing — Divide event cost across multiple payers
+// Split Billing - Divide event cost across multiple payers
 // Fetches split billing configuration and client list for the payer selector
 
 import type { Metadata } from 'next'

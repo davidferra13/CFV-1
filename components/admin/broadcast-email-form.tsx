@@ -1,6 +1,6 @@
 'use client'
 
-// Admin Broadcast Email Form — send an email to all chefs or inactive chefs
+// Admin Broadcast Email Form - send an email to all chefs or inactive chefs
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'

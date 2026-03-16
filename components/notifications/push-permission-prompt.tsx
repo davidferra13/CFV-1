@@ -80,7 +80,7 @@ export function PushPermissionPrompt() {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-stone-100">Stay in the loop</p>
           <p className="mt-0.5 text-xs text-stone-500">
-            Get instant alerts for new inquiries, messages, and bookings — even when the app is
+            Get instant alerts for new inquiries, messages, and bookings - even when the app is
             closed.
           </p>
           <div className="mt-3 flex items-center gap-2">

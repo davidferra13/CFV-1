@@ -1,6 +1,6 @@
 'use client'
 
-// Fun Q&A Form — optional personality questions for clients
+// Fun Q&A Form - optional personality questions for clients
 // Lives on the /my-profile page. Completely opt-in, zero pressure copy.
 
 import { useState, useTransition } from 'react'
@@ -36,7 +36,7 @@ export function FunQAForm({ initialAnswers }: FunQAFormProps) {
         setSaved(true)
         setError(null)
       } catch {
-        setError('Something went wrong — please try again.')
+        setError('Something went wrong - please try again.')
       }
     })
   }
@@ -48,7 +48,7 @@ export function FunQAForm({ initialAnswers }: FunQAFormProps) {
           <div>
             <CardTitle className="text-xl">Just for Fun</CardTitle>
             <p className="text-sm text-stone-500 mt-1">
-              No pressure at all — answer as many or as few as you like. Your chef uses these to
+              No pressure at all - answer as many or as few as you like. Your chef uses these to
               make every experience feel a little more you.
             </p>
           </div>
@@ -79,7 +79,7 @@ export function FunQAForm({ initialAnswers }: FunQAFormProps) {
 
         {saved && (
           <Alert variant="success" className="text-sm">
-            Saved — your chef will love getting to know you better!
+            Saved - your chef will love getting to know you better!
           </Alert>
         )}
         {error && (

@@ -1,4 +1,4 @@
-// Active Clients Card — "Who's Online" widget for chef dashboard
+// Active Clients Card - "Who's Online" widget for chef dashboard
 import Link from 'next/link'
 import type { ActiveClient } from '@/lib/activity/types'
 

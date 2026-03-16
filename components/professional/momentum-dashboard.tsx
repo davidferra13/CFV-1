@@ -69,7 +69,7 @@ export function MomentumDashboard({ snapshot }: { snapshot: Snapshot | null }) {
             <p className="text-2xl font-bold text-stone-900 mt-1">
               {snapshot.avg_satisfaction_90d !== null
                 ? `${Number(snapshot.avg_satisfaction_90d).toFixed(1)}/10`
-                : '—'}
+                : '-'}
             </p>
           </CardContent>
         </Card>

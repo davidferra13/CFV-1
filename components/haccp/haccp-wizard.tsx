@@ -53,7 +53,7 @@ function buildSteps(planData: HACCPPlanData): WizardStep[] {
         {
           id: `${ccp.id}-monitoring`,
           label: 'Monitoring',
-          detail: `${ccp.monitoring.what} — ${ccp.monitoring.frequency}`,
+          detail: `${ccp.monitoring.what} - ${ccp.monitoring.frequency}`,
         },
         {
           id: `${ccp.id}-corrective`,

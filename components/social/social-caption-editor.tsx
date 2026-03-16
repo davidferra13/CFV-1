@@ -115,7 +115,7 @@ export function SocialCaptionEditor({
           rows={8}
           placeholder={
             activePlatform === 'master'
-              ? 'Write your master caption here — this is the default for all platforms...'
+              ? 'Write your master caption here - this is the default for all platforms...'
               : `Caption for ${SOCIAL_PLATFORM_LABELS[activePlatform]}...`
           }
           className="resize-none"
@@ -135,7 +135,7 @@ export function SocialCaptionEditor({
           <span className={`text-xs ${isOver ? 'text-red-500 font-medium' : 'text-stone-400'}`}>
             {charCount}
             {charLimit !== null && `/${charLimit}`}
-            {isOver && ' — over limit'}
+            {isOver && ' - over limit'}
           </span>
         </div>
       </div>

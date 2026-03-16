@@ -1,5 +1,5 @@
 // @ts-nocheck
-// Admin Beta Surveys — list all survey definitions with response counts.
+// Admin Beta Surveys - list all survey definitions with response counts.
 // DEFERRED: Beta survey tables not yet created (migration pending).
 
 import { requireAdmin } from '@/lib/auth/admin'

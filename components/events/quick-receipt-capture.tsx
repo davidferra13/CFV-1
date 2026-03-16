@@ -1,6 +1,6 @@
 'use client'
 
-// QuickReceiptCapture — Inline receipt upload widget for live events.
+// QuickReceiptCapture - Inline receipt upload widget for live events.
 // Shown on the event detail page for events in 'confirmed' or 'in_progress' state.
 // Allows the chef to snap a receipt photo, preview it, and upload with one tap.
 // On success, the receipt is queued for background OCR and the chef is linked to the receipt summary.
@@ -60,7 +60,7 @@ export function QuickReceiptCapture({ eventId }: Props) {
           setState('error')
         }
       } catch {
-        setErrorMsg('Upload failed — please try again')
+        setErrorMsg('Upload failed - please try again')
         setState('error')
       }
     })
@@ -71,7 +71,7 @@ export function QuickReceiptCapture({ eventId }: Props) {
       <div className="rounded-lg border border-emerald-200 bg-emerald-950 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-emerald-800">
-            Receipt uploaded — OCR processing in background
+            Receipt uploaded - OCR processing in background
           </p>
           <p className="text-xs text-emerald-600 mt-0.5">
             Line items will be ready for review shortly.
@@ -98,7 +98,7 @@ export function QuickReceiptCapture({ eventId }: Props) {
         <div>
           <h3 className="text-sm font-semibold text-stone-200">Quick Receipt Capture</h3>
           <p className="text-xs text-stone-500 mt-0.5">
-            Snap a receipt now — OCR extracts line items automatically
+            Snap a receipt now - OCR extracts line items automatically
           </p>
         </div>
         {state === 'idle' && (
@@ -108,7 +108,7 @@ export function QuickReceiptCapture({ eventId }: Props) {
         )}
       </div>
 
-      {/* Hidden file input — capture="environment" triggers camera on mobile */}
+      {/* Hidden file input - capture="environment" triggers camera on mobile */}
       <input
         ref={fileInputRef}
         type="file"

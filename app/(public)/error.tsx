@@ -2,7 +2,7 @@
 
 // Public Pages Error Boundary
 // Catches errors within the (public) route group before they bubble to the global error.tsx.
-// Minimal context — visitor may not be logged in at all.
+// Minimal context - visitor may not be logged in at all.
 
 import { useEffect } from 'react'
 import * as Sentry from '@sentry/nextjs'

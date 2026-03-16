@@ -1,4 +1,4 @@
-// Dashboard section skeletons — shown while async sections stream in
+// Dashboard section skeletons - shown while async sections stream in
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {

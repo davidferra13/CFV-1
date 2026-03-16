@@ -238,7 +238,7 @@ export function MenuUploadZone({ onFilesProcessed, onPastedText }: MenuUploadZon
               PDF, images (JPG, PNG, HEIC), Word (.docx), or plain text
             </p>
             <p className="text-stone-600 text-xs mt-2">
-              Upload 100+ files at once — they&apos;ll be processed in queue
+              Upload 100+ files at once - they&apos;ll be processed in queue
             </p>
             <input
               ref={fileInputRef}

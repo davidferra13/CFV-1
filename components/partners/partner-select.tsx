@@ -1,4 +1,4 @@
-// Partner Select — Cascading dropdown for selecting partner + location
+// Partner Select - Cascading dropdown for selecting partner + location
 // Used in inquiry form and event form
 'use client'
 
@@ -90,7 +90,7 @@ export function PartnerSelect({
               return (
                 <option key={loc.id} value={loc.id}>
                   {loc.name}
-                  {cityState ? ` — ${cityState}` : ''}
+                  {cityState ? ` - ${cityState}` : ''}
                 </option>
               )
             })}

@@ -1,9 +1,9 @@
 'use client'
 
-// MenuEditor — real, connected menu editor
+// MenuEditor - real, connected menu editor
 // Displays a menu's course/component hierarchy and lets the chef build it out.
 // All mutations go through lib/menus/actions.ts server actions.
-// State is server-driven via revalidatePath — no local optimistic cache needed.
+// State is server-driven via revalidatePath - no local optimistic cache needed.
 
 import { useState, useTransition } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -202,7 +202,7 @@ function ComponentForm({
         <span className="text-sm text-stone-300">Make-ahead (prep at home, transport to site)</span>
       </label>
 
-      {/* Transport + Window — only visible when make_ahead */}
+      {/* Transport + Window - only visible when make_ahead */}
       {form.is_make_ahead && (
         <div className="flex gap-2 ml-6">
           <div className="flex-1">
@@ -250,7 +250,7 @@ function ComponentForm({
         />
       </div>
 
-      {/* Storage notes — only visible when make_ahead */}
+      {/* Storage notes - only visible when make_ahead */}
       {form.is_make_ahead && (
         <div>
           <label className="block text-xs text-stone-500 mb-1">

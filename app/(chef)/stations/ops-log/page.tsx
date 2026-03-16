@@ -9,7 +9,7 @@ import { getOpsLog } from '@/lib/stations/ops-log-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-export const metadata: Metadata = { title: 'Operations Log — ChefFlow' }
+export const metadata: Metadata = { title: 'Operations Log | ChefFlow' }
 
 const ACTION_LABELS: Record<string, string> = {
   check_in: 'Check In',
@@ -48,7 +48,7 @@ export default async function OpsLogPage() {
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Operations Log</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Every kitchen action logged permanently — who, when, what. This data is append-only and
+          Every kitchen action logged permanently - who, when, what. This data is append-only and
           never deleted.
         </p>
       </div>

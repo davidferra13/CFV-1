@@ -1,4 +1,4 @@
-// Partner Showcase — Public-facing grid of partner venues
+// Partner Showcase - Public-facing grid of partner venues
 // Shows cover images, descriptions, locations, seasonal galleries, and booking links
 'use client'
 
@@ -117,7 +117,7 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
                   <MapPin className="h-4 w-4 text-stone-400 mt-0.5 flex-shrink-0" />
                   <div>
                     <span className="text-stone-300 font-medium">{loc.name}</span>
-                    {cityState && <span className="text-stone-400 ml-1">— {cityState}</span>}
+                    {cityState && <span className="text-stone-400 ml-1">- {cityState}</span>}
                     {loc.max_guest_count && (
                       <span className="text-stone-400 ml-2 inline-flex items-center gap-0.5">
                         <Users className="h-3 w-3" /> up to {loc.max_guest_count}

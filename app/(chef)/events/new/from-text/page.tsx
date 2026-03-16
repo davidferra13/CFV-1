@@ -1,5 +1,5 @@
 // Natural Language Event Entry Page
-// Chef describes an event in plain text — AI parses it into a pre-filled draft.
+// Chef describes an event in plain text - AI parses it into a pre-filled draft.
 // AI policy compliant: parsed draft is shown for chef review before any data is saved.
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -17,7 +17,7 @@ export default async function NewEventFromTextPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Quick Event Entry</h1>
         <p className="text-stone-400 mt-1">
-          Describe the event in your own words — ChefFlow will parse the details for you.
+          Describe the event in your own words | ChefFlow will parse the details for you.
         </p>
       </div>
 

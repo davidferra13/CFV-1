@@ -2,8 +2,8 @@
 
 // Calendar Add Buttons
 // Gives clients two ways to save their event to a calendar:
-//   1. "Add to Google Calendar" — opens a prefilled deep-link URL in a new tab (no OAuth)
-//   2. "Download .ics" — triggers the API route that returns an RFC 5545 .ics file
+//   1. "Add to Google Calendar" - opens a prefilled deep-link URL in a new tab (no OAuth)
+//   2. "Download .ics" - triggers the API route that returns an RFC 5545 .ics file
 //      compatible with Apple Calendar, Outlook, and any other iCalendar-aware client.
 
 import { CalendarPlus } from '@/components/ui/icons'
@@ -17,7 +17,7 @@ type Props = {
 }
 
 // Build the Google Calendar deep-link URL.
-// Uses local (floating) times — no timezone conversion needed for a private event.
+// Uses local (floating) times - no timezone conversion needed for a private event.
 function buildGoogleCalendarUrl({
   occasion,
   eventDate,

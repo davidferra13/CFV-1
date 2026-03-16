@@ -155,7 +155,7 @@ function LegCard({
 
   return (
     <Card className="overflow-hidden">
-      {/* Header — always visible */}
+      {/* Header - always visible */}
       <button
         type="button"
         onClick={() => setExpanded((p) => !p)}
@@ -387,7 +387,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <div className="text-4xl">🗺️</div>
       <h3 className="text-lg font-semibold text-stone-300">No travel legs planned yet</h3>
       <p className="text-sm text-stone-500 max-w-sm mx-auto">
-        Plan your full route — specialty sourcing, grocery runs, travel to venue, and return home.
+        Plan your full route - specialty sourcing, grocery runs, travel to venue, and return home.
       </p>
       <Button onClick={onAdd}>Plan first trip</Button>
     </div>

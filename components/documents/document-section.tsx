@@ -1,4 +1,4 @@
-// Document Section — shows document readiness and view/print buttons
+// Document Section - shows document readiness and view/print buttons
 // Placed on the event detail page (and inquiry pages with a linked event) for chef access
 // "View PDF" opens an inline iframe modal. ↗ opens in a new tab as a fallback.
 'use client'
@@ -78,7 +78,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
     {
       type: 'grocery',
       label: 'Grocery List',
-      description: 'Ingredients by store section + stop — bring to the store',
+      description: 'Ingredients by store section + stop - bring to the store',
       ready: readiness.groceryList.ready,
       missing: readiness.groceryList.missing,
     },
@@ -167,7 +167,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                   </Button>
                 )}
 
-                {/* Interactive viewer — all operational docs except packing */}
+                {/* Interactive viewer - all operational docs except packing */}
                 {doc.type !== 'packing' &&
                   (doc.ready ? (
                     <Button
@@ -183,7 +183,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                     </Button>
                   ))}
 
-                {/* Archive snapshot — saves a versioned PDF copy for this event */}
+                {/* Archive snapshot - saves a versioned PDF copy for this event */}
                 {doc.ready ? (
                   <Button
                     variant="ghost"
@@ -200,7 +200,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                   </Button>
                 )}
 
-                {/* View PDF — opens inline modal */}
+                {/* View PDF - opens inline modal */}
                 <Button
                   variant="secondary"
                   size="sm"
@@ -210,7 +210,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                   View PDF
                 </Button>
 
-                {/* ↗ escape hatch — opens PDF in a new tab */}
+                {/* ↗ escape hatch - opens PDF in a new tab */}
                 {doc.ready && (
                   <a
                     href={`${baseUrl}?type=${doc.type}`}
@@ -228,7 +228,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
           ))}
         </div>
 
-        {/* Print All — combined 8-page PDF; stays as new-tab link for multi-page print */}
+        {/* Print All - combined 8-page PDF; stays as new-tab link for multi-page print */}
         <div className="mt-5 pt-4 border-t border-stone-700">
           <Button
             variant="primary"
@@ -242,11 +242,11 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
         </div>
       </Card>
 
-      {/* Travel Route — separate card; variable-length, not part of the 8-sheet set */}
+      {/* Travel Route - separate card; variable-length, not part of the 8-sheet set */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-1">Travel Route</h2>
         <p className="text-stone-500 text-sm mb-4">
-          Complete route sheet for all planned trips — specialty sourcing, grocery runs, venue
+          Complete route sheet for all planned trips - specialty sourcing, grocery runs, venue
           travel, and return home. One page per leg.
         </p>
         <div className="flex items-center justify-between">
@@ -312,17 +312,17 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
         </div>
       </Card>
 
-      {/* Content Asset Capture Sheet — marketing tool, separate from operational packet */}
+      {/* Content Asset Capture Sheet - marketing tool, separate from operational packet */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-1">Content Asset Capture Sheet</h2>
         <p className="text-stone-500 text-sm mb-4">
-          Shot list for capturing 20+ marketing assets per event — organized by phase, with platform
+          Shot list for capturing 20+ marketing assets per event - organized by phase, with platform
           specs and brand consistency reminders. Bring this alongside your other printed sheets.
         </p>
         <div className="flex items-center justify-between">
           <div>
             <span className="text-emerald-600 text-sm font-medium">Always ready</span>
-            <p className="text-xs text-stone-400 mt-1">Static checklist — no menu data required</p>
+            <p className="text-xs text-stone-400 mt-1">Static checklist - no menu data required</p>
           </div>
           <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
             <Button
@@ -371,7 +371,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
         </div>
       </Card>
 
-      {/* Serving Labels — printable food labels for containers/packaging */}
+      {/* Serving Labels - printable food labels for containers/packaging */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-1">Serving Labels</h2>
         <p className="text-stone-500 text-sm mb-4">
@@ -398,7 +398,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
         </div>
       </Card>
 
-      {/* Business Documents — quote, contract, invoice */}
+      {/* Business Documents - quote, contract, invoice */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-1">Business Documents</h2>
         <p className="text-stone-500 text-sm mb-4">Quote, contract, and invoice for this event.</p>
@@ -444,7 +444,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                     businessDocs.contract.status}
                   {businessDocs.contract.status === 'signed' && businessDocs.contract.signedAt && (
                     <span className="text-stone-400 ml-1">
-                      — {new Date(businessDocs.contract.signedAt).toLocaleDateString()}
+                      - {new Date(businessDocs.contract.signedAt).toLocaleDateString()}
                     </span>
                   )}
                 </span>

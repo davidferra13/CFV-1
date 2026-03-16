@@ -1,4 +1,4 @@
-// Admin Events — All events across every chef
+// Admin Events - All events across every chef
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getAllPlatformEvents, type PlatformEventRow } from '@/lib/admin/platform-stats'
@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation'
 import { CalendarRange } from '@/components/ui/icons'
 
 function formatCents(cents: number | null): string {
-  if (!cents) return '—'
+  if (!cents) return '-'
   return '$' + (cents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })
 }
 
@@ -112,10 +112,10 @@ export default async function AdminEventsPage() {
                 {events.map((event) => (
                   <tr key={event.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3 font-medium text-slate-900 max-w-[200px] truncate">
-                      {event.occasion ?? '—'}
+                      {event.occasion ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-stone-500 text-xs">
-                      {event.chefBusinessName ?? '—'}
+                      {event.chefBusinessName ?? '-'}
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -125,10 +125,10 @@ export default async function AdminEventsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-400">
-                      {event.event_date ? new Date(event.event_date).toLocaleDateString() : '—'}
+                      {event.event_date ? new Date(event.event_date).toLocaleDateString() : '-'}
                     </td>
                     <td className="px-4 py-3 text-right text-stone-300">
-                      {event.guest_count ?? '—'}
+                      {event.guest_count ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-right font-medium text-slate-900">
                       {formatCents(event.quoted_price_cents)}

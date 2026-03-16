@@ -1,4 +1,4 @@
-// Client Portal — Public, token-based access
+// Client Portal - Public, token-based access
 // No account required. Chef shares a magic link, client sees their events + quotes + payments.
 
 import { notFound } from 'next/navigation'

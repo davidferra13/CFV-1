@@ -1,4 +1,4 @@
-// Automation Execution Log — Shows recent rule firings
+// Automation Execution Log - Shows recent rule firings
 import { Badge } from '@/components/ui/badge'
 import type { AutomationExecution } from '@/lib/automations/types'
 

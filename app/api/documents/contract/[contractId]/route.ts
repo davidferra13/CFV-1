@@ -4,7 +4,7 @@ import { requireAuth } from '@/lib/auth/get-user'
 import { generateContract } from '@/lib/documents/generate-contract'
 
 // Both chef and client can download the contract PDF.
-// Auth is resolved via requireAuth() — then ownership verified in the generator
+// Auth is resolved via requireAuth() - then ownership verified in the generator
 // by scoping the DB query to chef_id OR client_id based on the user's role.
 
 export async function GET(_request: Request, { params }: { params: { contractId: string } }) {

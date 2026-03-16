@@ -17,7 +17,7 @@ import {
 const MENU_UPLOADS_BUCKET = 'menu-uploads'
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 MB (reduced from 50 MB to limit DoS via large file processing)
 
-// Allowed file extensions for menu uploads — reject everything else
+// Allowed file extensions for menu uploads - reject everything else
 const ALLOWED_EXTENSIONS = new Set([
   'pdf',
   'doc',
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate file extension — reject executable, script, and unknown file types
+    // Validate file extension - reject executable, script, and unknown file types
     const ext = file.name.split('.').pop()?.toLowerCase() || ''
     if (!ALLOWED_EXTENSIONS.has(ext)) {
       return NextResponse.json(
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Read file into buffer early — needed for hash and processing
+    // Read file into buffer early - needed for hash and processing
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
 
     if (storageError) {
       console.error('[menu-upload] Storage upload failed:', storageError)
-      // Non-blocking — processing can still work from the buffer
+      // Non-blocking - processing can still work from the buffer
     } else {
       // Save the storage path to the job record
       await supabase

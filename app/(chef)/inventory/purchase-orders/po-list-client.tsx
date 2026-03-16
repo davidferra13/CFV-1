@@ -18,7 +18,7 @@ function formatStatus(status: string) {
 }
 
 function formatCents(cents: number | null) {
-  if (cents == null) return '—'
+  if (cents == null) return '-'
   return `$${(cents / 100).toFixed(2)}`
 }
 
@@ -88,7 +88,7 @@ export function POListClient({ initialOrders }: Props) {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-stone-300">
-                      {po.orderDate ? new Date(po.orderDate).toLocaleDateString() : '—'}
+                      {po.orderDate ? new Date(po.orderDate).toLocaleDateString() : '-'}
                     </td>
                     <td className="px-4 py-3 text-right text-stone-300">
                       {formatCents(po.estimatedTotalCents)}
@@ -97,7 +97,7 @@ export function POListClient({ initialOrders }: Props) {
                       {formatCents(po.actualTotalCents)}
                     </td>
                     <td className="px-4 py-3 text-stone-500 max-w-[200px] truncate">
-                      {po.notes || '—'}
+                      {po.notes || '-'}
                     </td>
                   </tr>
                 ))

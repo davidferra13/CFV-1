@@ -1,4 +1,4 @@
-// Full Calendar View — Google Calendar-style schedule
+// Full Calendar View - Google Calendar-style schedule
 // Month, week, day, and agenda views with drag-and-drop, keyboard shortcuts, mini calendar.
 
 'use client'
@@ -220,7 +220,7 @@ export function CalendarView({
 
     const toastMsg =
       result.clearedPrepBlocks && result.clearedPrepBlocks > 0
-        ? `Event rescheduled — ${result.clearedPrepBlocks} prep block${result.clearedPrepBlocks === 1 ? '' : 's'} cleared`
+        ? `Event rescheduled - ${result.clearedPrepBlocks} prep block${result.clearedPrepBlocks === 1 ? '' : 's'} cleared`
         : 'Event rescheduled'
     setRescheduleToast(toastMsg)
     setTimeout(() => setRescheduleToast(null), 3500)
@@ -238,7 +238,7 @@ export function CalendarView({
 
   const handleEventResize = useCallback(async (info: EventResizeDoneArg) => {
     // Resize only changes end time visually; we don't persist service duration yet
-    // Just revert for now — the event keeps its default 3-hour window
+    // Just revert for now - the event keeps its default 3-hour window
     info.revert()
   }, [])
 

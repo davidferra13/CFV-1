@@ -1,4 +1,4 @@
-// Prep Prompts View — displays time-aware preparation nudges
+// Prep Prompts View - displays time-aware preparation nudges
 // Server component.
 
 import Link from 'next/link'

@@ -98,7 +98,7 @@ export default async function LedgerAdjustmentsPage() {
                         {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">{entry.description}</TableCell>

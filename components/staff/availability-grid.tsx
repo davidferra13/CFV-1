@@ -1,6 +1,6 @@
 'use client'
 
-// Staff Availability Grid — toggle grid showing staff × date availability.
+// Staff Availability Grid - toggle grid showing staff × date availability.
 // Rows are staff members, columns are dates. Click a cell to toggle availability.
 
 import { useState, useTransition } from 'react'

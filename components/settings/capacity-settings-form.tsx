@@ -1,6 +1,6 @@
 'use client'
 
-// CapacitySettingsForm — Workload Limits & Off-Hours Protection
+// CapacitySettingsForm - Workload Limits & Off-Hours Protection
 // Lets the chef set hard caps on weekly/monthly event volume and
 // configure which hours/days they don't want to receive booking inquiries.
 

@@ -1,4 +1,4 @@
-// Settings Loading Skeleton — sectioned form layout
+// Settings Loading Skeleton - sectioned form layout
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ContextLoader } from '@/components/ui/context-loader'
 

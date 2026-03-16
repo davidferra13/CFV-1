@@ -1,6 +1,6 @@
 // Scheduled Automations Cron
-// GET /api/scheduled/automations — invoked by Vercel Cron Job (Vercel sends GET)
-// POST /api/scheduled/automations — invoked manually or by external schedulers
+// GET /api/scheduled/automations - invoked by Vercel Cron Job (Vercel sends GET)
+// POST /api/scheduled/automations - invoked manually or by external schedulers
 // Evaluates time-based automation triggers every 15 minutes.
 // Respects per-chef chef_automation_settings (enabled flags and thresholds).
 

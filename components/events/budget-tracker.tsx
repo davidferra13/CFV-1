@@ -1,4 +1,4 @@
-// BudgetTracker — per-event food cost budget card
+// BudgetTracker - per-event food cost budget card
 // Shows budget vs. actual spend with a progress bar.
 // Chef can set a custom budget amount; falls back to the formula-derived guardrail.
 

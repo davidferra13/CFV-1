@@ -1,6 +1,6 @@
 // TakeAChef Transcript Prompt
 // Persistent amber banner encouraging chefs to paste their TakeAChef conversation.
-// TakeAChef locks transcripts after the inquiry closes — this is the only way to keep them.
+// TakeAChef locks transcripts after the inquiry closes - this is the only way to keep them.
 'use client'
 
 import { useState, useEffect } from 'react'

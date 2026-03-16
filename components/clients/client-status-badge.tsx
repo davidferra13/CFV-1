@@ -1,6 +1,6 @@
 'use client'
 
-// Client Status Badge — displays lifecycle status with inline change dropdown
+// Client Status Badge - displays lifecycle status with inline change dropdown
 // Statuses: active, dormant, repeat_ready, vip
 // Chef can change status directly from the client detail header
 

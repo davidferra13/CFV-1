@@ -1,6 +1,6 @@
 'use client'
 
-// Stripe Connect — Client Component
+// Stripe Connect - Client Component
 // Handles the CTA button to initiate Connect onboarding.
 
 import { useState } from 'react'
@@ -56,11 +56,11 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
           <div className="space-y-2 text-sm text-stone-400">
             <div className="flex items-center gap-2">
               <span className="text-green-500">✓</span>
-              <span>Charges enabled — you can accept payments</span>
+              <span>Charges enabled - you can accept payments</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-green-500">✓</span>
-              <span>Payouts enabled — funds transfer to your bank</span>
+              <span>Payouts enabled - funds transfer to your bank</span>
             </div>
             {status.accountId && (
               <p className="text-xs text-stone-400 mt-2">Account ID: {status.accountId}</p>
@@ -121,7 +121,7 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
         </div>
       )}
 
-      {/* Connected — manage in Stripe Dashboard */}
+      {/* Connected - manage in Stripe Dashboard */}
       {status.connected && (
         <div className="bg-stone-800 rounded-xl border border-stone-700 p-4">
           <p className="text-sm text-stone-400 mb-3">

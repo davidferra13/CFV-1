@@ -1,11 +1,11 @@
 'use client'
 
-// Allergen Badge Panel — shows allergen, caution, and health label badges for a recipe.
+// Allergen Badge Panel - shows allergen, caution, and health label badges for a recipe.
 // On-demand: chef clicks "Check Allergens" to trigger Edamam API lookup.
 // Results cached in component state so repeat clicks don't re-fetch.
 //
 // Badge colors:
-//   - Red (error): Major allergens (nuts, dairy, gluten, eggs, shellfish, etc.) — SAFETY
+//   - Red (error): Major allergens (nuts, dairy, gluten, eggs, shellfish, etc.) - SAFETY
 //   - Yellow (warning): Cautions (FODMAPs, sulfites, etc.)
 //   - Green (success): Positive health labels (Vegan, Vegetarian, Gluten-Free, etc.)
 
@@ -21,7 +21,7 @@ type Props = {
   ingredientCount: number
 }
 
-// Major allergens that get red badges — these are SAFETY-critical
+// Major allergens that get red badges - these are SAFETY-critical
 const MAJOR_ALLERGENS = new Set([
   'Peanuts',
   'Tree Nuts',
@@ -58,7 +58,7 @@ export function AllergenBadgePanel({ recipeId, ingredientCount }: Props) {
     })
   }
 
-  // Not yet loaded — show trigger button
+  // Not yet loaded - show trigger button
   if (!data && !error) {
     return (
       <Card>
@@ -136,7 +136,7 @@ export function AllergenBadgePanel({ recipeId, ingredientCount }: Props) {
     )
   }
 
-  // Loaded — show results
+  // Loaded - show results
   const hasAllergens = data!.allergens.length > 0
   const hasCautions = data!.cautions.length > 0
   const hasHealthLabels = data!.healthLabels.length > 0
@@ -167,7 +167,7 @@ export function AllergenBadgePanel({ recipeId, ingredientCount }: Props) {
           </p>
         ) : (
           <div className="space-y-4">
-            {/* Allergens — red badges, most prominent */}
+            {/* Allergens - red badges, most prominent */}
             {hasAllergens && (
               <div>
                 <p className="text-sm font-medium text-red-400 mb-2 flex items-center gap-2">
@@ -187,7 +187,7 @@ export function AllergenBadgePanel({ recipeId, ingredientCount }: Props) {
               </div>
             )}
 
-            {/* Cautions — yellow badges */}
+            {/* Cautions - yellow badges */}
             {hasCautions && (
               <div>
                 <p className="text-sm font-medium text-amber-400 mb-2 flex items-center gap-2">
@@ -204,7 +204,7 @@ export function AllergenBadgePanel({ recipeId, ingredientCount }: Props) {
               </div>
             )}
 
-            {/* Health labels — green badges */}
+            {/* Health labels - green badges */}
             {hasHealthLabels && (
               <div>
                 <p className="text-sm font-medium text-emerald-400 mb-2 flex items-center gap-2">

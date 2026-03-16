@@ -1,6 +1,6 @@
 'use client'
 
-// Billing page interactive UI — renders the subscription status card,
+// Billing page interactive UI - renders the subscription status card,
 // Free vs Pro comparison, and CTA buttons (upgrade / manage subscription).
 
 import { redirectToCheckout, redirectToBillingPortal } from './actions'
@@ -101,7 +101,7 @@ export function BillingClient({ status, upgraded }: Props) {
             </h2>
             <p className="mt-0.5 text-sm text-stone-500">
               {status.isGrandfathered
-                ? 'Founding member — free forever'
+                ? 'Founding member - free forever'
                 : isPro
                   ? 'Full access to all features'
                   : 'Core features included'}
@@ -115,7 +115,7 @@ export function BillingClient({ status, upgraded }: Props) {
             <div className="flex items-center gap-2 text-sm text-stone-400">
               <Star size={15} className="text-amber-500 shrink-0" />
               <span>
-                You're on the founding member plan — full Pro access, no subscription charge. Ever.
+                You're on the founding member plan - full Pro access, no subscription charge. Ever.
               </span>
             </div>
           )}

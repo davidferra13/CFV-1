@@ -1,4 +1,4 @@
-// File AAR Button — Opens a picker of completed events without AARs
+// File AAR Button - Opens a picker of completed events without AARs
 'use client'
 
 import { useState, useEffect } from 'react'

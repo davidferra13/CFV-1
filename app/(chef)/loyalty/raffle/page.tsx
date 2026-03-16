@@ -95,7 +95,7 @@ export default async function RaffleAdminPage() {
               <p className="mt-1">
                 The winner will be drawn automatically on{' '}
                 {format(new Date(activeRound.month_end + 'T00:00:00'), 'MMMM d')}. No manual
-                selection — the draw is fully automated and provably fair.
+                selection - the draw is fully automated and provably fair.
               </p>
             </div>
 
@@ -168,25 +168,25 @@ export default async function RaffleAdminPage() {
         </CardHeader>
         <CardContent className="text-sm text-stone-400 space-y-2">
           <p>
-            <strong className="text-stone-200">1. You set the prizes</strong> — Set a random draw
+            <strong className="text-stone-200">1. You set the prizes</strong> - Set a random draw
             prize, plus optional bonus prizes for Top Scorer and Most Dedicated player.
           </p>
           <p>
-            <strong className="text-stone-200">2. Clients play to enter</strong> — Clients play a
+            <strong className="text-stone-200">2. Clients play to enter</strong> - Clients play a
             quick game on their rewards page. Each play earns 1 raffle entry per day. They can
             replay to improve their leaderboard score.
           </p>
           <p>
-            <strong className="text-stone-200">3. Three ways to win</strong> — 🎲 Random Draw
+            <strong className="text-stone-200">3. Three ways to win</strong> - 🎲 Random Draw
             (luck), 🏆 Top Scorer (skill), 🔥 Most Dedicated (consistency). Clients have three
             reasons to come back.
           </p>
           <p>
-            <strong className="text-stone-200">4. Anonymous leaderboard</strong> — Clients see food
+            <strong className="text-stone-200">4. Anonymous leaderboard</strong> - Clients see food
             emoji aliases (no real names). Your admin view shows real client names.
           </p>
           <p>
-            <strong className="text-stone-200">5. Automated &amp; provably fair</strong> — The draw
+            <strong className="text-stone-200">5. Automated &amp; provably fair</strong> - The draw
             runs automatically on the 1st of each month. A cryptographic seed is published so
             everyone can verify.
           </p>

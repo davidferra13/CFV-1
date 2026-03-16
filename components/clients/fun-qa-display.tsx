@@ -1,4 +1,4 @@
-// Fun Q&A Display — chef-facing read-only view of a client's fun answers
+// Fun Q&A Display - chef-facing read-only view of a client's fun answers
 // Shown on the client detail page. Helps chefs personalise follow-ups
 // and spot rebooking opportunities (see the "rebook_occasion" question).
 
@@ -22,7 +22,7 @@ export function FunQADisplay({ answers, clientName }: FunQADisplayProps) {
         <CardContent>
           <p className="text-sm text-stone-400 italic">
             {clientName.split(' ')[0]} hasn&apos;t answered the fun Q&amp;A yet. Once they do, their
-            personality will show up here — great inspiration for tailoring the next invite.
+            personality will show up here - great inspiration for tailoring the next invite.
           </p>
         </CardContent>
       </Card>
@@ -39,7 +39,7 @@ export function FunQADisplay({ answers, clientName }: FunQADisplayProps) {
           </span>
         </div>
         <p className="text-sm text-stone-500 mt-1">
-          Answered by {clientName.split(' ')[0]} — use these to craft a personalised re-engagement
+          Answered by {clientName.split(' ')[0]} - use these to craft a personalised re-engagement
           message or plan their next experience.
         </p>
       </CardHeader>

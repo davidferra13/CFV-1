@@ -7,7 +7,7 @@
 // Wix Automations HTTP Action does not support HMAC payload signing (unlike Stripe).
 // We authenticate via a per-chef webhook_secret stored in wix_connections.
 // The secret MUST be passed in the X-Wix-Webhook-Secret header.
-// Query param ?secret= was removed in security round 6 — secrets in URLs leak to logs.
+// Query param ?secret= was removed in security round 6 - secrets in URLs leak to logs.
 
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   }
 
   // Authenticate: find the chef connection using webhook secret (header only).
-  // Query param ?secret= removed — secrets in URLs leak to server logs and CDN logs.
+  // Query param ?secret= removed - secrets in URLs leak to server logs and CDN logs.
   const secret = req.headers.get('x-wix-webhook-secret')
 
   if (!secret) {
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true, cached: true })
   }
 
-  // Insert the raw submission into staging table (fast — meets 1250ms deadline)
+  // Insert the raw submission into staging table (fast - meets 1250ms deadline)
   const { data: submission, error: insertError } = await supabase
     .from('wix_submissions')
     .insert({
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
   }
 
   // Return 200 immediately (within Wix's 1250ms deadline)
-  // Process async — don't await this in the response path
+  // Process async - don't await this in the response path
   if (connection.auto_create_inquiry && submission) {
     // Fire-and-forget: process the submission asynchronously
     // In Vercel, use waitUntil if available; otherwise the cron picks it up

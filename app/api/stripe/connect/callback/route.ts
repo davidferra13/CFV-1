@@ -1,4 +1,4 @@
-// Stripe Connect Express — Callback Handler
+// Stripe Connect Express - Callback Handler
 // After a chef completes (or abandons) the Stripe-hosted onboarding,
 // Stripe redirects to this route. We refresh the account status from the
 // Stripe API and redirect the chef back to either the wizard or settings.
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/auth/signin?portal=chef`)
   }
 
-  // Sync status from Stripe (non-fatal — redirect regardless of result)
+  // Sync status from Stripe (non-fatal - redirect regardless of result)
   try {
     await refreshConnectAccountStatus()
   } catch (err) {

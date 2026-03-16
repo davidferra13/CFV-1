@@ -83,7 +83,7 @@ export default async function MyRewardsPage() {
     )
   }
 
-  // Program is disabled — show minimal page
+  // Program is disabled - show minimal page
   if (status.programMode === 'off') {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
@@ -180,7 +180,7 @@ export default async function MyRewardsPage() {
         </CardContent>
       </Card>
 
-      {/* Monthly Raffle — game-based entries, anonymous leaderboard */}
+      {/* Monthly Raffle - game-based entries, anonymous leaderboard */}
       {raffleData && (
         <RaffleSection
           round={raffleData.round}

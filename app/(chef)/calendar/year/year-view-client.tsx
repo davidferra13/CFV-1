@@ -115,7 +115,7 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-stone-100">Year View — {year}</h1>
+          <h1 className="text-xl font-bold text-stone-100">Year View - {year}</h1>
           <p className="text-sm text-stone-400">Click any week to open the planner.</p>
         </div>
         <div className="flex items-center gap-2">

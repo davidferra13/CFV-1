@@ -221,7 +221,7 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
       }
 
       await createExpense(input)
-      trackAction('Created expense', `$${amount} at ${vendorName || 'vendor'} — ${category}`)
+      trackAction('Created expense', `$${amount} at ${vendorName || 'vendor'} - ${category}`)
       router.push('/expenses')
     } catch (err: any) {
       const msg = err.message || 'Failed to create expense'
@@ -291,7 +291,7 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
       const totalCents = businessTotal + personalTotal
       trackAction(
         'Created expense from receipt',
-        `$${(totalCents / 100).toFixed(2)} at ${vendorName || extraction?.storeName || 'store'} — ${lineItems.length} items`
+        `$${(totalCents / 100).toFixed(2)} at ${vendorName || extraction?.storeName || 'store'} - ${lineItems.length} items`
       )
       router.push('/expenses')
     } catch (err: any) {

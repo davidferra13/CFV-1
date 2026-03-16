@@ -135,7 +135,7 @@ export function GoalCard({ view, onCheckIn }: GoalCardProps) {
           <p className="text-xs text-stone-500">{progress.progressPercent}% toward target</p>
         </div>
 
-        {/* Manual goal — recent check-ins */}
+        {/* Manual goal - recent check-ins */}
         {expanded && manual && recentCheckIns && recentCheckIns.length > 0 && (
           <div className="space-y-1 pt-2 border-t border-stone-100">
             <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
@@ -149,7 +149,7 @@ export function GoalCard({ view, onCheckIn }: GoalCardProps) {
                 >
                   <span className="truncate max-w-[200px]">
                     +{ci.loggedValue}
-                    {ci.notes ? ` — ${ci.notes}` : ''}
+                    {ci.notes ? ` - ${ci.notes}` : ''}
                   </span>
                   <span className="text-stone-400 flex-shrink-0 ml-2">
                     {formatDate(ci.loggedAt)}

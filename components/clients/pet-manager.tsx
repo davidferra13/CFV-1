@@ -79,7 +79,7 @@ export function PetManager({ clientId, initialPets }: { clientId: string; initia
                 <span className="text-lg">{PET_ICONS[pet.type] || '🐾'}</span>
                 <span className="font-medium text-stone-200">{pet.name}</span>
                 <span className="text-stone-400 capitalize">({pet.type})</span>
-                {pet.notes && <span className="text-stone-500 ml-1">— {pet.notes}</span>}
+                {pet.notes && <span className="text-stone-500 ml-1">- {pet.notes}</span>}
               </div>
             ))}
           </div>

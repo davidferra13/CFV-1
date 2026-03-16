@@ -224,7 +224,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
             <option value="">Select staff member…</option>
             {availableToAdd.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.name} — {ROLE_LABELS[s.role] ?? s.role} ({formatRate(s.hourly_rate_cents)})
+                {s.name} - {ROLE_LABELS[s.role] ?? s.role} ({formatRate(s.hourly_rate_cents)})
               </option>
             ))}
           </select>

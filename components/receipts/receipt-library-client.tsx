@@ -17,7 +17,7 @@ import { format } from 'date-fns'
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatCents(cents: number | null | undefined): string {
-  if (!cents && cents !== 0) return '—'
+  if (!cents && cents !== 0) return '-'
   return `$${(cents / 100).toFixed(2)}`
 }
 
@@ -122,7 +122,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
 
   const { extraction } = receipt
 
-  // Context label — event name or "Standalone"
+  // Context label - event name or "Standalone"
   const contextLabel = receipt.eventName
     ? `${receipt.eventName}${receipt.eventDate ? ` · ${format(new Date(receipt.eventDate), 'MMM d, yyyy')}` : ''}`
     : 'Standalone receipt'
@@ -141,7 +141,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
               className="object-cover w-full h-full"
               unoptimized
               onError={(e) => {
-                // Signed URL may have expired on legacy records — show placeholder
+                // Signed URL may have expired on legacy records - show placeholder
                 const target = e.target as HTMLImageElement
                 target.style.display = 'none'
               }}
@@ -233,7 +233,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
                           }
                           className="text-xs border border-stone-700 rounded px-1 py-0.5 text-stone-400 bg-stone-900"
                         >
-                          <option value="">—</option>
+                          <option value="">-</option>
                           <option value="protein">Protein</option>
                           <option value="produce">Produce</option>
                           <option value="dairy">Dairy</option>

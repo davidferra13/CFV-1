@@ -1,6 +1,6 @@
 'use client'
 
-// MenuDocEditor — Google Doc-style menu editor
+// MenuDocEditor - Google Doc-style menu editor
 // Two-panel layout: document (left) + event context sidebar (right).
 // All fields auto-save with 1.5s debounce. No explicit save button needed.
 // Simple Mode toggle lets chef bypass structured editor entirely.
@@ -394,7 +394,7 @@ function CourseBlock({
                 setDescription(v)
                 saveField('description', { description: v || null })
               }}
-              placeholder="Ingredients, preparation, flavour notes — shown to client…"
+              placeholder="Ingredients, preparation, flavour notes - shown to client…"
               minRows={2}
               className="w-full text-sm text-stone-500 italic bg-transparent border-none outline-none placeholder:text-stone-300 leading-relaxed mb-2 py-0 block"
             />
@@ -405,7 +405,7 @@ function CourseBlock({
           )}
         </div>
 
-        {/* Dish photo thumbnail — click to add or replace */}
+        {/* Dish photo thumbnail - click to add or replace */}
         <DishPhotoUpload
           compact
           entityType="dish"
@@ -415,7 +415,7 @@ function CourseBlock({
         />
       </div>
 
-      {/* Dietary tags row — Accommodates */}
+      {/* Dietary tags row - Accommodates */}
       <div className="flex flex-wrap items-center gap-1.5 mt-2">
         {dietaryTags.map((tag) => (
           <button
@@ -470,7 +470,7 @@ function CourseBlock({
         )}
       </div>
 
-      {/* Allergen flags row — Contains */}
+      {/* Allergen flags row - Contains */}
       {(allergenFlags.length > 0 || !locked) && (
         <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
           {allergenFlags.map((short) => {
@@ -480,7 +480,7 @@ function CourseBlock({
                 type="button"
                 key={short}
                 onClick={() => !locked && toggleAllergen(short)}
-                title={`Contains ${allergenLabel} — click to remove`}
+                title={`Contains ${allergenLabel} - click to remove`}
                 className={`text-xs font-semibold px-2 py-0.5 rounded-full border transition-colors ${
                   locked
                     ? 'border-orange-200 text-orange-700 bg-orange-950 cursor-default'
@@ -960,7 +960,7 @@ function ContextSidebar({
               {sendResult === 'sent' ? (
                 <p className="text-xs text-emerald-600 font-medium">Menu sent to client ✓</p>
               ) : sendResult === 'error' ? (
-                <p className="text-xs text-red-500">Failed to send — try from event page</p>
+                <p className="text-xs text-red-500">Failed to send - try from event page</p>
               ) : (
                 <button
                   type="button"
@@ -1035,7 +1035,7 @@ function ContextSidebar({
             {pricePerPerson ? (
               `$${Number(pricePerPerson).toLocaleString()} / person`
             ) : (
-              <span className="text-stone-300">—</span>
+              <span className="text-stone-300">-</span>
             )}
           </p>
         )}
@@ -1435,7 +1435,7 @@ export function MenuDocEditor({
                     type="number"
                     value={guestCount}
                     onChange={(e) => handleGuestCount(e.target.value)}
-                    placeholder="—"
+                    placeholder="-"
                     min="1"
                     className="text-sm text-stone-500 border-b border-dashed border-stone-600 bg-transparent outline-none focus:border-brand-400 w-10 pb-0.5 transition-colors"
                   />
@@ -1455,7 +1455,7 @@ export function MenuDocEditor({
                     <p className="text-sm font-medium text-blue-800">Freeform text mode</p>
                     <p className="text-xs text-blue-600 mt-0.5">
                       Write your menu as freeform text or paste it in directly. Switch back anytime
-                      — your structured courses will still be there.
+                      - your structured courses will still be there.
                     </p>
                   </div>
                 </div>
@@ -1463,7 +1463,7 @@ export function MenuDocEditor({
                   value={simpleContent}
                   onChange={(e) => handleSimpleContent(e.target.value)}
                   disabled={locked}
-                  placeholder={`Write your menu here…\n\nSTARTER\nAutumn Beet Salad — goat cheese, candied walnuts, honey vinaigrette\n\nMAIN\nGrass-fed Filet Mignon — truffle jus, pommes purée, haricots verts\n\nDESSERT\nValrhona Chocolate Fondant — crème anglaise, raspberry coulis`}
+                  placeholder={`Write your menu here…\n\nSTARTER\nAutumn Beet Salad - goat cheese, candied walnuts, honey vinaigrette\n\nMAIN\nGrass-fed Filet Mignon - truffle jus, pommes purée, haricots verts\n\nDESSERT\nValrhona Chocolate Fondant - crème anglaise, raspberry coulis`}
                   className="w-full min-h-[420px] text-sm text-stone-300 bg-stone-800 border border-stone-700 rounded-xl px-6 py-5 outline-none focus:ring-2 focus:ring-brand-700 leading-relaxed font-mono resize-none"
                 />
               </div>

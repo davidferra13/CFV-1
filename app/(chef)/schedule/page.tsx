@@ -1,4 +1,4 @@
-// Schedule Page — Google Calendar-style view
+// Schedule Page - Google Calendar-style view
 // Month, week, day, and list views with event interaction.
 // Seasonal sidebar shows active palette context (sensory anchor, micro-windows, energy reality).
 

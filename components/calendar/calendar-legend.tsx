@@ -1,6 +1,6 @@
 'use client'
 
-// CalendarLegend — Collapsible color legend for all calendar views.
+// CalendarLegend - Collapsible color legend for all calendar views.
 // Groups legend entries by category.
 
 import { useState } from 'react'

@@ -1,4 +1,4 @@
-// LivePresencePanel — Real-time "who's online" panel for the chef dashboard.
+// LivePresencePanel - Real-time "who's online" panel for the chef dashboard.
 // Subscribes to activity_events Realtime and updates as clients browse the portal.
 'use client'
 
@@ -127,7 +127,7 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
           if (cachedName) {
             applyPresenceUpdate(cachedName)
           } else {
-            // Client wasn't in the 30-minute seed window — look them up once, cache, then update
+            // Client wasn't in the 30-minute seed window - look them up once, cache, then update
             void (async () => {
               const { data } = await supabase
                 .from('clients')

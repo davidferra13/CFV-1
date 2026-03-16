@@ -128,7 +128,7 @@ export default async function IngredientsPage() {
                         Staple
                       </span>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
@@ -141,7 +141,7 @@ export default async function IngredientsPage() {
                   <TableCell className="text-stone-400 text-sm">
                     {(ing as any).usage_count > 0
                       ? `${(ing as any).usage_count} recipe${(ing as any).usage_count > 1 ? 's' : ''}`
-                      : '—'}
+                      : '-'}
                   </TableCell>
                 </TableRow>
               ))}

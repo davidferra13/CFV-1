@@ -1,4 +1,4 @@
-// POST /api/activity/breadcrumbs — Batched breadcrumb writes for retrace mode
+// POST /api/activity/breadcrumbs - Batched breadcrumb writes for retrace mode
 // Accepts an array of breadcrumb events and inserts them in bulk.
 // Non-blocking: failures return 200 with { tracked: false } to avoid disrupting the app.
 

@@ -22,7 +22,7 @@ export default async function GroceryQuotePage({ params }: { params: { id: strin
   const eventLabel = [
     event.occasion || 'Event',
     format(new Date(event.event_date), 'MMM d, yyyy'),
-  ].join(' — ')
+  ].join(' - ')
 
   return (
     <div className="space-y-6">

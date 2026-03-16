@@ -65,7 +65,7 @@ export async function EventsFinancialBar() {
       <div className="rounded-lg border border-stone-700/40 bg-stone-900/60 px-3 py-2">
         <p className="text-xs text-stone-500">Avg Events/Month</p>
         <p className="text-lg font-bold text-stone-100">
-          {summary.avgPerMonth != null ? summary.avgPerMonth : '—'}
+          {summary.avgPerMonth != null ? summary.avgPerMonth : '-'}
         </p>
         <p className="text-xs text-stone-500">{summary.eventsNext30Days} booked next 30d</p>
       </div>

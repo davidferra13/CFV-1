@@ -3,7 +3,7 @@ import { ArrowLeft } from '@/components/ui/icons'
 import { listStaffMembers } from '@/lib/staff/actions'
 import { StaffEntryForm } from '@/components/onboarding/staff-entry-form'
 
-export const metadata = { title: 'Staff Setup — ChefFlow Setup' }
+export const metadata = { title: 'Staff Setup | ChefFlow Setup' }
 
 export default async function OnboardingStaffPage() {
   const staff = await listStaffMembers().catch(() => [])
@@ -21,7 +21,7 @@ export default async function OnboardingStaffPage() {
           </Link>
           <h1 className="text-3xl font-bold text-stone-100">Staff Roster</h1>
           <p className="text-stone-400 mt-2 max-w-xl">
-            Add team members you work with regularly. This step is optional — you can add staff any
+            Add team members you work with regularly. This step is optional - you can add staff any
             time from the Staff section.
           </p>
         </div>

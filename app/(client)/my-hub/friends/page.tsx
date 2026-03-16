@@ -1,4 +1,4 @@
-// My Friends — add, manage, and discover friends
+// My Friends - add, manage, and discover friends
 
 import type { Metadata } from 'next'
 import Link from 'next/link'

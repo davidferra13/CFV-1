@@ -1,6 +1,6 @@
 'use client'
 
-// Remy Concierge Widget — Floating chatbot on ALL public pages (including landing).
+// Remy Concierge Widget - Floating chatbot on ALL public pages (including landing).
 // Open by default on first visit. Collapsible. Inviting chatbot look.
 // Platform-level concierge: no tenantId, hits /api/remy/landing endpoint.
 
@@ -149,7 +149,7 @@ export function RemyConciergeWidget() {
         }
       } catch (err: any) {
         if (err?.name !== 'AbortError') {
-          setError("Couldn't reach Remy — try again in a moment.")
+          setError("Couldn't reach Remy - try again in a moment.")
         }
       } finally {
         setIsStreaming(false)
@@ -260,7 +260,7 @@ export function RemyConciergeWidget() {
     return null
   }
 
-  // Docked state — compact launcher
+  // Docked state - compact launcher
   if (!isOpen) {
     return (
       <RemyMascotButton
@@ -273,7 +273,7 @@ export function RemyConciergeWidget() {
     )
   }
 
-  // Open state — full chatbot widget
+  // Open state - full chatbot widget
   // Outer wrapper: NO overflow-hidden so resize handles are never clipped.
   // Inner wrapper: overflow-hidden + rounded corners for content clipping.
   return (
@@ -289,13 +289,13 @@ export function RemyConciergeWidget() {
             }
       }
     >
-      {/* Resize handles — OUTSIDE overflow-hidden so they are NEVER clipped.
+      {/* Resize handles - OUTSIDE overflow-hidden so they are NEVER clipped.
            Corner handles are 20px hit area and higher z-index (z-30) so they
-           ALWAYS win over edge handles. This is a permanent rule — do not
+           ALWAYS win over edge handles. This is a permanent rule - do not
            shrink corners or lower their z-index. Ever. */}
       {!isMobile && !isMaximized && (
         <>
-          {/* Edge handles (z-20) — inset so they don't overlap corners */}
+          {/* Edge handles (z-20) - inset so they don't overlap corners */}
           <div
             onMouseDown={startResize('n')}
             className="absolute top-0 left-5 right-5 h-2 z-20 cursor-n-resize hover:bg-brand-400/20 active:bg-brand-400/40 transition-colors"
@@ -312,7 +312,7 @@ export function RemyConciergeWidget() {
             onMouseDown={startResize('e')}
             className="absolute right-0 top-5 bottom-5 w-2 z-20 cursor-e-resize hover:bg-brand-400/20 active:bg-brand-400/40 transition-colors"
           />
-          {/* Corner handles (z-30, 20px) — MUST be larger and above edges.
+          {/* Corner handles (z-30, 20px) - MUST be larger and above edges.
                These extend slightly OUTSIDE the rounded border to ensure
                they are always grabbable and never clipped. */}
           <div
@@ -334,7 +334,7 @@ export function RemyConciergeWidget() {
         </>
       )}
 
-      {/* Inner content wrapper — overflow-hidden here for rounded clipping.
+      {/* Inner content wrapper - overflow-hidden here for rounded clipping.
            z-10 ensures resize handles (z-20 edges, z-30 corners) are ALWAYS above content.
            Without this, animate-in / shadow-2xl can create a stacking context that covers handles. */}
       <div
@@ -393,7 +393,7 @@ export function RemyConciergeWidget() {
         <div className="flex-1 overflow-y-auto bg-stone-800 p-4" style={{ minHeight: '120px' }}>
           {messages.length === 0 && (
             <div className="space-y-4">
-              {/* Welcome message — looks like a chat bubble from Remy */}
+              {/* Welcome message - looks like a chat bubble from Remy */}
               <div className="flex items-start gap-2">
                 <RemyAvatar size="sm" className="!w-7 !h-7" />
                 <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-stone-900 px-4 py-3 text-sm leading-relaxed text-stone-300 shadow-sm">

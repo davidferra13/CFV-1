@@ -32,7 +32,7 @@ export async function POST(req: NextRequest, { params }: { params: { provider: s
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  // Only accept secret via header — never via query string (leaks into access logs)
+  // Only accept secret via header - never via query string (leaks into access logs)
   const secret = req.headers.get('x-chefflow-webhook-secret')
   if (!secret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

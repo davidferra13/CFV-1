@@ -1,4 +1,4 @@
-// AAR History Page — Shows all Event Reviews with trends
+// AAR History Page - Shows all Event Reviews with trends
 // Lets the chef see improvement over time
 
 import type { Metadata } from 'next'

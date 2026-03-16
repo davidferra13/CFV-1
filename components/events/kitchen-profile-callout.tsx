@@ -81,7 +81,7 @@ export function KitchenProfileCallout({ clientId, profile }: KitchenProfileCallo
             >
               Add notes
             </Link>{' '}
-            after your first walkthrough — they&apos;ll appear here on every event.
+            after your first walkthrough - they&apos;ll appear here on every event.
           </p>
         </div>
       ) : (

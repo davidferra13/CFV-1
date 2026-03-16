@@ -129,7 +129,7 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
                       {RISK_LABELS[row.riskLevel]}
                     </span>
                   </td>
-                  <td className="py-1 text-stone-500">{row.triggerAllergen ?? '—'}</td>
+                  <td className="py-1 text-stone-500">{row.triggerAllergen ?? '-'}</td>
                 </tr>
               ))}
             </tbody>

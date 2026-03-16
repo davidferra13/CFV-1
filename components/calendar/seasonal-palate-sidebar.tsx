@@ -1,4 +1,4 @@
-// Seasonal Palate Sidebar — Server Component
+// Seasonal Palate Sidebar - Server Component
 // Shows curated seasonal produce for the currently viewed calendar month.
 // Updates automatically when the chef navigates months via URL params.
 
@@ -45,7 +45,7 @@ export function SeasonalPaleteSidebar({ month }: Props) {
                         ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-brand-950 text-brand-400 ring-1 ring-inset ring-brand-700'
                         : 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-stone-800 text-stone-300 ring-1 ring-inset ring-stone-700'
                     }
-                    title={item.note ?? `${item.name} — ${item.peak ? 'peak season' : 'available'}`}
+                    title={item.note ?? `${item.name} - ${item.peak ? 'peak season' : 'available'}`}
                   >
                     {item.name}
                     {item.peak && (

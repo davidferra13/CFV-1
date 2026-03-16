@@ -130,7 +130,7 @@ export default function SalesTaxSettingsPage() {
                   <option value="">Select state…</option>
                   {Object.entries(COMMON_STATE_RATES_BPS).map(([code, info]) => (
                     <option key={code} value={code}>
-                      {code} — {info.label}
+                      {code} - {info.label}
                     </option>
                   ))}
                 </select>
@@ -154,7 +154,7 @@ export default function SalesTaxSettingsPage() {
                     }
                   />
                   <p className="text-xs text-stone-400 mt-1">
-                    {bpsToPercent(form.stateRateBps)} — 625 bps = 6.25%
+                    {bpsToPercent(form.stateRateBps)} - 625 bps = 6.25%
                   </p>
                 </div>
                 <div>
@@ -212,7 +212,7 @@ export default function SalesTaxSettingsPage() {
                 label="State Tax Registration Number"
                 value={form.registrationNumber}
                 onChange={(e) => setForm({ ...form, registrationNumber: e.target.value })}
-                placeholder="Optional — your state sales tax ID"
+                placeholder="Optional - your state sales tax ID"
               />
 
               <Input

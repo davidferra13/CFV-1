@@ -1,5 +1,5 @@
-// Kiosk Pairing API — verifies pairing code, issues device token
-// No Supabase auth required — uses admin client
+// Kiosk Pairing API - verifies pairing code, issues device token
+// No Supabase auth required - uses admin client
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'

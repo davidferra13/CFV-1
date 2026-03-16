@@ -1,8 +1,8 @@
 'use client'
 
-// LTVChart — Client Lifetime Value trajectory visualization.
+// LTVChart - Client Lifetime Value trajectory visualization.
 // Renders a bar-based sparkline showing cumulative revenue event by event.
-// No charting library — uses pure Tailwind CSS with proportional bar heights.
+// No charting library - uses pure Tailwind CSS with proportional bar heights.
 
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
@@ -17,13 +17,13 @@ export function LTVChart({ points, totalLifetimeValueCents }: Props) {
   if (points.length === 0) {
     return (
       <p className="text-sm text-stone-400 italic">
-        No completed events yet — LTV will appear here once events are closed.
+        No completed events yet - LTV will appear here once events are closed.
       </p>
     )
   }
 
   if (points.length === 1) {
-    // Single event — no trajectory to chart, just show the number
+    // Single event - no trajectory to chart, just show the number
     return (
       <div className="text-center py-2">
         <p className="text-2xl font-bold text-stone-100">
@@ -70,7 +70,7 @@ export function LTVChart({ points, totalLifetimeValueCents }: Props) {
         ))}
       </div>
 
-      {/* X-axis labels — show first and last only to avoid crowding */}
+      {/* X-axis labels - show first and last only to avoid crowding */}
       <div className="flex justify-between text-xs text-stone-400">
         <span>{format(new Date(points[0].eventDate), 'MMM yy')}</span>
         {points.length > 2 && (

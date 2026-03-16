@@ -9,7 +9,7 @@ import { getWasteLog, getWasteSummary } from '@/lib/stations/waste-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-export const metadata: Metadata = { title: 'Waste Log — ChefFlow' }
+export const metadata: Metadata = { title: 'Waste Log | ChefFlow' }
 
 const REASON_LABELS: Record<string, string> = {
   expired: 'Expired',
@@ -75,7 +75,7 @@ export default async function WasteLogPage() {
           <CardContent className="pt-4">
             <p className="text-sm text-stone-500">Top Reason</p>
             <p className="text-3xl font-bold text-stone-100">
-              {summary.topReason ? (REASON_LABELS[summary.topReason] ?? summary.topReason) : '—'}
+              {summary.topReason ? (REASON_LABELS[summary.topReason] ?? summary.topReason) : '-'}
             </p>
           </CardContent>
         </Card>

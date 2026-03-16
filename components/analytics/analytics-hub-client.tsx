@@ -427,13 +427,13 @@ function OperationsTab({ p }: { p: AnalyticsHubProps }) {
                 <tr key={phase.phase} className="border-b border-stone-800">
                   <td className="py-2 px-3 font-medium">{phase.phase}</td>
                   <td className="py-2 px-3">
-                    {phase.avgMinutes > 0 ? `${phase.avgMinutes}m` : '—'}
+                    {phase.avgMinutes > 0 ? `${phase.avgMinutes}m` : '-'}
                   </td>
                   <td className="py-2 px-3 text-stone-500">
-                    {phase.minMinutes > 0 ? `${phase.minMinutes}m` : '—'}
+                    {phase.minMinutes > 0 ? `${phase.minMinutes}m` : '-'}
                   </td>
                   <td className="py-2 px-3 text-stone-500">
-                    {phase.maxMinutes > 0 ? `${phase.maxMinutes}m` : '—'}
+                    {phase.maxMinutes > 0 ? `${phase.maxMinutes}m` : '-'}
                   </td>
                   <td className="py-2 px-3">{phase.eventCount}</td>
                 </tr>
@@ -740,7 +740,7 @@ function MarketingTab({ p }: { p: AnalyticsHubProps }) {
       {p.emailStats.bestCampaign && (
         <Card className="p-4 bg-amber-950 border-amber-200">
           <p className="text-sm text-stone-300">
-            Best campaign: <span className="font-semibold">{p.emailStats.bestCampaign.name}</span> —{' '}
+            Best campaign: <span className="font-semibold">{p.emailStats.bestCampaign.name}</span> -{' '}
             {p.emailStats.bestCampaign.openRate}% open rate
           </p>
         </Card>
@@ -811,7 +811,7 @@ function MarketingTab({ p }: { p: AnalyticsHubProps }) {
       {p.websiteStats.snapshotMonth && (
         <Card className="p-6">
           <h3 className="font-semibold text-stone-200 mb-4">
-            Website Stats — {p.websiteStats.snapshotMonth}
+            Website Stats - {p.websiteStats.snapshotMonth}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard
@@ -1097,11 +1097,11 @@ function BenchmarksTab() {
           The following statistics require external data unavailable to ChefFlow:
         </p>
         <ul className="text-xs text-stone-300 space-y-1 list-disc list-inside">
-          <li>Market share % / TAM penetration — requires industry research</li>
-          <li>Share of voice — requires social listening tools</li>
-          <li>Virality coefficient — not applicable to service businesses</li>
-          <li>Brand awareness score — requires survey to non-clients</li>
-          <li>Debt/equity ratios, goodwill impairment — personal finance scope</li>
+          <li>Market share % / TAM penetration - requires industry research</li>
+          <li>Share of voice - requires social listening tools</li>
+          <li>Virality coefficient - not applicable to service businesses</li>
+          <li>Brand awareness score - requires survey to non-clients</li>
+          <li>Debt/equity ratios, goodwill impairment - personal finance scope</li>
         </ul>
       </Card>
     </div>

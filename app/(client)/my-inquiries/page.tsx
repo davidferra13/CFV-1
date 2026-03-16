@@ -1,4 +1,4 @@
-// Client Inquiry List — /my-inquiries
+// Client Inquiry List - /my-inquiries
 // Shows the client's active inquiries in order of most recent first.
 
 import type { Metadata } from 'next'

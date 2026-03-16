@@ -87,7 +87,7 @@ export function StaffEntryForm({ initialStaff }: { initialStaff: StaffMember[] }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-      {/* Form — left (3/5) */}
+      {/* Form - left (3/5) */}
       <div className="lg:col-span-3 space-y-5">
         <Card>
           <CardHeader>
@@ -182,7 +182,7 @@ export function StaffEntryForm({ initialStaff }: { initialStaff: StaffMember[] }
         </Card>
       </div>
 
-      {/* Staff list — right (2/5) */}
+      {/* Staff list - right (2/5) */}
       <div className="lg:col-span-2 space-y-4">
         <Card>
           <CardHeader>

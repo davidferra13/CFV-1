@@ -42,19 +42,19 @@ export default async function AdminBetaPage() {
       {/* Summary chips */}
       <div className="flex flex-wrap gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-amber-900 text-amber-300">
-          Pending — {statusCounts['pending'] ?? 0}
+          Pending - {statusCounts['pending'] ?? 0}
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-sky-900 text-sky-300">
-          Invited — {statusCounts['invited'] ?? 0}
+          Invited - {statusCounts['invited'] ?? 0}
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-emerald-900 text-emerald-300">
-          Onboarded — {statusCounts['onboarded'] ?? 0}
+          Onboarded - {statusCounts['onboarded'] ?? 0}
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-red-900 text-red-300">
-          Declined — {statusCounts['declined'] ?? 0}
+          Declined - {statusCounts['declined'] ?? 0}
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-slate-700 text-slate-200">
-          Total — {signups.length}
+          Total - {signups.length}
         </span>
       </div>
 

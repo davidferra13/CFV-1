@@ -1,6 +1,6 @@
-// Remy — Landing Page Concierge Streaming API
-// UNAUTHENTICATED — for visitors on the public landing page and marketing pages.
-// No tenantId required — uses platform-level feature knowledge instead.
+// Remy - Landing Page Concierge Streaming API
+// UNAUTHENTICATED - for visitors on the public landing page and marketing pages.
+// No tenantId required - uses platform-level feature knowledge instead.
 // Rate-limited per IP. Uses Ollama for consistency with the rest of the system.
 
 import { NextRequest } from 'next/server'
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       req.headers.get('x-real-ip') ||
       'unknown'
 
-    // Rate limit check (Redis-backed — survives serverless cold starts)
+    // Rate limit check (Redis-backed - survives serverless cold starts)
     // 5 messages/min rate limit + 10 messages/30min session limit
     try {
       await checkRateLimit(`remy-landing:${ip}`, 5, 60_000)
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm getting a lot of messages — give me a moment to catch up! Try again in about a minute.",
+          data: "I'm getting a lot of messages - give me a moment to catch up! Try again in about a minute.",
         }),
         { headers: sseHeaders() }
       )
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     const validated = validateRemyRequestBody(rawBody)
     if (!validated) {
       return new Response(
-        encodeSSE({ type: 'error', data: 'Invalid request — please try again.' }),
+        encodeSSE({ type: 'error', data: 'Invalid request - please try again.' }),
         { headers: sseHeaders() }
       )
     }
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     if (!inputCheck.allowed) {
       const publicRefusal =
         inputCheck.category === 'dangerous_content' || inputCheck.category === 'abuse'
-          ? "I'm here to help with ChefFlow — let's keep it on topic!"
+          ? "I'm here to help with ChefFlow - let's keep it on topic!"
           : inputCheck.refusal
       return new Response(encodeSSE({ type: 'error', data: publicRefusal }), {
         headers: sseHeaders(),
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm taking a quick break — check back in a few minutes!",
+          data: "I'm taking a quick break - check back in a few minutes!",
         }),
         { headers: sseHeaders() }
       )
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
               encoder.encode(
                 encodeSSE({
                   type: 'error',
-                  data: 'Response took too long — try a shorter question!',
+                  data: 'Response took too long - try a shorter question!',
                 })
               )
             )
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
               encoder.encode(
                 encodeSSE({
                   type: 'error',
-                  data: "Something went wrong — I'll be back shortly!",
+                  data: "Something went wrong - I'll be back shortly!",
                 })
               )
             )
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
     return new Response(
       encodeSSE({
         type: 'error',
-        data: 'Something went wrong — please try again!',
+        data: 'Something went wrong - please try again!',
       }),
       { headers: sseHeaders() }
     )

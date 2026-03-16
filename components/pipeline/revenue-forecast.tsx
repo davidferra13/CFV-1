@@ -1,4 +1,4 @@
-// PipelineRevenueForecast — Dashboard widget showing expected + best-case revenue
+// PipelineRevenueForecast - Dashboard widget showing expected + best-case revenue
 // from open inquiries and active events, weighted by stage probability.
 import Link from 'next/link'
 import { TrendingUp } from '@/components/ui/icons'
@@ -66,7 +66,7 @@ export function PipelineRevenueForecast({ forecast }: Props) {
         </div>
       </div>
 
-      {/* Stage breakdown — only stages with budget */}
+      {/* Stage breakdown - only stages with budget */}
       {stagesWithAmount.length > 0 && (
         <div className="space-y-1.5">
           {stagesWithAmount.map((stage) => {

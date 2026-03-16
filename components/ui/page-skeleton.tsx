@@ -1,4 +1,4 @@
-// PageSkeleton — reusable loading skeleton for route-level loading.tsx files.
+// PageSkeleton - reusable loading skeleton for route-level loading.tsx files.
 // Variants match the most common page layouts in ChefFlow.
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card'

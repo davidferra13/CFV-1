@@ -1,6 +1,6 @@
 // Scheduled Raffle Draw Cron Endpoint
-// GET /api/scheduled/raffle-draw — invoked by Vercel Cron Job (1st of each month)
-// POST /api/scheduled/raffle-draw — invoked manually for testing
+// GET /api/scheduled/raffle-draw - invoked by Vercel Cron Job (1st of each month)
+// POST /api/scheduled/raffle-draw - invoked manually for testing
 //
 // Finds all active raffle rounds whose month_end has passed and draws winners.
 // Each entry has equal odds. Drawing is cryptographically random and provably fair.

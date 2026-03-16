@@ -66,7 +66,7 @@ export function RecipeScalingPanel({
           </Button>
         </div>
         <p className="text-xs text-stone-500 mt-2">
-          Adjusts technique notes and seasoning — not just multiplying quantities.
+          Adjusts technique notes and seasoning - not just multiplying quantities.
         </p>
       </div>
     )
@@ -123,7 +123,7 @@ export function RecipeScalingPanel({
                 <td className="py-1 pr-3 font-medium text-stone-200">
                   {ing.scaledQuantity} {ing.unit}
                 </td>
-                <td className="py-1 text-amber-600 text-[11px]">{ing.scalingNote ?? '—'}</td>
+                <td className="py-1 text-amber-600 text-[11px]">{ing.scalingNote ?? '-'}</td>
               </tr>
             ))}
           </tbody>

@@ -21,7 +21,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ chefId: string }>
 }): Promise<Metadata> {
-  return { title: 'Chef Profile — Chef Community' }
+  return { title: 'Chef Profile | Chef Community' }
 }
 
 export default async function ChefProfilePage({ params }: { params: Promise<{ chefId: string }> }) {

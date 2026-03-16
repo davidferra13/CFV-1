@@ -1,7 +1,7 @@
 // GET /api/calendar/event/[id]
 // Returns an RFC 5545-compliant .ics file for a confirmed client event.
 //
-// Auth: requireClient() — client must own the event.
+// Auth: requireClient() - client must own the event.
 // Only events in [paid, confirmed, in_progress, completed] states are downloadable.
 // The file is streamed as text/calendar so browsers / mobile OS handlers
 // pick it up and offer to add it to Apple Calendar, Outlook, etc.
@@ -19,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const supabase: any = createServerClient()
     const eventId = params.id
 
-    // Fetch event — must belong to this client
+    // Fetch event - must belong to this client
     const { data: event } = await supabase
       .from('events')
       .select(

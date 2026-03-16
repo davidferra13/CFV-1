@@ -1,4 +1,4 @@
-// Kiosk PIN Verification API — validates staff PIN, creates device session
+// Kiosk PIN Verification API - validates staff PIN, creates device session
 // Requires device token in Authorization header
 
 import { NextResponse } from 'next/server'
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'PIN is required' }, { status: 400 })
     }
 
-    // DB-based rate limit — count recent pin_failed events for this device
+    // DB-based rate limit - count recent pin_failed events for this device
     const supabase: any = createAdminClient()
     const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString()
 

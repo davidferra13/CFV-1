@@ -1,6 +1,6 @@
 'use client'
 
-// Survey Form — client component for the public satisfaction survey page
+// Survey Form - client component for the public satisfaction survey page
 // Handles all form state and calls submitSurveyResponse on submit
 
 import { useState } from 'react'

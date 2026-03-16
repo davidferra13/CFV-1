@@ -1,14 +1,14 @@
 'use client'
 
 /**
- * RemyOnboardingWizard — 5-step walkthrough before first Remy use.
+ * RemyOnboardingWizard - 5-step walkthrough before first Remy use.
  *
  * Steps:
- * 1. "Meet Remy" — what it is, what it does
- * 2. "How It Works" — the data flow schematic
- * 3. "You're in Control" — delete capabilities
- * 4. "Best Practices" — how to use AI effectively
- * 5. "Ready?" — explicit opt-in
+ * 1. "Meet Remy" - what it is, what it does
+ * 2. "How It Works" - the data flow schematic
+ * 3. "You're in Control" - delete capabilities
+ * 4. "Best Practices" - how to use AI effectively
+ * 5. "Ready?" - explicit opt-in
  *
  * Privacy is mentioned once, confidently, not belabored.
  */
@@ -159,7 +159,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                   {
                     icon: <Lock className="h-5 w-5 text-brand-500" />,
                     title: 'Your Data',
-                    desc: 'Client names, budgets, recipes — everything stays within ChefFlow. Conversation history lives in your browser.',
+                    desc: 'Client names, budgets, recipes - everything stays within ChefFlow. Conversation history lives in your browser.',
                   },
                   {
                     icon: <Eye className="h-5 w-5 text-brand-500" />,
@@ -192,7 +192,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 </div>
                 <h2 className="text-2xl font-bold text-stone-100">You&apos;re in Control</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">
-                  Your conversation history lives in your browser. You can clear it at any time —
+                  Your conversation history lives in your browser. You can clear it at any time -
                   and when you do, it&apos;s gone. Not archived, not hidden. Gone.
                 </p>
               </div>
@@ -200,7 +200,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
               {/* Interactive practice section */}
               <div className="rounded-xl border-2 border-dashed border-stone-600 bg-stone-800 p-5 space-y-4">
                 <h3 className="font-semibold text-stone-100 text-center">
-                  Try It — Practice Deleting Data
+                  Try It - Practice Deleting Data
                 </h3>
                 <p className="text-sm text-stone-500 text-center">
                   This is a safe demo. Click delete to see how it works.
@@ -336,10 +336,10 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
               <div className="rounded-xl border border-emerald-200 bg-emerald-950/50 p-5 space-y-3">
                 <h3 className="font-semibold text-emerald-900">Quick recap:</h3>
                 {[
-                  'Remy runs on ChefFlow\u2019s private servers — no third-party AI',
+                  'Remy runs on ChefFlow\u2019s private servers - no third-party AI',
                   'Conversations stay in your browser, not on our servers',
                   'Delete anything at any time',
-                  'Remy assists only — never acts without your approval',
+                  'Remy assists only - never acts without your approval',
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-emerald-500 shrink-0" />

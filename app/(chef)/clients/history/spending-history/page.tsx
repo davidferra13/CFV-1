@@ -123,12 +123,12 @@ export default async function SpendingHistoryPage() {
                       {client.totalEvents ?? 0}
                     </TableCell>
                     <TableCell className="text-stone-400 text-sm">
-                      {avgPerEvent > 0 ? formatCurrency(avgPerEvent) : '—'}
+                      {avgPerEvent > 0 ? formatCurrency(avgPerEvent) : '-'}
                     </TableCell>
                     <TableCell className="text-stone-500 text-sm">
                       {client.lastEventDate
                         ? new Date(client.lastEventDate).toLocaleDateString()
-                        : '—'}
+                        : '-'}
                     </TableCell>
                     <TableCell>
                       <Link href={`/clients/${client.id}`}>

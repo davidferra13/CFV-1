@@ -70,7 +70,7 @@ function LabelRow({ defaultLabel, currentLabel, labelType, onSaved }: LabelRowPr
 
   return (
     <div className="flex items-center gap-3 py-3 border-b border-stone-800 last:border-0">
-      {/* Default label — immutable reference shown in mono */}
+      {/* Default label - immutable reference shown in mono */}
       <div className="w-36 shrink-0">
         <span className="text-sm text-stone-500 font-mono">{defaultLabel}</span>
       </div>
@@ -175,7 +175,7 @@ export function EventLabelEditor({
               <CardTitle>Status Labels</CardTitle>
               <p className="text-sm text-stone-500 mt-1">
                 Rename event lifecycle states to match your preferred language. The underlying FSM
-                is unchanged — only the display name differs.
+                is unchanged - only the display name differs.
               </p>
             </div>
             {statusCustomCount > 0 && <Badge variant="info">{statusCustomCount} customised</Badge>}

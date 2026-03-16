@@ -1,4 +1,4 @@
-// Benchmarks — Track performance metrics over time
+// Benchmarks - Track performance metrics over time
 // Compare current period against historical averages and industry targets
 
 import type { Metadata } from 'next'

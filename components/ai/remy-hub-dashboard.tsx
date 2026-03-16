@@ -100,7 +100,7 @@ function MemoryTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-stone-500">
-          {memories.length} memor{memories.length === 1 ? 'y' : 'ies'} — Remy uses these to
+          {memories.length} memor{memories.length === 1 ? 'y' : 'ies'} - Remy uses these to
           personalize conversations.
         </p>
       </div>
@@ -212,7 +212,7 @@ function SettingsTab() {
       <details className="rounded-xl border border-stone-700 bg-stone-900">
         <summary className="cursor-pointer px-5 py-4">
           <span className="text-sm font-semibold text-stone-100">
-            How It Works — Data Flow Diagram
+            How It Works - Data Flow Diagram
           </span>
         </summary>
         <div className="border-t border-stone-700 p-5">
@@ -258,7 +258,7 @@ export function RemyHubDashboard() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-stone-100">Remy</h1>
           <p className="text-sm text-stone-500">
-            Your AI assistant — research, drafts, memory, and task execution
+            Your AI assistant - research, drafts, memory, and task execution
           </p>
         </div>
       </div>
@@ -293,7 +293,7 @@ export function RemyHubDashboard() {
         {activeTab === 'chat' && (
           <div>
             <p className="text-sm text-stone-500 mb-4">
-              Tell Remy what you need. Multi-step commands run in parallel — drafts always need your
+              Tell Remy what you need. Multi-step commands run in parallel - drafts always need your
               approval before anything goes out.
             </p>
             <CommandCenterClient />

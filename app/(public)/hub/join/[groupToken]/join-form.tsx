@@ -59,7 +59,7 @@ export function JoinGroupForm({ groupToken }: JoinGroupFormProps) {
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email (optional — for event updates)"
+          placeholder="Email (optional - for event updates)"
           type="email"
           className="w-full rounded-xl bg-stone-800 px-4 py-3 text-sm text-stone-200 outline-none ring-1 ring-stone-700 placeholder:text-stone-500 focus:ring-[var(--hub-primary,#e88f47)]"
         />

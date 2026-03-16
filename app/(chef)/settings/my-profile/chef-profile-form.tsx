@@ -133,7 +133,7 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
             label="Your Name or Business Name"
             value={businessName}
             onChange={(e) => setBusinessName(e.target.value)}
-            helperText="How you'd like to be known — a personal name or brand name both work"
+            helperText="How you'd like to be known - a personal name or brand name both work"
           />
           <Input
             label="Display Name"

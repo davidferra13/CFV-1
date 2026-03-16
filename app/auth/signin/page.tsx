@@ -21,7 +21,7 @@ import { Alert } from '@/components/ui/alert'
 function safeRedirectPath(raw: string | null): string {
   if (!raw) return '/'
   try {
-    // Parse as if relative to localhost — rejects anything with an external host
+    // Parse as if relative to localhost - rejects anything with an external host
     const url = new URL(raw, 'http://localhost')
     if (url.origin !== 'http://localhost') return '/'
     return url.pathname + url.search

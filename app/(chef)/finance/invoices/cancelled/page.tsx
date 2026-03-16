@@ -87,19 +87,19 @@ export default async function CancelledInvoicesPage() {
                         {event.client.full_name}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm capitalize">
-                    {event.occasion?.replace(/_/g, ' ') ?? '—'}
+                    {event.occasion?.replace(/_/g, ' ') ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">
-                    {event.guest_count ?? '—'}
+                    {event.guest_count ?? '-'}
                   </TableCell>
                   <TableCell className="text-stone-500 font-semibold text-sm line-through">
                     {event.quoted_price_cents != null
                       ? formatCurrency(event.quoted_price_cents)
-                      : '—'}
+                      : '-'}
                   </TableCell>
                   <TableCell>
                     <Link href={`/events/${event.id}`}>

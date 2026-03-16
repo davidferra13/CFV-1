@@ -1,4 +1,4 @@
-// Staff Portal Layout — Layer 2 of Defense in Depth
+// Staff Portal Layout - Layer 2 of Defense in Depth
 // Simple layout with top navigation for staff members.
 // Staff see: Dashboard, Tasks, Station, Recipes, Schedule.
 

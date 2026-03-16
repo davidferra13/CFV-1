@@ -154,7 +154,7 @@ export function AuditDetailClient({ audit }: Props) {
                       >
                         {item.actualQty != null
                           ? (variance > 0 ? '+' : '') + variance.toFixed(2)
-                          : '—'}
+                          : '-'}
                       </td>
                       {!isFinalized && (
                         <td className="px-4 py-3">

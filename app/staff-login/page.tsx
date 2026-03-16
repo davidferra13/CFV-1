@@ -1,4 +1,4 @@
-// Staff Login Page — Limited portal for kitchen/service staff
+// Staff Login Page - Limited portal for kitchen/service staff
 'use client'
 
 import { useState, Suspense } from 'react'

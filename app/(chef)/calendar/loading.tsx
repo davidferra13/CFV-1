@@ -1,4 +1,4 @@
-// Calendar Loading Skeleton — monthly grid with event chips
+// Calendar Loading Skeleton - monthly grid with event chips
 import { Card, CardContent } from '@/components/ui/card'
 import { ContextLoader } from '@/components/ui/context-loader'
 
@@ -27,7 +27,7 @@ export default function CalendarLoading() {
         ))}
       </div>
 
-      {/* Calendar grid — 5 rows × 7 cols */}
+      {/* Calendar grid - 5 rows × 7 cols */}
       <Card>
         <CardContent className="p-2">
           <div className="grid grid-cols-7 gap-1">

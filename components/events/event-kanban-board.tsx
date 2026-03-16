@@ -1,4 +1,4 @@
-// Event Kanban Board — drag-drop board with FSM-validated column transitions
+// Event Kanban Board - drag-drop board with FSM-validated column transitions
 'use client'
 
 import { useState, useTransition, useEffect } from 'react'
@@ -153,7 +153,7 @@ export function EventKanbanBoard({ events: initialEvents }: EventKanbanBoardProp
       return
     }
 
-    // Optimistic update — move card immediately
+    // Optimistic update - move card immediately
     setEvents((prev) => prev.map((e) => (e.id === draggedId ? { ...e, status: targetStatus } : e)))
 
     // Call server action inside transition
@@ -197,7 +197,7 @@ export function EventKanbanBoard({ events: initialEvents }: EventKanbanBoardProp
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        {/* Active columns — horizontal scroll on small screens */}
+        {/* Active columns - horizontal scroll on small screens */}
         <div className="flex gap-4 overflow-x-auto pb-4">
           {ACTIVE_COLUMNS.map((status) => (
             <EventKanbanColumn

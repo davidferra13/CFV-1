@@ -1,6 +1,6 @@
-// Inquiry Summary — shared visual snapshot component
+// Inquiry Summary - shared visual snapshot component
 // Used by both the chef detail page (variant="chef") and the client portal (variant="client").
-// Pure presentational — no data fetching, no side effects.
+// Pure presentational - no data fetching, no side effects.
 
 import type { ReactNode } from 'react'
 import Link from 'next/link'
@@ -255,7 +255,7 @@ export function InquirySummary({ data, variant }: Props) {
         </p>
 
         {terminal ? (
-          // Declined / expired — vertical list of actual transitions
+          // Declined / expired - vertical list of actual transitions
           <div className="space-y-3">
             {data.transitions.length === 0 ? (
               <p className="text-sm text-stone-300">No status history available.</p>
@@ -282,7 +282,7 @@ export function InquirySummary({ data, variant }: Props) {
             )}
           </div>
         ) : (
-          // Normal pipeline — horizontal step indicator
+          // Normal pipeline - horizontal step indicator
           <div className="flex items-start">
             {steps.map((step, i) => {
               const reached = isStepReached(step.status, data.status)

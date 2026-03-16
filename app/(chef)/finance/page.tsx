@@ -26,7 +26,7 @@ const SECTIONS = [
   {
     href: '/finance/invoices',
     label: 'Invoices',
-    description: 'Track invoices by status — draft, sent, paid, overdue',
+    description: 'Track invoices by status - draft, sent, paid, overdue',
     icon: '🧾',
   },
   {
@@ -104,7 +104,7 @@ const SECTIONS = [
   {
     href: '/finance/retainers',
     label: 'Retainers',
-    description: 'Recurring service agreements — monthly billing, event tracking',
+    description: 'Recurring service agreements - monthly billing, event tracking',
     icon: '🔁',
   },
 ]
@@ -122,7 +122,7 @@ export default async function FinancePage() {
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Finance</h1>
           <p className="text-stone-500 mt-1">
-            Complete financial management — invoices, expenses, ledger, and reporting
+            Complete financial management - invoices, expenses, ledger, and reporting
           </p>
         </div>
         <div className="rounded-xl border border-red-800 bg-red-950 p-6 text-center">
@@ -139,7 +139,7 @@ export default async function FinancePage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Finance</h1>
         <p className="text-stone-500 mt-1">
-          Complete financial management — invoices, expenses, ledger, and reporting
+          Complete financial management - invoices, expenses, ledger, and reporting
         </p>
       </div>
 

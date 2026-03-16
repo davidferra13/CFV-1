@@ -115,7 +115,7 @@ export async function GET(request: NextRequest, { params }: { params: { platform
   try {
     user = await requireChef()
   } catch {
-    return failRedirect('Session expired — please try again')
+    return failRedirect('Session expired - please try again')
   }
 
   const supabase: any = createAdminClient()
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest, { params }: { params: { platform
     .gt('expires_at', new Date().toISOString())
     .single()
 
-  if (!stateRow) return failRedirect('OAuth state invalid or expired — please try again')
+  if (!stateRow) return failRedirect('OAuth state invalid or expired - please try again')
 
   // CSRF: state must belong to the currently-logged-in chef
   if ((stateRow as any).tenant_id !== user.tenantId) return failRedirect('OAuth state mismatch')
@@ -352,7 +352,7 @@ export async function GET(request: NextRequest, { params }: { params: { platform
       })
     }
 
-    // Success — send chef back to connections page
+    // Success - send chef back to connections page
     const successUrl = new URL('/social/connections', origin)
     successUrl.searchParams.set('connected', platform)
     return NextResponse.redirect(successUrl)

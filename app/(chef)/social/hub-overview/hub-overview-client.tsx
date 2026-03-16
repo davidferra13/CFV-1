@@ -61,7 +61,7 @@ export function HubOverviewClient({ stats, stubs }: HubOverviewClientProps) {
         />
       </div>
 
-      {/* Event Stubs Seeking Chef — Lead Pipeline */}
+      {/* Event Stubs Seeking Chef - Lead Pipeline */}
       {stubs.length > 0 && (
         <div>
           <h2 className="mb-3 text-lg font-semibold text-stone-200">Event Stubs Seeking a Chef</h2>

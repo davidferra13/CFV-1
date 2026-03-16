@@ -1,4 +1,4 @@
-// Prospecting Hub — AI Scrub Page
+// Prospecting Hub - AI Scrub Page
 // Admin-only. Free-form query to generate prospect dossiers.
 
 import type { Metadata } from 'next'
@@ -32,7 +32,7 @@ export default async function ScrubPage() {
         <div>
           <h1 className="text-3xl font-bold text-stone-100">AI Lead Scrub</h1>
           <p className="text-stone-400 mt-1">
-            Type any query — AI will research and generate detailed prospect dossiers with real
+            Type any query - AI will research and generate detailed prospect dossiers with real
             contact info
           </p>
         </div>

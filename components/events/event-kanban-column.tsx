@@ -1,4 +1,4 @@
-// Event Kanban Column — droppable column for a single FSM status
+// Event Kanban Column - droppable column for a single FSM status
 'use client'
 
 import { useDroppable } from '@dnd-kit/core'

@@ -259,7 +259,7 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
               <span className="font-medium">{e.occasion ?? 'Event'}</span>
               <span className="text-stone-400">
                 {' '}
-                — {e.date ?? 'no date'} for {e.clientName} ({e.status})
+                - {e.date ?? 'no date'} for {e.clientName} ({e.status})
               </span>
             </li>
           ))}
@@ -312,7 +312,7 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
               <span className="font-medium">{inq.clientName}</span>
               <span className="text-stone-400">
                 {' '}
-                — {inq.eventType ?? 'inquiry'} ({inq.status})
+                - {inq.eventType ?? 'inquiry'} ({inq.status})
               </span>
             </li>
           ))}
@@ -368,7 +368,7 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
               <span className="font-medium">{r.name}</span>
               <span className="text-stone-400">
                 {' '}
-                — {r.category} (cooked {r.timesCooked}x)
+                - {r.category} (cooked {r.timesCooked}x)
               </span>
             </li>
           ))}

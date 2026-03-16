@@ -1,4 +1,4 @@
-// Kitchen Display System — Live service course tracker
+// Kitchen Display System - Live service course tracker
 // Shows courses and their status during active service for the event
 
 import type { Metadata } from 'next'

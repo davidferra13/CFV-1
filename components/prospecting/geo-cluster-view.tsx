@@ -94,7 +94,7 @@ export function GeoClusterView({ clusters }: GeoClusterViewProps) {
 
           return (
             <Card key={cluster.region} className="overflow-hidden">
-              {/* Region header — clickable */}
+              {/* Region header - clickable */}
               <button
                 type="button"
                 onClick={() => setExpandedRegion(isExpanded ? null : cluster.region)}
@@ -125,7 +125,7 @@ export function GeoClusterView({ clusters }: GeoClusterViewProps) {
                 </div>
               </button>
 
-              {/* Expanded view — all prospects in this cluster */}
+              {/* Expanded view - all prospects in this cluster */}
               {isExpanded && (
                 <div className="border-t border-stone-800">
                   {/* Quick preview chips */}
@@ -227,7 +227,7 @@ export function GeoClusterView({ clusters }: GeoClusterViewProps) {
                   <div className="px-4 py-2 bg-stone-800/30 border-t border-stone-800">
                     <p className="text-xs text-stone-500 flex items-center gap-1">
                       <Target className="h-3 w-3" />
-                      Plan a {cluster.region} outreach day — {cluster.count} prospects in one area
+                      Plan a {cluster.region} outreach day - {cluster.count} prospects in one area
                     </p>
                   </div>
                 </div>

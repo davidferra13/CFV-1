@@ -1,4 +1,4 @@
-// New Expense Client — Mode switcher between Manual, Receipt Upload, and OCR Scan
+// New Expense Client - Mode switcher between Manual, Receipt Upload, and OCR Scan
 'use client'
 
 import { useState } from 'react'

@@ -1,5 +1,5 @@
 // Time Analysis Page
-// Shows where the chef's hours are actually going — event phases + administrative overhead.
+// Shows where the chef's hours are actually going - event phases + administrative overhead.
 // Used to compute true effective hourly rate including all business time.
 
 import type { Metadata } from 'next'
@@ -9,7 +9,7 @@ import { ADMIN_TIME_CATEGORIES } from '@/lib/admin-time/constants'
 import { AdminTimeLogForm } from './admin-time-log-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Time Analysis — ChefFlow' }
+export const metadata: Metadata = { title: 'Time Analysis | ChefFlow' }
 
 function formatMinutes(minutes: number) {
   const h = Math.floor(minutes / 60)
@@ -33,7 +33,7 @@ export default async function TimeAnalysisPage() {
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Time Analysis</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Track administrative time to see where your hours really go — not just on-site.
+          Track administrative time to see where your hours really go - not just on-site.
         </p>
       </div>
 
@@ -115,7 +115,7 @@ export default async function TimeAnalysisPage() {
                     <div>
                       <span className="text-stone-300">{cat?.label ?? log.category}</span>
                       {log.notes && (
-                        <span className="text-stone-400 ml-2 text-xs">— {log.notes}</span>
+                        <span className="text-stone-400 ml-2 text-xs">- {log.notes}</span>
                       )}
                     </div>
                     <div className="text-stone-500">{formatMinutes(log.minutes)}</div>

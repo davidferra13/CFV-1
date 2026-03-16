@@ -1,6 +1,6 @@
 // Event Transitions Component
 // Shows action buttons for transitioning event status based on current state.
-// Readiness gates are shown inline — hard blocks disable the button, soft blocks warn.
+// Readiness gates are shown inline - hard blocks disable the button, soft blocks warn.
 'use client'
 
 import { useState } from 'react'
@@ -44,7 +44,7 @@ function GateList({ blockers }: { blockers: GateResult[] }) {
 
   return (
     <div className="space-y-2">
-      {/* Hard blocks — must be resolved before proceeding */}
+      {/* Hard blocks - must be resolved before proceeding */}
       {hardBlocks.length > 0 && (
         <div className="rounded-lg border border-red-200 bg-red-950 p-3 space-y-1.5">
           <p className="text-xs font-semibold text-red-900">Required before proceeding:</p>
@@ -63,7 +63,7 @@ function GateList({ blockers }: { blockers: GateResult[] }) {
         </div>
       )}
 
-      {/* Soft warnings — you can still proceed, but these are recommended */}
+      {/* Soft warnings - you can still proceed, but these are recommended */}
       {softWarnings.length > 0 && (
         <div className="rounded-lg border border-amber-200 bg-amber-950 p-3 space-y-1.5">
           <p className="text-xs font-semibold text-amber-900">
@@ -171,7 +171,7 @@ export function EventTransitions({
       )}
 
       <div className="space-y-4">
-        {/* Readiness gate warnings — shown for transitions that have blockers */}
+        {/* Readiness gate warnings - shown for transitions that have blockers */}
         {blockers.length > 0 && <GateList blockers={blockers} />}
 
         {/* Cancel Dialog */}

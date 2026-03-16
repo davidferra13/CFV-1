@@ -1,4 +1,4 @@
-// BreadcrumbTracker — Client-side component that silently tracks chef navigation.
+// BreadcrumbTracker - Client-side component that silently tracks chef navigation.
 // Placed in the chef layout. Records every route change and batches writes to the API.
 // Non-blocking: failures never affect the app.
 
@@ -46,7 +46,7 @@ export function BreadcrumbTracker() {
         body: JSON.stringify({ items }),
       })
     } catch {
-      // Non-blocking — breadcrumb tracking should never break the app
+      // Non-blocking - breadcrumb tracking should never break the app
     }
   }, [])
 
@@ -65,7 +65,7 @@ export function BreadcrumbTracker() {
             new Blob([JSON.stringify({ items })], { type: 'application/json' })
           )
         } catch {
-          // Last resort — ignore
+          // Last resort - ignore
         }
       }
     }
@@ -104,7 +104,7 @@ export function BreadcrumbTracker() {
     }
   }, [pathname, flush])
 
-  // No UI — this is a silent tracker
+  // No UI - this is a silent tracker
   return null
 }
 
@@ -122,7 +122,7 @@ export function trackBreadcrumb(
   const sid = window.sessionStorage.getItem('cf-breadcrumb-session') || ''
   const path = window.location.pathname
 
-  // Fire and forget — non-blocking
+  // Fire and forget - non-blocking
   fetch('/api/activity/breadcrumbs', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -25,7 +25,7 @@ function formatStatus(status: string) {
 }
 
 function formatCents(cents: number | null) {
-  if (cents == null) return '—'
+  if (cents == null) return '-'
   return `$${(cents / 100).toFixed(2)}`
 }
 

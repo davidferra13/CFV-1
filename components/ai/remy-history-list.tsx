@@ -185,7 +185,7 @@ export function RemyHistoryList() {
           <Bot className="h-12 w-12 text-stone-300 dark:text-stone-400 mx-auto mb-3" />
           <p className="text-sm text-stone-500 dark:text-stone-400">
             {total === 0
-              ? 'Nothing here yet. Everything Remy creates is auto-saved — just start chatting!'
+              ? 'Nothing here yet. Everything Remy creates is auto-saved - just start chatting!'
               : 'No matches found.'}
           </p>
         </div>

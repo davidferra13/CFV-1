@@ -1,6 +1,6 @@
 'use client'
 
-// DOPTaskCheckbox — Interactive checkbox for manually completing DOP tasks.
+// DOPTaskCheckbox - Interactive checkbox for manually completing DOP tasks.
 // Used inside DOPView for tasks that can't be auto-detected from system state.
 // Calls toggleDOPTaskCompletion server action with optimistic UI update.
 

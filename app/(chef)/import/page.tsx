@@ -56,7 +56,7 @@ export default async function ImportPage({ searchParams }: { searchParams: { mod
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Smart Import</h1>
         <p className="text-stone-400 mt-1">
-          Paste text, upload photos, or drop files — we&apos;ll pull out the details and let you
+          Paste text, upload photos, or drop files - we&apos;ll pull out the details and let you
           review everything before it saves.
         </p>
       </div>

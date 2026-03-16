@@ -1,6 +1,6 @@
 // Auto-Simulation Cron Route
-// GET  /api/scheduled/simulation — trigger run for all due tenants (called by watchdog/scheduler)
-// POST /api/scheduled/simulation — same, but accepts { tenantIds: string[] } body to scope the run
+// GET  /api/scheduled/simulation - trigger run for all due tenants (called by watchdog/scheduler)
+// POST /api/scheduled/simulation - same, but accepts { tenantIds: string[] } body to scope the run
 //
 // Can also be called manually:
 //   curl -X POST http://localhost:3000/api/scheduled/simulation \
@@ -14,7 +14,7 @@ import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 // Vercel Pro supports up to 800s; local dev has no limit.
-// 6 modules × 2 scenarios × ~15s ≈ 180s — well within budget.
+// 6 modules × 2 scenarios × ~15s ≈ 180s - well within budget.
 export const maxDuration = 300
 
 async function handleSimulation(req: NextRequest): Promise<NextResponse> {
@@ -48,10 +48,10 @@ async function handleSimulation(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ skipped: true, reason: 'No tenants found' })
   }
 
-  // Return immediately — simulation runs in the background.
+  // Return immediately - simulation runs in the background.
   // Results are stored in simulation_runs / simulation_results tables.
   // The AI fix report is written to docs/simulation-report.md when done.
-  const runningFor = tenantIds.slice(0, 1) // one tenant at a time — prevents Ollama overload
+  const runningFor = tenantIds.slice(0, 1) // one tenant at a time - prevents Ollama overload
 
   // Fire-and-forget: don't await, respond immediately
   Promise.resolve()
@@ -89,7 +89,7 @@ async function handleSimulation(req: NextRequest): Promise<NextResponse> {
           durationMs
         ).catch(() => {})
       }
-      console.log(`[sim-cron] Background run complete — ${durationMs}ms, ok=${allOk}`)
+      console.log(`[sim-cron] Background run complete - ${durationMs}ms, ok=${allOk}`)
     })
     .catch((err: unknown) => {
       console.error('[sim-cron] Background simulation failed:', err)

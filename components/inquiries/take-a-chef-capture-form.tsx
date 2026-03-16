@@ -1,7 +1,7 @@
 'use client'
 
 // Take a Chef Manual Capture Form
-// Structured form for logging a TakeaChef booking manually — no AI required.
+// Structured form for logging a TakeaChef booking manually - no AI required.
 // Fast for chefs who have the details in front of them and just want to get it in.
 
 import { useState } from 'react'
@@ -113,7 +113,7 @@ export function TakeAChefCaptureForm({
           <div>
             <p className="font-semibold text-green-900">Booking Captured</p>
             <p className="text-sm text-green-700 mt-0.5">
-              Client, inquiry, and draft event created — all tagged as Take a Chef
+              Client, inquiry, and draft event created - all tagged as Take a Chef
             </p>
           </div>
         </div>

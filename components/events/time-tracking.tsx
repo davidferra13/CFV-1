@@ -91,7 +91,7 @@ export function TimeTracking({
   const [driving, setDriving] = useState(initialData.time_travel_minutes?.toString() ?? '')
   const [execution, setExecution] = useState(initialData.time_service_minutes?.toString() ?? '')
 
-  // Live elapsed display — ticks every 30s while any timer is running.
+  // Live elapsed display - ticks every 30s while any timer is running.
   // Derived directly from initialData so the effect doesn't depend on activityRows.
   const [liveNow, setLiveNow] = useState(() => Date.now())
   const hasActiveTimer =

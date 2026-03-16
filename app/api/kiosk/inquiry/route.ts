@@ -1,4 +1,4 @@
-// Kiosk Inquiry Submission API — creates client + inquiry + draft event
+// Kiosk Inquiry Submission API - creates client + inquiry + draft event
 // Follows the same pattern as submitPublicInquiry but with device/staff attribution
 // Requires device token in Authorization header
 
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     const supabase: any = createAdminClient()
     const tenantId = device.tenantId
 
-    // DB-based rate limit — count recent submissions for this device
+    // DB-based rate limit - count recent submissions for this device
     const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString()
     const { count: recentCount } = await supabase
       .from('device_events')
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email or phone number is required' }, { status: 400 })
     }
 
-    // Duplicate inquiry detection — same name + date from same device within 5 min
+    // Duplicate inquiry detection - same name + date from same device within 5 min
     const dedupStart = new Date(Date.now() - DEDUP_WINDOW_MS).toISOString()
     const { count: dupeCount } = await supabase
       .from('device_events')

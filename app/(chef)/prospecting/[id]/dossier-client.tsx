@@ -316,7 +316,7 @@ export function ProspectDossierClient({
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left column — Contact & Gatekeeper Intel */}
+        {/* Left column - Contact & Gatekeeper Intel */}
         <div className="lg:col-span-1 space-y-4">
           {/* Contact Card */}
           <Card>
@@ -506,7 +506,7 @@ export function ProspectDossierClient({
           </Card>
         </div>
 
-        {/* Right column — Approach, Intelligence, Actions */}
+        {/* Right column - Approach, Intelligence, Actions */}
         <div className="lg:col-span-2 space-y-4">
           {/* Quick Call Log */}
           <Card className="border-brand-700 bg-brand-950/20">
@@ -647,7 +647,7 @@ export function ProspectDossierClient({
                   {prospect.draft_email}
                 </pre>
                 <p className="text-xs text-stone-500 mt-3 italic">
-                  AI-drafted — review and personalize before sending.
+                  AI-drafted - review and personalize before sending.
                 </p>
               </CardContent>
             </Card>
@@ -721,23 +721,23 @@ export function ProspectDossierClient({
                 if (daysSince > 30)
                   return (
                     <span className="text-red-400 font-medium ml-1">
-                      ({daysSince} days ago — stale)
+                      ({daysSince} days ago - stale)
                     </span>
                   )
                 if (daysSince > 14)
                   return (
                     <span className="text-amber-400 font-medium ml-1">
-                      ({daysSince} days ago — aging)
+                      ({daysSince} days ago - aging)
                     </span>
                   )
-                return <span className="text-green-400 ml-1">({daysSince} days ago — fresh)</span>
+                return <span className="text-green-400 ml-1">({daysSince} days ago - fresh)</span>
               })()}
             </div>
           )}
           {!prospect.last_enriched_at && (
             <div className="flex items-center gap-2 text-xs text-amber-500">
               <CalendarClock className="h-3.5 w-3.5" />
-              Never enriched — click Re-Enrich to gather web intelligence
+              Never enriched - click Re-Enrich to gather web intelligence
             </div>
           )}
 
@@ -801,7 +801,7 @@ export function ProspectDossierClient({
                   <div key={email.sequence} className="rounded-lg bg-stone-800 p-3 space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-indigo-400">
-                        Email {email.sequence} — Day {email.send_after_days}
+                        Email {email.sequence} - Day {email.send_after_days}
                       </span>
                       <button
                         type="button"
@@ -823,7 +823,7 @@ export function ProspectDossierClient({
                   </div>
                 ))}
                 <p className="text-xs text-stone-500 italic">
-                  AI-drafted sequence — review and personalize each email before sending.
+                  AI-drafted sequence - review and personalize each email before sending.
                 </p>
               </CardContent>
             </Card>

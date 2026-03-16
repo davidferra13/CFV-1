@@ -13,7 +13,7 @@ type InviteChefCardProps = {
 }
 
 /**
- * "Invite a Chef" card — shows a shareable referral link.
+ * "Invite a Chef" card - shows a shareable referral link.
  * Can be placed on the dashboard, settings, or anywhere in the chef app.
  * Uses the chef's public profile link as the share URL when available,
  * falls back to the main site URL.
@@ -23,8 +23,8 @@ export function InviteChefCard({ chefSlug, chefName }: InviteChefCardProps) {
 
   const referralUrl = `${SITE_URL}/auth/signup${chefSlug ? `?ref=${chefSlug}` : ''}`
   const shareText = chefName
-    ? `${chefName} invited you to try ChefFlow — the business OS for private chefs. Sign up free:`
-    : 'Check out ChefFlow — the business OS for private chefs. Sign up free:'
+    ? `${chefName} invited you to try ChefFlow - the business OS for private chefs. Sign up free:`
+    : 'Check out ChefFlow - the business OS for private chefs. Sign up free:'
 
   async function handleCopy() {
     try {
@@ -47,7 +47,7 @@ export function InviteChefCard({ chefSlug, chefName }: InviteChefCardProps) {
   function handleNativeShare() {
     if (navigator.share) {
       navigator.share({
-        title: 'ChefFlow — Ops for Artists',
+        title: 'ChefFlow - Ops for Artists',
         text: shareText,
         url: referralUrl,
       })

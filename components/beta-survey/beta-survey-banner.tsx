@@ -44,7 +44,7 @@ export function BetaSurveyBannerClient({
         <ClipboardList size={16} className="text-brand-400 shrink-0" />
         <p className="text-sm text-stone-200 flex-1">
           <strong className="text-brand-300">{surveyTitle}</strong>
-          {' — '}
+          {': '}
           Help us build a better ChefFlow. Takes about 3 minutes.
         </p>
         <Link

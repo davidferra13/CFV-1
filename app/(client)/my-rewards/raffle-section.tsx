@@ -35,7 +35,7 @@ export function RaffleSection({
   const [localTotal, setLocalTotal] = useState(totalEntries)
   const router = useRouter()
 
-  // Nothing to show — no active raffle and no recent draw receipt
+  // Nothing to show - no active raffle and no recent draw receipt
   if (!round && !lastDrawReceipt) return null
 
   const handleEntryEarned = (newTotal: number, alias: string) => {
@@ -103,12 +103,12 @@ export function RaffleSection({
                 <p className="text-xs text-stone-400">Total Entries</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-stone-100">{localAlias || '—'}</p>
+                <p className="text-2xl font-bold text-stone-100">{localAlias || '-'}</p>
                 <p className="text-xs text-stone-400">Your Alias</p>
               </div>
             </div>
 
-            {/* Play button — always available */}
+            {/* Play button - always available */}
             <button
               type="button"
               onClick={() => setShowGame(true)}

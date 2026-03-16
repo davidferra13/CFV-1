@@ -57,7 +57,7 @@ export default async function SharePage({ params }: { params: { token: string } 
           <Badge variant="success">{statusLabel}</Badge>
         </div>
 
-        {/* Countdown — only for upcoming events */}
+        {/* Countdown - only for upcoming events */}
         {eventData.status !== 'completed' && eventData.eventDate && (
           <EventCountdown eventDate={eventData.eventDate} serveTime={eventData.serveTime} />
         )}
@@ -280,7 +280,7 @@ export default async function SharePage({ params }: { params: { token: string } 
           </Card>
         )}
 
-        {/* Join the Hub CTA — shown after guest has RSVPed */}
+        {/* Join the Hub CTA - shown after guest has RSVPed */}
         {existingGuest?.guest_token && eventData.status !== 'completed' && (
           <div className="mb-6">
             <JoinHubCTA

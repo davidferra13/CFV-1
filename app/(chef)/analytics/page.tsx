@@ -1,5 +1,5 @@
 // Comprehensive Analytics Hub
-// All statistics tracked by ChefFlow — 9 tabs covering every business and chef metric
+// All statistics tracked by ChefFlow - 9 tabs covering every business and chef metric
 
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
@@ -101,9 +101,9 @@ export default async function AnalyticsHubPage() {
   const { start, end } = periodDates(12)
   const thisMonth = currentMonth()
 
-  // Fetch all analytics in parallel — each fetch is independent.
+  // Fetch all analytics in parallel - each fetch is independent.
   // Promise.allSettled ensures one failure doesn't crash the page.
-  // No .catch() wrappers — let allSettled handle failures so val() can
+  // No .catch() wrappers - let allSettled handle failures so val() can
   // distinguish "rejected" (load failed) from "fulfilled with zeros" (no data).
   const [
     // Overview / existing
@@ -213,7 +213,7 @@ export default async function AnalyticsHubPage() {
 
   function val<T>(result: PromiseSettledResult<T>, fallback: T): T {
     if (result.status === 'fulfilled') return result.value
-    // Log the failure — don't silently swallow it
+    // Log the failure - don't silently swallow it
     console.error('[AnalyticsHub] Fetch failed:', result.reason)
     return fallback
   }
@@ -223,7 +223,7 @@ export default async function AnalyticsHubPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Analytics Hub</h1>
         <p className="text-stone-400 mt-1">
-          Every metric that matters — business, operations, clients, marketing, social, and culinary
+          Every metric that matters - business, operations, clients, marketing, social, and culinary
         </p>
       </div>
 

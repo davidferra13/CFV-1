@@ -1,7 +1,7 @@
 'use client'
 
-// Interactive Packing List — check off items while physically packing the car
-// State is localStorage (keyed by eventId) — no server roundtrip per checkbox.
+// Interactive Packing List - check off items while physically packing the car
+// State is localStorage (keyed by eventId) - no server roundtrip per checkbox.
 // Packing happens under time pressure; we can't afford network latency.
 // Only the final "Mark Car Packed" action writes to the server.
 
@@ -23,7 +23,7 @@ type PackingListClientProps = {
   weather?: EventWeather | null
 }
 
-// ─── Weather Suggestion Logic (deterministic — Formula > AI) ─────────────────
+// ─── Weather Suggestion Logic (deterministic - Formula > AI) ─────────────────
 
 type WeatherSuggestion = {
   label: string
@@ -124,7 +124,7 @@ function ItemRow({
           : 'bg-stone-900 border border-stone-700 hover:bg-stone-800'
       }`}
     >
-      {/* Large checkbox — easy to tap on mobile */}
+      {/* Large checkbox - easy to tap on mobile */}
       <div
         className={`flex-shrink-0 w-7 h-7 rounded border-2 flex items-center justify-center mt-0.5 ${
           checked ? 'bg-green-500 border-green-500' : 'border-stone-400 bg-stone-900'
@@ -325,7 +325,7 @@ export function PackingListClient({
         } catch {
           // ignore
         }
-        // Sync to DB in background — fire-and-forget, localStorage is source of truth
+        // Sync to DB in background - fire-and-forget, localStorage is source of truth
         togglePackingConfirmation(eventId, id, newValue).catch(() => {})
         return next
       })
@@ -378,7 +378,7 @@ export function PackingListClient({
 
   return (
     <div className="space-y-4">
-      {/* Weather banner — shown only when weather data is available */}
+      {/* Weather banner - shown only when weather data is available */}
       {weather && (
         <Card className="p-4 border-sky-800 bg-sky-950/50">
           <div className="flex items-center justify-between">
@@ -406,7 +406,7 @@ export function PackingListClient({
           {weatherSuggestions.length > 0 && (
             <div className="mt-3 pt-3 border-t border-sky-800/50 space-y-2">
               <p className="text-xs font-semibold text-amber-400 uppercase tracking-wide">
-                Weather Alert — Pack These
+                Weather Alert - Pack These
               </p>
               {weatherSuggestions.map((suggestion) => (
                 <div key={suggestion.label}>
@@ -424,10 +424,10 @@ export function PackingListClient({
             </div>
           )}
 
-          {/* Clear/mild — no alerts needed */}
+          {/* Clear/mild - no alerts needed */}
           {weatherSuggestions.length === 0 && (
             <p className="mt-2 text-xs text-sky-400">
-              Great weather — standard packing should be fine.
+              Great weather - standard packing should be fine.
             </p>
           )}
         </Card>
@@ -453,7 +453,7 @@ export function PackingListClient({
 
       {/* Food sections */}
       <Section
-        title="Cooler — Cold Items"
+        title="Cooler - Cold Items"
         subtitle="Pack proteins on bottom, sauces upright. Lids secured."
         items={coldSection}
         checkedState={checked}
@@ -461,16 +461,16 @@ export function PackingListClient({
       />
 
       <Section
-        title="Cooler — Frozen (pack last)"
+        title="Cooler - Frozen (pack last)"
         subtitle="Pack on top of ice packs, last into the cooler before leaving."
         items={frozenSection}
         checkedState={checked}
         onToggle={toggle}
-        warning="PACK LAST — right before walking out the door."
+        warning="PACK LAST - right before walking out the door."
       />
 
       <Section
-        title="Dry Bag — Room Temp"
+        title="Dry Bag - Room Temp"
         subtitle="No contact with ice packs."
         items={roomTempSection}
         checkedState={checked}
@@ -478,7 +478,7 @@ export function PackingListClient({
       />
 
       <Section
-        title="Fragile — Own Container"
+        title="Fragile - Own Container"
         subtitle="Nothing stacked on top. Handle separately."
         items={fragileSection}
         checkedState={checked}
@@ -504,7 +504,7 @@ export function PackingListClient({
             {courseVerification.map(({ courseNumber, courseName, count }) => (
               <div key={courseNumber} className="flex items-center justify-between text-sm">
                 <span className="text-stone-300">
-                  Course {courseNumber} — {courseName}
+                  Course {courseNumber} - {courseName}
                 </span>
                 <span className="text-stone-500 font-medium">
                   {count} item{count !== 1 ? 's' : ''}

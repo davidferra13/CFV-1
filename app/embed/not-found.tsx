@@ -1,4 +1,4 @@
-// Friendly 404 for embed pages — shown inside iframes when chef ID is invalid
+// Friendly 404 for embed pages - shown inside iframes when chef ID is invalid
 
 export default function EmbedNotFound() {
   return (

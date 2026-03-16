@@ -1,4 +1,4 @@
-// Shift Report — displays register session summary after closing
+// Shift Report - displays register session summary after closing
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'

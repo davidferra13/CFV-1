@@ -1,4 +1,4 @@
-// Partner Portal Layout — server-side auth guard + sidebar wrapper.
+// Partner Portal Layout - server-side auth guard + sidebar wrapper.
 // requirePartner() throws if the user is not an authenticated partner,
 // causing a redirect to the sign-in page.
 

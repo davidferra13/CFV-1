@@ -1,6 +1,6 @@
 'use client'
 
-// CelebrationModal — Milestone celebration overlay.
+// CelebrationModal - Milestone celebration overlay.
 // Fires on key achievements: first client, first event completed, first payment.
 // Uses localStorage to track "already celebrated" state (never shows twice).
 // Pure client-side, no server interaction.
@@ -28,13 +28,13 @@ const MILESTONE_CONTENT: Record<
     emoji: '🎉',
     title: 'Your first client!',
     message:
-      "You just added your first client. Build that relationship — it's the foundation of everything.",
+      "You just added your first client. Build that relationship - it's the foundation of everything.",
   },
   first_event_completed: {
     emoji: '✅',
     title: 'First event complete!',
     message:
-      'You did it — your first event is in the books. The ledger is updated, the timeline is locked. On to the next one.',
+      'You did it - your first event is in the books. The ledger is updated, the timeline is locked. On to the next one.',
   },
   first_payment_received: {
     emoji: '💰',
@@ -44,7 +44,7 @@ const MILESTONE_CONTENT: Record<
   first_inquiry: {
     emoji: '📬',
     title: 'First inquiry logged!',
-    message: 'A lead is in the system. Work your pipeline — every client starts here.',
+    message: 'A lead is in the system. Work your pipeline - every client starts here.',
   },
   first_quote_sent: {
     emoji: '📋',
@@ -67,7 +67,7 @@ export function CelebrationModal({ milestone, shouldCelebrate }: Props) {
       if (localStorage.getItem(key)) return // already celebrated
       localStorage.setItem(key, '1')
     } catch {
-      // localStorage unavailable — still show once this session
+      // localStorage unavailable - still show once this session
     }
 
     // Small delay so the page data has settled before the modal pops

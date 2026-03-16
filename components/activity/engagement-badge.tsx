@@ -1,4 +1,4 @@
-// EngagementBadge — Small intent badge for surfacing client engagement level.
+// EngagementBadge - Small intent badge for surfacing client engagement level.
 // Shows HOT / WARM / COLD based on recent portal activity score.
 // Renders nothing when level is 'none'.
 

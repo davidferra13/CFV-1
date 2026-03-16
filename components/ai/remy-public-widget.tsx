@@ -1,6 +1,6 @@
 'use client'
 
-// Remy — Public Chat Widget
+// Remy - Public Chat Widget
 // Lightweight inline chat for public-facing pages (no auth required).
 // Compact design: floating button → expandable card (not a full drawer).
 
@@ -18,7 +18,7 @@ interface Message {
 }
 
 interface RemyPublicWidgetProps {
-  /** The chef's tenant ID — required to load public context */
+  /** The chef's tenant ID - required to load public context */
   tenantId: string
   /** Optional chef name for the greeting */
   chefName?: string
@@ -128,7 +128,7 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
       }
     } catch (err: any) {
       if (err?.name !== 'AbortError') {
-        setError("Couldn't reach Remy — try again in a moment.")
+        setError("Couldn't reach Remy - try again in a moment.")
       }
     } finally {
       setIsStreaming(false)

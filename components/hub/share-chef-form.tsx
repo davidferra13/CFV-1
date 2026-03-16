@@ -166,7 +166,7 @@ export function ShareChefForm({
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Add a note (optional) — e.g. 'They made the best pasta for my birthday!'"
+                placeholder="Add a note (optional) - e.g. 'They made the best pasta for my birthday!'"
                 rows={2}
                 className="w-full rounded-lg border border-stone-700 bg-stone-800 px-4 py-2.5 text-sm text-stone-100 placeholder-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
                 maxLength={500}

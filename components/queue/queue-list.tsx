@@ -1,4 +1,4 @@
-// Queue List — Client component with filtering state
+// Queue List - Client component with filtering state
 // Receives server-rendered items, filters client-side.
 
 'use client'

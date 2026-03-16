@@ -1,6 +1,6 @@
 'use client'
 
-// RedemptionCodeInput — Shown on the event payment page
+// RedemptionCodeInput - Shown on the event payment page
 // Lets clients enter a gift card or voucher code to apply a credit before paying.
 // Call sequence:
 //   1. validateIncentiveCode() for preview (no writes)
@@ -91,7 +91,7 @@ export function RedemptionCodeInput({
           </svg>
           <div>
             <span className="text-sm font-medium text-green-800">
-              {code.toUpperCase()} applied — {formatCurrency(validation.appliedCents)} credit
+              {code.toUpperCase()} applied - {formatCurrency(validation.appliedCents)} credit
             </span>
             {validation.remainingCents !== null && validation.remainingCents > 0 && (
               <span className="text-xs text-emerald-600 ml-2">
@@ -182,7 +182,7 @@ export function RedemptionCodeInput({
           {validation.status === 'valid' && (
             <div className="bg-stone-800 rounded-lg px-4 py-3 border border-stone-700">
               <p className="text-sm font-medium text-stone-100">
-                {code.toUpperCase()} — {formatCurrency(validation.appliedCents)} will be applied
+                {code.toUpperCase()} - {formatCurrency(validation.appliedCents)} will be applied
               </p>
               {validation.remainingCents !== null && (
                 <p className="text-xs text-stone-500 mt-0.5">

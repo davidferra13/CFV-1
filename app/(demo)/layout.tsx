@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 
 export default function DemoLayout({ children }: { children: React.ReactNode }) {
-  // Hard gate — only renders when DEMO_MODE_ENABLED=true
+  // Hard gate - only renders when DEMO_MODE_ENABLED=true
   if (process.env.DEMO_MODE_ENABLED !== 'true') {
     notFound()
   }

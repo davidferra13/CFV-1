@@ -38,7 +38,7 @@ function RoleSelectionContent() {
       router.push(destination)
       router.refresh()
     } catch (err) {
-      // Re-throw redirect errors — these are intentional navigations from redirect()
+      // Re-throw redirect errors - these are intentional navigations from redirect()
       if (isRedirectError(err)) throw err
       const error = err as Error
       setError(error.message)

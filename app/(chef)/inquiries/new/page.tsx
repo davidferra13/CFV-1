@@ -1,6 +1,6 @@
-// Quick Capture — Log a new inquiry fast
+// Quick Capture - Log a new inquiry fast
 // Only channel + client name required. Everything else optional.
-// The chef is logging this between tasks — friction kills adoption.
+// The chef is logging this between tasks - friction kills adoption.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'

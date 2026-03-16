@@ -7,7 +7,7 @@ import { CulinaryBoard } from '@/components/culinary/culinary-board'
 export const metadata: Metadata = {
   title: 'Culinary Board - ChefFlow',
   description:
-    'The ultimate culinary composition cheat sheet — every word to inspire your next dish.',
+    'The ultimate culinary composition cheat sheet - every word to inspire your next dish.',
 }
 
 /** Google Fonts for the artistic board view (handwritten chalk styles) */

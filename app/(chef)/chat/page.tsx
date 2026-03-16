@@ -1,4 +1,4 @@
-// Chef Chat Inbox — Real-time messaging with clients
+// Chef Chat Inbox - Real-time messaging with clients
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'

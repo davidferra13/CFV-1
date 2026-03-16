@@ -752,7 +752,7 @@ export function ControlPacketClient({
                 {(activeSnapshot.seating_snapshot ?? []).map((seat: any) => (
                   <tr key={String(seat.seatId)} className="border-t border-[#1e3520]">
                     <td className="px-2 py-2 text-[#d2e8d4]">{String(seat.seatId ?? '')}</td>
-                    <td className="px-2 py-2 text-[#d2e8d4]">{String(seat.guestName ?? '—')}</td>
+                    <td className="px-2 py-2 text-[#d2e8d4]">{String(seat.guestName ?? '-')}</td>
                     <td className="px-2 py-2 text-[#8ebf92]">
                       {String(seat.participationStatus ?? '')}
                     </td>
@@ -859,7 +859,7 @@ export function ControlPacketClient({
                       key={`${row.seatId}-${row.guestName}`}
                       className="border-t border-[#1e3520]"
                     >
-                      <td className="px-2 py-2 text-[#8ebf92]">{row.seatId || '—'}</td>
+                      <td className="px-2 py-2 text-[#8ebf92]">{row.seatId || '-'}</td>
                       <td className="px-2 py-2 text-[#d2e8d4]">{row.guestName}</td>
                       <td className="px-2 py-2">
                         <input

@@ -1,4 +1,4 @@
-// Finance Loading Skeleton — shown instantly when navigating to /finance
+// Finance Loading Skeleton - shown instantly when navigating to /finance
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ContextLoader } from '@/components/ui/context-loader'
 

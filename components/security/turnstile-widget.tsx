@@ -27,9 +27,9 @@ declare global {
 interface TurnstileWidgetProps {
   /** Called when Turnstile verification succeeds with the token */
   onVerify: (token: string) => void
-  /** Called when the token expires — form should clear the stored token */
+  /** Called when the token expires - form should clear the stored token */
   onExpire?: () => void
-  /** Called on Turnstile error — non-blocking, form can still submit */
+  /** Called on Turnstile error - non-blocking, form can still submit */
   onError?: () => void
   /** Theme for the invisible badge (does not render visibly in invisible mode) */
   theme?: 'light' | 'dark' | 'auto'
@@ -66,8 +66,8 @@ function loadTurnstileScript(): Promise<void> {
 
     script.onerror = () => {
       scriptLoading = false
-      console.warn('[turnstile] Failed to load Turnstile script — widget will be inactive')
-      resolve() // Don't reject — graceful degradation
+      console.warn('[turnstile] Failed to load Turnstile script - widget will be inactive')
+      resolve() // Don't reject - graceful degradation
     }
 
     document.head.appendChild(script)
@@ -77,7 +77,7 @@ function loadTurnstileScript(): Promise<void> {
 /**
  * Invisible Cloudflare Turnstile CAPTCHA widget.
  *
- * Renders nothing visible — the widget runs in the background and calls
+ * Renders nothing visible - the widget runs in the background and calls
  * onVerify with a token when the challenge is passed.
  *
  * If NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set, this component renders
@@ -124,7 +124,7 @@ export function TurnstileWidget({
       try {
         window.turnstile.remove(widgetIdRef.current)
       } catch {
-        // Ignore — widget may already be removed
+        // Ignore - widget may already be removed
       }
       widgetIdRef.current = null
     }
@@ -167,7 +167,7 @@ export function TurnstileWidget({
     }
   }, [initWidget])
 
-  // If no site key, render nothing — graceful degradation
+  // If no site key, render nothing - graceful degradation
   if (!siteKey) return null
 
   // The container div is required by Turnstile but renders nothing visible in invisible mode

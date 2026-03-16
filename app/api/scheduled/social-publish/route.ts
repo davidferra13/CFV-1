@@ -1,5 +1,5 @@
 // POST /api/scheduled/social-publish
-// Vercel Cron Job — fires every 5 minutes.
+// Vercel Cron Job - fires every 5 minutes.
 // Delegates to the publishing engine which queries queued posts and fires each adapter.
 // Secured with CRON_SECRET (Vercel injects Authorization: Bearer <secret>).
 

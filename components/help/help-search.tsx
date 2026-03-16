@@ -1,6 +1,6 @@
 'use client'
 
-// HelpSearch — Inline search over a static article list.
+// HelpSearch - Inline search over a static article list.
 // Shows dropdown results as user types. No external API calls.
 
 import { useState } from 'react'

@@ -1,4 +1,4 @@
-// Staff Shift Controls — Check-in / Check-out for a station
+// Staff Shift Controls - Check-in / Check-out for a station
 'use client'
 
 import { useState } from 'react'

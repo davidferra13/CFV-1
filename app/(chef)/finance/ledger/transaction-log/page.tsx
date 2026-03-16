@@ -119,14 +119,14 @@ export default async function TransactionLogPage() {
                         {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm max-w-xs truncate">
                     {entry.description}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm capitalize">
-                    {entry.payment_method?.replace(/_/g, ' ') ?? '—'}
+                    {entry.payment_method?.replace(/_/g, ' ') ?? '-'}
                   </TableCell>
                   <TableCell
                     className={`text-sm font-semibold ${entry.is_refund ? 'text-red-600' : 'text-green-700'}`}

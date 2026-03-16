@@ -1,6 +1,6 @@
 'use client'
 
-// Quick Debrief Prompt — 3-question card that appears on recently-completed events
+// Quick Debrief Prompt - 3-question card that appears on recently-completed events
 // before the chef files a full AAR. Captures immediate impressions while fresh.
 // Submits to the AAR create action with partial data.
 
@@ -39,7 +39,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
         preparation_rating: energyRating, // Rough proxy
         what_went_well: wentWell || undefined,
         would_do_differently: doDifferently || undefined,
-        general_notes: 'Quick debrief — file full AAR later',
+        general_notes: 'Quick debrief - file full AAR later',
       })
       setStep('done')
     } catch {
@@ -65,7 +65,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
     <div className="rounded-lg border border-amber-200 bg-amber-950 p-4">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <p className="text-sm font-semibold text-amber-900">Quick Debrief — while it's fresh</p>
+          <p className="text-sm font-semibold text-amber-900">Quick Debrief - while it's fresh</p>
           <p className="text-xs text-amber-700 mt-0.5">3 quick questions before you move on.</p>
         </div>
         <button

@@ -424,7 +424,7 @@ export function SmartImportHub({
         </Alert>
       )}
 
-      {/* CUSTOM COMPONENT MODES — CSV and Past Events handle their own full flow */}
+      {/* CUSTOM COMPONENT MODES - CSV and Past Events handle their own full flow */}
       {isCustomMode && mode === 'csv' && <CsvImport />}
       {isCustomMode && mode === 'past-events' && (
         <PastEventsImport existingClients={existingClients} />
@@ -432,7 +432,7 @@ export function SmartImportHub({
       {isCustomMode && mode === 'take-a-chef' && <TakeAChefImport aiConfigured={aiConfigured} />}
       {isCustomMode && mode === 'inquiries' && <InquiryImport aiConfigured={aiConfigured} />}
 
-      {/* INPUT PHASE — AI-driven modes only */}
+      {/* INPUT PHASE - AI-driven modes only */}
       {!isCustomMode && (phase === 'input' || phase === 'parsing') && (
         <div className="space-y-4">
           {/* Text input for text-based modes */}
@@ -488,12 +488,12 @@ export function SmartImportHub({
         </div>
       )}
 
-      {/* REVIEW PHASE — AI-driven modes only */}
+      {/* REVIEW PHASE - AI-driven modes only */}
       {!isCustomMode && phase === 'review' && (
         <div className="space-y-6">
           {/* AI Extraction Notice */}
           <Alert variant="info" title="Here's what we found">
-            This was extracted automatically — review it below before saving.
+            This was extracted automatically - review it below before saving.
           </Alert>
 
           {/* Parse Summary */}
@@ -615,7 +615,7 @@ export function SmartImportHub({
                 className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
               />
               <span className="text-sm text-stone-300">
-                Everything looks right — save this data
+                Everything looks right - save this data
               </span>
             </label>
           )}
@@ -647,7 +647,7 @@ export function SmartImportHub({
         </div>
       )}
 
-      {/* SAVING PHASE — AI-driven modes only */}
+      {/* SAVING PHASE - AI-driven modes only */}
       {!isCustomMode && phase === 'saving' && (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mb-4" />
@@ -655,7 +655,7 @@ export function SmartImportHub({
         </div>
       )}
 
-      {/* DONE PHASE — AI-driven modes only */}
+      {/* DONE PHASE - AI-driven modes only */}
       {!isCustomMode && phase === 'done' && (
         <div className="space-y-4">
           <Alert variant="success" title="All saved">

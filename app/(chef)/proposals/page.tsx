@@ -1,4 +1,4 @@
-// Proposals Hub — Manage proposal templates and add-ons
+// Proposals Hub - Manage proposal templates and add-ons
 // Links to template builder and add-on library
 
 import type { Metadata } from 'next'

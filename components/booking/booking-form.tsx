@@ -1,6 +1,6 @@
 'use client'
 
-// BookingForm — public booking form for the chef booking page.
+// BookingForm - public booking form for the chef booking page.
 // Dual-mode: inquiry-first (submit inquiry) or instant-book (pay deposit via Stripe Checkout).
 
 import { useState, useMemo, useEffect } from 'react'

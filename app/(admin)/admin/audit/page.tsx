@@ -1,4 +1,4 @@
-// Admin Audit Log — immutable record of sensitive platform actions
+// Admin Audit Log - immutable record of sensitive platform actions
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformAuditLog } from '@/lib/admin/platform-stats'
@@ -70,22 +70,22 @@ export default async function AdminAuditPage() {
                 {entries.map((entry) => (
                   <tr key={String(entry.id)} className="hover:bg-slate-50">
                     <td className="px-4 py-2.5 text-xs text-slate-400 whitespace-nowrap">
-                      {entry.ts ? new Date(String(entry.ts)).toLocaleString() : '—'}
+                      {entry.ts ? new Date(String(entry.ts)).toLocaleString() : '-'}
                     </td>
                     <td className="px-4 py-2.5 text-xs text-stone-400">
-                      {String(entry.actor_email ?? '—')}
+                      {String(entry.actor_email ?? '-')}
                     </td>
                     <td className="px-4 py-2.5">
                       <span className="text-xs font-medium text-stone-300 bg-stone-800 px-1.5 py-0.5 rounded font-mono">
-                        {String(entry.action_type ?? '—')}
+                        {String(entry.action_type ?? '-')}
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-xs text-slate-400">
                       {entry.target_type ? `${entry.target_type}: ` : ''}
-                      {entry.target_id ? String(entry.target_id).slice(0, 12) + '…' : '—'}
+                      {entry.target_id ? String(entry.target_id).slice(0, 12) + '…' : '-'}
                     </td>
                     <td className="px-4 py-2.5 text-xs text-slate-400 max-w-[200px] truncate">
-                      {entry.details ? JSON.stringify(entry.details) : '—'}
+                      {entry.details ? JSON.stringify(entry.details) : '-'}
                     </td>
                   </tr>
                 ))}

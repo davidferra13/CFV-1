@@ -1,6 +1,6 @@
 'use client'
 
-// Clipboard Print — Print-friendly layout for daily clipboard
+// Clipboard Print - Print-friendly layout for daily clipboard
 // Clean table layout with no interactive elements. Uses @media print CSS.
 
 type ClipboardEntry = {
@@ -63,7 +63,7 @@ export function ClipboardPrint({ stationName, date, entries }: Props) {
         {/* Header */}
         <div className="text-center mb-6 border-b-2 border-black pb-4">
           <h1 className="text-2xl font-bold">{stationName}</h1>
-          <p className="text-sm text-gray-600 mt-1">Daily Clipboard — {date}</p>
+          <p className="text-sm text-gray-600 mt-1">Daily Clipboard - {date}</p>
           <p className="text-xs text-gray-400 mt-1">Printed {new Date().toLocaleString()}</p>
         </div>
 
@@ -156,7 +156,7 @@ export function ClipboardPrint({ stationName, date, entries }: Props) {
 
         {/* Footer */}
         <div className="mt-8 border-t border-gray-300 pt-4 text-xs text-gray-400 text-center">
-          ChefFlow Station Clipboard — {stationName} — {date}
+          ChefFlow Station Clipboard - {stationName} - {date}
         </div>
       </div>
     </div>

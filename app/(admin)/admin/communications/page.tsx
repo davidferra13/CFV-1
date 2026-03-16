@@ -1,4 +1,4 @@
-// Admin Communications — Platform announcements and direct email
+// Admin Communications - Platform announcements and direct email
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getAnnouncement, type AnnouncementType } from '@/lib/admin/platform-actions'

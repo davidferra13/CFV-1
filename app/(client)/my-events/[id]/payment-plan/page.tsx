@@ -1,4 +1,4 @@
-// Payment Plan — Client-facing installment schedule calculator
+// Payment Plan - Client-facing installment schedule calculator
 // Shows the event total, payment milestones, and allows plan selection
 
 import type { Metadata } from 'next'

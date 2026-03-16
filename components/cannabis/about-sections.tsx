@@ -1,6 +1,6 @@
 'use client'
 
-// Cannabis Portal — About Page Components
+// Cannabis Portal - About Page Components
 // Collapsible accordion sections, styled tables, timeline, feature status badges.
 // All themed to the dark green cannabis aesthetic.
 
@@ -144,7 +144,7 @@ export function AboutMemberTable({ members }: { members: MemberRow[] }) {
                 {m.name}
               </td>
               <td className="px-3 py-2" style={{ color: '#6aaa6e' }}>
-                {m.organization || '—'}
+                {m.organization || '-'}
               </td>
               <td className="px-3 py-2 text-xs" style={{ color: '#4a7c4e' }}>
                 {m.seat}

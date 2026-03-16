@@ -1,4 +1,4 @@
-// Event-Sale Bridge — shows linked commerce sale on event detail page
+// Event-Sale Bridge - shows linked commerce sale on event detail page
 'use client'
 
 import { useState, useTransition } from 'react'

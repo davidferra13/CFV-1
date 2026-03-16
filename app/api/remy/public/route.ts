@@ -1,6 +1,6 @@
-// Remy — Public Layer Streaming API
-// UNAUTHENTICATED — for visitors on public-facing pages.
-// Rate-limited per IP. No PII involved — could use cloud model,
+// Remy - Public Layer Streaming API
+// UNAUTHENTICATED - for visitors on public-facing pages.
+// Rate-limited per IP. No PII involved - could use cloud model,
 // but uses Ollama for consistency.
 
 import { NextRequest } from 'next/server'
@@ -50,7 +50,7 @@ function buildPublicSystemPrompt(contextBlock: string): string {
 
   parts.push(`\nRESPONSE FORMAT:
 Write your reply in natural language with markdown formatting (bold, bullets, etc.).
-Keep responses concise — 1-3 paragraphs max.
+Keep responses concise - 1-3 paragraphs max.
 When relevant, suggest the visitor submit an inquiry or visit the booking page.`)
 
   return parts.join('\n')
@@ -77,14 +77,14 @@ export async function POST(req: NextRequest) {
       req.headers.get('x-real-ip') ||
       'unknown'
 
-    // Rate limit check (Redis-backed — survives serverless cold starts)
+    // Rate limit check (Redis-backed - survives serverless cold starts)
     try {
       await checkRateLimit(`remy-public:${ip}`, 5, 60_000)
     } catch {
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm getting a lot of messages — give me a moment to catch up! Try again in about a minute.",
+          data: "I'm getting a lot of messages - give me a moment to catch up! Try again in about a minute.",
         }),
         { headers: sseHeaders() }
       )
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     const validated = validateRemyRequestBody(rawBody)
     if (!validated) {
       return new Response(
-        encodeSSE({ type: 'error', data: 'Invalid request — please try again.' }),
+        encodeSSE({ type: 'error', data: 'Invalid request - please try again.' }),
         { headers: sseHeaders() }
       )
     }
@@ -104,18 +104,18 @@ export async function POST(req: NextRequest) {
     // Validate tenant ID
     if (!tenantId) {
       return new Response(
-        encodeSSE({ type: 'error', data: 'Configuration error — please refresh the page.' }),
+        encodeSSE({ type: 'error', data: 'Configuration error - please refresh the page.' }),
         { headers: sseHeaders() }
       )
     }
 
-    // Input validation (reuse guardrails — same dangerous content checks)
+    // Input validation (reuse guardrails - same dangerous content checks)
     const inputCheck = validateRemyInput(message)
     if (!inputCheck.allowed) {
       // Use public-appropriate refusal
       const publicRefusal =
         inputCheck.category === 'dangerous_content' || inputCheck.category === 'abuse'
-          ? "I'm here to help with food and events — let's keep it on topic!"
+          ? "I'm here to help with food and events - let's keep it on topic!"
           : inputCheck.refusal
       return new Response(encodeSSE({ type: 'error', data: publicRefusal }), {
         headers: sseHeaders(),
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm taking a quick break — check back in a few minutes!",
+          data: "I'm taking a quick break - check back in a few minutes!",
         }),
         { headers: sseHeaders() }
       )
@@ -185,7 +185,7 @@ export async function POST(req: NextRequest) {
               encoder.encode(
                 encodeSSE({
                   type: 'error',
-                  data: 'Response took too long — try a shorter question!',
+                  data: 'Response took too long - try a shorter question!',
                 })
               )
             )
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
               encoder.encode(
                 encodeSSE({
                   type: 'error',
-                  data: "Something went wrong — I'll be back shortly!",
+                  data: "Something went wrong - I'll be back shortly!",
                 })
               )
             )
@@ -213,7 +213,7 @@ export async function POST(req: NextRequest) {
     return new Response(
       encodeSSE({
         type: 'error',
-        data: 'Something went wrong — please try again!',
+        data: 'Something went wrong - please try again!',
       }),
       { headers: sseHeaders() }
     )

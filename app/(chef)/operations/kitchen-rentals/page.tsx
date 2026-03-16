@@ -9,7 +9,7 @@ import { format } from 'date-fns'
 import { KitchenRentalForm } from './kitchen-rental-form'
 import { DeleteKitchenRentalButton } from './delete-kitchen-rental-button'
 
-export const metadata: Metadata = { title: 'Kitchen Rentals — ChefFlow' }
+export const metadata: Metadata = { title: 'Kitchen Rentals | ChefFlow' }
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`
@@ -27,7 +27,7 @@ export default async function KitchenRentalsPage() {
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Kitchen Rentals</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Track commercial kitchen bookings — hours, costs, and event linkages.
+          Track commercial kitchen bookings - hours, costs, and event linkages.
         </p>
       </div>
 

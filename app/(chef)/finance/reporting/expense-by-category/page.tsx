@@ -110,7 +110,7 @@ export default async function ExpenseByCategoryPage() {
                           <TableCell className="text-stone-500 text-sm">
                             {totalSpend > 0
                               ? `${Math.round((cat.total / totalSpend) * 100)}%`
-                              : '—'}
+                              : '-'}
                           </TableCell>
                         </TableRow>
                       ))}

@@ -28,7 +28,7 @@ interface RemyMascotButtonProps {
   viseme?: Viseme
   /** Whether Remy is currently speaking (lip-sync active) */
   isSpeaking?: boolean
-  /** Current emotion — passed to talking avatar for rest-state face */
+  /** Current emotion - passed to talking avatar for rest-state face */
   emotion?: RemyEmotion
   /** Whether Remy is minimized (only chef hat peeks out) */
   minimized?: boolean
@@ -36,7 +36,7 @@ interface RemyMascotButtonProps {
   onToggleMinimize?: () => void
   /** Called when a non-looping body animation completes */
   onAnimComplete?: () => void
-  /** Proactive nudge message — overrides the hover greeting SpeechBubble */
+  /** Proactive nudge message - overrides the hover greeting SpeechBubble */
   nudgeMessage?: string | null
   /** Called when the user dismisses a nudge */
   onDismissNudge?: () => void
@@ -49,7 +49,7 @@ interface RemyMascotButtonProps {
   /** Allow sleep-state hat-only rendering */
   allowSleepHat?: boolean
 
-  // Legacy compat — mapped internally
+  // Legacy compat - mapped internally
   state?: 'idle' | 'thinking' | 'success' | 'nudge' | 'sleeping'
 }
 
@@ -191,7 +191,7 @@ export function RemyMascotButton({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Minimize/restore toggle — shows on hover */}
+      {/* Minimize/restore toggle - shows on hover */}
       {isHovered && (
         <div className="absolute -top-2 -right-2 z-10 flex items-center gap-1">
           {!minimized && onToggleMinimize && (
@@ -238,12 +238,12 @@ export function RemyMascotButton({
         {/* Thinking bubble */}
         {!minimized && effectiveBodyState === 'thinking' && <ThinkingBubble />}
 
-        {/* Nudge speech bubble — proactive, takes priority over hover greeting */}
+        {/* Nudge speech bubble - proactive, takes priority over hover greeting */}
         {!minimized && nudgeMessage && effectiveBodyState === 'nudge' && (
           <SpeechBubble text={nudgeMessage} onClick={onDismissNudge} />
         )}
 
-        {/* Speech bubble (hover, once per session) — hidden when nudge is active */}
+        {/* Speech bubble (hover, once per session) - hidden when nudge is active */}
         {!minimized &&
           !nudgeMessage &&
           showSpeechBubble &&
@@ -295,7 +295,7 @@ export function RemyMascotButton({
   )
 }
 
-/** Thinking bubble — animated ••• dots in a small cloud */
+/** Thinking bubble - animated ••• dots in a small cloud */
 function ThinkingBubble() {
   return (
     <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full bg-white px-3 py-1.5 shadow-lg animate-fade-slide-up">
@@ -318,7 +318,7 @@ function ThinkingBubble() {
   )
 }
 
-/** Speech bubble — small tooltip with greeting or nudge text */
+/** Speech bubble - small tooltip with greeting or nudge text */
 function SpeechBubble({ text, onClick }: { text: string; onClick?: () => void }) {
   return (
     <div

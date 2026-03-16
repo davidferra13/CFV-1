@@ -1,4 +1,4 @@
-// RemySummary — Remy's conversational daily summary at the top of the Daily Ops page.
+// RemySummary - Remy's conversational daily summary at the top of the Daily Ops page.
 
 import { Bot } from '@/components/ui/icons'
 

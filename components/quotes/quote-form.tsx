@@ -1,4 +1,4 @@
-// Quote Form — Create or edit a quote
+// Quote Form - Create or edit a quote
 // Supports pre-filling from inquiry data and showing client pricing history
 'use client'
 
@@ -97,7 +97,7 @@ type QuoteFormProps = {
   clients: Client[]
   pricingHistory?: PricingHistoryEntry[]
   pricingSuggestion?: PricingSuggestion | null
-  /** GOLDMINE benchmark fallback — shown when chef has no pricing history */
+  /** GOLDMINE benchmark fallback - shown when chef has no pricing history */
   benchmarkHint?: string | null
   prefilledClientId?: string
   prefilledInquiryId?: string
@@ -644,7 +644,7 @@ export function QuoteForm({
         }
         const result = mutationResult.result as any
         if (result.success) {
-          trackAction('Updated quote', `$${totalAmount} — ${quoteName || pricingModel}`)
+          trackAction('Updated quote', `$${totalAmount} - ${quoteName || pricingModel}`)
           setCommittedFormData(currentFormData)
           await durableDraft.clearDraft()
           router.push(`/quotes/${existingQuote.id}`)
@@ -674,7 +674,7 @@ export function QuoteForm({
         }
         const result = mutationResult.result as any
         if (result.success && result.quote) {
-          trackAction('Created quote', `$${totalAmount} — ${quoteName || pricingModel}`)
+          trackAction('Created quote', `$${totalAmount} - ${quoteName || pricingModel}`)
           setCommittedFormData(currentFormData)
           await durableDraft.clearDraft()
           router.push(`/quotes/${result.quote.id}`)
@@ -874,7 +874,7 @@ export function QuoteForm({
             <div className="space-y-1.5">
               {!guestCount || parseInt(guestCount) <= 0 ? (
                 <p className="text-xs text-amber-700 bg-amber-950 border border-amber-200 rounded px-2 py-1">
-                  Fill in &ldquo;Number of Guests&rdquo; in the main form first — the calculator
+                  Fill in &ldquo;Number of Guests&rdquo; in the main form first - the calculator
                   uses that count.
                 </p>
               ) : (
@@ -900,7 +900,7 @@ export function QuoteForm({
               <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-2">
                 {calcResult.requiresCustomPricing ? (
                   <p className="text-sm text-amber-700 font-medium">
-                    Requires custom pricing — use the notes fields below.
+                    Requires custom pricing - use the notes fields below.
                   </p>
                 ) : (
                   <>
@@ -1112,7 +1112,7 @@ export function QuoteForm({
               </div>
             )}
 
-            {/* Menu Food Cost hint — informational only, chef sets the price */}
+            {/* Menu Food Cost hint - informational only, chef sets the price */}
             {menuCost && (
               <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-800">
                 <div className="p-3 space-y-2">
@@ -1189,10 +1189,10 @@ export function QuoteForm({
                   const isAboveMedian = enteredCents >= medianCents
                   const isAboveMin = enteredCents >= minCents
                   const label = isAboveMedian
-                    ? 'Above median — strong pricing'
+                    ? 'Above median - strong pricing'
                     : isAboveMin
-                      ? 'Below median — consider increasing'
-                      : 'Below typical minimum — check pricing'
+                      ? 'Below median - consider increasing'
+                      : 'Below typical minimum - check pricing'
                   const colorClass = isAboveMedian
                     ? 'text-emerald-600'
                     : isAboveMin

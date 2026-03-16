@@ -1,6 +1,6 @@
 'use client'
 
-// Admin Feature Flag Toggle Panel — interactive toggle controls per chef
+// Admin Feature Flag Toggle Panel - interactive toggle controls per chef
 // Server action (toggleChefFlag) is called on each click.
 
 import { useState, useTransition } from 'react'

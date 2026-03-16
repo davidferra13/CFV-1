@@ -146,7 +146,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-      {/* Form — left (3/5) */}
+      {/* Form - left (3/5) */}
       <div className="lg:col-span-3 space-y-5">
         <Card>
           <CardHeader>
@@ -320,7 +320,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
         </Card>
       </div>
 
-      {/* Recipe list — right (2/5) */}
+      {/* Recipe list - right (2/5) */}
       <div className="lg:col-span-2 space-y-4">
         <Card>
           <CardHeader>
@@ -332,7 +332,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
           <CardContent>
             {recipes.length === 0 ? (
               <p className="text-sm text-stone-400 text-center py-6">
-                No recipes yet — add your first one.
+                No recipes yet - add your first one.
               </p>
             ) : (
               <ul className="divide-y divide-stone-800 max-h-96 overflow-y-auto">

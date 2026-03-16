@@ -1,4 +1,4 @@
-// Inbox Item Card — Renders a single unified inbox item
+// Inbox Item Card - Renders a single unified inbox item
 // Different visual treatments per source type.
 import Link from 'next/link'
 import type { UnifiedInboxItem } from '@/lib/inbox/types'

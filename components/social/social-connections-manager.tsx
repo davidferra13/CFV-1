@@ -118,7 +118,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
         // Hard-reload so the server re-fetches the connections list
         window.location.reload()
       } else {
-        alert('Disconnect failed — please try again.')
+        alert('Disconnect failed - please try again.')
       }
     } finally {
       setDisconnecting(null)
@@ -131,7 +131,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
       <div className="bg-brand-950 border border-brand-100 rounded-xl px-5 py-4">
         <h3 className="font-semibold text-brand-200 mb-1">How platform connections work</h3>
         <p className="text-sm text-brand-400 leading-relaxed">
-          Connect your accounts once with a secure OAuth flow — ChefFlow never stores your password.
+          Connect your accounts once with a secure OAuth flow - ChefFlow never stores your password.
           Once connected, posts you mark as <strong>Queued</strong> will automatically publish at
           their scheduled time. You can disconnect any platform at any time.
         </p>

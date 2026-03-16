@@ -1,4 +1,4 @@
-// Staff Tasks View — Tasks assigned to this staff member, grouped by date
+// Staff Tasks View - Tasks assigned to this staff member, grouped by date
 // Allows checking off tasks as done using the completeMyTask action.
 
 import type { Metadata } from 'next'

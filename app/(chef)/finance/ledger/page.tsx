@@ -37,7 +37,7 @@ export default async function LedgerPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Ledger</h1>
         <p className="text-stone-500 mt-1">
-          Immutable, append-only financial record — the source of truth for all balances
+          Immutable, append-only financial record - the source of truth for all balances
         </p>
       </div>
 

@@ -55,7 +55,7 @@ export async function IntelligenceSummaryCard() {
               </p>
             )}
             {totalAlerts === 0 && (
-              <p className="text-muted-foreground">All clear — view full intelligence dashboard</p>
+              <p className="text-muted-foreground">All clear - view full intelligence dashboard</p>
             )}
           </div>
         </CardContent>

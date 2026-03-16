@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * LedgerExplainerPlayer — Remotion Player wrapper for the ledger animation.
+ * LedgerExplainerPlayer - Remotion Player wrapper for the ledger animation.
  * Shows the append-only ledger with running totals and profit breakdown.
  */
 

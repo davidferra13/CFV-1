@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AI & Privacy — Settings page (Trust Center).
+ * AI & Privacy - Settings page (Trust Center).
  *
  * If the user hasn't completed onboarding, shows the onboarding wizard.
  * Otherwise shows the Trust Center with:
@@ -157,14 +157,14 @@ export default function AiPrivacyPage() {
         </div>
         <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
           <p>
-            Remy runs on ChefFlow&apos;s private AI infrastructure — not OpenAI, not Google, not any
+            Remy runs on ChefFlow&apos;s private AI infrastructure - not OpenAI, not Google, not any
             third-party cloud AI service. When you talk to Remy, your conversation is processed on
             our private servers and the response is sent back to you.
           </p>
           <p>
             We don&apos;t store what you say or what Remy says. Your conversation history lives in
             your browser, on your device. If you switch browsers or clear your browser data, your
-            conversation history goes with it — because it was never on our servers to begin with.
+            conversation history goes with it - because it was never on our servers to begin with.
           </p>
         </div>
       </div>
@@ -177,17 +177,17 @@ export default function AiPrivacyPage() {
         </div>
         <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
           <p>
-            We can see that you used Remy — how often, which features, whether errors occurred. We
+            We can see that you used Remy - how often, which features, whether errors occurred. We
             cannot see what you talked about.
           </p>
           <p>
-            This isn&apos;t a policy choice — it&apos;s how the system is built. There is no
+            This isn&apos;t a policy choice - it&apos;s how the system is built. There is no
             database table for your conversations. There is no log file. The data doesn&apos;t exist
             on our servers.
           </p>
         </div>
 
-        {/* Anonymous metrics summary — shows the chef what we actually have */}
+        {/* Anonymous metrics summary - shows the chef what we actually have */}
         {metrics && metrics.totalMessages > 0 && (
           <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-2">
             <div className="flex items-center gap-2">
@@ -206,7 +206,7 @@ export default function AiPrivacyPage() {
                 <p className="text-xs text-stone-500">Messages</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-stone-100">{metrics.topCategory ?? '—'}</p>
+                <p className="text-lg font-bold text-stone-100">{metrics.topCategory ?? '-'}</p>
                 <p className="text-xs text-stone-500">Top category</p>
               </div>
               <div>
@@ -216,7 +216,7 @@ export default function AiPrivacyPage() {
                         month: 'short',
                         year: 'numeric',
                       })
-                    : '—'}
+                    : '-'}
                 </p>
                 <p className="text-xs text-stone-500">Since</p>
               </div>
@@ -254,7 +254,7 @@ export default function AiPrivacyPage() {
           <p>
             Some ChefFlow features use external APIs for things like grocery pricing, nutrition
             data, and store availability. These services receive only the specific item-level data
-            they need to function (e.g., &ldquo;broccoli price&rdquo;) — never your name, your
+            they need to function (e.g., &ldquo;broccoli price&rdquo;) - never your name, your
             clients&apos; names, or any personal information.
           </p>
           <p>
@@ -299,7 +299,7 @@ export default function AiPrivacyPage() {
         </p>
       </div>
 
-      {/* ─── How It Works — animated schematic ──── */}
+      {/* ─── How It Works - animated schematic ──── */}
       <div className="rounded-xl border border-stone-700 bg-stone-900 overflow-hidden">
         <div className="px-5 py-4">
           <div className="flex items-center gap-2">

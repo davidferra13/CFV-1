@@ -2,7 +2,7 @@
 
 // Direct Outreach Panel
 // Shown on individual client profile pages. Lets the chef send a 1:1 email,
-// SMS, or log a call/Instagram note — all stored in direct_outreach_log.
+// SMS, or log a call/Instagram note - all stored in direct_outreach_log.
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -20,13 +20,13 @@ const CHANNEL_OPTIONS: Array<{ value: Channel; label: string; icon: string; note
     value: 'call_note',
     label: 'Log a call',
     icon: '📞',
-    note: 'Saves a record — does not place a call',
+    note: 'Saves a record - does not place a call',
   },
   {
     value: 'instagram_note',
     label: 'Instagram note',
     icon: '📸',
-    note: 'Saves a record — copy and paste into Instagram',
+    note: 'Saves a record - copy and paste into Instagram',
   },
 ]
 
