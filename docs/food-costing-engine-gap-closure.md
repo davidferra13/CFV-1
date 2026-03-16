@@ -77,9 +77,18 @@ Six gaps in the food costing and inventory engine were closed, completing the sy
 
 - `lib/finance/food-cost-calculator.ts` - Added unit-aware cost calculation
 - `lib/inventory/purchase-order-actions.ts` - Hooked in price history recording
+- `lib/events/transitions.ts` - Hooked `checkVarianceAlerts()` into event FSM "completed" transition
+- `lib/inventory/variance-actions.ts` - Wired conversion engine for unit-normalized expected vs actual comparison
 
-## What Remains (~2% of total system)
+## UI Components (Phase 7)
 
-- UI components for price history charts, vendor comparison panels, auto-reorder button, and variance alert settings
-- Hooking `checkVarianceAlerts()` into the event FSM "completed" transition
-- Wiring the conversion engine into `lib/inventory/variance-actions.ts` for unit-normalized comparisons
+All four UI components built to close the final gap:
+
+- `components/inventory/price-history-chart.tsx` - Recharts line chart with monthly avg prices, trend badge (rising/falling/stable), min/max/current summary
+- `components/inventory/vendor-comparison-panel.tsx` - Multi-vendor price comparison with best-price highlight, lead times, min order quantities
+- `components/inventory/auto-reorder-panel.tsx` - Preview + generate draft POs from par-level shortfalls, grouped by vendor
+- `components/inventory/variance-alert-settings.tsx` - Threshold slider (5-50%), enable/disable toggles, save to DB
+
+## Status: Complete
+
+All 6 backend phases + UI components + event FSM wiring + variance unit normalization are done. The food costing engine is at ~100% feature coverage.
