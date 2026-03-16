@@ -6,6 +6,7 @@ import { TemplateEditor } from './template-editor'
 
 type Props = {
   templates: ResponseTemplate[]
+  chefId: string
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -21,7 +22,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   re_engagement: 'Re-engagement',
 }
 
-export function TemplateList({ templates }: Props) {
+export function TemplateList({ templates, chefId }: Props) {
   const [editing, setEditing] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
 
@@ -54,7 +55,7 @@ export function TemplateList({ templates }: Props) {
 
       {creating && (
         <div className="mb-4">
-          <TemplateEditor template={null} onClose={() => setCreating(false)} />
+          <TemplateEditor template={null} onClose={() => setCreating(false)} chefId={chefId} />
         </div>
       )}
 
@@ -67,7 +68,7 @@ export function TemplateList({ templates }: Props) {
             {categoryTemplates.map((t) => (
               <div key={t.id}>
                 {editing === t.id ? (
-                  <TemplateEditor template={t} onClose={() => setEditing(null)} />
+                  <TemplateEditor template={t} onClose={() => setEditing(null)} chefId={chefId} />
                 ) : (
                   <div
                     onClick={() => setEditing(t.id)}

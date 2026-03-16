@@ -10,7 +10,7 @@ import { ArrowLeft } from '@/components/ui/icons'
 export const metadata: Metadata = { title: 'New Product | ChefFlow' }
 
 export default async function NewProductPage() {
-  await requireChef()
+  const user = await requireChef()
   await requirePro('commerce')
 
   return (
@@ -24,7 +24,7 @@ export default async function NewProductPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100">New Product</h1>
       </div>
-      <ProductForm />
+      <ProductForm chefId={user.entityId!} />
     </div>
   )
 }

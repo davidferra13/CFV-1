@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/clients/actions'
 import { Button } from '@/components/ui/button'
@@ -9,11 +9,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Alert } from '@/components/ui/alert'
 import { TagArrayInput } from '@/components/ui/tag-array-input'
-import { SaveStateBadge } from '@/components/ui/save-state-badge'
-import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
-import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
-import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
-import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 
@@ -392,7 +389,25 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
   const [redFlags, setRedFlags] = useState('')
   const [acquisitionCost, setAcquisitionCost] = useState('')
 
-  const currentFormData = useMemo<ClientDraftData>(
+  const defaultData = useMemo<ClientDraftData>(
+    () => ({
+      mode: 'quick',
+      full_name: '',
+      email: '',
+      phone: '',
+      referral_source: '',
+      status: 'active',
+      preferred_name: '',
+      address: '',
+      partner_name: '',
+      guest_count: '',
+      allergies: [],
+      dietary_restrictions: [],
+      vibe_notes: '',
+    }),
+    []
+  )
+  const currentData = useMemo<ClientDraftData>(
     () => ({
       mode,
       full_name: fullName,
@@ -424,70 +439,35 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
       vibeNotes,
     ]
   )
-  const initialFormData = useMemo<ClientDraftData>(
-    () => ({
-      mode: 'quick',
-      full_name: '',
-      email: '',
-      phone: '',
-      referral_source: '',
-      status: 'active',
-      preferred_name: '',
-      address: '',
-      partner_name: '',
-      guest_count: '',
-      allergies: [],
-      dietary_restrictions: [],
-      vibe_notes: '',
-    }),
-    []
-  )
-  const [committedFormData, setCommittedFormData] = useState<ClientDraftData>(initialFormData)
 
   const createMutation = useIdempotentMutation<any, any>('clients/create', {
     mutation: createClient as any,
   })
-  const durableDraft = useDurableDraft<ClientDraftData>('client-create-form', null, {
-    schemaVersion: 1,
+
+  const protection = useProtectedForm({
+    surfaceId: 'client-create',
+    recordId: null,
     tenantId,
-    defaultData: initialFormData,
-    debounceMs: 700,
-  })
-
-  const isDirty = useMemo(
-    () => JSON.stringify(currentFormData) !== JSON.stringify(committedFormData),
-    [committedFormData, currentFormData]
-  )
-
-  const unsavedGuard = useUnsavedChangesGuard({
-    isDirty,
-    onSaveDraft: () => durableDraft.persistDraft(currentFormData, { immediate: true }),
-    canSaveDraft: true,
+    defaultData,
+    currentData,
     saveState: createMutation.saveState,
+    onMarkUnsaved: createMutation.markUnsaved,
   })
 
-  useEffect(() => {
-    if (!isDirty) return
-    void durableDraft.persistDraft(currentFormData)
-    if (createMutation.saveState.status === 'SAVED') {
-      createMutation.markUnsaved()
-    }
-  }, [createMutation, currentFormData, durableDraft, isDirty])
-
-  const applyDraft = (data: ClientDraftData) => {
-    setMode(data.mode)
-    setFullName(data.full_name)
-    setEmail(data.email)
-    setPhone(data.phone)
-    setReferralSource(data.referral_source)
-    setStatus(data.status)
-    setPreferredName(data.preferred_name)
-    setAddress(data.address)
-    setPartnerName(data.partner_name)
-    setGuestCount(data.guest_count)
-    setAllergies(data.allergies)
-    setDietaryRestrictions(data.dietary_restrictions)
-    setVibeNotes(data.vibe_notes)
+  function applyDraftData(data: Record<string, unknown>) {
+    if (typeof data.mode === 'string') setMode(data.mode as 'quick' | 'full')
+    if (typeof data.full_name === 'string') setFullName(data.full_name)
+    if (typeof data.email === 'string') setEmail(data.email)
+    if (typeof data.phone === 'string') setPhone(data.phone)
+    if (typeof data.referral_source === 'string') setReferralSource(data.referral_source)
+    if (typeof data.status === 'string') setStatus(data.status)
+    if (typeof data.preferred_name === 'string') setPreferredName(data.preferred_name)
+    if (typeof data.address === 'string') setAddress(data.address)
+    if (typeof data.partner_name === 'string') setPartnerName(data.partner_name)
+    if (typeof data.guest_count === 'string') setGuestCount(data.guest_count)
+    if (Array.isArray(data.allergies)) setAllergies(data.allergies)
+    if (Array.isArray(data.dietary_restrictions)) setDietaryRestrictions(data.dietary_restrictions)
+    if (typeof data.vibe_notes === 'string') setVibeNotes(data.vibe_notes)
   }
 
   // ─── Submit ───────────────────────────────────────────────────────────
@@ -496,8 +476,6 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
     e.preventDefault()
     setLoading(true)
     setError(null)
-
-    await durableDraft.persistDraft(currentFormData, { immediate: true })
 
     if (!fullName.trim()) {
       setError('Full name is required')
@@ -610,8 +588,7 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
 
       const result = mutationResult.result as any
       // Navigate to the new client's detail page
-      setCommittedFormData(currentFormData)
-      await durableDraft.clearDraft()
+      protection.markCommitted()
       router.push(`/clients/${result.client.id}`)
     } catch (err) {
       const uiError = mapErrorToUI(err)
@@ -622,666 +599,651 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
   }
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-4 flex justify-end">
-        <SaveStateBadge state={createMutation.saveState} onRetry={createMutation.retryLast} />
-      </div>
-
-      {/* Mode Toggle */}
-      <div className="flex items-center gap-2 mb-6">
-        <button
-          type="button"
-          onClick={() => setMode('quick')}
-          className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
-            mode === 'quick'
-              ? 'bg-brand-500 text-white'
-              : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-          }`}
-        >
-          Quick Add
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode('full')}
-          className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
-            mode === 'full'
-              ? 'bg-brand-500 text-white'
-              : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-          }`}
-        >
-          Full Profile
-        </button>
-        <span className="text-xs text-stone-300 ml-2">
-          {mode === 'quick'
-            ? 'Get them in the system fast - fill in details later'
-            : 'The complete client dossier - every field you could ever need'}
-        </span>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* ─── Quick Add Fields (always visible) ──────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Full Name"
-            placeholder="Jane Doe"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
-          <Input
-            label="Preferred Name / Nickname"
-            placeholder="What they like to be called"
-            value={preferredName}
-            onChange={(e) => setPreferredName(e.target.value)}
-          />
-          <Input
-            label="Email"
-            type="email"
-            placeholder="client@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Input
-            label="Phone"
-            placeholder="(555) 555-5555"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-          <Textarea
-            label="Address"
-            placeholder="Full address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
-          />
-          <Select
-            label="How did they find you?"
-            value={referralSource}
-            onChange={(e) => setReferralSource(e.target.value)}
+    <FormShield
+      guard={protection.guard}
+      showRestorePrompt={protection.showRestorePrompt}
+      lastSavedAt={protection.lastSavedAt}
+      onRestore={() => {
+        const d = protection.restoreDraft()
+        if (d) applyDraftData(d)
+      }}
+      onDiscard={protection.discardDraft}
+      saveState={protection.saveState}
+      onRetry={createMutation.retryLast}
+    >
+      <div className="max-w-4xl">
+        {/* Mode Toggle */}
+        <div className="flex items-center gap-2 mb-6">
+          <button
+            type="button"
+            onClick={() => setMode('quick')}
+            className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
+              mode === 'quick'
+                ? 'bg-brand-500 text-white'
+                : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+            }`}
           >
-            <option value="">Select...</option>
-            <option value="referral">Referral</option>
-            <option value="instagram">Instagram</option>
-            <option value="website">Website</option>
-            <option value="take_a_chef">Take a Chef</option>
-            <option value="phone">Phone Call</option>
-            <option value="email">Email</option>
-            <option value="other">Other</option>
-          </Select>
-          <Input
-            label="Partner / Spouse Name"
-            placeholder="Name"
-            value={partnerName}
-            onChange={(e) => setPartnerName(e.target.value)}
-          />
-          <Input
-            label="Typical Guest Count"
-            placeholder="e.g. 4-6, 8-12, 20+"
-            value={guestCount}
-            onChange={(e) => setGuestCount(e.target.value)}
-          />
+            Quick Add
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('full')}
+            className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
+              mode === 'full'
+                ? 'bg-brand-500 text-white'
+                : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+            }`}
+          >
+            Full Profile
+          </button>
+          <span className="text-xs text-stone-300 ml-2">
+            {mode === 'quick'
+              ? 'Get them in the system fast - fill in details later'
+              : 'The complete client dossier - every field you could ever need'}
+          </span>
         </div>
 
-        {/* Dietary - always on Quick Add because it's safety-critical */}
-        <div className="space-y-3">
-          <TagArrayInput
-            label="Allergies"
-            value={allergies}
-            onChange={setAllergies}
-            placeholder="Type allergy and press Enter"
-            suggestions={ALLERGY_SUGGESTIONS}
-          />
-          <TagArrayInput
-            label="Dietary Restrictions"
-            value={dietaryRestrictions}
-            onChange={setDietaryRestrictions}
-            placeholder="e.g. Vegetarian, Gluten-Free"
-            suggestions={RESTRICTION_SUGGESTIONS}
-          />
-        </div>
-
-        {/* Quick notes field */}
-        <Textarea
-          label="Notes"
-          placeholder="Anything else from the first call - vibe, special requests, how they sounded..."
-          value={vibeNotes}
-          onChange={(e) => setVibeNotes(e.target.value)}
-        />
-
-        {/* ─── Full Profile Sections (collapsible) ────────────────────── */}
-        {mode === 'full' && (
-          <div className="space-y-3 pt-2">
-            {/* 1. Identity & Demographics */}
-            <Section
-              title="Identity & Demographics"
-              description="Occupation, birthday, social media, contact preferences"
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* ─── Quick Add Fields (always visible) ──────────────────────── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Full Name"
+              placeholder="Jane Doe"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+            <Input
+              label="Preferred Name / Nickname"
+              placeholder="What they like to be called"
+              value={preferredName}
+              onChange={(e) => setPreferredName(e.target.value)}
+            />
+            <Input
+              label="Email"
+              type="email"
+              placeholder="client@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Input
+              label="Phone"
+              placeholder="(555) 555-5555"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+            <Textarea
+              label="Address"
+              placeholder="Full address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+            <Select
+              label="How did they find you?"
+              value={referralSource}
+              onChange={(e) => setReferralSource(e.target.value)}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <option value="">Select...</option>
+              <option value="referral">Referral</option>
+              <option value="instagram">Instagram</option>
+              <option value="website">Website</option>
+              <option value="take_a_chef">Take a Chef</option>
+              <option value="phone">Phone Call</option>
+              <option value="email">Email</option>
+              <option value="other">Other</option>
+            </Select>
+            <Input
+              label="Partner / Spouse Name"
+              placeholder="Name"
+              value={partnerName}
+              onChange={(e) => setPartnerName(e.target.value)}
+            />
+            <Input
+              label="Typical Guest Count"
+              placeholder="e.g. 4-6, 8-12, 20+"
+              value={guestCount}
+              onChange={(e) => setGuestCount(e.target.value)}
+            />
+          </div>
+
+          {/* Dietary - always on Quick Add because it's safety-critical */}
+          <div className="space-y-3">
+            <TagArrayInput
+              label="Allergies"
+              value={allergies}
+              onChange={setAllergies}
+              placeholder="Type allergy and press Enter"
+              suggestions={ALLERGY_SUGGESTIONS}
+            />
+            <TagArrayInput
+              label="Dietary Restrictions"
+              value={dietaryRestrictions}
+              onChange={setDietaryRestrictions}
+              placeholder="e.g. Vegetarian, Gluten-Free"
+              suggestions={RESTRICTION_SUGGESTIONS}
+            />
+          </div>
+
+          {/* Quick notes field */}
+          <Textarea
+            label="Notes"
+            placeholder="Anything else from the first call - vibe, special requests, how they sounded..."
+            value={vibeNotes}
+            onChange={(e) => setVibeNotes(e.target.value)}
+          />
+
+          {/* ─── Full Profile Sections (collapsible) ────────────────────── */}
+          {mode === 'full' && (
+            <div className="space-y-3 pt-2">
+              {/* 1. Identity & Demographics */}
+              <Section
+                title="Identity & Demographics"
+                description="Occupation, birthday, social media, contact preferences"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Select
+                    label="Preferred Contact Method"
+                    value={preferredContact}
+                    onChange={(e) => setPreferredContact(e.target.value)}
+                  >
+                    <option value="">Select...</option>
+                    <option value="phone">Phone Call</option>
+                    <option value="text">Text Message</option>
+                    <option value="email">Email</option>
+                    <option value="instagram">Instagram DM</option>
+                  </Select>
+                  <Input
+                    label="Occupation"
+                    placeholder="Attorney, Doctor, CEO, etc."
+                    value={occupation}
+                    onChange={(e) => setOccupation(e.target.value)}
+                  />
+                  <Input
+                    label="Company"
+                    placeholder="Where they work"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                  />
+                  <Input
+                    label="Birthday"
+                    type="date"
+                    value={birthday}
+                    onChange={(e) => setBirthday(e.target.value)}
+                  />
+                  <Input
+                    label="Anniversary"
+                    type="date"
+                    value={anniversary}
+                    onChange={(e) => setAnniversary(e.target.value)}
+                  />
+                  <Input
+                    label="Instagram Handle"
+                    placeholder="@handle"
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
+                  />
+                  <Input
+                    label="Referral Source Detail"
+                    placeholder="Who referred them?"
+                    value={referralDetail}
+                    onChange={(e) => setReferralDetail(e.target.value)}
+                    helperText="Name of the person who referred them, or specific source"
+                  />
+                </div>
                 <Select
-                  label="Preferred Contact Method"
-                  value={preferredContact}
-                  onChange={(e) => setPreferredContact(e.target.value)}
+                  label="Client Status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                >
+                  <option value="active">Active</option>
+                  <option value="vip">VIP</option>
+                  <option value="repeat_ready">Repeat Ready</option>
+                  <option value="dormant">Dormant</option>
+                </Select>
+              </Section>
+
+              {/* 2. Household & Family */}
+              <Section title="Household & Family" description="Children, pets, family dynamics">
+                <ChildrenManager value={children} onChange={setChildren} />
+                <PetManager value={pets} onChange={setPets} />
+                <Textarea
+                  label="Family Notes"
+                  placeholder="Any family dynamics, guest patterns, or household notes worth knowing"
+                  value={familyNotes}
+                  onChange={(e) => setFamilyNotes(e.target.value)}
+                />
+              </Section>
+
+              {/* 3. Dietary & Culinary Preferences */}
+              <Section
+                title="Culinary Preferences"
+                description="Favorites, dislikes, spice tolerance, beverages"
+              >
+                <TagArrayInput
+                  label="Dislikes / Won't Eat"
+                  value={dislikes}
+                  onChange={setDislikes}
+                  placeholder="Foods they dislike"
+                />
+                <Select
+                  label="Spice Tolerance"
+                  value={spiceTolerance}
+                  onChange={(e) => setSpiceTolerance(e.target.value)}
                 >
                   <option value="">Select...</option>
-                  <option value="phone">Phone Call</option>
-                  <option value="text">Text Message</option>
-                  <option value="email">Email</option>
-                  <option value="instagram">Instagram DM</option>
+                  <option value="none">None - no spice at all</option>
+                  <option value="mild">Mild</option>
+                  <option value="medium">Medium</option>
+                  <option value="hot">Hot</option>
+                  <option value="very_hot">Very Hot - bring the heat</option>
                 </Select>
-                <Input
-                  label="Occupation"
-                  placeholder="Attorney, Doctor, CEO, etc."
-                  value={occupation}
-                  onChange={(e) => setOccupation(e.target.value)}
+                <TagArrayInput
+                  label="Favorite Cuisines"
+                  value={favoriteCuisines}
+                  onChange={setFavoriteCuisines}
+                  placeholder="e.g. Italian, Japanese"
+                  suggestions={CUISINE_SUGGESTIONS}
                 />
-                <Input
-                  label="Company"
-                  placeholder="Where they work"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
+                <TagArrayInput
+                  label="Favorite Dishes"
+                  value={favoriteDishes}
+                  onChange={setFavoriteDishes}
+                  placeholder="Specific dishes they love"
                 />
-                <Input
-                  label="Birthday"
-                  type="date"
-                  value={birthday}
-                  onChange={(e) => setBirthday(e.target.value)}
+                <Textarea
+                  label="Wine & Beverage Preferences"
+                  placeholder="Red wine lover? Cocktail preferences? Non-drinker?"
+                  value={wineBeveragePrefs}
+                  onChange={(e) => setWineBeveragePrefs(e.target.value)}
                 />
-                <Input
-                  label="Anniversary"
-                  type="date"
-                  value={anniversary}
-                  onChange={(e) => setAnniversary(e.target.value)}
-                />
-                <Input
-                  label="Instagram Handle"
-                  placeholder="@handle"
-                  value={instagram}
-                  onChange={(e) => setInstagram(e.target.value)}
-                />
-                <Input
-                  label="Referral Source Detail"
-                  placeholder="Who referred them?"
-                  value={referralDetail}
-                  onChange={(e) => setReferralDetail(e.target.value)}
-                  helperText="Name of the person who referred them, or specific source"
-                />
-              </div>
-              <Select
-                label="Client Status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
+              </Section>
+
+              {/* 4. Address & Access */}
+              <Section
+                title="Access & Security"
+                description="Parking, gate codes, WiFi, house rules"
               >
-                <option value="active">Active</option>
-                <option value="vip">VIP</option>
-                <option value="repeat_ready">Repeat Ready</option>
-                <option value="dormant">Dormant</option>
-              </Select>
-            </Section>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Gate Code"
+                    placeholder="Gate or entry code"
+                    value={gateCode}
+                    onChange={(e) => setGateCode(e.target.value)}
+                  />
+                  <Input
+                    label="WiFi Password"
+                    placeholder="For timers, recipes, music"
+                    value={wifiPassword}
+                    onChange={(e) => setWifiPassword(e.target.value)}
+                  />
+                </div>
+                <Textarea
+                  label="Parking Instructions"
+                  placeholder="Where to park, driveway rules, street parking, etc."
+                  value={parkingInstructions}
+                  onChange={(e) => setParkingInstructions(e.target.value)}
+                />
+                <Textarea
+                  label="Access Instructions"
+                  placeholder="Which door to use, doorbell, knock, etc."
+                  value={accessInstructions}
+                  onChange={(e) => setAccessInstructions(e.target.value)}
+                />
+                <Textarea
+                  label="Security Notes"
+                  placeholder="Alarm system, cameras, doorman, etc."
+                  value={securityNotes}
+                  onChange={(e) => setSecurityNotes(e.target.value)}
+                />
+                <Textarea
+                  label="House Rules"
+                  placeholder="Shoes off, noise level, no smoking, etc."
+                  value={houseRules}
+                  onChange={(e) => setHouseRules(e.target.value)}
+                />
+              </Section>
 
-            {/* 2. Household & Family */}
-            <Section title="Household & Family" description="Children, pets, family dynamics">
-              <ChildrenManager value={children} onChange={setChildren} />
-              <PetManager value={pets} onChange={setPets} />
-              <Textarea
-                label="Family Notes"
-                placeholder="Any family dynamics, guest patterns, or household notes worth knowing"
-                value={familyNotes}
-                onChange={(e) => setFamilyNotes(e.target.value)}
-                onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
-              />
-            </Section>
-
-            {/* 3. Dietary & Culinary Preferences */}
-            <Section
-              title="Culinary Preferences"
-              description="Favorites, dislikes, spice tolerance, beverages"
-            >
-              <TagArrayInput
-                label="Dislikes / Won't Eat"
-                value={dislikes}
-                onChange={setDislikes}
-                placeholder="Foods they dislike"
-              />
-              <Select
-                label="Spice Tolerance"
-                value={spiceTolerance}
-                onChange={(e) => setSpiceTolerance(e.target.value)}
+              {/* 5. Kitchen Profile */}
+              <Section
+                title="Kitchen Profile"
+                description="Equipment, layout, limitations, nearby stores"
               >
-                <option value="">Select...</option>
-                <option value="none">None - no spice at all</option>
-                <option value="mild">Mild</option>
-                <option value="medium">Medium</option>
-                <option value="hot">Hot</option>
-                <option value="very_hot">Very Hot - bring the heat</option>
-              </Select>
-              <TagArrayInput
-                label="Favorite Cuisines"
-                value={favoriteCuisines}
-                onChange={setFavoriteCuisines}
-                placeholder="e.g. Italian, Japanese"
-                suggestions={CUISINE_SUGGESTIONS}
-              />
-              <TagArrayInput
-                label="Favorite Dishes"
-                value={favoriteDishes}
-                onChange={setFavoriteDishes}
-                placeholder="Specific dishes they love"
-              />
-              <Textarea
-                label="Wine & Beverage Preferences"
-                placeholder="Red wine lover? Cocktail preferences? Non-drinker?"
-                value={wineBeveragePrefs}
-                onChange={(e) => setWineBeveragePrefs(e.target.value)}
-              />
-            </Section>
-
-            {/* 4. Address & Access */}
-            <Section title="Access & Security" description="Parking, gate codes, WiFi, house rules">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Gate Code"
-                  placeholder="Gate or entry code"
-                  value={gateCode}
-                  onChange={(e) => setGateCode(e.target.value)}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Select
+                    label="Kitchen Size"
+                    value={kitchenSize}
+                    onChange={(e) => setKitchenSize(e.target.value)}
+                  >
+                    <option value="">Select...</option>
+                    <option value="small">Small - limited counter/storage</option>
+                    <option value="medium">Medium - standard home kitchen</option>
+                    <option value="large">Large - spacious, multiple stations</option>
+                    <option value="professional">Professional - commercial-grade</option>
+                  </Select>
+                  <div className="flex items-end gap-4 pb-1">
+                    <label className="text-sm font-medium text-stone-300">Dishwasher?</label>
+                    <div className="flex gap-3">
+                      <label className="flex items-center gap-1.5 text-sm">
+                        <input
+                          type="radio"
+                          name="dishwasher"
+                          checked={hasDishwasher === true}
+                          onChange={() => setHasDishwasher(true)}
+                          className="text-brand-500"
+                        />
+                        Yes
+                      </label>
+                      <label className="flex items-center gap-1.5 text-sm">
+                        <input
+                          type="radio"
+                          name="dishwasher"
+                          checked={hasDishwasher === false}
+                          onChange={() => setHasDishwasher(false)}
+                          className="text-brand-500"
+                        />
+                        No
+                      </label>
+                    </div>
+                  </div>
+                  <Input
+                    label="Available Place Settings"
+                    type="number"
+                    placeholder="How many?"
+                    value={placeSettings}
+                    onChange={(e) => setPlaceSettings(e.target.value)}
+                  />
+                  <Input
+                    label="Nearest Grocery Store"
+                    placeholder="Name and distance"
+                    value={nearestGrocery}
+                    onChange={(e) => setNearestGrocery(e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Textarea
+                    label="Oven Notes"
+                    placeholder="Gas/electric? Temperature accuracy? Reliability?"
+                    value={ovenNotes}
+                    onChange={(e) => setOvenNotes(e.target.value)}
+                  />
+                  <Textarea
+                    label="Stovetop / Burner Notes"
+                    placeholder="Gas, induction, electric? How many burners?"
+                    value={burnerNotes}
+                    onChange={(e) => setBurnerNotes(e.target.value)}
+                  />
+                  <Textarea
+                    label="Counter / Prep Space"
+                    placeholder="How much prep surface? Island?"
+                    value={counterNotes}
+                    onChange={(e) => setCounterNotes(e.target.value)}
+                  />
+                  <Textarea
+                    label="Refrigeration / Storage"
+                    placeholder="Fridge/freezer size? Extra cooler space?"
+                    value={refrigerationNotes}
+                    onChange={(e) => setRefrigerationNotes(e.target.value)}
+                  />
+                  <Textarea
+                    label="Plating Surfaces"
+                    placeholder="Warming drawer? Heat lamps? Counter space for plating?"
+                    value={platingNotes}
+                    onChange={(e) => setPlatingNotes(e.target.value)}
+                  />
+                  <Textarea
+                    label="Sink Notes"
+                    placeholder="Hot water? Double sink? Drainage?"
+                    value={sinkNotes}
+                    onChange={(e) => setSinkNotes(e.target.value)}
+                  />
+                </div>
+                <Textarea
+                  label="Kitchen Constraints / Limitations"
+                  placeholder="Anything that limits what you can cook here"
+                  value={kitchenConstraints}
+                  onChange={(e) => setKitchenConstraints(e.target.value)}
+                />
+                <Textarea
+                  label="Outdoor Cooking"
+                  placeholder="Grill, smoker, pizza oven, fire pit, etc."
+                  value={outdoorCooking}
+                  onChange={(e) => setOutdoorCooking(e.target.value)}
                 />
                 <Input
-                  label="WiFi Password"
-                  placeholder="For timers, recipes, music"
-                  value={wifiPassword}
-                  onChange={(e) => setWifiPassword(e.target.value)}
+                  label="Water Quality"
+                  placeholder="Well water, city water, filtered, etc."
+                  value={waterQuality}
+                  onChange={(e) => setWaterQuality(e.target.value)}
                 />
-              </div>
-              <Textarea
-                label="Parking Instructions"
-                placeholder="Where to park, driveway rules, street parking, etc."
-                value={parkingInstructions}
-                onChange={(e) => setParkingInstructions(e.target.value)}
-              />
-              <Textarea
-                label="Access Instructions"
-                placeholder="Which door to use, doorbell, knock, etc."
-                value={accessInstructions}
-                onChange={(e) => setAccessInstructions(e.target.value)}
-              />
-              <Textarea
-                label="Security Notes"
-                placeholder="Alarm system, cameras, doorman, etc."
-                value={securityNotes}
-                onChange={(e) => setSecurityNotes(e.target.value)}
-              />
-              <Textarea
-                label="House Rules"
-                placeholder="Shoes off, noise level, no smoking, etc."
-                value={houseRules}
-                onChange={(e) => setHouseRules(e.target.value)}
-              />
-            </Section>
+                <TagArrayInput
+                  label="Equipment Available at Client's Home"
+                  value={equipmentAvailable}
+                  onChange={setEquipmentAvailable}
+                  placeholder="What they have"
+                  suggestions={EQUIPMENT_SUGGESTIONS}
+                />
+                <TagArrayInput
+                  label="Equipment You Must Bring"
+                  value={equipmentMustBring}
+                  onChange={setEquipmentMustBring}
+                  placeholder="What you need to bring"
+                  suggestions={EQUIPMENT_SUGGESTIONS}
+                />
+              </Section>
 
-            {/* 5. Kitchen Profile */}
-            <Section
-              title="Kitchen Profile"
-              description="Equipment, layout, limitations, nearby stores"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Select
-                  label="Kitchen Size"
-                  value={kitchenSize}
-                  onChange={(e) => setKitchenSize(e.target.value)}
-                >
-                  <option value="">Select...</option>
-                  <option value="small">Small - limited counter/storage</option>
-                  <option value="medium">Medium - standard home kitchen</option>
-                  <option value="large">Large - spacious, multiple stations</option>
-                  <option value="professional">Professional - commercial-grade</option>
-                </Select>
-                <div className="flex items-end gap-4 pb-1">
-                  <label className="text-sm font-medium text-stone-300">Dishwasher?</label>
-                  <div className="flex gap-3">
-                    <label className="flex items-center gap-1.5 text-sm">
-                      <input
-                        type="radio"
-                        name="dishwasher"
-                        checked={hasDishwasher === true}
-                        onChange={() => setHasDishwasher(true)}
-                        className="text-brand-500"
-                      />
-                      Yes
-                    </label>
-                    <label className="flex items-center gap-1.5 text-sm">
-                      <input
-                        type="radio"
-                        name="dishwasher"
-                        checked={hasDishwasher === false}
-                        onChange={() => setHasDishwasher(false)}
-                        className="text-brand-500"
-                      />
-                      No
-                    </label>
+              {/* 6. Service Defaults */}
+              <Section
+                title="Service Defaults"
+                description="Preferred style, budget, cleanup, event preferences"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Select
+                    label="Preferred Service Style"
+                    value={serviceStyle}
+                    onChange={(e) => setServiceStyle(e.target.value)}
+                  >
+                    <option value="">Select...</option>
+                    <option value="plated">Plated (formal)</option>
+                    <option value="family-style">Family Style</option>
+                    <option value="buffet">Buffet</option>
+                    <option value="tasting">Tasting Menu</option>
+                    <option value="meal-prep">Meal Prep</option>
+                    <option value="cooking-class">Cooking Class</option>
+                    <option value="cocktail-party">Cocktail Party / Passed Apps</option>
+                    <option value="bbq">BBQ / Outdoor Grill</option>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-300 mb-1.5">
+                    Preferred Event Days
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {DAY_OPTIONS.map((day) => (
+                      <label key={day} className="flex items-center gap-1.5 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={preferredDays.includes(day.toLowerCase())}
+                          onChange={(e) => {
+                            const d = day.toLowerCase()
+                            setPreferredDays(
+                              e.target.checked
+                                ? [...preferredDays, d]
+                                : preferredDays.filter((pd) => pd !== d)
+                            )
+                          }}
+                          className="text-brand-500 rounded"
+                        />
+                        {day}
+                      </label>
+                    ))}
                   </div>
                 </div>
-                <Input
-                  label="Available Place Settings"
-                  type="number"
-                  placeholder="How many?"
-                  value={placeSettings}
-                  onChange={(e) => setPlaceSettings(e.target.value)}
-                />
-                <Input
-                  label="Nearest Grocery Store"
-                  placeholder="Name and distance"
-                  value={nearestGrocery}
-                  onChange={(e) => setNearestGrocery(e.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Textarea
-                  label="Oven Notes"
-                  placeholder="Gas/electric? Temperature accuracy? Reliability?"
-                  value={ovenNotes}
-                  onChange={(e) => setOvenNotes(e.target.value)}
-                />
-                <Textarea
-                  label="Stovetop / Burner Notes"
-                  placeholder="Gas, induction, electric? How many burners?"
-                  value={burnerNotes}
-                  onChange={(e) => setBurnerNotes(e.target.value)}
-                />
-                <Textarea
-                  label="Counter / Prep Space"
-                  placeholder="How much prep surface? Island?"
-                  value={counterNotes}
-                  onChange={(e) => setCounterNotes(e.target.value)}
-                />
-                <Textarea
-                  label="Refrigeration / Storage"
-                  placeholder="Fridge/freezer size? Extra cooler space?"
-                  value={refrigerationNotes}
-                  onChange={(e) => setRefrigerationNotes(e.target.value)}
-                />
-                <Textarea
-                  label="Plating Surfaces"
-                  placeholder="Warming drawer? Heat lamps? Counter space for plating?"
-                  value={platingNotes}
-                  onChange={(e) => setPlatingNotes(e.target.value)}
-                />
-                <Textarea
-                  label="Sink Notes"
-                  placeholder="Hot water? Double sink? Drainage?"
-                  value={sinkNotes}
-                  onChange={(e) => setSinkNotes(e.target.value)}
-                />
-              </div>
-              <Textarea
-                label="Kitchen Constraints / Limitations"
-                placeholder="Anything that limits what you can cook here"
-                value={kitchenConstraints}
-                onChange={(e) => setKitchenConstraints(e.target.value)}
-              />
-              <Textarea
-                label="Outdoor Cooking"
-                placeholder="Grill, smoker, pizza oven, fire pit, etc."
-                value={outdoorCooking}
-                onChange={(e) => setOutdoorCooking(e.target.value)}
-              />
-              <Input
-                label="Water Quality"
-                placeholder="Well water, city water, filtered, etc."
-                value={waterQuality}
-                onChange={(e) => setWaterQuality(e.target.value)}
-              />
-              <TagArrayInput
-                label="Equipment Available at Client's Home"
-                value={equipmentAvailable}
-                onChange={setEquipmentAvailable}
-                placeholder="What they have"
-                suggestions={EQUIPMENT_SUGGESTIONS}
-              />
-              <TagArrayInput
-                label="Equipment You Must Bring"
-                value={equipmentMustBring}
-                onChange={setEquipmentMustBring}
-                placeholder="What you need to bring"
-                suggestions={EQUIPMENT_SUGGESTIONS}
-              />
-            </Section>
-
-            {/* 6. Service Defaults */}
-            <Section
-              title="Service Defaults"
-              description="Preferred style, budget, cleanup, event preferences"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Budget Range - Minimum ($)"
+                    type="number"
+                    placeholder="e.g. 500"
+                    value={budgetMin}
+                    onChange={(e) => setBudgetMin(e.target.value)}
+                    helperText="Per event minimum spend"
+                  />
+                  <Input
+                    label="Budget Range - Maximum ($)"
+                    type="number"
+                    placeholder="e.g. 2000"
+                    value={budgetMax}
+                    onChange={(e) => setBudgetMax(e.target.value)}
+                    helperText="Per event maximum spend"
+                  />
+                </div>
                 <Select
-                  label="Preferred Service Style"
-                  value={serviceStyle}
-                  onChange={(e) => setServiceStyle(e.target.value)}
+                  label="Cleanup Expectations"
+                  value={cleanupExpectations}
+                  onChange={(e) => setCleanupExpectations(e.target.value)}
                 >
                   <option value="">Select...</option>
-                  <option value="plated">Plated (formal)</option>
-                  <option value="family-style">Family Style</option>
-                  <option value="buffet">Buffet</option>
-                  <option value="tasting">Tasting Menu</option>
-                  <option value="meal-prep">Meal Prep</option>
-                  <option value="cooking-class">Cooking Class</option>
-                  <option value="cocktail-party">Cocktail Party / Passed Apps</option>
-                  <option value="bbq">BBQ / Outdoor Grill</option>
+                  <option value="full_reset">
+                    Full Kitchen Reset - leave it cleaner than I found it
+                  </option>
+                  <option value="cooking_mess">Cooking Mess Only - clean what I used</option>
+                  <option value="minimal">Minimal - they prefer to clean up themselves</option>
+                  <option value="staff_handles">Their Staff Handles Cleanup</option>
                 </Select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-300 mb-1.5">
-                  Preferred Event Days
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {DAY_OPTIONS.map((day) => (
-                    <label key={day} className="flex items-center gap-1.5 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={preferredDays.includes(day.toLowerCase())}
-                        onChange={(e) => {
-                          const d = day.toLowerCase()
-                          setPreferredDays(
-                            e.target.checked
-                              ? [...preferredDays, d]
-                              : preferredDays.filter((pd) => pd !== d)
-                          )
-                        }}
-                        className="text-brand-500 rounded"
-                      />
-                      {day}
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Budget Range - Minimum ($)"
-                  type="number"
-                  placeholder="e.g. 500"
-                  value={budgetMin}
-                  onChange={(e) => setBudgetMin(e.target.value)}
-                  helperText="Per event minimum spend"
+                <Select
+                  label="Leftovers Preference"
+                  value={leftoversPref}
+                  onChange={(e) => setLeftoversPref(e.target.value)}
+                >
+                  <option value="">Select...</option>
+                  <option value="package_all">Package Everything - they love leftovers</option>
+                  <option value="portion_control">Portion Control - cook just enough</option>
+                  <option value="staff_takes">Staff / Helper Takes Leftovers</option>
+                  <option value="compost">Compost / Discard</option>
+                  <option value="no_preference">No Preference</option>
+                </Select>
+              </Section>
+
+              {/* 7. Personality & Communication */}
+              <Section
+                title="Personality & Communication"
+                description="How they interact, what impresses them, vibe"
+                badge="Chef Only"
+              >
+                <Select
+                  label="Formality Level"
+                  value={formalityLevel}
+                  onChange={(e) => setFormalityLevel(e.target.value)}
+                >
+                  <option value="">Select...</option>
+                  <option value="casual">Casual - first names, relaxed vibe</option>
+                  <option value="semi_formal">Semi-Formal - friendly but professional</option>
+                  <option value="formal">Formal - Mr./Mrs., white-glove service</option>
+                </Select>
+                <Textarea
+                  label="Communication Style"
+                  placeholder="Quick texter? Long emailer? Phone call only? How responsive are they?"
+                  value={communicationStyle}
+                  onChange={(e) => setCommunicationStyle(e.target.value)}
+                />
+                <Textarea
+                  label="Vibe Notes"
+                  placeholder="Their personality, energy, how they interact with you"
+                  value={vibeNotes}
+                  onChange={(e) => setVibeNotes(e.target.value)}
+                />
+                <Textarea
+                  label="What They Care About"
+                  placeholder="What matters most to them? Presentation? Health? Impressing guests?"
+                  value={whatTheyCareAbout}
+                  onChange={(e) => setWhatTheyCareAbout(e.target.value)}
+                />
+                <Textarea
+                  label="Wow Factors"
+                  placeholder="What impresses them? Tableside flambe? Exotic ingredients? Plating art?"
+                  value={wowFactors}
+                  onChange={(e) => setWowFactors(e.target.value)}
+                />
+                <Textarea
+                  label="Payment Behavior"
+                  placeholder="Pays promptly? Always late? Prefers Venmo? Tips in cash?"
+                  value={paymentBehavior}
+                  onChange={(e) => setPaymentBehavior(e.target.value)}
+                />
+                <Textarea
+                  label="Tipping Pattern"
+                  placeholder="Generous tipper? Standard 20%? Never tips? Tips in cash?"
+                  value={tippingPattern}
+                  onChange={(e) => setTippingPattern(e.target.value)}
+                />
+                <Textarea
+                  label="Farewell Style"
+                  placeholder="How they say goodbye - linger and chat? Quick exit?"
+                  value={farewellStyle}
+                  onChange={(e) => setFarewellStyle(e.target.value)}
+                />
+                <Textarea
+                  label="How They Handle Issues"
+                  placeholder="Direct? Passive? Complains to your face? Leaves bad reviews?"
+                  value={complaintHandling}
+                  onChange={(e) => setComplaintHandling(e.target.value)}
+                />
+              </Section>
+
+              {/* 8. Chef's Internal Assessment */}
+              <Section
+                title="Chef's Internal Assessment"
+                description="Business intelligence - referral potential, red flags, acquisition cost"
+                badge="Chef Only"
+              >
+                <p className="text-xs text-stone-500 bg-stone-800 rounded-lg p-3">
+                  These fields are strictly for your internal use. Clients will never see any of
+                  this information.
+                </p>
+                <Select
+                  label="Referral Potential"
+                  value={referralPotential}
+                  onChange={(e) => setReferralPotential(e.target.value)}
+                >
+                  <option value="">Select...</option>
+                  <option value="high">High - connected, loves to recommend</option>
+                  <option value="medium">Medium - would refer if asked</option>
+                  <option value="low">Low - keeps to themselves</option>
+                </Select>
+                <Textarea
+                  label="Red Flags"
+                  placeholder="Anything to watch out for - late cancellations, boundary issues, unrealistic expectations"
+                  value={redFlags}
+                  onChange={(e) => setRedFlags(e.target.value)}
                 />
                 <Input
-                  label="Budget Range - Maximum ($)"
+                  label="Client Acquisition Cost ($)"
                   type="number"
-                  placeholder="e.g. 2000"
-                  value={budgetMax}
-                  onChange={(e) => setBudgetMax(e.target.value)}
-                  helperText="Per event maximum spend"
+                  placeholder="Marketing spend to acquire this client"
+                  value={acquisitionCost}
+                  onChange={(e) => setAcquisitionCost(e.target.value)}
+                  helperText="How much did it cost to land this client?"
                 />
-              </div>
-              <Select
-                label="Cleanup Expectations"
-                value={cleanupExpectations}
-                onChange={(e) => setCleanupExpectations(e.target.value)}
-              >
-                <option value="">Select...</option>
-                <option value="full_reset">
-                  Full Kitchen Reset - leave it cleaner than I found it
-                </option>
-                <option value="cooking_mess">Cooking Mess Only - clean what I used</option>
-                <option value="minimal">Minimal - they prefer to clean up themselves</option>
-                <option value="staff_handles">Their Staff Handles Cleanup</option>
-              </Select>
-              <Select
-                label="Leftovers Preference"
-                value={leftoversPref}
-                onChange={(e) => setLeftoversPref(e.target.value)}
-              >
-                <option value="">Select...</option>
-                <option value="package_all">Package Everything - they love leftovers</option>
-                <option value="portion_control">Portion Control - cook just enough</option>
-                <option value="staff_takes">Staff / Helper Takes Leftovers</option>
-                <option value="compost">Compost / Discard</option>
-                <option value="no_preference">No Preference</option>
-              </Select>
-            </Section>
+              </Section>
+            </div>
+          )}
 
-            {/* 7. Personality & Communication */}
-            <Section
-              title="Personality & Communication"
-              description="How they interact, what impresses them, vibe"
-              badge="Chef Only"
-            >
-              <Select
-                label="Formality Level"
-                value={formalityLevel}
-                onChange={(e) => setFormalityLevel(e.target.value)}
-              >
-                <option value="">Select...</option>
-                <option value="casual">Casual - first names, relaxed vibe</option>
-                <option value="semi_formal">Semi-Formal - friendly but professional</option>
-                <option value="formal">Formal - Mr./Mrs., white-glove service</option>
-              </Select>
-              <Textarea
-                label="Communication Style"
-                placeholder="Quick texter? Long emailer? Phone call only? How responsive are they?"
-                value={communicationStyle}
-                onChange={(e) => setCommunicationStyle(e.target.value)}
-              />
-              <Textarea
-                label="Vibe Notes"
-                placeholder="Their personality, energy, how they interact with you"
-                value={vibeNotes}
-                onChange={(e) => setVibeNotes(e.target.value)}
-                onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
-              />
-              <Textarea
-                label="What They Care About"
-                placeholder="What matters most to them? Presentation? Health? Impressing guests?"
-                value={whatTheyCareAbout}
-                onChange={(e) => setWhatTheyCareAbout(e.target.value)}
-              />
-              <Textarea
-                label="Wow Factors"
-                placeholder="What impresses them? Tableside flambe? Exotic ingredients? Plating art?"
-                value={wowFactors}
-                onChange={(e) => setWowFactors(e.target.value)}
-              />
-              <Textarea
-                label="Payment Behavior"
-                placeholder="Pays promptly? Always late? Prefers Venmo? Tips in cash?"
-                value={paymentBehavior}
-                onChange={(e) => setPaymentBehavior(e.target.value)}
-              />
-              <Textarea
-                label="Tipping Pattern"
-                placeholder="Generous tipper? Standard 20%? Never tips? Tips in cash?"
-                value={tippingPattern}
-                onChange={(e) => setTippingPattern(e.target.value)}
-              />
-              <Textarea
-                label="Farewell Style"
-                placeholder="How they say goodbye - linger and chat? Quick exit?"
-                value={farewellStyle}
-                onChange={(e) => setFarewellStyle(e.target.value)}
-              />
-              <Textarea
-                label="How They Handle Issues"
-                placeholder="Direct? Passive? Complains to your face? Leaves bad reviews?"
-                value={complaintHandling}
-                onChange={(e) => setComplaintHandling(e.target.value)}
-              />
-            </Section>
-
-            {/* 8. Chef's Internal Assessment */}
-            <Section
-              title="Chef's Internal Assessment"
-              description="Business intelligence - referral potential, red flags, acquisition cost"
-              badge="Chef Only"
-            >
-              <p className="text-xs text-stone-500 bg-stone-800 rounded-lg p-3">
-                These fields are strictly for your internal use. Clients will never see any of this
-                information.
-              </p>
-              <Select
-                label="Referral Potential"
-                value={referralPotential}
-                onChange={(e) => setReferralPotential(e.target.value)}
-              >
-                <option value="">Select...</option>
-                <option value="high">High - connected, loves to recommend</option>
-                <option value="medium">Medium - would refer if asked</option>
-                <option value="low">Low - keeps to themselves</option>
-              </Select>
-              <Textarea
-                label="Red Flags"
-                placeholder="Anything to watch out for - late cancellations, boundary issues, unrealistic expectations"
-                value={redFlags}
-                onChange={(e) => setRedFlags(e.target.value)}
-              />
-              <Input
-                label="Client Acquisition Cost ($)"
-                type="number"
-                placeholder="Marketing spend to acquire this client"
-                value={acquisitionCost}
-                onChange={(e) => setAcquisitionCost(e.target.value)}
-                helperText="How much did it cost to land this client?"
-              />
-            </Section>
+          {/* ─── Submit ──────────────────────────────────────────────────── */}
+          <div className="flex gap-2 pt-4 border-t border-stone-700">
+            <Button type="submit" loading={loading}>
+              {mode === 'quick' ? 'Add Client' : 'Create Full Profile'}
+            </Button>
+            <Button variant="ghost" type="button" onClick={() => router.push('/clients')}>
+              Cancel
+            </Button>
           </div>
+        </form>
+
+        {error && (
+          <Alert variant="error" title="Error" className="mt-4">
+            {error}
+          </Alert>
         )}
-
-        {/* ─── Submit ──────────────────────────────────────────────────── */}
-        <div className="flex gap-2 pt-4 border-t border-stone-700">
-          <Button type="submit" loading={loading}>
-            {mode === 'quick' ? 'Add Client' : 'Create Full Profile'}
-          </Button>
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={() => unsavedGuard.requestNavigation(() => router.push('/clients'))}
-          >
-            Cancel
-          </Button>
-        </div>
-      </form>
-
-      {error && (
-        <Alert variant="error" title="Error" className="mt-4">
-          {error}
-        </Alert>
-      )}
-
-      <DraftRestorePrompt
-        open={durableDraft.showRestorePrompt}
-        lastSavedAt={durableDraft.pendingDraft?.lastSavedAt ?? durableDraft.lastSavedAt}
-        onRestore={() => {
-          const restored = durableDraft.restoreDraft()
-          if (restored) {
-            applyDraft(restored)
-          }
-        }}
-        onDiscard={() => void durableDraft.discardDraft()}
-      />
-
-      <UnsavedChangesDialog
-        open={unsavedGuard.open}
-        canSaveDraft={unsavedGuard.canSaveDraft}
-        onStay={unsavedGuard.onStay}
-        onLeave={unsavedGuard.onLeave}
-        onSaveDraftAndLeave={() => void unsavedGuard.onSaveDraftAndLeave()}
-      />
-    </div>
+      </div>
+    </FormShield>
   )
 }

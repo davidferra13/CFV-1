@@ -26,6 +26,7 @@ export default async function NewRetainerPage() {
       <RetainerForm
         clients={(clients || []).map((c: any) => ({ id: c.id, full_name: c.full_name }))}
         mode="create"
+        chefId={user.tenantId!}
       />
     </div>
   )

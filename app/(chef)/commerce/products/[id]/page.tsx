@@ -12,7 +12,7 @@ import { ArrowLeft } from '@/components/ui/icons'
 export const metadata: Metadata = { title: 'Edit Product | ChefFlow' }
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireChef()
+  const user = await requireChef()
   await requirePro('commerce')
   const { id } = await params
 
@@ -34,7 +34,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         </Link>
         <h1 className="text-3xl font-bold text-stone-100">Edit Product</h1>
       </div>
-      <ProductForm product={product} />
+      <ProductForm product={product} chefId={user.entityId!} />
     </div>
   )
 }

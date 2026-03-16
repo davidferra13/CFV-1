@@ -15,18 +15,18 @@ async function AutoResponseSection() {
   return <AutoResponseSettings config={config} />
 }
 
-async function BusinessHoursSection() {
+async function BusinessHoursSection({ chefId }: { chefId: string }) {
   const config = await getBusinessHoursConfig()
-  return <BusinessHoursEditor config={config} />
+  return <BusinessHoursEditor config={config} chefId={chefId} />
 }
 
-async function TemplatesSection() {
+async function TemplatesSection({ chefId }: { chefId: string }) {
   const templates = await getTemplates()
-  return <TemplateList templates={templates} />
+  return <TemplateList templates={templates} chefId={chefId} />
 }
 
 export default async function CommunicationSettingsPage() {
-  await requireChef()
+  const user = await requireChef()
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 p-6">
@@ -45,13 +45,13 @@ export default async function CommunicationSettingsPage() {
 
       <WidgetErrorBoundary name="Business Hours">
         <Suspense fallback={<SectionSkeleton title="Business Hours" />}>
-          <BusinessHoursSection />
+          <BusinessHoursSection chefId={user.entityId} />
         </Suspense>
       </WidgetErrorBoundary>
 
       <WidgetErrorBoundary name="Response Templates">
         <Suspense fallback={<SectionSkeleton title="Response Templates" />}>
-          <TemplatesSection />
+          <TemplatesSection chefId={user.entityId!} />
         </Suspense>
       </WidgetErrorBoundary>
     </div>

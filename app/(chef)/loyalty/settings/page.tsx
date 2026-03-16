@@ -11,7 +11,7 @@ import { LoyaltySettingsForm } from './loyalty-settings-form'
 export const metadata: Metadata = { title: 'Loyalty Settings - ChefFlow' }
 
 export default async function LoyaltySettingsPage() {
-  await requireChef()
+  const user = await requireChef()
   const config = await getLoyaltyConfig()
 
   return (
@@ -29,7 +29,7 @@ export default async function LoyaltySettingsPage() {
         </p>
       </div>
 
-      <LoyaltySettingsForm config={config} />
+      <LoyaltySettingsForm config={config} chefId={user.entityId!} />
     </div>
   )
 }

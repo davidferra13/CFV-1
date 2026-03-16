@@ -1,7 +1,7 @@
 // Commerce Product Form - create/edit products
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,12 +17,15 @@ import {
 } from '@/lib/commerce/constants'
 import type { ProductCategory, TaxClass } from '@/lib/commerce/constants'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 
 type Props = {
   product?: any // existing product for edit mode
+  chefId: string
 }
 
-export function ProductForm({ product }: Props) {
+export function ProductForm({ product, chefId }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const isEdit = !!product
@@ -39,6 +42,70 @@ export function ProductForm({ product }: Props) {
   const [lowStockThreshold, setLowStockThreshold] = useState(
     product?.low_stock_threshold?.toString() ?? ''
   )
+
+  const defaultData = useMemo(
+    () => ({
+      name: product?.name ?? '',
+      description: product?.description ?? '',
+      category: product?.category ?? '',
+      sku: product?.sku ?? '',
+      price: product ? (product.price_cents / 100).toFixed(2) : '',
+      cost: product?.cost_cents ? (product.cost_cents / 100).toFixed(2) : '',
+      taxClass: product?.tax_class ?? 'standard',
+      trackInventory: product?.track_inventory ?? false,
+      availableQty: product?.available_qty?.toString() ?? '',
+      lowStockThreshold: product?.low_stock_threshold?.toString() ?? '',
+    }),
+    [product]
+  )
+
+  const currentData = useMemo(
+    () => ({
+      name,
+      description,
+      category,
+      sku,
+      price,
+      cost,
+      taxClass,
+      trackInventory,
+      availableQty,
+      lowStockThreshold,
+    }),
+    [
+      name,
+      description,
+      category,
+      sku,
+      price,
+      cost,
+      taxClass,
+      trackInventory,
+      availableQty,
+      lowStockThreshold,
+    ]
+  )
+
+  const protection = useProtectedForm({
+    surfaceId: 'product',
+    recordId: product?.id ?? null,
+    tenantId: chefId,
+    defaultData,
+    currentData,
+  })
+
+  function applyDraftData(data: Record<string, unknown>) {
+    if (typeof data.name === 'string') setName(data.name)
+    if (typeof data.description === 'string') setDescription(data.description)
+    if (typeof data.category === 'string') setCategory(data.category)
+    if (typeof data.sku === 'string') setSku(data.sku)
+    if (typeof data.price === 'string') setPrice(data.price)
+    if (typeof data.cost === 'string') setCost(data.cost)
+    if (typeof data.taxClass === 'string') setTaxClass(data.taxClass as TaxClass)
+    if (typeof data.trackInventory === 'boolean') setTrackInventory(data.trackInventory)
+    if (typeof data.availableQty === 'string') setAvailableQty(data.availableQty)
+    if (typeof data.lowStockThreshold === 'string') setLowStockThreshold(data.lowStockThreshold)
+  }
 
   function handleSubmit() {
     if (!name.trim()) {
@@ -71,6 +138,7 @@ export function ProductForm({ product }: Props) {
               trackInventory && lowStockThreshold ? parseInt(lowStockThreshold, 10) : undefined,
           })
           toast.success('Product updated')
+          protection.markCommitted()
         } else {
           await createProduct({
             name: name.trim(),
@@ -86,6 +154,7 @@ export function ProductForm({ product }: Props) {
               trackInventory && lowStockThreshold ? parseInt(lowStockThreshold, 10) : undefined,
           })
           toast.success('Product created')
+          protection.markCommitted()
         }
         router.push('/commerce/products')
         router.refresh()
@@ -105,165 +174,181 @@ export function ProductForm({ product }: Props) {
       : null
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{isEdit ? 'Edit Product' : 'New Product'}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Name */}
-          <div>
-            <label className="text-stone-400 text-sm block mb-1">
-              Product Name <span className="text-red-400">*</span>
-            </label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Chocolate Croissant"
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="text-stone-400 text-sm block mb-1">Description</label>
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description"
-            />
-          </div>
-
-          {/* Category + SKU row */}
-          <div className="grid grid-cols-2 gap-4">
+    <FormShield
+      guard={protection.guard}
+      showRestorePrompt={protection.showRestorePrompt}
+      lastSavedAt={protection.lastSavedAt}
+      onRestore={() => {
+        const d = protection.restoreDraft()
+        if (d) applyDraftData(d)
+      }}
+      onDiscard={protection.discardDraft}
+      saveState={protection.saveState}
+    >
+      <div className="max-w-2xl mx-auto space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>{isEdit ? 'Edit Product' : 'New Product'}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Name */}
             <div>
-              <label className="text-stone-400 text-sm block mb-1">Category</label>
+              <label className="text-stone-400 text-sm block mb-1">
+                Product Name <span className="text-red-400">*</span>
+              </label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Chocolate Croissant"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="text-stone-400 text-sm block mb-1">Description</label>
+              <Input
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Optional description"
+              />
+            </div>
+
+            {/* Category + SKU row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-stone-400 text-sm block mb-1">Category</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full rounded-md border border-stone-700 bg-stone-900 text-stone-200 px-3 py-2 text-sm"
+                >
+                  <option value="">None</option>
+                  {PRODUCT_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {PRODUCT_CATEGORY_LABELS[cat as ProductCategory]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-stone-400 text-sm block mb-1">SKU</label>
+                <Input
+                  value={sku}
+                  onChange={(e) => setSku(e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
+            </div>
+
+            {/* Price + Cost row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-stone-400 text-sm block mb-1">
+                  Price ($) <span className="text-red-400">*</span>
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className="text-stone-400 text-sm block mb-1">Cost ($)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={cost}
+                  onChange={(e) => setCost(e.target.value)}
+                  placeholder="0.00"
+                />
+                {margin !== null && (
+                  <p className="text-xs mt-1">
+                    <span
+                      className={
+                        margin >= 60
+                          ? 'text-emerald-400'
+                          : margin >= 30
+                            ? 'text-amber-400'
+                            : 'text-red-400'
+                      }
+                    >
+                      {margin}% margin
+                    </span>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Tax class */}
+            <div>
+              <label className="text-stone-400 text-sm block mb-1">Tax Class</label>
               <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                value={taxClass}
+                onChange={(e) => setTaxClass(e.target.value as TaxClass)}
                 className="w-full rounded-md border border-stone-700 bg-stone-900 text-stone-200 px-3 py-2 text-sm"
               >
-                <option value="">None</option>
-                {PRODUCT_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {PRODUCT_CATEGORY_LABELS[cat as ProductCategory]}
+                {TAX_CLASSES.map((tc) => (
+                  <option key={tc} value={tc}>
+                    {TAX_CLASS_LABELS[tc as TaxClass]}
                   </option>
                 ))}
               </select>
             </div>
-            <div>
-              <label className="text-stone-400 text-sm block mb-1">SKU</label>
-              <Input value={sku} onChange={(e) => setSku(e.target.value)} placeholder="Optional" />
-            </div>
-          </div>
 
-          {/* Price + Cost row */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-stone-400 text-sm block mb-1">
-                Price ($) <span className="text-red-400">*</span>
+            {/* Inventory tracking */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={trackInventory}
+                  onChange={(e) => setTrackInventory(e.target.checked)}
+                  className="rounded border-stone-600"
+                />
+                <span className="text-stone-300 text-sm">Track inventory</span>
               </label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="0.00"
-              />
-            </div>
-            <div>
-              <label className="text-stone-400 text-sm block mb-1">Cost ($)</label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                value={cost}
-                onChange={(e) => setCost(e.target.value)}
-                placeholder="0.00"
-              />
-              {margin !== null && (
-                <p className="text-xs mt-1">
-                  <span
-                    className={
-                      margin >= 60
-                        ? 'text-emerald-400'
-                        : margin >= 30
-                          ? 'text-amber-400'
-                          : 'text-red-400'
-                    }
-                  >
-                    {margin}% margin
-                  </span>
-                </p>
+
+              {trackInventory && (
+                <div className="grid grid-cols-2 gap-4 pl-6">
+                  <div>
+                    <label className="text-stone-400 text-sm block mb-1">Stock Quantity</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={availableQty}
+                      onChange={(e) => setAvailableQty(e.target.value)}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-stone-400 text-sm block mb-1">Low Stock Alert</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={lowStockThreshold}
+                      onChange={(e) => setLowStockThreshold(e.target.value)}
+                      placeholder="5"
+                    />
+                  </div>
+                </div>
               )}
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Tax class */}
-          <div>
-            <label className="text-stone-400 text-sm block mb-1">Tax Class</label>
-            <select
-              value={taxClass}
-              onChange={(e) => setTaxClass(e.target.value as TaxClass)}
-              className="w-full rounded-md border border-stone-700 bg-stone-900 text-stone-200 px-3 py-2 text-sm"
-            >
-              {TAX_CLASSES.map((tc) => (
-                <option key={tc} value={tc}>
-                  {TAX_CLASS_LABELS[tc as TaxClass]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Inventory tracking */}
-          <div className="space-y-3">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={trackInventory}
-                onChange={(e) => setTrackInventory(e.target.checked)}
-                className="rounded border-stone-600"
-              />
-              <span className="text-stone-300 text-sm">Track inventory</span>
-            </label>
-
-            {trackInventory && (
-              <div className="grid grid-cols-2 gap-4 pl-6">
-                <div>
-                  <label className="text-stone-400 text-sm block mb-1">Stock Quantity</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={availableQty}
-                    onChange={(e) => setAvailableQty(e.target.value)}
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                  <label className="text-stone-400 text-sm block mb-1">Low Stock Alert</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={lowStockThreshold}
-                    onChange={(e) => setLowStockThreshold(e.target.value)}
-                    placeholder="5"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Actions */}
-      <div className="flex gap-3 justify-end">
-        <Button variant="ghost" onClick={() => router.push('/commerce/products')}>
-          Cancel
-        </Button>
-        <Button variant="primary" onClick={handleSubmit} disabled={isPending}>
-          {isPending ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Product'}
-        </Button>
+        {/* Actions */}
+        <div className="flex gap-3 justify-end">
+          <Button variant="ghost" onClick={() => router.push('/commerce/products')}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSubmit} disabled={isPending}>
+            {isPending ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Product'}
+          </Button>
+        </div>
       </div>
-    </div>
+    </FormShield>
   )
 }
