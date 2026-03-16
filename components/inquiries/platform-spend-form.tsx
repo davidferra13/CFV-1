@@ -30,7 +30,7 @@ export function PlatformSpendForm() {
 
   const [channel, setChannel] = useState('thumbtack')
   const [amount, setAmount] = useState('')
-  const [spendDate, setSpendDate] = useState(todayString)
+  const [spendDate, setSpendDate] = useState(todayString())
   const [notes, setNotes] = useState('')
 
   function resetForm() {
