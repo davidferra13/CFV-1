@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 // Partner Portal - Preview
 // Shows the partner exactly how they appear on the chef's public showcase page.
 // Fetches the same data that clients see - truth in advertising.
 
+import Image from 'next/image'
 import { requirePartner } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { Eye, EyeOff, ExternalLink } from '@/components/ui/icons'
@@ -92,11 +92,13 @@ export default async function PartnerPreviewPage() {
       <div className="rounded-2xl border border-stone-700 bg-stone-900 overflow-hidden shadow-sm">
         {/* Cover image */}
         {partner?.cover_image_url ? (
-          <div className="h-48 overflow-hidden bg-stone-800">
-            <img
+          <div className="relative h-48 overflow-hidden bg-stone-800">
+            <Image
               src={partner.cover_image_url}
               alt={partner?.name ?? ''}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
         ) : (
@@ -152,8 +154,14 @@ export default async function PartnerPreviewPage() {
                       className="rounded-lg border border-stone-800 overflow-hidden"
                     >
                       {thumb ? (
-                        <div className="h-24 bg-stone-800 overflow-hidden">
-                          <img src={thumb} alt={loc.name} className="w-full h-full object-cover" />
+                        <div className="relative h-24 bg-stone-800 overflow-hidden">
+                          <Image
+                            src={thumb}
+                            alt={loc.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 100vw, 50vw"
+                          />
                         </div>
                       ) : (
                         <div className="h-24 bg-stone-800" />
@@ -186,12 +194,14 @@ export default async function PartnerPreviewPage() {
                 {allImages.slice(0, 6).map((img: any) => (
                   <div
                     key={img.id}
-                    className="aspect-square rounded-lg overflow-hidden bg-stone-800"
+                    className="relative aspect-square rounded-lg overflow-hidden bg-stone-800"
                   >
-                    <img
+                    <Image
                       src={img.image_url}
                       alt={img.caption ?? ''}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 33vw, 20vw"
                     />
                   </div>
                 ))}

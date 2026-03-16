@@ -1,6 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
+import Image from 'next/image'
 import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -164,11 +164,13 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
               </div>
 
               {/* Photo */}
-              <div className="aspect-square bg-stone-800">
-                <img
+              <div className="relative aspect-square bg-stone-800">
+                <Image
                   src={item.photoUrl}
                   alt={item.dishName || item.caption || 'Portfolio photo'}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
               </div>
 
