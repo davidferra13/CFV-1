@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { CreateRewardForm } from './create-reward-form'
 
 export default async function NewRewardPage() {
-  await requireChef()
+  const user = await requireChef()
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -29,7 +29,7 @@ export default async function NewRewardPage() {
           <CardTitle>Reward Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <CreateRewardForm />
+          <CreateRewardForm chefId={user.entityId} />
         </CardContent>
       </Card>
     </div>

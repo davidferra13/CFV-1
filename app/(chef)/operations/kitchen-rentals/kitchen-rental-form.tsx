@@ -1,27 +1,55 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createKitchenRental } from '@/lib/kitchen-rentals/actions'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 
-export function KitchenRentalForm() {
+const EMPTY_FORM = {
+  facility_name: '',
+  address: '',
+  rental_date: '',
+  start_time: '',
+  end_time: '',
+  hours_booked: '',
+  cost_dollars: '',
+  purpose: '',
+  booking_confirmation: '',
+  notes: '',
+}
+
+export function KitchenRentalForm({ chefId }: { chefId: string }) {
   const router = useRouter()
-  const [form, setForm] = useState({
-    facility_name: '',
-    address: '',
-    rental_date: '',
-    start_time: '',
-    end_time: '',
-    hours_booked: '',
-    cost_dollars: '',
-    purpose: '',
-    booking_confirmation: '',
-    notes: '',
-  })
+  const [form, setForm] = useState({ ...EMPTY_FORM })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const defaultData = useMemo(() => ({ ...EMPTY_FORM }), [])
+  const currentData = useMemo(() => ({ ...form }), [form])
+
+  const protection = useProtectedForm({
+    surfaceId: 'kitchen-rental',
+    recordId: null,
+    tenantId: chefId,
+    defaultData,
+    currentData,
+    throttleMs: 10_000,
+  })
+
+  function applyDraftData(data: Record<string, unknown>) {
+    setForm((prev) => {
+      const next = { ...prev }
+      for (const key of Object.keys(EMPTY_FORM)) {
+        if (typeof data[key] === 'string') {
+          ;(next as any)[key] = data[key]
+        }
+      }
+      return next
+    })
+  }
 
   function update(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -48,18 +76,8 @@ export function KitchenRentalForm() {
         booking_confirmation: form.booking_confirmation || undefined,
         notes: form.notes || undefined,
       })
-      setForm({
-        facility_name: '',
-        address: '',
-        rental_date: '',
-        start_time: '',
-        end_time: '',
-        hours_booked: '',
-        cost_dollars: '',
-        purpose: '',
-        booking_confirmation: '',
-        notes: '',
-      })
+      setForm({ ...EMPTY_FORM })
+      protection.markCommitted()
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save')
@@ -69,104 +87,116 @@ export function KitchenRentalForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="col-span-2">
-          <label className="block text-xs font-medium text-stone-400 mb-1">Facility name *</label>
+    <FormShield
+      guard={protection.guard}
+      showRestorePrompt={protection.showRestorePrompt}
+      lastSavedAt={protection.lastSavedAt}
+      onRestore={() => {
+        const d = protection.restoreDraft()
+        if (d) applyDraftData(d)
+      }}
+      onDiscard={protection.discardDraft}
+      saveState={protection.saveState}
+    >
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-stone-400 mb-1">Facility name *</label>
+            <Input
+              value={form.facility_name}
+              onChange={(e) => update('facility_name', e.target.value)}
+              placeholder="Blue Apron Shared Kitchen"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-400 mb-1">Date *</label>
+            <Input
+              type="date"
+              value={form.rental_date}
+              onChange={(e) => update('rental_date', e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-400 mb-1">Cost *</label>
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.cost_dollars}
+              onChange={(e) => update('cost_dollars', e.target.value)}
+              placeholder="75.00"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-400 mb-1">Start time</label>
+            <Input
+              type="time"
+              value={form.start_time}
+              onChange={(e) => update('start_time', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-400 mb-1">End time</label>
+            <Input
+              type="time"
+              value={form.end_time}
+              onChange={(e) => update('end_time', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-400 mb-1">Hours booked</label>
+            <Input
+              type="number"
+              min="0.25"
+              step="0.25"
+              value={form.hours_booked}
+              onChange={(e) => update('hours_booked', e.target.value)}
+              placeholder="3.5"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-400 mb-1">
+              Booking confirmation #
+            </label>
+            <Input
+              value={form.booking_confirmation}
+              onChange={(e) => update('booking_confirmation', e.target.value)}
+              placeholder="Optional"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Address</label>
           <Input
-            value={form.facility_name}
-            onChange={(e) => update('facility_name', e.target.value)}
-            placeholder="Blue Apron Shared Kitchen"
-            required
+            value={form.address}
+            onChange={(e) => update('address', e.target.value)}
+            placeholder="123 Main St, City, State"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-400 mb-1">Date *</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Purpose</label>
           <Input
-            type="date"
-            value={form.rental_date}
-            onChange={(e) => update('rental_date', e.target.value)}
-            required
+            value={form.purpose}
+            onChange={(e) => update('purpose', e.target.value)}
+            placeholder="Large batch prep for Smith event"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-400 mb-1">Cost *</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Notes</label>
           <Input
-            type="number"
-            min="0"
-            step="0.01"
-            value={form.cost_dollars}
-            onChange={(e) => update('cost_dollars', e.target.value)}
-            placeholder="75.00"
-            required
+            value={form.notes}
+            onChange={(e) => update('notes', e.target.value)}
+            placeholder="Any additional notes"
           />
         </div>
-        <div>
-          <label className="block text-xs font-medium text-stone-400 mb-1">Start time</label>
-          <Input
-            type="time"
-            value={form.start_time}
-            onChange={(e) => update('start_time', e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-stone-400 mb-1">End time</label>
-          <Input
-            type="time"
-            value={form.end_time}
-            onChange={(e) => update('end_time', e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-stone-400 mb-1">Hours booked</label>
-          <Input
-            type="number"
-            min="0.25"
-            step="0.25"
-            value={form.hours_booked}
-            onChange={(e) => update('hours_booked', e.target.value)}
-            placeholder="3.5"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-stone-400 mb-1">
-            Booking confirmation #
-          </label>
-          <Input
-            value={form.booking_confirmation}
-            onChange={(e) => update('booking_confirmation', e.target.value)}
-            placeholder="Optional"
-          />
-        </div>
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-stone-400 mb-1">Address</label>
-        <Input
-          value={form.address}
-          onChange={(e) => update('address', e.target.value)}
-          placeholder="123 Main St, City, State"
-        />
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-stone-400 mb-1">Purpose</label>
-        <Input
-          value={form.purpose}
-          onChange={(e) => update('purpose', e.target.value)}
-          placeholder="Large batch prep for Smith event"
-        />
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-stone-400 mb-1">Notes</label>
-        <Input
-          value={form.notes}
-          onChange={(e) => update('notes', e.target.value)}
-          placeholder="Any additional notes"
-        />
-      </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
-      <Button type="submit" size="sm" disabled={saving}>
-        {saving ? 'Saving…' : 'Log Rental'}
-      </Button>
-    </form>
+        {error && <p className="text-xs text-red-600">{error}</p>}
+        <Button type="submit" size="sm" disabled={saving || !protection.isDirty}>
+          {saving ? 'Saving…' : 'Log Rental'}
+        </Button>
+      </form>
+    </FormShield>
   )
 }

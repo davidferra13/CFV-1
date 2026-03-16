@@ -16,7 +16,7 @@ function formatCents(cents: number) {
 }
 
 export default async function KitchenRentalsPage() {
-  await requireChef()
+  const user = await requireChef()
   const rentals = await listKitchenRentals()
 
   const totalCents = rentals.reduce((s: any, r: any) => s + r.cost_cents, 0)
@@ -106,7 +106,7 @@ export default async function KitchenRentalsPage() {
           <CardTitle className="text-base">Log a Rental</CardTitle>
         </CardHeader>
         <CardContent>
-          <KitchenRentalForm />
+          <KitchenRentalForm chefId={user.entityId} />
         </CardContent>
       </Card>
     </div>
