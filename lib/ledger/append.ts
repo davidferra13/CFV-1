@@ -168,28 +168,40 @@ export async function createAdjustment({
     created_by: user.id,
   })
 
-  // Log chef activity (non-blocking)
-  try {
-    const { logChefActivity } = await import('@/lib/activity/log-chef')
-    await logChefActivity({
-      tenantId: user.tenantId!,
-      actorId: user.id,
-      action: 'ledger_entry_created',
-      domain: 'financial',
-      entityType: 'ledger_entry',
-      entityId: result.entry?.id,
-      summary: `Recorded adjustment: $${(amount_cents / 100).toFixed(2)} — ${description}`,
-      context: {
-        amount_cents,
-        entry_type: 'adjustment',
-        payment_method,
-        event_id,
-        amount_display: `$${(amount_cents / 100).toFixed(2)}`,
+  // Log chef activity (non-blocking, captured in side_effect_failures)
+  {
+    const { nonBlocking } = await import('@/lib/monitoring/non-blocking')
+    await nonBlocking(
+      {
+        source: 'ledger-append',
+        operation: 'log_chef_activity',
+        severity: 'high',
+        entityType: 'ledger_entry',
+        entityId: result.entry?.id,
+        tenantId: user.tenantId,
+        context: { event_id, amount_cents },
       },
-      clientId: event.client_id,
-    })
-  } catch (err) {
-    log.ledger.warn('Activity log failed (non-blocking)', { error: err })
+      async () => {
+        const { logChefActivity } = await import('@/lib/activity/log-chef')
+        await logChefActivity({
+          tenantId: user.tenantId!,
+          actorId: user.id,
+          action: 'ledger_entry_created',
+          domain: 'financial',
+          entityType: 'ledger_entry',
+          entityId: result.entry?.id,
+          summary: `Recorded adjustment: $${(amount_cents / 100).toFixed(2)} — ${description}`,
+          context: {
+            amount_cents,
+            entry_type: 'adjustment',
+            payment_method,
+            event_id,
+            amount_display: `$${(amount_cents / 100).toFixed(2)}`,
+          },
+          clientId: event.client_id,
+        })
+      }
+    )
   }
 
   return result

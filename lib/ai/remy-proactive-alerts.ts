@@ -6,6 +6,7 @@
 // Runs on a scheduled cron (every hour) or on-demand.
 
 import { createServerClient } from '@/lib/supabase/server'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 
 interface AlertCandidate {
   alertType: string
@@ -23,7 +24,7 @@ async function checkMissingPrepList(supabase: any, tenantId: string): Promise<Al
   const in48h = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0]
   const today = new Date().toISOString().split('T')[0]
 
-  const { data: events } = await supabase
+  const { data: events, error } = await supabase
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -32,6 +33,8 @@ async function checkMissingPrepList(supabase: any, tenantId: string): Promise<Al
     .lte('event_date', in48h)
     .eq('prep_list_ready', false)
     .limit(5)
+
+  if (error) throw error
 
   for (const e of events ?? []) {
     const clientName = e.client?.full_name ?? 'Unknown'
@@ -55,7 +58,7 @@ async function checkMissingGroceryList(supabase: any, tenantId: string): Promise
   const in24h = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   const today = new Date().toISOString().split('T')[0]
 
-  const { data: events } = await supabase
+  const { data: events, error } = await supabase
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -64,6 +67,8 @@ async function checkMissingGroceryList(supabase: any, tenantId: string): Promise
     .lte('event_date', in24h)
     .eq('grocery_list_ready', false)
     .limit(5)
+
+  if (error) throw error
 
   for (const e of events ?? []) {
     const clientName = e.client?.full_name ?? 'Unknown'
@@ -83,13 +88,15 @@ async function checkOverdueInvoices(supabase: any, tenantId: string): Promise<Al
   const alerts: AlertCandidate[] = []
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: invoices } = await supabase
+  const { data: invoices, error } = await supabase
     .from('invoices')
     .select('id, invoice_number, due_date, total_cents, client:clients(full_name)')
     .eq('tenant_id', tenantId)
     .eq('status', 'sent')
     .lte('due_date', sevenDaysAgo)
     .limit(5)
+
+  if (error) throw error
 
   for (const inv of invoices ?? []) {
     const clientName = inv.client?.full_name ?? 'Unknown'
@@ -116,13 +123,15 @@ async function checkStaleInquiries(supabase: any, tenantId: string): Promise<Ale
   const alerts: AlertCandidate[] = []
   const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
 
-  const { data: inquiries } = await supabase
+  const { data: inquiries, error } = await supabase
     .from('inquiries')
     .select('id, lead_name, event_type, created_at, updated_at')
     .eq('tenant_id', tenantId)
     .in('status', ['new', 'awaiting_chef'])
     .lte('updated_at', twoDaysAgo)
     .limit(5)
+
+  if (error) throw error
 
   for (const inq of inquiries ?? []) {
     const daysOld = Math.floor(
@@ -144,13 +153,15 @@ async function checkPaymentReceived(supabase: any, tenantId: string): Promise<Al
   const alerts: AlertCandidate[] = []
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
 
-  const { data: payments } = await supabase
+  const { data: payments, error } = await supabase
     .from('ledger_entries')
     .select('id, amount_cents, created_at, event:events(id, occasion, client:clients(full_name))')
     .eq('tenant_id', tenantId)
     .eq('entry_type', 'payment')
     .gte('created_at', oneHourAgo)
     .limit(5)
+
+  if (error) throw error
 
   for (const p of payments ?? []) {
     const clientName = p.event?.client?.full_name ?? 'Unknown'
@@ -177,12 +188,14 @@ async function checkClientBirthdays(supabase: any, tenantId: string): Promise<Al
   const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
   // Check clients with birthday in next 7 days (month/day comparison)
-  const { data: clients } = await supabase
+  const { data: clients, error } = await supabase
     .from('clients')
     .select('id, full_name, date_of_birth')
     .eq('tenant_id', tenantId)
     .not('date_of_birth', 'is', null)
     .limit(100)
+
+  if (error) throw error
 
   for (const c of clients ?? []) {
     if (!c.date_of_birth) continue
@@ -237,7 +250,13 @@ async function checkWeatherForEvents(tenantId: string): Promise<AlertCandidate[]
       }
     })
   } catch (err) {
-    console.error('[non-blocking] Weather check failed:', err)
+    await recordSideEffectFailure({
+      source: 'remy-proactive-alerts',
+      operation: 'check_weather_for_events',
+      severity: 'low',
+      tenantId,
+      errorMessage: err instanceof Error ? err.message : String(err),
+    })
     return []
   }
 }
@@ -260,8 +279,40 @@ async function isDuplicate(
 
   if (entityId) query = query.eq('entity_id', entityId)
 
-  const { count } = await query
+  const { count, error } = await query
+  if (error) {
+    await recordSideEffectFailure({
+      source: 'remy-proactive-alerts',
+      operation: 'dedupe_lookup',
+      severity: 'medium',
+      tenantId,
+      entityType: 'alert',
+      entityId: entityId ?? undefined,
+      errorMessage: error.message,
+      context: { alertType },
+    })
+    return false
+  }
   return (count ?? 0) > 0
+}
+
+async function runRuleSafely(
+  tenantId: string,
+  operation: string,
+  fn: () => Promise<AlertCandidate[]>
+): Promise<AlertCandidate[]> {
+  try {
+    return await fn()
+  } catch (err) {
+    await recordSideEffectFailure({
+      source: 'remy-proactive-alerts',
+      operation,
+      severity: 'medium',
+      tenantId,
+      errorMessage: err instanceof Error ? err.message : String(err),
+    })
+    return []
+  }
 }
 
 export async function runAlertRules(tenantId: string): Promise<number> {
@@ -277,13 +328,23 @@ export async function runAlertRules(tenantId: string): Promise<number> {
     birthdayAlerts,
     weatherAlerts,
   ] = await Promise.all([
-    checkMissingPrepList(supabase, tenantId).catch(() => []),
-    checkMissingGroceryList(supabase, tenantId).catch(() => []),
-    checkOverdueInvoices(supabase, tenantId).catch(() => []),
-    checkStaleInquiries(supabase, tenantId).catch(() => []),
-    checkPaymentReceived(supabase, tenantId).catch(() => []),
-    checkClientBirthdays(supabase, tenantId).catch(() => []),
-    checkWeatherForEvents(tenantId).catch(() => []),
+    runRuleSafely(tenantId, 'check_missing_prep_list', () =>
+      checkMissingPrepList(supabase, tenantId)
+    ),
+    runRuleSafely(tenantId, 'check_missing_grocery_list', () =>
+      checkMissingGroceryList(supabase, tenantId)
+    ),
+    runRuleSafely(tenantId, 'check_overdue_invoices', () =>
+      checkOverdueInvoices(supabase, tenantId)
+    ),
+    runRuleSafely(tenantId, 'check_stale_inquiries', () => checkStaleInquiries(supabase, tenantId)),
+    runRuleSafely(tenantId, 'check_payment_received', () =>
+      checkPaymentReceived(supabase, tenantId)
+    ),
+    runRuleSafely(tenantId, 'check_client_birthdays', () =>
+      checkClientBirthdays(supabase, tenantId)
+    ),
+    runRuleSafely(tenantId, 'check_weather_for_events', () => checkWeatherForEvents(tenantId)),
   ])
 
   const allCandidates = [
@@ -313,7 +374,21 @@ export async function runAlertRules(tenantId: string): Promise<number> {
       priority: alert.priority,
     })
 
-    if (!error) inserted++
+    if (!error) {
+      inserted++
+      continue
+    }
+
+    await recordSideEffectFailure({
+      source: 'remy-proactive-alerts',
+      operation: 'insert_alert',
+      severity: 'medium',
+      tenantId,
+      entityType: alert.entityType,
+      entityId: alert.entityId,
+      errorMessage: error.message,
+      context: { alertType: alert.alertType, priority: alert.priority },
+    })
   }
 
   return inserted

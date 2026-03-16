@@ -14,7 +14,6 @@ import { getCircleForContext, getCircleForEvent, getChefHubProfileId } from './c
 export async function postMenuSharedToCircle(input: {
   menuId: string
   menuName: string
-  tenantId: string
   eventId?: string | null
   inquiryId?: string | null
 }): Promise<void> {
@@ -24,7 +23,7 @@ export async function postMenuSharedToCircle(input: {
   })
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
   const supabase = createServerClient({ admin: true })
@@ -48,7 +47,6 @@ export async function postQuoteSentToCircle(input: {
   perPersonCents?: number | null
   depositRequired: boolean
   depositCents?: number | null
-  tenantId: string
   eventId?: string | null
   inquiryId?: string | null
 }): Promise<void> {
@@ -58,7 +56,7 @@ export async function postQuoteSentToCircle(input: {
   })
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
   const total = (input.totalCents / 100).toFixed(2)
@@ -94,7 +92,6 @@ export async function postQuoteSentToCircle(input: {
 
 export async function postQuoteAcceptedToCircle(input: {
   quoteId: string
-  tenantId: string
   eventId?: string | null
   inquiryId?: string | null
 }): Promise<void> {
@@ -104,7 +101,7 @@ export async function postQuoteAcceptedToCircle(input: {
   })
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
   const supabase = createServerClient({ admin: true })
@@ -124,14 +121,13 @@ export async function postQuoteAcceptedToCircle(input: {
 
 export async function postPaymentReceivedToCircle(input: {
   eventId: string
-  tenantId: string
   amountCents: number
   paymentType: string
 }): Promise<void> {
   const circle = await getCircleForEvent(input.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
   const amount = (input.amountCents / 100).toFixed(2)
@@ -156,13 +152,12 @@ export async function postPaymentReceivedToCircle(input: {
 
 export async function postEventConfirmedToCircle(input: {
   eventId: string
-  tenantId: string
   eventDate: string | null
 }): Promise<void> {
   const circle = await getCircleForEvent(input.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
   const datePart = input.eventDate ? ` for ${input.eventDate}` : ''
@@ -184,14 +179,13 @@ export async function postEventConfirmedToCircle(input: {
 
 export async function postArrivalToCircle(input: {
   eventId: string
-  tenantId: string
   arrivalTime?: string | null
   message?: string | null
 }): Promise<void> {
   const circle = await getCircleForEvent(input.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
   let body = input.message || "I'm on my way!"
@@ -216,14 +210,13 @@ export async function postArrivalToCircle(input: {
 
 export async function postEventCompletedToCircle(input: {
   eventId: string
-  tenantId: string
   clientName?: string | null
   occasion?: string | null
 }): Promise<void> {
   const circle = await getCircleForEvent(input.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
   // Load chef first name for a personal touch
@@ -231,7 +224,7 @@ export async function postEventCompletedToCircle(input: {
   const { data: chef } = await supabase
     .from('chefs')
     .select('display_name, business_name')
-    .eq('id', input.tenantId)
+    .eq('id', circle.tenantId)
     .single()
 
   const chefFirst = (chef?.display_name || chef?.business_name || 'Chef').split(' ')[0]
@@ -260,13 +253,12 @@ export async function postEventCompletedToCircle(input: {
 
 export async function postPhotosToCircle(input: {
   eventId: string
-  tenantId: string
   photoCount: number
 }): Promise<void> {
   const circle = await getCircleForEvent(input.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
   const noun = input.photoCount === 1 ? 'photo' : 'photos'
@@ -290,13 +282,12 @@ export async function postPhotosToCircle(input: {
 
 export async function postPrepUpdateToCircle(input: {
   eventId: string
-  tenantId: string
   update: string
 }): Promise<void> {
   const circle = await getCircleForEvent(input.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
   const supabase = createServerClient({ admin: true })

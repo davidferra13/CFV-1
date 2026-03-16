@@ -202,6 +202,20 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             results.quotesNotified++
           } catch (notifErr) {
             console.error(`[lifecycle] Quote expiry notification failed for ${quote.id}:`, notifErr)
+            try {
+              const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
+              await recordSideEffectFailure({
+                source: 'lifecycle-cron',
+                operation: 'quote_expiry_notification',
+                severity: 'high',
+                entityType: 'quote',
+                entityId: quote.id,
+                tenantId: quote.tenant_id,
+                errorMessage: notifErr instanceof Error ? notifErr.message : String(notifErr),
+              })
+            } catch {
+              // Already logged above
+            }
           }
         } catch (err) {
           results.errors.push(`Expire quote ${quote.id}: ${(err as Error).message}`)

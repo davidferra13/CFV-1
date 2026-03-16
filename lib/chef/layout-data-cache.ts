@@ -7,22 +7,18 @@
 
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { hasPersistedAdminAccessForAuthUser } from '@/lib/auth/admin-access'
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
-import { getAdminEmails } from '@/lib/platform/owner-account'
-
-const ADMIN_EMAILS = getAdminEmails()
 
 // ─── Cannabis Access (cached 60s) ────────────────────────────────────────────
 
-export function getCachedCannabisAccess(authUserId: string, userEmail: string): Promise<boolean> {
-  const normalizedEmail = userEmail.trim().toLowerCase()
+export function getCachedCannabisAccess(authUserId: string): Promise<boolean> {
   return unstable_cache(
     async (): Promise<boolean> => {
-      // Admins always have cannabis access
-      if (ADMIN_EMAILS.length > 0 && ADMIN_EMAILS.includes(normalizedEmail)) return true
-
       const supabase: any = createAdminClient()
+      if (await hasPersistedAdminAccessForAuthUser(supabase, authUserId)) return true
+
       const { data, error } = await supabase
         .from('cannabis_tier_users')
         .select('status')
@@ -112,13 +108,13 @@ export function getCachedDeletionStatus(chefId: string): Promise<CachedDeletionS
 
 // ─── Admin Check (cached 60s) ────────────────────────────────────────────────
 
-export function getCachedIsAdmin(userEmail: string): Promise<boolean> {
-  const normalizedEmail = userEmail.trim().toLowerCase()
+export function getCachedIsAdmin(authUserId: string): Promise<boolean> {
   return unstable_cache(
     async (): Promise<boolean> => {
-      return ADMIN_EMAILS.length > 0 && ADMIN_EMAILS.includes(normalizedEmail)
+      const supabase: any = createAdminClient()
+      return hasPersistedAdminAccessForAuthUser(supabase, authUserId)
     },
-    [`is-admin-${normalizedEmail}`],
-    { revalidate: 60, tags: [`is-admin-${normalizedEmail}`] }
+    [`is-admin-${authUserId}`],
+    { revalidate: 60, tags: [`is-admin-${authUserId}`] }
   )()
 }

@@ -3,7 +3,7 @@
  *
  * Tests the role resolution patterns used by getCurrentUser(),
  * requireChef(), requireClient(), requireAuth(), requireAdmin().
- * This is P1 — broken auth = wrong users see wrong data.
+ * This is P1 - broken auth means wrong users see wrong data.
  *
  * We test the pure decision logic extracted from lib/auth/get-user.ts
  * and lib/auth/admin.ts without requiring Supabase or Next.js runtime.
@@ -13,10 +13,6 @@
 
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ROLE RESOLUTION LOGIC (extracted from lib/auth/get-user.ts)
-// ─────────────────────────────────────────────────────────────────────────────
 
 type RoleData = { role: string; entity_id: string } | null
 
@@ -37,21 +33,16 @@ function resolveAuthUser(
   roleData: RoleData,
   clientTenantId?: string | null
 ): AuthUser | null {
-  // No auth user → null
   if (!authUser) return null
-
-  // No role assigned → null
   if (!roleData) return null
 
-  // Only chef and client are valid portal roles
   if (roleData.role !== 'chef' && roleData.role !== 'client') return null
 
-  // Determine tenant_id based on role
   let tenantId: string | null = null
   if (roleData.role === 'chef') {
-    tenantId = roleData.entity_id // Chef's own ID
+    tenantId = roleData.entity_id
   } else if (roleData.role === 'client') {
-    tenantId = clientTenantId ?? null // From clients table
+    tenantId = clientTenantId ?? null
   }
 
   return {
@@ -63,9 +54,6 @@ function resolveAuthUser(
   }
 }
 
-/**
- * Pure function mirroring requireChef() logic.
- */
 function validateChefAccess(
   user: AuthUser | null,
   accountStatus?: string
@@ -79,9 +67,6 @@ function validateChefAccess(
   return { allowed: true, user }
 }
 
-/**
- * Pure function mirroring requireClient() logic.
- */
 function validateClientAccess(
   user: AuthUser | null
 ): { allowed: true; user: AuthUser } | { allowed: false; reason: string } {
@@ -91,9 +76,6 @@ function validateClientAccess(
   return { allowed: true, user }
 }
 
-/**
- * Pure function mirroring requireAuth() logic.
- */
 function validateAuthAccess(
   user: AuthUser | null
 ): { allowed: true; user: AuthUser } | { allowed: false; reason: string } {
@@ -103,35 +85,22 @@ function validateAuthAccess(
   return { allowed: true, user }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ADMIN ACCESS LOGIC (extracted from lib/auth/admin.ts)
-// ─────────────────────────────────────────────────────────────────────────────
+type PlatformAdminRow = { access_level: 'admin' | 'owner'; is_active: boolean } | null
 
-/**
- * Pure function mirroring admin email check logic.
- */
-function isAdminEmail(email: string | null, adminEmails: string[]): boolean {
-  if (!email) return false
-  if (adminEmails.length === 0) return false
-  return adminEmails.includes(email)
+function resolveAdminAccess(
+  adminRow: PlatformAdminRow
+): { allowed: true; accessLevel: 'admin' | 'owner' } | { allowed: false } {
+  if (!adminRow || !adminRow.is_active) {
+    return { allowed: false }
+  }
+
+  return {
+    allowed: true,
+    accessLevel: adminRow.access_level,
+  }
 }
 
-/**
- * Parses the ADMIN_EMAILS env var string into an array.
- * Mirrors the logic at the top of lib/auth/admin.ts.
- */
-function parseAdminEmails(envVar: string | undefined): string[] {
-  return (envVar ?? '')
-    .split(',')
-    .map((e) => e.trim())
-    .filter(Boolean)
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TESTS
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('Auth — resolveAuthUser', () => {
+describe('Auth - resolveAuthUser', () => {
   const authUser = { id: 'auth-1', email: 'chef@test.com' }
 
   it('returns null when no auth user', () => {
@@ -156,7 +125,7 @@ describe('Auth — resolveAuthUser', () => {
       email: 'chef@test.com',
       role: 'chef',
       entityId: 'chef-123',
-      tenantId: 'chef-123', // Chef's own ID
+      tenantId: 'chef-123',
     })
   })
 
@@ -164,7 +133,7 @@ describe('Auth — resolveAuthUser', () => {
     const result = resolveAuthUser(
       { id: 'auth-2', email: 'client@test.com' },
       { role: 'client', entity_id: 'client-456' },
-      'chef-789' // tenant from clients table
+      'chef-789'
     )
     assert.deepEqual(result, {
       id: 'auth-2',
@@ -184,7 +153,7 @@ describe('Auth — resolveAuthUser', () => {
   })
 })
 
-describe('Auth — validateChefAccess', () => {
+describe('Auth - validateChefAccess', () => {
   const chefUser: AuthUser = {
     id: 'auth-1',
     email: 'chef@test.com',
@@ -228,7 +197,7 @@ describe('Auth — validateChefAccess', () => {
   })
 })
 
-describe('Auth — validateClientAccess', () => {
+describe('Auth - validateClientAccess', () => {
   const clientUser: AuthUser = {
     id: 'auth-2',
     email: 'client@test.com',
@@ -259,7 +228,7 @@ describe('Auth — validateClientAccess', () => {
   })
 })
 
-describe('Auth — validateAuthAccess', () => {
+describe('Auth - validateAuthAccess', () => {
   it('allows any authenticated user', () => {
     const user: AuthUser = {
       id: 'auth-1',
@@ -276,66 +245,33 @@ describe('Auth — validateAuthAccess', () => {
   })
 })
 
-describe('Auth — admin email parsing', () => {
-  it('parses comma-separated admin emails', () => {
-    const result = parseAdminEmails('admin@test.com, boss@test.com')
-    assert.deepEqual(result, ['admin@test.com', 'boss@test.com'])
+describe('Auth - persisted admin access', () => {
+  it('allows active admin rows', () => {
+    assert.deepEqual(resolveAdminAccess({ access_level: 'admin', is_active: true }), {
+      allowed: true,
+      accessLevel: 'admin',
+    })
   })
 
-  it('handles single email', () => {
-    assert.deepEqual(parseAdminEmails('admin@test.com'), ['admin@test.com'])
+  it('allows active owner rows', () => {
+    assert.deepEqual(resolveAdminAccess({ access_level: 'owner', is_active: true }), {
+      allowed: true,
+      accessLevel: 'owner',
+    })
   })
 
-  it('handles undefined env var', () => {
-    assert.deepEqual(parseAdminEmails(undefined), [])
+  it('rejects inactive rows', () => {
+    assert.deepEqual(resolveAdminAccess({ access_level: 'admin', is_active: false }), {
+      allowed: false,
+    })
   })
 
-  it('handles empty string', () => {
-    assert.deepEqual(parseAdminEmails(''), [])
-  })
-
-  it('trims whitespace', () => {
-    assert.deepEqual(parseAdminEmails('  admin@test.com ,  boss@test.com  '), [
-      'admin@test.com',
-      'boss@test.com',
-    ])
-  })
-
-  it('filters out empty entries from trailing commas', () => {
-    assert.deepEqual(parseAdminEmails('admin@test.com,,'), ['admin@test.com'])
+  it('rejects missing rows', () => {
+    assert.deepEqual(resolveAdminAccess(null), { allowed: false })
   })
 })
 
-describe('Auth — isAdminEmail', () => {
-  const admins = ['admin@chefflow.com', 'boss@chefflow.com']
-
-  it('returns true for admin email', () => {
-    assert.equal(isAdminEmail('admin@chefflow.com', admins), true)
-  })
-
-  it('returns false for non-admin email', () => {
-    assert.equal(isAdminEmail('nobody@other.com', admins), false)
-  })
-
-  it('returns false for null email', () => {
-    assert.equal(isAdminEmail(null, admins), false)
-  })
-
-  it('returns false when admin list is empty', () => {
-    assert.equal(isAdminEmail('admin@chefflow.com', []), false)
-  })
-
-  it('is case-sensitive (matches production behavior)', () => {
-    // admin.ts does NOT lowercase — the env var must match exactly
-    assert.equal(isAdminEmail('Admin@chefflow.com', admins), false)
-  })
-})
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TENANT SCOPING — the golden rule: tenant_id always comes from session
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('Auth — tenant scoping principle', () => {
+describe('Auth - tenant scoping principle', () => {
   it('chef tenantId equals their own entityId (never from input)', () => {
     const user = resolveAuthUser(
       { id: 'auth-1', email: 'chef@test.com' },
@@ -349,9 +285,8 @@ describe('Auth — tenant scoping principle', () => {
     const user = resolveAuthUser(
       { id: 'auth-2', email: 'client@test.com' },
       { role: 'client', entity_id: 'client-def' },
-      'chef-abc' // DB value
+      'chef-abc'
     )
-    // Tenant is the chef who owns the client, not the client themselves
     assert.notEqual(user?.tenantId, user?.entityId)
     assert.equal(user?.tenantId, 'chef-abc')
     assert.equal(user?.entityId, 'client-def')

@@ -11,7 +11,6 @@ import { generateMenuProposalMessage, type MenuOption } from '@/lib/templates/me
 // ---------------------------------------------------------------------------
 
 export async function shareMenuProposalToCircle(input: {
-  tenantId: string
   menuIds: string[]
   clientName: string
   occasion: string | null
@@ -32,7 +31,7 @@ export async function shareMenuProposalToCircle(input: {
     return { success: false, error: 'No Dinner Circle found for this inquiry or event' }
   }
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) {
     return { success: false, error: 'Chef hub profile not found' }
   }
@@ -43,7 +42,7 @@ export async function shareMenuProposalToCircle(input: {
   const { data: chef } = await supabase
     .from('chefs')
     .select('display_name, business_name')
-    .eq('id', input.tenantId)
+    .eq('id', circle.tenantId)
     .single()
 
   const chefName = chef?.display_name || chef?.business_name || 'Chef'
@@ -57,7 +56,7 @@ export async function shareMenuProposalToCircle(input: {
       .from('menus')
       .select('id, name, description')
       .eq('id', menuId)
-      .eq('tenant_id', input.tenantId)
+      .eq('tenant_id', circle.tenantId)
       .single()
 
     if (!menu) continue

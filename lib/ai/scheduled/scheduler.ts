@@ -13,6 +13,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { enqueueTask } from '@/lib/ai/queue/actions'
 import { SCHEDULED_JOBS } from './job-definitions'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 export type { ScheduledJob } from './job-definitions'
 
 // ============================================
@@ -34,7 +35,21 @@ export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: n
   const hasPi = !!process.env.OLLAMA_PI_URL
 
   // Get all active tenants
-  const { data: tenants } = await supabase.from('chefs').select('id').limit(100)
+  const { data: tenants, error: tenantsError } = await supabase
+    .from('chefs')
+    .select('id')
+    .limit(100)
+
+  if (tenantsError) {
+    await recordSideEffectFailure({
+      source: 'scheduled-scheduler',
+      operation: 'load_tenants',
+      severity: 'high',
+      errorMessage: tenantsError.message,
+      context: { limit: 100 },
+    })
+    return { seeded: 0, skipped: 0 }
+  }
 
   if (!tenants || tenants.length === 0) {
     _seeded = true
@@ -61,10 +76,31 @@ export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: n
           scheduledFor: new Date(Date.now() + 5 * 60 * 1000 + Math.random() * 10 * 60 * 1000),
         })
 
-        if ('id' in result) seededCount++
-        else skippedCount++ // Already exists (dedup)
-      } catch {
+        if ('id' in result) {
+          seededCount++
+        } else {
+          skippedCount++
+          await recordSideEffectFailure({
+            source: 'scheduled-scheduler',
+            operation: 'seed_job',
+            severity: 'medium',
+            tenantId: tenant.id,
+            entityType: 'ai_task',
+            entityId: job.taskType,
+            errorMessage: result.error,
+          })
+        }
+      } catch (err) {
         skippedCount++
+        await recordSideEffectFailure({
+          source: 'scheduled-scheduler',
+          operation: 'seed_job',
+          severity: 'medium',
+          tenantId: tenant.id,
+          entityType: 'ai_task',
+          entityId: job.taskType,
+          errorMessage: err instanceof Error ? err.message : String(err),
+        })
       }
     }
   }
@@ -86,13 +122,33 @@ export async function rescheduleTask(taskType: string, tenantId: string): Promis
   if (!job.enabledWithoutPi && !hasPi) return // Skip heavy jobs without Pi
 
   try {
-    await enqueueTask({
+    const result = await enqueueTask({
       tenantId,
       taskType: job.taskType,
       priority: job.priority,
       scheduledFor: new Date(Date.now() + job.intervalMs),
     })
+    if ('error' in result) {
+      await recordSideEffectFailure({
+        source: 'scheduled-scheduler',
+        operation: 'reschedule_job',
+        severity: 'medium',
+        tenantId,
+        entityType: 'ai_task',
+        entityId: taskType,
+        errorMessage: result.error,
+      })
+    }
   } catch (err) {
     console.warn(`[scheduler] Failed to reschedule ${taskType}:`, err)
+    await recordSideEffectFailure({
+      source: 'scheduled-scheduler',
+      operation: 'reschedule_job',
+      severity: 'medium',
+      tenantId,
+      entityType: 'ai_task',
+      entityId: taskType,
+      errorMessage: err instanceof Error ? err.message : String(err),
+    })
   }
 }

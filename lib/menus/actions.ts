@@ -797,7 +797,6 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
       await circleFirstNotify({
         eventId: menuData?.event_id ?? null,
         inquiryId,
-        tenantId: user.tenantId!,
         notificationType: 'menu_shared',
         body: `Menu shared: ${menuName}. Take a look and let me know what you think!`,
         metadata: {

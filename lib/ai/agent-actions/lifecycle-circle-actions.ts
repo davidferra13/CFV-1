@@ -118,7 +118,6 @@ const sendPreEventBriefing: AgentActionDefinition = {
       const { postPreEventBriefing } = await import('@/lib/hub/pre-event-briefing-actions')
       const result = await postPreEventBriefing({
         eventId: payload.eventId as string,
-        tenantId: ctx.tenantId,
       })
 
       if (!result.success) {
@@ -195,7 +194,6 @@ const sendArrivalNotification: AgentActionDefinition = {
       const { postArrivalToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
       await postArrivalToCircle({
         eventId: payload.eventId as string,
-        tenantId: ctx.tenantId,
         arrivalTime: payload.arrivalTime as string | null,
         message: payload.message as string | null,
       })

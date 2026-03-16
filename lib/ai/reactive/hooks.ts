@@ -13,6 +13,64 @@
 
 import { enqueueTask } from '@/lib/ai/queue/actions'
 import { AI_PRIORITY } from '@/lib/ai/queue/types'
+import { recordSideEffectFailure, type Severity } from '@/lib/monitoring/non-blocking'
+
+async function enqueueReactiveTask(input: {
+  taskType: string
+  tenantId: string
+  priority: number
+  payload?: Record<string, unknown>
+  relatedEventId?: string
+  relatedClientId?: string
+  relatedInquiryId?: string
+  entityType?: string
+  entityId?: string | null
+  severity?: Severity
+}) {
+  try {
+    const result = await enqueueTask({
+      tenantId: input.tenantId,
+      taskType: input.taskType,
+      payload: input.payload,
+      priority: input.priority,
+      relatedEventId: input.relatedEventId,
+      relatedClientId: input.relatedClientId,
+      relatedInquiryId: input.relatedInquiryId,
+    })
+
+    if ('error' in result) {
+      await recordSideEffectFailure({
+        source: 'reactive-hooks',
+        operation: `enqueue:${input.taskType}`,
+        severity: input.severity ?? 'medium',
+        entityType: input.entityType,
+        entityId: input.entityId ?? undefined,
+        tenantId: input.tenantId,
+        errorMessage: result.error,
+        context: {
+          relatedEventId: input.relatedEventId ?? null,
+          relatedClientId: input.relatedClientId ?? null,
+          relatedInquiryId: input.relatedInquiryId ?? null,
+        },
+      })
+    }
+  } catch (err) {
+    await recordSideEffectFailure({
+      source: 'reactive-hooks',
+      operation: `enqueue:${input.taskType}`,
+      severity: input.severity ?? 'medium',
+      entityType: input.entityType,
+      entityId: input.entityId ?? undefined,
+      tenantId: input.tenantId,
+      errorMessage: err instanceof Error ? err.message : String(err),
+      context: {
+        relatedEventId: input.relatedEventId ?? null,
+        relatedClientId: input.relatedClientId ?? null,
+        relatedInquiryId: input.relatedInquiryId ?? null,
+      },
+    })
+  }
+}
 
 // ============================================
 // EVENT TRANSITION HOOKS
@@ -27,18 +85,16 @@ export async function onEventConfirmed(
   eventId: string,
   clientId: string | null
 ): Promise<void> {
-  try {
-    await enqueueTask({
-      tenantId,
-      taskType: 'reactive.event_confirmed',
-      payload: { eventId, clientId },
-      priority: AI_PRIORITY.REACTIVE,
-      relatedEventId: eventId,
-      relatedClientId: clientId ?? undefined,
-    })
-  } catch (err) {
-    console.warn('[reactive] onEventConfirmed enqueue failed (non-blocking)', err)
-  }
+  await enqueueReactiveTask({
+    tenantId,
+    taskType: 'reactive.event_confirmed',
+    payload: { eventId, clientId },
+    priority: AI_PRIORITY.REACTIVE,
+    relatedEventId: eventId,
+    relatedClientId: clientId ?? undefined,
+    entityType: 'event',
+    entityId: eventId,
+  })
 }
 
 /**
@@ -50,18 +106,16 @@ export async function onEventCompleted(
   eventId: string,
   clientId: string | null
 ): Promise<void> {
-  try {
-    await enqueueTask({
-      tenantId,
-      taskType: 'reactive.event_completed',
-      payload: { eventId, clientId },
-      priority: AI_PRIORITY.REACTIVE,
-      relatedEventId: eventId,
-      relatedClientId: clientId ?? undefined,
-    })
-  } catch (err) {
-    console.warn('[reactive] onEventCompleted enqueue failed (non-blocking)', err)
-  }
+  await enqueueReactiveTask({
+    tenantId,
+    taskType: 'reactive.event_completed',
+    payload: { eventId, clientId },
+    priority: AI_PRIORITY.REACTIVE,
+    relatedEventId: eventId,
+    relatedClientId: clientId ?? undefined,
+    entityType: 'event',
+    entityId: eventId,
+  })
 }
 
 /**
@@ -73,18 +127,16 @@ export async function onEventCancelled(
   eventId: string,
   clientId: string | null
 ): Promise<void> {
-  try {
-    await enqueueTask({
-      tenantId,
-      taskType: 'reactive.event_cancelled',
-      payload: { eventId, clientId },
-      priority: AI_PRIORITY.REACTIVE,
-      relatedEventId: eventId,
-      relatedClientId: clientId ?? undefined,
-    })
-  } catch (err) {
-    console.warn('[reactive] onEventCancelled enqueue failed (non-blocking)', err)
-  }
+  await enqueueReactiveTask({
+    tenantId,
+    taskType: 'reactive.event_cancelled',
+    payload: { eventId, clientId },
+    priority: AI_PRIORITY.REACTIVE,
+    relatedEventId: eventId,
+    relatedClientId: clientId ?? undefined,
+    entityType: 'event',
+    entityId: eventId,
+  })
 }
 
 // ============================================
@@ -111,30 +163,28 @@ export async function onInquiryCreated(
     recurringFrequency?: 'weekly' | 'biweekly' | 'monthly'
   }
 ): Promise<void> {
-  try {
-    await enqueueTask({
-      tenantId,
-      taskType: 'reactive.inquiry_created',
-      payload: {
-        inquiryId,
-        clientId,
-        channel: metadata?.channel,
-        clientName: metadata?.clientName,
-        occasion: metadata?.occasion,
-        budgetCents: metadata?.budgetCents,
-        budgetMode: metadata?.budgetMode,
-        budgetRange: metadata?.budgetRange,
-        guestCount: metadata?.guestCount,
-        serviceMode: metadata?.serviceMode,
-        recurringFrequency: metadata?.recurringFrequency,
-      },
-      priority: AI_PRIORITY.REACTIVE,
-      relatedInquiryId: inquiryId,
-      relatedClientId: clientId ?? undefined,
-    })
-  } catch (err) {
-    console.warn('[reactive] onInquiryCreated enqueue failed (non-blocking)', err)
-  }
+  await enqueueReactiveTask({
+    tenantId,
+    taskType: 'reactive.inquiry_created',
+    payload: {
+      inquiryId,
+      clientId,
+      channel: metadata?.channel,
+      clientName: metadata?.clientName,
+      occasion: metadata?.occasion,
+      budgetCents: metadata?.budgetCents,
+      budgetMode: metadata?.budgetMode,
+      budgetRange: metadata?.budgetRange,
+      guestCount: metadata?.guestCount,
+      serviceMode: metadata?.serviceMode,
+      recurringFrequency: metadata?.recurringFrequency,
+    },
+    priority: AI_PRIORITY.REACTIVE,
+    relatedInquiryId: inquiryId,
+    relatedClientId: clientId ?? undefined,
+    entityType: 'inquiry',
+    entityId: inquiryId,
+  })
 }
 
 // ============================================
@@ -150,18 +200,16 @@ export async function onMenuApproved(
   eventId: string,
   clientId: string | null
 ): Promise<void> {
-  try {
-    await enqueueTask({
-      tenantId,
-      taskType: 'reactive.menu_approved',
-      payload: { eventId, clientId },
-      priority: AI_PRIORITY.REACTIVE,
-      relatedEventId: eventId,
-      relatedClientId: clientId ?? undefined,
-    })
-  } catch (err) {
-    console.warn('[reactive] onMenuApproved enqueue failed (non-blocking)', err)
-  }
+  await enqueueReactiveTask({
+    tenantId,
+    taskType: 'reactive.menu_approved',
+    payload: { eventId, clientId },
+    priority: AI_PRIORITY.REACTIVE,
+    relatedEventId: eventId,
+    relatedClientId: clientId ?? undefined,
+    entityType: 'event',
+    entityId: eventId,
+  })
 }
 
 /**
@@ -169,17 +217,16 @@ export async function onMenuApproved(
  * Enqueues: re-run allergen check with new guest dietary info.
  */
 export async function onGuestListUpdated(tenantId: string, eventId: string): Promise<void> {
-  try {
-    await enqueueTask({
-      tenantId,
-      taskType: 'reactive.guest_list_updated',
-      payload: { eventId },
-      priority: AI_PRIORITY.REACTIVE,
-      relatedEventId: eventId,
-    })
-  } catch (err) {
-    console.warn('[reactive] onGuestListUpdated enqueue failed (non-blocking)', err)
-  }
+  await enqueueReactiveTask({
+    tenantId,
+    taskType: 'reactive.guest_list_updated',
+    payload: { eventId },
+    priority: AI_PRIORITY.REACTIVE,
+    relatedEventId: eventId,
+    entityType: 'event',
+    entityId: eventId,
+    severity: 'high',
+  })
 }
 
 // ============================================
@@ -196,18 +243,16 @@ export async function onPaymentReceived(
   clientId: string | null,
   amountCents: number
 ): Promise<void> {
-  try {
-    await enqueueTask({
-      tenantId,
-      taskType: 'reactive.payment_received',
-      payload: { eventId, clientId, amountCents },
-      priority: AI_PRIORITY.REACTIVE,
-      relatedEventId: eventId,
-      relatedClientId: clientId ?? undefined,
-    })
-  } catch (err) {
-    console.warn('[reactive] onPaymentReceived enqueue failed (non-blocking)', err)
-  }
+  await enqueueReactiveTask({
+    tenantId,
+    taskType: 'reactive.payment_received',
+    payload: { eventId, clientId, amountCents },
+    priority: AI_PRIORITY.REACTIVE,
+    relatedEventId: eventId,
+    relatedClientId: clientId ?? undefined,
+    entityType: 'event',
+    entityId: eventId,
+  })
 }
 
 /**
@@ -221,18 +266,17 @@ export async function onPaymentOverdue(
   clientId: string | null,
   clientName: string
 ): Promise<void> {
-  try {
-    await enqueueTask({
-      tenantId,
-      taskType: 'reactive.payment_overdue',
-      payload: { eventId, clientId, clientName },
-      priority: AI_PRIORITY.SCHEDULED,
-      relatedEventId: eventId,
-      relatedClientId: clientId ?? undefined,
-    })
-  } catch (err) {
-    console.warn('[reactive] onPaymentOverdue enqueue failed (non-blocking)', err)
-  }
+  await enqueueReactiveTask({
+    tenantId,
+    taskType: 'reactive.payment_overdue',
+    payload: { eventId, clientId, clientName },
+    priority: AI_PRIORITY.SCHEDULED,
+    relatedEventId: eventId,
+    relatedClientId: clientId ?? undefined,
+    entityType: 'event',
+    entityId: eventId,
+    severity: 'high',
+  })
 }
 
 // ============================================
@@ -250,17 +294,16 @@ export async function onTempOutOfRange(
   safeMin: number,
   safeMax: number
 ): Promise<void> {
-  try {
-    await enqueueTask({
-      tenantId,
-      taskType: 'reactive.temp_out_of_range',
-      payload: { eventId, temperature, safeMin, safeMax },
-      priority: AI_PRIORITY.REACTIVE,
-      relatedEventId: eventId,
-    })
-  } catch (err) {
-    console.warn('[reactive] onTempOutOfRange enqueue failed (non-blocking)', err)
-  }
+  await enqueueReactiveTask({
+    tenantId,
+    taskType: 'reactive.temp_out_of_range',
+    payload: { eventId, temperature, safeMin, safeMax },
+    priority: AI_PRIORITY.REACTIVE,
+    relatedEventId: eventId,
+    entityType: 'event',
+    entityId: eventId,
+    severity: 'critical',
+  })
 }
 
 /**
@@ -272,15 +315,14 @@ export async function onStaffNoShow(
   eventId: string,
   staffName: string
 ): Promise<void> {
-  try {
-    await enqueueTask({
-      tenantId,
-      taskType: 'reactive.staff_no_show',
-      payload: { eventId, staffName },
-      priority: AI_PRIORITY.REACTIVE,
-      relatedEventId: eventId,
-    })
-  } catch (err) {
-    console.warn('[reactive] onStaffNoShow enqueue failed (non-blocking)', err)
-  }
+  await enqueueReactiveTask({
+    tenantId,
+    taskType: 'reactive.staff_no_show',
+    payload: { eventId, staffName },
+    priority: AI_PRIORITY.REACTIVE,
+    relatedEventId: eventId,
+    entityType: 'event',
+    entityId: eventId,
+    severity: 'high',
+  })
 }

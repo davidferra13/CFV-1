@@ -104,9 +104,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     // Platform announcement (non-fatal - fail open)
     getAnnouncement().catch(() => null),
     // Cannabis tier check - kept in Promise.all to avoid reindexing, but unused (cannabis is admin-only now)
-    getCachedCannabisAccess(user.id, user.email ?? '').catch(() => false),
-    // Admin check - cached 60s, env-based (no DB call)
-    getCachedIsAdmin(user.email ?? '').catch(() => false),
+    getCachedCannabisAccess(user.id).catch(() => false),
+    // Admin check - cached 60s against persisted platform_admins access
+    getCachedIsAdmin(user.id).catch(() => false),
     // Archetype - cached 60s, null means chef hasn't picked one yet (show selector)
     getCachedChefArchetype(user.entityId).catch(() => null),
     // Deletion status - cached 60s, non-fatal, fail closed (no banner)

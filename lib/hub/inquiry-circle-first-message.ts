@@ -17,28 +17,28 @@ import { generateFirstResponse } from '@/lib/templates/inquiry-first-response'
 export async function postFirstCircleMessage(input: {
   groupId: string
   inquiryId: string
-  tenantId: string
 }): Promise<void> {
   const supabase = createServerClient({ admin: true })
 
   // Load inquiry data
   const { data: inquiry } = await supabase
     .from('inquiries')
-    .select('*, clients(full_name)')
+    .select('*, tenant_id, clients(full_name)')
     .eq('id', input.inquiryId)
-    .eq('tenant_id', input.tenantId)
     .single()
 
   if (!inquiry) return
+  const tenantId = inquiry.tenant_id as string | null
+  if (!tenantId) return
 
   // Load chef info + service config in parallel
   const [chefData, serviceConfig] = await Promise.all([
     supabase
       .from('chefs')
       .select('display_name, business_name, auth_user_id')
-      .eq('id', input.tenantId)
+      .eq('id', tenantId)
       .single(),
-    getServiceConfigForTenant(input.tenantId),
+    getServiceConfigForTenant(tenantId),
   ])
 
   const chef = chefData.data

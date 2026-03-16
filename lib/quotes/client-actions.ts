@@ -129,7 +129,6 @@ export async function acceptQuote(quoteId: string) {
       await circleFirstNotify({
         eventId: quote.event_id,
         inquiryId: quote.inquiry_id,
-        tenantId: quote.tenant_id,
         notificationType: 'quote_accepted',
         body: "Quote accepted! We're locked in. Next up: finalizing the menu and confirming all the details.",
         metadata: { quote_id: quoteId },

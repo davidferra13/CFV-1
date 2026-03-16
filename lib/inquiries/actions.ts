@@ -590,7 +590,6 @@ export async function createInquiry(input: CreateInquiryInput) {
     const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
     const circle = await createInquiryCircle({
       inquiryId: inquiry.id,
-      tenantId: user.tenantId!,
       clientName: validated.client_name,
       clientEmail: validated.client_email || null,
       occasion: validated.confirmed_occasion || null,
@@ -599,7 +598,6 @@ export async function createInquiry(input: CreateInquiryInput) {
     await postFirstCircleMessage({
       groupId: circle.groupId,
       inquiryId: inquiry.id,
-      tenantId: user.tenantId!,
     })
   } catch (err) {
     console.error('[createInquiry] Circle creation failed (non-blocking):', err)
@@ -1717,7 +1715,6 @@ export async function convertInquiryToEvent(inquiryId: string) {
     await linkInquiryCircleToEvent({
       inquiryId: inquiry.id,
       eventId: event.id,
-      tenantId: user.tenantId!,
     })
   } catch (err) {
     console.error('[convertInquiryToEvent] Circle-event link failed (non-blocking):', err)

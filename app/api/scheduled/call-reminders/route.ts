@@ -119,13 +119,21 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
         }),
       })
 
-      await supabase
+      const { error: updateError } = await supabase
         .from('scheduled_calls')
         .update({ reminder_24h_sent_at: new Date().toISOString() })
         .eq('id', call.id)
         .eq('tenant_id', call.tenant_id)
 
-      sent++
+      if (updateError) {
+        console.error(
+          `[CallReminders] 24h sent_at update failed for call ${call.id} (email was sent, may re-send on next run):`,
+          updateError.message
+        )
+        errors++
+      } else {
+        sent++
+      }
     } catch (err) {
       console.error(`[CallReminders] 24h reminder failed for call ${call.id}:`, err)
       errors++
@@ -153,13 +161,21 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
         }),
       })
 
-      await supabase
+      const { error: updateError } = await supabase
         .from('scheduled_calls')
         .update({ reminder_1h_sent_at: new Date().toISOString() })
         .eq('id', call.id)
         .eq('tenant_id', call.tenant_id)
 
-      sent++
+      if (updateError) {
+        console.error(
+          `[CallReminders] 1h sent_at update failed for call ${call.id} (email was sent, may re-send on next run):`,
+          updateError.message
+        )
+        errors++
+      } else {
+        sent++
+      }
     } catch (err) {
       console.error(`[CallReminders] 1h reminder failed for call ${call.id}:`, err)
       errors++

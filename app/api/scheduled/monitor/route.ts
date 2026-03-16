@@ -64,6 +64,7 @@ type CronStatus = {
 async function handleMonitor(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
+  const strict = request.nextUrl.searchParams.get('strict') === '1'
 
   const supabase = createServerClient({ admin: true })
   const now = new Date()
@@ -168,9 +169,11 @@ async function handleMonitor(request: NextRequest): Promise<NextResponse> {
     console.log('[CronMonitor] All crons healthy.', result.summary)
   }
 
-  // Return 200 even if unhealthy - the caller interprets result.healthy
-  // Returning non-200 would cause Vercel to retry the monitor itself
-  return NextResponse.json(result)
+  // Default route behavior stays cron-safe (200 even when unhealthy).
+  // External uptime checks can opt into strict signaling with ?strict=1.
+  return NextResponse.json(result, {
+    status: strict && !overallHealthy ? 503 : 200,
+  })
 }
 
 export { handleMonitor as GET, handleMonitor as POST }

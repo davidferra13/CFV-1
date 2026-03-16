@@ -684,7 +684,6 @@ async function handleInquiry(
       const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
       const circle = await createInquiryCircle({
         inquiryId: inquiry.id,
-        tenantId,
         clientName: leadName,
         clientEmail: email.from.email || null,
         occasion: ollamaOccasion || detFields.confirmed_occasion || null,
@@ -693,7 +692,6 @@ async function handleInquiry(
       await postFirstCircleMessage({
         groupId: circle.groupId,
         inquiryId: inquiry.id,
-        tenantId,
       })
     } catch (circleErr) {
       console.error('[handleInquiry] Circle creation failed (non-blocking):', circleErr)

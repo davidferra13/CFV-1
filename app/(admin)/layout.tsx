@@ -1,5 +1,5 @@
 // Admin Portal Layout
-// Requires admin access (email in ADMIN_EMAILS env var)
+// Requires persisted platform admin access.
 // Uses chef portal shell so admin pages match the standard chef experience.
 
 import { requireAdmin } from '@/lib/auth/admin'

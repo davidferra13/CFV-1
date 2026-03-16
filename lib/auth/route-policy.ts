@@ -42,6 +42,7 @@ export const STAFF_PROTECTED_PATHS = [
 
 // Public website and tokenized pages that must remain reachable unauthenticated.
 export const PUBLIC_UNAUTHENTICATED_PATHS = [
+  '/about',
   '/pricing',
   '/privacy-policy',
   '/compare',

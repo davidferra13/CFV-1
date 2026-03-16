@@ -61,6 +61,7 @@ export async function selectArchetype(archetypeId: ArchetypeId) {
 
   revalidatePath('/', 'layout')
   revalidateTag(`chef-layout-${user.entityId}`)
+  revalidateTag(`chef-archetype-${user.entityId}`)
 
   // Non-blocking: ensure HACCP plan exists for this archetype
   try {

@@ -203,7 +203,7 @@ export default async function ProspectingPage({
                 </p>
                 <Link
                   href="/prospecting/scrub"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-400"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-500 hover:text-brand-400"
                 >
                   Run your first scrub <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
@@ -223,7 +223,7 @@ export default async function ProspectingPage({
                 </p>
                 <Link
                   href="/prospecting/queue"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-400"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-500 hover:text-brand-400"
                 >
                   Build a call queue <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
@@ -243,7 +243,7 @@ export default async function ProspectingPage({
                 </p>
                 <Link
                   href="/prospecting/scripts"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-400"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-500 hover:text-brand-400"
                 >
                   Create a script <ArrowRight className="h-3.5 w-3.5" />
                 </Link>

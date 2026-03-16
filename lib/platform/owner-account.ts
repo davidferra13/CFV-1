@@ -34,8 +34,8 @@ export function isFounderEmail(email: string | null | undefined): boolean {
 }
 
 /**
- * Admin auth allowlist.
- * Env-driven, but always includes founder account as a hard safety baseline.
+ * Legacy admin email list for notifications and founder metadata.
+ * Not used for security gates.
  */
 export function getAdminEmails(): string[] {
   return uniqueStrings([...parseEmailList(process.env.ADMIN_EMAILS), FOUNDER_EMAIL])

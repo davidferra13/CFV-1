@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Store the message (even if we can't match a client - it'll show as unlinked)
-    await (supabase as any).from('messages').insert({
+    const { error: insertError } = await (supabase as any).from('messages').insert({
       tenant_id: tenantId,
       client_id: clientId,
       direction: 'inbound',
@@ -113,6 +113,24 @@ export async function POST(request: NextRequest) {
         media_urls: msg.mediaUrls,
       },
     })
+
+    if (insertError) {
+      console.error('[twilio-webhook] Failed to store inbound message:', insertError.message)
+      try {
+        const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
+        await recordSideEffectFailure({
+          source: 'twilio-webhook',
+          operation: 'insert_message',
+          severity: 'critical',
+          entityType: 'message',
+          tenantId,
+          errorMessage: insertError.message,
+          context: { from: msg.from, twilio_sid: msg.messageSid },
+        })
+      } catch {
+        // Already logged above
+      }
+    }
 
     // Twilio expects TwiML response
     return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {

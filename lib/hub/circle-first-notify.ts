@@ -36,7 +36,6 @@ interface CircleFirstInput {
   // Where to find the circle
   eventId?: string | null
   inquiryId?: string | null
-  tenantId: string
 
   // What to post
   notificationType: HubNotificationType
@@ -82,9 +81,9 @@ export async function circleFirstNotify(input: CircleFirstInput): Promise<void> 
     return
   }
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) {
-    console.warn(`[circle-first] No hub profile for chef tenant=${input.tenantId}`)
+    console.warn(`[circle-first] No hub profile for chef tenant=${circle.tenantId}`)
     return
   }
 
@@ -108,7 +107,7 @@ export async function circleFirstNotify(input: CircleFirstInput): Promise<void> 
     groupId: circle.groupId,
     groupToken: circle.groupToken,
     authorProfileId: chefProfileId,
-    tenantId: input.tenantId,
+    chefTenantId: circle.tenantId,
     notificationType: input.notificationType,
     messagePreview: input.body,
   })
@@ -122,7 +121,7 @@ async function notifyMembersOfUpdate(input: {
   groupId: string
   groupToken: string
   authorProfileId: string
-  tenantId: string
+  chefTenantId: string
   notificationType: HubNotificationType
   messagePreview: string
 }): Promise<void> {
@@ -140,7 +139,7 @@ async function notifyMembersOfUpdate(input: {
       supabase
         .from('chefs')
         .select('display_name, business_name')
-        .eq('id', input.tenantId)
+        .eq('id', input.chefTenantId)
         .single(),
     ])
 

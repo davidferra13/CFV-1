@@ -195,7 +195,6 @@ const draftMenuProposal: AgentActionDefinition = {
     try {
       const { shareMenuProposalToCircle } = await import('@/lib/hub/menu-proposal-actions')
       const result = await shareMenuProposalToCircle({
-        tenantId: ctx.tenantId,
         menuIds: payload.menuIds as string[],
         clientName: payload.clientName as string,
         occasion: payload.occasion as string | null,

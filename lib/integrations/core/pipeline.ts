@@ -157,7 +157,7 @@ export async function processIntegrationEvent(eventId: string) {
     return { id: event.id as string, status: event.status as IntegrationSyncStatus }
   }
 
-  await supabase
+  const { error: markProcessingError } = await supabase
     .from('integration_events')
     .update({
       status: 'processing',
@@ -165,11 +165,15 @@ export async function processIntegrationEvent(eventId: string) {
     })
     .eq('id', eventId)
 
+  if (markProcessingError) {
+    throw new Error(`Failed to mark integration event processing: ${markProcessingError.message}`)
+  }
+
   try {
     const payload = (event.raw_payload || {}) as Record<string, unknown>
     const sourceEventType = String(event.source_event_type || 'unknown')
 
-    await supabase
+    const { error: completeError } = await supabase
       .from('integration_events')
       .update({
         status: 'completed',
@@ -180,11 +184,15 @@ export async function processIntegrationEvent(eventId: string) {
       })
       .eq('id', eventId)
 
+    if (completeError) {
+      throw new Error(`Failed to mark integration event completed: ${completeError.message}`)
+    }
+
     return { id: eventId, status: 'completed' as const }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown processing error'
 
-    await supabase
+    const { error: failUpdateError } = await supabase
       .from('integration_events')
       .update({
         status: 'failed',
@@ -192,6 +200,12 @@ export async function processIntegrationEvent(eventId: string) {
         processed_at: new Date().toISOString(),
       })
       .eq('id', eventId)
+
+    if (failUpdateError) {
+      throw new Error(
+        `Integration processing failed ("${message}") and failure status update failed: ${failUpdateError.message}`
+      )
+    }
 
     return { id: eventId, status: 'failed' as const, error: message }
   }

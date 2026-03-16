@@ -15,12 +15,23 @@ import { createServerClient } from '@/lib/supabase/server'
  */
 export async function createInquiryCircle(input: {
   inquiryId: string
-  tenantId: string
   clientName: string
   clientEmail: string | null
   occasion: string | null
 }): Promise<{ groupToken: string; groupId: string }> {
   const supabase = createServerClient({ admin: true })
+
+  const { data: inquiry } = await supabase
+    .from('inquiries')
+    .select('tenant_id')
+    .eq('id', input.inquiryId)
+    .single()
+
+  if (!inquiry?.tenant_id) {
+    throw new Error('Inquiry not found while creating Dinner Circle')
+  }
+
+  const tenantId = inquiry.tenant_id
 
   // Check if a circle already exists for this inquiry
   const { data: existing } = await supabase
@@ -36,7 +47,7 @@ export async function createInquiryCircle(input: {
   const { data: chef } = await supabase
     .from('chefs')
     .select('id, business_name, display_name, auth_user_id')
-    .eq('id', input.tenantId)
+    .eq('id', tenantId)
     .single()
 
   const chefName = chef?.business_name ?? chef?.display_name ?? 'Chef'
@@ -105,7 +116,7 @@ export async function createInquiryCircle(input: {
     .insert({
       name: groupName,
       inquiry_id: input.inquiryId,
-      tenant_id: input.tenantId,
+      tenant_id: tenantId,
       created_by_profile_id: chefProfileId,
       emoji: '🍽️',
     })
@@ -164,13 +175,24 @@ export async function getInquiryCircleToken(inquiryId: string): Promise<string |
 export async function linkInquiryCircleToEvent(input: {
   inquiryId: string
   eventId: string
-  tenantId: string
 }): Promise<void> {
   const supabase = createServerClient({ admin: true })
+
+  const [inquiryResult, eventResult] = await Promise.all([
+    supabase.from('inquiries').select('tenant_id').eq('id', input.inquiryId).single(),
+    supabase.from('events').select('tenant_id').eq('id', input.eventId).single(),
+  ])
+
+  const inquiryTenantId = inquiryResult.data?.tenant_id
+  const eventTenantId = eventResult.data?.tenant_id
+
+  if (!inquiryTenantId || !eventTenantId || inquiryTenantId !== eventTenantId) {
+    throw new Error('Inquiry and event tenant mismatch while linking Dinner Circle')
+  }
 
   await supabase
     .from('hub_groups')
     .update({ event_id: input.eventId })
     .eq('inquiry_id', input.inquiryId)
-    .eq('tenant_id', input.tenantId)
+    .eq('tenant_id', inquiryTenantId)
 }

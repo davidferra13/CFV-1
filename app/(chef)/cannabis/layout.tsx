@@ -4,7 +4,13 @@ import { isAdmin } from '@/lib/auth/admin'
 
 export default async function CannabisLayout({ children }: { children: React.ReactNode }) {
   await requireChef()
-  const adminCheck = await isAdmin().catch(() => false)
+  let adminCheck: boolean
+  try {
+    adminCheck = await isAdmin()
+  } catch (err) {
+    console.error('[cannabis-layout] Admin check failed, denying access as safety fallback:', err)
+    adminCheck = false
+  }
   if (!adminCheck) {
     redirect('/dashboard')
   }

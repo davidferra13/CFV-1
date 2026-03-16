@@ -12,10 +12,16 @@ import { createServerClient } from '@/lib/supabase/server'
  * Find a Dinner Circle linked to an event or inquiry.
  * Tries event first, then inquiry. Returns null if no circle exists.
  */
+export type CircleContext = {
+  groupId: string
+  groupToken: string
+  tenantId: string
+}
+
 export async function getCircleForContext(input: {
   eventId?: string | null
   inquiryId?: string | null
-}): Promise<{ groupId: string; groupToken: string } | null> {
+}): Promise<CircleContext | null> {
   if (!input.eventId && !input.inquiryId) return null
 
   const supabase = createServerClient({ admin: true })
@@ -24,26 +30,26 @@ export async function getCircleForContext(input: {
   if (input.eventId) {
     const { data } = await supabase
       .from('hub_groups')
-      .select('id, group_token')
+      .select('id, group_token, tenant_id')
       .eq('event_id', input.eventId)
       .eq('is_active', true)
       .limit(1)
       .maybeSingle()
 
-    if (data) return { groupId: data.id, groupToken: data.group_token }
+    if (data) return { groupId: data.id, groupToken: data.group_token, tenantId: data.tenant_id }
   }
 
   // Fall back to inquiry-linked circle
   if (input.inquiryId) {
     const { data } = await supabase
       .from('hub_groups')
-      .select('id, group_token')
+      .select('id, group_token, tenant_id')
       .eq('inquiry_id', input.inquiryId)
       .eq('is_active', true)
       .limit(1)
       .maybeSingle()
 
-    if (data) return { groupId: data.id, groupToken: data.group_token }
+    if (data) return { groupId: data.id, groupToken: data.group_token, tenantId: data.tenant_id }
   }
 
   return null
@@ -81,6 +87,7 @@ export async function getChefHubProfileId(tenantId: string): Promise<string | nu
 export async function getCircleForEvent(eventId: string): Promise<{
   groupId: string
   groupToken: string
+  tenantId: string
 } | null> {
   const supabase = createServerClient({ admin: true })
 

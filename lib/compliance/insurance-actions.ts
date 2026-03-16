@@ -1,5 +1,3 @@
-// @ts-nocheck - insurance_policies table pending schema migration
-//
 // DEFERRED: This file is inactive until the insurance_policies table migration
 // is applied. The 'use server' directive has been removed to prevent runtime
 // crashes from importing these functions. Re-enable once the schema exists.

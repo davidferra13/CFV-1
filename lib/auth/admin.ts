@@ -1,29 +1,22 @@
 // Admin Access Control
-// Platform-level gating separate from the chef/client role system.
-// Access is determined by ADMIN_EMAILS env var + founder hard baseline.
+// Platform-level gating separate from the chef/client/staff role system.
+// Access is persisted in platform_admins and queried per-session.
 
 import { createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getAdminEmails } from '@/lib/platform/owner-account'
-
-function resolveAdminEmails(): string[] {
-  // Keep explicit env read here for audit/test visibility.
-  void process.env.ADMIN_EMAILS
-  return getAdminEmails()
-}
-
-const ADMIN_EMAILS = resolveAdminEmails()
+import { getPersistedAdminAccessForAuthUser, type AdminAccessLevel } from '@/lib/auth/admin-access'
 
 export type AdminUser = {
   id: string
   email: string
+  accessLevel: AdminAccessLevel
 }
 
 /**
- * Require admin access. Throws/redirects if not authenticated or not in ADMIN_EMAILS.
- * Use in app/(admin)/layout.tsx and admin server actions.
+ * Resolve the current authenticated admin from the persisted platform_admins table.
+ * Returns null for unauthenticated users and authenticated non-admins.
  */
-export async function requireAdmin(): Promise<AdminUser> {
+export async function getCurrentAdminUser(): Promise<AdminUser | null> {
   const supabase = createServerClient()
   const {
     data: { user },
@@ -31,28 +24,41 @@ export async function requireAdmin(): Promise<AdminUser> {
   } = await supabase.auth.getUser()
 
   if (error || !user || !user.email) {
-    redirect('/auth/signin?redirect=/admin')
+    return null
   }
 
-  const normalizedEmail = user.email.toLowerCase()
-  if (ADMIN_EMAILS.length === 0 || !ADMIN_EMAILS.includes(normalizedEmail)) {
-    redirect('/unauthorized')
+  const access = await getPersistedAdminAccessForAuthUser(supabase as any, user.id)
+  if (!access) {
+    return null
   }
 
-  return { id: user.id, email: normalizedEmail }
+  return {
+    id: user.id,
+    email: user.email.toLowerCase(),
+    accessLevel: access.accessLevel,
+  }
 }
 
 /**
- * Non-throwing check — use to conditionally render admin links in shared layouts.
+ * Require admin access. Throws/redirects if not authenticated or not present in platform_admins.
+ * Use in app/(admin)/layout.tsx and admin server actions.
+ */
+export async function requireAdmin(): Promise<AdminUser> {
+  const admin = await getCurrentAdminUser()
+  if (!admin) {
+    redirect('/auth/signin?redirect=/admin')
+  }
+
+  return admin
+}
+
+/**
+ * Non-throwing check â€” use to conditionally render admin links in shared layouts.
  */
 export async function isAdmin(): Promise<boolean> {
   try {
-    const supabase = createServerClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user?.email) return false
-    return ADMIN_EMAILS.length > 0 && ADMIN_EMAILS.includes(user.email.toLowerCase())
+    const admin = await getCurrentAdminUser()
+    return admin !== null
   } catch {
     return false
   }

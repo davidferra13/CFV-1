@@ -5,6 +5,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { User } from '@supabase/supabase-js'
+import { hasPersistedAdminAccessForAuthUser } from '@/lib/auth/admin-access'
 import { signRoleCookie, verifyRoleCookie } from '@/lib/auth/signed-cookie'
 import {
   isAdminRoutePath,
@@ -23,10 +24,6 @@ function generateRequestId(): string {
 
 // Route policy lives in lib/auth/route-policy.ts.
 // Admin paths — require authentication but not a specific role (email check is in layout)
-const adminEmails = (process.env.ADMIN_EMAILS ?? '')
-  .split(',')
-  .map((email) => email.trim().toLowerCase())
-  .filter(Boolean)
 
 /**
  * Copy Supabase session cookies from the internal response onto a redirect response.
@@ -196,11 +193,8 @@ export async function middleware(request: NextRequest) {
   // Admin paths — defense-in-depth: check admin email list in middleware AND layout
   const isAdminRoute = isAdminRoutePath(pathname)
   if (isAdminRoute) {
-    if (
-      adminEmails.length === 0 ||
-      !user.email ||
-      !adminEmails.includes(user.email.toLowerCase())
-    ) {
+    const hasAdminAccess = await hasPersistedAdminAccessForAuthUser(supabase as any, user.id)
+    if (!hasAdminAccess) {
       return redirectWithCookies(new URL('/unauthorized', request.url), response)
     }
     response.headers.set('x-request-id', requestId)

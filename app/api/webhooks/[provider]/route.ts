@@ -60,9 +60,35 @@ export async function POST(req: NextRequest, { params }: { params: { provider: s
     })
 
     if (created.id) {
-      processIntegrationEvent(created.id).catch((error) => {
-        console.error('[Generic Integration Webhook] async process error:', error)
-      })
+      processIntegrationEvent(created.id)
+        .then(async (result) => {
+          if (result.status !== 'failed') return
+          const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
+          await recordSideEffectFailure({
+            source: 'generic-integration-webhook',
+            operation: 'process_event',
+            severity: 'high',
+            tenantId: connection.tenant_id as string,
+            entityType: 'integration_event',
+            entityId: created.id,
+            errorMessage: result.error ?? 'Integration event processing failed',
+            context: { provider },
+          })
+        })
+        .catch(async (error) => {
+          console.error('[Generic Integration Webhook] async process error:', error)
+          const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
+          await recordSideEffectFailure({
+            source: 'generic-integration-webhook',
+            operation: 'process_event',
+            severity: 'high',
+            tenantId: connection.tenant_id as string,
+            entityType: 'integration_event',
+            entityId: created.id,
+            errorMessage: error instanceof Error ? error.message : String(error),
+            context: { provider },
+          })
+        })
     }
 
     return NextResponse.json({

@@ -117,16 +117,28 @@ async function handleRSVPReminders(request: NextRequest): Promise<NextResponse> 
 
         if (ok) {
           sent += 1
-          await ((supabase as any)
+          const { error: logErr } = await ((supabase as any)
             .from('rsvp_reminder_log')
             .update({ status: 'sent' })
             .eq('id', logRow.id) as any)
+          if (logErr) {
+            console.error(
+              `[rsvp-reminders] Failed to mark log ${logRow.id} as sent (email was delivered, may re-send on next run):`,
+              logErr.message
+            )
+          }
         } else {
           failed += 1
-          await ((supabase as any)
+          const { error: logErr } = await ((supabase as any)
             .from('rsvp_reminder_log')
             .update({ status: 'failed' })
             .eq('id', logRow.id) as any)
+          if (logErr) {
+            console.error(
+              `[rsvp-reminders] Failed to mark log ${logRow.id} as failed:`,
+              logErr.message
+            )
+          }
         }
       }
     }

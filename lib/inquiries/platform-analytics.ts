@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/auth-utils'
+import { requireChef } from '@/lib/auth/get-user'
 
 export interface PlatformStat {
   channel: string

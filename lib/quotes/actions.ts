@@ -434,6 +434,7 @@ export async function updateQuote(id: string, input: UpdateQuoteInput) {
 export async function transitionQuote(id: string, newStatus: QuoteStatus) {
   const user = await requireChef()
   const supabase: any = createServerClient()
+  const warnings: string[] = []
 
   const getCurrentQuote = async (withSoftDeleteFilter: boolean) => {
     let query = supabase
@@ -559,7 +560,6 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
         await circleFirstNotify({
           eventId: updated.event_id,
           inquiryId: updated.inquiry_id,
-          tenantId: user.tenantId!,
           notificationType: 'quote_sent',
           body,
           metadata: {
@@ -618,7 +618,17 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
         }
       }
     } catch (emailErr) {
-      console.error('[transitionQuote] Email failed (non-blocking):', emailErr)
+      warnings.push('Quote saved but email delivery failed. The client may not have received it.')
+      const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
+      await recordSideEffectFailure({
+        source: 'quote-transition',
+        operation: 'send_quote_email',
+        severity: 'critical',
+        entityType: 'quote',
+        entityId: id,
+        tenantId: user.tenantId,
+        errorMessage: emailErr instanceof Error ? emailErr.message : String(emailErr),
+      })
     }
   }
 
@@ -650,6 +660,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     })
   } catch (err) {
     console.error('[transitionQuote] Activity log failed (non-blocking):', err)
+    warnings.push('Quote saved but activity log failed to record.')
   }
 
   // Circle post is now handled by circleFirstNotify() above (quote_sent notification)
@@ -670,7 +681,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     console.error('[transitionQuote] Zapier dispatch failed (non-blocking):', err)
   }
 
-  return { success: true, quote: updated }
+  return { success: true, quote: updated, warnings: warnings.length > 0 ? warnings : undefined }
 }
 
 // ============================================

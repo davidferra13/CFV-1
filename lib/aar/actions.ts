@@ -115,26 +115,38 @@ export async function createAAR(input: CreateAARInput) {
   revalidatePath('/dashboard')
   revalidatePath('/aar')
 
-  // Log chef activity (non-blocking)
-  try {
-    const { logChefActivity } = await import('@/lib/activity/log-chef')
-    await logChefActivity({
-      tenantId: user.tenantId!,
-      actorId: user.id,
-      action: 'aar_filed',
-      domain: 'operational',
-      entityType: 'after_action_review',
-      entityId: aar.id,
-      summary: `Filed after-action review — calm: ${validated.calm_rating}/5, prep: ${validated.preparation_rating}/5`,
-      context: {
-        event_id: validated.event_id,
-        calm_rating: validated.calm_rating,
-        preparation_rating: validated.preparation_rating,
-        execution_rating: validated.execution_rating,
+  // Log chef activity (non-blocking, captured in side_effect_failures)
+  {
+    const { nonBlocking } = await import('@/lib/monitoring/non-blocking')
+    await nonBlocking(
+      {
+        source: 'aar-create',
+        operation: 'log_chef_activity',
+        severity: 'high',
+        entityType: 'after_action_review',
+        entityId: aar.id,
+        tenantId: user.tenantId,
+        context: { event_id: validated.event_id },
       },
-    })
-  } catch (err) {
-    console.error('[createAAR] Activity log failed (non-blocking):', err)
+      async () => {
+        const { logChefActivity } = await import('@/lib/activity/log-chef')
+        await logChefActivity({
+          tenantId: user.tenantId!,
+          actorId: user.id,
+          action: 'aar_filed',
+          domain: 'operational',
+          entityType: 'after_action_review',
+          entityId: aar.id,
+          summary: `Filed after-action review — calm: ${validated.calm_rating}/5, prep: ${validated.preparation_rating}/5`,
+          context: {
+            event_id: validated.event_id,
+            calm_rating: validated.calm_rating,
+            preparation_rating: validated.preparation_rating,
+            execution_rating: validated.execution_rating,
+          },
+        })
+      }
+    )
   }
 
   return { success: true, aar }

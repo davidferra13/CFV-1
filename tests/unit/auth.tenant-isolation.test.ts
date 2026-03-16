@@ -190,15 +190,20 @@ describe('D3: API routes call requireChef/requireClient/requireAuth', () => {
   })
 })
 
-describe('D4: Admin check is email-based, not role-based', () => {
-  it('admin.ts reads from ADMIN_EMAILS env var', () => {
+describe('D4: Admin check uses persisted platform RBAC', () => {
+  it('admin.ts queries platform_admins instead of ADMIN_EMAILS', () => {
     const adminFile = join(ROOT, 'lib', 'auth', 'admin.ts')
-    const content = readFileSync(adminFile, 'utf-8')
+    const adminAccessFile = join(ROOT, 'lib', 'auth', 'admin-access.ts')
+    const adminContent = readFileSync(adminFile, 'utf-8')
+    const accessContent = readFileSync(adminAccessFile, 'utf-8')
 
-    assert.ok(content.includes('ADMIN_EMAILS'), 'admin.ts must reference ADMIN_EMAILS env var')
     assert.ok(
-      content.includes('process.env.ADMIN_EMAILS'),
-      'admin.ts must read ADMIN_EMAILS from process.env'
+      accessContent.includes('platform_admins'),
+      'admin access must query the persisted platform_admins table'
+    )
+    assert.ok(
+      !adminContent.includes('process.env.ADMIN_EMAILS'),
+      'admin.ts must not read ADMIN_EMAILS from process.env for authorization'
     )
   })
 })

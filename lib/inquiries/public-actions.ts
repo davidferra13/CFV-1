@@ -256,7 +256,6 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
     const circle = await createInquiryCircle({
       inquiryId: inquiry.id,
-      tenantId,
       clientName: validated.full_name.trim(),
       clientEmail: validated.email.toLowerCase().trim(),
       occasion: validated.occasion.trim(),
@@ -265,7 +264,6 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     await postFirstCircleMessage({
       groupId: circle.groupId,
       inquiryId: inquiry.id,
-      tenantId,
     })
   } catch (circleErr) {
     console.error('[submitPublicInquiry] Circle creation failed (non-blocking):', circleErr)

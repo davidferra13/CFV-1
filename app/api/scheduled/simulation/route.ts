@@ -93,6 +93,8 @@ async function handleSimulation(req: NextRequest): Promise<NextResponse> {
     })
     .catch((err: unknown) => {
       console.error('[sim-cron] Background simulation failed:', err)
+      const message = err instanceof Error ? err.message : String(err)
+      void recordCronError('simulation', message, Date.now() - started)
     })
 
   return NextResponse.json({ started: true, tenantIds: runningFor })

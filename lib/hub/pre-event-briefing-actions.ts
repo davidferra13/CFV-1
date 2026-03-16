@@ -12,14 +12,13 @@ import { generatePreEventBriefing } from '@/lib/templates/pre-event-briefing'
 
 export async function postPreEventBriefing(input: {
   eventId: string
-  tenantId: string
 }): Promise<{ success: boolean; error?: string }> {
   const circle = await getCircleForEvent(input.eventId)
   if (!circle) {
     return { success: false, error: 'No Dinner Circle found for this event' }
   }
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) {
     return { success: false, error: 'Chef hub profile not found' }
   }
@@ -34,9 +33,9 @@ export async function postPreEventBriefing(input: {
         'event_date, serve_time, arrival_time, occasion, guest_count, location_name, location_address, client_id'
       )
       .eq('id', input.eventId)
-      .eq('tenant_id', input.tenantId)
+      .eq('tenant_id', circle.tenantId)
       .single(),
-    supabase.from('chefs').select('display_name, business_name').eq('id', input.tenantId).single(),
+    supabase.from('chefs').select('display_name, business_name').eq('id', circle.tenantId).single(),
   ])
 
   const event = eventResult.data
@@ -58,7 +57,7 @@ export async function postPreEventBriefing(input: {
     .from('menus')
     .select('id, name')
     .eq('event_id', input.eventId)
-    .eq('tenant_id', input.tenantId)
+    .eq('tenant_id', circle.tenantId)
     .order('created_at', { ascending: true })
     .limit(1)
     .maybeSingle()
@@ -103,7 +102,7 @@ export async function postPreEventBriefing(input: {
   let whatToHaveReady: string[] = []
   try {
     const { getServiceConfigForTenant } = await import('@/lib/chef-services/service-config-actions')
-    const config = await getServiceConfigForTenant(input.tenantId)
+    const config = await getServiceConfigForTenant(circle.tenantId)
     if (config) {
       if (config.requires_oven) whatToHaveReady.push('Oven available and working')
       if (config.requires_stovetop) whatToHaveReady.push('Stovetop available')

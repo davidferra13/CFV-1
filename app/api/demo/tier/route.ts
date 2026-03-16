@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { readFileSync } from 'fs'
+import { revalidateTag } from 'next/cache'
 import { createServerClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
@@ -43,6 +44,8 @@ export async function POST(req: NextRequest) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  revalidateTag(`chef-layout-${demoChef.chefId}`)
 
   return NextResponse.json({
     ok: true,

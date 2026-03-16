@@ -265,7 +265,6 @@ export async function uploadEventPhoto(
         const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
         await circleFirstNotify({
           eventId,
-          tenantId: user.tenantId!,
           notificationType: 'photos_ready',
           body: 'Photos from your event are now available! Check them out.',
           metadata: { event_id: eventId, photo_count: 1 },
