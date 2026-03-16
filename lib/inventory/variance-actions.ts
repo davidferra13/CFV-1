@@ -5,6 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { convertQuantity, normalizeUnit } from '@/lib/units/conversion-engine'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -179,10 +180,21 @@ export async function getEventVarianceReport(eventId: string): Promise<EventVari
     const actual = actualMap.get(ingredientId)
 
     const ingredientName = expected?.ingredientName || actual?.ingredientName || 'Unknown'
-    const unit = expected?.unit || actual?.unit || ''
+    const expectedUnit = normalizeUnit(expected?.unit || '')
+    const actualUnit = normalizeUnit(actual?.unit || '')
+    const unit = expectedUnit || actualUnit || ''
     const expectedQty = expected?.expectedQty || 0
-    const actualQty = actual?.totalQty || 0
+    let actualQty = actual?.totalQty || 0
     const lastPriceCents = expected?.lastPriceCents || 0
+
+    // Normalize actual quantity to expected unit if they differ
+    if (expectedUnit && actualUnit && expectedUnit !== actualUnit && actualQty > 0) {
+      const converted = convertQuantity(actualQty, actualUnit, expectedUnit)
+      if (converted !== null) {
+        actualQty = converted
+      }
+      // If conversion not possible (e.g., volume vs weight without density), use as-is
+    }
 
     const varianceQty = actualQty - expectedQty
     const costImpactCents = Math.round(varianceQty * lastPriceCents)

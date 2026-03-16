@@ -400,7 +400,6 @@ export async function transitionEvent({
             : ''
           await circleFirstNotify({
             eventId,
-            tenantId: event.tenant_id,
             notificationType: 'event_confirmed',
             body: `Event confirmed${datePart}! Prep is underway. I'll share the full plan here soon.`,
             metadata: {
@@ -560,7 +559,6 @@ export async function transitionEvent({
 
           await circleFirstNotify({
             eventId,
-            tenantId: event.tenant_id,
             notificationType: 'event_completed',
             body: thankYou,
             metadata: { event_id: eventId },
@@ -657,6 +655,14 @@ export async function transitionEvent({
       }
     } catch (surveyErr) {
       log.events.warn('Survey creation failed (non-blocking)', { error: surveyErr })
+    }
+
+    // Check food cost variance alerts (non-blocking)
+    try {
+      const { checkVarianceAlerts } = await import('@/lib/inventory/variance-alert-actions')
+      await checkVarianceAlerts(eventId)
+    } catch (varianceErr) {
+      log.events.warn('Variance alert check failed (non-blocking)', { error: varianceErr })
     }
   }
 
