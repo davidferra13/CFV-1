@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function MenuEditorPage({ params }: Props) {
-  await requireChef()
+  const user = await requireChef()
   const { id } = await params
 
   const context = await getEditorContext(id)
@@ -35,6 +35,7 @@ export default async function MenuEditorPage({ params }: Props) {
       menu={context.menu}
       event={context.event}
       previousMenus={context.previousMenus}
+      chefId={user.entityId}
     />
   )
 }

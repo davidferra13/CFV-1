@@ -7,7 +7,7 @@ import { ContractTemplates } from '@/components/contracts/contract-templates'
 export const metadata: Metadata = { title: 'Contract Templates - ChefFlow' }
 
 export default async function ContractTemplatesPage() {
-  await requireChef()
+  const user = await requireChef()
   const templates = await listContractTemplates()
 
   return (
@@ -22,7 +22,7 @@ export default async function ContractTemplatesPage() {
         </p>
       </div>
 
-      <ContractTemplates templates={templates as any} />
+      <ContractTemplates templates={templates as any} chefId={user.entityId} />
     </div>
   )
 }

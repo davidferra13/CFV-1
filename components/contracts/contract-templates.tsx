@@ -11,7 +11,13 @@ type ContractTemplate = {
   version: number
 }
 
-export function ContractTemplates({ templates }: { templates: ContractTemplate[] }) {
+export function ContractTemplates({
+  templates,
+  chefId,
+}: {
+  templates: ContractTemplate[]
+  chefId: string
+}) {
   return (
     <div className="space-y-4">
       {templates.length === 0 ? (
@@ -20,7 +26,7 @@ export function ContractTemplates({ templates }: { templates: ContractTemplate[]
             <CardTitle className="text-base">Create your first template</CardTitle>
           </CardHeader>
           <CardContent>
-            <ContractTemplateEditor />
+            <ContractTemplateEditor chefId={chefId} />
           </CardContent>
         </Card>
       ) : (
@@ -49,7 +55,7 @@ export function ContractTemplates({ templates }: { templates: ContractTemplate[]
                     Edit template
                   </summary>
                   <div className="mt-4">
-                    <ContractTemplateEditor template={template} />
+                    <ContractTemplateEditor template={template} chefId={chefId} />
                   </div>
                 </details>
 
@@ -72,7 +78,7 @@ export function ContractTemplates({ templates }: { templates: ContractTemplate[]
               <CardTitle className="text-base">Add another template</CardTitle>
             </CardHeader>
             <CardContent>
-              <ContractTemplateEditor />
+              <ContractTemplateEditor chefId={chefId} />
             </CardContent>
           </Card>
         </>

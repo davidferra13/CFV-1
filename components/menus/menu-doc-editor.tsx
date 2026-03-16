@@ -5,7 +5,7 @@
 // All fields auto-save with 1.5s debounce. No explicit save button needed.
 // Simple Mode toggle lets chef bypass structured editor entirely.
 
-import { useState, useRef, useCallback, useTransition, useEffect } from 'react'
+import { useState, useRef, useCallback, useTransition, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -27,6 +27,8 @@ import {
 import { sendMenuForApproval } from '@/lib/events/menu-approval-actions'
 import { CocktailBrowserPanel } from '@/components/menus/cocktail-browser-panel'
 import { RecipeLinkPicker } from '@/components/menus/recipe-link-picker'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1083,10 +1085,12 @@ export function MenuDocEditor({
   menu: initialMenu,
   event,
   previousMenus,
+  chefId,
 }: {
   menu: EditorMenu
   event: EditorEvent | null
   previousMenus: PreviousMenu[]
+  chefId: string
 }) {
   const router = useRouter()
   const { saveState, scheduleSave } = useAutoSave()
@@ -1118,6 +1122,51 @@ export function MenuDocEditor({
     [...initialMenu.dishes].sort((a, b) => a.sort_order - b.sort_order)
   )
   const [showCuisineSuggestions, setShowCuisineSuggestions] = useState(false)
+
+  // ─── Form protection (draft persistence + unsaved changes guard) ────────────
+  const defaultData = useMemo(
+    () => ({
+      menuName: initialMenu.name,
+      cuisineType: initialMenu.cuisine_type ?? '',
+      serviceStyle: initialMenu.service_style ?? '',
+      guestCount: initialMenu.target_guest_count?.toString() ?? '',
+      pricePerPerson: initialMenu.price_per_person_cents
+        ? (initialMenu.price_per_person_cents / 100).toString()
+        : '',
+      simpleContent: initialMenu.simple_mode_content ?? '',
+    }),
+    [initialMenu]
+  )
+
+  const currentData = useMemo(
+    () => ({
+      menuName,
+      cuisineType,
+      serviceStyle,
+      guestCount,
+      pricePerPerson,
+      simpleContent,
+    }),
+    [menuName, cuisineType, serviceStyle, guestCount, pricePerPerson, simpleContent]
+  )
+
+  const protection = useProtectedForm({
+    surfaceId: 'menu-doc',
+    recordId: initialMenu.id,
+    tenantId: chefId,
+    defaultData,
+    currentData,
+    throttleMs: 10_000,
+  })
+
+  const applyFormData = useCallback((data: Record<string, unknown>) => {
+    if (typeof data.menuName === 'string') setMenuName(data.menuName)
+    if (typeof data.cuisineType === 'string') setCuisineType(data.cuisineType)
+    if (typeof data.serviceStyle === 'string') setServiceStyle(data.serviceStyle)
+    if (typeof data.guestCount === 'string') setGuestCount(data.guestCount)
+    if (typeof data.pricePerPerson === 'string') setPricePerPerson(data.pricePerPerson)
+    if (typeof data.simpleContent === 'string') setSimpleContent(data.simpleContent)
+  }, [])
 
   const saveMenuMeta = useCallback(
     (data: Parameters<typeof updateMenuMeta>[1]) => {
@@ -1287,244 +1336,257 @@ export function MenuDocEditor({
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-stone-800">
-      {/* Top bar */}
-      <div className="sticky top-0 z-20 bg-stone-900 border-b border-stone-700 px-6 py-2.5 flex items-center gap-4">
-        <button
-          type="button"
-          onClick={() => router.push(`/menus/${initialMenu.id}`)}
-          className="text-sm text-stone-500 hover:text-stone-200 transition-colors"
-        >
-          ← Back
-        </button>
+    <FormShield
+      guard={protection.guard}
+      showRestorePrompt={protection.showRestorePrompt}
+      lastSavedAt={protection.lastSavedAt}
+      onRestore={() => {
+        const d = protection.restoreDraft()
+        if (d) applyFormData(d)
+      }}
+      onDiscard={protection.discardDraft}
+      saveState={protection.saveState}
+    >
+      <div className="min-h-screen bg-stone-800">
+        {/* Top bar */}
+        <div className="sticky top-0 z-20 bg-stone-900 border-b border-stone-700 px-6 py-2.5 flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => router.push(`/menus/${initialMenu.id}`)}
+            className="text-sm text-stone-500 hover:text-stone-200 transition-colors"
+          >
+            ← Back
+          </button>
 
-        <div className="flex-1 min-w-0">
-          <span className="text-sm font-medium text-stone-300 truncate hidden sm:block">
-            {menuName || 'Untitled Menu'}
+          <div className="flex-1 min-w-0">
+            <span className="text-sm font-medium text-stone-300 truncate hidden sm:block">
+              {menuName || 'Untitled Menu'}
+            </span>
+          </div>
+
+          <span className={`text-xs ${saveColor} transition-colors shrink-0`}>{saveText}</span>
+
+          {/* Status badge */}
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border shrink-0 ${
+              locked
+                ? 'border-amber-300 bg-amber-950 text-amber-700'
+                : initialMenu.status === 'shared'
+                  ? 'border-blue-300 bg-blue-950 text-blue-700'
+                  : initialMenu.status === 'archived'
+                    ? 'border-stone-600 bg-stone-800 text-stone-500'
+                    : 'border-stone-700 bg-stone-900 text-stone-400'
+            }`}
+          >
+            {initialMenu.status.charAt(0).toUpperCase() + initialMenu.status.slice(1)}
           </span>
+
+          {/* Simple mode toggle */}
+          <button
+            type="button"
+            onClick={handleSimpleModeToggle}
+            title={
+              simpleMode
+                ? 'Switch back to structured course editor'
+                : 'Write freeform or paste menu text'
+            }
+            className={`text-xs px-3 py-1 rounded-full border transition-colors shrink-0 ${
+              simpleMode
+                ? 'border-brand-400 bg-brand-950 text-brand-400 font-medium'
+                : 'border-stone-700 text-stone-500 hover:border-stone-400 hover:text-stone-300'
+            }`}
+          >
+            {simpleMode ? 'Exit freeform' : 'Freeform text'}
+          </button>
         </div>
 
-        <span className={`text-xs ${saveColor} transition-colors shrink-0`}>{saveText}</span>
+        {/* Main layout */}
+        <div className="max-w-6xl mx-auto px-4 py-8 flex gap-6 items-start">
+          {/* ─── Document ─── */}
+          <div className="flex-1 min-w-0">
+            <div className="bg-stone-900 shadow-xl rounded-xl p-10 min-h-[calc(100vh-8rem)]">
+              {/* Title */}
+              {!locked ? (
+                <AutoTextarea
+                  value={menuName}
+                  onChange={handleMenuName}
+                  placeholder="Menu title…"
+                  minRows={1}
+                  className="w-full text-[2rem] leading-tight font-bold text-stone-100 bg-transparent border-none outline-none placeholder:text-stone-300 mb-1 py-0 block"
+                />
+              ) : (
+                <h1 className="text-[2rem] leading-tight font-bold text-stone-100 mb-1">
+                  {menuName}
+                </h1>
+              )}
 
-        {/* Status badge */}
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border shrink-0 ${
-            locked
-              ? 'border-amber-300 bg-amber-950 text-amber-700'
-              : initialMenu.status === 'shared'
-                ? 'border-blue-300 bg-blue-950 text-blue-700'
-                : initialMenu.status === 'archived'
-                  ? 'border-stone-600 bg-stone-800 text-stone-500'
-                  : 'border-stone-700 bg-stone-900 text-stone-400'
-          }`}
-        >
-          {initialMenu.status.charAt(0).toUpperCase() + initialMenu.status.slice(1)}
-        </span>
+              {/* Metadata row */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 mb-10 pb-6 border-b border-stone-800">
+                {/* Cuisine */}
+                <div className="relative">
+                  {!locked ? (
+                    <>
+                      <input
+                        value={cuisineType}
+                        onChange={(e) => handleCuisineType(e.target.value)}
+                        onFocus={() => setShowCuisineSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowCuisineSuggestions(false), 150)}
+                        placeholder="Cuisine type"
+                        className="text-sm text-stone-500 border-b border-dashed border-stone-600 bg-transparent outline-none focus:border-brand-400 focus:text-stone-200 pb-0.5 min-w-[100px] max-w-[180px] transition-colors"
+                      />
+                      {showCuisineSuggestions && (
+                        <div className="absolute left-0 top-full z-10 bg-stone-900 border border-stone-700 rounded-lg shadow-lg mt-1 py-1 max-h-48 overflow-y-auto min-w-[160px]">
+                          {CUISINE_SUGGESTIONS.filter(
+                            (s) =>
+                              !cuisineType || s.toLowerCase().includes(cuisineType.toLowerCase())
+                          ).map((s) => (
+                            <button
+                              type="button"
+                              key={s}
+                              onMouseDown={() => {
+                                handleCuisineType(s)
+                                setShowCuisineSuggestions(false)
+                              }}
+                              className="block w-full text-left px-3 py-1.5 text-sm text-stone-400 hover:bg-stone-800"
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    cuisineType && <span className="text-sm text-stone-500">{cuisineType}</span>
+                  )}
+                </div>
 
-        {/* Simple mode toggle */}
-        <button
-          type="button"
-          onClick={handleSimpleModeToggle}
-          title={
-            simpleMode
-              ? 'Switch back to structured course editor'
-              : 'Write freeform or paste menu text'
-          }
-          className={`text-xs px-3 py-1 rounded-full border transition-colors shrink-0 ${
-            simpleMode
-              ? 'border-brand-400 bg-brand-950 text-brand-400 font-medium'
-              : 'border-stone-700 text-stone-500 hover:border-stone-400 hover:text-stone-300'
-          }`}
-        >
-          {simpleMode ? 'Exit freeform' : 'Freeform text'}
-        </button>
-      </div>
+                {cuisineType && serviceStyle && <span className="text-stone-300 text-sm">·</span>}
 
-      {/* Main layout */}
-      <div className="max-w-6xl mx-auto px-4 py-8 flex gap-6 items-start">
-        {/* ─── Document ─── */}
-        <div className="flex-1 min-w-0">
-          <div className="bg-stone-900 shadow-xl rounded-xl p-10 min-h-[calc(100vh-8rem)]">
-            {/* Title */}
-            {!locked ? (
-              <AutoTextarea
-                value={menuName}
-                onChange={handleMenuName}
-                placeholder="Menu title…"
-                minRows={1}
-                className="w-full text-[2rem] leading-tight font-bold text-stone-100 bg-transparent border-none outline-none placeholder:text-stone-300 mb-1 py-0 block"
-              />
-            ) : (
-              <h1 className="text-[2rem] leading-tight font-bold text-stone-100 mb-1">
-                {menuName}
-              </h1>
-            )}
-
-            {/* Metadata row */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 mb-10 pb-6 border-b border-stone-800">
-              {/* Cuisine */}
-              <div className="relative">
+                {/* Service style */}
                 {!locked ? (
-                  <>
-                    <input
-                      value={cuisineType}
-                      onChange={(e) => handleCuisineType(e.target.value)}
-                      onFocus={() => setShowCuisineSuggestions(true)}
-                      onBlur={() => setTimeout(() => setShowCuisineSuggestions(false), 150)}
-                      placeholder="Cuisine type"
-                      className="text-sm text-stone-500 border-b border-dashed border-stone-600 bg-transparent outline-none focus:border-brand-400 focus:text-stone-200 pb-0.5 min-w-[100px] max-w-[180px] transition-colors"
-                    />
-                    {showCuisineSuggestions && (
-                      <div className="absolute left-0 top-full z-10 bg-stone-900 border border-stone-700 rounded-lg shadow-lg mt-1 py-1 max-h-48 overflow-y-auto min-w-[160px]">
-                        {CUISINE_SUGGESTIONS.filter(
-                          (s) => !cuisineType || s.toLowerCase().includes(cuisineType.toLowerCase())
-                        ).map((s) => (
-                          <button
-                            type="button"
-                            key={s}
-                            onMouseDown={() => {
-                              handleCuisineType(s)
-                              setShowCuisineSuggestions(false)
-                            }}
-                            className="block w-full text-left px-3 py-1.5 text-sm text-stone-400 hover:bg-stone-800"
-                          >
-                            {s}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </>
+                  <select
+                    value={serviceStyle}
+                    onChange={(e) => handleServiceStyle(e.target.value)}
+                    title="Service style"
+                    className="text-sm text-stone-500 border-b border-dashed border-stone-600 bg-transparent outline-none focus:border-brand-400 pb-0.5 appearance-none cursor-pointer transition-colors"
+                  >
+                    <option value="">Service style</option>
+                    {Object.entries(SERVICE_STYLE_LABELS).map(([v, l]) => (
+                      <option key={v} value={v}>
+                        {l}
+                      </option>
+                    ))}
+                  </select>
                 ) : (
-                  cuisineType && <span className="text-sm text-stone-500">{cuisineType}</span>
+                  serviceStyle && (
+                    <span className="text-sm text-stone-500">
+                      {SERVICE_STYLE_LABELS[serviceStyle] || serviceStyle}
+                    </span>
+                  )
+                )}
+
+                {(cuisineType || serviceStyle) && guestCount && (
+                  <span className="text-stone-300 text-sm">·</span>
+                )}
+
+                {/* Guest count */}
+                {!locked ? (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      value={guestCount}
+                      onChange={(e) => handleGuestCount(e.target.value)}
+                      placeholder="-"
+                      min="1"
+                      className="text-sm text-stone-500 border-b border-dashed border-stone-600 bg-transparent outline-none focus:border-brand-400 w-10 pb-0.5 transition-colors"
+                    />
+                    <span className="text-sm text-stone-400">guests</span>
+                  </div>
+                ) : (
+                  guestCount && <span className="text-sm text-stone-500">{guestCount} guests</span>
                 )}
               </div>
 
-              {cuisineType && serviceStyle && <span className="text-stone-300 text-sm">·</span>}
-
-              {/* Service style */}
-              {!locked ? (
-                <select
-                  value={serviceStyle}
-                  onChange={(e) => handleServiceStyle(e.target.value)}
-                  title="Service style"
-                  className="text-sm text-stone-500 border-b border-dashed border-stone-600 bg-transparent outline-none focus:border-brand-400 pb-0.5 appearance-none cursor-pointer transition-colors"
-                >
-                  <option value="">Service style</option>
-                  {Object.entries(SERVICE_STYLE_LABELS).map(([v, l]) => (
-                    <option key={v} value={v}>
-                      {l}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                serviceStyle && (
-                  <span className="text-sm text-stone-500">
-                    {SERVICE_STYLE_LABELS[serviceStyle] || serviceStyle}
-                  </span>
-                )
-              )}
-
-              {(cuisineType || serviceStyle) && guestCount && (
-                <span className="text-stone-300 text-sm">·</span>
-              )}
-
-              {/* Guest count */}
-              {!locked ? (
-                <div className="flex items-center gap-1">
-                  <input
-                    type="number"
-                    value={guestCount}
-                    onChange={(e) => handleGuestCount(e.target.value)}
-                    placeholder="-"
-                    min="1"
-                    className="text-sm text-stone-500 border-b border-dashed border-stone-600 bg-transparent outline-none focus:border-brand-400 w-10 pb-0.5 transition-colors"
+              {/* ── Simple mode ── */}
+              {simpleMode ? (
+                <div className="space-y-4">
+                  <div className="bg-blue-950 border border-blue-200 rounded-lg px-4 py-3 flex items-start gap-3">
+                    <span className="text-blue-500 text-lg leading-none">✎</span>
+                    <div>
+                      <p className="text-sm font-medium text-blue-800">Freeform text mode</p>
+                      <p className="text-xs text-blue-600 mt-0.5">
+                        Write your menu as freeform text or paste it in directly. Switch back
+                        anytime - your structured courses will still be there.
+                      </p>
+                    </div>
+                  </div>
+                  <textarea
+                    value={simpleContent}
+                    onChange={(e) => handleSimpleContent(e.target.value)}
+                    disabled={locked}
+                    placeholder={`Write your menu here…\n\nSTARTER\nAutumn Beet Salad - goat cheese, candied walnuts, honey vinaigrette\n\nMAIN\nGrass-fed Filet Mignon - truffle jus, pommes purée, haricots verts\n\nDESSERT\nValrhona Chocolate Fondant - crème anglaise, raspberry coulis`}
+                    className="w-full min-h-[420px] text-sm text-stone-300 bg-stone-800 border border-stone-700 rounded-xl px-6 py-5 outline-none focus:ring-2 focus:ring-brand-700 leading-relaxed font-mono resize-none"
                   />
-                  <span className="text-sm text-stone-400">guests</span>
                 </div>
               ) : (
-                guestCount && <span className="text-sm text-stone-500">{guestCount} guests</span>
+                /* ── Structured editor ── */
+                <div className="space-y-10">
+                  {dishes.length === 0 && !locked && (
+                    <div className="text-center py-16 text-stone-400 border-2 border-dashed border-stone-700 rounded-xl">
+                      <p className="text-base font-medium mb-1">No courses yet</p>
+                      <p className="text-sm">
+                        Add your first course below to start building the menu
+                      </p>
+                    </div>
+                  )}
+                  {locked && dishes.length === 0 && (
+                    <p className="text-center text-stone-400 py-16">No courses on this menu.</p>
+                  )}
+
+                  {sortedDishes.map((dish, idx) => (
+                    <CourseBlock
+                      key={dish.id}
+                      dish={dish}
+                      locked={locked}
+                      menuId={initialMenu.id}
+                      isFirst={idx === 0}
+                      isLast={idx === sortedDishes.length - 1}
+                      onDelete={handleDishDelete}
+                      onUpdate={handleDishUpdate}
+                      onMoveUp={handleMoveUp}
+                      onMoveDown={handleMoveDown}
+                      onUnlinkRecipe={handleUnlinkRecipe}
+                      onRecipeLinked={handleRecipeLinked}
+                      scheduleSave={scheduleSave}
+                    />
+                  ))}
+
+                  {!locked && (
+                    <AddCourseRow
+                      nextCourseNumber={nextCourseNumber}
+                      menuId={initialMenu.id}
+                      onAdded={handleCourseAdded}
+                    />
+                  )}
+                </div>
               )}
             </div>
+          </div>
 
-            {/* ── Simple mode ── */}
-            {simpleMode ? (
-              <div className="space-y-4">
-                <div className="bg-blue-950 border border-blue-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                  <span className="text-blue-500 text-lg leading-none">✎</span>
-                  <div>
-                    <p className="text-sm font-medium text-blue-800">Freeform text mode</p>
-                    <p className="text-xs text-blue-600 mt-0.5">
-                      Write your menu as freeform text or paste it in directly. Switch back anytime
-                      - your structured courses will still be there.
-                    </p>
-                  </div>
-                </div>
-                <textarea
-                  value={simpleContent}
-                  onChange={(e) => handleSimpleContent(e.target.value)}
-                  disabled={locked}
-                  placeholder={`Write your menu here…\n\nSTARTER\nAutumn Beet Salad - goat cheese, candied walnuts, honey vinaigrette\n\nMAIN\nGrass-fed Filet Mignon - truffle jus, pommes purée, haricots verts\n\nDESSERT\nValrhona Chocolate Fondant - crème anglaise, raspberry coulis`}
-                  className="w-full min-h-[420px] text-sm text-stone-300 bg-stone-800 border border-stone-700 rounded-xl px-6 py-5 outline-none focus:ring-2 focus:ring-brand-700 leading-relaxed font-mono resize-none"
-                />
-              </div>
-            ) : (
-              /* ── Structured editor ── */
-              <div className="space-y-10">
-                {dishes.length === 0 && !locked && (
-                  <div className="text-center py-16 text-stone-400 border-2 border-dashed border-stone-700 rounded-xl">
-                    <p className="text-base font-medium mb-1">No courses yet</p>
-                    <p className="text-sm">
-                      Add your first course below to start building the menu
-                    </p>
-                  </div>
-                )}
-                {locked && dishes.length === 0 && (
-                  <p className="text-center text-stone-400 py-16">No courses on this menu.</p>
-                )}
-
-                {sortedDishes.map((dish, idx) => (
-                  <CourseBlock
-                    key={dish.id}
-                    dish={dish}
-                    locked={locked}
-                    menuId={initialMenu.id}
-                    isFirst={idx === 0}
-                    isLast={idx === sortedDishes.length - 1}
-                    onDelete={handleDishDelete}
-                    onUpdate={handleDishUpdate}
-                    onMoveUp={handleMoveUp}
-                    onMoveDown={handleMoveDown}
-                    onUnlinkRecipe={handleUnlinkRecipe}
-                    onRecipeLinked={handleRecipeLinked}
-                    scheduleSave={scheduleSave}
-                  />
-                ))}
-
-                {!locked && (
-                  <AddCourseRow
-                    nextCourseNumber={nextCourseNumber}
-                    menuId={initialMenu.id}
-                    onAdded={handleCourseAdded}
-                  />
-                )}
-              </div>
-            )}
+          {/* ─── Sidebar ─── */}
+          <div className="w-72 shrink-0">
+            <ContextSidebar
+              event={event}
+              previousMenus={previousMenus}
+              pricePerPerson={pricePerPerson}
+              onPriceChange={handlePricePerPerson}
+              locked={locked}
+              menuCost={menuCost}
+              onCocktailSelect={handleCocktailSelect}
+            />
           </div>
         </div>
-
-        {/* ─── Sidebar ─── */}
-        <div className="w-72 shrink-0">
-          <ContextSidebar
-            event={event}
-            previousMenus={previousMenus}
-            pricePerPerson={pricePerPerson}
-            onPriceChange={handlePricePerPerson}
-            locked={locked}
-            menuCost={menuCost}
-            onCocktailSelect={handleCocktailSelect}
-          />
-        </div>
       </div>
-    </div>
+    </FormShield>
   )
 }

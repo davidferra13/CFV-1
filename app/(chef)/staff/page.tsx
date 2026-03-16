@@ -30,7 +30,7 @@ export default async function StaffRosterPage({
 }: {
   searchParams: { q?: string; role?: string; status?: string }
 }) {
-  await requireChef()
+  const user = await requireChef()
   await requireFocusAccess()
 
   const search = searchParams.q ?? ''
@@ -117,7 +117,7 @@ export default async function StaffRosterPage({
           <CardTitle className="text-base">Add Team Member</CardTitle>
         </CardHeader>
         <CardContent>
-          <StaffMemberForm />
+          <StaffMemberForm chefId={user.entityId} />
         </CardContent>
       </Card>
     </div>

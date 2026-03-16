@@ -31,7 +31,7 @@ const STATUS_BADGE: Record<string, 'success' | 'warning' | 'error' | 'default'> 
 }
 
 export default async function StaffDetailPage({ params }: { params: { id: string } }) {
-  await requireChef()
+  const user = await requireChef()
   const [member, hasLogin] = await Promise.all([
     getStaffMember(params.id),
     checkStaffHasLogin(params.id),
@@ -115,7 +115,7 @@ export default async function StaffDetailPage({ params }: { params: { id: string
           <CardTitle className="text-base">Edit Profile</CardTitle>
         </CardHeader>
         <CardContent>
-          <StaffMemberForm member={member} />
+          <StaffMemberForm member={member} chefId={user.entityId} />
         </CardContent>
       </Card>
 
