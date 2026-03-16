@@ -1,38 +1,15 @@
 -- Communication Platform Phase 2: Collaboration Layer
--- Adds response templates, menu revisions, guest count changes, payment milestones
+-- Adds menu revisions, guest count changes, payment milestones
+-- NOTE: response_templates table already exists (created in earlier migration with tenant_id)
 
--- Response templates (reusable message templates for chefs)
-CREATE TABLE IF NOT EXISTS response_templates (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  chef_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  subject TEXT,
-  body TEXT NOT NULL,
-  channel TEXT NOT NULL DEFAULT 'email' CHECK (channel IN ('email', 'sms', 'app')),
-  category TEXT NOT NULL DEFAULT 'general' CHECK (category IN (
-    'auto_response', 'follow_up', 'menu_proposal', 'booking_confirmation',
-    'payment_reminder', 'post_event', 'pre_event', 'general',
-    'onboarding', 're_engagement'
-  )),
-  variables JSONB DEFAULT '[]',
-  channel_filter TEXT,
-  occasion_filter TEXT,
-  is_default BOOLEAN DEFAULT false,
-  is_system BOOLEAN DEFAULT false,
-  usage_count INTEGER DEFAULT 0,
-  last_used_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-ALTER TABLE response_templates ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "chef_template_access" ON response_templates
-  FOR ALL USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
-  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
-
-CREATE INDEX idx_response_templates_chef ON response_templates(chef_id);
-CREATE INDEX idx_response_templates_category ON response_templates(chef_id, category);
+-- Add missing columns to existing response_templates if needed
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS channel TEXT DEFAULT 'email';
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS variables JSONB DEFAULT '[]';
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS channel_filter TEXT;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS occasion_filter TEXT;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS is_default BOOLEAN DEFAULT false;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS is_system BOOLEAN DEFAULT false;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS last_used_at TIMESTAMPTZ;
 
 -- Menu revision history (version tracking for menu proposals)
 CREATE TABLE IF NOT EXISTS menu_revisions (
@@ -68,8 +45,8 @@ CREATE POLICY "client_menu_revision_read" ON menu_revisions
     WHERE ur.auth_user_id = auth.uid() AND ur.role = 'client'
   ));
 
-CREATE INDEX idx_menu_revisions_menu ON menu_revisions(menu_id);
-CREATE INDEX idx_menu_revisions_event ON menu_revisions(event_id);
+CREATE INDEX IF NOT EXISTS idx_menu_revisions_menu ON menu_revisions(menu_id);
+CREATE INDEX IF NOT EXISTS idx_menu_revisions_event ON menu_revisions(event_id);
 
 -- Per-dish feedback from clients on menu proposals
 CREATE TABLE IF NOT EXISTS menu_dish_feedback (
@@ -99,7 +76,7 @@ CREATE POLICY "client_dish_feedback_access" ON menu_dish_feedback
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'client'
   ));
 
-CREATE INDEX idx_menu_dish_feedback_revision ON menu_dish_feedback(menu_revision_id);
+CREATE INDEX IF NOT EXISTS idx_menu_dish_feedback_revision ON menu_dish_feedback(menu_revision_id);
 
 -- Guest count change audit log
 CREATE TABLE IF NOT EXISTS guest_count_changes (
@@ -136,7 +113,7 @@ CREATE POLICY "client_guest_count_read" ON guest_count_changes
     WHERE ur.auth_user_id = auth.uid() AND ur.role = 'client'
   ));
 
-CREATE INDEX idx_guest_count_changes_event ON guest_count_changes(event_id);
+CREATE INDEX IF NOT EXISTS idx_guest_count_changes_event ON guest_count_changes(event_id);
 
 -- Payment milestones (per-event payment schedule)
 CREATE TABLE IF NOT EXISTS payment_milestones (
@@ -169,5 +146,5 @@ CREATE POLICY "client_milestone_read" ON payment_milestones
     WHERE ur.auth_user_id = auth.uid() AND ur.role = 'client'
   ));
 
-CREATE INDEX idx_payment_milestones_event ON payment_milestones(event_id);
-CREATE INDEX idx_payment_milestones_status ON payment_milestones(status) WHERE status IN ('pending', 'overdue');
+CREATE INDEX IF NOT EXISTS idx_payment_milestones_event ON payment_milestones(event_id);
+CREATE INDEX IF NOT EXISTS idx_payment_milestones_status ON payment_milestones(status) WHERE status IN ('pending', 'overdue');
