@@ -155,8 +155,11 @@ export function getUnitType(unit: string): UnitType {
 // ── Normalize ───────────────────────────────────────────────────────────────
 
 export function normalizeUnit(unit: string): string {
-  const trimmed = unit.toLowerCase().trim()
-  return UNIT_ALIASES[trimmed] ?? trimmed
+  const trimmed = unit.trim()
+  // Check case-sensitive first ('T' = tablespoon in recipe shorthand)
+  if (trimmed === 'T') return 'tbsp'
+  const lower = trimmed.toLowerCase()
+  return UNIT_ALIASES[lower] ?? lower
 }
 
 // ── Same-type conversion ────────────────────────────────────────────────────

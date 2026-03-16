@@ -21,8 +21,8 @@ test('normalizeUnit maps singular/plural volume aliases', () => {
   assert.equal(normalizeUnit('t'), 'tsp')
   assert.equal(normalizeUnit('tablespoon'), 'tbsp')
   assert.equal(normalizeUnit('tablespoons'), 'tbsp')
-  // 'T' lowercases to 't' which maps to 'tsp' (case-insensitive normalization)
-  assert.equal(normalizeUnit('T'), 'tsp')
+  // 'T' is case-sensitive shorthand for tablespoon in recipe notation
+  assert.equal(normalizeUnit('T'), 'tbsp')
   assert.equal(normalizeUnit('cup'), 'cup')
   assert.equal(normalizeUnit('cups'), 'cup')
   assert.equal(normalizeUnit('c'), 'cup')
