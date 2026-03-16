@@ -11,6 +11,8 @@ import type { ChefJourneyEntry, ChefJourneyEntryType } from '@/lib/journey/types
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { showUndoToast } from '@/components/ui/undo-toast'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { LocationMap } from '@/components/ui/location-map'
@@ -215,22 +217,34 @@ export function JourneyEntryPanel({
   const handleConfirmDelete = () => {
     if (!deletingEntry) return
     const entry = deletingEntry
+    const previous = [...entries]
     setDeletingEntry(null)
 
-    setError(null)
-    startTransition(async () => {
-      try {
-        await deleteChefJourneyEntry(entry.id)
-        setEntries((prev) => {
-          const next = prev.filter((item) => item.id !== entry.id)
-          onEntriesChange?.(next)
-          return next
-        })
-      } catch (deleteError) {
-        setError(
-          deleteError instanceof Error ? deleteError.message : 'Failed to delete journal entry'
-        )
-      }
+    // Optimistic removal
+    setEntries((prev) => {
+      const next = prev.filter((item) => item.id !== entry.id)
+      onEntriesChange?.(next)
+      return next
+    })
+
+    showUndoToast({
+      message: 'Journey entry deleted',
+      duration: 8000,
+      onExecute: async () => {
+        try {
+          await deleteChefJourneyEntry(entry.id)
+        } catch (deleteError) {
+          setEntries(previous)
+          onEntriesChange?.(previous)
+          toast.error(
+            deleteError instanceof Error ? deleteError.message : 'Failed to delete journal entry'
+          )
+        }
+      },
+      onUndo: () => {
+        setEntries(previous)
+        onEntriesChange?.(previous)
+      },
     })
   }
 

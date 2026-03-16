@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { showUndoToast } from '@/components/ui/undo-toast'
 import {
   uploadEventPhoto,
   deleteEventPhoto,
@@ -351,19 +352,28 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
   // ── Delete ──
 
   function handleDelete(photoId: string) {
-    startTransition(async () => {
-      try {
-        const result = await deleteEventPhoto(photoId)
-        if (result.success) {
-          setPhotos((prev) => prev.filter((p) => p.id !== photoId))
-          setError(null)
-        } else {
-          setError(result.error ?? 'Failed to delete photo')
+    const previous = [...photos]
+    setPhotos((prev) => prev.filter((p) => p.id !== photoId))
+    setError(null)
+
+    showUndoToast({
+      message: 'Photo deleted',
+      duration: 8000,
+      onExecute: async () => {
+        try {
+          const result = await deleteEventPhoto(photoId)
+          if (!result.success) {
+            setPhotos(previous)
+            toast.error(result.error ?? 'Failed to delete photo')
+          }
+        } catch {
+          setPhotos(previous)
+          toast.error('Failed to delete photo')
         }
-      } catch (err) {
-        setError('Failed to delete photo')
-        toast.error('Failed to delete photo')
-      }
+      },
+      onUndo: () => {
+        setPhotos(previous)
+      },
     })
   }
 

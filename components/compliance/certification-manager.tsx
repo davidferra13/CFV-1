@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { showUndoToast } from '@/components/ui/undo-toast'
+import { toast } from 'sonner'
 import { Award, Plus, Trash2, Pencil, Clock, AlertTriangle } from '@/components/ui/icons'
 import {
   getCertifications,
@@ -303,16 +305,26 @@ export function CertificationManager() {
   function confirmDelete() {
     if (!deleteTarget) return
     const id = deleteTarget.id
-    startTransition(async () => {
-      try {
-        await deleteCertification(id)
-        setDeleteTarget(null)
-        await loadCerts()
-      } catch (err: any) {
-        // Error shown via state, but keep modal open
-        setFetchError(err.message ?? 'Failed to delete.')
-        setDeleteTarget(null)
-      }
+    const previous = [...certs]
+
+    // Optimistic removal
+    setCerts((prev) => prev.filter((c) => c.id !== id))
+    setDeleteTarget(null)
+
+    showUndoToast({
+      message: 'Certification deleted',
+      duration: 8000,
+      onExecute: async () => {
+        try {
+          await deleteCertification(id)
+        } catch (err: any) {
+          setCerts(previous)
+          toast.error(err.message ?? 'Failed to delete certification')
+        }
+      },
+      onUndo: () => {
+        setCerts(previous)
+      },
     })
   }
 

@@ -12,6 +12,8 @@ import type { ChefJournalMediaType, ChefJourneyEntry, ChefJourneyMedia } from '@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { showUndoToast } from '@/components/ui/undo-toast'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { LocationMap } from '@/components/ui/location-map'
@@ -246,22 +248,34 @@ export function JourneyMediaPanel({
   const handleConfirmDelete = () => {
     if (!deletingMedia) return
     const item = deletingMedia
+    const previous = [...media]
     setDeletingMedia(null)
 
-    setError(null)
-    startTransition(async () => {
-      try {
-        await deleteChefJourneyMedia(item.id)
-        setMedia((prev) => {
-          const next = prev.filter((existing) => existing.id !== item.id)
-          onMediaChange?.(next)
-          return next
-        })
-      } catch (deleteError) {
-        setError(
-          deleteError instanceof Error ? deleteError.message : 'Failed to delete journal media'
-        )
-      }
+    // Optimistic removal
+    setMedia((prev) => {
+      const next = prev.filter((existing) => existing.id !== item.id)
+      onMediaChange?.(next)
+      return next
+    })
+
+    showUndoToast({
+      message: 'Media deleted',
+      duration: 8000,
+      onExecute: async () => {
+        try {
+          await deleteChefJourneyMedia(item.id)
+        } catch (deleteError) {
+          setMedia(previous)
+          onMediaChange?.(previous)
+          toast.error(
+            deleteError instanceof Error ? deleteError.message : 'Failed to delete journal media'
+          )
+        }
+      },
+      onUndo: () => {
+        setMedia(previous)
+        onMediaChange?.(previous)
+      },
     })
   }
 

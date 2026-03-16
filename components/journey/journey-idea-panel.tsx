@@ -16,6 +16,8 @@ import type {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { showUndoToast } from '@/components/ui/undo-toast'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDisplayDate } from './helpers'
@@ -212,22 +214,34 @@ export function JourneyIdeaPanel({
   const handleConfirmDelete = () => {
     if (!deletingIdea) return
     const idea = deletingIdea
+    const previous = [...ideas]
     setDeletingIdea(null)
 
-    setError(null)
-    startTransition(async () => {
-      try {
-        await deleteChefJourneyIdea(idea.id)
-        setIdeas((prev) => {
-          const next = prev.filter((item) => item.id !== idea.id)
-          onIdeasChange?.(next)
-          return next
-        })
-      } catch (deleteError) {
-        setError(
-          deleteError instanceof Error ? deleteError.message : 'Failed to delete journal idea'
-        )
-      }
+    // Optimistic removal
+    setIdeas((prev) => {
+      const next = prev.filter((item) => item.id !== idea.id)
+      onIdeasChange?.(next)
+      return next
+    })
+
+    showUndoToast({
+      message: 'Idea deleted',
+      duration: 8000,
+      onExecute: async () => {
+        try {
+          await deleteChefJourneyIdea(idea.id)
+        } catch (deleteError) {
+          setIdeas(previous)
+          onIdeasChange?.(previous)
+          toast.error(
+            deleteError instanceof Error ? deleteError.message : 'Failed to delete journal idea'
+          )
+        }
+      },
+      onUndo: () => {
+        setIdeas(previous)
+        onIdeasChange?.(previous)
+      },
     })
   }
 

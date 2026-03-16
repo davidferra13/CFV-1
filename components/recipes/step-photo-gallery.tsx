@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useState, useTransition } from 'react'
+import { toast } from 'sonner'
+import { showUndoToast } from '@/components/ui/undo-toast'
 import { deleteRecipeStepPhoto, reorderStepPhotos } from '@/lib/recipes/recipe-photo-actions'
 import type { RecipeStepPhoto } from '@/lib/recipes/recipe-photo-actions'
 
@@ -26,13 +28,21 @@ export function StepPhotoGallery({ recipeId, stepNumber, photos: initialPhotos }
       setPhotos((prev) => prev.filter((p) => p.id !== photoId))
       setConfirmDelete(null)
 
-      startTransition(async () => {
-        try {
-          await deleteRecipeStepPhoto(photoId)
-        } catch (err) {
-          console.error('[step-photo-gallery] Delete failed:', err)
+      showUndoToast({
+        message: 'Photo deleted',
+        duration: 8000,
+        onExecute: async () => {
+          try {
+            await deleteRecipeStepPhoto(photoId)
+          } catch (err) {
+            console.error('[step-photo-gallery] Delete failed:', err)
+            setPhotos(previous)
+            toast.error('Failed to delete photo')
+          }
+        },
+        onUndo: () => {
           setPhotos(previous)
-        }
+        },
       })
     },
     [confirmDelete, photos]
@@ -66,9 +76,7 @@ export function StepPhotoGallery({ recipeId, stepNumber, photos: initialPhotos }
   )
 
   if (photos.length === 0) {
-    return (
-      <p className="text-sm text-gray-400 italic">No photos for this step yet.</p>
-    )
+    return <p className="text-sm text-gray-400 italic">No photos for this step yet.</p>
   }
 
   return (
@@ -76,15 +84,8 @@ export function StepPhotoGallery({ recipeId, stepNumber, photos: initialPhotos }
       {/* Grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {photos.map((photo, index) => (
-          <div
-            key={photo.id}
-            className="group relative overflow-hidden rounded-lg border bg-white"
-          >
-            <button
-              type="button"
-              onClick={() => setSelectedIndex(index)}
-              className="block w-full"
-            >
+          <div key={photo.id} className="group relative overflow-hidden rounded-lg border bg-white">
+            <button type="button" onClick={() => setSelectedIndex(index)} className="block w-full">
               <img
                 src={photo.photo_url}
                 alt={photo.caption || `Step ${stepNumber} photo ${index + 1}`}
@@ -143,22 +144,18 @@ export function StepPhotoGallery({ recipeId, stepNumber, photos: initialPhotos }
           onKeyDown={(e) => {
             if (e.key === 'Escape') setSelectedIndex(null)
             if (e.key === 'ArrowLeft' && selectedIndex > 0) setSelectedIndex(selectedIndex - 1)
-            if (e.key === 'ArrowRight' && selectedIndex < photos.length - 1) setSelectedIndex(selectedIndex + 1)
+            if (e.key === 'ArrowRight' && selectedIndex < photos.length - 1)
+              setSelectedIndex(selectedIndex + 1)
           }}
         >
-          <div
-            className="relative max-h-[90vh] max-w-4xl"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="relative max-h-[90vh] max-w-4xl" onClick={(e) => e.stopPropagation()}>
             <img
               src={photos[selectedIndex].photo_url}
               alt={photos[selectedIndex].caption || `Step ${stepNumber} photo`}
               className="max-h-[85vh] rounded-lg object-contain"
             />
             {photos[selectedIndex].caption && (
-              <p className="mt-2 text-center text-sm text-white">
-                {photos[selectedIndex].caption}
-              </p>
+              <p className="mt-2 text-center text-sm text-white">{photos[selectedIndex].caption}</p>
             )}
             {/* Nav buttons */}
             {selectedIndex > 0 && (

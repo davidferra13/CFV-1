@@ -11,6 +11,8 @@ import type { ClientPhoto } from '@/lib/clients/photo-actions'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { showUndoToast } from '@/components/ui/undo-toast'
+import { toast } from 'sonner'
 
 const CATEGORIES = [
   { value: 'all', label: 'All' },
@@ -41,7 +43,6 @@ export function ClientPhotoGallery({
   const [editingCaption, setEditingCaption] = useState<string | null>(null)
   const [captionText, setCaptionText] = useState('')
   const [deletePhotoId, setDeletePhotoId] = useState<string | null>(null)
-  const [deleting, setDeleting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const filtered = filter === 'all' ? photos : photos.filter((p) => p.category === filter)
@@ -75,16 +76,30 @@ export function ClientPhotoGallery({
     setDeletePhotoId(photoId)
   }
 
-  async function handleConfirmedDelete() {
+  function handleConfirmedDelete() {
     if (!deletePhotoId) return
-    setDeleting(true)
-    const result = await deleteClientPhoto(deletePhotoId)
-    if (result.success) {
-      setPhotos((prev) => prev.filter((p) => p.id !== deletePhotoId))
-      if (lightboxIndex !== null) setLightboxIndex(null)
-    }
-    setDeleting(false)
+    const photoId = deletePhotoId
+    const previous = photos
+
+    // Optimistic removal
+    setPhotos((prev) => prev.filter((p) => p.id !== photoId))
+    if (lightboxIndex !== null) setLightboxIndex(null)
     setDeletePhotoId(null)
+
+    showUndoToast({
+      message: 'Photo deleted',
+      duration: 8000,
+      onExecute: async () => {
+        const result = await deleteClientPhoto(photoId)
+        if (!result.success) {
+          setPhotos(previous)
+          toast.error('Failed to delete photo')
+        }
+      },
+      onUndo: () => {
+        setPhotos(previous)
+      },
+    })
   }
 
   async function handleSaveCaption(photoId: string) {
@@ -230,7 +245,6 @@ export function ClientPhotoGallery({
         description="This cannot be undone."
         confirmLabel="Delete"
         variant="danger"
-        loading={deleting}
         onConfirm={handleConfirmedDelete}
         onCancel={() => setDeletePhotoId(null)}
       />
