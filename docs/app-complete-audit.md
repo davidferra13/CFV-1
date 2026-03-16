@@ -1245,7 +1245,20 @@ Auto-generated FDA-compliant HACCP plan based on chef's business archetype. Free
 
 Archetype-specific content for: private-chef, caterer, meal-prep, restaurant, food-truck, bakery.
 
-### 15.2 New Integration Settings Pages (added 2026-02-27)
+### 15.2 Communication Settings (`/settings/communication`)
+
+Unified communication configuration hub. Auto-response rules, business hours, and response templates. Free tier feature.
+
+| Element                        | Description                                                                                                          |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Auto-Response Settings section | Enable/disable auto-responses, select default template, configure triggers (inquiry received, event confirmed, etc.) |
+| Business Hours Editor section  | Timezone selector, per-day schedule (Mon-Sun) with enabled toggle + start/end time, outside-hours message            |
+| Template List section          | Grid of response templates with name, category, preview. Edit/delete actions per template                            |
+| Template Editor modal          | Name, category dropdown, body with `{{variable}}` placeholders, variable reference list, preview pane                |
+
+Components: `auto-response-settings.tsx`, `business-hours-editor.tsx`, `template-list.tsx`, `template-editor.tsx`.
+
+### 15.3 New Integration Settings Pages (added 2026-02-27)
 
 | Route                       | What it shows                                                                                                      |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -1591,7 +1604,46 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 
 ---
 
-## 22. Beta Signup (added 2026-02-27)
+## 22. Communication Platform Public Pages (added 2026-03-15)
+
+### Post-Event Survey (`/feedback/[token]`) - Public, no auth
+
+Token-authenticated survey page. HMAC-SHA256 signed tokens verify legitimacy without requiring login.
+
+| Element              | Description                                                              |
+| -------------------- | ------------------------------------------------------------------------ |
+| Token verification   | Validates HMAC signature and checks survey hasn't already been completed |
+| Overall rating       | 1-5 star rating selector                                                 |
+| Food quality rating  | 1-5 star rating for food specifically                                    |
+| Service rating       | 1-5 star rating for service                                              |
+| Communication rating | 1-5 star rating for communication throughout the process                 |
+| Highlights text      | Open text field for what the client enjoyed most                         |
+| Improvements text    | Open text field for suggestions                                          |
+| Would book again     | Yes/No toggle                                                            |
+| Would refer          | Yes/No toggle                                                            |
+| Submit button        | Saves response, marks survey as completed with timestamp                 |
+
+Component: `components/feedback/post-event-survey-form.tsx`.
+
+### Client Onboarding (`/onboarding/[token]`) - Client auth required
+
+Token-authenticated onboarding form for new clients. Chef sends link, client fills in preferences and dietary info.
+
+| Element              | Description                                                                  |
+| -------------------- | ---------------------------------------------------------------------------- |
+| Token verification   | Validates HMAC signature, loads associated client record                     |
+| Dietary restrictions | Multi-select for common dietary needs (vegetarian, vegan, gluten-free, etc.) |
+| Allergies            | Free-text field for specific allergies (cross-referenced by allergen engine) |
+| Cuisine preferences  | Multi-select for preferred cuisine types                                     |
+| Kitchen details      | Equipment available, kitchen size, special considerations                    |
+| Communication prefs  | Preferred contact method, response time expectations                         |
+| Submit button        | Saves onboarding data to client record, notifies chef                        |
+
+Component: `components/clients/onboarding-form.tsx`.
+
+---
+
+## 23. Beta Signup (added 2026-02-27)
 
 ### Public Routes (no auth)
 
