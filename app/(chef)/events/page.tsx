@@ -9,13 +9,31 @@ import { requireChef } from '@/lib/auth/get-user'
 export const metadata: Metadata = { title: 'Events - ChefFlow' }
 import { getEvents } from '@/lib/events/actions'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
+import { isDemoEvent } from '@/lib/onboarding/demo-data'
 
-type EventStatus = 'all' | 'draft' | 'proposed' | 'accepted' | 'paid' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'
+type EventStatus =
+  | 'all'
+  | 'draft'
+  | 'proposed'
+  | 'accepted'
+  | 'paid'
+  | 'confirmed'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
 
 async function EventsList({ status }: { status: EventStatus }) {
   await requireChef()
@@ -24,12 +42,12 @@ async function EventsList({ status }: { status: EventStatus }) {
 
   // Filter by status if not 'all'
   if (status !== 'all') {
-    events = events.filter(event => event.status === status)
+    events = events.filter((event) => event.status === status)
   }
 
   // Sort by date (newest first by default)
-  events = events.sort((a, b) =>
-    new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+  events = events.sort(
+    (a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
   )
 
   if (events.length === 0) {
@@ -72,27 +90,30 @@ async function EventsList({ status }: { status: EventStatus }) {
                 >
                   {event.occasion || 'Untitled Event'}
                 </Link>
+                {isDemoEvent(event) && (
+                  <Badge variant="info" className="ml-2 text-[10px] px-1.5 py-0">
+                    Sample
+                  </Badge>
+                )}
               </TableCell>
-              <TableCell>
-                {format(new Date(event.event_date), 'MMM d, yyyy')}
-              </TableCell>
-              <TableCell>
-                {event.client?.full_name || 'Unknown'}
-              </TableCell>
+              <TableCell>{format(new Date(event.event_date), 'MMM d, yyyy')}</TableCell>
+              <TableCell>{event.client?.full_name || 'Unknown'}</TableCell>
               <TableCell>
                 <EventStatusBadge status={event.status} />
               </TableCell>
-              <TableCell>
-                {formatCurrency(event.quoted_price_cents ?? 0)}
-              </TableCell>
+              <TableCell>{formatCurrency(event.quoted_price_cents ?? 0)}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Link href={`/events/${event.id}`}>
-                    <Button size="sm" variant="secondary">View</Button>
+                    <Button size="sm" variant="secondary">
+                      View
+                    </Button>
                   </Link>
                   {event.status === 'draft' && (
                     <Link href={`/events/${event.id}/edit`}>
-                      <Button size="sm" variant="secondary">Edit</Button>
+                      <Button size="sm" variant="secondary">
+                        Edit
+                      </Button>
                     </Link>
                   )}
                 </div>
@@ -106,7 +127,7 @@ async function EventsList({ status }: { status: EventStatus }) {
 }
 
 export default async function EventsPage({
-  searchParams
+  searchParams,
 }: {
   searchParams: { status?: EventStatus }
 }) {
@@ -131,74 +152,47 @@ export default async function EventsPage({
       <Card className="p-4">
         <div className="flex gap-2 flex-wrap">
           <Link href="/events?status=all">
-            <Button
-              size="sm"
-              variant={status === 'all' ? 'primary' : 'secondary'}
-            >
+            <Button size="sm" variant={status === 'all' ? 'primary' : 'secondary'}>
               All
             </Button>
           </Link>
           <Link href="/events?status=draft">
-            <Button
-              size="sm"
-              variant={status === 'draft' ? 'primary' : 'secondary'}
-            >
+            <Button size="sm" variant={status === 'draft' ? 'primary' : 'secondary'}>
               Draft
             </Button>
           </Link>
           <Link href="/events?status=proposed">
-            <Button
-              size="sm"
-              variant={status === 'proposed' ? 'primary' : 'secondary'}
-            >
+            <Button size="sm" variant={status === 'proposed' ? 'primary' : 'secondary'}>
               Proposed
             </Button>
           </Link>
           <Link href="/events?status=accepted">
-            <Button
-              size="sm"
-              variant={status === 'accepted' ? 'primary' : 'secondary'}
-            >
+            <Button size="sm" variant={status === 'accepted' ? 'primary' : 'secondary'}>
               Accepted
             </Button>
           </Link>
           <Link href="/events?status=paid">
-            <Button
-              size="sm"
-              variant={status === 'paid' ? 'primary' : 'secondary'}
-            >
+            <Button size="sm" variant={status === 'paid' ? 'primary' : 'secondary'}>
               Paid
             </Button>
           </Link>
           <Link href="/events?status=confirmed">
-            <Button
-              size="sm"
-              variant={status === 'confirmed' ? 'primary' : 'secondary'}
-            >
+            <Button size="sm" variant={status === 'confirmed' ? 'primary' : 'secondary'}>
               Confirmed
             </Button>
           </Link>
           <Link href="/events?status=in_progress">
-            <Button
-              size="sm"
-              variant={status === 'in_progress' ? 'primary' : 'secondary'}
-            >
+            <Button size="sm" variant={status === 'in_progress' ? 'primary' : 'secondary'}>
               In Progress
             </Button>
           </Link>
           <Link href="/events?status=completed">
-            <Button
-              size="sm"
-              variant={status === 'completed' ? 'primary' : 'secondary'}
-            >
+            <Button size="sm" variant={status === 'completed' ? 'primary' : 'secondary'}>
               Completed
             </Button>
           </Link>
           <Link href="/events?status=cancelled">
-            <Button
-              size="sm"
-              variant={status === 'cancelled' ? 'primary' : 'secondary'}
-            >
+            <Button size="sm" variant={status === 'cancelled' ? 'primary' : 'secondary'}>
               Cancelled
             </Button>
           </Link>
@@ -206,11 +200,13 @@ export default async function EventsPage({
       </Card>
 
       {/* Events Table */}
-      <Suspense fallback={
-        <Card className="p-8 text-center">
-          <p className="text-stone-500">Loading events...</p>
-        </Card>
-      }>
+      <Suspense
+        fallback={
+          <Card className="p-8 text-center">
+            <p className="text-stone-500">Loading events...</p>
+          </Card>
+        }
+      >
         <EventsList status={status} />
       </Suspense>
     </div>

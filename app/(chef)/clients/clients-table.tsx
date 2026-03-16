@@ -1,12 +1,21 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { Tables } from '@/types/database'
+import { isDemoClient } from '@/lib/onboarding/demo-data'
 
 type ClientWithStats = Tables<'clients'> & {
   totalEvents: number
@@ -25,7 +34,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
   // Filter and sort clients
   const filteredAndSortedClients = useMemo(() => {
     // Filter by search
-    let filtered = clients.filter(client => {
+    let filtered = clients.filter((client) => {
       const searchLower = search.toLowerCase()
       return (
         client.full_name.toLowerCase().includes(searchLower) ||
@@ -134,9 +143,16 @@ export function ClientsTable({ clients }: ClientsTableProps) {
               <TableRow
                 key={client.id}
                 className="cursor-pointer"
-                onClick={() => window.location.href = `/clients/${client.id}`}
+                onClick={() => (window.location.href = `/clients/${client.id}`)}
               >
-                <TableCell className="font-medium">{client.full_name}</TableCell>
+                <TableCell className="font-medium">
+                  {client.full_name}
+                  {isDemoClient(client) && (
+                    <Badge variant="info" className="ml-2 text-[10px] px-1.5 py-0">
+                      Sample
+                    </Badge>
+                  )}
+                </TableCell>
                 <TableCell className="text-stone-600">{client.email}</TableCell>
                 <TableCell className="text-stone-600">{client.phone || '-'}</TableCell>
                 <TableCell className="text-right">{client.totalEvents}</TableCell>

@@ -77,11 +77,22 @@
     "dotenv": "^17.3.1",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.18",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "postcss": "^8.4.49",
+    "prettier": "^3.8.1",
     "sharp": "^0.34.5",
     "supabase": "^2.76.8",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.21.0",
     "typescript": "^5.7.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write"
+    ],
+    "*.{js,jsx,json,md,css}": [
+      "prettier --write"
+    ]
   }
 }

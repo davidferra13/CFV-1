@@ -10,13 +10,25 @@ import { getBookingScoresForOpenInquiries } from '@/lib/analytics/booking-score'
 import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
 
 export const metadata: Metadata = { title: 'Inquiries - ChefFlow' }
-import { InquiryStatusBadge, InquiryChannelBadge } from '@/components/inquiries/inquiry-status-badge'
+import {
+  InquiryStatusBadge,
+  InquiryChannelBadge,
+} from '@/components/inquiries/inquiry-status-badge'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatDistanceToNow, format } from 'date-fns'
 import type { BookingScore } from '@/lib/analytics/booking-score'
+import { isDemoInquiry } from '@/lib/onboarding/demo-data'
 
-type InquiryFilter = 'all' | 'new' | 'awaiting_client' | 'awaiting_chef' | 'quoted' | 'confirmed' | 'closed'
+type InquiryFilter =
+  | 'all'
+  | 'new'
+  | 'awaiting_client'
+  | 'awaiting_chef'
+  | 'quoted'
+  | 'confirmed'
+  | 'closed'
 
 const OPEN_STATUSES = new Set(['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
 
@@ -41,9 +53,9 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
 
   // Apply filter
   if (filter === 'closed') {
-    inquiries = inquiries.filter(i => i.status === 'declined' || i.status === 'expired')
+    inquiries = inquiries.filter((i) => i.status === 'declined' || i.status === 'expired')
   } else if (filter !== 'all') {
-    inquiries = inquiries.filter(i => i.status === filter)
+    inquiries = inquiries.filter((i) => i.status === filter)
   }
 
   // Build score lookup map
@@ -92,13 +104,20 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                   <span className="font-medium text-stone-900">{name}</span>
                   <InquiryStatusBadge status={inquiry.status as any} />
                   <InquiryChannelBadge channel={inquiry.channel} />
+                  {isDemoInquiry(inquiry) && (
+                    <Badge variant="info" className="text-[10px] px-1.5 py-0">
+                      Sample
+                    </Badge>
+                  )}
                   {score && <BookingScoreBadge score={score} />}
                 </div>
                 {inquiry.confirmed_occasion && (
                   <p className="text-sm text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>
                 )}
                 {inquiry.next_action_required && (
-                  <p className="text-xs text-brand-600 mt-1">Next: {inquiry.next_action_required}</p>
+                  <p className="text-xs text-brand-600 mt-1">
+                    Next: {inquiry.next_action_required}
+                  </p>
                 )}
               </div>
               <div className="text-right flex-shrink-0">
@@ -123,7 +142,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
 }
 
 export default async function InquiriesPage({
-  searchParams
+  searchParams,
 }: {
   searchParams: { status?: InquiryFilter }
 }) {
@@ -159,10 +178,7 @@ export default async function InquiriesPage({
         <div className="flex gap-2 flex-wrap">
           {tabs.map((tab) => (
             <Link key={tab.value} href={`/inquiries?status=${tab.value}`}>
-              <Button
-                size="sm"
-                variant={filter === tab.value ? 'primary' : 'secondary'}
-              >
+              <Button size="sm" variant={filter === tab.value ? 'primary' : 'secondary'}>
                 {tab.label}
               </Button>
             </Link>
@@ -171,11 +187,13 @@ export default async function InquiriesPage({
       </Card>
 
       {/* Inquiry List */}
-      <Suspense fallback={
-        <Card className="p-8 text-center">
-          <p className="text-stone-500">Loading inquiries...</p>
-        </Card>
-      }>
+      <Suspense
+        fallback={
+          <Card className="p-8 text-center">
+            <p className="text-stone-500">Loading inquiries...</p>
+          </Card>
+        }
+      >
         <InquiryList filter={filter} />
       </Suspense>
     </div>

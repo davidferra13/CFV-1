@@ -7,14 +7,45 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // Routes that require chef role (route groups don't create URL segments)
 const chefPaths = [
-  '/dashboard', '/queue', '/leads', '/clients', '/events', '/financials', '/menus',
-  '/inquiries', '/quotes', '/expenses', '/schedule', '/settings',
-  '/aar', '/recipes', '/loyalty', '/import', '/chat', '/network',
+  '/dashboard',
+  '/queue',
+  '/leads',
+  '/clients',
+  '/events',
+  '/financials',
+  '/menus',
+  '/inquiries',
+  '/quotes',
+  '/expenses',
+  '/schedule',
+  '/settings',
+  '/aar',
+  '/recipes',
+  '/loyalty',
+  '/import',
+  '/chat',
+  '/network',
 ]
 // Routes that require client role
-const clientPaths = ['/my-events', '/my-quotes', '/my-chat', '/my-profile', '/my-rewards', '/book-now']
+const clientPaths = [
+  '/my-events',
+  '/my-quotes',
+  '/my-chat',
+  '/my-profile',
+  '/my-rewards',
+  '/book-now',
+]
 // Paths that skip all auth processing
-const skipAuthPaths = ['/pricing', '/contact', '/privacy', '/terms', '/unauthorized', '/share', '/chef', '/partner-signup']
+const skipAuthPaths = [
+  '/pricing',
+  '/contact',
+  '/privacy',
+  '/terms',
+  '/unauthorized',
+  '/share',
+  '/chef',
+  '/partner-signup',
+]
 
 /**
  * Copy Supabase session cookies from the internal response onto a redirect response.
@@ -70,18 +101,14 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({
             request: {
               headers: request.headers,
             },
           })
           cookiesToSet.forEach(({ name, value, options }) => {
-            const cookieOptions = sessionOnly
-              ? { ...options, maxAge: undefined }
-              : options
+            const cookieOptions = sessionOnly ? { ...options, maxAge: undefined } : options
             response.cookies.set(name, value, cookieOptions)
           })
         },
@@ -135,6 +162,11 @@ export async function middleware(request: NextRequest) {
 
   // All remaining routes require authentication
   if (!user) {
+    // API routes get a JSON 401 instead of a redirect to sign-in page.
+    // Without this, /api/nonexistent would redirect to /auth/signin and appear as 200.
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
     const redirectUrl = new URL('/auth/signin', request.url)
     redirectUrl.searchParams.set('redirect', pathname)
     return redirectWithCookies(redirectUrl, response)
@@ -161,7 +193,9 @@ export async function middleware(request: NextRequest) {
 
   // Enforce role-based routing using actual URL paths
   const isChefRoute = chefPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
-  const isClientRoute = clientPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
+  const isClientRoute = clientPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  )
 
   if (isChefRoute && roleData.role !== 'chef') {
     return redirectWithCookies(new URL('/my-events', request.url), response)
