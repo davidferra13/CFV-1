@@ -1272,6 +1272,12 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
   },
   { href: '/settings/embed', label: 'Embed Widget', icon: Settings, context: 'Settings' },
   {
+    href: '/settings/communication',
+    label: 'Communication',
+    icon: ChatDots,
+    context: 'Settings',
+  },
+  {
     href: '/settings/calendar-sync',
     label: 'Calendar Sync (iCal)',
     icon: Settings,

@@ -140,6 +140,27 @@ const COMMAND_PATTERNS: RegExp[] = [
   /^(pending|open|overdue|new)\s+(inquir|leads?|bookings?|events?|invoices?)/i,
   // "Email status/overview" → email commands
   /^email\s+(status|overview|summary|inbox)\b/i,
+  // ─── Communication platform commands ───
+  // Auto-response management
+  /^(auto[- ]?respond|auto[- ]?response|enable auto[- ]?response|disable auto[- ]?response)/i,
+  // Business hours configuration
+  /^(set business hours|update business hours|change business hours|business hours)/i,
+  // Communication/response templates
+  /^(communication templates?|response templates?|create template|edit template)/i,
+  // Client onboarding
+  /^(send onboarding|onboarding link|client onboarding|generate onboarding)/i,
+  // Menu approval portal
+  /^(send menu|menu approval|send (the )?menu to|menu proposal)/i,
+  // Guest count changes
+  /^(update guest count|change guest count|guest count)/i,
+  // Payment milestones and schedules
+  /^(payment milestones?|milestone template|create milestone|payment schedule)/i,
+  // Post-event surveys and feedback
+  /^(send survey|post[- ]?event survey|feedback survey|create survey)/i,
+  // Kitchen assessment checklists
+  /^(kitchen assessment|assess kitchen|kitchen checklist)/i,
+  // Event contacts and stakeholders
+  /^(add (event )?contact|event contacts?|stakeholder)/i,
 ]
 
 const QUESTION_PATTERNS: RegExp[] = [
@@ -201,6 +222,14 @@ const QUESTION_SHAPED_COMMANDS: RegExp[] = [
   /^(how\s+fast\s+do\s+i\s+respond|response\s+time)/i, // Response time
   /^(what\s+should\s+i\s+charge|pricing\s+suggest)/i, // Pricing suggestions
   /^(year.?over.?year|yoy|compared?\s+to\s+last\s+year)/i, // YoY comparison
+  // ─── Communication platform question-shaped commands ───
+  /^what('?s| are) (the )?business hours/i, // "What are my business hours?"
+  /^(has|have) .+ (completed|finished|submitted) (the )?(onboarding|survey|feedback)/i, // "Has Sarah completed the onboarding?"
+  /^what('?s| is) (the )?(payment|milestone) (status|schedule)/i, // "What's the payment schedule for..."
+  /^(did|has) .+ (approve|approved) the menu/i, // "Did Sarah approve the menu?"
+  /^what('?s| is) (the )?survey (results?|feedback|score)/i, // "What's the survey feedback from..."
+  /^(is|are) auto[- ]?respon(se|der) (on|off|enabled|disabled|active)/i, // "Is auto-response enabled?"
+  /^who('?s| has| is) (the )?(primary|event) contact/i, // "Who's the primary contact for..."
 ]
 
 function tryDeterministicClassify(message: string): ClassificationResult | null {

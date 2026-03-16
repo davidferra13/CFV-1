@@ -10,6 +10,7 @@ import type { RemyContext, PageEntityContext } from '@/lib/ai/remy-types'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { loadEmailDigest } from '@/lib/ai/remy-email-actions'
 import { sanitizeForPrompt } from '@/lib/ai/remy-input-validation'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import { getBusinessHealthSummary } from '@/lib/intelligence/business-health-summary'
 import { getEventIntelligenceContext } from '@/lib/intelligence/event-context'
 import { getClientIntelligenceContext } from '@/lib/intelligence/client-intelligence-context'
@@ -36,12 +37,60 @@ interface CachedContext {
     | 'dailyPlan'
     | 'emailDigest'
     | 'serviceConfigPrompt'
+    | 'recentSurveyFeedback'
+    | 'pendingMilestones'
+    | 'autoResponseStatus'
   >
   expiresAt: number
 }
 
 const contextCache = new Map<string, CachedContext>()
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+async function recordContextFailure(
+  tenantId: string,
+  operation: string,
+  error: unknown,
+  context?: Record<string, unknown>
+): Promise<void> {
+  const errorMessage = error instanceof Error ? error.message : String(error)
+
+  await recordSideEffectFailure({
+    source: 'remy-context',
+    operation,
+    severity: 'medium',
+    tenantId,
+    errorMessage,
+    context,
+  })
+}
+
+async function withContextFallback<T>(
+  tenantId: string,
+  operation: string,
+  fallback: T,
+  fn: () => Promise<T>,
+  context?: Record<string, unknown>
+): Promise<T> {
+  try {
+    return await fn()
+  } catch (error) {
+    await recordContextFailure(tenantId, operation, error, context)
+    return fallback
+  }
+}
+
+async function reportContextQueryErrors(
+  tenantId: string,
+  results: Record<string, { error?: { message: string } | null }>
+): Promise<void> {
+  const failures = Object.entries(results).filter(([, result]) => result.error)
+  await Promise.all(
+    failures.map(([operation, result]) =>
+      recordContextFailure(tenantId, operation, result.error, { queryScope: 'remy_context' })
+    )
+  )
+}
 
 // ─── Public Loader ──────────────────────────────────────────────────────────
 
@@ -54,11 +103,14 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
   const [chefProfile, counts, dailyPlan, healthSummary, serviceConfig] = await Promise.all([
     loadChefProfile(supabase, tenantId),
     loadQuickCounts(supabase, tenantId),
-    getDailyPlanStats().catch(() => null),
-    getBusinessHealthSummary()
-      .then((s) => s.remyContext)
-      .catch(() => null),
-    getServiceConfigForTenant(tenantId).catch(() => null),
+    withContextFallback(tenantId, 'load_daily_plan', null, () => getDailyPlanStats()),
+    withContextFallback(tenantId, 'load_business_health_summary', null, async () => {
+      const summary = await getBusinessHealthSummary()
+      return summary.remyContext
+    }),
+    withContextFallback(tenantId, 'load_service_config', null, () =>
+      getServiceConfigForTenant(tenantId)
+    ),
   ])
 
   // Tier 2: Cached for 5 minutes
@@ -76,16 +128,91 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
   }
 
   // Tier 2b: Email digest (non-blocking, cached alongside detailed context)
-  const emailDigest = await loadEmailDigest(tenantId).catch((err) => {
-    console.error('[non-blocking] Email digest failed:', err)
-    return undefined
-  })
+  const emailDigest = await withContextFallback(
+    tenantId,
+    'load_email_digest',
+    undefined,
+    () => loadEmailDigest(tenantId),
+    { currentPage: currentPage ?? null }
+  )
+
+  // Tier 2b: Recent survey feedback (non-blocking)
+  const recentSurveyFeedback = await withContextFallback(
+    tenantId,
+    'load_recent_survey_feedback',
+    undefined,
+    async () => {
+      const { data } = await supabase
+        .from('post_event_surveys')
+        .select(
+          'overall_rating, would_book_again, completed_at, event:events(occasion, client:clients(full_name))'
+        )
+        .eq('chef_id', tenantId)
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false })
+        .limit(5)
+      if (!data || data.length === 0) return undefined
+      return data.map((s: any) => ({
+        clientName: s.event?.client?.full_name ?? 'Unknown',
+        overallRating: s.overall_rating ?? 0,
+        wouldBookAgain: s.would_book_again ?? false,
+        completedAt: s.completed_at,
+      }))
+    }
+  )
+
+  // Tier 2b: Pending payment milestones (non-blocking)
+  const pendingMilestones = await withContextFallback(
+    tenantId,
+    'load_pending_milestones',
+    undefined,
+    async () => {
+      const { data } = await supabase
+        .from('event_payment_milestones')
+        .select('name, amount_cents, due_date, event:events(occasion, client:clients(full_name))')
+        .eq('chef_id', tenantId)
+        .in('status', ['pending', 'partial'])
+        .order('due_date', { ascending: true })
+        .limit(10)
+      if (!data || data.length === 0) return undefined
+      return data.map((m: any) => ({
+        clientName: m.event?.client?.full_name ?? 'Unknown',
+        occasion: m.event?.occasion ?? 'Event',
+        milestoneName: m.name ?? 'Payment',
+        amountCents: m.amount_cents ?? 0,
+        dueDate: m.due_date,
+      }))
+    }
+  )
+
+  // Tier 2b: Auto-response status (non-blocking)
+  const autoResponseStatus = await withContextFallback(
+    tenantId,
+    'load_auto_response_status',
+    undefined,
+    async () => {
+      const [configResult, templateCountResult] = await Promise.all([
+        supabase.from('auto_response_config').select('enabled').eq('chef_id', tenantId).single(),
+        supabase
+          .from('response_templates')
+          .select('id', { count: 'exact', head: true })
+          .eq('chef_id', tenantId),
+      ])
+      return {
+        enabled: configResult.data?.enabled ?? false,
+        templateCount: templateCountResult.count ?? 0,
+      }
+    }
+  )
 
   // Tier 3: Page-specific entity context (non-blocking)
-  const pageEntity = await loadPageEntityContext(supabase, tenantId, currentPage).catch((err) => {
-    console.error('[non-blocking] Page entity context failed:', err)
-    return undefined
-  })
+  const pageEntity = await withContextFallback(
+    tenantId,
+    'load_page_entity_context',
+    undefined,
+    () => loadPageEntityContext(supabase, tenantId, currentPage),
+    { currentPage: currentPage ?? null }
+  )
 
   return {
     chefName: chefProfile.businessName,
@@ -121,18 +248,30 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     // Business intelligence (cross-engine synthesis)
     businessIntelligence: healthSummary ?? undefined,
     // Service configuration (what this chef offers/doesn't offer)
-    serviceConfigPrompt: serviceConfig ? await formatServiceConfigForPrompt(serviceConfig) : undefined,
+    serviceConfigPrompt: serviceConfig
+      ? await formatServiceConfigForPrompt(serviceConfig)
+      : undefined,
+    // Post-event survey feedback
+    recentSurveyFeedback: recentSurveyFeedback ?? undefined,
+    // Payment milestones
+    pendingMilestones: pendingMilestones ?? undefined,
+    // Auto-response config
+    autoResponseStatus: autoResponseStatus ?? undefined,
   }
 }
 
 // ─── Tier 1: Chef Profile ───────────────────────────────────────────────────
 
 async function loadChefProfile(supabase: any, tenantId: string) {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('chefs')
     .select('business_name, tagline')
     .eq('id', tenantId)
     .single()
+
+  if (error) {
+    await recordContextFailure(tenantId, 'load_chef_profile', error)
+  }
 
   return {
     businessName: data?.business_name ?? null,
@@ -157,6 +296,12 @@ async function loadQuickCounts(supabase: any, tenantId: string) {
       .eq('tenant_id', tenantId)
       .in('status', ['new', 'awaiting_chef', 'awaiting_client']),
   ])
+
+  await reportContextQueryErrors(tenantId, {
+    count_clients: clientsResult,
+    count_upcoming_events: eventsResult,
+    count_open_inquiries: inquiriesResult,
+  })
 
   return {
     clients: clientsResult.count ?? 0,
@@ -555,6 +700,46 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .eq('tenant_id', tenantId)
       .limit(500),
   ])
+
+  await reportContextQueryErrors(tenantId, {
+    load_detailed_upcoming_events: eventsResult,
+    load_detailed_recent_clients: clientsResult,
+    load_detailed_month_revenue: revenueResult,
+    load_detailed_pending_quotes: quotesResult,
+    load_detailed_availability: availabilityResult,
+    load_detailed_calendar: calendarResult,
+    load_detailed_waitlist: waitlistResult,
+    load_detailed_staff_roster: staffResult,
+    load_detailed_equipment: equipmentResult,
+    load_detailed_goals: goalsResult,
+    load_detailed_todos: todosResult,
+    load_detailed_calls: callsResult,
+    load_detailed_documents: documentsResult,
+    load_detailed_folders: foldersResult,
+    load_detailed_artifacts: artifactsResult,
+    load_detailed_year_revenue: yearRevenueResult,
+    load_detailed_year_expenses: yearExpensesResult,
+    load_detailed_year_events: yearEventsResult,
+    load_detailed_recipe_stats: recipeStatsResult,
+    load_detailed_client_vibe_notes: clientVibeNotesResult,
+    load_detailed_recent_aars: recentAARsResult,
+    load_detailed_pending_menu_approvals: pendingMenuApprovalsResult,
+    load_detailed_unread_inquiry_messages: unreadInquiryMsgsResult,
+    load_detailed_stale_inquiries: staleInquiriesResult,
+    load_detailed_overdue_payments: overduePaymentsResult,
+    load_detailed_client_booking_history: clientBookingHistoryResult,
+    load_detailed_monthly_revenue_pattern: monthlyRevenueResult,
+    load_detailed_upcoming_payment_deadlines: upcomingPaymentDeadlinesResult,
+    load_detailed_expiring_quotes: expiringQuotesResult,
+    load_detailed_event_profitability: eventProfitabilityResult,
+    load_detailed_inquiry_velocity: inquiryVelocityResult,
+    load_detailed_staff_assignments: staffAssignmentsResult,
+    load_detailed_conversion_rate: conversionRateResult,
+    load_detailed_expense_breakdown: expenseBreakdownResult,
+    load_detailed_all_events_pattern: allEventsPatternResult,
+    load_detailed_menu_approval_turnaround: menuApprovalResult,
+    load_detailed_client_referrals: clientReferralResult,
+  })
 
   const monthRevenueCents = (revenueResult.data ?? []).reduce(
     (sum: any, entry: any) => sum + ((entry as { amount_cents: number }).amount_cents ?? 0),
@@ -1428,6 +1613,19 @@ async function loadEventEntity(
       .limit(1),
   ])
 
+  await reportContextQueryErrors(tenantId, {
+    load_event_entity: eventResult,
+    load_event_entity_ledger: ledgerResult,
+    load_event_entity_expenses: expensesResult,
+    load_event_entity_staff: staffResult,
+    load_event_entity_temp_logs: tempLogsResult,
+    load_event_entity_quotes: quotesResult,
+    load_event_entity_transitions: transitionsResult,
+    load_event_entity_approvals: approvalResult,
+    load_event_entity_grocery_quotes: groceryResult,
+    load_event_entity_after_action_review: aarResult,
+  })
+
   const data = eventResult.data
   if (!data) return undefined
 
@@ -1723,14 +1921,21 @@ async function loadEventEntity(
   }
 
   // Intelligence context (non-blocking)
-  const eventIntel = await getEventIntelligenceContext({
-    eventId,
-    guestCount: (data.guest_count as number) ?? null,
-    occasion: (data.occasion as string) ?? null,
-    quotedPriceCents: (data.quoted_price_cents as number) ?? null,
-    status: data.status as string,
-    eventDate: (data.event_date as string) ?? null,
-  }).catch(() => null)
+  const eventIntel = await withContextFallback(
+    tenantId,
+    'load_event_intelligence',
+    null,
+    () =>
+      getEventIntelligenceContext({
+        eventId,
+        guestCount: (data.guest_count as number) ?? null,
+        occasion: (data.occasion as string) ?? null,
+        quotedPriceCents: (data.quoted_price_cents as number) ?? null,
+        status: data.status as string,
+        eventDate: (data.event_date as string) ?? null,
+      }),
+    { eventId }
+  )
 
   if (eventIntel) {
     if (eventIntel.profitabilityProjection) {
@@ -1807,6 +2012,14 @@ async function loadClientEntity(
         .order('created_at', { ascending: false })
         .limit(1),
     ])
+
+  await reportContextQueryErrors(tenantId, {
+    load_client_entity: clientResult,
+    load_client_entity_events: eventsResult,
+    load_client_entity_notes: notesResult,
+    load_client_entity_reviews: reviewsResult,
+    load_client_entity_last_message: lastMessageResult,
+  })
 
   const data = clientResult.data
   if (!data) return undefined
@@ -2022,7 +2235,13 @@ async function loadClientEntity(
   }
 
   // Intelligence context (non-blocking)
-  const clientIntel = await getClientIntelligenceContext(clientId).catch(() => null)
+  const clientIntel = await withContextFallback(
+    tenantId,
+    'load_client_intelligence',
+    null,
+    () => getClientIntelligenceContext(clientId),
+    { clientId }
+  )
 
   if (clientIntel) {
     lines.push(`\nRELATIONSHIP INTELLIGENCE:`)
@@ -2075,6 +2294,11 @@ async function loadRecipeEntity(
       .order('sort_order', { ascending: true })
       .limit(30),
   ])
+
+  await reportContextQueryErrors(tenantId, {
+    load_recipe_entity: recipeResult,
+    load_recipe_entity_ingredients: ingredientsResult,
+  })
 
   const data = recipeResult.data
   if (!data) return undefined
@@ -2166,6 +2390,11 @@ async function loadInquiryEntity(
       .limit(15),
   ])
 
+  await reportContextQueryErrors(tenantId, {
+    load_inquiry_entity: inquiryResult,
+    load_inquiry_entity_messages: messagesResult,
+  })
+
   const data = inquiryResult.data
   if (!data) return undefined
 
@@ -2254,14 +2483,21 @@ async function loadInquiryEntity(
   }
 
   // Intelligence context (non-blocking)
-  const inquiryIntel = await getInquiryConversionContext({
-    inquiryId,
-    guestCount: (data.confirmed_guest_count as number) ?? null,
-    occasion: (data.confirmed_occasion as string) ?? null,
-    budgetCents: (data.confirmed_budget_cents as number) ?? null,
-    channel: (data.channel as string) ?? 'unknown',
-    createdAt: (data.first_contact_at as string) ?? new Date().toISOString(),
-  }).catch(() => null)
+  const inquiryIntel = await withContextFallback(
+    tenantId,
+    'load_inquiry_conversion_intelligence',
+    null,
+    () =>
+      getInquiryConversionContext({
+        inquiryId,
+        guestCount: (data.confirmed_guest_count as number) ?? null,
+        occasion: (data.confirmed_occasion as string) ?? null,
+        budgetCents: (data.confirmed_budget_cents as number) ?? null,
+        channel: (data.channel as string) ?? 'unknown',
+        createdAt: (data.first_contact_at as string) ?? new Date().toISOString(),
+      }),
+    { inquiryId }
+  )
 
   if (inquiryIntel) {
     lines.push(`\nCONVERSION INTELLIGENCE:`)
@@ -2361,6 +2597,11 @@ async function loadMenuEntity(
       .order('course_number', { ascending: true })
       .limit(20),
   ])
+
+  await reportContextQueryErrors(tenantId, {
+    load_menu_entity: menuResult,
+    load_menu_entity_dishes: dishesResult,
+  })
 
   const data = menuResult.data
   if (!data) return undefined

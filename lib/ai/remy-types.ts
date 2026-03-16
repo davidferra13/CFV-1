@@ -355,6 +355,26 @@ export interface RemyContext {
   businessIntelligence?: string
   /** Chef service configuration — what services/policies/extras the chef offers */
   serviceConfigPrompt?: string
+  /** Recent post-event survey results (for proactive awareness) */
+  recentSurveyFeedback?: Array<{
+    clientName: string
+    overallRating: number
+    wouldBookAgain: boolean
+    completedAt: string
+  }>
+  /** Pending payment milestones across events */
+  pendingMilestones?: Array<{
+    clientName: string
+    occasion: string
+    milestoneName: string
+    amountCents: number
+    dueDate: string | null
+  }>
+  /** Auto-response configuration status */
+  autoResponseStatus?: {
+    enabled: boolean
+    templateCount: number
+  }
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────
