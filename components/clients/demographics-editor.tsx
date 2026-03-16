@@ -1,13 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { updateClient } from '@/lib/clients/actions'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 
 type Props = {
   clientId: string
+  chefId: string
   occupation: string | null
   companyName: string | null
   birthday: string | null
@@ -19,7 +22,7 @@ type Props = {
   formality: string | null
 }
 
-export function DemographicsEditor({ clientId, ...initial }: Props) {
+export function DemographicsEditor({ clientId, chefId, ...initial }: Props) {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [occupation, setOccupation] = useState(initial.occupation || '')
@@ -31,6 +34,76 @@ export function DemographicsEditor({ clientId, ...initial }: Props) {
   const [referralSource, setReferralSource] = useState(initial.referralSource || '')
   const [referralDetail, setReferralDetail] = useState(initial.referralSourceDetail || '')
   const [formality, setFormality] = useState(initial.formality || '')
+
+  const defaultData = useMemo(
+    () => ({
+      occupation: initial.occupation || '',
+      companyName: initial.companyName || '',
+      birthday: initial.birthday || '',
+      anniversary: initial.anniversary || '',
+      instagram: initial.instagramHandle || '',
+      preferredContact: initial.preferredContactMethod || '',
+      referralSource: initial.referralSource || '',
+      referralDetail: initial.referralSourceDetail || '',
+      formality: initial.formality || '',
+    }),
+    [
+      initial.occupation,
+      initial.companyName,
+      initial.birthday,
+      initial.anniversary,
+      initial.instagramHandle,
+      initial.preferredContactMethod,
+      initial.referralSource,
+      initial.referralSourceDetail,
+      initial.formality,
+    ]
+  )
+
+  const currentData = useMemo(
+    () => ({
+      occupation,
+      companyName,
+      birthday,
+      anniversary,
+      instagram,
+      preferredContact,
+      referralSource,
+      referralDetail,
+      formality,
+    }),
+    [
+      occupation,
+      companyName,
+      birthday,
+      anniversary,
+      instagram,
+      preferredContact,
+      referralSource,
+      referralDetail,
+      formality,
+    ]
+  )
+
+  const protection = useProtectedForm({
+    surfaceId: 'client-demographics',
+    recordId: clientId,
+    tenantId: chefId,
+    defaultData,
+    currentData,
+  })
+
+  function applyDraftData(data: Record<string, unknown>) {
+    if (typeof data.occupation === 'string') setOccupation(data.occupation)
+    if (typeof data.companyName === 'string') setCompanyName(data.companyName)
+    if (typeof data.birthday === 'string') setBirthday(data.birthday)
+    if (typeof data.anniversary === 'string') setAnniversary(data.anniversary)
+    if (typeof data.instagram === 'string') setInstagram(data.instagram)
+    if (typeof data.preferredContact === 'string') setPreferredContact(data.preferredContact)
+    if (typeof data.referralSource === 'string') setReferralSource(data.referralSource)
+    if (typeof data.referralDetail === 'string') setReferralDetail(data.referralDetail)
+    if (typeof data.formality === 'string') setFormality(data.formality)
+  }
 
   async function handleSave() {
     setSaving(true)
@@ -46,6 +119,7 @@ export function DemographicsEditor({ clientId, ...initial }: Props) {
         referral_source_detail: referralDetail || undefined,
         formality_level: (formality || null) as any,
       })
+      protection.markCommitted()
       setEditing(false)
     } catch (err) {
       console.error('Failed to update demographics:', err)
@@ -141,93 +215,105 @@ export function DemographicsEditor({ clientId, ...initial }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-brand-700 overflow-hidden">
-      <div className="px-4 py-3 bg-brand-950 border-b border-brand-700">
-        <h3 className="font-medium text-stone-200">Demographics & Identity</h3>
-      </div>
-      <div className="p-4 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Occupation"
-            value={occupation}
-            onChange={(e) => setOccupation(e.target.value)}
-            placeholder="Attorney, Doctor, CEO"
-          />
-          <Input
-            label="Company"
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            placeholder="Where they work"
-          />
-          <Input
-            label="Birthday"
-            type="date"
-            value={birthday}
-            onChange={(e) => setBirthday(e.target.value)}
-          />
-          <Input
-            label="Anniversary"
-            type="date"
-            value={anniversary}
-            onChange={(e) => setAnniversary(e.target.value)}
-          />
-          <Input
-            label="Instagram"
-            value={instagram}
-            onChange={(e) => setInstagram(e.target.value)}
-            placeholder="@handle"
-          />
-          <Select
-            label="Preferred Contact"
-            value={preferredContact}
-            onChange={(e) => setPreferredContact(e.target.value)}
-          >
-            <option value="">Select...</option>
-            <option value="phone">Phone</option>
-            <option value="text">Text</option>
-            <option value="email">Email</option>
-            <option value="instagram">Instagram DM</option>
-          </Select>
-          <Select
-            label="Referral Source"
-            value={referralSource}
-            onChange={(e) => setReferralSource(e.target.value)}
-          >
-            <option value="">Select...</option>
-            <option value="referral">Referral</option>
-            <option value="instagram">Instagram</option>
-            <option value="website">Website</option>
-            <option value="take_a_chef">Take a Chef</option>
-            <option value="phone">Phone</option>
-            <option value="email">Email</option>
-            <option value="other">Other</option>
-          </Select>
-          <Input
-            label="Referral Detail"
-            value={referralDetail}
-            onChange={(e) => setReferralDetail(e.target.value)}
-            placeholder="Who referred them?"
-          />
-          <Select
-            label="Formality Level"
-            value={formality}
-            onChange={(e) => setFormality(e.target.value)}
-          >
-            <option value="">Select...</option>
-            <option value="casual">Casual</option>
-            <option value="semi_formal">Semi-Formal</option>
-            <option value="formal">Formal</option>
-          </Select>
+    <FormShield
+      guard={protection.guard}
+      showRestorePrompt={protection.showRestorePrompt}
+      lastSavedAt={protection.lastSavedAt}
+      onRestore={() => {
+        const d = protection.restoreDraft()
+        if (d) applyDraftData(d)
+      }}
+      onDiscard={protection.discardDraft}
+      saveState={protection.saveState}
+    >
+      <div className="rounded-lg border border-brand-700 overflow-hidden">
+        <div className="px-4 py-3 bg-brand-950 border-b border-brand-700">
+          <h3 className="font-medium text-stone-200">Demographics & Identity</h3>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={handleSave} loading={saving}>
-            Save
-          </Button>
-          <Button variant="ghost" onClick={() => setEditing(false)}>
-            Cancel
-          </Button>
+        <div className="p-4 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Occupation"
+              value={occupation}
+              onChange={(e) => setOccupation(e.target.value)}
+              placeholder="Attorney, Doctor, CEO"
+            />
+            <Input
+              label="Company"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              placeholder="Where they work"
+            />
+            <Input
+              label="Birthday"
+              type="date"
+              value={birthday}
+              onChange={(e) => setBirthday(e.target.value)}
+            />
+            <Input
+              label="Anniversary"
+              type="date"
+              value={anniversary}
+              onChange={(e) => setAnniversary(e.target.value)}
+            />
+            <Input
+              label="Instagram"
+              value={instagram}
+              onChange={(e) => setInstagram(e.target.value)}
+              placeholder="@handle"
+            />
+            <Select
+              label="Preferred Contact"
+              value={preferredContact}
+              onChange={(e) => setPreferredContact(e.target.value)}
+            >
+              <option value="">Select...</option>
+              <option value="phone">Phone</option>
+              <option value="text">Text</option>
+              <option value="email">Email</option>
+              <option value="instagram">Instagram DM</option>
+            </Select>
+            <Select
+              label="Referral Source"
+              value={referralSource}
+              onChange={(e) => setReferralSource(e.target.value)}
+            >
+              <option value="">Select...</option>
+              <option value="referral">Referral</option>
+              <option value="instagram">Instagram</option>
+              <option value="website">Website</option>
+              <option value="take_a_chef">Take a Chef</option>
+              <option value="phone">Phone</option>
+              <option value="email">Email</option>
+              <option value="other">Other</option>
+            </Select>
+            <Input
+              label="Referral Detail"
+              value={referralDetail}
+              onChange={(e) => setReferralDetail(e.target.value)}
+              placeholder="Who referred them?"
+            />
+            <Select
+              label="Formality Level"
+              value={formality}
+              onChange={(e) => setFormality(e.target.value)}
+            >
+              <option value="">Select...</option>
+              <option value="casual">Casual</option>
+              <option value="semi_formal">Semi-Formal</option>
+              <option value="formal">Formal</option>
+            </Select>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={handleSave} loading={saving}>
+              Save
+            </Button>
+            <Button variant="ghost" onClick={() => setEditing(false)}>
+              Cancel
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </FormShield>
   )
 }

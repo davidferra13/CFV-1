@@ -98,7 +98,7 @@ interface ClientDetailPageProps {
 }
 
 export default async function ClientDetailPage({ params }: ClientDetailPageProps) {
-  await requireChef()
+  const chefUser = await requireChef()
 
   const [
     client,
@@ -380,6 +380,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       {/* Demographics & Identity */}
       <DemographicsEditor
         clientId={client.id}
+        chefId={chefUser.entityId}
         occupation={(client as any).occupation ?? null}
         companyName={(client as any).company_name ?? null}
         birthday={(client as any).birthday ?? null}
@@ -699,6 +700,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       {/* Personal Details (nickname, partner, family) */}
       <PersonalInfoEditor
         clientId={client.id}
+        chefId={chefUser.entityId}
         initialData={{
           preferred_name: (client as any).preferred_name ?? null,
           partner_name: (client as any).partner_name ?? null,

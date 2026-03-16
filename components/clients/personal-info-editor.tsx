@@ -1,18 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { updateClientPersonalInfo } from '@/lib/clients/milestones'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 
 export function PersonalInfoEditor({
   clientId,
+  chefId,
   initialData,
 }: {
   clientId: string
+  chefId: string
   initialData: {
     preferred_name: string | null
     partner_name: string | null
@@ -28,6 +32,39 @@ export function PersonalInfoEditor({
   )
   const [familyNotes, setFamilyNotes] = useState(initialData.family_notes ?? '')
 
+  const defaultData = useMemo(
+    () => ({
+      preferredName: initialData.preferred_name ?? '',
+      partnerPreferredName: initialData.partner_preferred_name ?? '',
+      familyNotes: initialData.family_notes ?? '',
+    }),
+    [initialData.preferred_name, initialData.partner_preferred_name, initialData.family_notes]
+  )
+
+  const currentData = useMemo(
+    () => ({
+      preferredName,
+      partnerPreferredName,
+      familyNotes,
+    }),
+    [preferredName, partnerPreferredName, familyNotes]
+  )
+
+  const protection = useProtectedForm({
+    surfaceId: 'client-personal-info',
+    recordId: clientId,
+    tenantId: chefId,
+    defaultData,
+    currentData,
+  })
+
+  function applyDraftData(data: Record<string, unknown>) {
+    if (typeof data.preferredName === 'string') setPreferredName(data.preferredName)
+    if (typeof data.partnerPreferredName === 'string')
+      setPartnerPreferredName(data.partnerPreferredName)
+    if (typeof data.familyNotes === 'string') setFamilyNotes(data.familyNotes)
+  }
+
   async function handleSave() {
     setSaving(true)
     try {
@@ -37,6 +74,7 @@ export function PersonalInfoEditor({
         family_notes: familyNotes || null,
       })
       trackAction('Updated client details', preferredName || 'client')
+      protection.markCommitted()
       setEditing(false)
     } catch (e) {
       console.error(e)
@@ -93,47 +131,61 @@ export function PersonalInfoEditor({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Personal Details</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs font-medium text-stone-400">Preferred Name / Nickname</label>
-            <Input
-              placeholder='e.g., "Murr" instead of Mary'
-              value={preferredName}
-              onChange={(e) => setPreferredName(e.target.value)}
-            />
+    <FormShield
+      guard={protection.guard}
+      showRestorePrompt={protection.showRestorePrompt}
+      lastSavedAt={protection.lastSavedAt}
+      onRestore={() => {
+        const d = protection.restoreDraft()
+        if (d) applyDraftData(d)
+      }}
+      onDiscard={protection.discardDraft}
+      saveState={protection.saveState}
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Personal Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium text-stone-400">
+                Preferred Name / Nickname
+              </label>
+              <Input
+                placeholder='e.g., "Murr" instead of Mary'
+                value={preferredName}
+                onChange={(e) => setPreferredName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-stone-400">Partner Preferred Name</label>
+              <Input
+                placeholder='e.g., "Mike" instead of Michael'
+                value={partnerPreferredName}
+                onChange={(e) => setPartnerPreferredName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-stone-400">Family Notes</label>
+              <Textarea
+                placeholder="Children, babysitter situations, extended family connections..."
+                value={familyNotes}
+                onChange={(e) => setFamilyNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={handleSave} disabled={saving}>
+                {saving ? 'Saving...' : 'Save'}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setEditing(false)} disabled={saving}>
+                Cancel
+              </Button>
+            </div>
           </div>
-          <div>
-            <label className="text-xs font-medium text-stone-400">Partner Preferred Name</label>
-            <Input
-              placeholder='e.g., "Mike" instead of Michael'
-              value={partnerPreferredName}
-              onChange={(e) => setPartnerPreferredName(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-stone-400">Family Notes</label>
-            <Textarea
-              placeholder="Children, babysitter situations, extended family connections..."
-              value={familyNotes}
-              onChange={(e) => setFamilyNotes(e.target.value)}
-              rows={3}
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button size="sm" onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : 'Save'}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setEditing(false)} disabled={saving}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </FormShield>
   )
 }
