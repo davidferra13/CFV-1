@@ -1,6 +1,8 @@
 // Food Cost Calculator - pure deterministic functions (Formula > AI)
 // No server dependencies, no database calls. Pure math.
 
+import { computeIngredientCost, lookupDensity } from '@/lib/units/conversion-engine'
+
 export type FoodCostRating = 'excellent' | 'good' | 'fair' | 'high'
 
 export interface FoodCostRatingResult {
@@ -21,6 +23,51 @@ export function calculateRecipeFoodCost(
     total += Math.round(ing.qty * ing.costPerUnitCents)
   }
   return total
+}
+
+/**
+ * Unit-aware recipe food cost calculation.
+ * Handles cases where recipe unit differs from ingredient cost unit
+ * (e.g., recipe uses cups but ingredient is priced per lb).
+ * Falls back to simple multiplication when units match or conversion isn't possible.
+ */
+export function calculateRecipeFoodCostWithUnits(
+  ingredients: Array<{
+    qty: number
+    recipeUnit: string
+    costPerUnitCents: number
+    costUnit: string
+    ingredientName?: string
+    densityGPerMl?: number | null
+  }>
+): { totalCents: number; itemCosts: Array<{ costCents: number; converted: boolean }> } {
+  let totalCents = 0
+  const itemCosts: Array<{ costCents: number; converted: boolean }> = []
+
+  for (const ing of ingredients) {
+    // Try unit-aware conversion first
+    const density =
+      ing.densityGPerMl ?? (ing.ingredientName ? lookupDensity(ing.ingredientName) : null)
+    const cost = computeIngredientCost(
+      ing.qty,
+      ing.recipeUnit,
+      ing.costPerUnitCents,
+      ing.costUnit,
+      density
+    )
+
+    if (cost !== null) {
+      totalCents += cost
+      itemCosts.push({ costCents: cost, converted: true })
+    } else {
+      // Fallback: assume same unit (existing behavior)
+      const fallback = Math.round(ing.qty * ing.costPerUnitCents)
+      totalCents += fallback
+      itemCosts.push({ costCents: fallback, converted: false })
+    }
+  }
+
+  return { totalCents, itemCosts }
 }
 
 /**

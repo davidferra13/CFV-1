@@ -621,6 +621,19 @@ export async function receivePOItems(
           .from('ingredients')
           .update({ last_price_cents: item.actualUnitPriceCents } as any)
           .eq('id', (poItem as any).ingredient_id)
+
+        // Record price history entry (non-blocking)
+        await supabase.from('ingredient_price_history').insert({
+          chef_id: user.tenantId!,
+          ingredient_id: (poItem as any).ingredient_id,
+          price_cents: item.actualUnitPriceCents,
+          unit: (poItem as any).unit,
+          source: 'po_receipt',
+          source_id: item.itemId,
+          vendor_id: po.vendor_id ?? null,
+          recorded_at: new Date().toISOString().split('T')[0],
+          notes: `PO ${po.po_number || poId}`,
+        })
       } catch (err) {
         // Non-blocking: price update failure shouldn't stop receiving
         console.error('[non-blocking] Failed to update ingredient price', err)
