@@ -1,5 +1,5 @@
-// Raffle system constants — shared between server actions and client components.
-// NOT a 'use server' file — safe to export constants.
+// Raffle system constants - shared between server actions and client components.
+// NOT a 'use server' file - safe to export constants.
 
 /** Food emoji pool for anonymous aliases. ~30 options ensures uniqueness within typical client lists. */
 export const ALIAS_EMOJIS = [
@@ -81,7 +81,7 @@ export const BAD_ITEMS = ['🦴', '🧊', '🪨', '💀']
 export const ENTRIES_PER_DAY = 1
 export const MIN_SCORE_FOR_ENTRY = 1
 
-/** Winner categories — 3 ways to win each month */
+/** Winner categories - 3 ways to win each month */
 export const WINNER_CATEGORIES = {
   random_draw: { label: 'Random Draw', emoji: '🎲', description: 'Every entry has equal odds' },
   top_scorer: {
