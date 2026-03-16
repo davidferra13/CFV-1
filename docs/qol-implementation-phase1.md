@@ -138,10 +138,18 @@ Unlike the full-page ErrorBoundary, this keeps the rest of the page functional w
 - Prep schedule task deletions
 - Remy conversation archive/delete
 
-### Session recovery
+### Session recovery (COMPLETE)
 
-- Store `lastActivePath` on route change
-- Resume flow after re-authentication
+- `lib/session/recovery.ts` - stores/retrieves last active path via localStorage (24h expiry)
+- `components/session/route-tracker.tsx` - invisible client component mounted in chef layout, tracks route changes
+- `app/(chef)/layout.tsx` - mounts `<RouteTracker />` via dynamic import (SSR: false)
+- `app/auth/signin/page.tsx` - uses `getLastActivePath()` as default redirect when no explicit `?redirect=` param; clears after use
+
+### Performance optimizations (partial)
+
+- `components/activity/client-activity-feed.tsx` - React.memo on list items (COMPLETE)
+- `app/(partner)/partner/preview/page.tsx` - next/image conversion (COMPLETE)
+- `lib/gmail/sync.ts` - N+1 query batching (PENDING, larger refactor)
 
 ### Data export expansion
 
