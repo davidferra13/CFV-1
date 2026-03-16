@@ -16,8 +16,6 @@ import { SkeletonTable } from '@/components/ui/skeleton'
 import { ClientInvitationForm } from './client-invitation-form'
 import { ClientsTable } from './clients-table'
 import { PendingInvitationsTable } from './pending-invitations-table'
-import { getClientHealthScores } from '@/lib/clients/health-score'
-import { getChurnPreventionTriggers } from '@/lib/intelligence/churn-prevention-triggers'
 import { RebookingBar } from '@/components/intelligence/rebooking-bar'
 import { safeFetch } from '@/lib/utils/safe-fetch'
 import { ErrorState } from '@/components/ui/error-state'
@@ -109,14 +107,7 @@ async function ClientsListContent() {
     return <ErrorState title="Could not load clients" description={clientsResult.error} />
   }
 
-  const [healthSummary, churnResult] = await Promise.all([
-    getClientHealthScores().catch(() => ({ scores: [], medianLtv: 0, avgEventsPerYear: 0 })),
-    getChurnPreventionTriggers().catch(() => null),
-  ])
-
   const clients = clientsResult.data
-  const healthMap = new Map(healthSummary.scores.map((s) => [s.clientId, s]))
-  const churnMap = new Map((churnResult?.atRiskClients || []).map((c) => [c.clientId, c]))
 
   if (clients.length === 0) {
     return (
@@ -129,5 +120,5 @@ async function ClientsListContent() {
     )
   }
 
-  return <ClientsTable clients={clients} healthMap={healthMap} churnMap={churnMap} />
+  return <ClientsTable clients={clients} />
 }

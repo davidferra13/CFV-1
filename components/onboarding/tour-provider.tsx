@@ -79,7 +79,14 @@ export function OnboardingTourProvider({ config, initialProgress, children }: Pr
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(
     new Set(initialProgress.completedSteps)
   )
-  const [welcomeSeen, setWelcomeSeen] = useState(!!initialProgress.welcomeSeenAt)
+  const [welcomeSeen, setWelcomeSeen] = useState(() => {
+    if (initialProgress.welcomeSeenAt) return true
+    // Client-side fallback: survives full-page navigations that race the server write
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('cf-welcome-seen') === '1'
+    }
+    return false
+  })
   const [checklistDismissed, setChecklistDismissed] = useState(
     !!initialProgress.checklistDismissedAt
   )
@@ -132,6 +139,14 @@ export function OnboardingTourProvider({ config, initialProgress, children }: Pr
     }
   }, [pathname, config.steps, completedSteps])
 
+  // Clean up localStorage fallback once server confirms the write.
+  // This ensures resetTourProgress() can correctly re-show the modal.
+  useEffect(() => {
+    if (initialProgress.welcomeSeenAt && typeof window !== 'undefined') {
+      localStorage.removeItem('cf-welcome-seen')
+    }
+  }, [initialProgress.welcomeSeenAt])
+
   const completeStep = useCallback(
     (stepId: string) => {
       if (completedSteps.has(stepId)) return
@@ -149,6 +164,10 @@ export function OnboardingTourProvider({ config, initialProgress, children }: Pr
 
   const handleMarkWelcomeSeen = useCallback(() => {
     setWelcomeSeen(true)
+    // Persist immediately to survive full-page navigations (race condition protection)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cf-welcome-seen', '1')
+    }
     startTransition(async () => {
       try {
         await serverMarkWelcomeSeen()
