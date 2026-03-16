@@ -1,0 +1,74 @@
+// Upgrade Gate - Server Component
+// Wraps Pro-only page content. If the chef is on the Free tier, shows an upgrade
+// prompt instead of (or overlaid on) the children.
+//
+// Modes:
+//   'block' (default) - Shows upgrade prompt card instead of content
+//   'blur'            - Shows content blurred with upgrade prompt overlay
+//   'hide'            - Renders nothing (use for optional nav sections)
+//
+// Usage:
+//   <UpgradeGate chefId={user.entityId} featureSlug="advanced-analytics">
+//     <BenchmarksPage />
+//   </UpgradeGate>
+
+import { getTierForChef } from '@/lib/billing/tier'
+import { getProFeature } from '@/lib/billing/pro-features'
+import { isAdmin } from '@/lib/auth/admin'
+
+type Props = {
+  chefId: string
+  featureSlug: string
+  children: React.ReactNode
+  mode?: 'block' | 'blur' | 'hide'
+}
+
+export async function UpgradeGate({ chefId, featureSlug, children, mode = 'block' }: Props) {
+  // Admins always bypass - full Pro access regardless of subscription
+  const adminCheck = await isAdmin().catch(() => false)
+  if (adminCheck) return <>{children}</>
+
+  const { tier } = await getTierForChef(chefId)
+
+  // Pro users (including grandfathered and trialing) - render content as-is
+  if (tier === 'pro') return <>{children}</>
+
+  // Free user - apply gating based on mode
+  if (mode === 'hide') return null
+
+  const feature = getProFeature(featureSlug)
+
+  if (mode === 'blur') {
+    return (
+      <div className="relative">
+        <div className="pointer-events-none select-none blur-sm opacity-60" aria-hidden="true">
+          {children}
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center bg-stone-900/30">
+          <UpgradePromptInline label={feature?.label} description={feature?.description} />
+        </div>
+      </div>
+    )
+  }
+
+  // Default: block mode
+  return <UpgradePromptInline label={feature?.label} description={feature?.description} />
+}
+
+function UpgradePromptInline({
+  label,
+  description,
+}: {
+  label?: string
+  description?: string
+}) {
+  return (
+    <div className="mx-auto max-w-md rounded-lg border border-amber-500/30 bg-stone-900 p-6 text-center">
+      <h2 className="text-xl font-semibold text-stone-100">{label || 'Pro Feature'}</h2>
+      {description && <p className="mt-2 text-sm text-stone-400">{description}</p>}
+      <p className="mt-4 text-sm text-stone-500">
+        Upgrade to Pro to unlock this feature.
+      </p>
+    </div>
+  )
+}
