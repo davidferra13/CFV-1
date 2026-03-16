@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import { getVendors, togglePreferred, deleteVendor } from '@/lib/vendors/vendor-actions'
 import type { VendorCategory } from '@/lib/vendors/vendor-actions'
 import { Button } from '@/components/ui/button'
@@ -59,11 +59,7 @@ export function VendorList({
   const [preferredFilter, setPreferredFilter] = useState<boolean | undefined>(undefined)
   const [isPending, startTransition] = useTransition()
 
-  useEffect(() => {
-    loadVendors()
-  }, [categoryFilter, preferredFilter])
-
-  async function loadVendors() {
+  const loadVendors = useCallback(async () => {
     setLoading(true)
     try {
       const data = await getVendors({
@@ -76,7 +72,11 @@ export function VendorList({
     } finally {
       setLoading(false)
     }
-  }
+  }, [categoryFilter, preferredFilter])
+
+  useEffect(() => {
+    loadVendors()
+  }, [loadVendors])
 
   function handleTogglePreferred(id: string) {
     const previous = [...vendors]

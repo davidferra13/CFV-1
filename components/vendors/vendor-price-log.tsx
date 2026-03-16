@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import { getPriceHistory, addPriceEntry } from '@/lib/vendors/vendor-actions'
 import { Button } from '@/components/ui/button'
 import { TrendingUp, TrendingDown, Minus, Plus } from 'lucide-react'
@@ -67,11 +67,7 @@ export function VendorPriceLog({
   const [recordedAt, setRecordedAt] = useState(new Date().toISOString().split('T')[0])
   const [entryNotes, setEntryNotes] = useState('')
 
-  useEffect(() => {
-    loadPrices()
-  }, [vendorId])
-
-  async function loadPrices() {
+  const loadPrices = useCallback(async () => {
     setLoading(true)
     try {
       const data = await getPriceHistory(vendorId)
@@ -81,7 +77,11 @@ export function VendorPriceLog({
     } finally {
       setLoading(false)
     }
-  }
+  }, [vendorId])
+
+  useEffect(() => {
+    loadPrices()
+  }, [loadPrices])
 
   function handleAddEntry(e: React.FormEvent) {
     e.preventDefault()

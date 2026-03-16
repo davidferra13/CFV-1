@@ -29,7 +29,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   const staffName = profile?.name ?? 'Staff Member'
 
   return (
-    <div className="min-h-screen bg-stone-800">
+    <div className="min-h-screen bg-stone-800" data-cf-portal="staff">
       <TestAccountBanner />
       <a
         href="#main-content"

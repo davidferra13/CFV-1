@@ -1,6 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import {
   getMealPrepItems,
   toggleItemAvailability,
@@ -31,18 +32,18 @@ export function MealPrepMenuManager() {
   const [editingItem, setEditingItem] = useState<MealPrepItem | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  const loadItems = async () => {
+  const loadItems = useCallback(async () => {
     try {
       const data = await getMealPrepItems(filter ? { category: filter } : undefined)
       setItems(data)
     } catch (err) {
       toast.error('Failed to load menu items')
     }
-  }
+  }, [filter])
 
   useEffect(() => {
     loadItems()
-  }, [filter])
+  }, [loadItems])
 
   const handleToggle = (item: MealPrepItem) => {
     const previous = items
@@ -142,13 +143,9 @@ export function MealPrepMenuManager() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="font-medium">{item.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    ${(item.price_cents / 100).toFixed(2)}
-                  </p>
+                  <p className="text-sm text-gray-500">${(item.price_cents / 100).toFixed(2)}</p>
                 </div>
-                <Badge variant={item.is_available ? 'success' : 'default'}>
-                  {item.category}
-                </Badge>
+                <Badge variant={item.is_available ? 'success' : 'default'}>{item.category}</Badge>
               </div>
 
               {item.description && (

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 // Proposal Live Preview
 // Renders the proposal as the client will see it, with print-friendly layout
 'use client'
@@ -50,12 +51,8 @@ function CoverPreview({
           {branding.business_name}
         </p>
       )}
-      <h1 className="text-3xl font-bold mb-3">
-        {content.event_name || 'Your Event'}
-      </h1>
-      {content.subtitle && (
-        <p className="text-lg opacity-90">{content.subtitle}</p>
-      )}
+      <h1 className="text-3xl font-bold mb-3">{content.event_name || 'Your Event'}</h1>
+      {content.subtitle && <p className="text-lg opacity-90">{content.subtitle}</p>}
       {content.event_date && (
         <p className="mt-4 text-sm opacity-70">
           {new Date(content.event_date).toLocaleDateString('en-US', {
@@ -67,9 +64,7 @@ function CoverPreview({
         </p>
       )}
       {branding.tagline && (
-        <p className="mt-6 text-xs uppercase tracking-wider opacity-60">
-          {branding.tagline}
-        </p>
+        <p className="mt-6 text-xs uppercase tracking-wider opacity-60">{branding.tagline}</p>
       )}
     </div>
   )
@@ -83,12 +78,8 @@ function MenuPreview({ section }: { section: ProposalSection }) {
 
   return (
     <div className="py-8 px-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
-        {section.title}
-      </h2>
-      {content.description && (
-        <p className="text-gray-600 mb-6 italic">{content.description}</p>
-      )}
+      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">{section.title}</h2>
+      {content.description && <p className="text-gray-600 mb-6 italic">{content.description}</p>}
       {(content.courses ?? []).length > 0 ? (
         <div className="space-y-6">
           {content.courses!.map((course, idx) => (
@@ -126,18 +117,14 @@ function PricingPreview({ section }: { section: ProposalSection }) {
 
   return (
     <div className="py-8 px-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
-        {section.title}
-      </h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">{section.title}</h2>
 
       {content.show_line_items !== false && items.length > 0 && (
         <div className="space-y-2 mb-4">
           {items.map((item, idx) => (
             <div key={idx} className="flex justify-between text-gray-800">
               <span>{item.label || 'Item'}</span>
-              <span className="font-medium">
-                ${(item.amount_cents / 100).toFixed(2)}
-              </span>
+              <span className="font-medium">${(item.amount_cents / 100).toFixed(2)}</span>
             </div>
           ))}
         </div>
@@ -156,9 +143,7 @@ function PricingPreview({ section }: { section: ProposalSection }) {
         </p>
       )}
 
-      {content.custom_note && (
-        <p className="text-sm text-gray-600 mt-4">{content.custom_note}</p>
-      )}
+      {content.custom_note && <p className="text-sm text-gray-600 mt-4">{content.custom_note}</p>}
     </div>
   )
 }
@@ -168,9 +153,7 @@ function TermsPreview({ section }: { section: ProposalSection }) {
 
   return (
     <div className="py-8 px-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
-        {section.title}
-      </h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">{section.title}</h2>
       {content.text ? (
         <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
           {content.text}
@@ -192,9 +175,7 @@ function PhotosPreview({ section }: { section: ProposalSection }) {
 
   return (
     <div className="py-8 px-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
-        {section.title}
-      </h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">{section.title}</h2>
       {photos.length > 0 ? (
         <>
           <div className="grid grid-cols-2 gap-3">
@@ -208,9 +189,7 @@ function PhotosPreview({ section }: { section: ProposalSection }) {
             ))}
           </div>
           {content.caption && (
-            <p className="text-sm text-gray-500 text-center mt-3 italic">
-              {content.caption}
-            </p>
+            <p className="text-sm text-gray-500 text-center mt-3 italic">{content.caption}</p>
           )}
         </>
       ) : (
@@ -229,9 +208,7 @@ function BioPreview({ section }: { section: ProposalSection }) {
 
   return (
     <div className="py-8 px-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
-        {section.title}
-      </h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">{section.title}</h2>
       <div className="flex gap-6 items-start">
         {content.photo_url && (
           <img
@@ -242,9 +219,7 @@ function BioPreview({ section }: { section: ProposalSection }) {
         )}
         <div>
           {content.name && (
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {content.name}
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{content.name}</h3>
           )}
           {content.description ? (
             <p className="text-gray-700 whitespace-pre-wrap">{content.description}</p>
@@ -262,9 +237,7 @@ function CustomPreview({ section }: { section: ProposalSection }) {
 
   return (
     <div className="py-8 px-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
-        {section.title}
-      </h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">{section.title}</h2>
       {content.body ? (
         <div className="text-gray-700 whitespace-pre-wrap">{content.body}</div>
       ) : (
@@ -310,9 +283,7 @@ function RenderSection({
 // ============================================
 
 export function ProposalLivePreview({ sections, branding, mode, onClose }: PreviewProps) {
-  const visibleSections = sections
-    .filter((s) => s.visible)
-    .sort((a, b) => a.order - b.order)
+  const visibleSections = sections.filter((s) => s.visible).sort((a, b) => a.order - b.order)
 
   const containerClass =
     mode === 'fullscreen'
@@ -325,10 +296,7 @@ export function ProposalLivePreview({ sections, branding, mode, onClose }: Previ
       <div className="sticky top-0 z-10 bg-gray-50 border-b px-4 py-2 flex items-center justify-between print:hidden">
         <span className="text-sm font-medium text-gray-600">Preview</span>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => window.print()}
-          >
+          <Button variant="ghost" onClick={() => window.print()}>
             Print / PDF
           </Button>
           {onClose && (

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
@@ -133,7 +134,7 @@ export function RecipeSlideshow({ recipeName, steps }: Props) {
         <div>
           <h2 className="text-lg font-semibold text-white">{recipeName}</h2>
           <p className="text-sm text-gray-400">
-            Step {(step?.number ?? currentStep + 1)} of {totalSteps}
+            Step {step?.number ?? currentStep + 1} of {totalSteps}
             {step && step.photos.length > 1 && (
               <span className="ml-2">
                 (Photo {currentPhoto + 1}/{step.photos.length})
@@ -198,21 +199,30 @@ export function RecipeSlideshow({ recipeName, steps }: Props) {
               aria-label="Previous"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
             <button
               type="button"
               onClick={nextPhoto}
               disabled={
-                currentStep === totalSteps - 1 &&
-                currentPhoto === (step?.photos.length ?? 1) - 1
+                currentStep === totalSteps - 1 && currentPhoto === (step?.photos.length ?? 1) - 1
               }
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-3 text-white hover:bg-black/80 disabled:opacity-20"
               aria-label="Next"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </button>
           </div>

@@ -11,9 +11,9 @@ import { useDeferredAction } from '@/hooks/use-deferred-action'
 export function TemplateActionsClient({ templateId }: { templateId: string }) {
   const router = useRouter()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [deleted, setDeleted] = useState(false)
+  const [isDeleted, setIsDeleted] = useState(false)
 
-  const { execute: deferDelete, deleted } = useDeferredAction({
+  const { execute: deferDelete } = useDeferredAction({
     delay: 8000,
     toastMessage: 'Template deleted',
     onExecute: async () => {
@@ -21,11 +21,11 @@ export function TemplateActionsClient({ templateId }: { templateId: string }) {
       router.refresh()
     },
     onUndo: () => {
-      setDeleted(false)
+      setIsDeleted(false)
       setShowDeleteConfirm(false)
     },
     onError: (err) => {
-      setDeleted(false)
+      setIsDeleted(false)
       toast.error(err instanceof Error ? err.message : 'Failed to delete template')
     },
   })
@@ -36,11 +36,11 @@ export function TemplateActionsClient({ templateId }: { templateId: string }) {
 
   function handleConfirmedDelete() {
     setShowDeleteConfirm(false)
-    setDeleted(true)
+    setIsDeleted(true)
     deferDelete()
   }
 
-  if (deleted) {
+  if (isDeleted) {
     return <span className="text-xs text-stone-500 italic">Deleted (undo in toast)</span>
   }
 
@@ -50,10 +50,10 @@ export function TemplateActionsClient({ templateId }: { templateId: string }) {
         variant="ghost"
         size="sm"
         onClick={handleDelete}
-        disabled={deleted}
+        disabled={isDeleted}
         className="shrink-0 text-stone-400 hover:text-red-600"
       >
-        {deleted ? '…' : 'Delete'}
+        {isDeleted ? '…' : 'Delete'}
       </Button>
       <ConfirmModal
         open={showDeleteConfirm}
@@ -61,7 +61,7 @@ export function TemplateActionsClient({ templateId }: { templateId: string }) {
         description="You'll have 8 seconds to undo."
         confirmLabel="Delete"
         variant="danger"
-        loading={deleted}
+        loading={isDeleted}
         onConfirm={handleConfirmedDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />

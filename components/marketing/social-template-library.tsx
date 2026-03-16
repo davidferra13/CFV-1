@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import {
   getSocialTemplates,
   seedDefaultTemplates,
@@ -32,11 +32,16 @@ const TEMPLATE_TYPES: { value: TemplateType; label: string }[] = [
 
 function platformColor(p: SocialPlatform): string {
   switch (p) {
-    case 'instagram': return 'bg-pink-100 text-pink-800 border-pink-200'
-    case 'facebook': return 'bg-blue-100 text-blue-800 border-blue-200'
-    case 'tiktok': return 'bg-gray-100 text-gray-800 border-gray-200'
-    case 'twitter': return 'bg-sky-100 text-sky-800 border-sky-200'
-    case 'linkedin': return 'bg-indigo-100 text-indigo-800 border-indigo-200'
+    case 'instagram':
+      return 'bg-pink-100 text-pink-800 border-pink-200'
+    case 'facebook':
+      return 'bg-blue-100 text-blue-800 border-blue-200'
+    case 'tiktok':
+      return 'bg-gray-100 text-gray-800 border-gray-200'
+    case 'twitter':
+      return 'bg-sky-100 text-sky-800 border-sky-200'
+    case 'linkedin':
+      return 'bg-indigo-100 text-indigo-800 border-indigo-200'
   }
 }
 
@@ -55,7 +60,7 @@ export function SocialTemplateLibrary() {
   const [showEditor, setShowEditor] = useState(false)
   const [isPending, startTransition] = useTransition()
 
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
     setLoading(true)
     try {
       const filters: { platform?: SocialPlatform; templateType?: TemplateType } = {}
@@ -74,11 +79,11 @@ export function SocialTemplateLibrary() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [platformFilter, typeFilter])
 
   useEffect(() => {
     fetchTemplates()
-  }, [platformFilter, typeFilter])
+  }, [fetchTemplates])
 
   const filteredTemplates = templates.filter((t) => {
     if (!searchQuery) return true
@@ -138,17 +143,16 @@ export function SocialTemplateLibrary() {
   }
 
   const handleCopyContent = async (template: SocialTemplate) => {
-    const fullContent = template.hashtags.length > 0
-      ? `${template.content}\n\n${template.hashtags.join(' ')}`
-      : template.content
+    const fullContent =
+      template.hashtags.length > 0
+        ? `${template.content}\n\n${template.hashtags.join(' ')}`
+        : template.content
 
     try {
       await navigator.clipboard.writeText(fullContent)
       await incrementUsedCount(template.id)
       setTemplates((prev) =>
-        prev.map((t) =>
-          t.id === template.id ? { ...t, used_count: t.used_count + 1 } : t
-        )
+        prev.map((t) => (t.id === template.id ? { ...t, used_count: t.used_count + 1 } : t))
       )
     } catch {
       setError('Failed to copy to clipboard')
@@ -162,12 +166,7 @@ export function SocialTemplateLibrary() {
   }
 
   if (showEditor) {
-    return (
-      <SocialTemplateEditor
-        template={editingTemplate}
-        onClose={handleEditorClose}
-      />
-    )
+    return <SocialTemplateEditor template={editingTemplate} onClose={handleEditorClose} />
   }
 
   return (
@@ -283,7 +282,9 @@ export function SocialTemplateLibrary() {
                     >
                       {template.platform}
                     </span>
-                    <span className="text-xs text-gray-500">{typeLabel(template.template_type)}</span>
+                    <span className="text-xs text-gray-500">
+                      {typeLabel(template.template_type)}
+                    </span>
                   </div>
                 </div>
                 {template.is_default && (
@@ -300,7 +301,10 @@ export function SocialTemplateLibrary() {
               {template.hashtags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-3">
                   {template.hashtags.slice(0, 4).map((tag, i) => (
-                    <span key={i} className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                    <span
+                      key={i}
+                      className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"
+                    >
                       {tag}
                     </span>
                   ))}

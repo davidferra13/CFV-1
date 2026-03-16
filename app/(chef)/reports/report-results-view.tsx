@@ -2,6 +2,11 @@
 
 import type { GeneratedReport } from '@/lib/reports/report-actions'
 
+type ReportData<TType extends GeneratedReport['type']> = Extract<
+  GeneratedReport,
+  { type: TType }
+>['data']
+
 function formatCents(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
 }
@@ -33,11 +38,7 @@ export function ReportResultsView({ report }: Props) {
 
 // ── Revenue Summary ────────────────────────────────────────────────────────
 
-function RevenueSummaryView({
-  data,
-}: {
-  data: GeneratedReport extends { type: 'revenue-summary'; data: infer D } ? D : never
-}) {
+function RevenueSummaryView({ data }: { data: ReportData<'revenue-summary'> }) {
   return (
     <div className="space-y-4">
       {/* Summary Cards */}
@@ -71,11 +72,7 @@ function RevenueSummaryView({
 
 // ── Client Activity ────────────────────────────────────────────────────────
 
-function ClientActivityView({
-  data,
-}: {
-  data: GeneratedReport extends { type: 'client-activity'; data: infer D } ? D : never
-}) {
+function ClientActivityView({ data }: { data: ReportData<'client-activity'> }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
@@ -99,11 +96,7 @@ function ClientActivityView({
 
 // ── Event Performance ──────────────────────────────────────────────────────
 
-function EventPerformanceView({
-  data,
-}: {
-  data: GeneratedReport extends { type: 'event-performance'; data: infer D } ? D : never
-}) {
+function EventPerformanceView({ data }: { data: ReportData<'event-performance'> }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
@@ -128,11 +121,7 @@ function EventPerformanceView({
 
 // ── Expense Breakdown ──────────────────────────────────────────────────────
 
-function ExpenseBreakdownView({
-  data,
-}: {
-  data: GeneratedReport extends { type: 'expense-breakdown'; data: infer D } ? D : never
-}) {
+function ExpenseBreakdownView({ data }: { data: ReportData<'expense-breakdown'> }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -155,11 +144,7 @@ function ExpenseBreakdownView({
 
 // ── Pipeline Conversion ────────────────────────────────────────────────────
 
-function PipelineConversionView({
-  data,
-}: {
-  data: GeneratedReport extends { type: 'pipeline-conversion'; data: infer D } ? D : never
-}) {
+function PipelineConversionView({ data }: { data: ReportData<'pipeline-conversion'> }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

@@ -681,6 +681,8 @@ export function useRemySend(config: UseRemySendConfig) {
       setIsFirstExchange,
       setProjectSuggestion,
       setLoading,
+      closeDrawer,
+      router,
     ]
   )
 

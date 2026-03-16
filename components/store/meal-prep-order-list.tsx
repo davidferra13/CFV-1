@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import {
   getMealPrepOrders,
   updateOrderStatus,
@@ -10,7 +10,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
-const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }
+> = {
   pending: { label: 'Pending', variant: 'warning' },
   confirmed: { label: 'Confirmed', variant: 'info' },
   preparing: { label: 'Preparing', variant: 'info' },
@@ -43,26 +46,24 @@ export function MealPrepOrderList() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     try {
       const data = await getMealPrepOrders(statusFilter ? { status: statusFilter } : undefined)
       setOrders(data)
     } catch (err) {
       toast.error('Failed to load orders')
     }
-  }
+  }, [statusFilter])
 
   useEffect(() => {
     loadOrders()
-  }, [statusFilter])
+  }, [loadOrders])
 
   const handleStatusChange = (orderId: string, newStatus: string) => {
     if (newStatus === 'cancelled' && !confirm('Cancel this order?')) return
 
     const previous = orders
-    setOrders(
-      orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-    )
+    setOrders(orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)))
 
     startTransition(async () => {
       try {
@@ -100,7 +101,10 @@ export function MealPrepOrderList() {
       ) : (
         <div className="divide-y rounded-lg border">
           {orders.map((order) => {
-            const config = STATUS_CONFIG[order.status] ?? { label: order.status, variant: 'default' as const }
+            const config = STATUS_CONFIG[order.status] ?? {
+              label: order.status,
+              variant: 'default' as const,
+            }
             const actions = NEXT_ACTIONS[order.status] ?? []
             const isExpanded = expandedId === order.id
             const itemsList = Array.isArray(order.items) ? order.items : []
@@ -129,7 +133,9 @@ export function MealPrepOrderList() {
                       {order.fulfillment_type === 'delivery' ? 'Delivery' : 'Pickup'}
                     </span>
                     <span className="text-sm text-gray-500">{order.fulfillment_date}</span>
-                    <span className="text-xs text-gray-400">{isExpanded ? '\u25B2' : '\u25BC'}</span>
+                    <span className="text-xs text-gray-400">
+                      {isExpanded ? '\u25B2' : '\u25BC'}
+                    </span>
                   </div>
                 </button>
 
@@ -169,18 +175,28 @@ export function MealPrepOrderList() {
                         </tr>
                       </thead>
                       <tbody>
-                        {itemsList.map((item: { itemId: string; name: string; quantity: number; priceCents: number }, idx: number) => (
-                          <tr key={idx} className="border-b last:border-0">
-                            <td className="py-1">{item.name}</td>
-                            <td className="py-1 text-right">{item.quantity}</td>
-                            <td className="py-1 text-right">
-                              ${(item.priceCents / 100).toFixed(2)}
-                            </td>
-                            <td className="py-1 text-right">
-                              ${((item.priceCents * item.quantity) / 100).toFixed(2)}
-                            </td>
-                          </tr>
-                        ))}
+                        {itemsList.map(
+                          (
+                            item: {
+                              itemId: string
+                              name: string
+                              quantity: number
+                              priceCents: number
+                            },
+                            idx: number
+                          ) => (
+                            <tr key={idx} className="border-b last:border-0">
+                              <td className="py-1">{item.name}</td>
+                              <td className="py-1 text-right">{item.quantity}</td>
+                              <td className="py-1 text-right">
+                                ${(item.priceCents / 100).toFixed(2)}
+                              </td>
+                              <td className="py-1 text-right">
+                                ${((item.priceCents * item.quantity) / 100).toFixed(2)}
+                              </td>
+                            </tr>
+                          )
+                        )}
                       </tbody>
                     </table>
 

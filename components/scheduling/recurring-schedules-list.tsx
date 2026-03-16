@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -41,7 +41,7 @@ export function RecurringSchedulesList({ clientId, onEdit }: RecurringSchedulesL
   const [actionFeedback, setActionFeedback] = useState<string | null>(null)
   const [showInactive, setShowInactive] = useState(false)
 
-  async function loadSchedules() {
+  const loadSchedules = useCallback(async () => {
     try {
       setError(null)
       const data = await getRecurringSchedules(clientId)
@@ -51,11 +51,11 @@ export function RecurringSchedulesList({ clientId, onEdit }: RecurringSchedulesL
     } finally {
       setLoading(false)
     }
-  }
+  }, [clientId])
 
   useEffect(() => {
     loadSchedules()
-  }, [clientId])
+  }, [loadSchedules])
 
   function handleToggleActive(schedule: RecurringSchedule) {
     const previous = [...schedules]

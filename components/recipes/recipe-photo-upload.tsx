@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
@@ -45,9 +46,7 @@ export function RecipePhotoUpload({ recipeId, stepNumber, onUpload }: Props) {
   }, [])
 
   const updateCaption = (index: number, caption: string) => {
-    setPreviews((prev) =>
-      prev.map((p, i) => (i === index ? { ...p, caption } : p))
-    )
+    setPreviews((prev) => prev.map((p, i) => (i === index ? { ...p, caption } : p)))
   }
 
   const removePreview = (index: number) => {
@@ -94,8 +93,18 @@ export function RecipePhotoUpload({ recipeId, stepNumber, onUpload }: Props) {
           ${dragOver ? 'border-orange-400 bg-orange-50' : 'border-gray-300 hover:border-gray-400 bg-gray-50'}
         `}
       >
-        <svg className="mb-2 h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 16v-8m0 0l-3 3m3-3l3 3M6.75 19.25h10.5a2 2 0 002-2V6.75a2 2 0 00-2-2H6.75a2 2 0 00-2 2v10.5a2 2 0 002 2z" />
+        <svg
+          className="mb-2 h-8 w-8 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M12 16v-8m0 0l-3 3m3-3l3 3M6.75 19.25h10.5a2 2 0 002-2V6.75a2 2 0 00-2-2H6.75a2 2 0 00-2 2v10.5a2 2 0 002 2z"
+          />
         </svg>
         <p className="text-sm text-gray-600">
           Drop photos here or <span className="text-orange-600 font-medium">browse</span>
@@ -146,7 +155,9 @@ export function RecipePhotoUpload({ recipeId, stepNumber, onUpload }: Props) {
             disabled={uploading}
             className="rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 disabled:opacity-50"
           >
-            {uploading ? 'Uploading...' : `Upload ${previews.length} photo${previews.length === 1 ? '' : 's'}`}
+            {uploading
+              ? 'Uploading...'
+              : `Upload ${previews.length} photo${previews.length === 1 ? '' : 's'}`}
           </button>
         </div>
       )}
