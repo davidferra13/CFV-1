@@ -77,7 +77,7 @@ function renderMetricWidget(
             <div className="flex items-center justify-between gap-2">
               <CardTitle>{widget.title}</CardTitle>
               {widget.href ? (
-                <Link href={widget.href} className="text-sm text-brand-600 hover:text-brand-400">
+                <Link href={widget.href} className="text-sm text-brand-500 hover:text-brand-400">
                   Open
                 </Link>
               ) : null}

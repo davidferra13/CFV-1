@@ -244,7 +244,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                     </p>
                     <button
                       onClick={() => setPracticeDeleted(false)}
-                      className="text-xs text-brand-600 hover:text-brand-400 underline"
+                      className="text-xs text-brand-500 hover:text-brand-400 underline"
                     >
                       Reset demo
                     </button>

@@ -36,7 +36,7 @@ export default function VerifyEmailPage() {
           <CardFooter>
             <div className="w-full text-sm text-center text-stone-400">
               Already verified?{' '}
-              <Link href="/auth/signin" className="text-brand-600 hover:text-brand-400 font-medium">
+              <Link href="/auth/signin" className="text-brand-500 hover:text-brand-400 font-medium">
                 Sign in
               </Link>
             </div>

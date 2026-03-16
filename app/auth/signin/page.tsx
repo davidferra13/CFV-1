@@ -159,7 +159,7 @@ function SignInForm() {
 
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-brand-600 hover:text-brand-400 font-medium"
+                  className="text-sm text-brand-500 hover:text-brand-400 font-medium"
                 >
                   Forgot password?
                 </Link>
@@ -199,14 +199,14 @@ function SignInForm() {
                 Don&apos;t have an account?{' '}
                 <Link
                   href="/auth/signup"
-                  className="text-brand-600 hover:text-brand-400 font-medium"
+                  className="text-brand-500 hover:text-brand-400 font-medium"
                 >
                   Chef sign up
                 </Link>{' '}
                 or{' '}
                 <Link
                   href="/auth/client-signup"
-                  className="text-brand-600 hover:text-brand-400 font-medium"
+                  className="text-brand-500 hover:text-brand-400 font-medium"
                 >
                   Client sign up
                 </Link>
@@ -224,7 +224,7 @@ export default function SignInPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-stone-950 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500" />
         </div>
       }
     >

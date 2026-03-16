@@ -164,7 +164,7 @@ export function MessageLogForm({
               <button
                 type="button"
                 onClick={() => setShowTemplates(!showTemplates)}
-                className="text-xs text-brand-600 hover:text-brand-400 font-medium"
+                className="text-xs text-brand-500 hover:text-brand-400 font-medium"
               >
                 Use Template
               </button>

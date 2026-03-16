@@ -693,7 +693,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                   type="button"
                   onClick={handleAIDraft}
                   disabled={draftState === 'loading'}
-                  className="text-xs text-brand-600 hover:text-brand-400 font-medium flex items-center gap-1 disabled:opacity-50"
+                  className="text-xs text-brand-500 hover:text-brand-400 font-medium flex items-center gap-1 disabled:opacity-50"
                 >
                   {draftState === 'loading' ? (
                     <>⏳ Drafting...</>

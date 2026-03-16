@@ -53,7 +53,7 @@ export function QueueList({ items, limit = 0, showFilters = true }: Props) {
       {hasMore && (
         <p className="text-center text-sm text-stone-500">
           Showing {displayed.length} of {filtered.length} items.{' '}
-          <a href="/queue" className="text-brand-600 hover:text-brand-400 font-medium">
+          <a href="/queue" className="text-brand-500 hover:text-brand-400 font-medium">
             View all
           </a>
         </p>

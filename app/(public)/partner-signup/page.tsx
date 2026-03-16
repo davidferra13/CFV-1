@@ -81,7 +81,7 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
               Submit your profile to be listed as a partner for {data.chef.display_name}.
             </p>
             <p className="text-sm mt-3">
-              <Link href={`/chef/${chefSlug}`} className="text-brand-600 hover:underline">
+              <Link href={`/chef/${chefSlug}`} className="text-brand-500 hover:underline">
                 View chef profile
               </Link>
             </p>

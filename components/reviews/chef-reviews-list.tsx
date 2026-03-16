@@ -95,7 +95,7 @@ export function ChefReviewsList({ reviews }: { reviews: UnifiedChefReviewItem[] 
                     href={review.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 mt-2"
+                    className="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-400 mt-2"
                   >
                     <ExternalLink className="w-3 h-3" />
                     View original source

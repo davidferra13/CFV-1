@@ -173,7 +173,7 @@ export function ShareEventButton({ eventId, existingShare }: ShareEventButtonPro
           <button
             onClick={handleCreateViewerLink}
             disabled={loading}
-            className="text-xs text-brand-600 hover:text-brand-400 underline"
+            className="text-xs text-brand-500 hover:text-brand-400 underline"
           >
             {loading ? 'Generating...' : 'Create viewer link'}
           </button>

@@ -18,6 +18,7 @@ import { getVendorPriceInsights } from '@/lib/vendors/price-insights-actions'
 import { VendorPriceInsights } from '@/components/vendors/vendor-price-insights'
 import { VendorPriceAlertSettings } from '@/components/vendors/vendor-price-alert-settings'
 import { InvoiceForm } from '@/components/vendors/invoice-form'
+import { VendorComparisonPanel } from '@/components/inventory/vendor-comparison-panel'
 import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Vendor Detail | ChefFlow' }
@@ -145,6 +146,14 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
 
       {/* Price list */}
       <VendorPriceList vendorId={vendor.id} items={vendor.items ?? []} />
+
+      {/* Cross-vendor price comparison for this vendor's top ingredient */}
+      {(vendor.items ?? []).length > 0 && (
+        <VendorComparisonPanel
+          ingredientName={(vendor.items as any[])[0]?.ingredient_name ?? ''}
+          ingredientId={(vendor.items as any[])[0]?.ingredient_id}
+        />
+      )}
 
       {/* Price alerts + trend */}
       <VendorPriceInsights

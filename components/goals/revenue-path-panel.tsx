@@ -85,7 +85,7 @@ export function RevenuePathPanel({
             </p>
             <button
               onClick={() => setActiveTab('services')}
-              className="text-sm font-medium text-brand-600 hover:text-brand-400"
+              className="text-sm font-medium text-brand-500 hover:text-brand-400"
             >
               Add service types →
             </button>

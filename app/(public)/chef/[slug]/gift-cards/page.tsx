@@ -40,7 +40,7 @@ export default async function GiftCardStorePage({ params }: Props) {
           </p>
           <a
             href={`/chef/${params.slug}`}
-            className="text-sm text-brand-600 hover:text-brand-400 mt-2 inline-block"
+            className="text-sm text-brand-500 hover:text-brand-400 mt-2 inline-block"
           >
             Back to chef profile
           </a>

@@ -32,7 +32,7 @@ export default async function MarketplaceCapturePage() {
           </div>
           <Link
             href="/marketplace"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-400"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-500 hover:text-brand-400"
           >
             <ArrowLeft className="h-4 w-4" />
             Marketplace command center

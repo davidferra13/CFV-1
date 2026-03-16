@@ -113,7 +113,7 @@ export function OnboardingChecklistWidget({ progress }: Props) {
         <div className="mt-3 pt-2 border-t border-stone-800">
           <Link
             href="/onboarding"
-            className="text-xs font-medium text-brand-600 hover:text-brand-400 flex items-center gap-1"
+            className="text-xs font-medium text-brand-500 hover:text-brand-400 flex items-center gap-1"
           >
             Open setup guide <ArrowRight className="h-3 w-3" />
           </Link>

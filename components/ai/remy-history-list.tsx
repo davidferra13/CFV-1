@@ -232,7 +232,7 @@ export function RemyHistoryList() {
                           onClick={() => handleTogglePin(artifact.id, artifact.pinned)}
                           className={`p-1 rounded transition-colors ${
                             artifact.pinned
-                              ? 'text-brand-600 hover:text-brand-400'
+                              ? 'text-brand-500 hover:text-brand-400'
                               : 'text-stone-400 hover:text-stone-400 dark:text-stone-500 dark:hover:text-stone-300'
                           }`}
                           title={artifact.pinned ? 'Unpin' : 'Pin'}

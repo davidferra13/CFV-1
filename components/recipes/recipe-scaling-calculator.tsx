@@ -310,7 +310,7 @@ export function RecipeScalingCalculator({ recipe }: Props) {
                     <button
                       type="button"
                       onClick={() => setSmartMode(true)}
-                      className="text-xs text-brand-600 hover:text-brand-400"
+                      className="text-xs text-brand-500 hover:text-brand-400"
                     >
                       What is smart scaling?
                     </button>

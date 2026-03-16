@@ -73,7 +73,7 @@ export default async function ProposalsPage() {
             </p>
             <Link
               href="/proposals/templates"
-              className="inline-block mt-4 text-sm text-brand-600 hover:text-brand-400 font-medium"
+              className="inline-block mt-4 text-sm text-brand-500 hover:text-brand-400 font-medium"
             >
               Create your first template
             </Link>

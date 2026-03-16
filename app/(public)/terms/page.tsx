@@ -141,7 +141,7 @@ export default function TermsPage() {
             <li>Maintain the confidentiality of your account credentials</li>
             <li>
               Notify ChefFlow immediately at{' '}
-              <a href="mailto:support@cheflowhq.com" className="text-brand-600 hover:underline">
+              <a href="mailto:support@cheflowhq.com" className="text-brand-500 hover:underline">
                 support@cheflowhq.com
               </a>{' '}
               if you suspect unauthorized access
@@ -282,7 +282,7 @@ export default function TermsPage() {
               href="https://stripe.com/legal/connect-account"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-brand-600 hover:underline"
+              className="text-brand-500 hover:underline"
             >
               Stripe Connected Account Agreement
             </a>
@@ -366,7 +366,7 @@ export default function TermsPage() {
               href="https://stripe.com/legal"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-brand-600 hover:underline"
+              className="text-brand-500 hover:underline"
             >
               Stripe&apos;s terms of service
             </a>
@@ -378,7 +378,7 @@ export default function TermsPage() {
           </h3>
           <p className="leading-relaxed">
             If you have a concern about a payment, please contact ChefFlow at{' '}
-            <a href="mailto:support@cheflowhq.com" className="text-brand-600 hover:underline">
+            <a href="mailto:support@cheflowhq.com" className="text-brand-500 hover:underline">
               support@cheflowhq.com
             </a>{' '}
             before initiating a credit card chargeback. Our dispute process is faster and preserves
@@ -519,7 +519,7 @@ export default function TermsPage() {
           <ol className="mb-4 list-decimal space-y-2 pl-5 leading-relaxed">
             <li>
               Submit a written description of the dispute to{' '}
-              <a href="mailto:support@cheflowhq.com" className="text-brand-600 hover:underline">
+              <a href="mailto:support@cheflowhq.com" className="text-brand-500 hover:underline">
                 support@cheflowhq.com
               </a>
             </li>
@@ -744,7 +744,7 @@ export default function TermsPage() {
           <h3 className="mb-2 text-base font-semibold text-stone-200">Appeal Process</h3>
           <p className="mb-6 leading-relaxed">
             A suspended user may appeal within 14 days by sending a written appeal to{' '}
-            <a href="mailto:support@cheflowhq.com" className="text-brand-600 hover:underline">
+            <a href="mailto:support@cheflowhq.com" className="text-brand-500 hover:underline">
               support@cheflowhq.com
             </a>
             . ChefFlow will respond within 10 business days. Reinstatement is at ChefFlow&apos;s
@@ -773,7 +773,7 @@ export default function TermsPage() {
           </h2>
           <p className="mb-4 leading-relaxed">
             ChefFlow&apos;s full data practices are described in our{' '}
-            <Link href="/privacy" className="text-brand-600 hover:underline">
+            <Link href="/privacy" className="text-brand-500 hover:underline">
               Privacy Policy
             </Link>
             , which is incorporated into these Terms by reference. ChefFlow does not sell personal
@@ -802,7 +802,7 @@ export default function TermsPage() {
             ChefFlow processes EU personal data pursuant to GDPR Article 6(b) and 6(f). EU users
             have the right to access, rectify, erase, port, and restrict their personal data.
             Contact{' '}
-            <a href="mailto:privacy@cheflowhq.com" className="text-brand-600 hover:underline">
+            <a href="mailto:privacy@cheflowhq.com" className="text-brand-500 hover:underline">
               privacy@cheflowhq.com
             </a>{' '}
             to exercise these rights; ChefFlow will respond within 30 days. ChefFlow notifies
@@ -814,7 +814,7 @@ export default function TermsPage() {
             California residents have the right to know what personal information ChefFlow collects,
             request deletion, and opt out of sale (ChefFlow does not sell personal information).
             Requests may be submitted to{' '}
-            <a href="mailto:privacy@cheflowhq.com" className="text-brand-600 hover:underline">
+            <a href="mailto:privacy@cheflowhq.com" className="text-brand-500 hover:underline">
               privacy@cheflowhq.com
             </a>
             .
@@ -825,7 +825,7 @@ export default function TermsPage() {
             ChefFlow collects, uses, and discloses personal information with the knowledge and
             consent of the individual. Consent may be withdrawn at any time, subject to legal or
             contractual restrictions. Contact{' '}
-            <a href="mailto:privacy@cheflowhq.com" className="text-brand-600 hover:underline">
+            <a href="mailto:privacy@cheflowhq.com" className="text-brand-500 hover:underline">
               privacy@cheflowhq.com
             </a>{' '}
             to submit a request.
@@ -1042,7 +1042,7 @@ export default function TermsPage() {
               <dt className="font-semibold text-stone-100">Notice</dt>
               <dd className="mt-1">
                 Legal notices to ChefFlow must be sent to{' '}
-                <a href="mailto:legal@cheflowhq.com" className="text-brand-600 hover:underline">
+                <a href="mailto:legal@cheflowhq.com" className="text-brand-500 hover:underline">
                   legal@cheflowhq.com
                 </a>
                 . Notices to users will be sent to the email address on file.
@@ -1074,7 +1074,7 @@ export default function TermsPage() {
                 </p>
                 <a
                   href={`mailto:${email}`}
-                  className="mt-1 block text-sm text-brand-600 hover:underline"
+                  className="mt-1 block text-sm text-brand-500 hover:underline"
                 >
                   {email}
                 </a>

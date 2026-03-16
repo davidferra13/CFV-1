@@ -134,7 +134,7 @@ export function BookingPageSettings({ initialSettings }: Props) {
                 href={bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-brand-600 hover:text-brand-400 underline"
+                className="text-xs text-brand-500 hover:text-brand-400 underline"
               >
                 Preview booking page
               </a>

@@ -138,7 +138,7 @@ export function TipLogPanel({ eventId, initialTips }: Props) {
       ) : (
         <button
           onClick={() => setIsAdding(true)}
-          className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-400 font-medium transition-colors"
+          className="flex items-center gap-1.5 text-sm text-brand-500 hover:text-brand-400 font-medium transition-colors"
         >
           <Plus className="h-4 w-4" />
           Record tip

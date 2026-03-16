@@ -7,6 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { getEventFinancialSummaryFull } from '@/lib/events/financial-summary-actions'
 import { FoodCostVariance } from '@/components/inventory/food-cost-variance'
+import { VarianceAlertSettings } from '@/components/inventory/variance-alert-settings'
 
 export const metadata: Metadata = { title: 'Food Cost Analysis - ChefFlow' }
 
@@ -78,6 +79,9 @@ export default async function FoodCostAnalysisPage() {
       ) : (
         <FoodCostVariance events={varianceEvents} />
       )}
+
+      {/* Variance alert configuration */}
+      <VarianceAlertSettings />
     </div>
   )
 }

@@ -47,7 +47,7 @@ export function QuoteVersionHistory({ currentQuoteId, versions, isSuperseded }: 
           <button
             onClick={handleRevise}
             disabled={isPending}
-            className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 disabled:opacity-50"
+            className="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-400 disabled:opacity-50"
           >
             <Plus className="h-3 w-3" />
             {isPending ? 'Creating revision...' : 'Create revision'}
@@ -99,7 +99,7 @@ export function QuoteVersionHistory({ currentQuoteId, versions, isSuperseded }: 
         <button
           onClick={handleRevise}
           disabled={isPending}
-          className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 disabled:opacity-50 mt-1"
+          className="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-400 disabled:opacity-50 mt-1"
         >
           <Plus className="h-3 w-3" />
           {isPending ? 'Creating revision...' : 'Create new revision'}

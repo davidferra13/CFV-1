@@ -14,7 +14,7 @@ export function QuoteAcceptanceInsightsPanel({ data }: QuoteAcceptanceInsightsPa
     <Card className="p-5">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-sm font-semibold text-stone-100">Quote Performance (Last 90 Days)</h3>
-        <Link href="/quotes" className="text-xs text-brand-600 hover:text-brand-400 font-medium">
+        <Link href="/quotes" className="text-xs text-brand-500 hover:text-brand-400 font-medium">
           All Quotes →
         </Link>
       </div>

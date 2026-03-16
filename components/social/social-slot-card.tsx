@@ -65,7 +65,7 @@ export function SocialSlotCard({ post }: Props) {
         <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
         <Link
           href={`/social/posts/${post.id}`}
-          className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 font-medium"
+          className="flex items-center gap-1 text-xs text-brand-500 hover:text-brand-400 font-medium"
         >
           <Pencil className="w-3 h-3" />
           Edit

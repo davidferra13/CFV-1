@@ -301,7 +301,7 @@ export function AgendaView({
                           <div className="mt-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Link
                               href={`/events/${props.eventId}`}
-                              className="text-xs font-medium text-brand-600 hover:text-brand-400"
+                              className="text-xs font-medium text-brand-500 hover:text-brand-400"
                               onClick={(e) => e.stopPropagation()}
                             >
                               View details →

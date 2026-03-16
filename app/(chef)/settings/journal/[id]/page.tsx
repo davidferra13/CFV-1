@@ -48,11 +48,11 @@ export default async function JournalDetailPage({
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
         <div className="flex items-center gap-2 text-sm">
-          <Link href="/settings" className="text-brand-600 hover:text-brand-400">
+          <Link href="/settings" className="text-brand-500 hover:text-brand-400">
             Settings
           </Link>
           <span className="text-stone-400">/</span>
-          <Link href="/settings/journal" className="text-brand-600 hover:text-brand-400">
+          <Link href="/settings/journal" className="text-brand-500 hover:text-brand-400">
             Chef Journal
           </Link>
           <span className="text-stone-400">/</span>

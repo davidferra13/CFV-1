@@ -98,7 +98,7 @@ export function PortalLinkManager({
         <button
           onClick={handleGenerate}
           disabled={loading}
-          className="text-xs font-medium text-brand-600 hover:text-brand-400 disabled:opacity-50"
+          className="text-xs font-medium text-brand-500 hover:text-brand-400 disabled:opacity-50"
         >
           {loading ? 'Generating…' : 'Generate portal link'}
         </button>
@@ -176,7 +176,7 @@ export function PortalLinkManager({
             <button
               onClick={handleGenerate}
               disabled={loading}
-              className="text-xs font-medium text-brand-600 hover:text-brand-400 disabled:opacity-50"
+              className="text-xs font-medium text-brand-500 hover:text-brand-400 disabled:opacity-50"
             >
               Generate new portal link
             </button>

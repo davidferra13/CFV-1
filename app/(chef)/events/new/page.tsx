@@ -23,7 +23,7 @@ export default async function NewEventPage() {
           Prefer a shortcut?{' '}
           <a
             href="/events/new/from-text"
-            className="text-brand-600 hover:text-brand-400 font-medium"
+            className="text-brand-500 hover:text-brand-400 font-medium"
           >
             Just describe it &rarr;
           </a>

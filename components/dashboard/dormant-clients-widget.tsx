@@ -27,7 +27,7 @@ export function DormantClientsWidget({ clients }: Props) {
           <CardTitle>Dormant Clients</CardTitle>
           <Link
             href="/clients"
-            className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
+            className="inline-flex items-center gap-1 text-sm text-brand-500 hover:text-brand-400"
           >
             All Clients <ArrowRight className="h-3.5 w-3.5" />
           </Link>

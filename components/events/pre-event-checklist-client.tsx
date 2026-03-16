@@ -177,7 +177,7 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
       <div className="mb-6">
         <Link
           href={`/my-events/${event.id}`}
-          className="text-brand-600 hover:text-brand-400 flex items-center gap-2 mb-4 text-sm"
+          className="text-brand-500 hover:text-brand-400 flex items-center gap-2 mb-4 text-sm"
         >
           <ChevronRight className="w-4 h-4 rotate-180" />
           Back to Event
@@ -232,7 +232,7 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
             <CardTitle className="text-base">Your Dietary Preferences</CardTitle>
             <Link
               href="/my-profile"
-              className="text-xs text-brand-600 hover:text-brand-400 font-medium"
+              className="text-xs text-brand-500 hover:text-brand-400 font-medium"
             >
               Update Profile →
             </Link>
@@ -272,7 +272,7 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
             <CardTitle className="text-base">Kitchen & Access</CardTitle>
             <Link
               href="/my-profile"
-              className="text-xs text-brand-600 hover:text-brand-400 font-medium"
+              className="text-xs text-brand-500 hover:text-brand-400 font-medium"
             >
               Update Profile →
             </Link>
@@ -304,7 +304,7 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
               <CardTitle className="text-base">Special Requests</CardTitle>
               <Link
                 href="/my-chat"
-                className="text-xs text-brand-600 hover:text-brand-400 font-medium"
+                className="text-xs text-brand-500 hover:text-brand-400 font-medium"
               >
                 Message Chef to Update →
               </Link>

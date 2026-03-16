@@ -87,7 +87,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
         {!showUpload && (
           <button
             onClick={() => setShowUpload(true)}
-            className="text-sm font-medium text-brand-600 hover:text-brand-400"
+            className="text-sm font-medium text-brand-500 hover:text-brand-400"
           >
             Share a photo
           </button>
@@ -169,7 +169,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
           {!showUpload && (
             <button
               onClick={() => setShowUpload(true)}
-              className="mt-2 text-sm font-medium text-brand-600 hover:text-brand-400"
+              className="mt-2 text-sm font-medium text-brand-500 hover:text-brand-400"
             >
               Upload a photo
             </button>

@@ -239,7 +239,7 @@ function FileContent({ message }: { message: ChatMessage }) {
             target="_blank"
             rel="noopener noreferrer"
             download={message.attachment_filename || undefined}
-            className="flex-shrink-0 p-2 text-brand-600 hover:text-brand-400 hover:bg-brand-950 rounded-lg transition-colors"
+            className="flex-shrink-0 p-2 text-brand-500 hover:text-brand-400 hover:bg-brand-950 rounded-lg transition-colors"
             title="Download file"
           >
             <Download className="w-4 h-4" />

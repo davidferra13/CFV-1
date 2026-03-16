@@ -38,7 +38,7 @@ export default async function ChooseMenuPage({ params }: { params: { id: string 
       <div className="mb-6">
         <Link
           href={`/my-events/${params.id}`}
-          className="text-brand-600 hover:text-brand-400 flex items-center gap-2 text-sm"
+          className="text-brand-500 hover:text-brand-400 flex items-center gap-2 text-sm"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

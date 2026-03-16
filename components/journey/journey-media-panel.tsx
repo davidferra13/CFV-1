@@ -562,7 +562,7 @@ export function JourneyMediaPanel({
                 href={item.media_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex text-xs text-brand-600 hover:text-brand-400"
+                className="inline-flex text-xs text-brand-500 hover:text-brand-400"
               >
                 View original source
               </a>

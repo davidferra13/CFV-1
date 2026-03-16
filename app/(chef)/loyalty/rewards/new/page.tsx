@@ -14,7 +14,7 @@ export default async function NewRewardPage() {
       <div>
         <Link
           href="/loyalty"
-          className="text-sm text-brand-600 hover:text-brand-400 mb-2 inline-block"
+          className="text-sm text-brand-500 hover:text-brand-400 mb-2 inline-block"
         >
           ← Back to Loyalty
         </Link>

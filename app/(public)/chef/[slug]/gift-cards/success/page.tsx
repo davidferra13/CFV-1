@@ -79,7 +79,7 @@ export default async function GiftCardSuccessPage({
           <div>
             <Link
               href={`/chef/${params.slug}/gift-cards`}
-              className="text-sm text-brand-600 hover:text-brand-400"
+              className="text-sm text-brand-500 hover:text-brand-400"
             >
               Buy another gift card
             </Link>

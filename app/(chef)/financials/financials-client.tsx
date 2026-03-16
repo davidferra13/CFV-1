@@ -401,7 +401,7 @@ export function FinancialsClient({
                             <p className="text-sm text-stone-300 mt-1">{rec.description}</p>
                             <Link
                               href={rec.href}
-                              className="text-sm text-brand-600 hover:text-brand-400 mt-2 inline-block"
+                              className="text-sm text-brand-500 hover:text-brand-400 mt-2 inline-block"
                             >
                               Open <span aria-hidden="true">&rarr;</span>
                             </Link>

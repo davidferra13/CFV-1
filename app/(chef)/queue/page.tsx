@@ -25,7 +25,7 @@ export default async function QueuePage() {
         </div>
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-400 font-medium"
+          className="inline-flex items-center gap-1.5 text-sm text-brand-500 hover:text-brand-400 font-medium"
         >
           <ArrowLeft className="h-4 w-4" /> Dashboard
         </Link>

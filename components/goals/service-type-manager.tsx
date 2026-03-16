@@ -399,7 +399,7 @@ export function ServiceTypeManager({
         {serviceTypes.length > 0 && (
           <button
             onClick={onGoToCalculator}
-            className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-400"
+            className="inline-flex items-center gap-1 text-sm font-medium text-brand-500 hover:text-brand-400"
           >
             Build my path
             <ArrowRight className="h-4 w-4" />

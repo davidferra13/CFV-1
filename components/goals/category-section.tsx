@@ -76,7 +76,7 @@ export function CategorySection({ category, goals, id, onCheckIn }: CategorySect
               <p className="text-sm text-stone-500">No {meta.label.toLowerCase()} goals yet.</p>
               <Link
                 href={`/goals/setup?category=${category}`}
-                className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-400"
+                className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-brand-500 hover:text-brand-400"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Add your first {meta.label.toLowerCase()} goal

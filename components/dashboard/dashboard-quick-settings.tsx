@@ -114,7 +114,7 @@ export function DashboardQuickSettings({
           <div className="mt-4 flex items-center justify-between gap-2 border-t border-stone-700 pt-3">
             <Link
               href="/settings/dashboard"
-              className="text-xs text-brand-600 hover:text-brand-400"
+              className="text-xs text-brand-500 hover:text-brand-400"
             >
               Full settings
             </Link>

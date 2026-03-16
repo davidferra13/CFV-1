@@ -96,7 +96,7 @@ export default async function VendorInvoicesPage() {
                 </div>
                 <Link
                   href={`/inventory/vendor-invoices/${invoice.id}`}
-                  className="text-sm text-brand-600 hover:text-brand-400 font-medium shrink-0 ml-4"
+                  className="text-sm text-brand-500 hover:text-brand-400 font-medium shrink-0 ml-4"
                 >
                   View &rarr;
                 </Link>

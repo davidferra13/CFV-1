@@ -197,7 +197,7 @@ export function RSVPForm({
         </p>
         <button
           onClick={() => setSubmitted(false)}
-          className="text-brand-600 hover:text-brand-400 font-medium text-sm"
+          className="text-brand-500 hover:text-brand-400 font-medium text-sm"
         >
           Update my response
         </button>
@@ -206,7 +206,7 @@ export function RSVPForm({
           <div className="mt-3">
             <a
               href={guestPortalHref}
-              className="text-brand-600 hover:text-brand-400 text-sm underline"
+              className="text-brand-500 hover:text-brand-400 text-sm underline"
             >
               Open my guest portal
             </a>

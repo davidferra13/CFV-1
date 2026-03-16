@@ -11,7 +11,7 @@ export default async function MenuTemplateSettingsPage() {
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2">
-          <Link href="/settings" className="text-sm text-brand-600 hover:text-brand-400">
+          <Link href="/settings" className="text-sm text-brand-500 hover:text-brand-400">
             Settings
           </Link>
           <span className="text-stone-400">/</span>

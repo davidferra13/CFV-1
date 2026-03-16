@@ -127,7 +127,7 @@ export default async function GuestAnalyticsPage() {
       <div className="flex gap-3">
         <Link
           href="/guest-leads"
-          className="text-sm text-brand-600 hover:text-brand-400 font-medium"
+          className="text-sm text-brand-500 hover:text-brand-400 font-medium"
         >
           Guest Pipeline
         </Link>

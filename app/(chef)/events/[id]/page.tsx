@@ -565,7 +565,7 @@ export default async function EventDetailPage({
                 <h3 className="text-sm font-semibold text-stone-300">Preparation Progress</h3>
                 <Link
                   href={`/events/${event.id}/schedule`}
-                  className="text-xs text-brand-600 hover:text-brand-400"
+                  className="text-xs text-brand-500 hover:text-brand-400"
                 >
                   View full schedule &rarr;
                 </Link>
@@ -585,7 +585,7 @@ export default async function EventDetailPage({
                 <h3 className="text-sm font-semibold text-stone-300">Packing</h3>
                 <Link
                   href={`/events/${event.id}/pack`}
-                  className="text-xs text-brand-600 hover:text-brand-400"
+                  className="text-xs text-brand-500 hover:text-brand-400"
                 >
                   Open checklist &rarr;
                 </Link>

@@ -227,7 +227,7 @@ function ClientSignUpForm() {
                 Already have an account?{' '}
                 <Link
                   href="/auth/signin"
-                  className="text-brand-600 hover:text-brand-400 font-medium"
+                  className="text-brand-500 hover:text-brand-400 font-medium"
                 >
                   Sign in
                 </Link>

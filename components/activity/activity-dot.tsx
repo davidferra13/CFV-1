@@ -83,7 +83,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
             <Link
               href="/activity"
               onClick={() => setOpen(false)}
-              className="text-[10px] font-medium text-brand-600 hover:text-brand-400"
+              className="text-[10px] font-medium text-brand-500 hover:text-brand-400"
             >
               View all
             </Link>

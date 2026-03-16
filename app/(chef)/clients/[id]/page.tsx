@@ -180,7 +180,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         <div>
           <Link
             href="/clients"
-            className="text-sm text-brand-600 hover:text-brand-400 mb-2 inline-block"
+            className="text-sm text-brand-500 hover:text-brand-400 mb-2 inline-block"
           >
             ← Back to Clients
           </Link>

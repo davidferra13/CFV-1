@@ -119,7 +119,7 @@ export function TipRequestButton({ eventId, clientName, existingRequest }: Props
       <button
         onClick={handleCreate}
         disabled={isPending}
-        className="flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-400 transition-colors disabled:opacity-50"
+        className="flex items-center gap-1.5 text-sm font-medium text-brand-500 hover:text-brand-400 transition-colors disabled:opacity-50"
       >
         <HandCoins className="h-4 w-4" />
         {isPending ? 'Creating...' : 'Request Tip'}

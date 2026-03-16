@@ -65,7 +65,7 @@ export function ChefJournalWidget({ insights, latestJourney }: ChefJournalWidget
           </CardTitle>
           <Link
             href="/settings/journal"
-            className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
+            className="inline-flex items-center gap-1 text-sm text-brand-500 hover:text-brand-400"
           >
             Open Journal
             <ArrowRight className="h-3.5 w-3.5" />
@@ -131,7 +131,7 @@ export function ChefJournalWidget({ insights, latestJourney }: ChefJournalWidget
               <p className="text-sm font-semibold text-stone-100 truncate">{latestJourney.title}</p>
               <Link
                 href={`/settings/journal/${latestJourney.id}`}
-                className="text-xs text-brand-600 hover:text-brand-400"
+                className="text-xs text-brand-500 hover:text-brand-400"
               >
                 Open
               </Link>
@@ -159,7 +159,7 @@ export function ChefJournalWidget({ insights, latestJourney }: ChefJournalWidget
             </p>
             <Link
               href="/settings/journal"
-              className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400 mt-2"
+              className="inline-flex items-center gap-1 text-sm text-brand-500 hover:text-brand-400 mt-2"
             >
               Create Journal
               <ArrowRight className="h-3.5 w-3.5" />

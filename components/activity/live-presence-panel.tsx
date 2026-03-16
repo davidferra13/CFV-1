@@ -178,7 +178,7 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
           )}
           <Link
             href="/clients/presence"
-            className="text-xs text-brand-600 hover:text-brand-400 font-medium"
+            className="text-xs text-brand-500 hover:text-brand-400 font-medium"
           >
             View all →
           </Link>

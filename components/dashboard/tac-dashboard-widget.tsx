@@ -71,7 +71,7 @@ export async function TacDashboardWidget() {
             </div>
             <Link
               href="/settings/integrations"
-              className="text-xs font-medium text-brand-600 hover:text-brand-400 whitespace-nowrap"
+              className="text-xs font-medium text-brand-500 hover:text-brand-400 whitespace-nowrap"
             >
               Connect Gmail
             </Link>
@@ -134,7 +134,7 @@ export async function TacDashboardWidget() {
                           href={lead.externalLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-brand-600 hover:text-brand-400"
+                          className="text-xs text-brand-500 hover:text-brand-400"
                         >
                           TakeAChef
                         </a>
@@ -177,7 +177,7 @@ export async function TacDashboardWidget() {
                         href={lead.externalLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-brand-600 hover:text-brand-400"
+                        className="text-xs text-brand-500 hover:text-brand-400"
                       >
                         TakeAChef
                       </a>
@@ -244,7 +244,7 @@ export async function TacDashboardWidget() {
         <div className="flex items-center gap-3">
           <Link
             href="/marketplace"
-            className="text-xs text-brand-600 hover:text-brand-400 font-medium"
+            className="text-xs text-brand-500 hover:text-brand-400 font-medium"
           >
             Open marketplace command center
           </Link>

@@ -79,7 +79,7 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
       <div className="mb-6">
         <Link
           href={`/my-events/${event.id}`}
-          className="text-brand-600 hover:text-brand-400 flex items-center gap-2 text-sm"
+          className="text-brand-500 hover:text-brand-400 flex items-center gap-2 text-sm"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -367,7 +367,7 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
           <p className="font-medium">Event completed</p>
           <p className="text-sm mt-1">
             Thank you for choosing a private chef experience.{' '}
-            <Link href={`/my-events/${event.id}#review`} className="underline text-brand-600">
+            <Link href={`/my-events/${event.id}#review`} className="underline text-brand-500">
               Leave a review
             </Link>
           </p>

@@ -238,7 +238,7 @@ export function DOPTaskPanel({ digest, weatherByEventId }: Props) {
                 {tasks.length > 5 && (
                   <Link
                     href={first.scheduleHref}
-                    className="text-xs text-brand-600 hover:text-brand-400 pl-2 block pt-1"
+                    className="text-xs text-brand-500 hover:text-brand-400 pl-2 block pt-1"
                   >
                     +{tasks.length - 5} more → Full schedule
                   </Link>
@@ -252,7 +252,7 @@ export function DOPTaskPanel({ digest, weatherByEventId }: Props) {
         {groups.size > 3 && (
           <Link
             href="/calendar"
-            className="block text-center text-sm text-brand-600 hover:text-brand-400 pt-2 border-t border-stone-800"
+            className="block text-center text-sm text-brand-500 hover:text-brand-400 pt-2 border-t border-stone-800"
           >
             View all events →
           </Link>

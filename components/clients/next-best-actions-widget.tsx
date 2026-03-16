@@ -45,7 +45,7 @@ export function NextBestActionsWidget({ actions }: Props) {
           <CardTitle>Client Actions</CardTitle>
           <Link
             href="/clients"
-            className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
+            className="inline-flex items-center gap-1 text-sm text-brand-500 hover:text-brand-400"
           >
             All Clients <ArrowRight className="h-3.5 w-3.5" />
           </Link>

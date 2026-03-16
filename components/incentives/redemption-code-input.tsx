@@ -117,7 +117,7 @@ export function RedemptionCodeInput({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="text-sm text-brand-600 hover:text-brand-400 font-medium"
+          className="text-sm text-brand-500 hover:text-brand-400 font-medium"
         >
           Have a gift card or voucher code?
         </button>

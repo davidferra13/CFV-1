@@ -123,7 +123,7 @@ export default async function MarketplacePage() {
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-400"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-500 hover:text-brand-400"
             >
               <ArrowLeft className="h-4 w-4" />
               Dashboard

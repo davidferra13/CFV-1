@@ -171,7 +171,7 @@ export function ClientTimeline({ clientId, initialItems, totalCount }: ClientTim
           <button
             type="button"
             onClick={() => setShowNoteForm(!showNoteForm)}
-            className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-400 transition-colors"
+            className="flex items-center gap-1 text-xs font-medium text-brand-500 hover:text-brand-400 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Add Note

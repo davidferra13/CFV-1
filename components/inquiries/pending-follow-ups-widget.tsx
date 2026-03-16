@@ -24,7 +24,7 @@ export function PendingFollowUpsWidget({ followUps }: PendingFollowUpsWidgetProp
           </CardTitle>
           <Link
             href="/inquiries?status=awaiting_client"
-            className="text-xs text-brand-600 hover:text-brand-400"
+            className="text-xs text-brand-500 hover:text-brand-400"
           >
             View all
           </Link>

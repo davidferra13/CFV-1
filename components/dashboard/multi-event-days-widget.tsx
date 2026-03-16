@@ -30,7 +30,7 @@ export function MultiEventDaysWidget({ days }: Props) {
           <CardTitle>Multi-Event Days</CardTitle>
           <Link
             href="/calendar/week"
-            className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
+            className="inline-flex items-center gap-1 text-sm text-brand-500 hover:text-brand-400"
           >
             Calendar <ArrowRight className="h-3.5 w-3.5" />
           </Link>

@@ -246,7 +246,7 @@ export function ModulesClient({
                       {isLocked && (
                         <Link
                           href="/settings/billing"
-                          className="text-xs text-brand-600 hover:text-brand-400 dark:text-brand-400 mt-1 inline-block"
+                          className="text-xs text-brand-500 hover:text-brand-400 dark:text-brand-400 mt-1 inline-block"
                         >
                           Upgrade to unlock
                         </Link>

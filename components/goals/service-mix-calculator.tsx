@@ -306,7 +306,7 @@ export function ServiceMixCalculator({
                 <button
                   onClick={handleAutoSuggest}
                   disabled={autoSuggestPending}
-                  className="font-medium text-brand-600 hover:text-brand-400 underline"
+                  className="font-medium text-brand-500 hover:text-brand-400 underline"
                 >
                   Auto-suggest mix
                 </button>{' '}

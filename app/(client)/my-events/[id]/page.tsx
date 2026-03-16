@@ -121,7 +121,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
       <div className="mb-6">
         <Link
           href="/my-events"
-          className="text-brand-600 hover:text-brand-400 flex items-center gap-2"
+          className="text-brand-500 hover:text-brand-400 flex items-center gap-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -332,7 +332,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
               href={`/api/documents/receipt/${event.id}`}
               documentType="receipt"
               entityId={event.id}
-              className="text-sm font-medium text-brand-600 hover:text-brand-400"
+              className="text-sm font-medium text-brand-500 hover:text-brand-400"
             >
               Download Receipt
             </TrackedDownloadLink>

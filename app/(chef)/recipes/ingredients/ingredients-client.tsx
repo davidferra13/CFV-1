@@ -270,9 +270,16 @@ export function IngredientsClient({ ingredients }: Props) {
                           {ing.usage_count} recipe{ing.usage_count !== 1 ? 's' : ''}
                         </TableCell>
                         <TableCell>
-                          <Button size="sm" variant="ghost" onClick={() => startEdit(ing)}>
-                            Edit
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="ghost" onClick={() => startEdit(ing)}>
+                              Edit
+                            </Button>
+                            <Link href={`/inventory/ingredients/${ing.id}`}>
+                              <Button size="sm" variant="ghost">
+                                Prices
+                              </Button>
+                            </Link>
+                          </div>
                         </TableCell>
                       </>
                     )}

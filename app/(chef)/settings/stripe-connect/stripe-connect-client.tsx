@@ -132,7 +132,7 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
             href="https://dashboard.stripe.com/login"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-400"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-500 hover:text-brand-400"
           >
             Open Stripe Dashboard →
           </a>

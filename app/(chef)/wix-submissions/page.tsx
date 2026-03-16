@@ -84,7 +84,7 @@ export default async function WixSubmissionsPage() {
                   {submission.inquiry_id ? (
                     <Link
                       href={`/inquiries/${submission.inquiry_id}`}
-                      className="text-brand-600 hover:text-brand-400"
+                      className="text-brand-500 hover:text-brand-400"
                     >
                       View inquiry
                     </Link>
@@ -95,7 +95,7 @@ export default async function WixSubmissionsPage() {
                 <td className="px-4 py-3 text-right">
                   <Link
                     href={`/wix-submissions/${submission.id}`}
-                    className="text-brand-600 hover:text-brand-400"
+                    className="text-brand-500 hover:text-brand-400"
                   >
                     Details
                   </Link>

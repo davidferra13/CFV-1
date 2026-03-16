@@ -250,7 +250,7 @@ export default function ContactPage() {
                         <h4 className="font-semibold text-stone-100 mb-1">Email</h4>
                         <a
                           href="mailto:support@cheflowhq.com"
-                          className="text-brand-600 hover:text-brand-400"
+                          className="text-brand-500 hover:text-brand-400"
                         >
                           support@cheflowhq.com
                         </a>

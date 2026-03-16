@@ -97,7 +97,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="text-sm font-medium text-brand-600 hover:text-brand-400"
+            className="text-sm font-medium text-brand-500 hover:text-brand-400"
           >
             {posted ? 'Post another' : 'Share your excitement'}
           </button>
@@ -184,7 +184,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-2 text-sm font-medium text-brand-600 hover:text-brand-400"
+              className="mt-2 text-sm font-medium text-brand-500 hover:text-brand-400"
             >
               Post a message
             </button>

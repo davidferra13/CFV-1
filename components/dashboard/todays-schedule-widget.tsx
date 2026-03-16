@@ -76,7 +76,7 @@ export function TodaysScheduleWidget({ schedule, weather }: TodaysScheduleWidget
           </div>
           <Link
             href={`/events/${event.id}/schedule`}
-            className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
+            className="inline-flex items-center gap-1 text-sm text-brand-500 hover:text-brand-400"
           >
             Full Schedule <ArrowRight className="h-3.5 w-3.5" />
           </Link>

@@ -62,7 +62,7 @@ export default async function ClientQuotesPage() {
                     <p className="text-xl font-bold text-stone-100">
                       {formatCurrency(quote.total_quoted_cents)}
                     </p>
-                    <p className="text-sm text-brand-600 font-medium">Review &rarr;</p>
+                    <p className="text-sm text-brand-500 font-medium">Review &rarr;</p>
                   </div>
                 </div>
               </Card>

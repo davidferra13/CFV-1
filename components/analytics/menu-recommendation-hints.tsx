@@ -20,7 +20,7 @@ export function MenuRecommendationHints({ result }: MenuRecommendationHintsProps
     <Card className="p-5">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-sm font-semibold text-stone-100">Recipe Suggestions</h3>
-        <Link href="/recipes" className="text-xs text-brand-600 hover:text-brand-400 font-medium">
+        <Link href="/recipes" className="text-xs text-brand-500 hover:text-brand-400 font-medium">
           Recipe Book →
         </Link>
       </div>

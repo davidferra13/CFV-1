@@ -65,7 +65,7 @@ export function WeeklyScheduleView({ initialSchedule }: { initialSchedule: WeekS
           {weekOffset !== 0 && (
             <button
               onClick={() => navigateWeek(-weekOffset)}
-              className="text-sm text-brand-600 hover:text-brand-400"
+              className="text-sm text-brand-500 hover:text-brand-400"
             >
               Back to this week
             </button>

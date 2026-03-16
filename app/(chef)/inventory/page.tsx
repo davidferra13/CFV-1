@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getParAlerts } from '@/lib/inventory/count-actions'
 import { ParAlertPanel } from '@/components/inventory/par-alert-panel'
+import { AutoReorderPanel } from '@/components/inventory/auto-reorder-panel'
 import { Card } from '@/components/ui/card'
 
 export const metadata: Metadata = { title: 'Inventory - ChefFlow' }
@@ -91,6 +92,7 @@ const ICON_MAP: Record<string, string> = {
   ledger: '\uD83D\uDCD2',
   location: '\uD83D\uDCCD',
   truck: '\uD83D\uDE9A',
+  pricetrend: '\uD83D\uDCC9',
   audit: '\uD83D\uDD0D',
   clipboard: '\uD83D\uDCCB',
   trash: '\uD83D\uDDD1\uFE0F',
@@ -119,6 +121,9 @@ export default async function InventoryPage() {
 
       {/* Par Alerts - shown prominently when items are below par */}
       {(parAlerts as any[]).length > 0 && <ParAlertPanel alerts={parAlerts as any[]} />}
+
+      {/* Auto-reorder from par shortfalls */}
+      {(parAlerts as any[]).length > 0 && <AutoReorderPanel />}
 
       {/* Sub-page navigation */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

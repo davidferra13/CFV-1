@@ -32,7 +32,7 @@ export default async function ReviewsPage() {
         <div className="flex items-center gap-3">
           <LogFeedbackButton />
           <ImportPlatformReview />
-          <Link href="/settings" className="text-sm text-brand-600 hover:text-brand-400">
+          <Link href="/settings" className="text-sm text-brand-500 hover:text-brand-400">
             Configure Google Review Link
           </Link>
         </div>

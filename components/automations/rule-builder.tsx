@@ -278,7 +278,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
         {!isEditing && (
           <button
             onClick={() => setShowQuickStart(!showQuickStart)}
-            className="text-xs text-brand-600 hover:text-brand-400"
+            className="text-xs text-brand-500 hover:text-brand-400"
           >
             {showQuickStart ? 'Build from scratch ↓' : '⚡ Quick-start templates'}
           </button>
@@ -375,7 +375,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
             <button
               type="button"
               onClick={addCondition}
-              className="text-xs text-brand-600 hover:text-brand-400"
+              className="text-xs text-brand-500 hover:text-brand-400"
             >
               + Add condition
             </button>

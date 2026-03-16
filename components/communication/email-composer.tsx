@@ -77,7 +77,7 @@ export function EmailComposer({
           <div className="relative">
             <button
               onClick={() => setShowTemplates(!showTemplates)}
-              className="text-xs text-brand-600 hover:text-brand-400 flex items-center gap-1"
+              className="text-xs text-brand-500 hover:text-brand-400 flex items-center gap-1"
             >
               Templates
               <ChevronDown className="h-3 w-3" />

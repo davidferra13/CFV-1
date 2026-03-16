@@ -52,7 +52,7 @@ export function CoolingAlertWidget({ coolingClients }: CoolingAlertWidgetProps) 
 
                 <Link
                   href={`/clients/${client.clientId}?tab=messages`}
-                  className="flex-shrink-0 text-xs font-medium text-brand-600 hover:text-brand-400 underline underline-offset-2"
+                  className="flex-shrink-0 text-xs font-medium text-brand-500 hover:text-brand-400 underline underline-offset-2"
                 >
                   {client.suggestedAction}
                 </Link>

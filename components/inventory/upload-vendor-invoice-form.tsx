@@ -133,7 +133,7 @@ export function UploadVendorInvoiceForm() {
             <button
               type="button"
               onClick={addItem}
-              className="text-xs text-brand-600 hover:text-brand-400 font-medium"
+              className="text-xs text-brand-500 hover:text-brand-400 font-medium"
             >
               + Add Line
             </button>

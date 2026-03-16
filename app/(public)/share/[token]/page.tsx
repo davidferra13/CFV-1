@@ -342,7 +342,7 @@ export default async function SharePage({ params }: { params: { token: string } 
           </p>
           <a
             href={`/auth/client-signup${existingGuest ? `?guest_token=${existingGuest.guest_token}` : ''}`}
-            className="text-brand-600 hover:text-brand-400 font-medium text-sm"
+            className="text-brand-500 hover:text-brand-400 font-medium text-sm"
           >
             Create a free account
           </a>

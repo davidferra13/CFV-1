@@ -92,7 +92,7 @@ export function ChatSidebar({
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-stone-800">
         <Link
           href={`/clients/${clientId}`}
-          className="flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-400 truncate"
+          className="flex items-center gap-1.5 text-sm font-medium text-brand-500 hover:text-brand-400 truncate"
         >
           <User className="w-3.5 h-3.5 flex-shrink-0" />
           {clientName}

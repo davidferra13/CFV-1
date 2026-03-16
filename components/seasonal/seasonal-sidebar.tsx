@@ -34,7 +34,7 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
             </h3>
             <Link
               href={`/settings/repertoire/${palette.id}`}
-              className="text-xs text-brand-600 hover:text-brand-400"
+              className="text-xs text-brand-500 hover:text-brand-400"
             >
               Edit
             </Link>
@@ -46,7 +46,7 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
               No notes yet.{' '}
               <Link
                 href={`/settings/repertoire/${palette.id}`}
-                className="text-brand-600 hover:text-brand-400"
+                className="text-brand-500 hover:text-brand-400"
               >
                 Add notes
               </Link>

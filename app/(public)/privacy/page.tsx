@@ -106,7 +106,7 @@ export default function PrivacyPage() {
                 href="https://stripe.com/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-600 hover:underline"
+                className="text-brand-500 hover:underline"
               >
                 Stripe&apos;s Privacy Policy
               </a>
@@ -167,7 +167,7 @@ export default function PrivacyPage() {
           </ul>
           <p className="mt-4 leading-relaxed">
             To exercise any of these rights, email us at{' '}
-            <a href="mailto:privacy@cheflowhq.com" className="text-brand-600 hover:underline">
+            <a href="mailto:privacy@cheflowhq.com" className="text-brand-500 hover:underline">
               privacy@cheflowhq.com
             </a>
             . We will respond within 30 days. We may need to verify your identity before fulfilling
@@ -194,7 +194,7 @@ export default function PrivacyPage() {
             hashed passwords, row-level security on our database, and access controls that limit
             data access to authorized users. No method of transmission or storage is 100% secure. If
             you become aware of a security issue, please contact us immediately at{' '}
-            <a href="mailto:security@cheflowhq.com" className="text-brand-600 hover:underline">
+            <a href="mailto:security@cheflowhq.com" className="text-brand-500 hover:underline">
               security@cheflowhq.com
             </a>
             .
@@ -230,7 +230,7 @@ export default function PrivacyPage() {
           <address className="mt-4 not-italic leading-relaxed">
             <strong>ChefFlow</strong>
             <br />
-            <a href="mailto:privacy@cheflowhq.com" className="text-brand-600 hover:underline">
+            <a href="mailto:privacy@cheflowhq.com" className="text-brand-500 hover:underline">
               privacy@cheflowhq.com
             </a>
           </address>

@@ -214,7 +214,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={handleMarkAllRead}
-            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 font-medium"
+            className="flex items-center gap-1 text-xs text-brand-500 hover:text-brand-400 font-medium"
           >
             <Check className="w-3 h-3" />
             Mark all read
@@ -288,7 +288,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
             onClose()
             router.push('/notifications')
           }}
-          className="w-full text-center text-xs text-brand-600 hover:text-brand-400 font-medium py-1"
+          className="w-full text-center text-xs text-brand-500 hover:text-brand-400 font-medium py-1"
         >
           View all notifications
         </button>

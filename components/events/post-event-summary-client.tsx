@@ -123,7 +123,7 @@ export function PostEventSummaryClient({
       <div className="mb-6">
         <Link
           href={`/my-events/${event.id}`}
-          className="text-brand-600 hover:text-brand-400 flex items-center gap-2 mb-4 text-sm"
+          className="text-brand-500 hover:text-brand-400 flex items-center gap-2 mb-4 text-sm"
         >
           <ChevronRight className="w-4 h-4 rotate-180" />
           Back to Event
@@ -215,7 +215,7 @@ export function PostEventSummaryClient({
               <Link
                 href={`/api/documents/foh-menu/${event.id}`}
                 target="_blank"
-                className="inline-flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-400 font-medium"
+                className="inline-flex items-center gap-1.5 text-sm text-brand-500 hover:text-brand-400 font-medium"
               >
                 <FileText className="w-4 h-4" />
                 Download Printable Menu
@@ -237,7 +237,7 @@ export function PostEventSummaryClient({
               <Link
                 href={`/api/documents/receipt/${event.id}`}
                 target="_blank"
-                className="text-xs text-brand-600 hover:text-brand-400 font-medium"
+                className="text-xs text-brand-500 hover:text-brand-400 font-medium"
               >
                 Download Receipt
               </Link>

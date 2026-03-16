@@ -396,7 +396,7 @@ export function NotificationListClient() {
           <button
             type="button"
             onClick={handleMarkAllRead}
-            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 font-medium"
+            className="flex items-center gap-1 text-xs text-brand-500 hover:text-brand-400 font-medium"
           >
             <Check className="w-3 h-3" />
             Mark all as read

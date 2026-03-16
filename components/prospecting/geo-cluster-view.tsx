@@ -198,7 +198,7 @@ export function GeoClusterView({ clusters }: GeoClusterViewProps) {
                             {prospect.phone && (
                               <a
                                 href={`tel:${prospect.phone}`}
-                                className="text-brand-600 hover:text-brand-400"
+                                className="text-brand-500 hover:text-brand-400"
                               >
                                 <Phone className="h-3.5 w-3.5" />
                               </a>
@@ -206,7 +206,7 @@ export function GeoClusterView({ clusters }: GeoClusterViewProps) {
                             {prospect.email && (
                               <a
                                 href={`mailto:${prospect.email}`}
-                                className="text-brand-600 hover:text-brand-400"
+                                className="text-brand-500 hover:text-brand-400"
                               >
                                 <Mail className="h-3.5 w-3.5" />
                               </a>

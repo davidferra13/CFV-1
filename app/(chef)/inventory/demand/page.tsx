@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getDemandForecast } from '@/lib/inventory/demand-forecast-actions'
 import { DemandClient } from './demand-client'
+import { AutoReorderPanel } from '@/components/inventory/auto-reorder-panel'
 
 export const metadata: Metadata = { title: 'Demand Forecast - ChefFlow' }
 
@@ -27,6 +28,9 @@ export default async function DemandPage() {
       </div>
 
       <DemandClient initialForecast={forecast as any[]} />
+
+      {/* Auto-reorder: generate draft POs from shortfalls */}
+      <AutoReorderPanel />
     </div>
   )
 }

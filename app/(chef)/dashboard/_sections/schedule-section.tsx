@@ -152,7 +152,7 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
                   </p>
                   {nextEvent && (
                     <Link href={`/events/${nextEvent.id}`} className="inline-block mt-3">
-                      <p className="text-sm text-brand-600 hover:text-brand-400 font-medium">
+                      <p className="text-sm text-brand-500 hover:text-brand-400 font-medium">
                         Next up: {nextEvent.occasion || 'Event'} -{' '}
                         {format(new Date(nextEvent.eventDate + 'T12:00:00'), 'EEEE, MMM d')}
                         <span className="text-stone-500 font-normal ml-1">

@@ -102,7 +102,7 @@ export function RowActions({ incentive }: { incentive: Incentive }) {
         {incentive.is_active && (
           <button
             onClick={() => setSendOpen(true)}
-            className="text-xs text-brand-600 hover:text-brand-400 font-medium"
+            className="text-xs text-brand-500 hover:text-brand-400 font-medium"
           >
             Send
           </button>

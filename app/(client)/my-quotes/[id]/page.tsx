@@ -125,7 +125,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
             <h2 className="text-xl font-semibold">Event Details</h2>
             <Link
               href={`/my-inquiries/${(quote.inquiry as any).id}`}
-              className="text-sm text-brand-600 hover:text-brand-400 font-medium"
+              className="text-sm text-brand-500 hover:text-brand-400 font-medium"
             >
               View Inquiry →
             </Link>

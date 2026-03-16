@@ -71,7 +71,7 @@ export function ChatHeader({
       {contextLabel && contextHref && (
         <Link
           href={contextHref}
-          className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 transition-colors"
+          className="flex items-center gap-1 text-xs text-brand-500 hover:text-brand-400 transition-colors"
         >
           <ExternalLink className="w-3.5 h-3.5" />
           {contextLabel}

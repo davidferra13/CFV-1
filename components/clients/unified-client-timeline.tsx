@@ -39,7 +39,7 @@ export function UnifiedClientTimeline({ items }: UnifiedClientTimelineProps) {
       {items.length > INITIAL_SHOW && !showAll && (
         <button
           onClick={() => setShowAll(true)}
-          className="mt-3 text-xs text-brand-600 hover:text-brand-400 font-medium"
+          className="mt-3 text-xs text-brand-500 hover:text-brand-400 font-medium"
         >
           Show {items.length - INITIAL_SHOW} more entries
         </button>

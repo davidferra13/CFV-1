@@ -23,7 +23,7 @@ export default async function NewEventFromTextPage() {
 
       <p className="text-sm text-stone-500">
         Prefer a structured form?{' '}
-        <Link href="/events/new" className="text-brand-600 hover:text-brand-400 font-medium">
+        <Link href="/events/new" className="text-brand-500 hover:text-brand-400 font-medium">
           Use the step-by-step form &rarr;
         </Link>
       </p>

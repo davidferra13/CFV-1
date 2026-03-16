@@ -104,7 +104,7 @@ function StaffLoginForm() {
 
               <p className="text-xs text-center text-stone-500">
                 This portal is for staff members only. If you are a chef, please use the{' '}
-                <a href="/auth/signin" className="text-brand-600 hover:text-brand-400">
+                <a href="/auth/signin" className="text-brand-500 hover:text-brand-400">
                   main sign in
                 </a>
                 .
