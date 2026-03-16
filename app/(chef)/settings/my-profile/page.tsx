@@ -9,7 +9,7 @@ import { ChefProfileForm } from './chef-profile-form'
 export const metadata: Metadata = { title: 'My Profile - ChefFlow' }
 
 export default async function ChefMyProfilePage() {
-  await requireChef()
+  const user = await requireChef()
   const profile = await getChefFullProfile()
 
   return (
@@ -28,7 +28,7 @@ export default async function ChefMyProfilePage() {
         </p>
       </div>
 
-      <ChefProfileForm profile={profile} />
+      <ChefProfileForm profile={profile} chefId={user.entityId} />
 
       {/* AI Chef Bio & Tagline Generator */}
       <ChefBioPanel />

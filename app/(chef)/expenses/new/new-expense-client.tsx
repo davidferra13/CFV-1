@@ -17,9 +17,10 @@ type Props = {
   events: EventOption[]
   defaultEventId?: string
   defaultMode?: 'manual' | 'scan'
+  chefId: string
 }
 
-export function NewExpenseClient({ events, defaultEventId, defaultMode }: Props) {
+export function NewExpenseClient({ events, defaultEventId, defaultMode, chefId }: Props) {
   const [mode, setMode] = useState<'form' | 'scan'>(defaultMode === 'scan' ? 'scan' : 'form')
 
   return (
@@ -35,7 +36,9 @@ export function NewExpenseClient({ events, defaultEventId, defaultMode }: Props)
       </div>
 
       {/* Content */}
-      {mode === 'form' && <ExpenseForm events={events} defaultEventId={defaultEventId} />}
+      {mode === 'form' && (
+        <ExpenseForm events={events} defaultEventId={defaultEventId} chefId={chefId} />
+      )}
 
       {mode === 'scan' && <ReceiptScanner events={events} defaultEventId={defaultEventId} />}
     </div>

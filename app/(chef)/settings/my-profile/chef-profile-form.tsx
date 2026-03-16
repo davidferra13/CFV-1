@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateChefFullProfile, uploadChefLogo } from '@/lib/chef/profile-actions'
 import { uploadChefProfileImage } from '@/lib/network/actions'
@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { Select } from '@/components/ui/select'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 
 type ChefProfile = {
   business_name: string
@@ -25,7 +27,7 @@ type ChefProfile = {
   preferred_inquiry_destination: 'website_only' | 'chefflow_only' | 'both'
 }
 
-export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
+export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; chefId: string }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -50,6 +52,69 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
   const [logoUrl, setLogoUrl] = useState(profile.logo_url || '')
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null)
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null)
+
+  const defaultData = useMemo(
+    () => ({
+      businessName: profile.business_name || '',
+      displayName: profile.display_name || '',
+      bio: profile.bio || '',
+      phone: profile.phone || '',
+      tagline: profile.tagline || '',
+      googleReviewUrl: profile.google_review_url || '',
+      websiteUrl: profile.website_url || '',
+      showWebsiteOnPublicProfile: profile.show_website_on_public_profile ?? true,
+      preferredInquiryDestination: (profile.preferred_inquiry_destination || 'both') as string,
+    }),
+    [profile]
+  )
+
+  const currentData = useMemo(
+    () => ({
+      businessName,
+      displayName,
+      bio,
+      phone,
+      tagline,
+      googleReviewUrl,
+      websiteUrl,
+      showWebsiteOnPublicProfile,
+      preferredInquiryDestination: preferredInquiryDestination as string,
+    }),
+    [
+      businessName,
+      displayName,
+      bio,
+      phone,
+      tagline,
+      googleReviewUrl,
+      websiteUrl,
+      showWebsiteOnPublicProfile,
+      preferredInquiryDestination,
+    ]
+  )
+
+  const protection = useProtectedForm({
+    surfaceId: 'chef-profile',
+    recordId: null,
+    tenantId: chefId,
+    defaultData,
+    currentData,
+    throttleMs: 10000,
+  })
+
+  const applyFormData = useCallback((d: typeof defaultData) => {
+    setBusinessName(d.businessName)
+    setDisplayName(d.displayName)
+    setBio(d.bio)
+    setPhone(d.phone)
+    setTagline(d.tagline)
+    setGoogleReviewUrl(d.googleReviewUrl)
+    setWebsiteUrl(d.websiteUrl)
+    setShowWebsiteOnPublicProfile(d.showWebsiteOnPublicProfile)
+    setPreferredInquiryDestination(
+      d.preferredInquiryDestination as 'website_only' | 'chefflow_only' | 'both'
+    )
+  }, [])
 
   useEffect(() => {
     if (!selectedImageFile) {
@@ -112,6 +177,7 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
           preferred_inquiry_destination: preferredInquiryDestination,
         })
         setSuccess(true)
+        protection.markCommitted()
         router.refresh()
       } catch (err: any) {
         setError(err?.message || 'Failed to update profile')
@@ -120,178 +186,197 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
   }
 
   return (
-    <div className="space-y-6">
-      {error && <Alert variant="error">{error}</Alert>}
-      {success && <Alert variant="success">Profile updated successfully.</Alert>}
+    <FormShield
+      guard={protection.guard}
+      showRestorePrompt={protection.showRestorePrompt}
+      lastSavedAt={protection.lastSavedAt}
+      onRestore={() => {
+        const d = protection.restoreDraft()
+        if (d) applyFormData(d)
+      }}
+      onDiscard={protection.discardDraft}
+      saveState={protection.saveState}
+    >
+      <div className="space-y-6">
+        {error && <Alert variant="error">{error}</Alert>}
+        {success && <Alert variant="success">Profile updated successfully.</Alert>}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Chef Profile</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Input
-            label="Your Name or Business Name"
-            value={businessName}
-            onChange={(e) => setBusinessName(e.target.value)}
-            helperText="How you'd like to be known - a personal name or brand name both work"
-          />
-          <Input
-            label="Display Name"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            helperText="Optional public-facing name. If blank, business name is used."
-          />
-          <Input
-            label="Phone"
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-          <Input
-            label="Tagline"
-            value={tagline}
-            onChange={(e) => setTagline(e.target.value)}
-            helperText="Short headline shown on your public chef page."
-          />
-          <Textarea
-            label="Bio"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            rows={4}
-            helperText={`${bio.length}/1200 characters`}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Public Profile Settings</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Input
-            label="Google Review URL"
-            type="url"
-            value={googleReviewUrl}
-            onChange={(e) => setGoogleReviewUrl(e.target.value)}
-            placeholder="https://g.page/r/..."
-          />
-          <Input
-            label="Official Website URL"
-            type="url"
-            value={websiteUrl}
-            onChange={(e) => setWebsiteUrl(e.target.value)}
-            placeholder="https://your-site.com"
-            helperText="Optional. Your primary marketing website."
-          />
-          <div className="rounded-lg border border-stone-700 p-3">
-            <label className="flex items-center gap-2 text-sm font-medium text-stone-300">
-              <input
-                type="checkbox"
-                className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
-                checked={showWebsiteOnPublicProfile}
-                onChange={(e) => setShowWebsiteOnPublicProfile(e.target.checked)}
-              />
-              Show website on public profile
-            </label>
-            <p className="mt-1 text-xs text-stone-500">
-              When enabled, clients can open your official website from your public chef page.
-            </p>
-          </div>
-          <Select
-            label="Preferred Inquiry Destination"
-            value={preferredInquiryDestination}
-            onChange={(e) => {
-              const value = (e.target.value || 'both') as 'website_only' | 'chefflow_only' | 'both'
-              setPreferredInquiryDestination(value)
-            }}
-            options={[
-              { value: 'both', label: 'Both (ChefFlow + Website)' },
-              { value: 'chefflow_only', label: 'ChefFlow only' },
-              { value: 'website_only', label: 'Website only' },
-            ]}
-            helperText="Default routing preference for incoming leads."
-          />
-          <div className="w-full">
-            <label className="block text-sm font-medium text-stone-300 mb-1.5">Profile Photo</label>
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
-              onChange={(e) => setSelectedImageFile(e.target.files?.[0] ?? null)}
-              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
+        <Card>
+          <CardHeader>
+            <CardTitle>Chef Profile</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Input
+              label="Your Name or Business Name"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              helperText="How you'd like to be known - a personal name or brand name both work"
             />
-            <p className="mt-1.5 text-sm text-stone-500">
-              Upload a JPEG, PNG, HEIC, or WebP image (max 10MB).
-            </p>
-            {profileImageUrl && !selectedImageFile && (
-              <button
-                type="button"
-                className="mt-2 text-sm text-stone-400 underline hover:text-stone-200"
-                onClick={() => setProfileImageUrl('')}
-              >
-                Remove current photo
-              </button>
-            )}
-          </div>
+            <Input
+              label="Display Name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              helperText="Optional public-facing name. If blank, business name is used."
+            />
+            <Input
+              label="Phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+            <Input
+              label="Tagline"
+              value={tagline}
+              onChange={(e) => setTagline(e.target.value)}
+              helperText="Short headline shown on your public chef page."
+            />
+            <Textarea
+              label="Bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={4}
+              helperText={`${bio.length}/1200 characters`}
+            />
+          </CardContent>
+        </Card>
 
-          {(imagePreviewUrl || profileImageUrl) && (
-            <div className="pt-2 border-t border-stone-800">
-              <p className="text-sm text-stone-400 mb-2">Image Preview</p>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={imagePreviewUrl || profileImageUrl}
-                alt="Profile preview"
-                className="h-20 w-20 rounded-full object-cover border border-stone-700"
-              />
+        <Card>
+          <CardHeader>
+            <CardTitle>Public Profile Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Input
+              label="Google Review URL"
+              type="url"
+              value={googleReviewUrl}
+              onChange={(e) => setGoogleReviewUrl(e.target.value)}
+              placeholder="https://g.page/r/..."
+            />
+            <Input
+              label="Official Website URL"
+              type="url"
+              value={websiteUrl}
+              onChange={(e) => setWebsiteUrl(e.target.value)}
+              placeholder="https://your-site.com"
+              helperText="Optional. Your primary marketing website."
+            />
+            <div className="rounded-lg border border-stone-700 p-3">
+              <label className="flex items-center gap-2 text-sm font-medium text-stone-300">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
+                  checked={showWebsiteOnPublicProfile}
+                  onChange={(e) => setShowWebsiteOnPublicProfile(e.target.checked)}
+                />
+                Show website on public profile
+              </label>
+              <p className="mt-1 text-xs text-stone-500">
+                When enabled, clients can open your official website from your public chef page.
+              </p>
             </div>
-          )}
-
-          <div className="w-full pt-2 border-t border-stone-800">
-            <label className="block text-sm font-medium text-stone-300 mb-1.5">Business Logo</label>
-            <p className="text-xs text-stone-500 mb-2">
-              Your brand mark or logo, shown on your public chef page. Transparent PNG or SVG works
-              best.
-            </p>
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/svg+xml"
-              onChange={(e) => setSelectedLogoFile(e.target.files?.[0] ?? null)}
-              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
+            <Select
+              label="Preferred Inquiry Destination"
+              value={preferredInquiryDestination}
+              onChange={(e) => {
+                const value = (e.target.value || 'both') as
+                  | 'website_only'
+                  | 'chefflow_only'
+                  | 'both'
+                setPreferredInquiryDestination(value)
+              }}
+              options={[
+                { value: 'both', label: 'Both (ChefFlow + Website)' },
+                { value: 'chefflow_only', label: 'ChefFlow only' },
+                { value: 'website_only', label: 'Website only' },
+              ]}
+              helperText="Default routing preference for incoming leads."
             />
-            <p className="mt-1.5 text-xs text-stone-500">
-              JPEG, PNG, WebP, or SVG (max 5MB). Recommended: landscape format, min 200px wide.
-            </p>
-            {logoUrl && !selectedLogoFile && (
-              <button
-                type="button"
-                className="mt-2 text-sm text-stone-400 underline hover:text-stone-200"
-                onClick={() => setLogoUrl('')}
-              >
-                Remove current logo
-              </button>
-            )}
-          </div>
+            <div className="w-full">
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
+                Profile Photo
+              </label>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
+                onChange={(e) => setSelectedImageFile(e.target.files?.[0] ?? null)}
+                className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
+              />
+              <p className="mt-1.5 text-sm text-stone-500">
+                Upload a JPEG, PNG, HEIC, or WebP image (max 10MB).
+              </p>
+              {profileImageUrl && !selectedImageFile && (
+                <button
+                  type="button"
+                  className="mt-2 text-sm text-stone-400 underline hover:text-stone-200"
+                  onClick={() => setProfileImageUrl('')}
+                >
+                  Remove current photo
+                </button>
+              )}
+            </div>
 
-          {(logoPreviewUrl || logoUrl) && (
-            <div className="pt-2 border-t border-stone-800">
-              <p className="text-sm text-stone-400 mb-2">Logo Preview</p>
-              <div className="inline-flex items-center justify-center rounded-lg border border-stone-700 bg-stone-800 p-3">
+            {(imagePreviewUrl || profileImageUrl) && (
+              <div className="pt-2 border-t border-stone-800">
+                <p className="text-sm text-stone-400 mb-2">Image Preview</p>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={logoPreviewUrl || logoUrl}
-                  alt="Logo preview"
-                  className="max-h-16 max-w-[240px] object-contain"
+                  src={imagePreviewUrl || profileImageUrl}
+                  alt="Profile preview"
+                  className="h-20 w-20 rounded-full object-cover border border-stone-700"
                 />
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
 
-      <div className="flex justify-end">
-        <Button variant="primary" size="lg" onClick={handleSave} disabled={isPending}>
-          {isPending ? 'Saving...' : 'Save Profile'}
-        </Button>
+            <div className="w-full pt-2 border-t border-stone-800">
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
+                Business Logo
+              </label>
+              <p className="text-xs text-stone-500 mb-2">
+                Your brand mark or logo, shown on your public chef page. Transparent PNG or SVG
+                works best.
+              </p>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                onChange={(e) => setSelectedLogoFile(e.target.files?.[0] ?? null)}
+                className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
+              />
+              <p className="mt-1.5 text-xs text-stone-500">
+                JPEG, PNG, WebP, or SVG (max 5MB). Recommended: landscape format, min 200px wide.
+              </p>
+              {logoUrl && !selectedLogoFile && (
+                <button
+                  type="button"
+                  className="mt-2 text-sm text-stone-400 underline hover:text-stone-200"
+                  onClick={() => setLogoUrl('')}
+                >
+                  Remove current logo
+                </button>
+              )}
+            </div>
+
+            {(logoPreviewUrl || logoUrl) && (
+              <div className="pt-2 border-t border-stone-800">
+                <p className="text-sm text-stone-400 mb-2">Logo Preview</p>
+                <div className="inline-flex items-center justify-center rounded-lg border border-stone-700 bg-stone-800 p-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={logoPreviewUrl || logoUrl}
+                    alt="Logo preview"
+                    className="max-h-16 max-w-[240px] object-contain"
+                  />
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end">
+          <Button variant="primary" size="lg" onClick={handleSave} disabled={isPending}>
+            {isPending ? 'Saving...' : 'Save Profile'}
+          </Button>
+        </div>
       </div>
-    </div>
+    </FormShield>
   )
 }

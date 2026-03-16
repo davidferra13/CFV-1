@@ -23,7 +23,7 @@ export default async function NewExpensePage({
 }: {
   searchParams: { event_id?: string; mode?: string }
 }) {
-  await requireChef()
+  const user = await requireChef()
   const events = await getEventsForDropdown()
 
   return (
@@ -33,6 +33,7 @@ export default async function NewExpensePage({
         events={events}
         defaultEventId={searchParams.event_id}
         defaultMode={searchParams.mode === 'scan' ? 'scan' : undefined}
+        chefId={user.entityId}
       />
     </div>
   )
