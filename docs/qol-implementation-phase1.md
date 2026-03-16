@@ -34,21 +34,24 @@ Lightweight error boundary for individual widgets/panels. Two modes:
 
 Unlike the full-page ErrorBoundary, this keeps the rest of the page functional when one widget crashes.
 
-### Form Protection Rollout (useProtectedForm + FormShield)
+### Form Protection Rollout (useProtectedForm + FormShield) - 25 Forms
 
-| File                                                   | What Changed                              |
-| ------------------------------------------------------ | ----------------------------------------- |
-| `components/prospecting/script-editor.tsx`             | Full protection added                     |
-| `components/settings/cancellation-policy-editor.tsx`   | Full protection + baseline data tracking  |
-| `app/(chef)/recipes/[id]/edit/edit-recipe-client.tsx`  | Full protection (25+ fields, ingredients) |
-| `app/(chef)/recipes/new/create-recipe-client.tsx`      | Full protection (new record drafts)       |
-| `app/(chef)/settings/my-profile/chef-profile-form.tsx` | Full protection (text fields only)        |
-| `components/expenses/expense-form.tsx`                 | Full protection (financial data)          |
-| `components/staff/staff-member-form.tsx`               | Full protection                           |
-| `components/contracts/contract-template-editor.tsx`    | Full protection (long-form text, 10s)     |
-| `components/menus/menu-doc-editor.tsx`                 | Full protection                           |
+| File                                                            | What Changed                              |
+| --------------------------------------------------------------- | ----------------------------------------- |
+| `components/prospecting/script-editor.tsx`                      | Full protection added                     |
+| `components/settings/cancellation-policy-editor.tsx`            | Full protection + baseline data tracking  |
+| `app/(chef)/recipes/[id]/edit/edit-recipe-client.tsx`           | Full protection (25+ fields, ingredients) |
+| `app/(chef)/recipes/new/create-recipe-client.tsx`               | Full protection (new record drafts)       |
+| `app/(chef)/settings/my-profile/chef-profile-form.tsx`          | Full protection (text fields only)        |
+| `components/expenses/expense-form.tsx`                          | Full protection (financial data)          |
+| `components/staff/staff-member-form.tsx`                        | Full protection                           |
+| `components/contracts/contract-template-editor.tsx`             | Full protection (long-form text, 10s)     |
+| `components/menus/menu-doc-editor.tsx`                          | Full protection                           |
+| `app/(chef)/operations/kitchen-rentals/kitchen-rental-form.tsx` | Full protection (10-field form)           |
+| `app/(chef)/loyalty/rewards/new/create-reward-form.tsx`         | Full protection (6-field form)            |
+| `app/(chef)/loyalty/raffle/create-raffle-form.tsx`              | Full protection (3 text areas)            |
 
-### Undo for Destructive Actions (useDeferredAction / showUndoToast)
+### Undo for Destructive Actions (useDeferredAction / showUndoToast) - 17 Actions
 
 | File                                                          | What Changed                    |
 | ------------------------------------------------------------- | ------------------------------- |
@@ -65,16 +68,30 @@ Unlike the full-page ErrorBoundary, this keeps the rest of the page functional w
 | `app/(chef)/settings/automations/automations-list.tsx`        | 8s deferred delete with undo    |
 | `components/messages/template-manager.tsx`                    | 8s deferred delete with undo    |
 | `app/(chef)/settings/emergency/emergency-contacts-client.tsx` | Optimistic removal + undo toast |
+| `app/(chef)/notifications/notification-list-client.tsx`       | Optimistic archive + undo toast |
+| `app/(chef)/network/friends-list.tsx`                         | Optimistic removal + undo toast |
+| `app/(chef)/network/trusted-circle.tsx`                       | Optimistic removal + undo toast |
+| `app/(chef)/network/collab-inbox.tsx`                         | Optimistic signal delete + undo |
 
-### Error Boundaries (WidgetErrorBoundary)
+### Error Boundaries (WidgetErrorBoundary) - 15 Pages
 
-| Page           | Sections Wrapped                          |
-| -------------- | ----------------------------------------- |
-| Dashboard      | 5 sections (hero, schedule, alerts, etc.) |
-| Inquiries list | 1 section (inquiry list)                  |
-| Events list    | 1 section (events list)                   |
-| Recipes        | 1 section (dietary trends)                |
-| Client detail  | 3 sections (duplicates, intel, events)    |
+| Page           | Sections Wrapped                               |
+| -------------- | ---------------------------------------------- |
+| Dashboard      | 5 sections (hero, schedule, alerts, etc.)      |
+| Inquiries list | 1 section (inquiry list)                       |
+| Events list    | 1 section (events list)                        |
+| Recipes        | 1 section (dietary trends)                     |
+| Client detail  | 3 sections (duplicates, intel, events)         |
+| Calendar       | 2 sections (scheduling insights, capacity)     |
+| Calendar week  | 1 section (week planner)                       |
+| Finance        | 2 sections (finance health, pricing intel)     |
+| Clients list   | 2 sections (rebooking, client invitation)      |
+| Quotes         | 2 sections (quote intel, pricing intel)        |
+| Network        | 1 section (network referral bar)               |
+| Menus          | 2 sections (dietary trends, ingredient consol) |
+| Event detail   | 1 section (event intelligence panel)           |
+| Communication  | 3 sections (auto-response, hours, templates)   |
+| Integrations   | 1 section (integration panels)                 |
 
 ## Existing Infrastructure (already in codebase, unchanged)
 
@@ -91,21 +108,19 @@ Unlike the full-page ErrorBoundary, this keeps the rest of the page functional w
 
 ## What's Next (Phase 2+)
 
-### Remaining form rollout (~25 forms)
+### Remaining form rollout (~15 forms)
 
 - Client editor components (demographics, personal info, dietary)
-- Remaining settings forms (notifications, billing, embed)
-- Modal/dialog forms with significant input
+- Modal/dialog forms with significant input (event form, quote form)
 - Public/embed forms (localStorage-based, no tenant scoping)
 
-### Remaining undo rollout (~20 destructive actions)
+### Remaining undo rollout (~10 destructive actions)
 
-- Client deletion
 - Photo/media deletions (client gallery, dish photos, event media)
-- Calendar event deletions
 - Journey entry/idea/media deletions
 - Certification deletions
 - Prep schedule task deletions
+- Remy conversation archive/delete
 
 ### Session recovery
 
