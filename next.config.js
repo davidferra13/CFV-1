@@ -230,6 +230,16 @@ const nextConfig = {
       },
     ]
   },
+  async redirects() {
+    return [
+      // Common alternative URL patterns that should reach the correct page
+      {
+        source: '/privacy-policy',
+        destination: '/privacy',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 // Sentry source-map upload and performance instrumentation.
