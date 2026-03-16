@@ -56,20 +56,21 @@ export function DesktopAppSettings() {
     }
   }
 
-  // In browser: show a download callout
+  // In browser: show a non-interactive info card (desktop app is in development)
   if (!isTauri && autostartState !== 'loading') {
     return (
-      <div className="rounded-lg border border-stone-700 bg-stone-800 p-4">
-        <p className="font-medium text-stone-100">ChefFlow Desktop App</p>
-        <p className="mt-1 text-sm text-stone-400">
-          Run ChefFlow as a native app that lives in your system tray - always one click away, with
-          desktop notifications and auto-start on login.
+      <div className="rounded-lg border border-stone-800 bg-stone-900/50 p-4 opacity-75">
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-stone-400">ChefFlow Desktop App</p>
+          <span className="text-[10px] font-medium uppercase tracking-wider text-stone-500 bg-stone-800 px-2 py-0.5 rounded-full">
+            In Development
+          </span>
+        </div>
+        <p className="mt-1 text-sm text-stone-500">
+          A native desktop app with system tray, desktop notifications, and auto-start on login is
+          currently in development. This page will update when the desktop app is available for
+          download.
         </p>
-        <p className="mt-3 text-sm text-stone-500">
-          You&apos;re currently using ChefFlow in a browser. Download the desktop app to unlock
-          system tray and native notification support.
-        </p>
-        <p className="mt-2 text-xs text-stone-400 italic">Desktop app download coming soon.</p>
       </div>
     )
   }

@@ -7,7 +7,7 @@
 // Step 4: Review Drafts (Ollama-generated, chef approves each)
 // Step 5: Launch (delivery mode choice + share link)
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Sparkles,
@@ -52,6 +52,7 @@ import {
   type CampaignConceptDraft,
 } from '@/lib/ai/campaign-outreach'
 import type { PushDinnerRecipient } from '@/lib/campaigns/push-dinner-actions'
+import { getMenus } from '@/lib/menus/actions'
 
 // Occasions (matches holiday system + common private chef occasions)
 const OCCASIONS = [
@@ -111,6 +112,18 @@ export function PushDinnerBuilder() {
 
   // Step 2 state
   const [menuId, setMenuId] = useState<string | null>(null)
+  const [menus, setMenus] = useState<
+    {
+      id: string
+      name: string
+      description: string | null
+      service_style: string | null
+      cuisine_type: string | null
+      status: string
+    }[]
+  >([])
+  const [menusLoading, setMenusLoading] = useState(false)
+  const [menusLoaded, setMenusLoaded] = useState(false)
 
   // Step 3 state
   const [segment, setSegment] = useState<string>('')
@@ -147,6 +160,34 @@ export function PushDinnerBuilder() {
   const autoName = effectiveOccasion
     ? `${effectiveOccasion} Dinner ${new Date(proposedDate || Date.now()).getFullYear()}`
     : ''
+
+  // Load menus when step 2 is entered
+  useEffect(() => {
+    if (step === 2 && !menusLoaded) {
+      setMenusLoading(true)
+      getMenus()
+        .then((data) => {
+          setMenus(
+            (data || [])
+              .filter((m: any) => m.status !== 'archived')
+              .map((m: any) => ({
+                id: m.id,
+                name: m.name,
+                description: m.description,
+                service_style: m.service_style,
+                cuisine_type: m.cuisine_type,
+                status: m.status,
+              }))
+          )
+          setMenusLoaded(true)
+        })
+        .catch((err) => {
+          console.error('[push-dinner] Failed to load menus', err)
+          setMenusLoaded(true)
+        })
+        .finally(() => setMenusLoading(false))
+    }
+  }, [step, menusLoaded])
 
   // ============================================================
   // STEP 1 HANDLERS
@@ -618,13 +659,80 @@ export function PushDinnerBuilder() {
             </p>
           </div>
 
-          <div className="border border-stone-700 rounded-lg p-4 text-center">
-            <Utensils className="w-8 h-8 text-stone-300 mx-auto mb-2" />
-            <p className="text-sm text-stone-500">Menu picker coming soon.</p>
-            <p className="text-xs text-stone-400 mt-1">
-              For now your dinner description will serve as the menu preview.
-            </p>
-          </div>
+          {/* Menu picker */}
+          {menusLoading && (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-5 h-5 animate-spin text-stone-400" />
+            </div>
+          )}
+
+          {!menusLoading && menusLoaded && menus.length === 0 && (
+            <div className="border border-stone-700 rounded-lg p-4 text-center">
+              <Utensils className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+              <p className="text-sm text-stone-500">No menus found.</p>
+              <p className="text-xs text-stone-400 mt-1">
+                Create menus in the Culinary section first, or skip this step. Your dinner
+                description will serve as the menu preview.
+              </p>
+            </div>
+          )}
+
+          {!menusLoading && menus.length > 0 && (
+            <div className="space-y-2">
+              {menus.map((menu) => (
+                <button
+                  key={menu.id}
+                  onClick={() => setMenuId(menuId === menu.id ? null : menu.id)}
+                  className={`w-full text-left border rounded-lg p-4 transition-colors ${
+                    menuId === menu.id
+                      ? 'border-brand-500 bg-brand-950'
+                      : 'border-stone-700 bg-stone-900 hover:border-stone-600'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        menuId === menu.id ? 'bg-brand-600 border-brand-600' : 'border-stone-600'
+                      }`}
+                    >
+                      {menuId === menu.id && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-stone-200 truncate">
+                          {menu.name}
+                        </span>
+                        {menu.service_style && (
+                          <Badge variant="default" className="shrink-0 text-[10px]">
+                            {menu.service_style.replace(/_/g, ' ')}
+                          </Badge>
+                        )}
+                        {menu.cuisine_type && (
+                          <Badge variant="info" className="shrink-0 text-[10px]">
+                            {menu.cuisine_type}
+                          </Badge>
+                        )}
+                      </div>
+                      {menu.description && (
+                        <p className="text-xs text-stone-400 mt-0.5 line-clamp-2">
+                          {menu.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+
+              {menuId && (
+                <button
+                  onClick={() => setMenuId(null)}
+                  className="text-xs text-stone-500 hover:text-stone-300 transition-colors mt-1"
+                >
+                  Clear selection
+                </button>
+              )}
+            </div>
+          )}
 
           <div className="flex gap-3">
             <Button variant="ghost" onClick={() => setStep(1)} className="gap-1">
