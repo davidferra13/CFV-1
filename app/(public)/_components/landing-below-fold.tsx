@@ -1,95 +1,156 @@
+'use client'
+
 import Link from 'next/link'
-import { CheckCircle2, CalendarDays, CreditCard, UsersRound } from 'lucide-react'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
-import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
+import { MapPin, Utensils, ArrowRight, Globe, ShieldCheck, Zap } from 'lucide-react'
 
-const FEATURES = [
+const VALUE_PROPS = [
   {
-    icon: CalendarDays,
-    title: 'Event Ops In One View',
-    description: 'Track inquiries, proposals, prep, and service without switching tools.',
+    icon: MapPin,
+    title: 'Discover Nearby',
+    description: 'Find private chefs, caterers, food trucks, and bakeries in your area.',
   },
   {
-    icon: UsersRound,
-    title: 'Client Collaboration',
-    description: 'Clients can review proposals, confirm details, and respond faster.',
+    icon: Utensils,
+    title: 'Real Menus',
+    description: 'Browse actual menus from providers, not stock photos or generic listings.',
   },
   {
-    icon: CreditCard,
-    title: 'Built-In Payments',
-    description: 'Send invoices and collect payments with Stripe-backed workflows.',
+    icon: ArrowRight,
+    title: 'Connect Directly',
+    description: 'Reach out to providers without a middleman. No commissions, no fees.',
   },
 ] as const
 
-const STEPS = [
-  'Create an event and structure your menu + pricing.',
-  'Send the proposal link to your client in seconds.',
-  'Collect payment and move straight into service prep.',
+const HOW_IT_WORKS = [
+  'Search by cuisine, occasion, or provider type.',
+  'Browse profiles with real menus and reviews.',
+  'Connect directly with the provider you choose.',
 ] as const
 
-const IS_BETA = LAUNCH_MODE === 'beta'
+const PROVIDER_BENEFITS = [
+  {
+    icon: Globe,
+    title: 'Get Discovered',
+    description: 'Consumers searching for food find you organically.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Keep Control',
+    description: 'Your platform, your pricing, your client relationships.',
+  },
+  {
+    icon: Zap,
+    title: 'Optional Tools',
+    description: 'Free listing. Upgrade to manage events, menus, and payments.',
+  },
+] as const
 
 export default function LandingBelowFold() {
   return (
     <>
+      {/* Value propositions */}
       <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
         <div className="grid gap-6 md:grid-cols-3">
-          {FEATURES.map((feature) => {
-            const Icon = feature.icon
+          {VALUE_PROPS.map((prop) => {
+            const Icon = prop.icon
             return (
               <article
-                key={feature.title}
-                className="rounded-xl border border-stone-200 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+                key={prop.title}
+                className="rounded-xl border border-stone-800 bg-stone-900/40 p-6"
               >
-                <div className="mb-4 inline-flex rounded-lg bg-brand-50 p-2.5 text-brand-700">
+                <div className="mb-4 inline-flex rounded-lg bg-brand-950/60 p-2.5 text-brand-400">
                   <Icon className="h-5 w-5" />
                 </div>
-                <h2 className="text-xl font-semibold text-stone-900">{feature.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-stone-600">{feature.description}</p>
+                <h2 className="text-xl font-semibold text-stone-100">{prop.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-stone-400">{prop.description}</p>
               </article>
             )
           })}
         </div>
       </section>
 
-      <section className="border-y border-stone-200 bg-stone-50/70">
+      {/* How it works */}
+      <section className="border-y border-stone-800/50">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 md:py-20 lg:px-8">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight text-stone-900 md:text-4xl">
-              From inquiry to payout in one flow.
+            <h2 className="text-3xl font-bold tracking-tight text-stone-100 md:text-4xl">
+              From search to table.
             </h2>
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-stone-600">
-              Keep the full client lifecycle in one system, with less back-and-forth and no
-              fragmented spreadsheets.
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-stone-400">
+              Whether you want a private dinner, catering for an event, or weekly meal prep, find
+              the right provider in minutes.
             </p>
           </div>
-          <div className="space-y-4 rounded-xl border border-stone-200 bg-white p-6">
-            {STEPS.map((step) => (
-              <div key={step} className="flex items-start gap-3">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
-                <p className="text-sm leading-relaxed text-stone-700">{step}</p>
+          <div className="space-y-5 rounded-xl border border-stone-800 bg-stone-900/40 p-6">
+            {HOW_IT_WORKS.map((step, i) => (
+              <div key={step} className="flex items-start gap-4">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-brand-700/40 bg-brand-950/50 text-sm font-semibold text-brand-300">
+                  {i + 1}
+                </span>
+                <p className="pt-1 text-sm leading-relaxed text-stone-300">{step}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
-        <h2 className="text-3xl font-bold tracking-tight text-stone-900 md:text-4xl">
-          Ready for a calmer workflow?
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-600">
-          Start with the essentials, then scale your operations with confidence.
+      {/* For operators (subtle, secondary) */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-stone-500">
+          For Food Providers
         </p>
-        <Link
-          href={buildMarketingSignupHref({
-            sourcePage: 'home',
-            sourceCta: 'below_fold_primary',
+        <h2 className="text-2xl font-bold tracking-tight text-stone-200 md:text-3xl">
+          List your business for free.
+        </h2>
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-stone-500">
+          Private chefs, caterers, restaurants, food trucks, bakeries. Get discovered by hungry
+          consumers searching for exactly what you offer.
+        </p>
+
+        <div className="mt-8 grid gap-6 md:grid-cols-3">
+          {PROVIDER_BENEFITS.map((benefit) => {
+            const Icon = benefit.icon
+            return (
+              <div key={benefit.title} className="flex items-start gap-3">
+                <div className="mt-0.5 rounded-lg bg-stone-800/50 p-2 text-stone-400">
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-stone-300">{benefit.title}</h3>
+                  <p className="mt-1 text-sm text-stone-500">{benefit.description}</p>
+                </div>
+              </div>
+            )
           })}
-          className="mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
-        >
-          {IS_BETA ? PRIMARY_SIGNUP_LABEL : 'Create Your Account'}
-        </Link>
+        </div>
+
+        <div className="mt-8">
+          <Link
+            href="/marketplace-chefs"
+            className="inline-flex items-center gap-2 rounded-lg border border-stone-700 bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
+          >
+            Learn more
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="border-t border-stone-800/50">
+        <div className="mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
+          <h2 className="text-3xl font-bold tracking-tight text-stone-100 md:text-4xl">
+            Discover what to eat next.
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
+            Browse providers near you, explore real menus, and connect directly.
+          </p>
+          <Link
+            href="/chefs"
+            className="mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
+          >
+            Start exploring
+          </Link>
+        </div>
       </section>
     </>
   )
