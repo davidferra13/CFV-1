@@ -19,8 +19,17 @@
 
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export async function POST(request: Request) {
+  // Rate limit: 30 requests per minute per IP
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  try {
+    await checkRateLimit(`prospecting-webhook:${ip}`, 30, 60_000)
+  } catch {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   // Auth: check pipeline key
   const pipelineKey = request.headers.get('x-prospecting-key')
   const expectedKey = process.env.PROSPECTING_API_KEY

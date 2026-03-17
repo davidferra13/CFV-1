@@ -66,6 +66,7 @@ const nextConfig = {
     // with its own heap allocation. Running it inside `next build` OOMs on this
     // codebase (~265 pages). Same pattern as eslint.ignoreDuringBuilds above.
     ignoreBuildErrors: true,
+    tsconfigPath: process.env.NEXT_TSCONFIG_PATH || 'tsconfig.next.json',
   },
   // Use git SHA for build ID (Vercel provides VERCEL_GIT_COMMIT_SHA).
   // When PWA dual-pass build is active, pin to a static ID to prevent

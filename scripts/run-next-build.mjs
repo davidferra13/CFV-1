@@ -131,6 +131,7 @@ async function main() {
     String(process.env.NODE_OPTIONS || '').trim(),
     maxOldSpaceSizeMb
   )
+  const tempTsconfigPath = resolve('.next-build.tsconfig.json')
   const buildSurface = String(process.env.NEXT_BUILD_SURFACE || '').trim()
   const restoreBuildSurface = await stageBuildSurface(process.cwd(), buildSurface)
   let exitCode = 1
@@ -143,6 +144,7 @@ async function main() {
       env: {
         ...process.env,
         NODE_OPTIONS: nodeOptions,
+        NEXT_TSCONFIG_PATH: tempTsconfigPath,
       },
     })
 

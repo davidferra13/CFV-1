@@ -53,6 +53,7 @@ export async function ensureClient(
       status: client.status ?? 'active',
       referral_source: client.referral_source ?? 'website',
       vibe_notes: client.vibe_notes ?? null,
+      is_demo: true,
     })
     .select('id')
     .single()
@@ -108,6 +109,7 @@ export async function ensureEvent(
       service_style: event.service_style,
       dietary_restrictions: [],
       allergies: [],
+      is_demo: true,
     })
     .select('id')
     .single()
@@ -158,6 +160,7 @@ export async function ensureInquiry(
       confirmed_budget_cents: inquiry.confirmed_budget_cents,
       confirmed_location: 'Boston, MA',
       unknown_fields: [],
+      is_demo: true,
       next_action_required: 'Review and respond',
       next_action_by: inquiry.next_action_by,
       first_contact_at: daysAgoISO(inquiry.daysAgo),
@@ -312,7 +315,7 @@ export async function ensureQuote(
       tenant_id: tenantId,
       client_id: clientId,
       event_id: eventId,
-      quote_name: `Quote — ${quote.status}`,
+      quote_name: `Quote - ${quote.status}`,
       pricing_model: 'flat_rate',
       total_quoted_cents: quote.total_cents,
       deposit_required: true,
