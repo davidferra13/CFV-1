@@ -6,14 +6,9 @@ import { useEffect, useState } from 'react'
 import { Menu, X } from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
-import { LAUNCH_MODE } from '@/lib/marketing/launch-mode'
-import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const NAV_ITEMS = [
-  { href: '/chefs', label: 'Search chefs' },
-  { href: '/marketplace-chefs', label: 'For chefs' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/compare', label: 'Compare' },
+  { href: '/chefs', label: 'Explore' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ]
@@ -22,7 +17,6 @@ export function PublicHeader() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const isBeta = LAUNCH_MODE === 'beta'
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 12)
@@ -79,26 +73,23 @@ export function PublicHeader() {
             Sign In
           </TrackedLink>
           <TrackedLink
-            href={buildMarketingSignupHref({
-              sourcePage: 'header',
-              sourceCta: 'operator_signup',
-            })}
-            analyticsName="header_signup"
+            href="/marketplace-chefs"
+            analyticsName="header_for_chefs"
             analyticsProps={{ section: 'public_header' }}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
           >
-            {isBeta ? 'Start operating' : 'Operator sign up'}
+            For food providers
           </TrackedLink>
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
           <TrackedLink
-            href="/marketplace-chefs"
-            analyticsName="header_mobile_for_chefs"
+            href="/chefs"
+            analyticsName="header_mobile_explore"
             analyticsProps={{ section: 'public_header_mobile' }}
             className="inline-flex h-9 items-center justify-center rounded-lg border border-brand-700/50 bg-brand-950/50 px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-200"
           >
-            For chefs
+            Explore
           </TrackedLink>
           <button
             type="button"
@@ -144,16 +135,13 @@ export function PublicHeader() {
               Sign In
             </TrackedLink>
             <TrackedLink
-              href={buildMarketingSignupHref({
-                sourcePage: 'header_mobile',
-                sourceCta: 'operator_signup',
-              })}
-              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-              analyticsName="header_mobile_signup"
+              href="/marketplace-chefs"
+              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800"
+              analyticsName="header_mobile_for_providers"
               analyticsProps={{ section: 'public_header_mobile' }}
               onClick={() => setMobileMenuOpen(false)}
             >
-              {isBeta ? 'Start operating' : 'Operator sign up'}
+              For food providers
             </TrackedLink>
           </div>
         </div>
