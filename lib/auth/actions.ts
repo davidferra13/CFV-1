@@ -485,7 +485,7 @@ export async function requestPasswordReset(email: string) {
 
   const supabase: any = createServerClient()
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.cheflowhq.com'
 
   const { error } = await supabase.auth.resetPasswordForEmail(validated.email, {
     redirectTo: `${siteUrl}/auth/callback?next=/auth/reset-password`,

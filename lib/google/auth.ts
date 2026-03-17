@@ -27,7 +27,7 @@ export async function checkGoogleOAuthHealth(): Promise<{
   redirectUri: string
   siteUrl: string
 }> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3100'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.cheflowhq.com'
   const redirectUri = `${siteUrl}/api/auth/google/connect/callback`
   return {
     configured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),

@@ -441,7 +441,7 @@ export async function createInstantBookingCheckout(
   }
 
   const stripe = getStripe()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
   const chefName = (chef.business_name as string) || 'Private Chef'
 
   const { computeApplicationFee } = await import('@/lib/stripe/transfer-routing')

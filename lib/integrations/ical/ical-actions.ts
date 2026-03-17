@@ -19,7 +19,7 @@ export async function getICalFeedStatus() {
 
   if (!data) throw new Error('Chef not found')
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3100'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
   const feedUrl = data.ical_feed_token
     ? `${appUrl}/api/feeds/calendar/${data.ical_feed_token}`
     : null
@@ -71,7 +71,7 @@ export async function regenerateICalFeedToken() {
 
   await supabase.from('chefs').update({ ical_feed_token: newToken }).eq('id', user.entityId)
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3100'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
 
   return {
     token: newToken,

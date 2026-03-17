@@ -70,7 +70,7 @@ export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseIn
   }
 
   const chefDisplayName = chef.display_name || chef.business_name || 'Private Chef'
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
 
   // Create the purchase intent row first (pre-payment audit state)
   const { data: intent, error: intentError } = await supabase

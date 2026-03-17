@@ -27,7 +27,7 @@ function getClientSecret() {
 }
 
 function getRedirectUri() {
-  const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3100'
+  const base = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
   return `${base}/api/integrations/quickbooks/callback`
 }
 

@@ -69,7 +69,7 @@ export async function createPaymentCheckoutUrl(
   if (amountCents <= 0) return null
 
   const stripe = getStripe()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
 
   // Fetch chef's Stripe Connect config for transfer routing
   const { getChefStripeConfig, computeApplicationFee } =
