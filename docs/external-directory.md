@@ -98,6 +98,54 @@ Creates:
 - Indexes for search and filtering
 - `updated_at` trigger
 
+## Email Outreach System
+
+### Consent-only outreach
+
+Emails are ONLY sent to businesses that voluntarily provided their email by submitting or claiming a listing. Discovered listings never receive outreach (they have no email on file).
+
+### Email triggers
+
+| Trigger                                 | Email sent                         | Template                 |
+| --------------------------------------- | ---------------------------------- | ------------------------ |
+| Business submits via `/discover/submit` | Welcome email                      | `directory-welcome.tsx`  |
+| Business owner claims a listing         | Claimed confirmation + profile CTA | `directory-claimed.tsx`  |
+| Admin verifies a listing                | Verification confirmation          | `directory-verified.tsx` |
+
+### Infrastructure
+
+- **Sending:** Uses existing Resend infrastructure (`lib/email/send.ts`)
+- **Templates:** React Email components in `lib/email/templates/directory-*.tsx`
+- **Outreach logic:** `lib/discover/outreach.ts` (opt-out checks, logging, email dispatch)
+- **Logging:** `directory_outreach_log` table tracks every email sent
+- **Opt-out:** `directory_email_preferences` table, one-click unsubscribe at `/discover/unsubscribe`
+- **Admin:** Outreach stats shown on `/admin/directory-listings` dashboard
+
+### Opt-out flow
+
+1. Every email includes an "Unsubscribe" link at the bottom
+2. Link goes to `/discover/unsubscribe?t=<base64url-encoded-email>`
+3. One click confirms unsubscribe
+4. All future sends check `directory_email_preferences` before dispatching
+5. Opt-out only affects directory emails, does not remove listings
+
+### Profile enhancement
+
+Claimed listings can enrich their profile at `/discover/[slug]/enhance`:
+
+- Pre-filled form with current listing data
+- Add: description, address, phone, menu URL, business hours
+- Changes appear immediately on the listing
+
+### Migration
+
+File: `supabase/migrations/20260401000080_directory_outreach.sql`
+
+Creates:
+
+- `directory_outreach_log` table (email send tracking)
+- `directory_email_preferences` table (opt-out management)
+
 ## Constants
 
 `lib/discover/constants.ts` defines:

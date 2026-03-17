@@ -7,6 +7,11 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { slugify } from './constants'
+import {
+  sendDirectoryWelcomeEmail,
+  sendDirectoryClaimedEmail,
+  sendDirectoryVerifiedEmail,
+} from './outreach'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -243,6 +248,28 @@ export async function submitDirectoryListing(input: {
     return { success: false, error: 'Failed to submit listing. Please try again.' }
   }
 
+  // Non-blocking: send welcome email to the submitter
+  try {
+    // Fetch the inserted listing to get the ID
+    const { data: inserted } = await supabase
+      .from('directory_listings')
+      .select('id')
+      .eq('slug', slug)
+      .single()
+
+    if (inserted) {
+      sendDirectoryWelcomeEmail({
+        listingId: inserted.id,
+        businessName: input.name.trim(),
+        businessType: input.businessType,
+        slug,
+        recipientEmail: input.email.trim(),
+      }).catch((err) => console.error('[non-blocking] Welcome email failed', err))
+    }
+  } catch (err) {
+    console.error('[non-blocking] Welcome email setup failed', err)
+  }
+
   revalidatePath('/discover')
   return { success: true }
 }
@@ -330,6 +357,28 @@ export async function requestListingClaim(input: {
     return { success: false, error: 'Failed to process claim.' }
   }
 
+  // Non-blocking: send claimed email
+  try {
+    // Need slug for the email link
+    const { data: updated } = await supabase
+      .from('directory_listings')
+      .select('slug, name')
+      .eq('id', input.listingId)
+      .single()
+
+    if (updated) {
+      sendDirectoryClaimedEmail({
+        listingId: input.listingId,
+        businessName: (updated as any).name,
+        claimerName: input.name.trim(),
+        slug: (updated as any).slug,
+        recipientEmail: input.email.trim(),
+      }).catch((err) => console.error('[non-blocking] Claimed email failed', err))
+    }
+  } catch (err) {
+    console.error('[non-blocking] Claimed email setup failed', err)
+  }
+
   revalidatePath('/discover')
   return { success: true }
 }
@@ -390,11 +439,31 @@ export async function adminUpdateListingStatus(
     updates.removed_at = new Date().toISOString()
   }
 
+  // Fetch listing details before update (for email)
+  const { data: listingBefore } = await supabase
+    .from('directory_listings')
+    .select('name, slug, claimed_by_email, email')
+    .eq('id', listingId)
+    .single()
+
   const { error } = await supabase.from('directory_listings').update(updates).eq('id', listingId)
 
   if (error) {
     console.error('[adminUpdateListingStatus]', error)
     return { success: false, error: 'Failed to update status.' }
+  }
+
+  // Non-blocking: send verified email when status changes to verified
+  if (status === 'verified' && listingBefore) {
+    const recipientEmail = (listingBefore as any).claimed_by_email || (listingBefore as any).email
+    if (recipientEmail) {
+      sendDirectoryVerifiedEmail({
+        listingId,
+        businessName: (listingBefore as any).name,
+        slug: (listingBefore as any).slug,
+        recipientEmail,
+      }).catch((err) => console.error('[non-blocking] Verified email failed', err))
+    }
   }
 
   revalidatePath('/discover')
@@ -449,6 +518,58 @@ export async function adminCreateListing(input: {
   revalidatePath('/discover')
   revalidatePath('/admin/directory-listings')
   return { success: true, slug }
+}
+
+// ─── Profile Enhancement (Claimed Listings) ──────────────────────────────────
+
+export async function enhanceDirectoryListing(input: {
+  listingId: string
+  description?: string
+  address?: string
+  phone?: string
+  menuUrl?: string
+  hours?: Record<string, string>
+}): Promise<{ success: boolean; error?: string }> {
+  const supabase = createServerClient({ admin: true })
+
+  // Verify listing exists and is claimed/verified
+  const { data: listing } = await supabase
+    .from('directory_listings')
+    .select('id, status')
+    .eq('id', input.listingId)
+    .single()
+
+  if (!listing) {
+    return { success: false, error: 'Listing not found.' }
+  }
+
+  if (listing.status !== 'claimed' && listing.status !== 'verified') {
+    return { success: false, error: 'Only claimed listings can be enhanced.' }
+  }
+
+  const updates: Record<string, any> = {}
+  if (input.description !== undefined) updates.description = input.description.trim() || null
+  if (input.address !== undefined) updates.address = input.address.trim() || null
+  if (input.phone !== undefined) updates.phone = input.phone.trim() || null
+  if (input.menuUrl !== undefined) updates.menu_url = input.menuUrl.trim() || null
+  if (input.hours !== undefined) updates.hours = input.hours
+
+  if (Object.keys(updates).length === 0) {
+    return { success: true }
+  }
+
+  const { error } = await supabase
+    .from('directory_listings')
+    .update(updates)
+    .eq('id', input.listingId)
+
+  if (error) {
+    console.error('[enhanceDirectoryListing]', error)
+    return { success: false, error: 'Failed to update listing.' }
+  }
+
+  revalidatePath('/discover')
+  return { success: true }
 }
 
 export async function adminGetNominations(): Promise<any[]> {

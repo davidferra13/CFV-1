@@ -3,12 +3,17 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { adminGetAllListings, adminGetNominations } from '@/lib/discover/actions'
+import { getOutreachStats } from '@/lib/discover/outreach'
 import { ListingManagementTable } from './_components/listing-management-table'
 
 export default async function AdminDirectoryListingsPage() {
   await requireAdmin()
 
-  const [listings, nominations] = await Promise.all([adminGetAllListings(), adminGetNominations()])
+  const [listings, nominations, outreach] = await Promise.all([
+    adminGetAllListings(),
+    adminGetNominations(),
+    getOutreachStats(),
+  ])
 
   const pendingNominations = nominations.filter((n) => n.status === 'pending')
 
@@ -94,6 +99,41 @@ export default async function AdminDirectoryListingsPage() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Outreach stats */}
+      {outreach.totalSent > 0 && (
+        <div className="mb-8 rounded-xl border border-stone-700 bg-stone-900 p-5">
+          <h2 className="text-sm font-semibold text-stone-200">Outreach emails</h2>
+          <div className="mt-3 flex flex-wrap gap-4">
+            <div>
+              <p className="text-[11px] text-stone-500">Total sent</p>
+              <p className="text-lg font-bold text-stone-100">{outreach.totalSent}</p>
+            </div>
+            {outreach.byType.map((t) => (
+              <div key={t.type}>
+                <p className="text-[11px] text-stone-500">{t.type}</p>
+                <p className="text-lg font-bold text-stone-300">{t.count}</p>
+              </div>
+            ))}
+            <div>
+              <p className="text-[11px] text-stone-500">Opted out</p>
+              <p
+                className={`text-lg font-bold ${outreach.optOutCount > 0 ? 'text-amber-300' : 'text-stone-500'}`}
+              >
+                {outreach.optOutCount}
+              </p>
+            </div>
+          </div>
+          {outreach.recentErrors.length > 0 && (
+            <div className="mt-3 rounded-lg bg-red-950/20 p-3">
+              <p className="text-[10px] font-medium text-red-300">
+                {outreach.recentErrors.length} recent send error
+                {outreach.recentErrors.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
