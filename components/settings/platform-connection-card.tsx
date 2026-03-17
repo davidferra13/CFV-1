@@ -122,7 +122,12 @@ export function PlatformConnectionCard({ connection }: { connection: PlatformCon
           {connection.status === 'disconnected' &&
             !showApiKeyInput &&
             (connection.authType === 'oauth' ? (
-              <Button variant="secondary" size="sm" disabled title="Coming soon">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled
+                title="OAuth connection not yet available"
+              >
                 Connect
               </Button>
             ) : (

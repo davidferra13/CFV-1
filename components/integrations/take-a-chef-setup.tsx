@@ -105,14 +105,9 @@ export function TakeAChefSetup({
               </div>
             )}
             <div className="pt-2 border-t border-stone-800">
-              <button
-                type="button"
-                disabled
-                className="text-xs text-stone-600 cursor-not-allowed"
-                title="Gmail disconnect is not yet available"
-              >
-                Disconnect Gmail (coming soon)
-              </button>
+              <p className="text-xs text-stone-600">
+                To disconnect Gmail, revoke access from your Google Account settings.
+              </p>
             </div>
             <TakeAChefCommissionDefaults initialPercent={defaultCommissionPercent} />
           </div>

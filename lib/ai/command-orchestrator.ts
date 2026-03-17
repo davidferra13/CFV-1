@@ -1930,7 +1930,7 @@ async function executeSingleTask(
           tier: 3,
           name: task.taskType,
           status: 'held',
-          holdReason: `"${task.taskType}" is not yet supported. More capabilities coming soon.`,
+          holdReason: `"${task.taskType}" is not currently supported. Try rephrasing your request.`,
         }
     }
 

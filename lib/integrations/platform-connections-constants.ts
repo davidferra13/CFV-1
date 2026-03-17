@@ -18,25 +18,29 @@ export const SUPPORTED_PLATFORMS = [
   {
     key: 'bark',
     name: 'Bark',
-    description: 'API integration (coming soon)',
+    description: 'API integration not yet available',
     authType: 'api_key' as const,
+    disabled: true,
   },
   {
     key: 'theknot',
     name: 'The Knot',
-    description: 'API integration (coming soon)',
+    description: 'API integration not yet available',
     authType: 'api_key' as const,
+    disabled: true,
   },
   {
     key: 'cozymeal',
     name: 'Cozymeal',
-    description: 'API integration (coming soon)',
+    description: 'API integration not yet available',
     authType: 'api_key' as const,
+    disabled: true,
   },
   {
     key: 'gigsalad',
     name: 'GigSalad',
-    description: 'API integration (coming soon)',
+    description: 'API integration not yet available',
     authType: 'api_key' as const,
+    disabled: true,
   },
 ]

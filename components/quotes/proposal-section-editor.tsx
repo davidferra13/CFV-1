@@ -65,7 +65,7 @@ function CoverEditor({ section, onUpdate }: SectionEditorProps) {
           placeholder="https://your-logo-url.com/logo.png"
         />
         <p className="text-xs text-gray-500 mt-1">
-          Paste a URL for your logo. Image upload coming soon.
+          Paste a URL for your logo (e.g. from your website or cloud storage).
         </p>
       </div>
     </div>
@@ -267,7 +267,11 @@ function PricingEditor({ section, onUpdate }: SectionEditorProps) {
               type="number"
               value={item.amount_cents / 100}
               onChange={(e) =>
-                updateLineItem(idx, 'amount_cents', Math.round(parseFloat(e.target.value || '0') * 100))
+                updateLineItem(
+                  idx,
+                  'amount_cents',
+                  Math.round(parseFloat(e.target.value || '0') * 100)
+                )
               }
               placeholder="0.00"
               className="w-28"
@@ -313,9 +317,7 @@ function TermsEditor({ section, onUpdate }: SectionEditorProps) {
       <label className="block text-sm font-medium text-gray-700 mb-1">Terms & Conditions</label>
       <Textarea
         value={content.text ?? ''}
-        onChange={(e) =>
-          onUpdate({ ...section, content: { ...content, text: e.target.value } })
-        }
+        onChange={(e) => onUpdate({ ...section, content: { ...content, text: e.target.value } })}
         placeholder="Enter your standard terms and conditions..."
         rows={8}
       />
@@ -358,7 +360,7 @@ function PhotosEditor({ section, onUpdate }: SectionEditorProps) {
           rows={4}
         />
         <p className="text-xs text-gray-500 mt-1">
-          Paste image URLs, one per line. Direct upload coming in a future update.
+          Paste image URLs, one per line (e.g. from your website or cloud storage).
         </p>
       </div>
       <div>
@@ -445,9 +447,7 @@ function CustomEditor({ section, onUpdate }: SectionEditorProps) {
         <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
         <Textarea
           value={content.body ?? ''}
-          onChange={(e) =>
-            onUpdate({ ...section, content: { ...content, body: e.target.value } })
-          }
+          onChange={(e) => onUpdate({ ...section, content: { ...content, body: e.target.value } })}
           placeholder="Write your custom content here..."
           rows={6}
         />

@@ -264,7 +264,9 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
                 ))}
               </div>
             ) : (
-              <p className="text-center text-stone-400 italic">Menu details coming soon</p>
+              <p className="text-center text-stone-400 italic">
+                Menu details will be shared separately
+              </p>
             )}
           </div>
         )}

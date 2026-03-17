@@ -27,8 +27,8 @@ export default async function EventStoryPage({ params }: { params: Promise<{ id:
 
       <div className="mt-8 p-4 rounded-lg bg-stone-900/50 border border-stone-800">
         <p className="text-sm text-stone-400">
-          <span className="text-stone-300 font-medium">Coming soon:</span> Download as video (MP4)
-          for Instagram, TikTok, or direct client sharing. For now, enjoy the preview.
+          Use your browser&apos;s screenshot or screen recording tool to capture this preview for
+          Instagram, TikTok, or direct client sharing.
         </p>
       </div>
     </div>
