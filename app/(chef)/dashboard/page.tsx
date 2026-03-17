@@ -94,19 +94,10 @@ function IntelligenceCardsSkeleton() {
   return <WidgetCardSkeleton size="md" />
 }
 
-export default async function ChefDashboard() {
-  const user = await requireChef()
-  const hour = new Date().getHours()
-  const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
-  const firstName = (user.email ?? '').split('@')[0].split('.')[0]
+// Streamed priority queue section (deferred behind Suspense so it doesn't block TTFB)
+async function PriorityQueueSection() {
+  const queue = await safe('queue', getPriorityQueue, emptyQueue)
 
-  const [queue, archetype] = await Promise.all([
-    safe('queue', getPriorityQueue, emptyQueue),
-    safe('archetype', () => getCachedChefArchetype(user.entityId), null),
-  ])
-  const primaryAction = getDashboardPrimaryAction(archetype)
-
-  // Build priority queue items for the list card
   const queueItems: ListCardItem[] = queue.items.slice(0, 5).map((item) => ({
     id: item.id,
     label: item.title,
@@ -123,6 +114,104 @@ export default async function ChefDashboard() {
             ? ('blue' as const)
             : ('stone' as const),
   }))
+
+  return (
+    <>
+      {/* PRIORITY BANNER */}
+      <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+        {queue.nextAction ? (
+          <Link href={queue.nextAction.href} className="block">
+            <div
+              className={`flex items-center justify-between rounded-2xl border px-5 py-4 transition-colors hover:opacity-90 ${
+                queue.nextAction.urgency === 'critical'
+                  ? 'bg-gradient-to-r from-red-950/80 to-red-900/30 border-red-800/50 text-red-200'
+                  : queue.nextAction.urgency === 'high'
+                    ? 'bg-gradient-to-r from-amber-950/80 to-amber-900/30 border-amber-800/50 text-amber-200'
+                    : 'bg-gradient-to-r from-brand-950/80 to-brand-900/30 border-brand-700/50 text-brand-200'
+              }`}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{
+                    backgroundColor:
+                      queue.nextAction.urgency === 'critical'
+                        ? '#ef4444'
+                        : queue.nextAction.urgency === 'high'
+                          ? '#f59e0b'
+                          : '#e88f47',
+                  }}
+                  aria-hidden="true"
+                />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate">{queue.nextAction.title}</p>
+                  <p className="text-xs opacity-75 mt-0.5 truncate">
+                    {queue.nextAction.context.primaryLabel}
+                    {queue.nextAction.context.secondaryLabel
+                      ? ` - ${queue.nextAction.context.secondaryLabel}`
+                      : ''}
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-medium shrink-0 ml-4">Go &rarr;</span>
+            </div>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-3 rounded-2xl border border-green-800/40 bg-gradient-to-r from-green-950/60 to-emerald-950/30 px-5 py-4">
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
+              style={{ backgroundColor: '#10b981' }}
+              aria-hidden="true"
+            />
+            <p className="text-sm font-medium text-green-300">
+              All caught up. Nothing urgent right now.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* PRIORITY QUEUE LIST */}
+      {!queue.summary.allCaughtUp && (
+        <ListCard
+          widgetId="priority_queue"
+          title="Priority Queue"
+          count={queue.summary.totalItems}
+          items={queueItems}
+          href="/queue"
+          emptyMessage="All caught up!"
+        />
+      )}
+    </>
+  )
+}
+
+function PriorityQueueSkeleton() {
+  return (
+    <>
+      <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+        <div className="rounded-2xl border border-stone-800 bg-stone-900/60 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-2.5 h-2.5 rounded-full bg-stone-700 animate-pulse" />
+            <div className="flex-1">
+              <div className="h-4 w-48 bg-stone-800 rounded animate-pulse" />
+              <div className="h-3 w-32 bg-stone-800 rounded animate-pulse mt-1.5" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <WidgetCardSkeleton size="md" />
+    </>
+  )
+}
+
+export default async function ChefDashboard() {
+  const user = await requireChef()
+  const hour = new Date().getHours()
+  const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
+  const firstName = (user.email ?? '').split('@')[0].split('.')[0]
+
+  const archetype = await safe('archetype', () => getCachedChefArchetype(user.entityId), null)
+  const primaryAction = getDashboardPrimaryAction(archetype)
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -195,73 +284,13 @@ export default async function ChefDashboard() {
       <ShortcutStrip />
 
       {/* ============================================ */}
-      {/* PRIORITY BANNER                              */}
+      {/* PRIORITY QUEUE (streamed, non-blocking)      */}
       {/* ============================================ */}
-      <div className="col-span-1 sm:col-span-2 lg:col-span-4">
-        {queue.nextAction ? (
-          <Link href={queue.nextAction.href} className="block">
-            <div
-              className={`flex items-center justify-between rounded-2xl border px-5 py-4 transition-colors hover:opacity-90 ${
-                queue.nextAction.urgency === 'critical'
-                  ? 'bg-gradient-to-r from-red-950/80 to-red-900/30 border-red-800/50 text-red-200'
-                  : queue.nextAction.urgency === 'high'
-                    ? 'bg-gradient-to-r from-amber-950/80 to-amber-900/30 border-amber-800/50 text-amber-200'
-                    : 'bg-gradient-to-r from-brand-950/80 to-brand-900/30 border-brand-700/50 text-brand-200'
-              }`}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{
-                    backgroundColor:
-                      queue.nextAction.urgency === 'critical'
-                        ? '#ef4444'
-                        : queue.nextAction.urgency === 'high'
-                          ? '#f59e0b'
-                          : '#e88f47',
-                  }}
-                  aria-hidden="true"
-                />
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold truncate">{queue.nextAction.title}</p>
-                  <p className="text-xs opacity-75 mt-0.5 truncate">
-                    {queue.nextAction.context.primaryLabel}
-                    {queue.nextAction.context.secondaryLabel
-                      ? ` - ${queue.nextAction.context.secondaryLabel}`
-                      : ''}
-                  </p>
-                </div>
-              </div>
-              <span className="text-xs font-medium shrink-0 ml-4">Go &rarr;</span>
-            </div>
-          </Link>
-        ) : (
-          <div className="flex items-center gap-3 rounded-2xl border border-green-800/40 bg-gradient-to-r from-green-950/60 to-emerald-950/30 px-5 py-4">
-            <span
-              className="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
-              style={{ backgroundColor: '#10b981' }}
-              aria-hidden="true"
-            />
-            <p className="text-sm font-medium text-green-300">
-              All caught up. Nothing urgent right now.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* ============================================ */}
-      {/* PRIORITY QUEUE - list card                   */}
-      {/* ============================================ */}
-      {!queue.summary.allCaughtUp && (
-        <ListCard
-          widgetId="priority_queue"
-          title="Priority Queue"
-          count={queue.summary.totalItems}
-          items={queueItems}
-          href="/queue"
-          emptyMessage="All caught up!"
-        />
-      )}
+      <WidgetErrorBoundary name="Priority Queue" compact>
+        <Suspense fallback={<PriorityQueueSkeleton />}>
+          <PriorityQueueSection />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* ============================================ */}
       {/* STREAMED SECTIONS (time-aware order)          */}
