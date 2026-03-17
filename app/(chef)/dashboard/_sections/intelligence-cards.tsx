@@ -92,7 +92,7 @@ export async function IntelligenceCards() {
                 {criticalAlerts.slice(0, 2).map((alert) => (
                   <Link
                     key={alert.id}
-                    href={alert.link || '#'}
+                    href={alert.link || '/dashboard'}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-950/40 border border-red-800/30 hover:bg-red-950/60 transition-colors"
                   >
                     <span className="text-sm shrink-0">{alert.icon}</span>
@@ -109,7 +109,7 @@ export async function IntelligenceCards() {
                 {warningAlerts.slice(0, 2 - criticalAlerts.length).map((alert) => (
                   <Link
                     key={alert.id}
-                    href={alert.link || '#'}
+                    href={alert.link || '/dashboard'}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-950/30 border border-amber-800/20 hover:bg-amber-950/50 transition-colors"
                   >
                     <span className="text-sm shrink-0">{alert.icon}</span>

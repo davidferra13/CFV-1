@@ -248,7 +248,7 @@ function ComingSoonWidget({ id }: { id: ClientDashboardWidgetId }) {
       title={CLIENT_DASHBOARD_WIDGET_LABELS[id]}
       description={CLIENT_DASHBOARD_WIDGET_DESCRIPTIONS[id]}
     >
-      <p className="text-sm text-stone-400">This widget will be connected in the next phase.</p>
+      <p className="text-sm text-stone-400">Not available yet</p>
     </ClientDashboardWidgetShell>
   )
 }

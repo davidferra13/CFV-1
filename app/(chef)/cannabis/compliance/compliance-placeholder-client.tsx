@@ -44,7 +44,7 @@ export function CompliancePlaceholderClient() {
       />
       <div className="flex items-center justify-between">
         <p className="text-xs" style={{ color: '#2d5a30' }}>
-          Saved locally · will sync to database in Phase 2
+          Saved locally in this browser
         </p>
         <button
           type="button"

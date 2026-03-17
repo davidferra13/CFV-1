@@ -85,27 +85,28 @@ export function OnboardingChecklistWidget({ progress }: Props) {
             const done = isDone(progress, step.key)
             return (
               <li key={step.key}>
-                <Link
-                  href={done ? '#' : step.href}
-                  className={`flex items-start gap-2.5 rounded-md px-2 py-1.5 transition-colors ${
-                    done ? 'opacity-50 cursor-default' : 'hover:bg-brand-900/60 cursor-pointer'
-                  }`}
-                >
-                  {done ? (
+                {done ? (
+                  <div className="flex items-start gap-2.5 rounded-md px-2 py-1.5 opacity-50 cursor-default">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                  ) : (
-                    <Circle className="h-4 w-4 text-stone-300 shrink-0 mt-0.5" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`text-xs font-medium ${done ? 'text-stone-300 line-through' : 'text-stone-200'}`}
-                    >
-                      {step.label}
-                    </p>
-                    {!done && <p className="text-[11px] text-stone-300 mt-0.5">{step.detail}</p>}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-stone-300 line-through">
+                        {step.label}
+                      </p>
+                    </div>
                   </div>
-                  {!done && <ArrowRight className="h-3.5 w-3.5 text-brand-400 shrink-0 mt-0.5" />}
-                </Link>
+                ) : (
+                  <Link
+                    href={step.href}
+                    className="flex items-start gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-brand-900/60 cursor-pointer"
+                  >
+                    <Circle className="h-4 w-4 text-stone-300 shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-stone-200">{step.label}</p>
+                      <p className="text-[11px] text-stone-300 mt-0.5">{step.detail}</p>
+                    </div>
+                    <ArrowRight className="h-3.5 w-3.5 text-brand-400 shrink-0 mt-0.5" />
+                  </Link>
+                )}
               </li>
             )
           })}

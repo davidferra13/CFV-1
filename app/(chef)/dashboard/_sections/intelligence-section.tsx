@@ -133,7 +133,7 @@ export async function IntelligenceSection({
               {criticalAlerts.length > 0 && (
                 <div className="space-y-2">
                   {criticalAlerts.map((alert) => (
-                    <Link key={alert.id} href={alert.link || '#'} className="block">
+                    <Link key={alert.id} href={alert.link || '/dashboard'} className="block">
                       <Card className="border-red-800/60 bg-red-950/30 hover:bg-red-950/50 transition-colors">
                         <CardContent className="py-3 px-4">
                           <div className="flex items-start gap-3">
@@ -157,7 +157,7 @@ export async function IntelligenceSection({
               {warningAlerts.length > 0 && (
                 <div className="space-y-2">
                   {warningAlerts.slice(0, 3).map((alert) => (
-                    <Link key={alert.id} href={alert.link || '#'} className="block">
+                    <Link key={alert.id} href={alert.link || '/dashboard'} className="block">
                       <Card className="border-amber-800/40 bg-amber-950/20 hover:bg-amber-950/40 transition-colors">
                         <CardContent className="py-3 px-4">
                           <div className="flex items-start gap-3">
@@ -181,7 +181,7 @@ export async function IntelligenceSection({
               {opportunities.length > 0 && (
                 <div className="space-y-2">
                   {opportunities.slice(0, 2).map((alert) => (
-                    <Link key={alert.id} href={alert.link || '#'} className="block">
+                    <Link key={alert.id} href={alert.link || '/dashboard'} className="block">
                       <Card className="border-brand-800/40 bg-brand-950/20 hover:bg-brand-950/40 transition-colors">
                         <CardContent className="py-3 px-4">
                           <div className="flex items-start gap-3">
