@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Plus, Trash2, X, Filter, Users, Search } from '@/components/ui/icons'
-import { buildBehavioralSegment, getSegmentPreview } from '@/lib/marketing/segmentation-actions'
+import {
+  buildBehavioralSegment,
+  deleteBehavioralSegment,
+  getSegmentPreview,
+} from '@/lib/marketing/segmentation-actions'
 import { toast } from 'sonner'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -128,9 +132,18 @@ export function BehavioralSegmentBuilder({
   }
 
   function handleDelete(segmentId: string) {
-    // Delete action not yet available on the server; remove from local view only
+    const previous = segments
     setSegments((prev) => prev.filter((s) => s.id !== segmentId))
-    toast.info('Segment hidden from view (server-side delete coming soon)')
+    startTransition(async () => {
+      try {
+        await deleteBehavioralSegment(segmentId)
+        toast.success('Segment deleted')
+      } catch (err: unknown) {
+        setSegments(previous)
+        const message = err instanceof Error ? err.message : 'Failed to delete segment'
+        toast.error(message)
+      }
+    })
   }
 
   function formatCriteria(criteria: FilterCriteria): string[] {

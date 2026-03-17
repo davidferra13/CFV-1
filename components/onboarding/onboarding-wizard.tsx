@@ -278,18 +278,20 @@ export function OnboardingWizard() {
             <FirstClientStep onComplete={handleComplete} onSkip={handleSkip} />
           )}
           {currentStep.key === 'first_recipe' && (
-            <PlaceholderStep
+            <RedirectStep
               title="Add your first recipe"
               description="Add a signature dish from your repertoire. You can import recipes later too."
-              onComplete={() => handleComplete({})}
+              href="/recipes"
+              buttonLabel="Go to Recipes"
               onSkip={handleSkip}
             />
           )}
           {currentStep.key === 'first_event' && (
-            <PlaceholderStep
+            <RedirectStep
               title="Create your first event"
               description="Set up an upcoming event, dinner, or booking to see how ChefFlow manages your workflow."
-              onComplete={() => handleComplete({})}
+              href="/events"
+              buttonLabel="Go to Events"
               onSkip={handleSkip}
             />
           )}
@@ -297,18 +299,20 @@ export function OnboardingWizard() {
             <PricingStep onComplete={handleComplete} onSkip={handleSkip} />
           )}
           {currentStep.key === 'calendar' && (
-            <PlaceholderStep
+            <RedirectStep
               title="Set your availability"
               description="Define your working hours and days off so clients know when you're available."
-              onComplete={() => handleComplete({})}
+              href="/calendar"
+              buttonLabel="Go to Calendar"
               onSkip={handleSkip}
             />
           )}
           {currentStep.key === 'communication' && (
-            <PlaceholderStep
+            <RedirectStep
               title="Communication preferences"
               description="Configure how you receive inquiries and communicate with clients."
-              onComplete={() => handleComplete({})}
+              href="/settings"
+              buttonLabel="Go to Settings"
               onSkip={handleSkip}
             />
           )}
@@ -318,16 +322,18 @@ export function OnboardingWizard() {
   )
 }
 
-// Placeholder for steps that don't have dedicated forms yet
-function PlaceholderStep({
+// Redirect step: sends user to the actual page to complete the task
+function RedirectStep({
   title,
   description,
-  onComplete,
+  href,
+  buttonLabel,
   onSkip,
 }: {
   title: string
   description: string
-  onComplete: () => void
+  href: string
+  buttonLabel: string
   onSkip: () => void
 }) {
   return (
@@ -337,26 +343,25 @@ function PlaceholderStep({
         <p className="mt-1 text-sm text-gray-500">{description}</p>
       </div>
 
-      <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
-        <p className="text-sm text-gray-500">
-          Full form coming soon. For now, mark as complete or skip.
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center space-y-3">
+        <p className="text-sm text-gray-600">
+          Complete this step from the main app. You can return to onboarding anytime.
         </p>
+        <a
+          href={href}
+          className="inline-block rounded-md bg-orange-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+        >
+          {buttonLabel}
+        </a>
       </div>
 
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex items-center justify-end pt-4">
         <button
           type="button"
           onClick={onSkip}
           className="text-sm text-gray-500 hover:text-gray-700 underline"
         >
-          I'll do this later
-        </button>
-        <button
-          type="button"
-          onClick={onComplete}
-          className="rounded-md bg-orange-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-        >
-          Mark Complete & Continue
+          Skip for now
         </button>
       </div>
     </div>

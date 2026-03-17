@@ -248,6 +248,28 @@ export async function getSegmentPreview(filters: BehavioralFilters): Promise<Seg
 }
 
 /**
+ * Delete a behavioral segment by ID.
+ */
+export async function deleteBehavioralSegment(segmentId: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { error } = await supabase
+    .from('client_segments')
+    .delete()
+    .eq('id', segmentId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[deleteBehavioralSegment] Error:', error)
+    throw new Error('Failed to delete segment')
+  }
+
+  revalidatePath('/clients/segments')
+  return { success: true }
+}
+
+/**
  * Re-evaluate a saved segment's filters against current clients.
  * Returns the segment name and all currently matching clients.
  */
