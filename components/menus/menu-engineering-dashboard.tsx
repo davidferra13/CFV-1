@@ -158,7 +158,18 @@ function QuadrantPanel({
 
 function SummaryBar({ result }: { result: MenuEngineeringResult }) {
   const { summary } = result
-  const total = summary.totalRecipes || 1
+  const total = summary.totalRecipes
+
+  if (total === 0) {
+    return (
+      <div className="bg-white rounded-xl border p-4 mb-6">
+        <h3 className="font-semibold text-sm">Menu Mix Distribution</h3>
+        <p className="text-xs text-gray-500 mt-2">
+          No recipes analyzed yet. Add costed recipes to see distribution.
+        </p>
+      </div>
+    )
+  }
 
   const segments: { quadrant: MenuQuadrant; count: number }[] = [
     { quadrant: 'star', count: summary.stars },

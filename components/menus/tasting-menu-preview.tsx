@@ -45,7 +45,7 @@ const PORTION_LABELS: Record<string, string> = {
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
 function formatCents(cents: number | null): string {
-  if (!cents) return '$0.00'
+  if (cents == null) return 'Not set'
   return `$${(cents / 100).toFixed(2)}`
 }
 
@@ -58,8 +58,9 @@ type Props = {
 
 export function TastingMenuPreview({ menu, onClose }: Props) {
   const hasWinePairings = menu.courses.some((c) => c.wine_pairing)
-  const totalPerPerson = (menu.price_per_person_cents ?? 0)
-  const totalWithWine = totalPerPerson + (menu.wine_pairing_upcharge_cents ?? 0)
+  const totalPerPerson = menu.price_per_person_cents
+  const totalWithWine =
+    totalPerPerson != null ? totalPerPerson + (menu.wine_pairing_upcharge_cents ?? 0) : null
 
   function handlePrint() {
     window.print()
@@ -145,9 +146,7 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
                   </div>
                 </div>
 
-                <h3 className="mt-1.5 text-base font-semibold text-gray-900">
-                  {course.dish_name}
-                </h3>
+                <h3 className="mt-1.5 text-base font-semibold text-gray-900">{course.dish_name}</h3>
 
                 {course.description && (
                   <p className="mt-0.5 text-sm text-gray-600">{course.description}</p>
@@ -158,9 +157,7 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
                   <div className="mt-2 flex items-start gap-1.5 rounded-md bg-purple-50 px-3 py-2">
                     <span className="text-sm">&#127863;</span>
                     <div>
-                      <p className="text-xs font-medium text-purple-800">
-                        {course.wine_pairing}
-                      </p>
+                      <p className="text-xs font-medium text-purple-800">{course.wine_pairing}</p>
                       {course.pairing_notes && (
                         <p className="mt-0.5 text-[11px] text-purple-600 italic">
                           {course.pairing_notes}
@@ -182,9 +179,7 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
             {totalPerPerson > 0 && (
               <div className="flex items-center gap-4">
                 <span className="text-gray-600">Per Person</span>
-                <span className="font-semibold text-gray-900">
-                  {formatCents(totalPerPerson)}
-                </span>
+                <span className="font-semibold text-gray-900">{formatCents(totalPerPerson)}</span>
               </div>
             )}
             {hasWinePairings && (menu.wine_pairing_upcharge_cents ?? 0) > 0 && (
@@ -197,9 +192,7 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
                 </div>
                 <div className="mt-1 flex items-center gap-4 border-t border-gray-100 pt-1">
                   <span className="font-medium text-gray-700">With Wine Pairing</span>
-                  <span className="font-bold text-gray-900">
-                    {formatCents(totalWithWine)}
-                  </span>
+                  <span className="font-bold text-gray-900">{formatCents(totalWithWine)}</span>
                 </div>
               </>
             )}

@@ -8,24 +8,16 @@ export async function findChefByPublicSlug<T>(
     return { data: null, matchedOn: null, error: null }
   }
 
-  const bySlug = await supabase
-    .from('chefs')
-    .select(select)
-    .eq('slug', normalizedSlug)
-    .maybeSingle()
+  // Run both lookups in parallel instead of sequentially
+  const [bySlug, byBookingSlug] = await Promise.all([
+    supabase.from('chefs').select(select).eq('slug', normalizedSlug).maybeSingle(),
+    supabase.from('chefs').select(select).eq('booking_slug', normalizedSlug).maybeSingle(),
+  ])
+
+  // Prefer slug match over booking_slug match
   if (bySlug.data) {
     return { data: bySlug.data as T, matchedOn: 'slug', error: null }
   }
-  if (bySlug.error && bySlug.error.code !== 'PGRST116') {
-    return { data: null, matchedOn: null, error: bySlug.error }
-  }
-
-  const byBookingSlug = await supabase
-    .from('chefs')
-    .select(select)
-    .eq('booking_slug', normalizedSlug)
-    .maybeSingle()
-
   if (byBookingSlug.data) {
     return { data: byBookingSlug.data as T, matchedOn: 'booking_slug', error: null }
   }
@@ -33,7 +25,7 @@ export async function findChefByPublicSlug<T>(
   return {
     data: null,
     matchedOn: null,
-    error: byBookingSlug.error ?? bySlug.error ?? null,
+    error: bySlug.error ?? byBookingSlug.error ?? null,
   }
 }
 

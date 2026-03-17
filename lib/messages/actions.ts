@@ -118,8 +118,9 @@ export async function createMessage(input: CreateMessageInput) {
         }
         const followUpMs = followUpMap[inq.status]
 
-        // Skip timer reset for terminal statuses
-        if (followUpMs != null) {
+        // Skip timer reset for terminal statuses and quoted inquiries
+        // (quoted has its own 72h window set at transition time; chef messages shouldn't reset it)
+        if (followUpMs != null && inq.status !== 'quoted') {
           const updatePayload: Record<string, string | null> = {
             follow_up_due_at: new Date(Date.now() + followUpMs).toISOString(),
             next_action_by: 'client',

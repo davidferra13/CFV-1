@@ -18,7 +18,6 @@ export const metadata: Metadata = {
 }
 
 const PricingFaq = dynamic(() => import('./_components/pricing-faq'), {
-  ssr: false,
   loading: () => (
     <section className="bg-stone-50 py-16 md:py-24">
       <div className="container mx-auto px-4">

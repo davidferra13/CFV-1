@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 }
 
 const ContactForm = dynamic(() => import('./_components/contact-form'), {
-  ssr: false,
   loading: () => (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
       <div className="lg:col-span-2">

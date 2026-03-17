@@ -11,7 +11,6 @@ export const metadata: Metadata = {
 }
 
 const TermsExtendedSections = dynamic(() => import('./_components/terms-extended-sections'), {
-  ssr: false,
   loading: () => (
     <div className="space-y-10">
       {[1, 2, 3, 4].map((i) => (

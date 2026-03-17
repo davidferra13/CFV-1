@@ -920,10 +920,40 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
     )
   }
 
+  // Build atomic payload: status + follow-up timer in a single UPDATE
+  const followUpMap: Record<string, number | null> = {
+    awaiting_client: 48 * 60 * 60 * 1000, // 48h
+    awaiting_chef: 24 * 60 * 60 * 1000, // 24h
+    quoted: 72 * 60 * 60 * 1000, // 72h
+    confirmed: null, // terminal
+    declined: null, // terminal
+    expired: null, // terminal
+  }
+
+  const followUpMs = followUpMap[newStatus]
+  const updatePayload: Record<string, string | null> = {
+    status: newStatus,
+    follow_up_due_at: followUpMs != null ? new Date(Date.now() + followUpMs).toISOString() : null,
+  }
+
+  if (newStatus === 'awaiting_client') {
+    updatePayload.next_action_by = 'client'
+    updatePayload.next_action_required = 'Waiting for client response'
+  } else if (newStatus === 'awaiting_chef') {
+    updatePayload.next_action_by = 'chef'
+    updatePayload.next_action_required = 'Chef needs to respond'
+  } else if (newStatus === 'quoted') {
+    updatePayload.next_action_by = 'client'
+    updatePayload.next_action_required = 'Waiting for client to accept quote'
+  } else {
+    updatePayload.next_action_by = null
+    updatePayload.next_action_required = null
+  }
+
   const runUpdate = async (withSoftDeleteFilter: boolean) => {
     let query = supabase
       .from('inquiries')
-      .update({ status: newStatus })
+      .update(updatePayload)
       .eq('id', id)
       .eq('tenant_id', user.tenantId!)
     if (withSoftDeleteFilter) {
@@ -945,46 +975,6 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
 
   revalidatePath('/inquiries')
   revalidatePath(`/inquiries/${id}`)
-
-  // Recalculate follow_up_due_at based on new status (non-blocking)
-  try {
-    const followUpMap: Record<string, number | null> = {
-      awaiting_client: 48 * 60 * 60 * 1000, // 48h
-      awaiting_chef: 24 * 60 * 60 * 1000, // 24h
-      quoted: 72 * 60 * 60 * 1000, // 72h
-      confirmed: null, // terminal
-      declined: null, // terminal
-      expired: null, // terminal
-    }
-
-    const followUpMs = followUpMap[newStatus]
-    const followUpPayload: Record<string, string | null> = {
-      follow_up_due_at: followUpMs != null ? new Date(Date.now() + followUpMs).toISOString() : null,
-    }
-
-    // Set next_action_by based on who needs to act
-    if (newStatus === 'awaiting_client') {
-      followUpPayload.next_action_by = 'client'
-      followUpPayload.next_action_required = 'Waiting for client response'
-    } else if (newStatus === 'awaiting_chef') {
-      followUpPayload.next_action_by = 'chef'
-      followUpPayload.next_action_required = 'Chef needs to respond'
-    } else if (newStatus === 'quoted') {
-      followUpPayload.next_action_by = 'client'
-      followUpPayload.next_action_required = 'Waiting for client to accept quote'
-    } else {
-      followUpPayload.next_action_by = null
-      followUpPayload.next_action_required = null
-    }
-
-    await supabase
-      .from('inquiries')
-      .update(followUpPayload)
-      .eq('id', id)
-      .eq('tenant_id', user.tenantId!)
-  } catch (err) {
-    console.error('[transitionInquiry] Follow-up recalculation failed (non-blocking):', err)
-  }
 
   // Log chef activity (non-blocking)
   try {
