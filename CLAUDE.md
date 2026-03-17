@@ -749,11 +749,11 @@ Private data categories that must stay local:
 
 Three AI backends, each with a clear purpose. Do not cross the privacy boundary.
 
-| Backend    | Purpose                                                      | Cost                | Privacy          |
-| ---------- | ------------------------------------------------------------ | ------------------- | ---------------- |
-| **Ollama** | Private data (client PII, financials, allergies)             | Free (local GPU)    | Data stays on PC |
-| **Gemini** | Generic cloud tasks (technique lists, kitchen specs)         | Paid (Google)       | No PII allowed   |
-| **Groq**   | Fast free cloud inference (OpenClaw build/QA, generic tasks) | Free (rate-limited) | No PII allowed   |
+| Backend    | Purpose                                              | Cost                | Privacy          |
+| ---------- | ---------------------------------------------------- | ------------------- | ---------------- |
+| **Ollama** | Private data (client PII, financials, allergies)     | Free (local GPU)    | Data stays on PC |
+| **Gemini** | Generic cloud tasks (technique lists, kitchen specs) | Paid (Google)       | No PII allowed   |
+| **Groq**   | Fast free cloud inference (generic tasks)            | Free (rate-limited) | No PII allowed   |
 
 | File                                                        | AI Backend | Why                                                    |
 | ----------------------------------------------------------- | ---------- | ------------------------------------------------------ |

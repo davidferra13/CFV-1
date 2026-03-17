@@ -4,7 +4,7 @@
 
 Groq provides free cloud inference for open-source models (Llama 3, Mixtral) on their custom LPU hardware. ~800 tokens/sec, free tier includes ~30 requests/minute and ~14,400 requests/day.
 
-Used for: OpenClaw build/QA/runner agents, and ChefFlow non-private generic tasks.
+Used for: ChefFlow non-private generic tasks.
 NOT used for: Any client PII, financials, allergies, messages (those stay on Ollama, local only).
 
 ## Step 1: Get a Groq API Key
@@ -48,7 +48,7 @@ GROQ_API_KEY=gsk_your_key_here
 
 ```
 Claude Opus/Sonnet (paid)  →  Orchestration, architecture, escalation
-Groq Llama 3 (free cloud)  →  Build, QA, runner (fast, free)
+Groq Llama 3 (free cloud)  →  Generic non-private tasks (fast, free)
 Ollama qwen3:4b (local)    →  Fallback when Groq rate-limits
 Ollama (local, all models)  →  ChefFlow private data (Remy, GOLDMINE, etc.)
 ```

@@ -1,6 +1,5 @@
 // PATCH /api/prospecting/[id]/enrich
 // Update enrichment fields on an existing prospect (event signals, news, social profiles).
-// Used by OpenClaw's automated enrichment jobs.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { validateProspectingAuth } from '@/lib/prospecting/api-auth'

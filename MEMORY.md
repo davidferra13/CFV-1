@@ -93,23 +93,14 @@ Canonical policy lives in `AI-POLICY.md`. Key rules every agent must follow:
 - Wants autonomous progress, not questions
 - Core belief: ChefFlow handles the business, chef handles the art
 
-## Infrastructure (2026-03-13)
-
-Full reference: `docs/OPENCLAW-HIERARCHY.md`
+## Infrastructure (2026-03-17)
 
 Key facts:
 
-- OpenClaw gateway retired from Pi (2026-03-17), needs new host if revived
 - Ollama runs on developer PC (localhost:11434), used by ChefFlow App AI
 - GPU: RTX 3050 (6GB VRAM). 30B models offload to CPU, run at 12-15 tok/s. Only qwen3:4b safe for fallback.
-- OpenClaw billing: separate Anthropic API key with $50 prepaid credits (loaded Mar 13, 2026)
 - Two active AI systems: Claude Code (Rank 1, PC), ChefFlow App AI (runtime)
-- Claude Code outranks OpenClaw on all code decisions. OpenClaw's output is always subject to review.
-- OpenClaw agents: main (Opus), sonnet (Sonnet), build (Groq 70B), qa (Groq 70B), runner (Groq 8B)
-- Groq free tier: ~30 req/min. Fallback chain: Opus -> Sonnet -> Groq 70B -> Ollama qwen3:4b
-- Concurrency: max 2 agents simultaneous, max 3 subagents per agent
-- Known bug: provider must be named `claude` not `anthropic` in config (normalizer crash)
-- API key must be embedded directly in config (env var resolution broken with `claude` provider name)
+- Groq free tier: ~30 req/min (used for non-private generic tasks)
 
 ## Team Operating Principles
 
