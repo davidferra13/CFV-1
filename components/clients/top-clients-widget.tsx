@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowRight } from '@/components/ui/icons'
 import { formatCurrency } from '@/lib/utils/currency'
-import { TIER_CONFIG } from '@/lib/clients/lifetime-value-actions'
+import { TIER_CONFIG } from '@/lib/clients/lifetime-value-constants'
 import type { TopClientByRevenue } from '@/lib/clients/lifetime-value-actions'
 
 interface Props {

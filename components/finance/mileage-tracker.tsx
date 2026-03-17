@@ -10,10 +10,9 @@ import {
   updateMileageLog,
   deleteMileageLog,
   type MileageEntry,
-  type MileagePurpose,
   type MileageSummary,
-  MILEAGE_PURPOSE_LABELS,
 } from '@/lib/finance/mileage-actions'
+import { MILEAGE_PURPOSE_LABELS, type MileagePurpose } from '@/lib/finance/mileage-constants'
 import { Car, Plus, Trash2, Edit2, Save, MapPin, ChevronDown } from '@/components/ui/icons'
 
 interface Props {

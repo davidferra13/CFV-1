@@ -1,12 +1,8 @@
 'use client'
 
 import { useState, useEffect, useTransition } from 'react'
-import {
-  ONBOARDING_STEPS,
-  getOnboardingProgress,
-  completeStep,
-  skipStep,
-} from '@/lib/onboarding/onboarding-actions'
+import { getOnboardingProgress, completeStep, skipStep } from '@/lib/onboarding/onboarding-actions'
+import { ONBOARDING_STEPS } from '@/lib/onboarding/onboarding-constants'
 import { ProfileStep } from './onboarding-steps/profile-step'
 import { ServicesStep } from './onboarding-steps/services-step'
 import { FirstClientStep } from './onboarding-steps/first-client-step'

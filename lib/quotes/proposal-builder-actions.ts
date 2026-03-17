@@ -94,7 +94,7 @@ const SaveDraftSchema = z.object({
 // DEFAULT SECTIONS
 // ============================================
 
-export function getDefaultSections(): ProposalSection[] {
+function getDefaultSections(): ProposalSection[] {
   return [
     {
       id: crypto.randomUUID(),
@@ -189,19 +189,17 @@ export async function saveProposalTemplate(
   const chefId = user.tenantId!
 
   // Upsert: insert if no template exists, update if it does
-  const { error } = await (supabase as any)
-    .from('proposal_templates')
-    .upsert(
-      {
-        chef_id: chefId,
-        default_sections: validated.default_sections,
-        branding: validated.branding,
-        default_terms: validated.default_terms ?? '',
-        bio_content: validated.bio_content ?? '',
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'chef_id' }
-    )
+  const { error } = await (supabase as any).from('proposal_templates').upsert(
+    {
+      chef_id: chefId,
+      default_sections: validated.default_sections,
+      branding: validated.branding,
+      default_terms: validated.default_terms ?? '',
+      bio_content: validated.bio_content ?? '',
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'chef_id' }
+  )
 
   if (error) {
     console.error('[proposal-builder] Failed to save template:', error)

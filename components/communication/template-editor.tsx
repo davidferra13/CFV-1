@@ -5,10 +5,10 @@ import {
   createTemplate,
   updateTemplate,
   deleteTemplate,
-  TEMPLATE_VARIABLES,
   type ResponseTemplate,
   type TemplateCategory,
 } from '@/lib/communication/templates/actions'
+import { TEMPLATE_VARIABLES } from '@/lib/communication/templates/constants'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
 

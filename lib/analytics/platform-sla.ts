@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 
 // Per-platform target response time in hours
-export const PLATFORM_SLA_TARGETS: Record<string, number> = {
+const PLATFORM_SLA_TARGETS: Record<string, number> = {
   thumbtack: 2,
   take_a_chef: 4,
   yhangry: 4,

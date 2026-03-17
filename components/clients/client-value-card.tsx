@@ -5,7 +5,7 @@
 // projected annual revenue, trend indicator, and tier badge.
 
 import { formatCurrency } from '@/lib/utils/currency'
-import { TIER_CONFIG, getClientTier } from '@/lib/clients/lifetime-value-actions'
+import { TIER_CONFIG, getClientTier } from '@/lib/clients/lifetime-value-constants'
 import type { ClientLifetimeValue } from '@/lib/clients/lifetime-value-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, TrendingDown } from '@/components/ui/icons'

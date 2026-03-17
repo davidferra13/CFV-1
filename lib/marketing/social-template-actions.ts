@@ -4,9 +4,11 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+import { type SocialPlatform } from './social-template-constants'
+
 // ---- Types ----
 
-export type SocialPlatform = 'instagram' | 'facebook' | 'tiktok' | 'twitter' | 'linkedin'
+export type { SocialPlatform }
 export type TemplateType = 'post' | 'story' | 'reel_caption' | 'bio' | 'hashtag_set'
 
 export type SocialTemplate = {
@@ -31,17 +33,11 @@ type CreateTemplateData = {
   hashtags?: string[]
 }
 
-type UpdateTemplateData = Partial<Omit<CreateTemplateData, 'platform'> & { platform: SocialPlatform }>
+type UpdateTemplateData = Partial<
+  Omit<CreateTemplateData, 'platform'> & { platform: SocialPlatform }
+>
 
-// ---- Character limits per platform ----
-
-export const PLATFORM_CHAR_LIMITS: Record<SocialPlatform, number> = {
-  instagram: 2200,
-  facebook: 63206,
-  tiktok: 2200,
-  twitter: 280,
-  linkedin: 3000,
-}
+// PLATFORM_CHAR_LIMITS moved to ./social-template-constants.ts
 
 // ---- Actions ----
 
@@ -134,9 +130,7 @@ export async function updateSocialTemplate(
   return { data, error: null }
 }
 
-export async function deleteSocialTemplate(
-  id: string
-): Promise<{ error: string | null }> {
+export async function deleteSocialTemplate(id: string): Promise<{ error: string | null }> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
@@ -196,9 +190,7 @@ export async function duplicateSocialTemplate(
   return { data, error: null }
 }
 
-export async function incrementUsedCount(
-  id: string
-): Promise<{ error: string | null }> {
+export async function incrementUsedCount(id: string): Promise<{ error: string | null }> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
@@ -240,35 +232,40 @@ const DEFAULT_TEMPLATES: DefaultTemplate[] = [
     platform: 'instagram',
     template_type: 'post',
     title: 'Behind the Scenes',
-    content: 'A peek behind the curtain. This is where the magic happens.\n\nFrom prep to plate, every detail matters.',
+    content:
+      'A peek behind the curtain. This is where the magic happens.\n\nFrom prep to plate, every detail matters.',
     hashtags: ['#privatechef', '#behindthescenes', '#cheflife', '#foodprep'],
   },
   {
     platform: 'instagram',
     template_type: 'post',
     title: 'Plating Shot',
-    content: 'Every plate tells a story.\n\nTonight\'s creation: [dish name]\n\nFreshly sourced, carefully crafted, served with intention.',
+    content:
+      "Every plate tells a story.\n\nTonight's creation: [dish name]\n\nFreshly sourced, carefully crafted, served with intention.",
     hashtags: ['#plating', '#chefsofinstagram', '#foodart', '#privatechef'],
   },
   {
     platform: 'instagram',
     template_type: 'post',
     title: 'Client Testimonial',
-    content: '"[Client quote here]"\n\nNothing makes my day more than hearing from happy guests. Thank you for trusting me with your table.',
+    content:
+      '"[Client quote here]"\n\nNothing makes my day more than hearing from happy guests. Thank you for trusting me with your table.',
     hashtags: ['#clientlove', '#privatechef', '#testimonial', '#happyclients'],
   },
   {
     platform: 'instagram',
     template_type: 'post',
     title: 'Weekly Menu Preview',
-    content: 'This week\'s menu is coming together.\n\nHighlights:\n- [Dish 1]\n- [Dish 2]\n- [Dish 3]\n\nLimited spots available. DM to book.',
+    content:
+      "This week's menu is coming together.\n\nHighlights:\n- [Dish 1]\n- [Dish 2]\n- [Dish 3]\n\nLimited spots available. DM to book.",
     hashtags: ['#weeklymenu', '#privatechef', '#mealprep', '#chefservices'],
   },
   {
     platform: 'instagram',
     template_type: 'post',
     title: 'Seasonal Ingredient Spotlight',
-    content: 'Right now I\'m obsessed with [ingredient].\n\nIt\'s peak season and the flavor is unreal. Here\'s how I\'m using it this week.',
+    content:
+      "Right now I'm obsessed with [ingredient].\n\nIt's peak season and the flavor is unreal. Here's how I'm using it this week.",
     hashtags: ['#seasonal', '#farmtotable', '#localingredients', '#chefsofinstagram'],
   },
   {
@@ -282,49 +279,56 @@ const DEFAULT_TEMPLATES: DefaultTemplate[] = [
     platform: 'instagram',
     template_type: 'reel_caption',
     title: 'Cooking Process Reel',
-    content: 'From raw to refined. Watch the full process.\n\nSong: [song name]\n\n[Describe dish and technique]',
+    content:
+      'From raw to refined. Watch the full process.\n\nSong: [song name]\n\n[Describe dish and technique]',
     hashtags: ['#cookingreels', '#cheflife', '#foodprocess', '#reels'],
   },
   {
     platform: 'facebook',
     template_type: 'post',
     title: 'Event Recap',
-    content: 'What an incredible evening! Had the honor of cooking for [number] guests at [location/occasion].\n\nThe menu featured [highlight dishes]. Every bite was crafted with care and locally sourced ingredients.\n\nInterested in booking a private dining experience? Send me a message.',
+    content:
+      'What an incredible evening! Had the honor of cooking for [number] guests at [location/occasion].\n\nThe menu featured [highlight dishes]. Every bite was crafted with care and locally sourced ingredients.\n\nInterested in booking a private dining experience? Send me a message.',
     hashtags: ['#privatechef', '#privateevent', '#personalchef'],
   },
   {
     platform: 'facebook',
     template_type: 'post',
     title: 'Booking Availability',
-    content: 'I have a few openings this [month/week] for private chef services.\n\nWhether it\'s an intimate dinner for two or a gathering of twenty, I\'d love to create something special for you.\n\nReach out to discuss your event.',
+    content:
+      "I have a few openings this [month/week] for private chef services.\n\nWhether it's an intimate dinner for two or a gathering of twenty, I'd love to create something special for you.\n\nReach out to discuss your event.",
     hashtags: ['#privatechef', '#booknow', '#chefforhire'],
   },
   {
     platform: 'tiktok',
     template_type: 'reel_caption',
     title: 'Day in the Life',
-    content: 'A day in the life of a private chef.\n\nSpoiler: it\'s not all glamour. It\'s early mornings, heavy bags, and a lot of love.\n\n#cheflife #privatechef #dayinthelife',
+    content:
+      "A day in the life of a private chef.\n\nSpoiler: it's not all glamour. It's early mornings, heavy bags, and a lot of love.\n\n#cheflife #privatechef #dayinthelife",
     hashtags: ['#cheflife', '#privatechef', '#dayinthelife', '#foodtok'],
   },
   {
     platform: 'twitter',
     template_type: 'post',
     title: 'Quick Thought',
-    content: 'The best meals aren\'t about the most expensive ingredients. They\'re about intention, technique, and knowing your guests.',
+    content:
+      "The best meals aren't about the most expensive ingredients. They're about intention, technique, and knowing your guests.",
     hashtags: ['#cheflife', '#privatechef'],
   },
   {
     platform: 'linkedin',
     template_type: 'post',
     title: 'Business Update',
-    content: 'Excited to share a milestone in my private chef business.\n\n[Describe achievement: new service area, number of events, partnership, etc.]\n\nGrateful for every client who trusts me to bring their vision to the table. If you know someone looking for a private chef experience, I\'d love to connect.',
+    content:
+      "Excited to share a milestone in my private chef business.\n\n[Describe achievement: new service area, number of events, partnership, etc.]\n\nGrateful for every client who trusts me to bring their vision to the table. If you know someone looking for a private chef experience, I'd love to connect.",
     hashtags: ['#privatechef', '#entrepreneur', '#foodbusiness', '#culinary'],
   },
   {
     platform: 'instagram',
     template_type: 'bio',
     title: 'Chef Bio Template',
-    content: 'Private Chef | [City/Region]\nFarm-to-table dining experiences\nBookings & inquiries: [link]\n[Signature emoji] [Tagline]',
+    content:
+      'Private Chef | [City/Region]\nFarm-to-table dining experiences\nBookings & inquiries: [link]\n[Signature emoji] [Tagline]',
     hashtags: [],
   },
   {
@@ -333,9 +337,18 @@ const DEFAULT_TEMPLATES: DefaultTemplate[] = [
     title: 'General Chef Hashtags',
     content: 'Copy and paste this set for general chef posts.',
     hashtags: [
-      '#privatechef', '#personalchef', '#cheflife', '#chefsofinstagram',
-      '#farmtotable', '#homecooking', '#foodie', '#instafood',
-      '#chefservices', '#privatecatering', '#finedining', '#foodart',
+      '#privatechef',
+      '#personalchef',
+      '#cheflife',
+      '#chefsofinstagram',
+      '#farmtotable',
+      '#homecooking',
+      '#foodie',
+      '#instafood',
+      '#chefservices',
+      '#privatecatering',
+      '#finedining',
+      '#foodart',
     ],
   },
   {
@@ -344,9 +357,16 @@ const DEFAULT_TEMPLATES: DefaultTemplate[] = [
     title: 'Event-Specific Hashtags',
     content: 'Use this set for event and party posts.',
     hashtags: [
-      '#privateevent', '#dinnnerparty', '#eventcatering', '#chefforhire',
-      '#intimatedining', '#privatecatering', '#celebrationdinner',
-      '#birthdaydinner', '#anniversarydinner', '#holidaydinner',
+      '#privateevent',
+      '#dinnnerparty',
+      '#eventcatering',
+      '#chefforhire',
+      '#intimatedining',
+      '#privatecatering',
+      '#celebrationdinner',
+      '#birthdaydinner',
+      '#anniversarydinner',
+      '#holidaydinner',
     ],
   },
 ]
@@ -369,10 +389,7 @@ export async function seedDefaultTemplates(): Promise<{ count: number; error: st
     is_default: true,
   }))
 
-  const { data, error } = await supabase
-    .from('social_templates')
-    .insert(rows)
-    .select('id')
+  const { data, error } = await supabase.from('social_templates').insert(rows).select('id')
 
   if (error) {
     console.error('[social-templates] seed error:', error)

@@ -245,7 +245,7 @@ export async function deleteTemplate(id: string): Promise<{ success: boolean; er
 // TEMPLATE VARIABLE REFERENCE
 // ==========================================
 
-export const TEMPLATE_VARIABLES = [
+const TEMPLATE_VARIABLES = [
   { key: 'client_name', description: "Client's first name", example: 'Sarah' },
   { key: 'client_full_name', description: "Client's full name", example: 'Sarah Johnson' },
   { key: 'occasion', description: 'Event occasion', example: 'Birthday Dinner' },

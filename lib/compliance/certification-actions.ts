@@ -7,7 +7,7 @@ import { z } from 'zod'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export const CERT_TYPES = [
+const CERT_TYPES = [
   'servsafe',
   'food_handler',
   'servsafe_manager',
@@ -25,7 +25,7 @@ export const CERT_TYPES = [
 export type CertType = (typeof CERT_TYPES)[number]
 export type CertStatus = 'active' | 'expiring_soon' | 'expired' | 'pending_renewal'
 
-export const CERT_TYPE_LABELS: Record<CertType, string> = {
+const CERT_TYPE_LABELS: Record<CertType, string> = {
   servsafe: 'ServSafe',
   food_handler: 'Food Handler Permit',
   servsafe_manager: 'ServSafe Manager',
@@ -41,11 +41,7 @@ export const CERT_TYPE_LABELS: Record<CertType, string> = {
 }
 
 // Cert types that every chef should have (used for "missing required" count)
-export const REQUIRED_CERT_TYPES: CertType[] = [
-  'food_handler',
-  'business_license',
-  'liability_insurance',
-]
+const REQUIRED_CERT_TYPES: CertType[] = ['food_handler', 'business_license', 'liability_insurance']
 
 const CertificationInputSchema = z.object({
   cert_type: z.enum(CERT_TYPES),

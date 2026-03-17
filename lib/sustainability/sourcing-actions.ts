@@ -4,41 +4,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
-// ============================================
-// TYPES
-// ============================================
-
-export type SourceType =
-  | 'local_farm'
-  | 'farmers_market'
-  | 'organic'
-  | 'conventional'
-  | 'imported'
-  | 'foraged'
-  | 'garden'
-  | 'specialty'
-
-export const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
-  local_farm: 'Local Farm',
-  farmers_market: "Farmer's Market",
-  organic: 'Organic Supplier',
-  conventional: 'Conventional',
-  imported: 'Imported',
-  foraged: 'Foraged',
-  garden: 'Garden Grown',
-  specialty: 'Specialty Purveyor',
-}
-
-export const SOURCE_TYPE_COLORS: Record<SourceType, string> = {
-  local_farm: '#22c55e',
-  farmers_market: '#84cc16',
-  organic: '#10b981',
-  conventional: '#94a3b8',
-  imported: '#f97316',
-  foraged: '#06b6d4',
-  garden: '#14b8a6',
-  specialty: '#8b5cf6',
-}
+import { type SourceType } from './sourcing-constants'
+// SOURCE_TYPE_LABELS and SOURCE_TYPE_COLORS moved to ./sourcing-constants.ts
 
 // CO2 estimates: lbs CO2 per lb of food (simplified model)
 const CO2_PER_LB: Record<string, number> = {
@@ -101,22 +68,20 @@ export async function addSourcingEntry(input: SourcingEntryInput) {
   const chef = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
-    .from('sourcing_entries')
-    .insert({
-      chef_id: chef.tenantId!,
-      event_id: input.event_id || null,
-      entry_date: input.entry_date || new Date().toISOString().split('T')[0],
-      ingredient_name: input.ingredient_name,
-      source_type: input.source_type,
-      source_name: input.source_name || null,
-      distance_miles: input.distance_miles ?? null,
-      cost_cents: input.cost_cents ?? null,
-      weight_lbs: input.weight_lbs ?? null,
-      is_organic: input.is_organic ?? false,
-      is_local: input.is_local ?? false,
-      notes: input.notes || null,
-    })
+  const { error } = await (supabase as any).from('sourcing_entries').insert({
+    chef_id: chef.tenantId!,
+    event_id: input.event_id || null,
+    entry_date: input.entry_date || new Date().toISOString().split('T')[0],
+    ingredient_name: input.ingredient_name,
+    source_type: input.source_type,
+    source_name: input.source_name || null,
+    distance_miles: input.distance_miles ?? null,
+    cost_cents: input.cost_cents ?? null,
+    weight_lbs: input.weight_lbs ?? null,
+    is_organic: input.is_organic ?? false,
+    is_local: input.is_local ?? false,
+    notes: input.notes || null,
+  })
 
   if (error) throw new Error(error.message)
   revalidatePath('/culinary/sourcing')

@@ -4,11 +4,10 @@ import { useState, useTransition } from 'react'
 import {
   addSourcingEntry,
   deleteSourcingEntry,
-  SOURCE_TYPE_LABELS,
   type SourcingEntry,
   type SourcingEntryInput,
-  type SourceType,
 } from '@/lib/sustainability/sourcing-actions'
+import { SOURCE_TYPE_LABELS, type SourceType } from '@/lib/sustainability/sourcing-constants'
 
 const SOURCE_TYPES: SourceType[] = [
   'local_farm',
@@ -234,7 +233,9 @@ export function SourcingLog({
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    cost_cents: e.target.value ? Math.round(parseFloat(e.target.value) * 100) : null,
+                    cost_cents: e.target.value
+                      ? Math.round(parseFloat(e.target.value) * 100)
+                      : null,
                   })
                 }
                 placeholder="0.00"

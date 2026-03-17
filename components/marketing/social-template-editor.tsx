@@ -4,11 +4,11 @@ import { useState, useTransition } from 'react'
 import {
   createSocialTemplate,
   updateSocialTemplate,
-  PLATFORM_CHAR_LIMITS,
   type SocialTemplate,
   type SocialPlatform,
   type TemplateType,
 } from '@/lib/marketing/social-template-actions'
+import { PLATFORM_CHAR_LIMITS } from '@/lib/marketing/social-template-constants'
 
 const PLATFORMS: { value: SocialPlatform; label: string }[] = [
   { value: 'instagram', label: 'Instagram' },
@@ -114,9 +114,7 @@ export function SocialTemplateEditor({ template, onClose }: Props) {
   }
 
   const handleCopyToClipboard = async () => {
-    const fullContent = hashtags.length > 0
-      ? `${content}\n\n${hashtags.join(' ')}`
-      : content
+    const fullContent = hashtags.length > 0 ? `${content}\n\n${hashtags.join(' ')}` : content
 
     try {
       await navigator.clipboard.writeText(fullContent)
@@ -135,9 +133,7 @@ export function SocialTemplateEditor({ template, onClose }: Props) {
     return (
       <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
         <div className="p-3 border-b border-gray-100 bg-gray-50">
-          <span className="text-xs font-medium text-gray-500 uppercase">
-            {platform} Preview
-          </span>
+          <span className="text-xs font-medium text-gray-500 uppercase">{platform} Preview</span>
         </div>
         <div className="p-4">
           {/* Mock profile header */}
@@ -153,9 +149,7 @@ export function SocialTemplateEditor({ template, onClose }: Props) {
           <p className="text-sm text-gray-800 whitespace-pre-wrap mb-2">{previewContent}</p>
 
           {/* Hashtags */}
-          {hashtagString && (
-            <p className="text-sm text-blue-600">{hashtagString}</p>
-          )}
+          {hashtagString && <p className="text-sm text-blue-600">{hashtagString}</p>}
 
           {/* Mock engagement bar */}
           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
@@ -250,9 +244,7 @@ export function SocialTemplateEditor({ template, onClose }: Props) {
             <div className="flex items-center justify-between mb-1">
               <label className="text-sm font-medium text-gray-700">Content</label>
               <span
-                className={`text-xs ${
-                  isOverLimit ? 'text-red-600 font-medium' : 'text-gray-400'
-                }`}
+                className={`text-xs ${isOverLimit ? 'text-red-600 font-medium' : 'text-gray-400'}`}
               >
                 {charCount}/{charLimit}
               </span>

@@ -1,4 +1,4 @@
-// GET /events/export - Downloads all events as a CSV file.
+// GET /events/csv-export - Downloads all events as a CSV file.
 
 import { NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'

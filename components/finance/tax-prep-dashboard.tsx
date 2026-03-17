@@ -12,8 +12,8 @@ import {
   type QuarterlyEstimateRow,
   updateQuarterlyPayment,
   categorizeExpense,
-  SCHEDULE_C_LINES,
 } from '@/lib/finance/tax-prep-actions'
+import { SCHEDULE_C_LINES } from '@/lib/finance/tax-prep-constants'
 
 type Props = {
   summary: TaxPrepSummary

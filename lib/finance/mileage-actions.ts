@@ -7,26 +7,10 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { MILEAGE_PURPOSE_LABELS, type MileagePurpose } from './mileage-constants'
 
 // IRS 2026 standard mileage rate
 const IRS_RATE_PER_MILE = 72.5 // cents
-
-export type MileagePurpose =
-  | 'client_service'
-  | 'grocery_shopping'
-  | 'event_prep'
-  | 'consultation'
-  | 'delivery'
-  | 'other'
-
-export const MILEAGE_PURPOSE_LABELS: Record<MileagePurpose, string> = {
-  client_service: 'Client Service',
-  grocery_shopping: 'Grocery Shopping',
-  event_prep: 'Event Prep',
-  consultation: 'Consultation',
-  delivery: 'Delivery',
-  other: 'Other',
-}
 
 export interface MileageEntry {
   id: string
@@ -299,6 +283,10 @@ export async function getMileageSummary(year: number): Promise<MileageSummary> {
     byMonth,
     ratePerMile: IRS_RATE_PER_MILE,
   }
+}
+
+export async function getYtdMileageSummary(): Promise<MileageSummary> {
+  return getMileageSummary(new Date().getFullYear())
 }
 
 // ---------------------------------------------------------------------------

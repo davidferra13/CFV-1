@@ -2,7 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { z } from 'zod'
+import { recordPlatformSpendSchema } from './platform-cpl-constants'
 
 export interface PlatformCPLData {
   channel: string
@@ -37,17 +37,13 @@ const CHANNEL_DISPLAY: Record<string, string> = {
   other: 'Other',
 }
 
-export const recordPlatformSpendSchema = z.object({
-  channel: z.string().min(1),
-  amountCents: z.number().int().positive(),
-  spendDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  campaignName: z.string().optional(),
-  notes: z.string().optional(),
-})
-
-export async function recordPlatformSpend(
-  input: z.infer<typeof recordPlatformSpendSchema>
-): Promise<{ success: boolean; error?: string }> {
+export async function recordPlatformSpend(input: {
+  channel: string
+  amountCents: number
+  spendDate: string
+  campaignName?: string
+  notes?: string
+}): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const parsed = recordPlatformSpendSchema.safeParse(input)
   if (!parsed.success) {

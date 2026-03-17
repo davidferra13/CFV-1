@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getOnboardingStatus, ONBOARDING_STEPS } from '@/lib/onboarding/onboarding-actions'
+import { getOnboardingStatus } from '@/lib/onboarding/onboarding-actions'
+import { ONBOARDING_STEPS } from '@/lib/onboarding/onboarding-constants'
 
 export function OnboardingBanner() {
   const [status, setStatus] = useState<{

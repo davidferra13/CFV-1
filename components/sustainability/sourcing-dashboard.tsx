@@ -6,12 +6,14 @@ import {
   getSourcingScorecard,
   getSourceBreakdown,
   getMonthlyTrend,
-  SOURCE_TYPE_LABELS,
-  SOURCE_TYPE_COLORS,
   type SourcingStats,
   type Scorecard,
-  type SourceType,
 } from '@/lib/sustainability/sourcing-actions'
+import {
+  SOURCE_TYPE_LABELS,
+  SOURCE_TYPE_COLORS,
+  type SourceType,
+} from '@/lib/sustainability/sourcing-constants'
 
 const GRADE_COLORS: Record<string, string> = {
   A: 'text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-900/20 dark:border-green-800',
@@ -64,10 +66,7 @@ export function SourcingDashboard() {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-32 animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800"
-          />
+          <div key={i} className="h-32 animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" />
         ))}
       </div>
     )
@@ -147,15 +146,11 @@ export function SourcingDashboard() {
 
         {/* Avg Food Miles */}
         <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
-          <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            Avg Food Miles
-          </div>
+          <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Avg Food Miles</div>
           <div className="mt-1 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
             {stats.avgFoodMiles}
           </div>
-          <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            miles per ingredient
-          </div>
+          <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">miles per ingredient</div>
         </div>
       </div>
 
@@ -173,15 +168,15 @@ export function SourcingDashboard() {
           </div>
         </div>
         <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
-          <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Weight Tracked</div>
+          <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            Total Weight Tracked
+          </div>
           <div className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
             {stats.totalWeightLbs} lbs
           </div>
         </div>
         <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
-          <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            Total Entries
-          </div>
+          <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Entries</div>
           <div className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
             {stats.totalEntries}
           </div>

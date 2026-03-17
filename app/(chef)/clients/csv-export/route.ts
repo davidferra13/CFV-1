@@ -1,4 +1,4 @@
-// GET /clients/export - Downloads all clients as a CSV file.
+// GET /clients/csv-export - Downloads all clients as a CSV file.
 
 import { NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'

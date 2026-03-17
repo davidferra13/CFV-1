@@ -1,12 +1,8 @@
 'use client'
 
 import { useEffect } from 'react'
-import {
-  CLIENT_FIELDS,
-  RECIPE_FIELDS,
-  EVENT_FIELDS,
-  type ColumnMapping,
-} from '@/lib/migration/csv-import-actions'
+import { type ColumnMapping } from '@/lib/migration/csv-import-actions'
+import { CLIENT_FIELDS, RECIPE_FIELDS, EVENT_FIELDS } from '@/lib/migration/csv-import-constants'
 
 type TargetType = 'clients' | 'recipes' | 'events'
 
@@ -26,7 +22,7 @@ const AUTO_DETECT_MAP: Record<string, Record<string, string>> = {
     fullname: 'full_name',
     'full name': 'full_name',
     'client name': 'full_name',
-    'client_name': 'full_name',
+    client_name: 'full_name',
     email: 'email',
     'email address': 'email',
     'e-mail': 'email',
@@ -157,22 +153,17 @@ export default function ColumnMapper({
 
   // Track which target fields are already mapped
   const usedTargetFields = new Set(
-    mappings
-      .filter((m) => m.targetField !== '__skip__')
-      .map((m) => m.targetField)
+    mappings.filter((m) => m.targetField !== '__skip__').map((m) => m.targetField)
   )
 
   // Check which required fields are mapped
-  const missingRequired = requiredFields.filter(
-    (f) => !usedTargetFields.has(f)
-  )
+  const missingRequired = requiredFields.filter((f) => !usedTargetFields.has(f))
 
   return (
     <div className="space-y-4">
       {missingRequired.length > 0 && (
         <div className="rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
-          <strong>Missing required fields:</strong>{' '}
-          {missingRequired.join(', ')}
+          <strong>Missing required fields:</strong> {missingRequired.join(', ')}
         </div>
       )}
 
@@ -187,9 +178,7 @@ export default function ColumnMapper({
           </thead>
           <tbody>
             {headers.map((header, idx) => {
-              const currentMapping = mappings.find(
-                (m) => m.sourceColumn === header
-              )
+              const currentMapping = mappings.find((m) => m.sourceColumn === header)
               const currentTarget = currentMapping?.targetField || '__skip__'
 
               // Get sample values for this column
@@ -207,27 +196,17 @@ export default function ColumnMapper({
                   <td className="p-2">
                     <select
                       value={currentTarget}
-                      onChange={(e) =>
-                        handleMappingChange(header, e.target.value)
-                      }
+                      onChange={(e) => handleMappingChange(header, e.target.value)}
                       className={`w-full rounded border px-2 py-1 text-sm ${
-                        currentTarget === '__skip__'
-                          ? 'text-gray-400'
-                          : 'text-gray-900'
+                        currentTarget === '__skip__' ? 'text-gray-400' : 'text-gray-900'
                       }`}
                     >
                       <option value="__skip__">Skip this column</option>
                       {targetFields.map((field) => {
-                        const isUsed =
-                          usedTargetFields.has(field) &&
-                          currentTarget !== field
+                        const isUsed = usedTargetFields.has(field) && currentTarget !== field
                         const isRequired = requiredFields.includes(field)
                         return (
-                          <option
-                            key={field}
-                            value={field}
-                            disabled={isUsed}
-                          >
+                          <option key={field} value={field} disabled={isUsed}>
                             {field}
                             {isRequired ? ' *' : ''}
                             {isUsed ? ' (already mapped)' : ''}
@@ -244,8 +223,7 @@ export default function ColumnMapper({
       </div>
 
       <p className="text-xs text-gray-500">
-        Fields marked with * are required. Each target field can only be mapped
-        once.
+        Fields marked with * are required. Each target field can only be mapped once.
       </p>
     </div>
   )

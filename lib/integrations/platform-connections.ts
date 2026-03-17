@@ -3,45 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-
-export const SUPPORTED_PLATFORMS = [
-  {
-    key: 'thumbtack',
-    name: 'Thumbtack',
-    description: 'Connect via Thumbtack Pro API key',
-    authType: 'api_key' as const,
-  },
-  {
-    key: 'google_business',
-    name: 'Google Business Profile',
-    description: 'Uses your existing Google connection',
-    authType: 'oauth' as const,
-  },
-  {
-    key: 'bark',
-    name: 'Bark',
-    description: 'API integration (coming soon)',
-    authType: 'api_key' as const,
-  },
-  {
-    key: 'theknot',
-    name: 'The Knot',
-    description: 'API integration (coming soon)',
-    authType: 'api_key' as const,
-  },
-  {
-    key: 'cozymeal',
-    name: 'Cozymeal',
-    description: 'API integration (coming soon)',
-    authType: 'api_key' as const,
-  },
-  {
-    key: 'gigsalad',
-    name: 'GigSalad',
-    description: 'API integration (coming soon)',
-    authType: 'api_key' as const,
-  },
-]
+import { SUPPORTED_PLATFORMS } from './platform-connections-constants'
 
 export interface PlatformConnectionStatus {
   platform: string

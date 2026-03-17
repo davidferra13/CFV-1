@@ -4,11 +4,10 @@ import { useCallback, useEffect, useState, useTransition } from 'react'
 import {
   generatePrepTimeline,
   generatePrepTimelinePdf,
-  CATEGORY_LABELS,
   type PrepTimeline,
-  type PrepCategory,
   type PrepTask,
 } from '@/lib/events/prep-timeline'
+import { CATEGORY_LABELS, type PrepCategory } from '@/lib/events/prep-timeline-constants'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 

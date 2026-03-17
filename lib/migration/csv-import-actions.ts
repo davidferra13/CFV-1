@@ -45,57 +45,14 @@ export type ImportHistoryEntry = {
 
 type MappedRow = Record<string, string>
 
-// ---- Target field definitions ----
-
-export const CLIENT_FIELDS = [
-  'full_name',
-  'email',
-  'phone',
-  'address',
-  'preferred_name',
-  'partner_name',
-  'allergies',
-  'dietary_restrictions',
-  'kitchen_size',
-  'notes',
-] as const
-
-export const RECIPE_FIELDS = [
-  'name',
-  'category',
-  'method',
-  'description',
-  'prep_time_minutes',
-  'cook_time_minutes',
-  'yield_quantity',
-  'yield_unit',
-  'yield_description',
-  'dietary_tags',
-  'notes',
-] as const
-
-export const EVENT_FIELDS = [
-  'event_date',
-  'guest_count',
-  'occasion',
-  'location_address',
-  'location_city',
-  'location_state',
-  'location_zip',
-  'kitchen_notes',
-  'dietary_restrictions',
-  'allergies',
-] as const
+// Field definitions moved to ./csv-import-constants.ts
 
 // ---- Server Actions ----
 
 /**
  * Parse CSV text and return a preview (first 10 rows + metadata).
  */
-export async function parseCSVPreview(
-  csvText: string,
-  hasHeaders?: boolean
-): Promise<CSVPreview> {
+export async function parseCSVPreview(csvText: string, hasHeaders?: boolean): Promise<CSVPreview> {
   await requireChef()
 
   const { detectDelimiter } = await import('./csv-parser')
@@ -113,9 +70,7 @@ export async function parseCSVPreview(
 /**
  * Import clients from mapped CSV rows.
  */
-export async function importClients(
-  mappedRows: MappedRow[]
-): Promise<ImportResult> {
+export async function importClients(mappedRows: MappedRow[]): Promise<ImportResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const supabase = createServerClient()
@@ -147,9 +102,7 @@ export async function importClients(
       .maybeSingle()
 
     if (existing) {
-      result.errors.push(
-        `Row ${rowNum}: Client with email "${row.email}" already exists`
-      )
+      result.errors.push(`Row ${rowNum}: Client with email "${row.email}" already exists`)
       result.skipped++
       continue
     }
@@ -163,12 +116,9 @@ export async function importClients(
 
     if (row.phone?.trim()) insertData.phone = row.phone.trim()
     if (row.address?.trim()) insertData.address = row.address.trim()
-    if (row.preferred_name?.trim())
-      insertData.preferred_name = row.preferred_name.trim()
-    if (row.partner_name?.trim())
-      insertData.partner_name = row.partner_name.trim()
-    if (row.kitchen_size?.trim())
-      insertData.kitchen_size = row.kitchen_size.trim()
+    if (row.preferred_name?.trim()) insertData.preferred_name = row.preferred_name.trim()
+    if (row.partner_name?.trim()) insertData.partner_name = row.partner_name.trim()
+    if (row.kitchen_size?.trim()) insertData.kitchen_size = row.kitchen_size.trim()
     if (row.allergies?.trim()) {
       insertData.allergies = row.allergies
         .split(',')
@@ -201,9 +151,7 @@ export async function importClients(
 /**
  * Import recipes from mapped CSV rows.
  */
-export async function importRecipes(
-  mappedRows: MappedRow[]
-): Promise<ImportResult> {
+export async function importRecipes(mappedRows: MappedRow[]): Promise<ImportResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const supabase = createServerClient()
@@ -238,9 +186,7 @@ export async function importRecipes(
     }
 
     const category = row.category?.trim().toLowerCase() || 'other'
-    const resolvedCategory = validCategories.includes(category)
-      ? category
-      : 'other'
+    const resolvedCategory = validCategories.includes(category) ? category : 'other'
 
     const insertData: Record<string, unknown> = {
       tenant_id: tenantId,
@@ -251,16 +197,14 @@ export async function importRecipes(
 
     if (row.description?.trim()) insertData.description = row.description.trim()
     if (row.notes?.trim()) insertData.notes = row.notes.trim()
-    if (row.yield_description?.trim())
-      insertData.yield_description = row.yield_description.trim()
+    if (row.yield_description?.trim()) insertData.yield_description = row.yield_description.trim()
     if (row.yield_unit?.trim()) insertData.yield_unit = row.yield_unit.trim()
 
     const prepTime = parseInt(row.prep_time_minutes, 10)
     if (!isNaN(prepTime) && prepTime > 0) insertData.prep_time_minutes = prepTime
 
     const cookTime = parseInt(row.cook_time_minutes, 10)
-    if (!isNaN(cookTime) && cookTime > 0)
-      insertData.cook_time_minutes = cookTime
+    if (!isNaN(cookTime) && cookTime > 0) insertData.cook_time_minutes = cookTime
 
     const yieldQty = parseFloat(row.yield_quantity)
     if (!isNaN(yieldQty) && yieldQty > 0) insertData.yield_quantity = yieldQty
@@ -291,9 +235,7 @@ export async function importRecipes(
  * Import events from mapped CSV rows.
  * Requires client_id lookup by email or name.
  */
-export async function importEvents(
-  mappedRows: MappedRow[]
-): Promise<ImportResult> {
+export async function importEvents(mappedRows: MappedRow[]): Promise<ImportResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const supabase = createServerClient()
@@ -367,8 +309,7 @@ export async function importEvents(
     }
 
     if (row.occasion?.trim()) insertData.occasion = row.occasion.trim()
-    if (row.kitchen_notes?.trim())
-      insertData.kitchen_notes = row.kitchen_notes.trim()
+    if (row.kitchen_notes?.trim()) insertData.kitchen_notes = row.kitchen_notes.trim()
 
     if (row.dietary_restrictions?.trim()) {
       insertData.dietary_restrictions = row.dietary_restrictions
@@ -485,11 +426,7 @@ function parseSingleMXPRecipe(block: string): MXPRecipe | null {
     if (/^Preparation Time\s*:/i.test(trimmedLine)) continue
 
     // Detect section transitions
-    if (
-      trimmedLine === '' &&
-      section === 'meta' &&
-      i > startIdx + 2
-    ) {
+    if (trimmedLine === '' && section === 'meta' && i > startIdx + 2) {
       section = 'ingredients'
       continue
     }

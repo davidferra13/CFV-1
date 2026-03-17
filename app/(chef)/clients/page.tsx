@@ -35,7 +35,7 @@ export default async function ClientsPage() {
             Recurring Board
           </Button>
           <a
-            href="/clients/export"
+            href="/clients/csv-export"
             className="inline-flex items-center justify-center px-3 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
           >
             Export CSV

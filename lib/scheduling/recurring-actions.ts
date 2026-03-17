@@ -90,7 +90,7 @@ function mapRow(r: any): RecurringSchedule {
  * Pure date math: calculate the next N occurrences from a start date.
  * No AI, no LLM - just deterministic date calculations.
  */
-export function calculateNextOccurrences(
+function calculateNextOccurrences(
   frequency: Frequency,
   dayOfWeek: number | null,
   startDate: Date,

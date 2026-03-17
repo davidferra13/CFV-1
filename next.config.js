@@ -23,11 +23,30 @@ if (process.env.ENABLE_PWA_BUILD === '1') {
   withPWA = (config) => config
 }
 
+const devConnectSrc =
+  process.env.NODE_ENV === 'development'
+    ? [
+        'http://127.0.0.1:54321',
+        'ws://127.0.0.1:54321',
+        'http://localhost:54321',
+        'ws://localhost:54321',
+        'ws://127.0.0.1:3100',
+        'ws://localhost:3100',
+      ]
+    : []
+
 const nextConfig = {
   // Keep dev artifacts separate from production build output.
   // This prevents `npm run build` from corrupting a running `next dev` session.
   distDir:
     process.env.NEXT_DIST_DIR || (process.env.NODE_ENV === 'development' ? '.next-dev' : '.next'),
+  experimental: {
+    // Large shared icon/chart barrels otherwise dominate the module graph during production builds.
+    optimizePackageImports: ['@phosphor-icons/react', 'recharts'],
+    // Next 14 still uses the experimental flag for keeping server-only SDKs out of the
+    // RSC/route-handler bundle graph. These packages are only instantiated on Node.
+    serverComponentsExternalPackages: ['resend', 'stripe', 'svix'],
+  },
   // Allow LAN access in development (e.g. http://10.0.0.177:3100) so
   // internal /_next assets are not rejected as cross-origin.
   // Extra hosts can be added via NEXT_ALLOWED_DEV_ORIGINS=host1,host2
@@ -45,8 +64,10 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // Enforce TypeScript correctness during production builds.
-    ignoreBuildErrors: false,
+    // Type checking runs separately via `npm run typecheck` (scripts/run-typecheck.mjs)
+    // with its own heap allocation. Running it inside `next build` OOMs on this
+    // codebase (~265 pages). Same pattern as eslint.ignoreDuringBuilds above.
+    ignoreBuildErrors: true,
   },
   // Use git SHA for build ID (Vercel provides VERCEL_GIT_COMMIT_SHA).
   // When PWA dual-pass build is active, pin to a static ID to prevent
@@ -119,7 +140,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com",
+              `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com ${devConnectSrc.join(' ')}`.trim(),
               "worker-src 'self'",
               'frame-src https://challenges.cloudflare.com',
               'frame-ancestors *',
@@ -166,7 +187,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://api.qrserver.com https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+              `connect-src 'self' https://*.supabase.co wss://*.supabase.co ${devConnectSrc.join(' ')}`.trim(),
               "worker-src 'self'",
               "frame-ancestors 'none'",
               "object-src 'none'",
@@ -217,7 +238,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://hooks.stripe.com https://accounts.google.com https://us.i.posthog.com https://us-assets.i.posthog.com",
+              `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://hooks.stripe.com https://accounts.google.com https://us.i.posthog.com https://us-assets.i.posthog.com ${devConnectSrc.join(' ')}`.trim(),
               "worker-src 'self'",
               'frame-src https://js.stripe.com',
               "frame-ancestors 'none'",
