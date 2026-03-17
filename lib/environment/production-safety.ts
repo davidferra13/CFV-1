@@ -99,6 +99,20 @@ export function evaluateProductionSafetyEnv(
     warnings.push('STRIPE_WEBHOOK_SECRET does not match expected whsec_ prefix')
   }
 
+  if (!siteUrl) {
+    errors.push('NEXT_PUBLIC_SITE_URL is not set')
+  }
+  if (!appUrl) {
+    errors.push('NEXT_PUBLIC_APP_URL is not set')
+  }
+
+  // Sentry: warn if DSN is set but auth token is missing (source maps won't upload)
+  if (env.SENTRY_DSN && !env.SENTRY_AUTH_TOKEN) {
+    warnings.push(
+      'SENTRY_DSN is set but SENTRY_AUTH_TOKEN is missing. Source maps will not upload to Sentry.'
+    )
+  }
+
   return { errors, warnings }
 }
 
