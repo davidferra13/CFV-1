@@ -1,0 +1,14 @@
+{
+  "name": "openclaw",
+  "version": "1.0.0",
+  "description": "Autonomous worldwide food business crawler. Runs 24/7 on Raspberry Pi, systematically covering every region.",
+  "type": "module",
+  "scripts": {
+    "start": "node daemon.mjs",
+    "status": "node status.mjs",
+    "dry-run": "DRY_RUN=1 node daemon.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

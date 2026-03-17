@@ -1,0 +1,4 @@
+node_modules/
+data/progress.json
+crawler_findings/
+openclaw.log
