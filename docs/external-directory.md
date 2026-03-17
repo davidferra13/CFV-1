@@ -1,157 +1,108 @@
 # External Directory (Discover)
 
-## Overview
+Public directory of food businesses that are NOT ChefFlow platform users. Lives at `/discover`, managed at `/admin/directory-listings`.
 
-The `/discover` directory is a public-facing listing of food businesses (restaurants, caterers, food trucks, bakeries, etc.) that are NOT ChefFlow platform users. It complements the existing `/chefs` directory, which shows vetted ChefFlow platform chefs.
+## How It Works
 
-The directory follows a consent-first hybrid model:
+### Listing lifecycle
 
-- **Phase 1 (Discovered):** Minimal public facts only (name, city, cuisine type, website link)
-- **Phase 2 (Claimed/Verified):** Full details populated by the business owner after claiming
+```
+discovered ──> claimed ──> verified
+     │              │           │
+     └──────────────┴───────────┴──> removed
+                    ↑
+        pending_submission
+```
 
-## Architecture
+- **Discovered:** Admin creates manually or approves a community nomination. Shows public facts only (name, city, cuisine, website). No email on file, no outreach sent.
+- **Pending submission:** Business self-submits via `/discover/submit`. Provides their email. Waits for admin review.
+- **Claimed:** Business owner claims an existing discovered listing by providing name + email. Unlocks profile enhancement.
+- **Verified:** Admin approves. Green badge, higher ranking in results.
+- **Removed:** Business or admin removes the listing.
 
-### Database
+### Consent boundary
 
-**`directory_listings`** table stores all external business listings.
+Discovered listings have NO email, NO private data. Only public facts.
+Email, phone, address, hours, menu, description are only populated when the business owner provides them (submit or claim).
+Outreach is only sent to businesses that gave us their email voluntarily.
 
-Key columns:
+## Outreach System
 
-- `name`, `slug`, `city`, `state`, `cuisine_types[]`, `business_type`, `website_url` (Phase 1)
-- `address`, `phone`, `email`, `description`, `hours`, `photo_urls[]`, `menu_url`, `price_range` (Phase 2, consent-gated)
-- `status`: discovered | pending_submission | claimed | verified | removed
-- `source`: manual | openstreetmap | submission | community_nomination
+### When emails fire
 
-**`directory_nominations`** table stores community-submitted suggestions.
+Emails are non-blocking side effects. They never prevent the main action from succeeding.
 
-### Server Actions
+| Event in `actions.ts`                                | Outreach function in `outreach.ts` | Template                 |
+| ---------------------------------------------------- | ---------------------------------- | ------------------------ |
+| `submitDirectoryListing()` inserts a listing         | `sendDirectoryWelcomeEmail()`      | `directory-welcome.tsx`  |
+| `requestListingClaim()` updates status to claimed    | `sendDirectoryClaimedEmail()`      | `directory-claimed.tsx`  |
+| `adminUpdateListingStatus()` sets status to verified | `sendDirectoryVerifiedEmail()`     | `directory-verified.tsx` |
 
-All actions in `lib/discover/actions.ts`:
+### How a send works internally
 
-| Action                        | Auth   | Purpose                       |
-| ----------------------------- | ------ | ----------------------------- |
-| `getDirectoryListings()`      | Public | Browse with filters           |
-| `getDirectoryListingBySlug()` | Public | Single listing detail         |
-| `getDirectoryFacets()`        | Public | Filter option counts          |
-| `submitDirectoryListing()`    | Public | Business self-submission      |
-| `submitNomination()`          | Public | Community nomination          |
-| `requestListingClaim()`       | Public | Business owner claims listing |
-| `requestListingRemoval()`     | Public | Request to be removed         |
-| `adminGetAllListings()`       | Admin  | Full listing management       |
-| `adminUpdateListingStatus()`  | Admin  | Approve/remove/verify         |
-| `adminCreateListing()`        | Admin  | Manually add listings         |
-| `adminGetNominations()`       | Admin  | Review nominations            |
-| `adminReviewNomination()`     | Admin  | Approve/reject nominations    |
+Every send function in `outreach.ts` follows the same pattern:
 
-### Routes
+1. **Opt-out check:** Queries `directory_email_preferences` for the recipient. If `opted_out = true`, logs a skip and returns early.
+2. **Build opt-out URL:** `base64url(email)` appended as `?t=` param to `/discover/unsubscribe`.
+3. **Send via Resend:** Calls `sendEmail()` from `lib/email/send.ts` with a React Email component.
+4. **Log the send:** Inserts a row into `directory_outreach_log` with email type, recipient, subject, and error (if any).
+5. **Error handling:** `try/catch` around everything. Failures are logged, never thrown. The calling action in `actions.ts` also wraps the outreach call in `.catch()` so a failed email never breaks the user's submission/claim.
 
-| Route                       | Purpose                                  |
-| --------------------------- | ---------------------------------------- |
-| `/discover`                 | Browse directory with search and filters |
-| `/discover/[slug]`          | Individual listing detail                |
-| `/discover/submit`          | Business self-submission form            |
-| `/admin/directory-listings` | Admin management dashboard               |
+### Unsubscribe flow
 
-### Privacy & Consent Model
+1. Every email footer has an unsubscribe link: `/discover/unsubscribe?t=<base64url-encoded-email>`
+2. Page decodes the `?t` param, pre-fills the email input.
+3. User clicks "Unsubscribe", which calls `optOutDirectoryEmail()`.
+4. That upserts into `directory_email_preferences` with `opted_out: true`.
+5. All future sends check this table first.
 
-**Auto-populated (no consent needed):**
+### Admin outreach stats
 
-- Business name, city/neighborhood, cuisine type, website URL
-- Sourced from public registries, OpenStreetMap, or manual curation
+`getOutreachStats()` returns total sends, breakdown by email type, recent errors (last 10), and opt-out count. Rendered on `/admin/directory-listings` when `totalSent > 0`.
 
-**Consent-gated (requires claim):**
+## Database
 
-- Address, phone, email, photos, menu, hours, description
-- Only shown after business owner claims and verifies their listing
+### Tables
 
-**Removal:**
+**`directory_listings`** - All listings. RLS: public read (non-removed), service_role write.
 
-- Any listing can be removed within 48 hours via the "Request removal" button
-- No friction, no questions asked
-- Admin sees pending removal requests highlighted in the management dashboard
+Key columns: `name`, `slug`, `city`, `state`, `business_type`, `cuisine_types[]`, `website_url`, `status`, `source`, `email`, `phone`, `address`, `description`, `hours` (jsonb), `photo_urls[]`, `menu_url`, `price_range`, `featured`, `claimed_by_name`, `claimed_by_email`, `claimed_at`, `claim_token`, `removal_requested_at`, `removal_reason`.
 
-### Data Flow
+**`directory_nominations`** - Community suggestions. RLS: public insert, service_role manage.
 
-1. **Discovery:** Admin manually creates listings OR listings come from community nominations
-2. **Submission:** Businesses can self-submit via `/discover/submit` (status: `pending_submission`)
-3. **Claim:** Business owners can claim discovered listings (status: `claimed`)
-4. **Verification:** Admin verifies claimed/submitted listings (status: `verified`)
-5. **Removal:** Business or admin removes listing (status: `removed`)
+**`directory_outreach_log`** - Every email sent. Columns: `listing_id`, `email_type`, `recipient_email`, `subject`, `error`, `sent_at`.
 
-## Landing Page Integration
+**`directory_email_preferences`** - Opt-out records. Columns: `email` (unique), `opted_out`, `opted_out_at`, `opt_out_reason`.
 
-The home page search bar and category pills now route to `/discover` for non-chef categories:
+### Migrations
 
-- "Private Chefs" still goes to `/chefs` (ChefFlow platform directory)
-- "Restaurants", "Caterers", "Food Trucks", "Bakeries", "Meal Prep" go to `/discover`
+- `20260401000079_external_directory_listings.sql` - listings + nominations tables, RLS, indexes
+- `20260401000080_directory_outreach.sql` - outreach log + email preferences tables
 
-The public header nav now includes both "Chefs" and "Discover" links.
+## Implementation files
 
-## Migration
+| File                                         | What it does                                                                                                                 |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `lib/discover/actions.ts`                    | All server actions (13 total). Public queries, submissions, claims, admin CRUD. Fires outreach as non-blocking side effects. |
+| `lib/discover/outreach.ts`                   | Email dispatch, opt-out checks, send logging, admin stats.                                                                   |
+| `lib/discover/constants.ts`                  | 8 business types, 21 cuisine categories, 4 price ranges, 5 statuses. Type exports + label helpers.                           |
+| `lib/email/templates/directory-welcome.tsx`  | React Email: submission confirmation, 3-step process, preview CTA.                                                           |
+| `lib/email/templates/directory-claimed.tsx`  | React Email: claim confirmation, CTA to `/discover/[slug]/enhance`.                                                          |
+| `lib/email/templates/directory-verified.tsx` | React Email: verified badge confirmation, link to live listing.                                                              |
 
-File: `supabase/migrations/20260401000079_external_directory_listings.sql`
+## Adding a new email trigger
 
-Creates:
+1. Create the template in `lib/email/templates/directory-*.tsx` using `BaseLayout`. Include `optOutUrl` in footer.
+2. Add a send function in `outreach.ts` following the existing pattern (opt-out check, send, log).
+3. Call it from the relevant action in `actions.ts` as a non-blocking side effect:
+   ```ts
+   sendYourNewEmail({...}).catch((err) => console.error('[non-blocking] ...', err))
+   ```
+4. Add the email type string to `getOutreachStats()` if you want it tracked separately (it auto-counts by `email_type`).
 
-- `directory_listings` table with RLS (public read, service_role write)
-- `directory_nominations` table with RLS (public insert, service_role manage)
-- Indexes for search and filtering
-- `updated_at` trigger
+## Adding a new listing field
 
-## Email Outreach System
-
-### Consent-only outreach
-
-Emails are ONLY sent to businesses that voluntarily provided their email by submitting or claiming a listing. Discovered listings never receive outreach (they have no email on file).
-
-### Email triggers
-
-| Trigger                                 | Email sent                         | Template                 |
-| --------------------------------------- | ---------------------------------- | ------------------------ |
-| Business submits via `/discover/submit` | Welcome email                      | `directory-welcome.tsx`  |
-| Business owner claims a listing         | Claimed confirmation + profile CTA | `directory-claimed.tsx`  |
-| Admin verifies a listing                | Verification confirmation          | `directory-verified.tsx` |
-
-### Infrastructure
-
-- **Sending:** Uses existing Resend infrastructure (`lib/email/send.ts`)
-- **Templates:** React Email components in `lib/email/templates/directory-*.tsx`
-- **Outreach logic:** `lib/discover/outreach.ts` (opt-out checks, logging, email dispatch)
-- **Logging:** `directory_outreach_log` table tracks every email sent
-- **Opt-out:** `directory_email_preferences` table, one-click unsubscribe at `/discover/unsubscribe`
-- **Admin:** Outreach stats shown on `/admin/directory-listings` dashboard
-
-### Opt-out flow
-
-1. Every email includes an "Unsubscribe" link at the bottom
-2. Link goes to `/discover/unsubscribe?t=<base64url-encoded-email>`
-3. One click confirms unsubscribe
-4. All future sends check `directory_email_preferences` before dispatching
-5. Opt-out only affects directory emails, does not remove listings
-
-### Profile enhancement
-
-Claimed listings can enrich their profile at `/discover/[slug]/enhance`:
-
-- Pre-filled form with current listing data
-- Add: description, address, phone, menu URL, business hours
-- Changes appear immediately on the listing
-
-### Migration
-
-File: `supabase/migrations/20260401000080_directory_outreach.sql`
-
-Creates:
-
-- `directory_outreach_log` table (email send tracking)
-- `directory_email_preferences` table (opt-out management)
-
-## Constants
-
-`lib/discover/constants.ts` defines:
-
-- `BUSINESS_TYPES` (8 types)
-- `CUISINE_CATEGORIES` (21 categories)
-- `PRICE_RANGES` (4 tiers)
-- `LISTING_STATUSES` (5 statuses)
-- Helper functions: `getBusinessTypeLabel()`, `getCuisineLabel()`, `slugify()`
+1. Add the column via a new migration (additive only).
+2. Add it to the `DirectoryListing` type in `actions.ts`.
+3. If it's consent-gated: only render it on `[slug]/page.tsx` when `status === 'claimed' || status === 'verified'`.
+4. If it's editable by the business owner: add it to `enhanceDirectoryListing()` in `actions.ts` and the form in `enhance-profile-form.tsx`.
