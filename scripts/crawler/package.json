@@ -1,0 +1,14 @@
+{
+  "name": "chefflow-directory-crawler",
+  "version": "1.0.0",
+  "description": "Autonomous crawler that populates the ChefFlow directory from public data sources",
+  "type": "module",
+  "scripts": {
+    "crawl": "node index.mjs",
+    "crawl:dry": "DRY_RUN=1 node index.mjs",
+    "crawl:region": "node index.mjs --region"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

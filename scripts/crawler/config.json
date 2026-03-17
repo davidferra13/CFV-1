@@ -1,0 +1,78 @@
+{
+  "supabase": {
+    "url": "https://luefkpakzvxcsqroxyhz.supabase.co",
+    "serviceRoleKeyEnv": "SUPABASE_SERVICE_ROLE_KEY"
+  },
+  "regions": [
+    {
+      "name": "Downtown Los Angeles, CA",
+      "bbox": [33.98, -118.3, 34.07, -118.22],
+      "state": "CA"
+    },
+    {
+      "name": "West Hollywood, CA",
+      "bbox": [34.07, -118.4, 34.11, -118.33],
+      "state": "CA"
+    },
+    {
+      "name": "Manhattan, NY",
+      "bbox": [40.72, -74.01, 40.8, -73.94],
+      "state": "NY"
+    },
+    {
+      "name": "Brooklyn, NY",
+      "bbox": [40.66, -73.99, 40.72, -73.93],
+      "state": "NY"
+    },
+    {
+      "name": "Downtown Chicago, IL",
+      "bbox": [41.87, -87.66, 41.92, -87.61],
+      "state": "IL"
+    },
+    {
+      "name": "Wicker Park Chicago, IL",
+      "bbox": [41.9, -87.69, 41.93, -87.66],
+      "state": "IL"
+    },
+    {
+      "name": "Miami Beach, FL",
+      "bbox": [25.76, -80.15, 25.82, -80.11],
+      "state": "FL"
+    },
+    {
+      "name": "Wynwood Miami, FL",
+      "bbox": [25.78, -80.22, 25.82, -80.18],
+      "state": "FL"
+    },
+    {
+      "name": "Austin, TX",
+      "bbox": [30.24, -97.78, 30.3, -97.72],
+      "state": "TX"
+    },
+    {
+      "name": "San Francisco, CA",
+      "bbox": [37.74, -122.45, 37.8, -122.39],
+      "state": "CA"
+    },
+    {
+      "name": "Capitol Hill Seattle, WA",
+      "bbox": [47.6, -122.34, 47.64, -122.3],
+      "state": "WA"
+    },
+    {
+      "name": "Nashville, TN",
+      "bbox": [36.14, -86.82, 36.18, -86.76],
+      "state": "TN"
+    }
+  ],
+  "overpass": {
+    "endpoint": "https://overpass-api.de/api/interpreter",
+    "timeout": 60,
+    "rateLimitMs": 5000
+  },
+  "crawl": {
+    "batchSize": 50,
+    "maxPerRegion": 500,
+    "minNameLength": 2
+  }
+}
