@@ -3,6 +3,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ColorPalettePicker } from '@/components/settings/color-palette-picker'
+import { MilestoneAnimationToggle } from '@/components/settings/milestone-animation-toggle'
 
 export const metadata: Metadata = { title: 'Appearance - ChefFlow' }
 
@@ -38,6 +39,26 @@ export default async function AppearancePage() {
               <p className="text-sm text-stone-500">Switch between light and dark mode</p>
             </div>
             <ThemeToggle />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Milestone Animations</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-stone-300">
+                Celebrate milestones automatically
+              </p>
+              <p className="text-sm text-stone-500">
+                Disabled by default. Turn this on if you want milestone overlays and replay controls
+                in the chef portal.
+              </p>
+            </div>
+            <MilestoneAnimationToggle />
           </div>
         </CardContent>
       </Card>

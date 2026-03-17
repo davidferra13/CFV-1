@@ -9,6 +9,7 @@ const FeedbackSchema = z.object({
   message: z.string().min(1).max(2000),
   anonymous: z.boolean(),
   page_context: z.string().max(500).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 export type FeedbackInput = z.infer<typeof FeedbackSchema>
@@ -21,7 +22,7 @@ export async function submitFeedback(
     return { success: false, error: 'Invalid input.' }
   }
 
-  const { sentiment, message, anonymous, page_context } = parsed.data
+  const { sentiment, message, anonymous, page_context, metadata } = parsed.data
 
   // Best-effort: attach identity if the user is authenticated and not sending anonymously
   const user = await getCurrentUser()
@@ -33,6 +34,7 @@ export async function submitFeedback(
     message,
     anonymous,
     page_context: page_context ?? null,
+    metadata: metadata ?? {},
     user_id: !anonymous && user ? user.id : null,
     user_role: !anonymous && user ? user.role : null,
   })

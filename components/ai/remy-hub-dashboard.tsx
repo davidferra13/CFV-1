@@ -104,6 +104,12 @@ function MemoryTab() {
           personalize conversations.
         </p>
       </div>
+      {memories.some((memory) => !memory.editable) && (
+        <p className="text-xs text-stone-500">
+          Runtime file memories are loaded from `memory/runtime/remy.json`. Edit them in VS Code and
+          Remy will pick them up on the next request.
+        </p>
+      )}
       <div className="space-y-2">
         {memories.map((m) => (
           <div
@@ -115,19 +121,22 @@ function MemoryTab() {
               <p className="text-sm text-stone-200">{m.content}</p>
               <div className="flex items-center gap-2 mt-1.5">
                 <Badge variant="default">{CATEGORY_LABELS[m.category] ?? m.category}</Badge>
+                {!m.editable && <Badge variant="info">VS Code</Badge>}
                 <span className="text-xs text-stone-400">Importance: {m.importance}/10</span>
                 <span className="text-xs text-stone-400">Used {m.accessCount}x</span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => handleDelete(m.id)}
-              disabled={deleting === m.id}
-              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-stone-400 hover:text-red-500 hover:bg-red-950 transition-all disabled:opacity-50"
-              aria-label="Delete memory"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+            {m.editable && (
+              <button
+                type="button"
+                onClick={() => handleDelete(m.id)}
+                disabled={deleting === m.id}
+                className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-stone-400 hover:text-red-500 hover:bg-red-950 transition-all disabled:opacity-50"
+                aria-label="Delete memory"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         ))}
       </div>

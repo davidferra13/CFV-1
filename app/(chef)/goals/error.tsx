@@ -4,10 +4,10 @@
 // Catches errors in goals, revenue-path, and goal setup pages.
 
 import { useEffect } from 'react'
-import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 
 export default function GoalsError({
   error,
@@ -17,9 +17,7 @@ export default function GoalsError({
   reset: () => void
 }) {
   useEffect(() => {
-    Sentry.captureException(error, {
-      tags: { boundary: 'goals', digest: error.digest },
-    })
+    reportClientBoundaryError(error, { boundary: 'goals', digest: error.digest })
     console.error('[Goals Error]', error)
   }, [error])
 

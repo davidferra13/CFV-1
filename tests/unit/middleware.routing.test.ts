@@ -8,9 +8,11 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   API_SKIP_AUTH_PREFIXES,
+  PUBLIC_ASSET_PATHS,
   PUBLIC_UNAUTHENTICATED_PATHS,
   isAdminRoutePath,
   isApiSkipAuthPath,
+  isPublicAssetPath,
   isChefRoutePath,
   isClientRoutePath,
   isPublicUnauthenticatedPath,
@@ -47,6 +49,18 @@ describe('Route Policy - source of truth coverage', () => {
   it('includes expected API bypass namespaces', () => {
     for (const path of ['/api/remy/client', '/api/remy/stream', '/api/webhooks', '/api/e2e']) {
       assert.equal(API_SKIP_AUTH_PREFIXES.includes(path), true)
+    }
+  })
+
+  it('includes expected public asset routes', () => {
+    for (const path of [
+      '/manifest.json',
+      '/robots.txt',
+      '/sitemap.xml',
+      '/sw.js',
+      '/inbox-sw.js',
+    ]) {
+      assert.equal(PUBLIC_ASSET_PATHS.includes(path), true)
     }
   })
 })
@@ -120,6 +134,22 @@ describe('Middleware - public unauthenticated paths', () => {
     assert.equal(isPublicUnauthenticatedPath('/dashboard'), false)
     assert.equal(isPublicUnauthenticatedPath('/my-events'), false)
     assert.equal(isPublicUnauthenticatedPath('/settings'), false)
+  })
+})
+
+describe('Middleware - public asset paths', () => {
+  it('matches browser runtime assets that must bypass auth', () => {
+    assert.equal(isPublicAssetPath('/manifest.json'), true)
+    assert.equal(isPublicAssetPath('/robots.txt'), true)
+    assert.equal(isPublicAssetPath('/sitemap.xml'), true)
+    assert.equal(isPublicAssetPath('/sw.js'), true)
+    assert.equal(isPublicAssetPath('/inbox-sw.js'), true)
+  })
+
+  it('does not classify application pages as public assets', () => {
+    assert.equal(isPublicAssetPath('/pricing'), false)
+    assert.equal(isPublicAssetPath('/dashboard'), false)
+    assert.equal(isPublicAssetPath('/api/health'), false)
   })
 })
 

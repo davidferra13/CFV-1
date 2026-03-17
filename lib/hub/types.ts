@@ -14,9 +14,12 @@ export interface HubGuestProfile {
   profile_token: string
   auth_user_id: string | null
   client_id: string | null
-  known_allergies: string[]
-  known_dietary: string[]
+  known_allergies: string[] | null
+  known_dietary: string[] | null
   notifications_enabled: boolean
+  referred_by_profile_id?: string | null
+  first_group_id?: string | null
+  upgraded_to_client_at?: string | null
   created_at: string
   updated_at: string
 }
@@ -42,6 +45,7 @@ export type HubGroupVisibility = 'public' | 'private' | 'secret'
 export interface HubGroup {
   id: string
   event_id: string | null
+  inquiry_id?: string | null
   event_stub_id: string | null
   tenant_id: string | null
   name: string
@@ -54,6 +58,7 @@ export interface HubGroup {
   allow_member_invites: boolean
   allow_anonymous_posts: boolean
   visibility: HubGroupVisibility
+  group_type?: 'circle' | 'dinner_club' | 'planning'
   created_by_profile_id: string
   last_message_at: string | null
   last_message_preview: string | null
@@ -80,11 +85,12 @@ export interface HubGroupMember {
   can_pin: boolean
   last_read_at: string | null
   notifications_muted: boolean
-  notify_email: boolean
-  notify_push: boolean
-  quiet_hours_start: string | null
-  quiet_hours_end: string | null
-  digest_mode: HubDigestMode
+  last_notified_at?: string | null
+  notify_email?: boolean
+  notify_push?: boolean
+  quiet_hours_start?: string | null
+  quiet_hours_end?: string | null
+  digest_mode?: HubDigestMode
   joined_at: string
   // Joined data
   profile?: HubGuestProfile

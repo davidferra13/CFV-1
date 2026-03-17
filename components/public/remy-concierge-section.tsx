@@ -10,7 +10,9 @@ import { Send, Loader2, MessageCircle, ChevronDown } from '@/components/ui/icons
 import Link from 'next/link'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { getStarterPainPoints, CHEFFLOW_FEATURE_MAP } from '@/lib/ai/chefflow-feature-map'
+import { PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { NO_CLICK_FIRST_PUBLIC_ENABLED } from '@/lib/marketing/no-click-rollout'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 interface Message {
   id: string
@@ -193,10 +195,13 @@ export function RemyConciergeSection() {
           </div>
           <div className="mt-10 text-center">
             <Link
-              href="/auth/signup"
+              href={buildMarketingSignupHref({
+                sourcePage: 'home',
+                sourceCta: 'remy_fallback_primary',
+              })}
               className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
-              Sign up
+              {PRIMARY_SIGNUP_LABEL}
             </Link>
           </div>
         </div>
@@ -310,10 +315,13 @@ export function RemyConciergeSection() {
           {messages.length >= 4 && !isStreaming && (
             <div className="mt-6 text-center">
               <Link
-                href="/auth/signup"
+                href={buildMarketingSignupHref({
+                  sourcePage: 'home',
+                  sourceCta: 'remy_conversation_primary',
+                })}
                 className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
               >
-                Sign up
+                {PRIMARY_SIGNUP_LABEL}
               </Link>
             </div>
           )}

@@ -28,7 +28,19 @@ export async function postFirstCircleMessage(input: {
     .single()
 
   if (!inquiry) return
-  const tenantId = inquiry.tenant_id as string | null
+  const inquiryRecord = inquiry as Record<string, unknown> & {
+    tenant_id: string | null
+    clients?: { full_name?: string | null } | null
+    confirmed_date?: string | null
+    preferred_date?: string | null
+    confirmed_guest_count?: number | null
+    guest_count?: number | null
+    confirmed_dietary_restrictions?: string[] | null
+    confirmed_occasion?: string | null
+    occasion?: string | null
+    client_name?: string | null
+  }
+  const tenantId = inquiryRecord.tenant_id
   if (!tenantId) return
 
   // Load chef info + service config in parallel
@@ -47,11 +59,11 @@ export async function postFirstCircleMessage(input: {
 
   // Generate the first response using the deterministic template
   const response = generateFirstResponse({
-    clientName: inquiry.clients?.full_name || inquiry.client_name || 'there',
-    date: inquiry.confirmed_date || inquiry.preferred_date || null,
-    guestCount: inquiry.confirmed_guest_count || inquiry.guest_count || null,
-    dietaryRestrictions: inquiry.confirmed_dietary_restrictions || [],
-    occasion: inquiry.confirmed_occasion || inquiry.occasion || null,
+    clientName: inquiryRecord.clients?.full_name || inquiryRecord.client_name || 'there',
+    date: inquiryRecord.confirmed_date || inquiryRecord.preferred_date || null,
+    guestCount: inquiryRecord.confirmed_guest_count || inquiryRecord.guest_count || null,
+    dietaryRestrictions: inquiryRecord.confirmed_dietary_restrictions || [],
+    occasion: inquiryRecord.confirmed_occasion || inquiryRecord.occasion || null,
     chefFirstName,
     serviceConfig,
   })

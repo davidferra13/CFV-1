@@ -33,10 +33,11 @@ export type PrepTimeline = {
 }
 
 // ---------------------------------------------------------------------------
-// Category labels and colors (for display)
+// Category labels (shared constant, also exported from prep-timeline-constants.ts
+// for client components that cannot import from 'use server' files)
 // ---------------------------------------------------------------------------
 
-export const CATEGORY_LABELS: Record<PrepCategory, string> = {
+const CATEGORY_LABELS: Record<PrepCategory, string> = {
   'day-before': 'Day Before',
   morning: 'Morning Of',
   afternoon: 'Afternoon',

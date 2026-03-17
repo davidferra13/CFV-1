@@ -5,10 +5,10 @@
 // Minimal context - visitor may not be logged in at all.
 
 import { useEffect } from 'react'
-import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 
 export default function PublicError({
   error,
@@ -18,9 +18,7 @@ export default function PublicError({
   reset: () => void
 }) {
   useEffect(() => {
-    Sentry.captureException(error, {
-      tags: { boundary: 'public', digest: error.digest },
-    })
+    reportClientBoundaryError(error, { boundary: 'public', digest: error.digest })
     console.error('[Public Error]', error)
   }, [error])
 

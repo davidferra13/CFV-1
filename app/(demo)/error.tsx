@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
-import * as Sentry from '@sentry/nextjs'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 
 export default function DemoError({
   error,
@@ -13,9 +13,7 @@ export default function DemoError({
   reset: () => void
 }) {
   useEffect(() => {
-    Sentry.captureException(error, {
-      tags: { boundary: 'demo', digest: error.digest },
-    })
+    reportClientBoundaryError(error, { boundary: 'demo', digest: error.digest })
     console.error('[Demo Error]', error)
   }, [error])
 

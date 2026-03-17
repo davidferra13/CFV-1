@@ -8,11 +8,13 @@
 import { useState, useEffect } from 'react'
 import { usePushSubscription } from './use-push-subscription'
 import { useIsDemoMode } from '@/lib/demo-mode'
+import { useOnboardingPeripheralsEnabled } from '@/lib/onboarding/peripheral-visibility'
 
 const DISMISSED_KEY = 'chefflow:push-prompt-dismissed'
 
 export function PushPermissionPrompt() {
   const isDemo = useIsDemoMode()
+  const onboardingPeripheralsEnabled = useOnboardingPeripheralsEnabled()
   const { state, isLoading, subscribe } = usePushSubscription()
   const [visible, setVisible] = useState(false)
   const [dismissed, setDismissed] = useState(true) // start hidden, load from storage
@@ -29,10 +31,14 @@ export function PushPermissionPrompt() {
 
   // Show after 5-second delay once we know the state
   useEffect(() => {
-    if (state !== 'default' || dismissed) return
+    if (!onboardingPeripheralsEnabled || state !== 'default' || dismissed) {
+      setVisible(false)
+      return
+    }
+
     const timer = setTimeout(() => setVisible(true), 5000)
     return () => clearTimeout(timer)
-  }, [state, dismissed])
+  }, [dismissed, onboardingPeripheralsEnabled, state])
 
   const handleDismiss = () => {
     setVisible(false)
@@ -50,6 +56,7 @@ export function PushPermissionPrompt() {
   }
 
   if (isDemo) return null
+  if (!onboardingPeripheralsEnabled) return null
   if (!visible) return null
   if (state !== 'default') return null
 

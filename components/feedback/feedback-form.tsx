@@ -1,11 +1,29 @@
 'use client'
 
-import { useState } from 'react'
-import { submitFeedback } from '@/lib/feedback/feedback-actions'
+import { type FormEvent, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { submitFeedback as submitGuestFeedback } from '@/lib/feedback/feedback-actions'
+import { submitFeedback as submitUserFeedback, type FeedbackInput } from '@/lib/feedback/actions'
 
 interface FeedbackFormProps {
-  token: string
+  token?: string
   eventTitle?: string
+  pageContext?: string
+}
+
+const SENTIMENT_OPTIONS: Array<{ value: FeedbackInput['sentiment']; label: string }> = [
+  { value: 'love', label: 'Love it' },
+  { value: 'suggestion', label: 'Suggestion' },
+  { value: 'frustrated', label: 'Frustrated' },
+  { value: 'bug', label: 'Bug' },
+  { value: 'other', label: 'Other' },
+]
+
+function detectDeviceType() {
+  if (typeof window === 'undefined') return 'unknown'
+  if (window.innerWidth < 768) return 'mobile'
+  if (window.innerWidth < 1024) return 'tablet'
+  return 'desktop'
 }
 
 function StarRating({
@@ -49,7 +67,118 @@ function StarRating({
   )
 }
 
-export function FeedbackForm({ token, eventTitle }: FeedbackFormProps) {
+function UserFeedbackPanel({ pageContext }: { pageContext?: string }) {
+  const pathname = usePathname()
+  const [sentiment, setSentiment] = useState<FeedbackInput['sentiment']>('suggestion')
+  const [message, setMessage] = useState('')
+  const [anonymous, setAnonymous] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError(null)
+    setSubmitting(true)
+
+    const effectivePageContext = pageContext ?? pathname ?? 'unknown'
+
+    try {
+      const result = await submitUserFeedback({
+        sentiment,
+        message,
+        anonymous,
+        page_context: effectivePageContext,
+        metadata: {
+          source: 'in-app-feedback-form',
+          pathname: effectivePageContext,
+          deviceType: detectDeviceType(),
+          viewportWidth: typeof window === 'undefined' ? undefined : window.innerWidth,
+          viewportHeight: typeof window === 'undefined' ? undefined : window.innerHeight,
+          appVersion: process.env.NEXT_PUBLIC_APP_VERSION,
+          appEnv: process.env.NEXT_PUBLIC_APP_ENV ?? process.env.NODE_ENV,
+        },
+      })
+
+      if (!result.success) {
+        setError(result.error ?? 'Failed to send feedback.')
+        return
+      }
+
+      setSubmitted(true)
+      setMessage('')
+    } catch (err) {
+      console.error('[feedback] User submission error:', err)
+      setError('Failed to send feedback.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div className="rounded-xl border border-emerald-800 bg-emerald-950/40 p-4 text-sm text-emerald-200">
+        Feedback sent. It has been routed to the internal review queue.
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-1.5">
+        <label className="block text-sm font-medium text-stone-200">
+          What kind of feedback is this?
+        </label>
+        <select
+          value={sentiment}
+          onChange={(event) => setSentiment(event.target.value as FeedbackInput['sentiment'])}
+          className="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-sm text-stone-100"
+        >
+          {SENTIMENT_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="block text-sm font-medium text-stone-200">Message</label>
+        <textarea
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          rows={5}
+          maxLength={2000}
+          placeholder="Describe what happened, what you expected, and what would make this better."
+          className="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500"
+          required
+        />
+      </div>
+
+      <label className="flex items-center gap-2 text-sm text-stone-300">
+        <input
+          type="checkbox"
+          checked={anonymous}
+          onChange={(event) => setAnonymous(event.target.checked)}
+          className="rounded border-stone-600 bg-stone-950"
+        />
+        Send anonymously
+      </label>
+
+      {error ? <p className="text-sm text-red-400">{error}</p> : null}
+
+      <button
+        type="submit"
+        disabled={submitting}
+        className="w-full rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700 disabled:opacity-50"
+      >
+        {submitting ? 'Sending...' : 'Send feedback'}
+      </button>
+    </form>
+  )
+}
+
+function EventFeedbackSurvey({ token, eventTitle }: { token: string; eventTitle?: string }) {
   const [overallRating, setOverallRating] = useState(0)
   const [foodRating, setFoodRating] = useState(0)
   const [serviceRating, setServiceRating] = useState(0)
@@ -62,7 +191,7 @@ export function FeedbackForm({ token, eventTitle }: FeedbackFormProps) {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
 
@@ -74,7 +203,7 @@ export function FeedbackForm({ token, eventTitle }: FeedbackFormProps) {
     setSubmitting(true)
 
     try {
-      const result = await submitFeedback(token, {
+      const result = await submitGuestFeedback(token, {
         overallRating,
         foodRating: foodRating || overallRating,
         serviceRating: serviceRating || overallRating,
@@ -92,8 +221,8 @@ export function FeedbackForm({ token, eventTitle }: FeedbackFormProps) {
 
       setSubmitted(true)
     } catch (err) {
-      setError('Something went wrong. Please try again.')
       console.error('[feedback] Submit error:', err)
+      setError('Something went wrong. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -129,14 +258,12 @@ export function FeedbackForm({ token, eventTitle }: FeedbackFormProps) {
       onSubmit={handleSubmit}
       className="mx-auto max-w-lg space-y-6 rounded-lg bg-white p-8 shadow-md"
     >
-      {eventTitle && (
+      {eventTitle ? (
         <div className="border-b border-gray-200 pb-4">
           <h2 className="text-xl font-bold text-gray-900">How was your experience?</h2>
           <p className="mt-1 text-sm text-gray-500">Event: {eventTitle}</p>
         </div>
-      )}
-
-      {!eventTitle && (
+      ) : (
         <div className="border-b border-gray-200 pb-4">
           <h2 className="text-xl font-bold text-gray-900">How was your experience?</h2>
           <p className="mt-1 text-sm text-gray-500">We would love to hear your feedback</p>
@@ -251,4 +378,12 @@ export function FeedbackForm({ token, eventTitle }: FeedbackFormProps) {
       </button>
     </form>
   )
+}
+
+export function FeedbackForm({ token, eventTitle, pageContext }: FeedbackFormProps) {
+  if (!token) {
+    return <UserFeedbackPanel pageContext={pageContext} />
+  }
+
+  return <EventFeedbackSurvey token={token} eventTitle={eventTitle} />
 }

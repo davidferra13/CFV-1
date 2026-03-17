@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useCallback } from 'react'
 import type { ActivityEventType } from '@/lib/activity/types'
+import { buildActivityTrackPayload } from '@/lib/activity/client-payload'
 
 interface TrackedActivityLinkProps {
   href: string
@@ -32,12 +33,14 @@ export function TrackedActivityLink({
       method: 'POST',
       keepalive: true,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event_type: eventType,
-        entity_type: entityType,
-        entity_id: entityId,
-        metadata,
-      }),
+      body: JSON.stringify(
+        buildActivityTrackPayload({
+          eventType,
+          entityType,
+          entityId,
+          metadata,
+        })
+      ),
     }).catch(() => {
       // Silently ignore tracking failures.
     })

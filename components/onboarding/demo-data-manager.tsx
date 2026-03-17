@@ -5,7 +5,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { seedDemoData, clearDemoData } from '@/lib/onboarding/demo-data'
+import { seedDemoData, clearDemoData } from '@/lib/onboarding/demo-data-actions'
 import { Button } from '@/components/ui/button'
 
 interface Props {

@@ -3,7 +3,7 @@
 import { access, readFile, rm, stat } from 'node:fs/promises'
 import { constants as fsConstants } from 'node:fs'
 import path from 'node:path'
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
@@ -77,6 +77,39 @@ async function shouldResetBuildInfo(buildInfoPath, projectDir, configPaths) {
   }
 }
 
+function stopChildTree(child, signal = 'SIGTERM') {
+  if (child.exitCode !== null || child.killed) {
+    return
+  }
+
+  if (process.platform === 'win32') {
+    try {
+      spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], {
+        stdio: 'ignore',
+        windowsHide: true,
+      })
+      return
+    } catch {
+      // Fall through to direct child kill if taskkill is unavailable.
+    }
+  }
+
+  if (process.platform !== 'win32') {
+    try {
+      process.kill(-child.pid, signal)
+      return
+    } catch {
+      // Fall back to direct child kill when process-group termination is unavailable.
+    }
+  }
+
+  try {
+    child.kill(signal)
+  } catch {
+    // Best effort shutdown for child compiler process.
+  }
+}
+
 async function main() {
   const forwardedArgs = process.argv.slice(2)
   const hasIncrementalFlag = forwardedArgs.includes('--incremental')
@@ -121,19 +154,12 @@ async function main() {
   const child = spawn(process.execPath, [`--max-old-space-size=${maxOldSpaceSizeMb}`, tscCliPath, ...args], {
     stdio: 'inherit',
     shell: false,
+    detached: process.platform !== 'win32',
     env: process.env,
   })
 
   const stopChild = (signal = 'SIGTERM') => {
-    if (child.exitCode !== null) {
-      return
-    }
-
-    try {
-      child.kill(signal)
-    } catch {
-      // Best effort shutdown for child compiler process.
-    }
+    stopChildTree(child, signal)
   }
 
   for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK']) {

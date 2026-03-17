@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { submitSurveyResponse } from '@/lib/feedback/surveys'
+import { submitSurveyResponse } from '@/lib/feedback/surveys-actions'
 
 type Props = {
   token: string

@@ -889,7 +889,10 @@ async function handleMemoryList(): Promise<RemyResponse> {
     importance: m.importance,
     accessCount: m.accessCount,
     relatedClientId: m.relatedClientId,
+    relatedClientName: m.relatedClientName,
     createdAt: m.createdAt,
+    source: m.source,
+    editable: m.editable,
   }))
 
   return {

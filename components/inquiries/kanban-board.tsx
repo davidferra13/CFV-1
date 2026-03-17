@@ -41,13 +41,13 @@ const COLUMNS: ColumnDef[] = [
   },
   {
     id: 'awaiting_chef',
-    label: 'Awaiting Chef',
+    label: 'Your Reply',
     statuses: ['awaiting_chef', 'awaiting_response'],
     badgeVariant: 'warning',
   },
   {
     id: 'awaiting_client',
-    label: 'Awaiting Client',
+    label: 'Client Reply',
     statuses: ['awaiting_client'],
     badgeVariant: 'info',
   },
@@ -65,7 +65,7 @@ const COLUMNS: ColumnDef[] = [
   },
   {
     id: 'closed',
-    label: 'Declined / Expired',
+    label: 'Closed',
     statuses: ['declined', 'expired'],
     badgeVariant: 'error',
     collapsedByDefault: true,

@@ -17,8 +17,8 @@ const STATUS_CONFIG: Record<
   { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }
 > = {
   new: { label: 'New', variant: 'warning' },
-  awaiting_client: { label: 'Awaiting Client', variant: 'info' },
-  awaiting_chef: { label: 'Awaiting Chef', variant: 'default' },
+  awaiting_client: { label: 'Client Reply', variant: 'info' },
+  awaiting_chef: { label: 'Your Reply', variant: 'default' },
   quoted: { label: 'Quoted', variant: 'info' },
   confirmed: { label: 'Confirmed', variant: 'success' },
   declined: { label: 'Declined', variant: 'error' },

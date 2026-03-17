@@ -1,68 +1,94 @@
 # Uptime Monitoring Setup
 
-## Health Endpoint
+## Monitor Targets
 
-ChefFlow exposes a public health endpoint at:
+Use two endpoints for different purposes.
 
-```
-GET /api/health
-```
+| Purpose              | Endpoint                         | Healthy response                           | Why it exists                                                                                     |
+| -------------------- | -------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| Liveness             | `/api/health/ping`               | `200 OK`                                   | Fast process and edge check with no dependency inspection.                                        |
+| Readiness and paging | `/api/health/readiness?strict=1` | `200 OK` when healthy, `503` when degraded | Checks required env, circuit breakers, and background job health. Use this for external alerting. |
 
-**Response (200 OK):**
+Do not use `/api/health` for external paging. It is not the strict release-health signal.
+
+## Readiness Contract
+
+`GET /api/health/readiness?strict=1`
+
+Expected headers:
+
+- `X-Health-Status: ok` or `degraded`
+- `X-Health-Scope: readiness`
+- `X-Request-ID: <uuid>`
+
+Expected body shape:
 
 ```json
 {
   "status": "ok",
-  "timestamp": "2026-03-15T12:00:00.000Z"
+  "checks": {
+    "env": "ok",
+    "circuitBreakers": "ok",
+    "backgroundJobs": "ok"
+  },
+  "details": {},
+  "build": {}
 }
 ```
 
-No authentication required. Also supports `HEAD` requests for lower-overhead checks.
-
 ## UptimeRobot Configuration
 
-1. Create a free account at [uptimerobot.com](https://uptimerobot.com)
-2. Add a new monitor with these settings:
+Primary production monitor:
 
-| Setting             | Value                                  |
-| ------------------- | -------------------------------------- |
-| Monitor Type        | HTTP(s)                                |
-| Friendly Name       | ChefFlow Production                    |
-| URL                 | `https://app.cheflowhq.com/api/health` |
-| Monitoring Interval | 5 minutes                              |
-| Monitor Timeout     | 30 seconds                             |
+| Setting             | Value                                                     |
+| ------------------- | --------------------------------------------------------- |
+| Monitor Type        | HTTP(s)                                                   |
+| Friendly Name       | ChefFlow Production Readiness                             |
+| URL                 | `https://app.cheflowhq.com/api/health/readiness?strict=1` |
+| Monitoring Interval | 5 minutes                                                 |
+| Monitor Timeout     | 30 seconds                                                |
 
-3. For beta monitoring, add a second monitor:
+Beta monitor:
 
-| Setting             | Value                                   |
-| ------------------- | --------------------------------------- |
-| Monitor Type        | HTTP(s)                                 |
-| Friendly Name       | ChefFlow Beta                           |
-| URL                 | `https://beta.cheflowhq.com/api/health` |
-| Monitoring Interval | 5 minutes                               |
-| Monitor Timeout     | 30 seconds                              |
+| Setting             | Value                                                      |
+| ------------------- | ---------------------------------------------------------- |
+| Monitor Type        | HTTP(s)                                                    |
+| Friendly Name       | ChefFlow Beta Readiness                                    |
+| URL                 | `https://beta.cheflowhq.com/api/health/readiness?strict=1` |
+| Monitoring Interval | 5 minutes                                                  |
+| Monitor Timeout     | 30 seconds                                                 |
+
+Optional low-noise liveness monitor:
+
+| Setting             | Value                                        |
+| ------------------- | -------------------------------------------- |
+| Monitor Type        | HTTP(s)                                      |
+| Friendly Name       | ChefFlow Beta Ping                           |
+| URL                 | `https://beta.cheflowhq.com/api/health/ping` |
+| Monitoring Interval | 5 minutes                                    |
+| Monitor Timeout     | 10 seconds                                   |
 
 ## Recommended Alert Thresholds
 
-- **Down alert:** Trigger after 2 consecutive failures (10 minutes of downtime)
-- **SSL expiry:** Alert 14 days before certificate expiration
-- **Response time:** Alert if response exceeds 5 seconds consistently
+- Down alert after 2 consecutive failures.
+- SSL expiry alert 14 days before expiration.
+- Response-time alert if readiness exceeds 5 seconds consistently.
 
 ## Notification Setup
 
-Configure at least two alert contacts:
+Configure at least two alert paths:
 
-1. **Email** - Primary notification channel for all incidents
-2. **Webhook** (optional) - POST to a Slack/Discord webhook for team visibility
+1. Email for all incidents.
+2. Webhook to Slack or Discord for team visibility.
 
-## Alternative Services
+## Manual Verification
 
-If UptimeRobot doesn't fit your needs:
+Run these checks after every beta deployment:
 
-- **Better Uptime** (betteruptime.com) - Free tier with status pages
-- **Uptime Kuma** - Self-hosted, open source
-- **Pingdom** - More advanced, paid
+```bash
+curl -I https://beta.cheflowhq.com/api/health/readiness?strict=1
+curl https://beta.cheflowhq.com/api/health/readiness?strict=1
+curl -I https://beta.cheflowhq.com/api/health/ping
+```
 
-## Status Page (Optional)
-
-UptimeRobot offers a free public status page. If enabled, it can be linked from the ChefFlow footer or support docs to give users visibility into system health.
+Confirm that readiness returns `200` only when the beta environment is actually healthy.

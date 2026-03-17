@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { submitOnboarding } from '@/lib/clients/onboarding'
+import { submitOnboarding } from '@/lib/clients/onboarding-actions'
 
 type Props = {
   token: string

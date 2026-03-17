@@ -62,6 +62,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/event',
   '/proposal',
   '/review',
+  '/feedback',
   '/tip',
   '/worksheet',
   '/guest-feedback',
@@ -84,6 +85,14 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/hub',
   '/g',
   '/availability',
+] as const
+
+export const PUBLIC_ASSET_PATHS = [
+  '/manifest.json',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/sw.js',
+  '/inbox-sw.js',
 ] as const
 
 export const ADMIN_PATHS = ['/admin'] as const
@@ -139,6 +148,10 @@ export function isStaffRoutePath(pathname: string): boolean {
 
 export function isPublicUnauthenticatedPath(pathname: string): boolean {
   return matchesAnyPathOrChild(pathname, PUBLIC_UNAUTHENTICATED_PATHS)
+}
+
+export function isPublicAssetPath(pathname: string): boolean {
+  return PUBLIC_ASSET_PATHS.includes(pathname as (typeof PUBLIC_ASSET_PATHS)[number])
 }
 
 export function isAdminRoutePath(pathname: string): boolean {

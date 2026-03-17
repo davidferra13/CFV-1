@@ -1,5 +1,3 @@
-'use server'
-
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 

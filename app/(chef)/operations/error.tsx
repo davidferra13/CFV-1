@@ -4,10 +4,10 @@
 // Catches errors in kitchen-rentals, equipment, expenses.
 
 import { useEffect } from 'react'
-import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 
 export default function OperationsError({
   error,
@@ -17,9 +17,7 @@ export default function OperationsError({
   reset: () => void
 }) {
   useEffect(() => {
-    Sentry.captureException(error, {
-      tags: { boundary: 'operations', digest: error.digest },
-    })
+    reportClientBoundaryError(error, { boundary: 'operations', digest: error.digest })
     console.error('[Operations Error]', error)
   }, [error])
 

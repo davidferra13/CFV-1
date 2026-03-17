@@ -33,7 +33,7 @@ export default async function NewInquiryPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-100">Log New Inquiry</h1>
+        <h1 className="text-3xl font-bold text-stone-100">New Inquiry</h1>
         <p className="text-stone-400 mt-1">
           Capture the lead now, fill in details later. Only channel and name are required.
         </p>

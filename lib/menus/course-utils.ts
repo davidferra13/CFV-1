@@ -1,5 +1,5 @@
 export function getNextCourseNumber(courseNumbers: Array<number | null | undefined>): number {
-  const maxCourseNumber = courseNumbers.reduce((max, courseNumber) => {
+  const maxCourseNumber = courseNumbers.reduce<number>((max, courseNumber) => {
     if (typeof courseNumber !== 'number' || !Number.isFinite(courseNumber)) {
       return max
     }

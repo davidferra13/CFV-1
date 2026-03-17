@@ -840,7 +840,7 @@ export default async function SettingsPage() {
           description="Tell us what you love, what frustrates you, or anything in between. We read every submission."
           icon="MessageCircle"
         >
-          <FeedbackForm />
+          <FeedbackForm pageContext="/settings" />
         </SettingsCategory>
 
         {/* ── 20. Account & Security ───────────────────────────── */}

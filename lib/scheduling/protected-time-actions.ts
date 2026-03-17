@@ -45,6 +45,18 @@ export interface ProtectedTimeBlock {
   createdAt: string
 }
 
+export interface ProtectedBlockSummary {
+  id: string
+  start_date: string
+  end_date: string
+  title: string
+  block_type: 'full_day' | 'partial'
+  start_time: string | null
+  end_time: string | null
+  reason: string
+  created_at: string
+}
+
 // ============================================
 // ACTIONS
 // ============================================
@@ -172,6 +184,52 @@ export async function getProtectedTime(
   }
 
   return (data ?? []).map((d: any) => mapToProtectedTime(d, false, null))
+}
+
+/**
+ * Backward-compatible summary list used by Daily Ops and Remy intelligence.
+ * The underlying table stores single-date blocks, so start/end are the same day.
+ */
+export async function listProtectedBlocks(
+  startDate?: string,
+  endDate?: string
+): Promise<ProtectedBlockSummary[]> {
+  const user = await requirePro('advanced-calendar')
+  const supabase = createServerClient()
+
+  let query = (supabase as any)
+    .from('chef_availability_blocks')
+    .select('id, block_date, block_type, start_time, end_time, reason, created_at')
+    .eq('chef_id', user.tenantId!)
+    .eq('is_event_auto', false)
+    .order('block_date')
+
+  if (startDate) {
+    query = query.gte('block_date', startDate)
+  }
+
+  if (endDate) {
+    query = query.lte('block_date', endDate)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('[listProtectedBlocks] Error:', error)
+    throw new Error('Failed to load protected time blocks')
+  }
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    start_date: row.block_date,
+    end_date: row.block_date,
+    title: row.reason ?? 'Protected time',
+    block_type: row.block_type,
+    start_time: row.start_time ?? null,
+    end_time: row.end_time ?? null,
+    reason: row.reason ?? '',
+    created_at: row.created_at,
+  }))
 }
 
 // ============================================

@@ -44,4 +44,17 @@ test.describe('Recipes', () => {
     const nameField = page.getByLabel(/name|recipe name/i).first()
     await expect(nameField).toBeVisible({ timeout: 10_000 })
   })
+
+  test('recipes page shows compact mobile actions', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto(ROUTES.recipes)
+    const mainContent = page.locator('#main-content')
+    await expect(mainContent.getByRole('link', { name: 'New Recipe' })).toBeVisible()
+    const moreButton = mainContent.getByRole('button', { name: 'More' })
+    await expect(moreButton).toBeVisible()
+    await moreButton.click({ force: true })
+    await expect(mainContent.getByRole('link', { name: 'Production Log' })).toBeVisible()
+    await expect(mainContent.getByRole('link', { name: 'Ingredients' })).toBeVisible()
+    await expect(mainContent.getByRole('button', { name: 'Import Link' })).toBeVisible()
+  })
 })

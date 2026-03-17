@@ -3,18 +3,13 @@
 // Called daily by Vercel Cron. Protected by CRON_SECRET.
 
 import { NextRequest, NextResponse } from 'next/server'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { processSequences, processBirthdayEnrollments } from '@/lib/marketing/actions'
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  const secret = process.env.CRON_SECRET
-
-  if (!secret) {
-    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
-  }
-
-  if (authHeader !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const authError = verifyCronAuth(req.headers.get('authorization'))
+  if (authError) {
+    return authError
   }
 
   try {

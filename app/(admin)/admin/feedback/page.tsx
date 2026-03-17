@@ -33,7 +33,7 @@ export default async function AdminFeedbackPage() {
   const supabase: any = createAdminClient()
   const { data: rows, error } = await supabase
     .from('user_feedback')
-    .select('id, created_at, sentiment, message, anonymous, user_role, page_context')
+    .select('id, created_at, sentiment, message, anonymous, user_role, page_context, metadata')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -107,9 +107,28 @@ export default async function AdminFeedbackPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-slate-200">
-                      <span title={row.message}>
-                        {row.message.length > 140 ? row.message.slice(0, 140) + '…' : row.message}
-                      </span>
+                      <div>
+                        <span title={row.message}>
+                          {row.message.length > 140 ? row.message.slice(0, 140) + '…' : row.message}
+                        </span>
+                        {row.metadata && typeof row.metadata === 'object' ? (
+                          <div className="mt-1 text-[11px] text-slate-500">
+                            {[
+                              typeof row.metadata['deviceType'] === 'string'
+                                ? `device: ${row.metadata['deviceType']}`
+                                : null,
+                              typeof row.metadata['appVersion'] === 'string'
+                                ? `version: ${row.metadata['appVersion']}`
+                                : null,
+                              typeof row.metadata['appEnv'] === 'string'
+                                ? `env: ${row.metadata['appEnv']}`
+                                : null,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </div>
+                        ) : null}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-slate-400 text-xs">
                       {row.anonymous ? (

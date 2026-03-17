@@ -1535,9 +1535,11 @@ export default async function MyEventsPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+        <div data-tour="client-events-overview">
           <h1 className="text-3xl font-bold text-stone-100">My Events</h1>
-          <p className="mt-2 text-stone-400">Manage your upcoming events and view past bookings</p>
+          <p className="mt-2 text-stone-400" data-tour="client-make-payment">
+            Manage your upcoming events and view past bookings
+          </p>
         </div>
       </div>
 

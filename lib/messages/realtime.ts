@@ -1,4 +1,4 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
 
 /**
  * Subscribe to real-time message updates for a specific entity.
@@ -13,10 +13,7 @@ export function subscribeToMessages(
   filterValue: string,
   onMessage: (payload: { new: Record<string, unknown> }) => void
 ) {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createClient()
 
   const channel = supabase
     .channel(`messages:${filterColumn}:${filterValue}`)
@@ -45,10 +42,7 @@ export function subscribeToChefNotifications(
   tenantId: string,
   onNotification: (payload: { new: Record<string, unknown> }) => void
 ) {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createClient()
 
   const channel = supabase
     .channel(`notifications:${tenantId}`)

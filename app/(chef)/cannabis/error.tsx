@@ -4,10 +4,10 @@
 // Catches errors across the cannabis compliance and events pages.
 
 import { useEffect } from 'react'
-import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 
 export default function CannabisError({
   error,
@@ -17,9 +17,7 @@ export default function CannabisError({
   reset: () => void
 }) {
   useEffect(() => {
-    Sentry.captureException(error, {
-      tags: { boundary: 'cannabis', digest: error.digest },
-    })
+    reportClientBoundaryError(error, { boundary: 'cannabis', digest: error.digest })
     console.error('[Cannabis Module Error]', error)
   }, [error])
 

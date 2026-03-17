@@ -157,6 +157,7 @@ export default async function ChefDashboard() {
           </Link>
           <Link
             href={primaryAction.href}
+            data-tour="chef-dashboard-home"
             className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors font-medium text-sm"
           >
             <Plus className="h-4 w-4" />

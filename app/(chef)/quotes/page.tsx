@@ -125,7 +125,7 @@ export default async function QuotesPage({
           <p className="text-stone-400 mt-1">Create and track pricing quotes for your clients</p>
         </div>
         <Link href="/quotes/new">
-          <Button>+ New Quote</Button>
+          <Button data-tour="chef-send-quote">+ New Quote</Button>
         </Link>
       </div>
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { X, ClipboardList } from '@/components/ui/icons'
+import { useOnboardingPeripheralsEnabled } from '@/lib/onboarding/peripheral-visibility'
 
 const DISMISS_KEY = 'beta-survey-banner-dismissed'
 const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours
@@ -19,9 +20,15 @@ export function BetaSurveyBannerClient({
   surveyTitle,
   href,
 }: BetaSurveyBannerClientProps) {
+  const onboardingPeripheralsEnabled = useOnboardingPeripheralsEnabled()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
+    if (!onboardingPeripheralsEnabled) {
+      setVisible(false)
+      return
+    }
+
     // Check if dismissed within the last 24 hours
     const dismissedAt = localStorage.getItem(`${DISMISS_KEY}-${surveySlug}`)
     if (dismissedAt) {
@@ -29,13 +36,14 @@ export function BetaSurveyBannerClient({
       if (elapsed < DISMISS_DURATION_MS) return
     }
     setVisible(true)
-  }, [surveySlug])
+  }, [onboardingPeripheralsEnabled, surveySlug])
 
   const dismiss = () => {
     localStorage.setItem(`${DISMISS_KEY}-${surveySlug}`, String(Date.now()))
     setVisible(false)
   }
 
+  if (!onboardingPeripheralsEnabled) return null
   if (!visible) return null
 
   return (

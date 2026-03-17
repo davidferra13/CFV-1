@@ -5,9 +5,9 @@
 // Provides admin-specific recovery context.
 
 import { useEffect } from 'react'
-import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 
 export default function AdminError({
   error,
@@ -17,9 +17,7 @@ export default function AdminError({
   reset: () => void
 }) {
   useEffect(() => {
-    Sentry.captureException(error, {
-      tags: { boundary: 'admin', digest: error.digest },
-    })
+    reportClientBoundaryError(error, { boundary: 'admin', digest: error.digest })
     console.error('[Admin Error]', error)
   }, [error])
 
@@ -53,9 +51,7 @@ export default function AdminError({
             {error.message && (
               <p className="text-xs text-red-300 font-mono break-all">{error.message}</p>
             )}
-            {error.digest && (
-              <p className="text-xs text-slate-500 mt-1">ID: {error.digest}</p>
-            )}
+            {error.digest && <p className="text-xs text-slate-500 mt-1">ID: {error.digest}</p>}
           </div>
         )}
 

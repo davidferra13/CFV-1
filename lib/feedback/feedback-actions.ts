@@ -33,7 +33,7 @@ export async function getAllFeedback(filters?: {
 
   let query = supabase
     .from('event_feedback')
-    .select('*, events(title, event_date), clients(first_name, last_name)')
+    .select('*, events(occasion, event_date), clients(full_name)')
     .eq('chef_id', user.tenantId!)
     .order('submitted_at', { ascending: false })
 
@@ -67,7 +67,7 @@ export async function createFeedbackRequest(eventId: string) {
   // Verify the event belongs to this chef
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select('id, client_id, title')
+    .select('id, client_id, occasion')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -99,7 +99,7 @@ export async function createFeedbackRequest(eventId: string) {
 
   return {
     token,
-    eventTitle: event.title,
+    eventTitle: event.occasion ?? 'Event',
     error: null,
   }
 }

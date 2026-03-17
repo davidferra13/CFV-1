@@ -36,7 +36,9 @@ export async function getCircleForContext(input: {
       .limit(1)
       .maybeSingle()
 
-    if (data) return { groupId: data.id, groupToken: data.group_token, tenantId: data.tenant_id }
+    if (data?.tenant_id) {
+      return { groupId: data.id, groupToken: data.group_token, tenantId: data.tenant_id }
+    }
   }
 
   // Fall back to inquiry-linked circle
@@ -49,7 +51,9 @@ export async function getCircleForContext(input: {
       .limit(1)
       .maybeSingle()
 
-    if (data) return { groupId: data.id, groupToken: data.group_token, tenantId: data.tenant_id }
+    if (data?.tenant_id) {
+      return { groupId: data.id, groupToken: data.group_token, tenantId: data.tenant_id }
+    }
   }
 
   return null

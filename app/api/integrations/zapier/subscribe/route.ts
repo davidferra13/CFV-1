@@ -120,8 +120,9 @@ export async function POST(req: NextRequest) {
     }
 
     const targetUrl = targetUrlCandidate.trim()
+    let normalizedTargetUrl = targetUrl
     try {
-      validateWebhookUrl(targetUrl)
+      normalizedTargetUrl = validateWebhookUrl(targetUrl).toString()
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Invalid webhook URL'
       throw new HttpError(400, message)
@@ -134,7 +135,7 @@ export async function POST(req: NextRequest) {
       .from('zapier_webhook_subscriptions')
       .insert({
         tenant_id: tenantId,
-        target_url: targetUrl,
+        target_url: normalizedTargetUrl,
         event_types: eventTypes,
       })
       .select('id, target_url, event_types, secret, created_at')

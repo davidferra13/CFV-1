@@ -1564,8 +1564,26 @@ async function handleTacBookingConfirmed(
     externalIds: booking.identityKeys,
   })
 
+  let existingInquiry: {
+    id: string
+    client_id: string | null
+    referral_partner_id: string | null
+    partner_location_id: string | null
+    confirmed_date: string | null
+    confirmed_guest_count: number | null
+    confirmed_occasion: string | null
+    confirmed_location: string | null
+    confirmed_service_expectations: string | null
+    confirmed_dietary_restrictions: string[] | null
+    confirmed_cannabis_preference: string | null
+    source_message: string | null
+    converted_to_event_id: string | null
+    external_link: string | null
+    unknown_fields: Json | null
+  } | null = null
+
   if (inquiryId) {
-    const { data: existingInquiry } = await supabase
+    const { data: fetchedInquiry } = await supabase
       .from('inquiries')
       .select(
         'id, client_id, referral_partner_id, partner_location_id, confirmed_date, confirmed_guest_count, confirmed_occasion, confirmed_location, confirmed_service_expectations, confirmed_dietary_restrictions, confirmed_cannabis_preference, source_message, converted_to_event_id, external_link, unknown_fields'
@@ -1573,6 +1591,8 @@ async function handleTacBookingConfirmed(
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
       .single()
+
+    existingInquiry = fetchedInquiry
 
     // Extract service_mode and schedule_request from unknown_fields
     const uf = (existingInquiry?.unknown_fields ?? {}) as Record<string, unknown>
@@ -2022,7 +2042,7 @@ async function handleTacPayment(
               ...existingFields,
               take_a_chef_payouts: [...existingPayouts, payoutRecord],
               last_payout_recorded_at: new Date().toISOString(),
-            },
+            } as Json,
           })
           .eq('id', match.id)
           .eq('tenant_id', tenantId)

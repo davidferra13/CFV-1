@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { CheckCircle2, CalendarDays, CreditCard, UsersRound } from 'lucide-react'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const FEATURES = [
   {
@@ -24,6 +26,8 @@ const STEPS = [
   'Send the proposal link to your client in seconds.',
   'Collect payment and move straight into service prep.',
 ] as const
+
+const IS_BETA = LAUNCH_MODE === 'beta'
 
 export default function LandingBelowFold() {
   return (
@@ -78,10 +82,13 @@ export default function LandingBelowFold() {
           Start with the essentials, then scale your operations with confidence.
         </p>
         <Link
-          href="/auth/signup"
+          href={buildMarketingSignupHref({
+            sourcePage: 'home',
+            sourceCta: 'below_fold_primary',
+          })}
           className="mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
         >
-          Create Your Account
+          {IS_BETA ? PRIMARY_SIGNUP_LABEL : 'Create Your Account'}
         </Link>
       </section>
     </>

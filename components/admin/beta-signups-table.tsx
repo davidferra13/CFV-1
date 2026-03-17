@@ -13,6 +13,8 @@ interface BetaSignup {
   cuisine_type: string | null
   years_in_business: string | null
   referral_source: string | null
+  source_page: string | null
+  source_cta: string | null
   status: string
   notes: string | null
   created_at: string
@@ -45,6 +47,12 @@ function formatDate(iso: string) {
     minute: '2-digit',
     hour12: true,
   })
+}
+
+function formatMarketingOrigin(signup: Pick<BetaSignup, 'source_page' | 'source_cta'>) {
+  if (!signup.source_page && !signup.source_cta) return '-'
+  if (!signup.source_cta) return signup.source_page
+  return `${signup.source_page ?? 'unknown'} / ${signup.source_cta}`
 }
 
 // ── Invite Link Copy Button ──
@@ -176,6 +184,7 @@ function SignupRow({ signup, onDelete }: { signup: BetaSignup; onDelete: (id: st
           ? REFERRAL_LABELS[signup.referral_source] || signup.referral_source
           : '-'}
       </td>
+      <td className="px-4 py-3 text-slate-400 text-xs">{formatMarketingOrigin(signup)}</td>
       <td className="px-4 py-3">
         <select
           value={status}
@@ -371,6 +380,7 @@ export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
                 <th className="px-4 py-3 font-medium text-slate-300">Cuisine</th>
                 <th className="px-4 py-3 font-medium text-slate-300">Years</th>
                 <th className="px-4 py-3 font-medium text-slate-300">Source</th>
+                <th className="px-4 py-3 font-medium text-slate-300">Origin</th>
                 <th className="px-4 py-3 font-medium text-slate-300">Status</th>
                 <th className="px-4 py-3 font-medium text-slate-300">Notes</th>
                 <th className="px-4 py-3 font-medium text-slate-300 w-12">

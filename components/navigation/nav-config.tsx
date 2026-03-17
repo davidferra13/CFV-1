@@ -180,10 +180,10 @@ export const navGroups: NavGroup[] = [
         icon: ChatTeardropText,
         children: [
           { href: '/inquiries/awaiting-response', label: 'Awaiting Response' },
-          { href: '/inquiries/awaiting-client-reply', label: 'Awaiting Client' },
+          { href: '/inquiries/awaiting-client-reply', label: 'Client Reply' },
           { href: '/inquiries/menu-drafting', label: 'Menu Drafting' },
           { href: '/inquiries/sent-to-client', label: 'Sent to Client' },
-          { href: '/inquiries/new', label: 'Log New Inquiry' },
+          { href: '/inquiries/new', label: 'New Inquiry' },
           { href: '/inquiries/declined', label: 'Declined' },
         ],
       },

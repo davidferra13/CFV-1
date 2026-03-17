@@ -15,7 +15,7 @@ import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { cancelInvitation } from '@/lib/clients/actions'
 import { format, differenceInDays } from 'date-fns'
 import { useRouter } from 'next/navigation'
-import { Tables } from '@/types/database'
+import type { Tables } from '@/types/database'
 import { toast } from 'sonner'
 
 interface PendingInvitationsTableProps {

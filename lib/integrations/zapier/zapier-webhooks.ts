@@ -21,7 +21,7 @@ export async function createWebhookSubscription(input: {
   const supabase: any = createServerClient({ admin: true })
 
   // SECURITY: Validate URL to prevent SSRF — blocks private IPs, requires HTTPS
-  validateWebhookUrl(input.targetUrl)
+  const targetUrl = validateWebhookUrl(input.targetUrl).toString()
 
   // Validate event types
   const validTypes = input.eventTypes.filter((t) =>
@@ -35,7 +35,7 @@ export async function createWebhookSubscription(input: {
     .from('zapier_webhook_subscriptions')
     .insert({
       tenant_id: user.entityId,
-      target_url: input.targetUrl,
+      target_url: targetUrl,
       event_types: validTypes,
     })
     .select('id, target_url, event_types, secret, created_at')

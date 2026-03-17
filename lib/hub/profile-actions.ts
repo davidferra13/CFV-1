@@ -11,6 +11,7 @@ import type { HubGuestProfile, HubGuestEventHistory } from './types'
 const CreateProfileSchema = z.object({
   display_name: z.string().min(1).max(100),
   email: z.string().email().optional().nullable(),
+  auth_user_id: z.string().uuid().optional().nullable(),
 })
 
 /**
@@ -18,10 +19,17 @@ const CreateProfileSchema = z.object({
  * Public — no auth required.
  */
 export async function getOrCreateProfile(input: {
-  display_name: string
+  display_name?: string
+  displayName?: string
   email?: string | null
+  auth_user_id?: string | null
+  authUserId?: string | null
 }): Promise<HubGuestProfile> {
-  const validated = CreateProfileSchema.parse(input)
+  const validated = CreateProfileSchema.parse({
+    display_name: input.display_name ?? input.displayName,
+    email: input.email ?? null,
+    auth_user_id: input.auth_user_id ?? input.authUserId ?? null,
+  })
   const supabase = createServerClient({ admin: true })
 
   // If email provided, try to find existing profile
@@ -33,7 +41,23 @@ export async function getOrCreateProfile(input: {
       .eq('email_normalized', normalized)
       .single()
 
-    if (existing) return existing as HubGuestProfile
+    if (existing) {
+      if (validated.auth_user_id && !existing.auth_user_id) {
+        const { data: linked } = await supabase
+          .from('hub_guest_profiles')
+          .update({
+            auth_user_id: validated.auth_user_id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existing.id)
+          .select('*')
+          .single()
+
+        return (linked ?? existing) as HubGuestProfile
+      }
+
+      return existing as HubGuestProfile
+    }
   }
 
   // Create new profile
@@ -42,6 +66,7 @@ export async function getOrCreateProfile(input: {
     .insert({
       display_name: validated.display_name,
       email: validated.email ?? null,
+      auth_user_id: validated.auth_user_id ?? null,
     })
     .select('*')
     .single()
@@ -176,6 +201,12 @@ export async function upgradeGuestToClient(input: {
   if (profile.auth_user_id) throw new Error('Profile already linked to an account')
 
   const now = new Date().toISOString()
+  const knownDietary = profile.known_dietary ?? []
+  const knownAllergies = profile.known_allergies ?? []
+  const firstGroupId =
+    'first_group_id' in profile ? (profile.first_group_id as string | null) : null
+  const referredByProfileId =
+    'referred_by_profile_id' in profile ? (profile.referred_by_profile_id as string | null) : null
 
   // Link profile to account
   const { data: updated, error } = await supabase
@@ -193,7 +224,7 @@ export async function upgradeGuestToClient(input: {
   if (error) throw new Error(`Failed to upgrade profile: ${error.message}`)
 
   // Copy dietary info to client if client has none
-  if (profile.known_dietary?.length > 0 || profile.known_allergies?.length > 0) {
+  if (knownDietary.length > 0 || knownAllergies.length > 0) {
     const { data: client } = await supabase
       .from('clients')
       .select('dietary_restrictions, allergies')
@@ -204,15 +235,12 @@ export async function upgradeGuestToClient(input: {
       const updates: Record<string, unknown> = {}
       if (
         (!client.dietary_restrictions || client.dietary_restrictions.length === 0) &&
-        profile.known_dietary?.length > 0
+        knownDietary.length > 0
       ) {
-        updates.dietary_restrictions = profile.known_dietary
+        updates.dietary_restrictions = knownDietary
       }
-      if (
-        (!client.allergies || client.allergies.length === 0) &&
-        profile.known_allergies?.length > 0
-      ) {
-        updates.allergies = profile.known_allergies
+      if ((!client.allergies || client.allergies.length === 0) && knownAllergies.length > 0) {
+        updates.allergies = knownAllergies
       }
       if (Object.keys(updates).length > 0) {
         await supabase.from('clients').update(updates).eq('id', input.clientId)
@@ -221,17 +249,17 @@ export async function upgradeGuestToClient(input: {
   }
 
   // Record referral source on the client
-  if (profile.first_group_id || profile.referred_by_profile_id) {
+  if (firstGroupId || referredByProfileId) {
     const referralUpdates: Record<string, unknown> = {}
-    if (profile.first_group_id) {
-      referralUpdates.referred_from_group_id = profile.first_group_id
+    if (firstGroupId) {
+      referralUpdates.referred_from_group_id = firstGroupId
     }
-    if (profile.referred_by_profile_id) {
+    if (referredByProfileId) {
       // Find the referring profile's client_id
       const { data: referrer } = await supabase
         .from('hub_guest_profiles')
         .select('client_id')
-        .eq('id', profile.referred_by_profile_id)
+        .eq('id', referredByProfileId)
         .single()
       if (referrer?.client_id) {
         referralUpdates.referred_by_client_id = referrer.client_id

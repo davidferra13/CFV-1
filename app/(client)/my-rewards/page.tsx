@@ -143,7 +143,7 @@ export default async function MyRewardsPage() {
         </Link>
       </div>
 
-      <Card>
+      <Card data-tour="client-check-rewards">
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>

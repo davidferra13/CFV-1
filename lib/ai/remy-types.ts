@@ -93,7 +93,10 @@ export interface RemyMemoryItem {
   importance: number
   accessCount: number
   relatedClientId: string | null
+  relatedClientName?: string | null
   createdAt: string
+  source?: 'database' | 'runtime_file'
+  editable?: boolean
 }
 
 export interface RemyResponse {

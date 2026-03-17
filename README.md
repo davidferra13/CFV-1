@@ -103,7 +103,10 @@ supabase/migrations/   # Database schema and RLS policies
 
 ## Deployment
 
-See implementation plan for deployment checklist.
+- Web beta release gate and go/no-go checklist: `docs/web-beta-go-no-go-checklist.md`
+- Web beta release architecture and timeline: `docs/web-beta-release-architecture.md`
+- Beta host operations: `docs/beta-server-setup.md`
+- Uptime and readiness monitoring: `docs/uptime-monitoring-setup.md`
 
 ## License
 

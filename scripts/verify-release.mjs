@@ -5,6 +5,30 @@ function npmCommand() {
   return process.platform === 'win32' ? 'npm' : 'npm'
 }
 
+function resolveProfile() {
+  const args = process.argv.slice(2)
+  let profile = 'full'
+
+  for (let index = 0; index < args.length; index += 1) {
+    const value = args[index]
+    if (value === '--profile' && args[index + 1]) {
+      profile = args[index + 1]
+      index += 1
+      continue
+    }
+
+    if (value.startsWith('--profile=')) {
+      profile = value.slice('--profile='.length)
+    }
+  }
+
+  if (profile !== 'full' && profile !== 'web-beta') {
+    throw new Error(`Unsupported release profile "${profile}". Expected "full" or "web-beta".`)
+  }
+
+  return profile
+}
+
 function runStep(step) {
   const maxAttempts = (step.retries ?? 0) + 1
   let attempt = 0
@@ -52,11 +76,17 @@ function runStep(step) {
 }
 
 async function main() {
+  const profile = resolveProfile()
   const runId = process.env.CF_VERIFY_RUN_ID || `verify-${process.pid}-${Date.now()}`
   const buildDistDir = process.env.NEXT_BUILD_DIST_DIR || `.next-verify-${runId}`
   const smokeBaseUrl = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3110'
   const smokeServerCommand =
     process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || 'npx next start -p 3110'
+  const webBetaBuildDistDir =
+    process.env.WEB_BETA_NEXT_BUILD_DIST_DIR || `.next-web-beta-${runId}`
+  const webBetaSmokeBaseUrl = process.env.WEB_BETA_PLAYWRIGHT_BASE_URL || 'http://localhost:3111'
+  const webBetaSmokeServerCommand =
+    process.env.WEB_BETA_PLAYWRIGHT_WEB_SERVER_COMMAND || 'npx next start -p 3111'
   const sharedStepEnv = {
     PLAYWRIGHT_RUN_ID: runId,
     PLAYWRIGHT_OUTPUT_DIR: process.env.PLAYWRIGHT_OUTPUT_DIR || `test-results/${runId}`,
@@ -65,64 +95,141 @@ async function main() {
   }
 
   console.log(`[verify:release] Run ID: ${runId}`)
+  console.log(`[verify:release] Profile: ${profile}`)
   console.log(`[verify:release] Build dist dir: ${buildDistDir}`)
+  console.log(`[verify:release] Web beta build dist dir: ${webBetaBuildDistDir}`)
   console.log(`[verify:release] Smoke base URL: ${smokeBaseUrl}`)
+  console.log(`[verify:release] Web beta smoke base URL: ${webBetaSmokeBaseUrl}`)
   console.log('[verify:release] Cleaning previous run artifacts...')
-  await rm(buildDistDir, { recursive: true, force: true })
+  await Promise.all([
+    rm(buildDistDir, { recursive: true, force: true }),
+    rm(webBetaBuildDistDir, { recursive: true, force: true }),
+  ])
 
-  const steps = [
-    {
-      name: 'verify:secrets',
-      args: ['run', 'verify:secrets'],
-      env: sharedStepEnv,
+  const buildStep = {
+    name: 'build',
+    args: ['run', 'build'],
+    env: {
+      ...sharedStepEnv,
+      NEXT_DIST_DIR: buildDistDir,
+      NODE_OPTIONS: '--max-old-space-size=8192',
+      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || smokeBaseUrl,
+      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || smokeBaseUrl,
     },
-    {
-      name: 'typecheck',
-      args: ['run', 'typecheck'],
-      env: sharedStepEnv,
+    retries: 1,
+  }
+
+  const smokeStep = {
+    name: 'test:e2e:smoke:release',
+    args: ['run', 'test:e2e:smoke:release'],
+    env: {
+      ...sharedStepEnv,
+      NEXT_DIST_DIR: buildDistDir,
+      PLAYWRIGHT_BASE_URL: smokeBaseUrl,
+      PLAYWRIGHT_WEB_SERVER_COMMAND: smokeServerCommand,
+      PLAYWRIGHT_REUSE_SERVER: process.env.PLAYWRIGHT_REUSE_SERVER || 'false',
+      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || smokeBaseUrl,
+      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || smokeBaseUrl,
     },
-    {
-      name: 'lint:strict',
-      args: ['run', 'lint:strict'],
-      env: sharedStepEnv,
+    retries: 1,
+  }
+
+  const webBetaBuildStep = {
+    name: 'build:web-beta',
+    args: ['run', 'build'],
+    env: {
+      ...sharedStepEnv,
+      NEXT_DIST_DIR: webBetaBuildDistDir,
+      NODE_OPTIONS: '--max-old-space-size=8192',
+      NEXT_BUILD_SURFACE: 'web-beta',
+      NEXT_PUBLIC_MARKETING_MODE: 'beta',
+      NEXT_PUBLIC_RELEASE_PROFILE: 'web-beta',
+      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || webBetaSmokeBaseUrl,
+      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || webBetaSmokeBaseUrl,
     },
-    {
-      name: 'test:critical',
-      args: ['run', 'test:critical'],
-      env: sharedStepEnv,
+    retries: 1,
+  }
+
+  const webBetaSmokeStep = {
+    name: 'test:e2e:web-beta:release',
+    args: ['run', 'test:e2e:web-beta:release'],
+    env: {
+      ...sharedStepEnv,
+      PLAYWRIGHT_BASE_URL: webBetaSmokeBaseUrl,
+      PLAYWRIGHT_WEB_SERVER_COMMAND: webBetaSmokeServerCommand,
+      PLAYWRIGHT_REUSE_SERVER: process.env.PLAYWRIGHT_REUSE_SERVER || 'false',
+      NEXT_BUILD_SURFACE: 'web-beta',
+      NEXT_PUBLIC_MARKETING_MODE: 'beta',
+      NEXT_PUBLIC_RELEASE_PROFILE: 'web-beta',
+      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || webBetaSmokeBaseUrl,
+      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || webBetaSmokeBaseUrl,
+      NEXT_DIST_DIR: webBetaBuildDistDir,
     },
-    {
-      name: 'test:unit',
-      args: ['run', 'test:unit'],
-      env: sharedStepEnv,
-    },
-    {
-      name: 'build',
-      args: ['run', 'build'],
-      env: {
-        ...sharedStepEnv,
-        NEXT_DIST_DIR: buildDistDir,
-        NODE_OPTIONS: '--max-old-space-size=8192',
-        NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || smokeBaseUrl,
-        NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || smokeBaseUrl,
+    retries: 1,
+  }
+
+  const profiles = {
+    full: [
+      {
+        name: 'verify:secrets',
+        args: ['run', 'verify:secrets'],
+        env: sharedStepEnv,
       },
-      retries: 1,
-    },
-    {
-      name: 'test:e2e:smoke:release',
-      args: ['run', 'test:e2e:smoke:release'],
-      env: {
-        ...sharedStepEnv,
-        NEXT_DIST_DIR: buildDistDir,
-        PLAYWRIGHT_BASE_URL: smokeBaseUrl,
-        PLAYWRIGHT_WEB_SERVER_COMMAND: smokeServerCommand,
-        PLAYWRIGHT_REUSE_SERVER: process.env.PLAYWRIGHT_REUSE_SERVER || 'false',
-        NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || smokeBaseUrl,
-        NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || smokeBaseUrl,
+      {
+        name: 'typecheck',
+        args: ['run', 'typecheck'],
+        env: sharedStepEnv,
       },
-      retries: 1,
-    },
-  ]
+      {
+        name: 'lint:strict',
+        args: ['run', 'lint:strict'],
+        env: sharedStepEnv,
+      },
+      {
+        name: 'test:critical',
+        args: ['run', 'test:critical'],
+        env: sharedStepEnv,
+      },
+      {
+        name: 'test:unit',
+        args: ['run', 'test:unit'],
+        env: sharedStepEnv,
+      },
+      buildStep,
+      smokeStep,
+    ],
+    'web-beta': [
+      {
+        name: 'verify:secrets',
+        args: ['run', 'verify:secrets'],
+        env: sharedStepEnv,
+      },
+      {
+        name: 'typecheck:web-beta',
+        args: ['run', 'typecheck:web-beta'],
+        env: sharedStepEnv,
+      },
+      {
+        name: 'lint:web-beta',
+        args: ['run', 'lint:web-beta'],
+        env: sharedStepEnv,
+      },
+      {
+        name: 'test:critical',
+        args: ['run', 'test:critical'],
+        env: sharedStepEnv,
+      },
+      {
+        name: 'test:unit:web-beta',
+        args: ['run', 'test:unit:web-beta'],
+        env: sharedStepEnv,
+      },
+      webBetaBuildStep,
+      webBetaSmokeStep,
+    ],
+  }
+
+  const steps = profiles[profile]
 
   console.log('[verify:release] Starting release verification...')
   for (const step of steps) {

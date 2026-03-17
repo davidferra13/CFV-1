@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import { getBlogPost, getAllBlogSlugs, BLOG_POSTS } from '@/lib/blog/posts'
 import { JsonLd, BreadcrumbJsonLd } from '@/components/seo/json-ld'
 import { BlogMarkdown } from '@/components/blog/blog-markdown'
+import { PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -150,10 +152,13 @@ export default function BlogPostPage({ params }: Props) {
               ChefFlow keeps events, clients, menus, and payments in one place.
             </p>
             <Link
-              href="/auth/signup"
+              href={buildMarketingSignupHref({
+                sourcePage: `blog:${post.slug}`,
+                sourceCta: 'post_primary',
+              })}
               className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
-              Sign up
+              {PRIMARY_SIGNUP_LABEL}
             </Link>
           </div>
 

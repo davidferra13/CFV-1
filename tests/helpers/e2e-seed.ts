@@ -63,6 +63,19 @@ export type SeedResult = {
 }
 
 function assertRemoteTestAllowed(url: string) {
+  const isLocalTarget = /127\.0\.0\.1|localhost/.test(url)
+
+  if (isLocalTarget) {
+    if (process.env.SUPABASE_E2E_ALLOW_LOCAL !== 'true') {
+      throw new Error(
+        '[e2e-seed] Local E2E seed refused.\n' +
+          'Add SUPABASE_E2E_ALLOW_LOCAL=true to your environment to proceed.\n' +
+          'This guard prevents accidental seeding against the wrong local database.'
+      )
+    }
+    return
+  }
+
   if (process.env.SUPABASE_E2E_ALLOW_REMOTE !== 'true') {
     throw new Error(
       '[e2e-seed] Remote E2E seed refused.\n' +

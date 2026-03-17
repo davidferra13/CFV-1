@@ -27,7 +27,7 @@ function safeRedirectPath(raw: string | null): string {
 
 function SignInForm() {
   const router = useRouter()
-  const searchParams = useSearchParams() ?? new URLSearchParams()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
 
   const [error, setError] = useState<string | null>(null)
@@ -37,14 +37,15 @@ function SignInForm() {
     password: '',
     rememberMe: true,
   })
-  const explicitRedirect = searchParams.get('redirect')
+  const callbackError = searchParams?.get('error') ?? null
+  const callbackMessage = searchParams?.get('message') ?? null
+  const explicitRedirect = searchParams?.get('redirect')
   const redirectPath = safeRedirectPath(explicitRedirect || getLastActivePath())
+
   useEffect(() => {
-    const callbackError = searchParams.get('error')
-    const callbackMessage = searchParams.get('message')
     setError(callbackError || null)
     setMessage(callbackMessage || null)
-  }, [searchParams])
+  }, [callbackError, callbackMessage])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,6 +1,7 @@
 // Simple markdown-to-HTML renderer for blog posts
 // Uses regex transforms instead of a heavy markdown library.
 // Handles: headings, paragraphs, bold, italic, links, code blocks, lists, tables, hr, images.
+import { PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 
 function markdownToHtml(md: string): string {
   let html = md.trim()
@@ -74,7 +75,7 @@ function markdownToHtml(md: string): string {
 
   // Links - internal links (starting with /) stay in-tab, external open in new tab
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match: string, text: string, url: string) => {
-    const safeUrl = sanitizeUrl(url)
+    const safeUrl = sanitizeUrl(normalizeMarketingUrl(url))
     if (safeUrl.startsWith('/') || safeUrl.startsWith('#')) {
       return `<a href="${escapeHtml(safeUrl)}" class="blog-link">${escapeHtml(text)}</a>`
     }
@@ -119,6 +120,15 @@ function sanitizeUrl(url: string): string {
   if (/^(javascript|data|vbscript|blob):/i.test(trimmed)) return '#'
   if (/^(https?:\/\/|\/|#|mailto:)/i.test(trimmed)) return trimmed
   return '#'
+}
+
+function normalizeMarketingUrl(url: string): string {
+  const trimmed = url.trim()
+  if (trimmed === '/auth/signup') return PRIMARY_SIGNUP_HREF
+  if (trimmed.startsWith('/auth/signup?')) {
+    return `${PRIMARY_SIGNUP_HREF}${trimmed.slice('/auth/signup'.length)}`
+  }
+  return trimmed
 }
 
 export function BlogMarkdown({ content }: { content: string }) {

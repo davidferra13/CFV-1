@@ -53,8 +53,11 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const prevOnlineRef = useRef(true)
   const hasSyncedRef = useRef(false)
 
-  // Poll pending count
-  const refreshPendingCount = useCallback(async () => {
+  const refreshPendingCount = useCallback(async (force = false) => {
+    if (!force && typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+      return
+    }
+
     try {
       const count = await getPendingCount()
       setPendingCount(count)
@@ -63,20 +66,30 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Refresh pending count periodically and after status changes
   useEffect(() => {
-    refreshPendingCount()
-    const interval = setInterval(refreshPendingCount, 3000)
-    return () => clearInterval(interval)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshPendingCount(true)
+      }
+    }
+
+    void refreshPendingCount(true)
+    const interval = setInterval(() => {
+      void refreshPendingCount()
+    }, 3000)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [refreshPendingCount])
 
-  // Subscribe to sync progress
   useEffect(() => {
     return onSyncProgress((progress) => {
       setSyncProgress(progress)
       if (!progress.isSyncing) {
-        // Sync finished - refresh the count
-        refreshPendingCount()
+        void refreshPendingCount(true)
       }
     })
   }, [refreshPendingCount])

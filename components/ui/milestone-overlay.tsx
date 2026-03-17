@@ -13,8 +13,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useIsDemoMode } from '@/lib/demo-mode'
+import { useOnboardingPeripheralsEnabled } from '@/lib/onboarding/peripheral-visibility'
 import { getChefMilestoneStats, type ChefMilestoneStats } from '@/lib/milestones/stats-action'
 import { MILESTONE_DEFS, type MilestoneDef } from '@/lib/milestones/milestone-defs'
+import {
+  MILESTONE_ANIMATIONS_ENABLED_KEY,
+  MILESTONE_ANIMATIONS_PREF_EVENT,
+  readMilestoneAnimationsEnabled,
+} from '@/lib/milestones/preferences'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -335,6 +341,9 @@ function MilestoneAnimLayer({ def, onDone }: { def: MilestoneDef; onDone: () => 
 
 export function MilestoneOverlay() {
   const isDemo = useIsDemoMode()
+  const onboardingPeripheralsEnabled = useOnboardingPeripheralsEnabled()
+  const [animationsEnabled, setAnimationsEnabled] = useState(false)
+  const [prefLoaded, setPrefLoaded] = useState(false)
   const [queue, setQueue] = useState<MilestoneDef[]>([])
   const [current, setCurrent] = useState<MilestoneDef | null>(null)
   const [animKey, setAnimKey] = useState(0)
@@ -342,9 +351,40 @@ export function MilestoneOverlay() {
   const [playing, setPlaying] = useState(false)
   const queueRef = useRef<MilestoneDef[]>([])
 
+  useEffect(() => {
+    function syncPreference() {
+      const enabled = readMilestoneAnimationsEnabled()
+      setAnimationsEnabled(enabled)
+      setPrefLoaded(true)
+
+      if (!enabled) {
+        queueRef.current = []
+        setQueue([])
+        setCurrent(null)
+        setLastShown(null)
+        setPlaying(false)
+      }
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (event.key === null || event.key === MILESTONE_ANIMATIONS_ENABLED_KEY) {
+        syncPreference()
+      }
+    }
+
+    syncPreference()
+    window.addEventListener(MILESTONE_ANIMATIONS_PREF_EVENT, syncPreference)
+    window.addEventListener('storage', handleStorage)
+
+    return () => {
+      window.removeEventListener(MILESTONE_ANIMATIONS_PREF_EVENT, syncPreference)
+      window.removeEventListener('storage', handleStorage)
+    }
+  }, [])
+
   // Fetch stats and compute queue on mount
   useEffect(() => {
-    if (isDemo) return
+    if (isDemo || !onboardingPeripheralsEnabled || !prefLoaded || !animationsEnabled) return
     let cancelled = false
 
     async function init() {
@@ -369,7 +409,7 @@ export function MilestoneOverlay() {
     return () => {
       cancelled = true
     }
-  }, [isDemo])
+  }, [animationsEnabled, isDemo, onboardingPeripheralsEnabled, prefLoaded])
 
   const handleDone = useCallback(() => {
     if (!current) return
@@ -397,7 +437,7 @@ export function MilestoneOverlay() {
     setPlaying(true)
   }, [lastShown])
 
-  if (!lastShown) return null
+  if (!onboardingPeripheralsEnabled || !animationsEnabled || !lastShown) return null
 
   return (
     <>
@@ -405,7 +445,7 @@ export function MilestoneOverlay() {
 
       {playing && current && <MilestoneAnimLayer key={animKey} def={current} onDone={handleDone} />}
 
-      {/* Replay button - always interactive */}
+      {/* Replay button - only shown after an enabled animation has been seen */}
       <button
         onClick={replay}
         title={`Replay: ${lastShown.label}`}

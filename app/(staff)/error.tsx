@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
-import * as Sentry from '@sentry/nextjs'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 
 export default function StaffError({
   error,
@@ -13,9 +13,7 @@ export default function StaffError({
   reset: () => void
 }) {
   useEffect(() => {
-    Sentry.captureException(error, {
-      tags: { boundary: 'staff', digest: error.digest },
-    })
+    reportClientBoundaryError(error, { boundary: 'staff', digest: error.digest })
     console.error('[Staff Portal Error]', error)
   }, [error])
 

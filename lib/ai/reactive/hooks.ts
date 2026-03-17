@@ -17,7 +17,7 @@ import { recordSideEffectFailure, type Severity } from '@/lib/monitoring/non-blo
 
 async function enqueueReactiveTask(input: {
   taskType: string
-  tenantId: string
+  scopeTenantId: string
   priority: number
   payload?: Record<string, unknown>
   relatedEventId?: string
@@ -29,7 +29,7 @@ async function enqueueReactiveTask(input: {
 }) {
   try {
     const result = await enqueueTask({
-      tenantId: input.tenantId,
+      tenantId: input.scopeTenantId,
       taskType: input.taskType,
       payload: input.payload,
       priority: input.priority,
@@ -45,7 +45,7 @@ async function enqueueReactiveTask(input: {
         severity: input.severity ?? 'medium',
         entityType: input.entityType,
         entityId: input.entityId ?? undefined,
-        tenantId: input.tenantId,
+        tenantId: input.scopeTenantId,
         errorMessage: result.error,
         context: {
           relatedEventId: input.relatedEventId ?? null,
@@ -61,7 +61,7 @@ async function enqueueReactiveTask(input: {
       severity: input.severity ?? 'medium',
       entityType: input.entityType,
       entityId: input.entityId ?? undefined,
-      tenantId: input.tenantId,
+      tenantId: input.scopeTenantId,
       errorMessage: err instanceof Error ? err.message : String(err),
       context: {
         relatedEventId: input.relatedEventId ?? null,
@@ -86,7 +86,7 @@ export async function onEventConfirmed(
   clientId: string | null
 ): Promise<void> {
   await enqueueReactiveTask({
-    tenantId,
+    scopeTenantId: tenantId,
     taskType: 'reactive.event_confirmed',
     payload: { eventId, clientId },
     priority: AI_PRIORITY.REACTIVE,
@@ -107,7 +107,7 @@ export async function onEventCompleted(
   clientId: string | null
 ): Promise<void> {
   await enqueueReactiveTask({
-    tenantId,
+    scopeTenantId: tenantId,
     taskType: 'reactive.event_completed',
     payload: { eventId, clientId },
     priority: AI_PRIORITY.REACTIVE,
@@ -128,7 +128,7 @@ export async function onEventCancelled(
   clientId: string | null
 ): Promise<void> {
   await enqueueReactiveTask({
-    tenantId,
+    scopeTenantId: tenantId,
     taskType: 'reactive.event_cancelled',
     payload: { eventId, clientId },
     priority: AI_PRIORITY.REACTIVE,
@@ -164,7 +164,7 @@ export async function onInquiryCreated(
   }
 ): Promise<void> {
   await enqueueReactiveTask({
-    tenantId,
+    scopeTenantId: tenantId,
     taskType: 'reactive.inquiry_created',
     payload: {
       inquiryId,
@@ -201,7 +201,7 @@ export async function onMenuApproved(
   clientId: string | null
 ): Promise<void> {
   await enqueueReactiveTask({
-    tenantId,
+    scopeTenantId: tenantId,
     taskType: 'reactive.menu_approved',
     payload: { eventId, clientId },
     priority: AI_PRIORITY.REACTIVE,
@@ -218,7 +218,7 @@ export async function onMenuApproved(
  */
 export async function onGuestListUpdated(tenantId: string, eventId: string): Promise<void> {
   await enqueueReactiveTask({
-    tenantId,
+    scopeTenantId: tenantId,
     taskType: 'reactive.guest_list_updated',
     payload: { eventId },
     priority: AI_PRIORITY.REACTIVE,
@@ -244,7 +244,7 @@ export async function onPaymentReceived(
   amountCents: number
 ): Promise<void> {
   await enqueueReactiveTask({
-    tenantId,
+    scopeTenantId: tenantId,
     taskType: 'reactive.payment_received',
     payload: { eventId, clientId, amountCents },
     priority: AI_PRIORITY.REACTIVE,
@@ -267,7 +267,7 @@ export async function onPaymentOverdue(
   clientName: string
 ): Promise<void> {
   await enqueueReactiveTask({
-    tenantId,
+    scopeTenantId: tenantId,
     taskType: 'reactive.payment_overdue',
     payload: { eventId, clientId, clientName },
     priority: AI_PRIORITY.SCHEDULED,
@@ -295,7 +295,7 @@ export async function onTempOutOfRange(
   safeMax: number
 ): Promise<void> {
   await enqueueReactiveTask({
-    tenantId,
+    scopeTenantId: tenantId,
     taskType: 'reactive.temp_out_of_range',
     payload: { eventId, temperature, safeMin, safeMax },
     priority: AI_PRIORITY.REACTIVE,
@@ -316,7 +316,7 @@ export async function onStaffNoShow(
   staffName: string
 ): Promise<void> {
   await enqueueReactiveTask({
-    tenantId,
+    scopeTenantId: tenantId,
     taskType: 'reactive.staff_no_show',
     payload: { eventId, staffName },
     priority: AI_PRIORITY.REACTIVE,

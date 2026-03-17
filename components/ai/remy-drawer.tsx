@@ -1212,14 +1212,24 @@ export function RemyDrawer() {
                                           !
                                         </span>
                                       )}
+                                      {!item.editable && (
+                                        <span
+                                          className="ml-2 inline-flex rounded-full border border-stone-600 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-stone-400"
+                                          title="Managed in memory/runtime/remy.json"
+                                        >
+                                          VS Code
+                                        </span>
+                                      )}
                                     </span>
-                                    <button
-                                      onClick={() => handleDeleteMemory(item.id)}
-                                      className="opacity-0 group-hover/mem:opacity-100 flex-shrink-0 mt-0.5 text-stone-400 hover:text-red-500 transition-all p-0.5"
-                                      title="Delete this memory"
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </button>
+                                    {item.editable !== false && (
+                                      <button
+                                        onClick={() => handleDeleteMemory(item.id)}
+                                        className="opacity-0 group-hover/mem:opacity-100 flex-shrink-0 mt-0.5 text-stone-400 hover:text-red-500 transition-all p-0.5"
+                                        title="Delete this memory"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    )}
                                   </div>
                                 ))}
                               </div>

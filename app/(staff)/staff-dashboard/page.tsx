@@ -83,7 +83,7 @@ export default async function StaffDashboardPage({
       </div>
 
       {/* Quick stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4" data-tour="staff-dashboard-overview">
         <Card>
           <CardContent className="pt-4 pb-3 text-center">
             <div className="text-2xl font-bold text-stone-100">{pendingTasks.length}</div>

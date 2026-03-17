@@ -30,10 +30,30 @@ export function SwRegister() {
       return
     }
 
+    let isMounted = true
+    let refreshing = false
+    const hadController = Boolean(navigator.serviceWorker.controller)
+
+    const activateWaitingWorker = (registration: ServiceWorkerRegistration) => {
+      if (registration.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+      }
+    }
+
+    const handleControllerChange = () => {
+      if (!hadController || refreshing) return
+      refreshing = true
+      window.location.reload()
+    }
+
+    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange)
+
     navigator.serviceWorker
-      .register('/sw.js', { scope: '/' })
-      .then((registration) => {
+      .register('/sw.js', { scope: '/', updateViaCache: 'none' })
+      .then(async (registration) => {
+        if (!isMounted) return
         console.info('[SW] Service worker registered')
+        activateWaitingWorker(registration)
 
         // When a new SW is waiting, tell it to activate immediately
         registration.addEventListener('updatefound', () => {
@@ -41,27 +61,24 @@ export function SwRegister() {
           if (!newWorker) return
 
           newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New version available - activate it
-              newWorker.postMessage({ type: 'SKIP_WAITING' })
-              console.info('[SW] New service worker activated')
+            if (newWorker.state === 'installed') {
+              activateWaitingWorker(registration)
             }
           })
+        })
+
+        await registration.update().catch((err) => {
+          console.warn('[SW] Update check failed:', err)
         })
       })
       .catch((err) => {
         console.warn('[SW] Registration failed:', err)
       })
 
-    // When the new SW takes over, reload the page for the latest assets
-    let refreshing = false
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!refreshing) {
-        refreshing = true
-        // Don't reload during initial registration (no previous controller)
-        // Only reload on subsequent updates
-      }
-    })
+    return () => {
+      isMounted = false
+      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange)
+    }
   }, [])
 
   return null

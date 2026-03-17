@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { NO_CLICK_FIRST_PUBLIC_ENABLED } from '@/lib/marketing/no-click-rollout'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const STEPS = [
   {
@@ -11,7 +13,7 @@ const STEPS = [
     title: 'Capture the request',
     description:
       'Pull the request from a booking platform, email, text, or referral into one owned record with dates, guest context, and next actions.',
-    href: '/auth/signup',
+    href: buildMarketingSignupHref({ sourcePage: 'home', sourceCta: 'workflow_intake' }),
   },
   {
     icon: '2',
@@ -19,7 +21,7 @@ const STEPS = [
     title: 'Mirror the booking',
     description:
       'Track proposal status, final menu, prep lists, pricing, staffing, and production without losing the marketplace context.',
-    href: '/auth/signup',
+    href: buildMarketingSignupHref({ sourcePage: 'home', sourceCta: 'workflow_plan' }),
   },
   {
     icon: '3',
@@ -27,7 +29,7 @@ const STEPS = [
     title: 'Own the relationship',
     description:
       'Once the booking is real, keep client notes, household details, approvals, and repeat-booking opportunities in your own system.',
-    href: '/auth/signup',
+    href: buildMarketingSignupHref({ sourcePage: 'home', sourceCta: 'workflow_relationship' }),
   },
   {
     icon: '4',
@@ -35,7 +37,7 @@ const STEPS = [
     title: 'See the real margin',
     description:
       'Track booking value, platform fees, payouts, expenses, and follow-up value instead of stopping at the marketplace payout screen.',
-    href: '/auth/signup',
+    href: buildMarketingSignupHref({ sourcePage: 'home', sourceCta: 'workflow_revenue' }),
   },
 ]
 
@@ -176,7 +178,9 @@ export function WorkflowSteps() {
             >
               <p className="text-sm font-semibold text-stone-100">{step.title}</p>
               <p className="mt-1 text-xs leading-relaxed text-stone-300">{step.description}</p>
-              <p className="mt-2 text-xs font-medium text-brand-500">Sign up &rarr;</p>
+              <p className="mt-2 text-xs font-medium text-brand-500">
+                {PRIMARY_SIGNUP_LABEL} &rarr;
+              </p>
             </Link>
           ))}
         </div>
@@ -193,7 +197,7 @@ export function WorkflowSteps() {
                 {STEPS[activeStep].description}
               </p>
               <span className="mt-3 text-xs font-medium text-brand-600 group-hover:underline">
-                Sign up &rarr;
+                {PRIMARY_SIGNUP_LABEL} &rarr;
               </span>
             </div>
           ) : (

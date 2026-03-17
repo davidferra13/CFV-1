@@ -36,7 +36,9 @@ export default async function MyProfilePage() {
         </p>
       </div>
 
-      <ClientProfileForm profile={profile} />
+      <div data-tour="client-update-profile">
+        <ClientProfileForm profile={profile} />
+      </div>
 
       <MealCollaborationPanel
         history={mealCollab.history}
@@ -61,7 +63,7 @@ export default async function MyProfilePage() {
             submission.
           </p>
         </div>
-        <FeedbackForm />
+        <FeedbackForm pageContext="/my-profile" />
       </div>
     </div>
   )

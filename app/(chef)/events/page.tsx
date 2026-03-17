@@ -23,7 +23,7 @@ import {
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
-import { isDemoEvent } from '@/lib/onboarding/demo-data'
+import { isDemoEvent } from '@/lib/onboarding/demo-data-utils'
 
 type EventStatus =
   | 'all'
@@ -145,7 +145,7 @@ export default async function EventsPage({
           <p className="text-stone-600 mt-1">Manage your events and proposals</p>
         </div>
         <Link href="/events/new">
-          <Button>+ New Event</Button>
+          <Button data-tour="create-event">+ New Event</Button>
         </Link>
       </div>
 

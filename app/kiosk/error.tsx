@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import * as Sentry from '@sentry/nextjs'
+import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 
 export default function KioskError({
   error,
@@ -11,9 +11,7 @@ export default function KioskError({
   reset: () => void
 }) {
   useEffect(() => {
-    Sentry.captureException(error, {
-      tags: { boundary: 'kiosk', digest: error.digest },
-    })
+    reportClientBoundaryError(error, { boundary: 'kiosk', digest: error.digest })
     console.error('[Kiosk Error]', error)
   }, [error])
 

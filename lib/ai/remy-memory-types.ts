@@ -11,6 +11,8 @@ export type MemoryCategory =
   | 'pricing_pattern'
   | 'workflow_preference'
 
+export type RemyMemorySource = 'database' | 'runtime_file'
+
 export interface RemyMemory {
   id: string
   category: MemoryCategory
@@ -18,6 +20,9 @@ export interface RemyMemory {
   importance: number
   accessCount: number
   relatedClientId: string | null
+  relatedClientName: string | null
   createdAt: string
   lastAccessedAt: string
+  source: RemyMemorySource
+  editable: boolean
 }

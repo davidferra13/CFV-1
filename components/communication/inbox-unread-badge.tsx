@@ -13,8 +13,12 @@ export function InboxUnreadBadge() {
 
   useEffect(() => {
     let mounted = true
+    const isVisible = () =>
+      typeof document === 'undefined' || document.visibilityState === 'visible'
 
     const fetchCount = async () => {
+      if (!isVisible()) return
+
       try {
         const n = await getUnreadThreadCount()
         if (mounted) setCount(n)
@@ -23,12 +27,22 @@ export function InboxUnreadBadge() {
       }
     }
 
-    fetchCount()
-    const interval = setInterval(fetchCount, 30_000)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void fetchCount()
+      }
+    }
+
+    void fetchCount()
+    const interval = setInterval(() => {
+      void fetchCount()
+    }, 30_000)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       mounted = false
       clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [])
 

@@ -10,6 +10,7 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -40,7 +41,10 @@
     "pages/**/*.ts",
     "pages/**/*.tsx",
     "types/**/*.ts",
-    "types/**/*.tsx"
+    "types/**/*.d.ts",
+    "types/**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next-dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
@@ -48,6 +52,7 @@
     ".auth",
     ".claude",
     ".constraints",
+    ".next",
     ".next-dev",
     ".next-dev-*",
     ".next-local-*",

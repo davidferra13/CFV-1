@@ -2,14 +2,11 @@
 // Uses Supabase Realtime for message delivery, typing indicators, and presence
 // Client-side only — used in 'use client' components
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
 import type { ChatMessage } from './types'
 
 function getSupabaseClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  return createClient()
 }
 
 // ============================================

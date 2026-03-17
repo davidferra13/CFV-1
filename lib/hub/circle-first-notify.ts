@@ -2,6 +2,7 @@
 
 import { createElement } from 'react'
 import { createServerClient } from '@/lib/supabase/server'
+import type { Json } from '@/types/database'
 import { getCircleForContext, getChefHubProfileId } from './circle-lookup'
 import type { HubNotificationType } from './types'
 
@@ -99,7 +100,7 @@ export async function circleFirstNotify(input: CircleFirstInput): Promise<void> 
     source: 'system',
     action_url: input.actionUrl ?? null,
     action_label: input.actionLabel ?? null,
-    system_metadata: input.metadata ?? null,
+    system_metadata: (input.metadata ?? null) as Json,
   })
 
   // 2. Email members a short notification pointing to the circle

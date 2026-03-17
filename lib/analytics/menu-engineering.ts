@@ -1,4 +1,3 @@
-// @ts-nocheck
 // DEFERRED: This entire file requires the menu_items table (Phase 2 schema) which does not exist yet.
 // 'use server' is commented out to prevent runtime crashes from exported server actions.
 // Uncomment when the menu_items migration is applied.

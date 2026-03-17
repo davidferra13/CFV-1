@@ -49,7 +49,11 @@ export function BetaSignupForm() {
     })
 
     try {
-      const result = await submitBetaSignup(formData)
+      const result = await submitBetaSignup({
+        ...formData,
+        sourcePage,
+        sourceCta,
+      })
 
       if (result.success) {
         trackEvent(ANALYTICS_EVENTS.BETA_SIGNUP_SUBMITTED, {

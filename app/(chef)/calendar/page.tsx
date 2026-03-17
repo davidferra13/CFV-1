@@ -116,7 +116,7 @@ export default async function CalendarPage({
       </WidgetErrorBoundary>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
-        <div className="min-w-0">
+        <div className="min-w-0" data-tour="chef-explore-calendar">
           <AvailabilityCalendarClient
             year={year}
             month={month}

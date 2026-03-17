@@ -190,7 +190,7 @@ export function HubMessageBubble({
         {isOwn && <span className="mt-0.5 text-xs text-stone-600">{timeStr}</span>}
 
         {/* Seen by indicator (own messages only) */}
-        {isOwn && message.message_type !== 'system' && <SeenByIndicator messageId={message.id} />}
+        {isOwn && <SeenByIndicator messageId={message.id} />}
 
         {/* Reactions display */}
         {message.reaction_counts && Object.keys(message.reaction_counts).length > 0 && (

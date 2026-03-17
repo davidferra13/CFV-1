@@ -16,6 +16,7 @@
     "pages/**/*.ts",
     "pages/**/*.tsx",
     "types/**/*.ts",
+    "types/**/*.d.ts",
     "types/**/*.tsx"
   ],
   "exclude": [

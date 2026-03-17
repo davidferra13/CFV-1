@@ -11,6 +11,7 @@ import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { createHash } from 'crypto'
 import { validateMemoryContent } from '@/lib/ai/remy-guardrails'
 import type { RemyMemory, MemoryCategory } from '@/lib/ai/remy-memory-types'
+import { listRuntimeFileMemories } from '@/lib/ai/remy-runtime-memory'
 
 // ─── Extraction Schema ─────────────────────────────────────────────────────
 
@@ -320,7 +321,7 @@ If you can't determine a clear correction, return: { "oldFact": "", "newFact": "
 // ─── Load Relevant Memories ────────────────────────────────────────────────
 
 export async function loadRelevantMemories(
-  currentMessage: string,
+  _currentMessage: string,
   intentCategory?: string,
   mentionedClientName?: string
 ): Promise<RemyMemory[]> {
@@ -328,11 +329,24 @@ export async function loadRelevantMemories(
   const tenantId = user.tenantId!
   const supabase: any = createServerClient()
 
+  const runtimeMemories = sortMemories(await listRuntimeFileMemories())
   const memories: RemyMemory[] = []
   const seenIds = new Set<string>()
 
+  const pushMemory = (memory: RemyMemory) => {
+    if (seenIds.has(memory.id)) return
+    seenIds.add(memory.id)
+    memories.push(memory)
+  }
+
   // Layer 1: Client-specific memories (if a client is mentioned)
   if (mentionedClientName) {
+    for (const memory of runtimeMemories) {
+      if (matchesRelatedClientName(memory, mentionedClientName)) {
+        pushMemory(memory)
+      }
+    }
+
     const { data: clients } = await supabase
       .from('clients')
       .select('id')
@@ -351,15 +365,18 @@ export async function loadRelevantMemories(
         .limit(10)
 
       for (const row of data ?? []) {
-        if (!seenIds.has(row.id as string)) {
-          seenIds.add(row.id as string)
-          memories.push(mapRowToMemory(row))
-        }
+        pushMemory(mapRowToMemory(row))
       }
     }
   }
 
   // Layer 2: High-importance memories (always loaded)
+  for (const memory of runtimeMemories) {
+    if (memory.importance >= 8) {
+      pushMemory(memory)
+    }
+  }
+
   const { data: highImportance } = await supabase
     .from('remy_memories')
     .select('*')
@@ -370,10 +387,7 @@ export async function loadRelevantMemories(
     .limit(15)
 
   for (const row of highImportance ?? []) {
-    if (!seenIds.has(row.id as string)) {
-      seenIds.add(row.id as string)
-      memories.push(mapRowToMemory(row))
-    }
+    pushMemory(mapRowToMemory(row))
   }
 
   // Layer 3: Category-matched memories (based on intent)
@@ -387,6 +401,12 @@ export async function loadRelevantMemories(
     'business_rule',
   ]
 
+  for (const memory of runtimeMemories) {
+    if (categories.includes(memory.category)) {
+      pushMemory(memory)
+    }
+  }
+
   const { data: categoryMatched } = await supabase
     .from('remy_memories')
     .select('*')
@@ -397,10 +417,7 @@ export async function loadRelevantMemories(
     .limit(10)
 
   for (const row of categoryMatched ?? []) {
-    if (!seenIds.has(row.id as string)) {
-      seenIds.add(row.id as string)
-      memories.push(mapRowToMemory(row))
-    }
+    pushMemory(mapRowToMemory(row))
   }
 
   // Layer 4: Recently accessed memories (recency bias)
@@ -413,17 +430,14 @@ export async function loadRelevantMemories(
     .limit(5)
 
   for (const row of recent ?? []) {
-    if (!seenIds.has(row.id as string)) {
-      seenIds.add(row.id as string)
-      memories.push(mapRowToMemory(row))
-    }
+    pushMemory(mapRowToMemory(row))
   }
 
   // Hard cap: 30 memories max in context
   const capped = memories.slice(0, 30)
 
   // Bump last_accessed_at for all loaded memories (non-blocking)
-  const loadedIds = capped.map((m) => m.id)
+  const loadedIds = capped.filter((m) => m.source === 'database').map((m) => m.id)
   if (loadedIds.length > 0) {
     supabase
       .from('remy_memories')
@@ -439,6 +453,10 @@ export async function loadRelevantMemories(
 // ─── Delete Memory ─────────────────────────────────────────────────────────
 
 export async function deleteRemyMemory(memoryId: string): Promise<void> {
+  if (memoryId.startsWith('runtime:')) {
+    throw new Error('Runtime file memories are managed in memory/runtime/remy.json')
+  }
+
   const user = await requireChef()
   const tenantId = user.tenantId!
   const supabase: any = createServerClient()
@@ -461,6 +479,7 @@ export async function listRemyMemories(options?: {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const supabase: any = createServerClient()
+  const runtimeMemories = await listRuntimeFileMemories()
 
   let query = supabase
     .from('remy_memories')
@@ -478,7 +497,12 @@ export async function listRemyMemories(options?: {
   const { data, error } = await query
   if (error) throw new Error(`Failed to list memories: ${error.message}`)
 
-  return (data ?? []).map(mapRowToMemory)
+  const databaseMemories = (data ?? []).map(mapRowToMemory)
+  const combined = [...databaseMemories, ...runtimeMemories].filter((memory) =>
+    options?.category ? memory.category === options.category : true
+  )
+
+  return sortMemories(combined).slice(0, options?.limit ?? 100)
 }
 
 // ─── Decay Stale Memories ──────────────────────────────────────────────────
@@ -639,7 +663,35 @@ function mapRowToMemory(row: Record<string, unknown>): RemyMemory {
     importance: row.importance as number,
     accessCount: row.access_count as number,
     relatedClientId: row.related_client_id as string | null,
+    relatedClientName: null,
     createdAt: row.created_at as string,
     lastAccessedAt: row.last_accessed_at as string,
+    source: 'database',
+    editable: true,
   }
+}
+
+function matchesRelatedClientName(memory: RemyMemory, mentionedClientName: string): boolean {
+  if (!memory.relatedClientName) return false
+
+  const memoryName = memory.relatedClientName.toLowerCase()
+  const mentionedName = mentionedClientName.toLowerCase()
+
+  return memoryName.includes(mentionedName) || mentionedName.includes(memoryName)
+}
+
+function sortMemories(memories: RemyMemory[]): RemyMemory[] {
+  return [...memories].sort((left, right) => {
+    if (right.importance !== left.importance) {
+      return right.importance - left.importance
+    }
+
+    const leftTime = Date.parse(left.lastAccessedAt)
+    const rightTime = Date.parse(right.lastAccessedAt)
+    if (!Number.isNaN(leftTime) && !Number.isNaN(rightTime) && rightTime !== leftTime) {
+      return rightTime - leftTime
+    }
+
+    return left.content.localeCompare(right.content)
+  })
 }

@@ -51,7 +51,7 @@ export type BetaClientSummary = {
 export async function enrollBetaTester(clientId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Flag the client
   const { error: clientErr } = await supabase
@@ -88,7 +88,7 @@ export async function enrollBetaTester(clientId: string) {
 export async function unenrollBetaTester(clientId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { error } = await supabase
     .from('clients')
@@ -111,7 +111,7 @@ export async function unenrollBetaTester(clientId: string) {
 export async function getBetaTesters(): Promise<BetaClientSummary[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: clients, error } = await supabase
     .from('clients')
@@ -128,7 +128,7 @@ export async function getBetaTesters(): Promise<BetaClientSummary[]> {
 
   if (error) throw new Error(`Failed to load beta testers: ${error.message}`)
 
-  return (clients ?? []).map((c) => {
+  return (clients ?? []).map((c: any) => {
     const checklist = Array.isArray(c.beta_onboarding_checklist)
       ? c.beta_onboarding_checklist[0]
       : c.beta_onboarding_checklist
@@ -163,7 +163,7 @@ export async function getMyBetaChecklist(): Promise<{
   totalSteps: number
 } | null> {
   const user = await requireClient()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Get client record
   const { data: client, error: clientErr } = await supabase
@@ -199,7 +199,7 @@ export async function getMyBetaChecklist(): Promise<{
  */
 export async function completeBetaStep(step: BetaChecklistStep, metadata?: { circleId?: string }) {
   const user = await requireClient()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Get client
   const { data: client } = await supabase
@@ -265,7 +265,7 @@ export async function completeBetaStep(step: BetaChecklistStep, metadata?: { cir
  */
 export async function dismissBetaChecklist() {
   const user = await requireClient()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: client } = await supabase
     .from('clients')
@@ -296,7 +296,7 @@ export async function dismissBetaChecklist() {
  */
 export async function syncBetaChecklistProgress() {
   const user = await requireClient()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: client } = await supabase
     .from('clients')
@@ -485,7 +485,7 @@ export type DietaryRollup = {
 export async function getDietaryRollupForEvent(eventId: string): Promise<DietaryRollup> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Get event guests
   const { data: guests } = await supabase
@@ -527,7 +527,7 @@ export async function getDietaryRollupForEvent(eventId: string): Promise<Dietary
   let memberAllergies: string[][] = []
 
   if (hubGroupEvents && hubGroupEvents.length > 0) {
-    const groupIds = hubGroupEvents.map((g) => g.group_id)
+    const groupIds = hubGroupEvents.map((g: any) => g.group_id)
     const { data: members } = await supabase
       .from('hub_group_members')
       .select('profile_id, hub_guest_profiles(known_dietary, known_allergies)')
@@ -550,13 +550,13 @@ export async function getDietaryRollupForEvent(eventId: string): Promise<Dietary
   // Aggregate
   const allRestrictions = [
     ...clientDietary,
-    ...(guests ?? []).flatMap((g) => g.dietary_restrictions ?? []),
+    ...(guests ?? []).flatMap((g: any) => g.dietary_restrictions ?? []),
     ...memberDietary.flat(),
   ]
 
   const allAllergies = [
     ...clientAllergies,
-    ...(guests ?? []).flatMap((g) => g.allergies ?? []),
+    ...(guests ?? []).flatMap((g: any) => g.allergies ?? []),
     ...memberAllergies.flat(),
   ]
 
@@ -564,7 +564,7 @@ export async function getDietaryRollupForEvent(eventId: string): Promise<Dietary
   const guestsWithInfo =
     (clientDietary.length > 0 || clientAllergies.length > 0 ? 1 : 0) +
     (guests ?? []).filter(
-      (g) => (g.dietary_restrictions?.length ?? 0) > 0 || (g.allergies?.length ?? 0) > 0
+      (g: any) => (g.dietary_restrictions?.length ?? 0) > 0 || (g.allergies?.length ?? 0) > 0
     ).length +
     memberDietary.filter((d, i) => d.length > 0 || (memberAllergies[i]?.length ?? 0) > 0).length
 
@@ -588,7 +588,7 @@ export async function recordReferralSource(
   referredByClientId: string | null,
   fromGroupId: string | null
 ) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const updates: Record<string, unknown> = {}
   if (referredByClientId) updates.referred_by_client_id = referredByClientId

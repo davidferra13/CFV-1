@@ -18,7 +18,7 @@ export default async function StaffTasksPage() {
   const dateKeys = Object.keys(groupedTasks).sort()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="staff-check-tasks">
       <h1 className="text-2xl font-bold text-stone-100">My Tasks</h1>
 
       {dateKeys.length === 0 ? (

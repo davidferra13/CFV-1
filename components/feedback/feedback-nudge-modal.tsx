@@ -7,6 +7,7 @@
 import { useState, useEffect, useTransition } from 'react'
 import { submitUserFeedback, type FeedbackSentiment } from '@/lib/feedback/user-feedback-actions'
 import { useIsDemoMode } from '@/lib/demo-mode'
+import { useOnboardingPeripheralsEnabled } from '@/lib/onboarding/peripheral-visibility'
 
 const STORAGE_KEY = 'chefflow:feedback-nudge-done'
 
@@ -19,6 +20,7 @@ const SENTIMENTS: { emoji: string; label: string; value: FeedbackSentiment }[] =
 
 export function FeedbackNudgeModal() {
   const isDemo = useIsDemoMode()
+  const onboardingPeripheralsEnabled = useOnboardingPeripheralsEnabled()
   const [visible, setVisible] = useState(false)
   const [selected, setSelected] = useState<FeedbackSentiment | null>(null)
   const [message, setMessage] = useState('')
@@ -26,6 +28,11 @@ export function FeedbackNudgeModal() {
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
+    if (!onboardingPeripheralsEnabled) {
+      setVisible(false)
+      return
+    }
+
     try {
       if (localStorage.getItem(STORAGE_KEY)) return
     } catch {
@@ -33,7 +40,7 @@ export function FeedbackNudgeModal() {
     }
     const timer = setTimeout(() => setVisible(true), 5000)
     return () => clearTimeout(timer)
-  }, [])
+  }, [onboardingPeripheralsEnabled])
 
   function dismiss() {
     try {
@@ -65,7 +72,7 @@ export function FeedbackNudgeModal() {
     })
   }
 
-  if (isDemo || !visible) return null
+  if (isDemo || !onboardingPeripheralsEnabled || !visible) return null
 
   return (
     <div

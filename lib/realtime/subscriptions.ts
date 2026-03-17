@@ -21,17 +21,13 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
-import type { Database } from '@/types/database'
+import { createClient } from '@/lib/supabase/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 // ─── Supabase browser client (singleton per page) ────────────────────────────
 
 function getSupabaseBrowserClient() {
-  return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  return createClient()
 }
 
 // ─── Event status subscription ───────────────────────────────────────────────

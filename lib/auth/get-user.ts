@@ -1,14 +1,14 @@
-// Authoritative role resolution - System Law #2
-// NEVER infer role from URL, client state, or JWT claims
-// ALWAYS query user_roles table (single source of truth)
-
 import { cache } from 'react'
+import { headers } from 'next/headers'
 import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isAdmin } from '@/lib/auth/admin'
+import { readRequestAuthContext } from '@/lib/auth/request-auth-context'
 
 export type AuthUser = {
   id: string
+  userId: string
+  authUserId: string
   email: string
   role: 'chef' | 'client'
   entityId: string // chef.id or client.id
@@ -37,9 +37,21 @@ export type PartnerAuthUser = {
  * Returns null if not authenticated or no role assigned
  */
 export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
+  const requestAuthContext = readRequestAuthContext(headers())
+  if (requestAuthContext) {
+    return {
+      id: requestAuthContext.userId,
+      userId: requestAuthContext.userId,
+      authUserId: requestAuthContext.userId,
+      email: requestAuthContext.email,
+      role: requestAuthContext.role,
+      entityId: requestAuthContext.entityId,
+      tenantId: requestAuthContext.tenantId,
+    }
+  }
+
   const supabase = createServerClient()
 
-  // Get Supabase auth user
   const {
     data: { user },
     error,
@@ -49,7 +61,6 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
     return null
   }
 
-  // Get role from authoritative source (user_roles table)
   const { data: roleData, error: roleError } = await supabase
     .from('user_roles')
     .select('role, entity_id')
@@ -57,24 +68,19 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
     .single()
 
   if (roleError || !roleData) {
-    // User exists but no role assigned - should not happen in normal flow
     console.error('[AUTH] User has no role assigned:', user.id, roleError)
     return null
   }
 
   if (roleData.role !== 'chef' && roleData.role !== 'client') {
-    // system or unknown roles are not valid portal users
     return null
   }
 
-  // Get tenant_id based on role
   let tenantId: string | null = null
 
   if (roleData.role === 'chef') {
-    // Chef's own ID is the tenant
     tenantId = roleData.entity_id
   } else if (roleData.role === 'client') {
-    // Fetch client's tenant_id
     const { data: clientData } = await supabase
       .from('clients')
       .select('tenant_id')
@@ -86,6 +92,8 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
 
   return {
     id: user.id,
+    userId: user.id,
+    authUserId: user.id,
     email: user.email!,
     role: roleData.role,
     entityId: roleData.entity_id,

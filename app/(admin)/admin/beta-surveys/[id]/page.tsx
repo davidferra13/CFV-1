@@ -1,7 +1,5 @@
-// @ts-nocheck
 // Admin Beta Survey Results - individual survey detail with aggregated stats,
 // response table, invite management, and CSV export.
-// DEFERRED: Beta survey tables not yet created (migration pending).
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { createAdminClient } from '@/lib/supabase/admin'

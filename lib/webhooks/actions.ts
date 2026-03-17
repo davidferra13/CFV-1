@@ -13,13 +13,13 @@ export async function createWebhookEndpoint(input: {
   const user = await requireChef()
 
   // SECURITY: Validate URL to prevent SSRF — blocks private IPs, requires HTTPS
-  validateWebhookUrl(input.url)
+  const targetUrl = validateWebhookUrl(input.url).toString()
 
   const supabase: any = createServerClient()
   const secret = randomBytes(32).toString('hex')
   const { error } = await supabase.from('webhook_endpoints' as any).insert({
     tenant_id: user.entityId,
-    url: input.url,
+    url: targetUrl,
     description: input.description,
     events: input.events,
     secret,

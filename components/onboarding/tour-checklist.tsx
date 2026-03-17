@@ -4,7 +4,7 @@
 // Shows remaining onboarding steps with completion status.
 // Collapsible, dismissible, with progress bar.
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTour } from './tour-provider'
 import { Button } from '@/components/ui/button'
@@ -15,11 +15,15 @@ export function TourChecklist() {
   const router = useRouter()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
+  useEffect(() => {
+    if (window.matchMedia('(max-width: 639px)').matches) {
+      setIsCollapsed(true)
+    }
+  }, [])
+
   const handleStepClick = useCallback(
-    (stepId: string, route: string | null) => {
-      if (route) {
-        router.push(route)
-      }
+    (stepId: string, route: string) => {
+      router.push(route)
       tour.completeStep(stepId)
     },
     [router, tour]
@@ -28,7 +32,7 @@ export function TourChecklist() {
   if (!tour.showChecklist) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-80 max-h-[80vh] bg-stone-900 border border-stone-700 rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
+    <div className="fixed bottom-24 left-4 right-4 z-50 max-h-[65vh] overflow-hidden rounded-xl border border-stone-700 bg-stone-900 shadow-2xl animate-in slide-in-from-bottom-4 fade-in duration-300 sm:bottom-4 sm:left-auto sm:right-4 sm:w-80 sm:max-h-[80vh]">
       {/* Header */}
       <div className="px-4 py-3 bg-stone-800 border-b border-stone-700 flex items-center justify-between">
         <div className="flex items-center gap-2">

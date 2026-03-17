@@ -23,6 +23,10 @@ import {
   dismissChecklist as serverDismissChecklist,
   dismissTour as serverDismissTour,
 } from '@/lib/onboarding/tour-actions'
+import {
+  computeOnboardingPeripheralVisibility,
+  publishOnboardingPeripheralVisibility,
+} from '@/lib/onboarding/peripheral-visibility'
 
 type TourContextValue = {
   // Config
@@ -79,14 +83,7 @@ export function OnboardingTourProvider({ config, initialProgress, children }: Pr
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(
     new Set(initialProgress.completedSteps)
   )
-  const [welcomeSeen, setWelcomeSeen] = useState(() => {
-    if (initialProgress.welcomeSeenAt) return true
-    // Client-side fallback: survives full-page navigations that race the server write
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('cf-welcome-seen') === '1'
-    }
-    return false
-  })
+  const [welcomeSeen, setWelcomeSeen] = useState(() => !!initialProgress.welcomeSeenAt)
   const [checklistDismissed, setChecklistDismissed] = useState(
     !!initialProgress.checklistDismissedAt
   )
@@ -109,6 +106,25 @@ export function OnboardingTourProvider({ config, initialProgress, children }: Pr
 
   // Current tour step
   const currentTourStep = isTourActive ? (config.steps[currentTourIndex] ?? null) : null
+
+  useEffect(() => {
+    if (welcomeSeen || initialProgress.welcomeSeenAt || typeof window === 'undefined') return
+
+    // Client-side fallback: survives full-page navigations that race the server write
+    if (localStorage.getItem('cf-welcome-seen') === '1') {
+      setWelcomeSeen(true)
+    }
+  }, [welcomeSeen, initialProgress.welcomeSeenAt])
+
+  useEffect(() => {
+    publishOnboardingPeripheralVisibility(
+      computeOnboardingPeripheralVisibility({
+        showWelcome,
+        showChecklist,
+        isTourActive,
+      })
+    )
+  }, [showWelcome, showChecklist, isTourActive])
 
   // Auto-complete route-based steps
   useEffect(() => {

@@ -18,8 +18,8 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Cancelled',
   // Inquiry statuses
   new: 'New',
-  awaiting_client: 'Awaiting Client',
-  awaiting_chef: 'Awaiting Chef',
+  awaiting_client: 'Client Reply',
+  awaiting_chef: 'Your Reply',
   quoted: 'Quoted',
   declined: 'Declined',
   expired: 'Expired',

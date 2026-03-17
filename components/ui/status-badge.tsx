@@ -28,8 +28,8 @@ const STATUS_MAP: Record<string, { label: string; tier: StatusTier }> = {
   cancelled: { label: 'Cancelled', tier: 'muted' },
   // Inquiries
   new: { label: 'New', tier: 'pending' },
-  awaiting_client: { label: 'Awaiting Client', tier: 'progress' },
-  awaiting_chef: { label: 'Awaiting Chef', tier: 'pending' },
+  awaiting_client: { label: 'Client Reply', tier: 'progress' },
+  awaiting_chef: { label: 'Your Reply', tier: 'pending' },
   quoted: { label: 'Quoted', tier: 'progress' },
   declined: { label: 'Declined', tier: 'danger' },
   expired: { label: 'Expired', tier: 'muted' },

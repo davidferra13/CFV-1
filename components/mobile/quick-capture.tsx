@@ -12,11 +12,13 @@
 import { useState, useRef, useTransition } from 'react'
 import { Plus, Camera, DollarSign, X, Loader2 } from '@/components/ui/icons'
 import { useIsDemoMode } from '@/lib/demo-mode'
+import { useOnboardingPeripheralsEnabled } from '@/lib/onboarding/peripheral-visibility'
 import { toast } from 'sonner'
 import { createExpense } from '@/lib/expenses/actions'
 
 export function QuickCapture() {
   const isDemo = useIsDemoMode()
+  const onboardingPeripheralsEnabled = useOnboardingPeripheralsEnabled()
   const [open, setOpen] = useState(false)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [amount, setAmount] = useState('')
@@ -68,7 +70,7 @@ export function QuickCapture() {
     if (e.key === 'Enter') handleExpenseSubmit()
   }
 
-  if (isDemo) return null
+  if (isDemo || !onboardingPeripheralsEnabled) return null
 
   return (
     <>

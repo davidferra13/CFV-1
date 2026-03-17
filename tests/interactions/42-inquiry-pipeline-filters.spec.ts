@@ -104,6 +104,13 @@ test('/inquiries - budget_mode query loads', async ({ page }) => {
   await expect(page).toHaveURL(/budget_mode=not_sure/)
 })
 
+test('/inquiries - shows updated filter labels', async ({ page }) => {
+  await gotoStable(page, '/inquiries')
+  await expect(page.getByRole('button', { name: 'Client Reply' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Your Reply' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Closed' })).toBeVisible()
+})
+
 test('/inquiries - no hard JS errors', async ({ page }) => {
   await expectNoHardPageErrorsForRoute(page, '/inquiries')
 })

@@ -45,31 +45,33 @@ export function InquiriesFilterTabs({
   const tabs: { value: InquiryFilter; label: string }[] = [
     { value: 'all', label: 'All' },
     { value: 'new', label: 'New' },
-    { value: 'awaiting_client', label: 'Awaiting Client' },
-    { value: 'awaiting_chef', label: 'Awaiting Chef' },
+    { value: 'awaiting_client', label: 'Client Reply' },
+    { value: 'awaiting_chef', label: 'Your Reply' },
     { value: 'quoted', label: 'Quoted' },
     { value: 'confirmed', label: 'Confirmed' },
-    { value: 'closed', label: 'Declined / Expired' },
+    { value: 'closed', label: 'Closed' },
   ]
 
   return (
-    <div className="flex gap-2 flex-wrap items-center">
+    <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:items-center sm:overflow-visible sm:px-0 sm:pb-0">
       {tabs.map((tab) => (
         <Button
           key={tab.value}
           type="button"
           size="sm"
           variant={status === tab.value ? 'primary' : 'secondary'}
+          className="shrink-0 whitespace-nowrap"
           onClick={() => setState({ status: tab.value })}
         >
           {tab.label}
         </Button>
       ))}
-      <span className="w-px h-6 bg-stone-300 mx-1" />
+      <span className="mx-1 h-6 w-px shrink-0 bg-stone-300" />
       <Button
         type="button"
         size="sm"
         variant={channel === 'take_a_chef' ? 'primary' : 'secondary'}
+        className="shrink-0 whitespace-nowrap"
         onClick={() => setState({ channel: channel === 'take_a_chef' ? '' : 'take_a_chef' })}
       >
         TakeAChef
@@ -78,15 +80,17 @@ export function InquiriesFilterTabs({
         type="button"
         size="sm"
         variant={channel === 'yhangry' ? 'primary' : 'secondary'}
+        className="shrink-0 whitespace-nowrap"
         onClick={() => setState({ channel: channel === 'yhangry' ? '' : 'yhangry' })}
       >
         Yhangry
       </Button>
-      <span className="w-px h-6 bg-stone-300 mx-1" />
+      <span className="mx-1 h-6 w-px shrink-0 bg-stone-300" />
       <Button
         type="button"
         size="sm"
         variant={budgetMode === 'all' ? 'primary' : 'secondary'}
+        className="shrink-0 whitespace-nowrap"
         onClick={() => setState({ budget_mode: 'all' })}
       >
         Budget: All
@@ -95,6 +99,7 @@ export function InquiriesFilterTabs({
         type="button"
         size="sm"
         variant={budgetMode === 'exact' ? 'primary' : 'secondary'}
+        className="shrink-0 whitespace-nowrap"
         onClick={() => setState({ budget_mode: budgetMode === 'exact' ? 'all' : 'exact' })}
       >
         Exact
@@ -103,6 +108,7 @@ export function InquiriesFilterTabs({
         type="button"
         size="sm"
         variant={budgetMode === 'range' ? 'primary' : 'secondary'}
+        className="shrink-0 whitespace-nowrap"
         onClick={() => setState({ budget_mode: budgetMode === 'range' ? 'all' : 'range' })}
       >
         Range
@@ -111,6 +117,7 @@ export function InquiriesFilterTabs({
         type="button"
         size="sm"
         variant={budgetMode === 'not_sure' ? 'primary' : 'secondary'}
+        className="shrink-0 whitespace-nowrap"
         onClick={() => setState({ budget_mode: budgetMode === 'not_sure' ? 'all' : 'not_sure' })}
       >
         Not Sure
@@ -119,6 +126,7 @@ export function InquiriesFilterTabs({
         type="button"
         size="sm"
         variant={budgetMode === 'unset' ? 'primary' : 'secondary'}
+        className="shrink-0 whitespace-nowrap"
         onClick={() => setState({ budget_mode: budgetMode === 'unset' ? 'all' : 'unset' })}
       >
         Unset

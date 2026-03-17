@@ -4,6 +4,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { buildActivityTrackPayload } from '@/lib/activity/client-payload'
 
 interface SessionHeartbeatProps {
   entityType?: string
@@ -25,12 +26,14 @@ export function SessionHeartbeat({
       fetch('/api/activity/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event_type: 'session_heartbeat',
-          entity_type: entityType,
-          entity_id: entityId,
-          metadata: { seconds_on_page: secondsOnPage },
-        }),
+        body: JSON.stringify(
+          buildActivityTrackPayload({
+            eventType: 'session_heartbeat',
+            entityType,
+            entityId,
+            metadata: { seconds_on_page: secondsOnPage },
+          })
+        ),
       }).catch(() => {
         // Silently ignore tracking failures
       })

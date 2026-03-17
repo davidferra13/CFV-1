@@ -16,6 +16,8 @@ export interface BetaSignupInput {
   cuisineType?: string
   yearsInBusiness?: string
   referralSource?: string
+  sourcePage?: string
+  sourceCta?: string
   website?: string // honeypot
 }
 
@@ -81,29 +83,38 @@ export async function submitBetaSignup(
 
   try {
     const supabase: any = createAdminClient()
+    const sourcePage = input.sourcePage?.trim() || null
+    const sourceCta = input.sourceCta?.trim() || null
 
     // Check if this email already exists (for deciding whether to send emails)
     const { data: existing } = await supabase
       .from('beta_signups')
-      .select('id')
+      .select('id, source_page, source_cta')
       .eq('email', email)
       .maybeSingle()
 
     const isNewSignup = !existing
 
-    const { error } = await supabase.from('beta_signups').upsert(
-      {
-        name,
-        email,
-        phone: input.phone?.trim() || null,
-        business_name: input.businessName?.trim() || null,
-        cuisine_type: input.cuisineType?.trim() || null,
-        years_in_business: input.yearsInBusiness?.trim() || null,
-        referral_source: input.referralSource?.trim() || null,
-        created_at: new Date().toISOString(),
-      },
-      { onConflict: 'email' }
-    )
+    const updatePayload = {
+      name,
+      email,
+      phone: input.phone?.trim() || null,
+      business_name: input.businessName?.trim() || null,
+      cuisine_type: input.cuisineType?.trim() || null,
+      years_in_business: input.yearsInBusiness?.trim() || null,
+      referral_source: input.referralSource?.trim() || null,
+      source_page: existing?.source_page ?? sourcePage,
+      source_cta: existing?.source_cta ?? sourceCta,
+    }
+
+    const { error } = isNewSignup
+      ? await supabase.from('beta_signups').insert({
+          ...updatePayload,
+          source_page: sourcePage,
+          source_cta: sourceCta,
+          created_at: new Date().toISOString(),
+        })
+      : await supabase.from('beta_signups').update(updatePayload).eq('id', existing.id)
 
     if (error) {
       console.error('[beta-signup] Insert failed:', error)

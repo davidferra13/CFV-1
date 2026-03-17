@@ -1,8 +1,7 @@
 'use client'
 
-// Presence Beacon - silently broadcasts this visitor's presence to the site:presence Realtime channel.
-// Runs on every page for every visitor (anonymous and authenticated).
-// The admin dashboard subscribes to this channel to see who's online in real-time.
+// Presence Beacon - silently broadcasts authenticated portal presence to the
+// site:presence Realtime channel for internal live-ops views.
 
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
@@ -26,7 +25,6 @@ function generateId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID()
   }
-  // Fallback for non-secure contexts (HTTP over LAN)
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0
     return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
@@ -60,82 +58,54 @@ function getJoinedAt(): string {
 export function PresenceBeacon() {
   const pathname = usePathname()
   const channelRef = useRef<RealtimeChannel | null>(null)
-  const userInfoRef = useRef<{
-    userId: string | null
-    email: string | null
-    role: 'authenticated' | 'anonymous'
-  }>({
-    userId: null,
-    email: null,
-    role: 'anonymous',
-  })
   const sessionIdRef = useRef<string>(getOrCreateSessionId())
   const joinedAtRef = useRef<string>(getJoinedAt())
 
-  // Mount: create channel and subscribe
   useEffect(() => {
     const supabase = createClient()
-    const sessionId = sessionIdRef.current
-    const joinedAt = joinedAtRef.current
-
     const channel = supabase.channel(CHANNEL_NAME)
     channelRef.current = channel
 
     channel.subscribe(async (status) => {
       if (status !== 'SUBSCRIBED') return
 
-      // Resolve user identity once on connect
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      const info = {
-        userId: user?.id ?? null,
-        email: user?.email ?? null,
-        role: (user ? 'authenticated' : 'anonymous') as 'authenticated' | 'anonymous',
-      }
-      userInfoRef.current = info
-
-      const payload: PresencePayload = {
-        sessionId,
-        userId: null, // stripped from broadcast - admin resolves via server action
-        email: null, // stripped from broadcast - prevents PII leakage via channel
-        role: info.role,
+      await channel.track({
+        sessionId: sessionIdRef.current,
+        userId: null,
+        email: null,
+        role: 'authenticated',
         page: pathname ?? '/',
-        joinedAt,
+        joinedAt: joinedAtRef.current,
         userAgent: navigator.userAgent.slice(0, 150),
         referrer: document.referrer || '',
-      }
-
-      await channel.track(payload)
+      } satisfies PresencePayload)
     })
 
     return () => {
+      channelRef.current = null
       supabase.removeChannel(channel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Update page on every navigation
   useEffect(() => {
     const channel = channelRef.current
     if (!channel) return
 
-    const info = userInfoRef.current
-    const payload: PresencePayload = {
-      sessionId: sessionIdRef.current,
-      userId: null,
-      email: null,
-      role: info.role,
-      page: pathname ?? '/',
-      joinedAt: joinedAtRef.current,
-      userAgent: navigator.userAgent.slice(0, 150),
-      referrer: document.referrer || '',
-    }
-
-    channel.track(payload).catch(() => {
-      // ignore track errors (channel may not be subscribed yet)
-    })
+    channel
+      .track({
+        sessionId: sessionIdRef.current,
+        userId: null,
+        email: null,
+        role: 'authenticated',
+        page: pathname ?? '/',
+        joinedAt: joinedAtRef.current,
+        userAgent: navigator.userAgent.slice(0, 150),
+        referrer: document.referrer || '',
+      } satisfies PresencePayload)
+      .catch(() => {
+        // ignore track errors (channel may not be subscribed yet)
+      })
   }, [pathname])
 
   return null

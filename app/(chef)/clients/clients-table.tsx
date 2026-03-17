@@ -14,8 +14,8 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import Link from 'next/link'
-import { Tables } from '@/types/database'
-import { isDemoClient } from '@/lib/onboarding/demo-data'
+import type { Tables } from '@/types/database'
+import { isDemoClient } from '@/lib/onboarding/demo-data-utils'
 import { CalendarPlus, MessageCircle, ExternalLink } from '@/components/ui/icons'
 
 type ClientWithStats = Tables<'clients'> & {

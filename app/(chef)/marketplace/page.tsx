@@ -370,7 +370,7 @@ export default async function MarketplacePage() {
               subtitle="Brand-new requests with no action yet"
             />
             <StatCard
-              label="Awaiting Chef"
+              label="Your Reply"
               value={data.summary.awaitingChefCount}
               icon={Clock3}
               subtitle="Requests waiting on your response"

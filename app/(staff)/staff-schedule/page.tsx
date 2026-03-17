@@ -25,7 +25,7 @@ export default async function StaffSchedulePage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="staff-view-schedule">
       <h1 className="text-2xl font-bold text-stone-100">My Schedule</h1>
 
       {/* Upcoming assignments */}

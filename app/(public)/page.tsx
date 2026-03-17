@@ -2,25 +2,40 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
+const IS_BETA = LAUNCH_MODE === 'beta'
 
 export const revalidate = 3600 // ISR: revalidate every hour
 
 export const metadata: Metadata = {
-  title: 'ChefFlow | Private Chef Business OS',
-  description: 'Run events, menus, clients, and payments from one calm workspace.',
+  title: IS_BETA
+    ? 'ChefFlow Beta | Private Chef Business OS'
+    : 'ChefFlow | Private Chef Business OS',
+  description: IS_BETA
+    ? 'Request early access to ChefFlow beta and shape the operating system for private chefs.'
+    : 'Run events, menus, clients, and payments from one calm workspace.',
   openGraph: {
-    title: 'ChefFlow | Private Chef Business OS',
-    description: 'Run events, menus, clients, and payments from one calm workspace.',
+    title: IS_BETA
+      ? 'ChefFlow Beta | Private Chef Business OS'
+      : 'ChefFlow | Private Chef Business OS',
+    description: IS_BETA
+      ? 'Request early access to ChefFlow beta and shape the operating system for private chefs.'
+      : 'Run events, menus, clients, and payments from one calm workspace.',
     url: BASE_URL,
     siteName: 'ChefFlow',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChefFlow | Private Chef Business OS',
-    description: 'Run events, menus, clients, and payments from one calm workspace.',
+    title: IS_BETA
+      ? 'ChefFlow Beta | Private Chef Business OS'
+      : 'ChefFlow | Private Chef Business OS',
+    description: IS_BETA
+      ? 'Request early access to ChefFlow beta and shape the operating system for private chefs.'
+      : 'Run events, menus, clients, and payments from one calm workspace.',
   },
 }
 
@@ -61,16 +76,19 @@ export default function Home() {
           </p>
           <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row">
             <Link
-              href="/auth/signup"
+              href={buildMarketingSignupHref({
+                sourcePage: 'home',
+                sourceCta: 'hero_primary',
+              })}
               className="inline-flex flex-1 items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
-              Sign up
+              {PRIMARY_SIGNUP_LABEL}
             </Link>
             <Link
-              href="/pricing"
+              href={IS_BETA ? '/contact' : '/pricing'}
               className="inline-flex flex-1 items-center justify-center rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50"
             >
-              View Pricing
+              {IS_BETA ? 'Talk to us' : 'View Pricing'}
             </Link>
           </div>
         </div>

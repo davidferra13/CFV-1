@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatDistanceToNow, format, differenceInHours } from 'date-fns'
 import type { BookingScore } from '@/lib/analytics/booking-score'
-import { isDemoInquiry } from '@/lib/onboarding/demo-data'
+import { isDemoInquiry } from '@/lib/onboarding/demo-data-utils'
 
 const CHEF_ACTION_STATUSES = new Set(['new', 'awaiting_chef'])
 
