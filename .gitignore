@@ -194,3 +194,10 @@ cfv1-e2e-cookies.txt
 
 # Screenshots (ad-hoc debug captures)
 *.png
+
+# RL Agent data (local SQLite, checkpoints, screenshots, session logs)
+/data/rl-db/
+/data/rl-checkpoints/
+/data/rl-screenshots/
+/data/rl-sessions/
+/data/rl-issues/

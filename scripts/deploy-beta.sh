@@ -38,14 +38,25 @@ git push origin "$BRANCH" 2>/dev/null || echo "  (push skipped, may already be u
 
 # Step 2: Sync code to beta directory
 echo "[2/7] Syncing code to beta directory..."
-rsync -a --delete \
-  --exclude='.next' \
-  --exclude='.next-staging' \
-  --exclude='.next.backup' \
-  --exclude='node_modules' \
-  --exclude='.env.local' \
-  --exclude='.git' \
-  ./ "$BETA_DIR/"
+
+# Use robocopy on Windows (rsync not available in Git Bash)
+# Convert Git Bash paths to Windows paths for robocopy
+SRC_WIN=$(cygpath -w "$(pwd)")
+DST_WIN=$(cygpath -w "$BETA_DIR")
+
+# Double-slash flags to prevent Git Bash path expansion
+# robocopy exit codes 0-7 are success (8+ is error), so suppress set -e
+set +e
+robocopy "$SRC_WIN" "$DST_WIN" //MIR //NFL //NDL //NJH //NJS //NP \
+  //XD .next .next-staging .next.backup node_modules .git \
+  //XF .env.local \
+  > /dev/null 2>&1
+RC_EXIT=$?
+set -e
+if [ $RC_EXIT -ge 8 ]; then
+  echo "  ERROR: robocopy failed with exit code $RC_EXIT"
+  exit 1
+fi
 echo "  Code synced."
 
 # Step 3: Copy beta environment config
