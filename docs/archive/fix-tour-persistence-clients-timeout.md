@@ -1,7 +1,7 @@
 # Fix: Tour Modal Persistence + Clients Page Timeout
 
 **Date:** 2026-03-16
-**Branch:** feature/openclaw-adoption
+**Branch:** main
 
 ## What Changed
 

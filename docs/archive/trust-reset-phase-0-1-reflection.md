@@ -1,7 +1,7 @@
 # Trust Reset Phase 0-1 Hardening - Reflection
 
 Date: 2026-03-15
-Branch: `feature/openclaw-adoption`
+Branch: `main`
 
 ## What Changed
 

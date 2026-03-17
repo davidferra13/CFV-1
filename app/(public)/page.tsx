@@ -75,12 +75,12 @@ export default function Home() {
           <div className="mt-10 w-full max-w-2xl">
             <form action="/chefs" method="get" className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-500" />
+                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-500 pointer-events-none" />
                 <input
                   type="text"
                   name="q"
                   placeholder="What are you looking for?"
-                  className="h-14 w-full rounded-xl border border-stone-700 bg-stone-900/80 pl-12 pr-4 text-base text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                  className="h-14 w-full rounded-xl border border-stone-700 bg-stone-900/80 pl-[2.75rem] pr-4 text-base text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
                 />
               </div>
               <button

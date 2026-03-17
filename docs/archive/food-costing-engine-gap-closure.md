@@ -1,7 +1,7 @@
 # Food Costing Engine: Gap Closure
 
 **Date:** 2026-03-15
-**Branch:** feature/openclaw-adoption
+**Branch:** main
 
 ## What Changed
 

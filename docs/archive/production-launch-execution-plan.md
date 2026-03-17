@@ -633,9 +633,7 @@ Existing Playwright tests need to pass against the current codebase.
 [ ] 4.2.2  Create release branch:
            a. git checkout main
            b. git pull origin main
-           c. git merge feature/openclaw-adoption
-           d. Resolve any merge conflicts
-           e. Run full build: NODE_OPTIONS="--max-old-space-size=12288" npx next build --no-lint
+           c. Run full build: NODE_OPTIONS="--max-old-space-size=12288" npx next build --no-lint
            f. Run typecheck: npm run typecheck
            g. Both must pass with zero errors
 [ ] 4.2.3  Push to main (triggers Vercel deployment):

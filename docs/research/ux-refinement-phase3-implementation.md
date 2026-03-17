@@ -1,7 +1,7 @@
 # UX Refinement Phase 3: Tab-by-Tab Refinement
 
 > **Date:** 2026-03-16
-> **Branch:** feature/openclaw-adoption
+> **Branch:** main
 > **Status:** Complete
 
 ## Summary

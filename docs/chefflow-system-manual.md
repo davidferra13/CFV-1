@@ -1,6 +1,6 @@
 # ChefFlow V1 - Comprehensive System Manual
 
-> **Generated:** 2026-03-17 | **Baseline Version:** commit `56f4d197e` on `feature/openclaw-adoption`
+> **Generated:** 2026-03-17 | **Baseline Version:** commit `56f4d197e`
 > **Purpose:** Authoritative, single-source-of-truth technical manual for ChefFlow V1.
 > All subsequent changes are "patches" to this documented baseline.
 > **Maintainer:** Claude Code (Lead Engineer)

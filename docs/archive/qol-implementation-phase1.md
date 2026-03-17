@@ -1,7 +1,7 @@
 # QoL Phase 1 Implementation - Draft Persistence & Error Resilience
 
 > **Date:** 2026-03-15
-> **Branch:** feature/openclaw-adoption
+> **Branch:** main
 > **Scope:** Infrastructure + critical-risk form rollout + dashboard hardening
 
 ## What Was Built

@@ -143,10 +143,6 @@ This applies to ALL repeated actions, not just builds:
 4. **Let the user decide** the next step
 5. **Continue working on OTHER tasks** if you have them — stopping on one problem doesn't mean stopping everything
 
-### Why This Exists
-
-Without this rule, an agent that hits a tricky error will loop for 30–60+ minutes, burning hundreds of thousands of tokens, and often making the code worse with each iteration. The developer loses real money ($10–50+ per loop incident) and gets a worse result than if the agent had just stopped and asked for help after the second failure. The goal is not to limit agents — it's to redirect effort from futile repetition into asking for help.
-
 ---
 
 ## DATA SAFETY (HIGHEST PRIORITY)
@@ -304,10 +300,6 @@ When the developer says **"run hallucination scan"**, **"audit for hallucination
 
 Report findings in the same format as `docs/zero-hallucination-audit.md`. Update that file with any new findings.
 
-### Why This Exists
-
-A private chef platform handles real money, real clients, real dietary restrictions (allergies can be life-threatening), and real business decisions. When the dashboard says "$0 revenue," a chef might think their business is failing. When a notification toggle says "on" but was never saved, a chef misses a $5,000 booking. When a dietary note appears saved but wasn't persisted, someone could have an allergic reaction. **Every lie the UI tells has real consequences.** Zero tolerance.
-
 ---
 
 ## AGGRESSIVE DEFINITION OF DONE
@@ -359,31 +351,7 @@ Update `CLAUDE.md` immediately whenever any of the following happen:
 
 ---
 
-## MULTI-AGENT HIERARCHY (Claude Code is the Lead)
-
-This project is built by multiple AI agents. **Claude Code is the lead engineer** — rank 1, final authority on all code. Other agents are junior contributors whose work must be reviewed.
-
-### Current agents
-
-| Agent           | Role                                                  | How to identify its work                                            |
-| --------------- | ----------------------------------------------------- | ------------------------------------------------------------------- |
-| **Claude Code** | Lead engineer (you)                                   | Standard commits, no special tag                                    |
-| **Kilo**        | Junior engineer (local LLM via Ollama)                | Commits prefixed `kilo:`, files tagged `// @agent Kilo`             |
-| **Copilot**     | Research bot & prompt writer (GitHub Copilot / GPT-4) | Writes prompt files to `prompts/queue/` — never touches source code |
-
-### Your responsibilities as lead
-
-1. **Review all junior agent code.** When the developer says "review Kilo's work," run `git diff`, read the code, compile-check it, and either approve or fix it.
-2. **Update file tags after review.** Change `// @agent <Name> — review-pending` to `// @agent <Name> — reviewed by Claude Code` on approved files.
-3. **Junior agents never push, never build, never touch config/auth/database.** If you see Kilo commits that violate this, flag it to the developer immediately.
-4. **Pick up prompts from the queue.** When the developer says "pick up the queue," "run the next prompt," or "check the Claude queue," read prompt files from `prompts/queue/` and execute them. After executing, the developer moves the file to `prompts/completed/`.
-5. **Copilot no longer writes code.** Copilot is a research bot and prompt writer. It writes structured prompt files into `prompts/queue/` — never source code. If you see Copilot touching source files, flag it.
-
-Full details: `docs/agent-registry.md` | Kilo's rules: `KILO.md` | Copilot's rules: `COPILOT.md` | Workflows: `docs/kilo-workflow.md`, `docs/copilot-workflow.md`
-
----
-
-## "SHIP IT" — THE ONE COMMAND (READ THIS)
+## "SHIP IT" - THE ONE COMMAND (READ THIS)
 
 When the developer says **"ship it"** (or any variation: "ship", "send it", "push everything", "make it live"), do ALL of the following — no confirmation needed, no questions asked:
 
@@ -571,10 +539,6 @@ You are in multi-agent mode if:
 - **DO NOT retry a failed build.** If something fails, report it once and stop. Do not loop.
 - **DO NOT wait for the build to pass before committing.** Commit your code changes and let the developer run a single clean build after all agents finish.
 
-### Why this rule exists
-
-When 10 agents each try to verify the build, they all fail (`.next/` corruption, port 3100 conflicts, concurrent TypeScript process crashes). Each agent then retries, burning hundreds of tokens in a loop that never resolves. The developer loses time and money. The fix is simple: **agents implement and commit, the developer verifies once at the end.**
-
 ### The only time you should run a build
 
 Only run `npx tsc --noEmit --skipLibCheck` or `npx next build --no-lint` if:
@@ -745,21 +709,19 @@ Private data categories that must stay local:
 - Business analytics, insights, lead scores, pricing history
 - Temperature logs, staff data, event operational details
 
-### Gemini/Ollama/Groq Boundary (Updated 2026-03-13)
+### Gemini/Ollama Boundary
 
-Three AI backends, each with a clear purpose. Do not cross the privacy boundary.
+Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 
-| Backend    | Purpose                                              | Cost                | Privacy          |
-| ---------- | ---------------------------------------------------- | ------------------- | ---------------- |
-| **Ollama** | Private data (client PII, financials, allergies)     | Free (local GPU)    | Data stays on PC |
-| **Gemini** | Generic cloud tasks (technique lists, kitchen specs) | Paid (Google)       | No PII allowed   |
-| **Groq**   | Fast free cloud inference (generic tasks)            | Free (rate-limited) | No PII allowed   |
+| Backend    | Purpose                                              | Cost             | Privacy          |
+| ---------- | ---------------------------------------------------- | ---------------- | ---------------- |
+| **Ollama** | Private data (client PII, financials, allergies)     | Free (local GPU) | Data stays on PC |
+| **Gemini** | Generic cloud tasks (technique lists, kitchen specs) | Paid (Google)    | No PII allowed   |
 
 | File                                                        | AI Backend | Why                                                    |
 | ----------------------------------------------------------- | ---------- | ------------------------------------------------------ |
 | `lib/ai/gemini-service.ts`                                  | **Gemini** | Generic tasks, technique lists, kitchen specs (no PII) |
 | `lib/ai/campaign-outreach.ts` (`draftCampaignConcept` only) | **Gemini** | Generic themes/occasions (no client data)              |
-| `lib/ai/parse-groq.ts`                                      | **Groq**   | Non-private structured parsing (generic tasks)         |
 | `lib/ai/campaign-outreach.ts` (`draftPersonalizedOutreach`) | **Ollama** | Client names, dietary prefs, event history             |
 | `lib/ai/parse-recipe.ts`                                    | **Ollama** | Chef IP (recipe text)                                  |
 | `lib/ai/parse-brain-dump.ts`                                | **Ollama** | Client names, notes, recipes                           |
@@ -771,7 +733,7 @@ Three AI backends, each with a clear purpose. Do not cross the privacy boundary.
 | `lib/ai/contract-generator.ts`                              | **Ollama** | Client PII, event details, pricing                     |
 | `lib/ai/remy-actions.ts`                                    | **Ollama** | All client/chef conversational data                    |
 
-**Rule:** If a new AI file handles ANY private data category listed above, it MUST use `parseWithOllama`. No exceptions, no "just this once." Groq and Gemini are cloud services; private data never touches them.
+**Rule:** If a new AI file handles ANY private data category listed above, it MUST use `parseWithOllama`. No exceptions. Gemini is a cloud service; private data never touches it.
 
 ---
 
@@ -820,18 +782,8 @@ Three AI backends, each with a clear purpose. Do not cross the privacy boundary.
 | AI dispatch layer    | `lib/ai/dispatch/` (classifier, privacy gate, routing table, router, cost tracker) |
 | AI model governance  | `docs/ai-model-governance.md` **(canonical routing policy)**                       |
 | AI routing audit     | `scripts/audit-model-routing.ts` (detects direct provider imports)                 |
-| Groq parser          | `lib/ai/parse-groq.ts`                                                             |
-| Groq setup guide     | `docs/groq-setup.md`                                                               |
 | App audit (living)   | `docs/app-complete-audit.md` **(update when UI changes)**                          |
 | Remy reference       | `docs/remy-complete-reference.md` **(read this instead of re-scanning Remy)**      |
-| Agent registry       | `docs/agent-registry.md`                                                           |
-| Kilo agent rules     | `KILO.md`                                                                          |
-| Kilo workflow        | `docs/kilo-workflow.md`                                                            |
-| Copilot agent rules  | `COPILOT.md`                                                                       |
-| Copilot workflow     | `docs/copilot-workflow.md`                                                         |
-| Prompt queue         | `prompts/queue/` (Copilot writes here, Claude Code picks up)                       |
-| Prompt template      | `prompts/template.md`                                                              |
-| Completed prompts    | `prompts/completed/`                                                               |
 | Beta server docs     | `docs/beta-server-setup.md`                                                        |
 | Beta env config      | `.env.local.beta`                                                                  |
 | Beta start script    | `scripts/start-beta.ps1`                                                           |
@@ -885,14 +837,3 @@ The deploy script: pushes to GitHub, syncs code to CFv1-beta, builds locally wit
 - No local Supabase (no Docker) — use remote with `--linked` flag
 - Project ID: `luefkpakzvxcsqroxyhz`
 - Cross-layer columns added via `ALTER TABLE` (e.g., Layer 3 adds columns to `clients`)
-
----
-
-## COMPLETED FIXES (Reference Only)
-
-- **AI Privacy Architecture (2026-02-22):** Level 3 privacy by architecture. Conversations in browser IndexedDB, never on servers. See `docs/remy-privacy-architecture.md`.
-- **Ollama Loop Bug Fix (2026-02-22):** `lib/ai/command-orchestrator.ts` fail-fast for unsupported task types. `lib/ai/parse-ollama.ts` retry max 2 attempts. No infinite loops.
-
----
-
-Tell me last.

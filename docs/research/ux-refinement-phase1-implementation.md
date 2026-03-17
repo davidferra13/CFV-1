@@ -1,7 +1,7 @@
 # UX Refinement Phase 1 - Implementation Notes
 
 **Date:** 2026-03-15
-**Branch:** feature/openclaw-adoption
+**Branch:** main
 **Companion:** `docs/research/ux-refinement-master-plan.md`
 
 ---
