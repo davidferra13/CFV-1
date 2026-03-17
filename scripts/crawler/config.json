@@ -5,64 +5,79 @@
   },
   "regions": [
     {
-      "name": "Downtown Los Angeles, CA",
-      "bbox": [33.98, -118.3, 34.07, -118.22],
-      "state": "CA"
+      "name": "Haverhill, MA",
+      "bbox": [42.755, -71.1, 42.795, -71.06],
+      "state": "MA"
     },
     {
-      "name": "West Hollywood, CA",
-      "bbox": [34.07, -118.4, 34.11, -118.33],
-      "state": "CA"
+      "name": "Methuen, MA",
+      "bbox": [42.72, -71.2, 42.75, -71.16],
+      "state": "MA"
     },
     {
-      "name": "Manhattan, NY",
-      "bbox": [40.72, -74.01, 40.8, -73.94],
-      "state": "NY"
+      "name": "Lawrence, MA",
+      "bbox": [42.695, -71.18, 42.72, -71.14],
+      "state": "MA"
     },
     {
-      "name": "Brooklyn, NY",
-      "bbox": [40.66, -73.99, 40.72, -73.93],
-      "state": "NY"
+      "name": "Andover, MA",
+      "bbox": [42.64, -71.16, 42.67, -71.12],
+      "state": "MA"
     },
     {
-      "name": "Downtown Chicago, IL",
-      "bbox": [41.87, -87.66, 41.92, -87.61],
-      "state": "IL"
+      "name": "North Andover, MA",
+      "bbox": [42.68, -71.14, 42.71, -71.1],
+      "state": "MA"
     },
     {
-      "name": "Wicker Park Chicago, IL",
-      "bbox": [41.9, -87.69, 41.93, -87.66],
-      "state": "IL"
+      "name": "Newburyport, MA",
+      "bbox": [42.8, -70.89, 42.82, -70.86],
+      "state": "MA"
     },
     {
-      "name": "Miami Beach, FL",
-      "bbox": [25.76, -80.15, 25.82, -80.11],
-      "state": "FL"
+      "name": "Amesbury, MA",
+      "bbox": [42.85, -70.96, 42.87, -70.93],
+      "state": "MA"
     },
     {
-      "name": "Wynwood Miami, FL",
-      "bbox": [25.78, -80.22, 25.82, -80.18],
-      "state": "FL"
+      "name": "Salem, NH",
+      "bbox": [42.77, -71.24, 42.8, -71.2],
+      "state": "NH"
     },
     {
-      "name": "Austin, TX",
-      "bbox": [30.24, -97.78, 30.3, -97.72],
-      "state": "TX"
+      "name": "Plaistow-Atkinson, NH",
+      "bbox": [42.83, -71.12, 42.86, -71.08],
+      "state": "NH"
     },
     {
-      "name": "San Francisco, CA",
-      "bbox": [37.74, -122.45, 37.8, -122.39],
-      "state": "CA"
+      "name": "Lowell, MA",
+      "bbox": [42.63, -71.34, 42.66, -71.3],
+      "state": "MA"
     },
     {
-      "name": "Capitol Hill Seattle, WA",
-      "bbox": [47.6, -122.34, 47.64, -122.3],
-      "state": "WA"
+      "name": "Nashua, NH",
+      "bbox": [42.74, -71.49, 42.77, -71.45],
+      "state": "NH"
     },
     {
-      "name": "Nashville, TN",
-      "bbox": [36.14, -86.82, 36.18, -86.76],
-      "state": "TN"
+      "name": "Georgetown-Groveland, MA",
+      "bbox": [42.72, -71.0, 42.74, -70.97],
+      "state": "MA"
+    },
+    {
+      "name": "Bradford, MA",
+      "bbox": [42.74, -71.1, 42.76, -71.07],
+      "state": "MA"
+    },
+    {
+      "name": "Merrimac, MA",
+      "bbox": [42.82, -71.02, 42.84, -70.99],
+      "state": "MA"
+    },
+    {
+      "name": "Salisbury, MA",
+      "bbox": [42.84, -70.87, 42.86, -70.84],
+      "state": "MA"
     }
   ],
   "overpass": {
