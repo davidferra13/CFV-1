@@ -2,9 +2,9 @@
 
 ## What Changed
 
-OpenClaw (Raspberry Pi, always-on) was repurposed from a general-purpose "conductor" into a dedicated 24/7 prospecting engine for ChefFlow user acquisition.
+OpenClaw (always-on gateway service) was repurposed from a general-purpose "conductor" into a dedicated 24/7 prospecting engine for ChefFlow user acquisition.
 
-## Pi-Side Changes (via SSH)
+## OpenClaw Gateway Config
 
 ### Config (`openclaw.json`)
 

@@ -65,9 +65,9 @@ export type AiTaskStatus =
 
 /**
  * Where to run this task's Ollama call.
- * 'auto' lets the router decide based on priority + endpoint health.
+ * 'auto' lets the router decide. Pi is permanently retired.
  */
-export type LlmEndpoint = 'auto' | 'pc' | 'pi'
+export type LlmEndpoint = 'auto' | 'pc'
 
 // ============================================
 // TASK DEFINITION (for the registry)

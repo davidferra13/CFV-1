@@ -10,7 +10,7 @@ import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
 import { routeForRemy } from '@/lib/ai/llm-router'
-import { getEndpointSnapshot } from '@/lib/ai/cross-monitor'
+// Pi retired - no cross-monitor endpoint snapshot needed
 import { getRemyArchetype } from '@/lib/ai/privacy-actions'
 import { getSurveyState } from '@/lib/ai/remy-survey-actions'
 import { buildSurveyPromptSection } from '@/lib/ai/remy-survey-prompt'
@@ -27,7 +27,7 @@ import {
   checkDangerousActionBlock,
 } from '@/lib/ai/remy-input-validation'
 import { isRemyBlocked, isRemyAdmin, logRemyAbuse } from '@/lib/ai/remy-abuse-actions'
-import { acquireInteractiveLock, releaseInteractiveLock, isSlotBusy } from '@/lib/ai/queue'
+import { acquireInteractiveLock, releaseInteractiveLock } from '@/lib/ai/queue'
 import { checkRateLimit } from '@/lib/rateLimit'
 import {
   loadRelevantMemories,
@@ -41,11 +41,9 @@ import {
   OLLAMA_STREAM_MAX_TOKENS,
   OLLAMA_STREAM_TIMEOUT_MS,
   detectMemoryIntent,
-  detectPiTestIntent,
   encodeSSE,
   extractNavSuggestions,
   formatCategoryLabel,
-  handlePiTest,
   sseErrorResponse,
   sseHeaders,
   summarizeTaskResults,
@@ -246,15 +244,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    //  PI TEST (admin only)
-    if (admin && detectPiTestIntent(message)) {
-      return handlePiTest()
-    }
-
     //  MEMORY PATH (no streaming needed)
     const memoryIntent = detectMemoryIntent(message)
     if (memoryIntent === 'list') {
       const memories = await listRemyMemories({ limit: 200 })
+      const runtimeMemoryCount = memories.filter((memory) => !memory.editable).length
       const memoryItems: RemyMemoryItem[] = memories.map((m) => ({
         id: m.id,
         category: m.category,
@@ -262,7 +256,10 @@ export async function POST(req: NextRequest) {
         importance: m.importance,
         accessCount: m.accessCount,
         relatedClientId: m.relatedClientId,
+        relatedClientName: m.relatedClientName,
         createdAt: m.createdAt,
+        source: m.source,
+        editable: m.editable,
       }))
 
       let text: string
@@ -275,17 +272,25 @@ export async function POST(req: NextRequest) {
           if (!grouped.has(mem.category)) grouped.set(mem.category, [])
           grouped.get(mem.category)!.push(mem)
         }
-        const lines: string[] = [
-          `Here's everything I remember (${memories.length} memories). You can delete any of these - just tap the X next to it.\n`,
-        ]
+        const lines: string[] = [`Here's everything I remember (${memories.length} memories).\n`]
+        if (runtimeMemoryCount > 0) {
+          lines.push(
+            '_Runtime file memories come from `memory/runtime/remy.json`. Edit that file in VS Code and they will be picked up on the next message._\n'
+          )
+        } else {
+          lines.push('_Use the X button to delete any memory you no longer want me to keep._\n')
+        }
         for (const [category, items] of grouped) {
           lines.push(`**${formatCategoryLabel(category)}**`)
           for (const item of items) {
-            lines.push(`- ${item.content}${item.importance >= 8 ? ' [ALERT]' : ''}`)
+            const sourceNote = item.editable ? '' : ' _(VS Code)_'
+            lines.push(`- ${item.content}${item.importance >= 8 ? ' [ALERT]' : ''}${sourceNote}`)
           }
           lines.push('')
         }
-        lines.push('_To add a memory, say "remember that..." followed by the fact._')
+        lines.push(
+          '_To add a memory, say "remember that..." followed by the fact. Runtime file memories stay read-only in the app._'
+        )
         text = lines.join('\n')
       }
 
@@ -773,20 +778,8 @@ export async function POST(req: NextRequest) {
 
       const taskSummary = summarizeTaskResults(tasks)
 
-      // Stream the conversational part - same load-aware routing as question path
-      let mixedPrefer: 'auto' | 'pc' | 'pi' = 'auto'
-      const mixedPcBusy = isSlotBusy('pc')
-      const mixedPcSnap = getEndpointSnapshot('pc')
-      const mixedPiSnap = getEndpointSnapshot('pi')
-      if (
-        (mixedPcBusy || mixedPcSnap?.activeGeneration) &&
-        mixedPiSnap &&
-        mixedPiSnap.grade !== 'unhealthy'
-      ) {
-        mixedPrefer = 'pi'
-      }
-
-      const mixedEndpoint = await routeForRemy({ preferEndpoint: mixedPrefer })
+      // Stream the conversational part - always routes to PC (only endpoint)
+      const mixedEndpoint = await routeForRemy()
       if (!mixedEndpoint) {
         releaseInteractiveLock()
         return new Response(
@@ -965,23 +958,8 @@ export async function POST(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders() })
     }
 
-    //  QUESTION path (default) - STREAMED with load-aware routing + failover
-    //  Smart endpoint selection (load-aware)
-    // If the PC is mid-background-task or actively generating, prefer the Pi
-    // to avoid GPU contention. Falls back gracefully if Pi is unavailable.
-    let preferEndpoint: 'auto' | 'pc' | 'pi' = 'auto'
-    const pcBusy = isSlotBusy('pc')
-    const pcSnapshot = getEndpointSnapshot('pc')
-    const piSnapshot = getEndpointSnapshot('pi')
-    if (
-      (pcBusy || pcSnapshot?.activeGeneration) &&
-      piSnapshot &&
-      piSnapshot.grade !== 'unhealthy'
-    ) {
-      preferEndpoint = 'pi'
-    }
-
-    const endpoint = await routeForRemy({ preferEndpoint })
+    //  QUESTION path (default) - STREAMED, always routes to PC (only endpoint)
+    const endpoint = await routeForRemy()
     if (!endpoint) {
       releaseInteractiveLock()
       return new Response(

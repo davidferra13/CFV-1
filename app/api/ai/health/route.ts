@@ -1,25 +1,19 @@
 // GET /api/ai/health
-// Returns health status of ALL Ollama endpoints (PC + Pi).
+// Returns health status of the PC Ollama endpoint.
 // Used by dashboard, watchdog, and cross-monitoring system.
 // Gated behind CRON_SECRET or authenticated admin access to prevent
-// exposing internal infrastructure details (LAN IPs, model names).
-//
-// Best practices adopted:
-//   Google SRE: golden signals (latency, error rate, saturation)
-//   Kubernetes: liveness + readiness probes with distinct status
-//   AWS: multi-AZ health aggregation
-//   Netflix: circuit breaker state exposure for observability
+// exposing internal infrastructure details (model names).
 
 import { NextResponse } from 'next/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
-import { getOllamaConfig, getOllamaPiUrl, getModelForEndpoint } from '@/lib/ai/providers'
+import { getOllamaConfig, getModelForEndpoint } from '@/lib/ai/providers'
 
 // ============================================
 // TYPES
 // ============================================
 
 interface EndpointHealth {
-  name: 'pc' | 'pi'
+  name: 'pc'
   url: string
   online: boolean
   latencyMs: number | null
@@ -34,7 +28,7 @@ interface EndpointHealth {
 interface HealthResponse {
   status: 'all_healthy' | 'degraded' | 'offline'
   endpoints: EndpointHealth[]
-  dualMode: boolean
+  dualMode: false
   summary: string
   timestamp: string
 }
@@ -43,13 +37,9 @@ interface HealthResponse {
 // ENDPOINT HEALTH CHECK
 // ============================================
 
-async function checkEndpoint(
-  name: 'pc' | 'pi',
-  url: string,
-  expectedModel: string
-): Promise<EndpointHealth> {
+async function checkEndpoint(url: string, expectedModel: string): Promise<EndpointHealth> {
   const result: EndpointHealth = {
-    name,
+    name: 'pc',
     url,
     online: false,
     latencyMs: null,
@@ -61,7 +51,7 @@ async function checkEndpoint(
     error: null,
   }
 
-  // ── Liveness Probe: /api/tags ──
+  // Liveness Probe: /api/tags
   try {
     const start = Date.now()
     const tagsRes = await fetch(`${url}/api/tags`, {
@@ -86,7 +76,7 @@ async function checkEndpoint(
     return result
   }
 
-  // ── Saturation Probe: /api/ps (is Ollama busy generating?) ──
+  // Saturation Probe: /api/ps (is Ollama busy generating?)
   try {
     const psRes = await fetch(`${url}/api/ps`, {
       signal: AbortSignal.timeout(3000),
@@ -111,54 +101,39 @@ async function checkEndpoint(
 // ============================================
 
 export async function GET(req: Request) {
-  // Gate behind cron secret - exposes internal LAN IPs and model details
+  // Gate behind cron secret - exposes model details
   const authError = verifyCronAuth(req.headers.get('authorization'))
   if (authError) return authError
 
   const config = getOllamaConfig()
-  const piUrl = getOllamaPiUrl()
 
-  // Check both endpoints in parallel (AWS multi-AZ pattern)
-  const checks: Promise<EndpointHealth>[] = [
-    checkEndpoint('pc', config.baseUrl, getModelForEndpoint('pc', 'standard')),
-  ]
-  if (piUrl) {
-    checks.push(checkEndpoint('pi', piUrl, getModelForEndpoint('pi', 'standard')))
+  const endpoint = await checkEndpoint(config.baseUrl, getModelForEndpoint('pc', 'standard'))
+
+  const status =
+    endpoint.online && endpoint.modelReady
+      ? 'all_healthy'
+      : endpoint.online
+        ? 'degraded'
+        : 'offline'
+
+  const summary =
+    endpoint.online && endpoint.modelReady
+      ? `PC: healthy (${endpoint.latencyMs}ms)`
+      : endpoint.online
+        ? 'PC: online but model not ready'
+        : `PC: offline (${endpoint.error ?? 'unreachable'})`
+
+  // Redact internal URLs from the response
+  const sanitizedEndpoint = {
+    ...endpoint,
+    url: '[redacted-pc]',
   }
-
-  const endpoints = await Promise.all(checks)
-
-  // Compute aggregate status
-  const anyHealthy = endpoints.some((e) => e.online)
-  const allHealthy = endpoints.every((e) => e.online)
-  const allReady = endpoints.every((e) => e.online && e.modelReady)
-  const status = allReady ? 'all_healthy' : anyHealthy ? 'degraded' : 'offline'
-
-  // Generate human-readable summary
-  const summaryParts: string[] = []
-  for (const ep of endpoints) {
-    if (ep.online && ep.modelReady) {
-      summaryParts.push(`${ep.name.toUpperCase()}: healthy (${ep.latencyMs}ms)`)
-    } else if (ep.online && !ep.modelReady) {
-      summaryParts.push(`${ep.name.toUpperCase()}: online but model not ready`)
-    } else {
-      summaryParts.push(`${ep.name.toUpperCase()}: offline (${ep.error ?? 'unreachable'})`)
-    }
-  }
-
-  // Redact internal LAN IPs from the response - expose only the endpoint name
-  // Even though this endpoint is auth-gated, defense-in-depth means we don't
-  // leak network topology if the CRON_SECRET is compromised.
-  const sanitizedEndpoints = endpoints.map((ep) => ({
-    ...ep,
-    url: `[redacted-${ep.name}]`,
-  }))
 
   const response: HealthResponse = {
     status,
-    endpoints: sanitizedEndpoints,
-    dualMode: !!piUrl,
-    summary: summaryParts.join(' | '),
+    endpoints: [sanitizedEndpoint],
+    dualMode: false,
+    summary,
     timestamp: new Date().toISOString(),
   }
 

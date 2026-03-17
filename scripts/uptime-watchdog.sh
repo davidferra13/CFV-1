@@ -33,12 +33,12 @@ TIMEOUT=10    # seconds per check
 # Services to monitor
 BETA_URL="https://beta.cheflowhq.com/api/health"
 PROD_URL="https://app.cheflowhq.com/api/health"
-PI_HOST="pi"
+BETA_LOCAL_URL="http://localhost:3200/api/health"
 
 # Track previous state to avoid spam (only notify on state change)
 BETA_WAS_DOWN=false
 PROD_WAS_DOWN=false
-PI_WAS_DOWN=false
+BETA_LOCAL_WAS_DOWN=false
 
 mkdir -p "$(dirname "$LOG_FILE")"
 
@@ -69,21 +69,12 @@ notify() {
 
 check_http() {
   local url="$1"
-  local name="$2"
   local status
   status=$(curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$url" 2>/dev/null)
   if [ "$status" = "200" ]; then
     echo "up"
   else
     echo "down:$status"
-  fi
-}
-
-check_pi() {
-  if ssh -o ConnectTimeout=5 -o BatchMode=yes "$PI_HOST" "echo ok" >/dev/null 2>&1; then
-    echo "up"
-  else
-    echo "down"
   fi
 }
 
@@ -96,23 +87,38 @@ fi
 log "Watchdog started (interval: ${INTERVAL}s)"
 
 while true; do
-  # Check beta
-  BETA_STATUS=$(check_http "$BETA_URL" "Beta")
+  # Check beta (external via Cloudflare Tunnel)
+  BETA_STATUS=$(check_http "$BETA_URL")
   if [ "$BETA_STATUS" = "up" ]; then
     if [ "$BETA_WAS_DOWN" = true ]; then
-      log "RECOVERED: Beta is back up"
+      log "RECOVERED: Beta (external) is back up"
       BETA_WAS_DOWN=false
     fi
   else
     if [ "$BETA_WAS_DOWN" = false ]; then
-      log "ALERT: Beta is DOWN ($BETA_STATUS)"
+      log "ALERT: Beta (external) is DOWN ($BETA_STATUS)"
       notify "ChefFlow Alert" "Beta server is DOWN ($BETA_STATUS)"
       BETA_WAS_DOWN=true
     fi
   fi
 
+  # Check beta (local port 3200)
+  BETA_LOCAL_STATUS=$(check_http "$BETA_LOCAL_URL")
+  if [ "$BETA_LOCAL_STATUS" = "up" ]; then
+    if [ "$BETA_LOCAL_WAS_DOWN" = true ]; then
+      log "RECOVERED: Beta (localhost:3200) is back up"
+      BETA_LOCAL_WAS_DOWN=false
+    fi
+  else
+    if [ "$BETA_LOCAL_WAS_DOWN" = false ]; then
+      log "ALERT: Beta (localhost:3200) is DOWN ($BETA_LOCAL_STATUS)"
+      notify "ChefFlow Alert" "Beta local server is DOWN ($BETA_LOCAL_STATUS)"
+      BETA_LOCAL_WAS_DOWN=true
+    fi
+  fi
+
   # Check production
-  PROD_STATUS=$(check_http "$PROD_URL" "Prod")
+  PROD_STATUS=$(check_http "$PROD_URL")
   if [ "$PROD_STATUS" = "up" ]; then
     if [ "$PROD_WAS_DOWN" = true ]; then
       log "RECOVERED: Production is back up"
@@ -123,21 +129,6 @@ while true; do
       log "ALERT: Production is DOWN ($PROD_STATUS)"
       notify "ChefFlow Alert" "Production is DOWN ($PROD_STATUS)"
       PROD_WAS_DOWN=true
-    fi
-  fi
-
-  # Check Pi SSH
-  PI_STATUS=$(check_pi)
-  if [ "$PI_STATUS" = "up" ]; then
-    if [ "$PI_WAS_DOWN" = true ]; then
-      log "RECOVERED: Pi SSH is back up"
-      PI_WAS_DOWN=false
-    fi
-  else
-    if [ "$PI_WAS_DOWN" = false ]; then
-      log "ALERT: Pi is UNREACHABLE via SSH"
-      notify "ChefFlow Alert" "Raspberry Pi is UNREACHABLE"
-      PI_WAS_DOWN=true
     fi
   fi
 

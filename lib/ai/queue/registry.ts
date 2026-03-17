@@ -333,7 +333,7 @@ const SCHEDULED_HANDLER_MAP: Record<
   {
     name: string
     model: 'fast' | 'standard' | 'complex'
-    endpoint: 'auto' | 'pi'
+    endpoint: 'auto' | 'pc'
     recurrence: string
     handler: (p: Record<string, unknown>, t: string) => Promise<Record<string, unknown>>
   }
@@ -341,35 +341,35 @@ const SCHEDULED_HANDLER_MAP: Record<
   'scheduled.daily_briefing': {
     name: 'Daily Briefing Pre-Gen',
     model: 'standard',
-    endpoint: 'pi',
+    endpoint: 'pc',
     recurrence: '1 day',
     handler: handleDailyBriefing,
   },
   'scheduled.lead_scoring': {
     name: 'Auto Lead Scoring',
     model: 'fast',
-    endpoint: 'pi',
+    endpoint: 'pc',
     recurrence: '2 hours',
     handler: handleLeadScoring,
   },
   'scheduled.weekly_insights': {
     name: 'Weekly Business Insights',
     model: 'standard',
-    endpoint: 'pi',
+    endpoint: 'pc',
     recurrence: '1 week',
     handler: handleWeeklyInsights,
   },
   'scheduled.revenue_goal': {
     name: 'Revenue Goal Progress',
     model: 'standard',
-    endpoint: 'pi',
+    endpoint: 'pc',
     recurrence: '1 week',
     handler: handleRevenueGoal,
   },
   'scheduled.churn_prediction': {
     name: 'Client Churn Prediction',
     model: 'standard',
-    endpoint: 'pi',
+    endpoint: 'pc',
     recurrence: '1 week',
     handler: handleChurnPrediction,
   },
@@ -383,7 +383,7 @@ const SCHEDULED_HANDLER_MAP: Record<
   'scheduled.pipeline_bottleneck': {
     name: 'Pipeline Bottleneck Report',
     model: 'standard',
-    endpoint: 'pi',
+    endpoint: 'pc',
     recurrence: '1 week',
     handler: handlePipelineBottleneck,
   },
@@ -404,21 +404,21 @@ const SCHEDULED_HANDLER_MAP: Record<
   'scheduled.quote_analysis': {
     name: 'Quote Win/Loss Analysis',
     model: 'standard',
-    endpoint: 'pi',
+    endpoint: 'pc',
     recurrence: '1 week',
     handler: handleQuoteAnalysis,
   },
   'scheduled.anomaly_detection': {
     name: 'Platform Anomaly Detection',
     model: 'standard',
-    endpoint: 'pi',
+    endpoint: 'pc',
     recurrence: '1 day',
     handler: handleAnomalyDetection,
   },
   'scheduled.menu_engineering': {
     name: 'Menu Engineering Report',
     model: 'complex',
-    endpoint: 'pi',
+    endpoint: 'pc',
     recurrence: '1 month',
     handler: handleMenuEngineering,
   },
@@ -439,14 +439,14 @@ const SCHEDULED_HANDLER_MAP: Record<
   'scheduled.social_post_draft': {
     name: 'Social Post Draft',
     model: 'standard',
-    endpoint: 'pi',
+    endpoint: 'pc',
     recurrence: '1 week',
     handler: handleSocialPostDraft,
   },
   'scheduled.client_sentiment': {
     name: 'Client Sentiment Monitor',
     model: 'standard',
-    endpoint: 'pi',
+    endpoint: 'pc',
     recurrence: '1 week',
     handler: handleClientSentiment,
   },

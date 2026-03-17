@@ -14,7 +14,7 @@ A conversational AI assistant embedded in the Mission Control launcher dashboard
 ```
 User types message
   → Browser sends POST /api/chat { message, history }
-  → Server picks best Ollama (PC first, Pi fallback)
+  → Server connects to Ollama on PC (localhost:11434)
   → Server builds system prompt with live status + tool list
   → Server streams Ollama response as NDJSON tokens
   → Server parses <action> tags from full response
@@ -74,13 +74,11 @@ Response: NDJSON stream (one JSON object per line)
 | ----------------- | ------------------------ |
 | `dev/start`       | Start local dev server   |
 | `dev/stop`        | Stop local dev server    |
-| `beta/restart`    | Restart beta (PM2)       |
+| `beta/restart`    | Restart beta server      |
 | `beta/deploy`     | Deploy to beta           |
 | `beta/rollback`   | Rollback beta            |
 | `ollama/pc/start` | Start Ollama on PC       |
 | `ollama/pc/stop`  | Stop Ollama on PC        |
-| `ollama/pi/start` | Start Ollama on Pi       |
-| `ollama/pi/stop`  | Stop Ollama on Pi        |
 | `git/push`        | Push current branch      |
 | `build/typecheck` | Run tsc                  |
 | `build/full`      | Run next build           |
@@ -91,11 +89,10 @@ Response: NDJSON stream (one JSON object per line)
 
 The LLM uses tag-based tool calling: `<action>action/name</action>`. The server regex-parses these from the complete response and executes them sequentially. Results are sent as a separate `action_results` chunk.
 
-### Ollama Fallback
+### Ollama Connection
 
-1. Try PC Ollama first (`localhost:11434`, `qwen3-coder:30b`)
-2. If PC offline, try Pi (`10.0.0.177:11434`, `qwen3:8b`)
-3. If both offline, return 503 error
+1. Connect to PC Ollama (`localhost:11434`, `qwen3-coder:30b`)
+2. If Ollama offline, return 503 error
 
 ## Error Handling
 

@@ -26,13 +26,12 @@ let _seeded = false
 /**
  * Seed scheduled tasks for all active tenants.
  * Safe to call multiple times — idempotent (dedup in enqueueTask).
- * Only seeds jobs that are enabled without the Pi (unless Pi is configured).
+ * Seeds all enabled jobs (Pi is permanently retired, all jobs run on PC).
  */
 export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: number }> {
   if (_seeded) return { seeded: 0, skipped: 0 }
 
   const supabase: any = createAdminClient()
-  const hasPi = !!process.env.OLLAMA_PI_URL
 
   // Get all active tenants
   const { data: tenants, error: tenantsError } = await supabase
@@ -61,12 +60,6 @@ export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: n
 
   for (const tenant of tenants) {
     for (const job of SCHEDULED_JOBS) {
-      // Skip heavy jobs if no Pi
-      if (!job.enabledWithoutPi && !hasPi) {
-        skippedCount++
-        continue
-      }
-
       try {
         const result = await enqueueTask({
           tenantId: tenant.id,
@@ -117,9 +110,6 @@ export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: n
 export async function rescheduleTask(taskType: string, tenantId: string): Promise<void> {
   const job = SCHEDULED_JOBS.find((j) => j.taskType === taskType)
   if (!job) return // Not a recurring task
-
-  const hasPi = !!process.env.OLLAMA_PI_URL
-  if (!job.enabledWithoutPi && !hasPi) return // Skip heavy jobs without Pi
 
   try {
     const result = await enqueueTask({

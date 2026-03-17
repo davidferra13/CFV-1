@@ -1,37 +1,29 @@
-// @agent Kilo - review-pending
 // POST /api/ai/wake
-// Wake, ping, and manage Ollama endpoints.
+// Wake, ping, and manage the PC Ollama endpoint.
 // Admin-only endpoint for controlling AI infrastructure.
 
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth/admin'
 import {
-  pingAllEndpoints,
   pingEndpoint,
   wakePcOllama,
-  wakePiOllama,
-  wakeAllEndpoints,
   loadModelOnEndpoint,
-  loadModelsOnAllEndpoints,
   restartPcOllama,
-  restartPiOllama,
-  rebootPi,
-  networkDiagnosePi,
   networkDiagnosePc,
   type PingResult,
   type WakeResult,
   type LoadModelResult,
   type NetworkDiagResult,
 } from '@/lib/ai/ollama-wake'
-import { getOllamaConfig, getOllamaPiUrl } from '@/lib/ai/providers'
+import { getOllamaConfig } from '@/lib/ai/providers'
 
 // ============================================
 // TYPES
 // ============================================
 
 interface WakeRequest {
-  action: 'ping' | 'wake' | 'load-model' | 'restart' | 'reboot' | 'diagnose'
-  endpoint?: 'pc' | 'pi' | 'all'
+  action: 'ping' | 'wake' | 'load-model' | 'restart' | 'diagnose'
+  endpoint?: 'pc' | 'all'
 }
 
 interface WakeResponse {
@@ -61,29 +53,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { action, endpoint = 'all' } = body
+  const { action } = body
   const timestamp = new Date().toISOString()
 
   // Route to appropriate handler
   try {
     switch (action) {
       case 'ping':
-        return handlePing(endpoint)
+        return handlePing(timestamp)
 
       case 'wake':
-        return handleWake(endpoint, timestamp)
+        return handleWake(timestamp)
 
       case 'load-model':
-        return handleLoadModel(endpoint, timestamp)
+        return handleLoadModel(timestamp)
 
       case 'restart':
-        return handleRestart(endpoint, timestamp)
-
-      case 'reboot':
-        return handleReboot(timestamp)
+        return handleRestart(timestamp)
 
       case 'diagnose':
-        return handleDiagnose(endpoint, timestamp)
+        return handleDiagnose(timestamp)
 
       default:
         return NextResponse.json(
@@ -114,170 +103,64 @@ export async function POST(request: Request) {
 // ACTION HANDLERS
 // ============================================
 
-async function handlePing(endpoint: 'pc' | 'pi' | 'all'): Promise<Response> {
+async function handlePing(timestamp: string): Promise<Response> {
   const config = getOllamaConfig()
-  const piUrl = getOllamaPiUrl()
-  const timestamp = new Date().toISOString()
-
-  if (endpoint === 'all') {
-    const results = await pingAllEndpoints()
-    const allOnline = results.every((r) => r.online)
-
-    return NextResponse.json({
-      success: allOnline,
-      message: allOnline ? 'All endpoints online' : 'Some endpoints offline',
-      results,
-      timestamp,
-    } as WakeResponse)
-  }
-
-  const url = endpoint === 'pc' ? config.baseUrl : piUrl
-  if (!url) {
-    return NextResponse.json({
-      success: false,
-      message: `${endpoint.toUpperCase()} endpoint not configured`,
-      results: [],
-      timestamp,
-    } as WakeResponse)
-  }
-
-  const result = await pingEndpoint(endpoint, url, 15000)
+  const result = await pingEndpoint('pc', config.baseUrl, 15000)
 
   return NextResponse.json({
     success: result.online,
-    message: result.online
-      ? `${endpoint.toUpperCase()} online (${result.latencyMs}ms)`
-      : `${endpoint.toUpperCase()} offline: ${result.error}`,
+    message: result.online ? `PC online (${result.latencyMs}ms)` : `PC offline: ${result.error}`,
     results: [result],
     timestamp,
   } as WakeResponse)
 }
 
-async function handleWake(endpoint: 'pc' | 'pi' | 'all', timestamp: string): Promise<Response> {
-  let results: WakeResult[]
-
-  if (endpoint === 'all') {
-    results = await wakeAllEndpoints()
-  } else if (endpoint === 'pc') {
-    results = [await wakePcOllama()]
-  } else {
-    results = [await wakePiOllama()]
-  }
-
-  const allSuccess = results.every((r) => r.success)
-
-  return NextResponse.json({
-    success: allSuccess,
-    message: allSuccess
-      ? 'Wake successful'
-      : `Wake completed with errors: ${results.map((r) => r.message).join('; ')}`,
-    results,
-    timestamp,
-  } as WakeResponse)
-}
-
-async function handleLoadModel(
-  endpoint: 'pc' | 'pi' | 'all',
-  timestamp: string
-): Promise<Response> {
-  const config = getOllamaConfig()
-  const piUrl = getOllamaPiUrl()
-
-  let results: LoadModelResult[]
-
-  if (endpoint === 'all') {
-    results = await loadModelsOnAllEndpoints()
-    if (results.length === 0) {
-      return NextResponse.json({
-        success: true,
-        message: 'All models already loaded',
-        results: [],
-        timestamp,
-      } as WakeResponse)
-    }
-  } else {
-    const url = endpoint === 'pc' ? config.baseUrl : piUrl
-    if (!url) {
-      return NextResponse.json({
-        success: false,
-        message: `${endpoint.toUpperCase()} endpoint not configured`,
-        results: [],
-        timestamp,
-      } as WakeResponse)
-    }
-    results = [await loadModelOnEndpoint(endpoint, url)]
-  }
-
-  const allSuccess = results.every((r) => r.success)
-
-  return NextResponse.json({
-    success: allSuccess,
-    message: allSuccess
-      ? 'Model(s) loaded successfully'
-      : `Load completed with errors: ${results.map((r) => r.message).join('; ')}`,
-    results,
-    timestamp,
-  } as WakeResponse)
-}
-
-async function handleRestart(endpoint: 'pc' | 'pi' | 'all', timestamp: string): Promise<Response> {
-  const results: WakeResult[] = []
-
-  if (endpoint === 'pc' || endpoint === 'all') {
-    results.push(await restartPcOllama())
-  }
-
-  if (endpoint === 'pi' || endpoint === 'all') {
-    const piUrl = getOllamaPiUrl()
-    if (piUrl) {
-      results.push(await restartPiOllama())
-    }
-  }
-
-  const allSuccess = results.every((r) => r.success)
-
-  return NextResponse.json({
-    success: allSuccess,
-    message: allSuccess
-      ? 'Restart successful'
-      : `Restart completed with errors: ${results.map((r) => r.message).join('; ')}`,
-    results,
-    timestamp,
-  } as WakeResponse)
-}
-
-async function handleReboot(timestamp: string): Promise<Response> {
-  const result = await rebootPi()
+async function handleWake(timestamp: string): Promise<Response> {
+  const result = await wakePcOllama()
 
   return NextResponse.json({
     success: result.success,
-    message: result.message,
+    message: result.success ? 'Wake successful' : `Wake failed: ${result.message}`,
     results: [result],
     timestamp,
   } as WakeResponse)
 }
 
-async function handleDiagnose(endpoint: 'pc' | 'pi' | 'all', timestamp: string): Promise<Response> {
-  const results: NetworkDiagResult[] = []
-
-  if (endpoint === 'pc' || endpoint === 'all') {
-    results.push(await networkDiagnosePc())
-  }
-  if (endpoint === 'pi' || endpoint === 'all') {
-    results.push(await networkDiagnosePi())
-  }
-
-  const allReachable = results.every((r) => r.ollamaPortOpen)
+async function handleLoadModel(timestamp: string): Promise<Response> {
+  const config = getOllamaConfig()
+  const result = await loadModelOnEndpoint('pc', config.baseUrl)
 
   return NextResponse.json({
-    success: allReachable,
-    message: results.map((r) => r.diagnosis).join(' | '),
-    results,
+    success: result.success,
+    message: result.success ? 'Model loaded successfully' : `Load failed: ${result.message}`,
+    results: [result],
+    timestamp,
+  } as WakeResponse)
+}
+
+async function handleRestart(timestamp: string): Promise<Response> {
+  const result = await restartPcOllama()
+
+  return NextResponse.json({
+    success: result.success,
+    message: result.success ? 'Restart successful' : `Restart failed: ${result.message}`,
+    results: [result],
+    timestamp,
+  } as WakeResponse)
+}
+
+async function handleDiagnose(timestamp: string): Promise<Response> {
+  const result: NetworkDiagResult = await networkDiagnosePc()
+
+  return NextResponse.json({
+    success: result.ollamaPortOpen,
+    message: result.diagnosis,
+    results: [result],
     timestamp,
   })
 }
 
-// GET endpoint for quick status check - admin only (exposes internal LAN IPs)
+// GET endpoint for quick status check - admin only
 export async function GET() {
   try {
     await requireAdmin()
@@ -286,19 +169,17 @@ export async function GET() {
   }
 
   const config = getOllamaConfig()
-  const piUrl = getOllamaPiUrl()
   const timestamp = new Date().toISOString()
 
-  const results = await pingAllEndpoints()
+  const result = await pingEndpoint('pc', config.baseUrl, 15000)
 
   return NextResponse.json({
     success: true,
     message: 'Status check complete',
-    results,
+    results: [result],
     timestamp,
     endpoints: {
       pc: config.baseUrl,
-      pi: piUrl || null,
     },
-  } as WakeResponse & { endpoints: { pc: string; pi: string | null } })
+  })
 }

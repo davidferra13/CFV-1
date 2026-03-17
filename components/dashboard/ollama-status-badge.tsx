@@ -8,21 +8,12 @@
 // Uses existing API: GET /api/ai/health for polling status
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import {
-  Power,
-  RefreshCw,
-  Loader2,
-  Wifi,
-  Cpu,
-  Server,
-  RotateCcw,
-  Stethoscope,
-} from '@/components/ui/icons'
+import { Power, RefreshCw, Loader2, Wifi, Cpu, Stethoscope } from '@/components/ui/icons'
 
 // ── Types ────────────────────────────────────────────────────
 
 interface EndpointHealth {
-  name: 'pc' | 'pi'
+  name: 'pc'
   url: string
   online: boolean
   latencyMs: number | null
@@ -211,7 +202,7 @@ export function OllamaStatusBadge() {
 
   // ── Build endpoint list ──
   const endpoints: Array<{
-    name: 'pc' | 'pi'
+    name: 'pc'
     online: boolean
     latencyMs: number | null
     modelReady: boolean
@@ -219,78 +210,45 @@ export function OllamaStatusBadge() {
     error: string | null
   }> = []
 
-  if (useDualMode && health) {
-    for (const ep of health.endpoints) {
-      endpoints.push({
-        name: ep.name,
-        online: ep.online,
-        latencyMs: ep.latencyMs,
-        modelReady: ep.modelReady,
-        model: ep.configuredModel,
-        error: ep.error,
-      })
-    }
-  } else if (legacy) {
-    if (!legacy.configured) return null
-    endpoints.push({
-      name: legacy.isRemote ? 'pi' : 'pc',
-      online: legacy.online,
-      latencyMs: legacy.latencyMs,
-      modelReady: legacy.modelReady !== false,
-      model: legacy.model,
-      error: legacy.error,
-    })
-  } else if (health && !health.dualMode && health.endpoints.length > 0) {
+  if (health && health.endpoints.length > 0) {
     const ep = health.endpoints[0]
     endpoints.push({
-      name: ep.name,
+      name: 'pc',
       online: ep.online,
       latencyMs: ep.latencyMs,
       modelReady: ep.modelReady,
       model: ep.configuredModel,
       error: ep.error,
     })
+  } else if (legacy) {
+    if (!legacy.configured) return null
+    endpoints.push({
+      name: 'pc',
+      online: legacy.online,
+      latencyMs: legacy.latencyMs,
+      modelReady: legacy.modelReady !== false,
+      model: legacy.model,
+      error: legacy.error,
+    })
   }
 
   if (endpoints.length === 0) return null
 
-  const allOnline = endpoints.every((e) => e.online && e.modelReady)
-  const anyOnline = endpoints.some((e) => e.online)
-  // PC is the primary endpoint - if it's healthy, AI is functional
-  const pcEndpoint = endpoints.find((e) => e.name === 'pc')
+  const pcEndpoint = endpoints[0]
   const pcHealthy = pcEndpoint?.online && pcEndpoint?.modelReady
 
   let badgeClass: string
   let badgeDot: string
   let badgeLabel: string
 
-  if (allOnline) {
+  if (pcHealthy) {
     badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-700'
     badgeDot = 'bg-emerald-500 animate-pulse'
-    if (endpoints.length === 2) {
-      badgeLabel = `PC · ${endpoints[0].latencyMs ?? '?'}ms | Pi · ${endpoints[1].latencyMs ?? '?'}ms`
-    } else {
-      const ep = endpoints[0]
-      badgeLabel = `${ep.name === 'pi' ? 'Pi' : 'Local'} · ${ep.latencyMs ?? '?'}ms`
-    }
-  } else if (pcHealthy) {
-    // PC is fine, Pi is down - still green, Pi is a bonus not a requirement
-    badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-700'
-    badgeDot = 'bg-emerald-500 animate-pulse'
-    badgeLabel =
-      endpoints.length === 2
-        ? `PC · ${pcEndpoint.latencyMs ?? '?'}ms | Pi Off`
-        : `Local · ${pcEndpoint.latencyMs ?? '?'}ms`
-  } else if (anyOnline) {
-    // PC is down but Pi is up - amber, degraded
+    badgeLabel = `Local · ${pcEndpoint.latencyMs ?? '?'}ms`
+  } else if (pcEndpoint?.online) {
     badgeClass = 'border-amber-200 bg-amber-950 text-amber-700'
     badgeDot = 'bg-amber-500 animate-pulse'
-    badgeLabel =
-      endpoints.length === 2
-        ? endpoints
-            .map((e) => `${e.name === 'pc' ? 'PC' : 'Pi'} ${e.online ? `${e.latencyMs}ms` : 'Off'}`)
-            .join(' | ')
-        : 'AI Degraded'
+    badgeLabel = 'AI Degraded'
   } else {
     badgeClass = 'border-red-300 bg-red-950 text-red-700'
     badgeDot = 'bg-red-500'
@@ -309,7 +267,7 @@ export function OllamaStatusBadge() {
         <span className={`h-1.5 w-1.5 rounded-full ${badgeDot}`} />
         <span className="hidden sm:inline">{badgeLabel}</span>
         <span className="sm:hidden">
-          {allOnline || pcHealthy ? 'AI' : anyOnline ? 'AI ⚠' : 'AI Off'}
+          {pcHealthy ? 'AI' : pcEndpoint?.online ? 'AI ⚠' : 'AI Off'}
         </span>
       </button>
 
@@ -337,20 +295,18 @@ export function OllamaStatusBadge() {
 
           <div className="divide-y divide-stone-800">
             {endpoints.map((ep) => {
-              const label = ep.name === 'pc' ? 'PC' : 'Raspberry Pi'
-              const Icon = ep.name === 'pc' ? Cpu : Server
+              const label = 'PC (Local)'
+              const Icon = Cpu
               const wakeKey = `wake-${ep.name}`
               const restartKey = `restart-${ep.name}`
               const pingKey = `ping-${ep.name}`
               const loadKey = `load-model-${ep.name}`
-              const rebootKey = `reboot-${ep.name}`
               const diagnoseKey = `diagnose-${ep.name}`
               const resultKey =
                 actionResults[wakeKey] ||
                 actionResults[restartKey] ||
                 actionResults[pingKey] ||
                 actionResults[loadKey] ||
-                actionResults[rebootKey] ||
                 actionResults[diagnoseKey]
 
               return (
@@ -421,15 +377,6 @@ export function OllamaStatusBadge() {
                       onClick={() => runAction('diagnose', ep.name)}
                       color="blue"
                     />
-                    {ep.name === 'pi' && !ep.online && (
-                      <ActionButton
-                        label="Reboot Pi"
-                        icon={<RotateCcw className="h-3 w-3" />}
-                        loading={!!actionLoading[rebootKey]}
-                        onClick={() => runAction('reboot', ep.name)}
-                        color="red"
-                      />
-                    )}
                   </div>
 
                   {resultKey && (
@@ -445,9 +392,7 @@ export function OllamaStatusBadge() {
           </div>
 
           <div className="px-4 py-2 border-t border-stone-800 bg-stone-950/50">
-            <div className="text-[10px] text-stone-600">
-              Private AI - data stays on your devices
-            </div>
+            <div className="text-[10px] text-stone-600">Private AI - data stays on your PC</div>
           </div>
         </div>
       )}

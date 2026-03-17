@@ -48,7 +48,7 @@
         for (const k of Object.keys(agentLog)) {
           if (d.agents[k]) {
             const log = d.agents[k].log || []
-            agentLog[k] = log.length > 0 ? log : (ocOnline ? ['Standing by'] : ['OFFLINE'])
+            agentLog[k] = log.length > 0 ? log : ocOnline ? ['Standing by'] : ['OFFLINE']
           }
         }
       }
@@ -135,7 +135,14 @@
     const dot = ocOnline ? C.green : C.red
     rect(24, 22, 10, 10, dot)
     text('OPENCLAW COMMAND CENTER', 42, 27, C.text, 16, 'left')
-    text(ocOnline ? 'ONLINE  10.0.0.177  v2026.3.13' : 'GATEWAY OFFLINE', W - 24, 27, ocOnline ? C.green : C.red, 13, 'right')
+    text(
+      ocOnline ? 'ONLINE  v2026.3.13' : 'GATEWAY OFFLINE',
+      W - 24,
+      27,
+      ocOnline ? C.green : C.red,
+      13,
+      'right'
+    )
     if (ocLastActivity) {
       const timeStr = ocLastActivity.replace('T', ' ').substring(11, 19)
       text('last: ' + timeStr, W - 300, 27, C.textDim, 11, 'right')
@@ -181,7 +188,7 @@
       // Status dot
       const logs = agentLog[agent.key] || []
       const hasActivity = logs.length > 0 && logs[0] !== 'Standing by' && logs[0] !== 'OFFLINE'
-      rect(textStartX, ry + 30, 6, 6, hasActivity ? C.green : (ocOnline ? C.yellow : C.red))
+      rect(textStartX, ry + 30, 6, 6, hasActivity ? C.green : ocOnline ? C.yellow : C.red)
 
       // Activity log lines
       const maxLogLines = Math.floor((rowH - 35) / 14) + 1
@@ -218,13 +225,17 @@
       const maxJobs = Math.floor((schedH - 50) / 16)
       ocJobs.slice(0, maxJobs).forEach((job, i) => {
         const jy = headerY + 16 + i * 16
-        const agentColor = { main: C.crimson, build: C.lime, qa: C.gold, runner: C.salmon }[job.agent] || C.textDim
+        const agentColor =
+          { main: C.crimson, build: C.lime, qa: C.gold, runner: C.salmon }[job.agent] || C.textDim
 
         // Enabled dot
         rect(colX.name, jy - 3, 4, 4, job.enabled ? C.green : C.red)
 
         text(job.name || job.id, colX.name + 10, jy, C.text, 10, 'left')
-        const sched = typeof job.schedule === 'object' ? (job.schedule.expr || JSON.stringify(job.schedule)) : String(job.schedule)
+        const sched =
+          typeof job.schedule === 'object'
+            ? job.schedule.expr || JSON.stringify(job.schedule)
+            : String(job.schedule)
         text(sched, colX.schedule, jy, C.textDim, 10, 'left')
         text(job.agent, colX.agent, jy, agentColor, 10, 'left')
         text(job.channel || '', colX.channel, jy, C.textDim, 9, 'left')

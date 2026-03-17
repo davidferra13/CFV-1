@@ -112,8 +112,7 @@ Client Requests
 [Request Dispatch] — sends async HTTP requests
     ↓
 [Queue System] — lib/ai/queue/*
-    ├─ PC Slot (interactive + fast background)
-    └─ Pi Slot (heavy background)
+    └─ PC Slot (interactive + background)
     ↓
 [Ollama] — qwen3 models
     ↓
@@ -263,7 +262,7 @@ If one task type fails while others succeed:
 
 - That task may be too heavy for the model
 - Check model tier selection in `lib/providers/`
-- Consider routing to Pi instead of PC
+- Check model tier selection in queue config
 
 #### GPU Memory Trend
 

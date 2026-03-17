@@ -1771,13 +1771,9 @@
       h + 18,
       () => {
         tooltipData = {
-          title: 'OpenClaw Pi Gateway',
+          title: 'OpenClaw Gateway',
           color: ocUp ? C.statusGreen : C.statusRed,
-          lines: [
-            ocUp ? 'Connected' : 'Unreachable',
-            '10.0.0.177:18789',
-            'Raspberry Pi, always-on',
-          ],
+          lines: [ocUp ? 'Connected' : 'Unreachable', 'Gateway service'],
         }
       },
       'Delivery Door'
@@ -2708,7 +2704,7 @@
     rect(cx + 10, cy + 7, 10, 10, statusDot)
     text('OPENCLAW COMMAND CENTER', cx + 28, cy + 16, ocUp ? C.cream : '#a66', 14, 'left')
     text(
-      ocUp ? 'ONLINE  10.0.0.177' : 'GATEWAY OFFLINE',
+      ocUp ? 'ONLINE' : 'GATEWAY OFFLINE',
       cx + cw - 12,
       cy + 16,
       ocUp ? C.statusGreen : C.statusRed,

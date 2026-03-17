@@ -5,14 +5,8 @@
 // Every action is admin-only.
 
 import { requireAdmin } from '@/lib/auth/admin'
-import {
-  wakePcOllama,
-  wakePiOllama,
-  restartPcOllama,
-  restartPiOllama,
-  loadModelOnEndpoint,
-} from '@/lib/ai/ollama-wake'
-import { getOllamaConfig, getOllamaPiUrl } from '@/lib/ai/providers'
+import { wakePcOllama, restartPcOllama, loadModelOnEndpoint } from '@/lib/ai/ollama-wake'
+import { getOllamaConfig } from '@/lib/ai/providers'
 import { breakers } from '@/lib/resilience/circuit-breaker'
 import type { FixResult, ServiceId } from './types'
 
@@ -39,30 +33,6 @@ export async function executeHealAction(actionId: string): Promise<FixResult> {
         return fixResult(actionId, 'ollama_pc', r.success, r.message, start)
       }
 
-      // Ollama Pi
-      case 'wake_ollama_pi': {
-        const r = await wakePiOllama()
-        return fixResult(actionId, 'ollama_pi', r.success, r.message, start)
-      }
-      case 'restart_ollama_pi': {
-        const r = await restartPiOllama()
-        return fixResult(actionId, 'ollama_pi', r.success, r.message, start)
-      }
-      case 'load_model_pi': {
-        const piUrl = getOllamaPiUrl()
-        if (!piUrl) {
-          return fixResult(
-            actionId,
-            'ollama_pi',
-            false,
-            'Pi not configured (OLLAMA_PI_URL not set)',
-            start
-          )
-        }
-        const r = await loadModelOnEndpoint('pi', piUrl)
-        return fixResult(actionId, 'ollama_pi', r.success, r.message, start)
-      }
-
       // Circuit breaker resets
       case 'reset_stripe_breaker':
         return resetBreaker('stripe', 'stripe', start)
@@ -80,8 +50,8 @@ export async function executeHealAction(actionId: string): Promise<FixResult> {
         return resetBreaker('mealme', 'mealme', start)
 
       // Beta server
-      case 'restart_beta_pm2':
-        return await restartBetaPm2(start)
+      case 'restart_beta':
+        return await restartBeta(start)
 
       default:
         return fixResult(actionId, 'dev_server', false, `Unknown action: ${actionId}`, start)
@@ -131,22 +101,21 @@ function resetBreaker(
   )
 }
 
-async function restartBetaPm2(startTime: number): Promise<FixResult> {
+async function restartBeta(startTime: number): Promise<FixResult> {
   try {
     const { exec } = require('child_process')
     const { promisify } = require('util')
     const execAsync = promisify(exec)
-    await execAsync(
-      'ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no pi "pm2 restart chefflow-beta"',
-      { timeout: 20000 }
-    )
-    return fixResult('restart_beta_pm2', 'beta_server', true, 'PM2 process restarted', startTime)
+    await execAsync('powershell -ExecutionPolicy Bypass -File scripts/start-beta.ps1', {
+      timeout: 30000,
+    })
+    return fixResult('restart_beta', 'beta_server', true, 'Beta server restarted', startTime)
   } catch (err) {
     return fixResult(
-      'restart_beta_pm2',
+      'restart_beta',
       'beta_server',
       false,
-      err instanceof Error ? err.message : 'SSH command failed',
+      err instanceof Error ? err.message : 'Restart command failed',
       startTime
     )
   }

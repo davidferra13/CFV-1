@@ -284,11 +284,11 @@
 - **Condition:** Admin only — renders nothing for non-admins
 - Header: "System Health" with overall status dot, "Sweep All" button (runs full health sweep + auto-fix), Refresh button
 - Summary bar: healthy count, degraded count, error count, skipped count, time since last check
-- Service rows grouped by tier: Core (Internet, Database, Auth, Dev Server), AI (Ollama PC, Ollama Pi), Services (Stripe, Resend, Gmail, Maps, Spoonacular, Kroger, MealMe), Infrastructure (Beta Server, CF Tunnel)
+- Service rows grouped by tier: Core (Internet, Database, Auth, Dev Server), AI (Ollama PC), Services (Stripe, Resend, Gmail, Maps, Spoonacular, Kroger, MealMe), Infrastructure (Beta Server, CF Tunnel)
 - Each row: status dot (green/amber/red), service name, detail text, latency in ms, expand arrow
 - Expandable detail: error message, circuit breaker state, fix action buttons
-- Fix buttons per service: Wake / Restart / Load Model (Ollama), Reset Breaker (external APIs), Restart PM2 (Beta Server — requires confirmation)
-- Dangerous actions (PM2 restart) show `window.confirm()` dialog before executing
+- Fix buttons per service: Wake / Restart / Load Model (Ollama), Reset Breaker (external APIs), Restart Beta (requires confirmation)
+- Dangerous actions (beta restart) show `window.confirm()` dialog before executing
 - Adaptive polling: 120s (all healthy), 30s (any degraded), 15s (any error)
 - Footer: total services checked + sweep duration
 - API: `GET /api/system/health` (read-only sweep), `POST /api/system/heal` (execute fix or sweep-all)

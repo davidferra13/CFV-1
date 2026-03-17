@@ -11,7 +11,6 @@ export type ServiceId =
   | 'auth'
   | 'dev_server'
   | 'ollama_pc'
-  | 'ollama_pi'
   | 'stripe'
   | 'resend'
   | 'gmail'

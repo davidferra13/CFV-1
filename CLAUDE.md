@@ -869,7 +869,7 @@ bash scripts/deploy-beta.sh    # Sync + build + restart (~2 min)
 bash scripts/rollback-beta.sh  # Redeploy previous commit
 ```
 
-The deploy script: pushes to GitHub → syncs code to CFv1-beta → builds locally → restarts beta server → health check.
+The deploy script: pushes to GitHub, syncs code to CFv1-beta, builds locally with 12GB heap, swaps builds atomically, restarts beta server on port 3200, runs health check with auto-rollback on failure.
 
 ### Rules
 

@@ -19,11 +19,7 @@ const execAsync = promisify(exec)
 
 const PORT = 9999
 const PC_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
-const PI_URL = process.env.OLLAMA_PI_URL || 'http://10.0.0.177:11434'
 const PC_MODEL = process.env.OLLAMA_MODEL || 'qwen3-coder:30b'
-const PI_MODEL = process.env.OLLAMA_PI_MODEL || 'qwen3:8b'
-const PI_SSH_ALIAS = 'pi'
-const SSH_CONNECT_TIMEOUT = 5
 
 // ── Ollama Direct API ──────────────────────────────────────────────
 
@@ -88,230 +84,122 @@ async function pingEndpoint(name, url, expectedModel) {
 }
 
 async function getFullHealth() {
-  const [pc, pi] = await Promise.all([
-    pingEndpoint('pc', PC_URL, PC_MODEL),
-    pingEndpoint('pi', PI_URL, PI_MODEL),
-  ])
+  const pc = await pingEndpoint('pc', PC_URL, PC_MODEL)
 
-  const endpoints = [pc, pi]
-  const anyOnline = endpoints.some((e) => e.online)
-  const allReady = endpoints.every((e) => e.online && e.modelReady)
-  const status = allReady ? 'all_healthy' : anyOnline ? 'degraded' : 'offline'
+  const status = pc.online && pc.modelReady ? 'all_healthy' : pc.online ? 'degraded' : 'offline'
 
-  return { status, endpoints, timestamp: new Date().toISOString() }
+  return { status, endpoints: [pc], timestamp: new Date().toISOString() }
 }
 
-async function sshPi(command, timeoutMs = 10000) {
-  const { stdout } = await execAsync(
-    `ssh -o ConnectTimeout=${SSH_CONNECT_TIMEOUT} -o StrictHostKeyChecking=no ${PI_SSH_ALIAS} '${command}'`,
-    { timeout: timeoutMs }
-  )
-  return stdout.trim()
-}
-
-async function runAction(action, endpoint) {
-  const result = { success: false, message: '', endpoint, action }
+async function runAction(action) {
+  const result = { success: false, message: '', endpoint: 'pc', action }
   const isWindows = process.platform === 'win32'
 
   try {
     if (action === 'ping') {
-      const url = endpoint === 'pc' ? PC_URL : PI_URL
-      const model = endpoint === 'pc' ? PC_MODEL : PI_MODEL
-      const ping = await pingEndpoint(endpoint, url, model)
+      const ping = await pingEndpoint('pc', PC_URL, PC_MODEL)
       result.success = ping.online
       result.message = ping.online
-        ? `${endpoint.toUpperCase()} online (${ping.latencyMs}ms)`
-        : `${endpoint.toUpperCase()} offline: ${ping.error}`
+        ? `PC online (${ping.latencyMs}ms)`
+        : `PC offline: ${ping.error}`
       return result
     }
 
     if (action === 'wake') {
-      if (endpoint === 'pc') {
-        if (isWindows) {
-          try {
-            await execAsync('powershell -Command "Start-Service Ollama -ErrorAction SilentlyContinue"')
-          } catch {
-            await execAsync('start "" "ollama" serve', { windowsHide: true })
-          }
-        } else {
-          try {
-            await execAsync('systemctl start ollama 2>/dev/null || true')
-          } catch {
-            await execAsync('ollama serve &')
-          }
+      if (isWindows) {
+        try {
+          await execAsync('powershell -Command "Start-Service Ollama -ErrorAction SilentlyContinue"')
+        } catch {
+          await execAsync('start "" "ollama" serve', { windowsHide: true })
         }
-        await sleep(2000)
-        const ping = await pingEndpoint('pc', PC_URL, PC_MODEL)
-        result.success = ping.online
-        result.message = ping.online
-          ? `PC Ollama started (${ping.latencyMs}ms)`
-          : 'PC Ollama started but not responding yet'
       } else {
-        await sshPi('sudo systemctl restart ollama', 15000)
-        await sleep(3000)
-        const ping = await pingEndpoint('pi', PI_URL, PI_MODEL)
-        result.success = ping.online
-        result.message = ping.online
-          ? `Pi Ollama started (${ping.latencyMs}ms)`
-          : 'Pi Ollama restarted but not responding yet'
+        try {
+          await execAsync('systemctl start ollama 2>/dev/null || true')
+        } catch {
+          await execAsync('ollama serve &')
+        }
       }
+      await sleep(2000)
+      const ping = await pingEndpoint('pc', PC_URL, PC_MODEL)
+      result.success = ping.online
+      result.message = ping.online
+        ? `PC Ollama started (${ping.latencyMs}ms)`
+        : 'PC Ollama started but not responding yet'
       return result
     }
 
     if (action === 'restart') {
-      if (endpoint === 'pc') {
-        if (isWindows) {
-          try {
-            await execAsync(
-              'powershell -Command "Stop-Service Ollama -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Start-Service Ollama -ErrorAction SilentlyContinue"'
-            )
-          } catch {
-            await execAsync('taskkill /F /IM ollama.exe 2>nul || true')
-            await sleep(2000)
-            await execAsync('start "" "ollama" serve', { windowsHide: true })
-          }
-        } else {
+      if (isWindows) {
+        try {
           await execAsync(
-            'systemctl restart ollama 2>/dev/null || (pkill ollama; sleep 2; ollama serve &)'
+            'powershell -Command "Stop-Service Ollama -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Start-Service Ollama -ErrorAction SilentlyContinue"'
           )
+        } catch {
+          await execAsync('taskkill /F /IM ollama.exe 2>nul || true')
+          await sleep(2000)
+          await execAsync('start "" "ollama" serve', { windowsHide: true })
         }
-        await sleep(3000)
-        const ping = await pingEndpoint('pc', PC_URL, PC_MODEL)
-        result.success = ping.online
-        result.message = ping.online
-          ? `PC Ollama restarted (${ping.latencyMs}ms)`
-          : 'PC Ollama restarted but not responding yet'
       } else {
-        await sshPi('sudo systemctl restart ollama', 20000)
-        await sleep(4000)
-        const ping = await pingEndpoint('pi', PI_URL, PI_MODEL)
-        result.success = ping.online
-        result.message = ping.online
-          ? `Pi Ollama restarted (${ping.latencyMs}ms)`
-          : 'Pi Ollama restarted but not responding yet'
+        await execAsync(
+          'systemctl restart ollama 2>/dev/null || (pkill ollama; sleep 2; ollama serve &)'
+        )
       }
+      await sleep(3000)
+      const ping = await pingEndpoint('pc', PC_URL, PC_MODEL)
+      result.success = ping.online
+      result.message = ping.online
+        ? `PC Ollama restarted (${ping.latencyMs}ms)`
+        : 'PC Ollama restarted but not responding yet'
       return result
     }
 
     if (action === 'load-model') {
-      const url = endpoint === 'pc' ? PC_URL : PI_URL
-      const model = endpoint === 'pc' ? PC_MODEL : PI_MODEL
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 60000)
-      const res = await fetch(`${url}/api/generate`, {
+      const res = await fetch(`${PC_URL}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, prompt: '', keep_alive: '5m' }),
+        body: JSON.stringify({ model: PC_MODEL, prompt: '', keep_alive: '5m' }),
         signal: controller.signal,
       })
       clearTimeout(timeout)
       result.success = res.ok
       result.message = res.ok
-        ? `Model ${model} loaded on ${endpoint.toUpperCase()}`
+        ? `Model ${PC_MODEL} loaded on PC`
         : `Failed to load model: HTTP ${res.status}`
       return result
     }
 
     if (action === 'kill') {
-      if (endpoint === 'pc') {
-        if (isWindows) {
-          await execAsync('taskkill /F /IM ollama.exe 2>nul || true')
-        } else {
-          await execAsync('pkill ollama || true')
-        }
-        result.success = true
-        result.message = 'PC Ollama process killed'
+      if (isWindows) {
+        await execAsync('taskkill /F /IM ollama.exe 2>nul || true')
       } else {
-        await sshPi('sudo systemctl stop ollama', 10000)
-        result.success = true
-        result.message = 'Pi Ollama stopped'
-      }
-      return result
-    }
-
-    if (action === 'reboot') {
-      if (endpoint !== 'pi') {
-        result.message = 'Reboot is only available for the Pi'
-        return result
-      }
-      try {
-        await sshPi('sudo reboot', 10000)
-      } catch {
-        // Expected: SSH drops during reboot
+        await execAsync('pkill ollama || true')
       }
       result.success = true
-      result.message = 'Pi reboot command sent. It will be offline for ~30-60 seconds.'
+      result.message = 'PC Ollama process killed'
       return result
     }
 
     if (action === 'diagnose') {
-      if (endpoint === 'pc') {
-        const start = Date.now()
-        try {
-          const controller = new AbortController()
-          const timeout = setTimeout(() => controller.abort(), 5000)
-          const res = await fetch(`${PC_URL}/api/tags`, { signal: controller.signal, cache: 'no-store' })
-          clearTimeout(timeout)
-          result.latencyMs = Date.now() - start
-          result.success = res.ok
-          result.message = res.ok
-            ? `PC Ollama is running and responding (${result.latencyMs}ms).`
-            : `PC Ollama responded with HTTP ${res.status}.`
-        } catch (err) {
-          result.latencyMs = Date.now() - start
-          const msg = err?.message || 'Unknown error'
-          result.success = false
-          result.message = msg.includes('ECONNREFUSED')
-            ? 'Ollama is NOT running on this PC. Start it with: ollama serve'
-            : `PC Ollama unreachable: ${msg}`
-        }
-        return result
-      }
-
-      // Pi diagnosis — test 3 layers
-      const piHost = PI_URL.replace(/^https?:\/\//, '').replace(/:\d+.*$/, '')
-      const diag = { network: false, ssh: false, ollama: false }
-
-      // Layer 1: TCP ping
+      const start = Date.now()
       try {
-        await execAsync(
-          isWindows
-            ? `powershell -Command "Test-NetConnection -ComputerName ${piHost} -Port 22 -InformationLevel Quiet -WarningAction SilentlyContinue | Out-Null; if ($?) { exit 0 } else { exit 1 }"`
-            : `nc -z -w 3 ${piHost} 22`,
-          { timeout: 8000 }
-        )
-        diag.network = true
-      } catch {
-        result.message = `Pi is UNREACHABLE (${piHost}:22 timed out). Powered off, disconnected, or IP changed. Walk to the Pi and power-cycle it.`
-        return result
-      }
-
-      // Layer 2: SSH
-      try {
-        await sshPi('echo ok', 8000)
-        diag.ssh = true
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 5000)
+        const res = await fetch(`${PC_URL}/api/tags`, { signal: controller.signal, cache: 'no-store' })
+        clearTimeout(timeout)
+        result.latencyMs = Date.now() - start
+        result.success = res.ok
+        result.message = res.ok
+          ? `PC Ollama is running and responding (${result.latencyMs}ms).`
+          : `PC Ollama responded with HTTP ${res.status}.`
       } catch (err) {
-        const msg = err?.message || ''
-        if (msg.includes('Permission denied') || msg.includes('publickey')) {
-          result.message = `Pi is on the network but SSH auth failed (key issue). Error: ${msg}`
-        } else if (msg.includes('Connection refused')) {
-          result.message = 'Pi is on the network but SSH service is down (port 22 refused). OS is up but sshd is not running.'
-        } else {
-          result.message = `Pi is on the network but SSH failed: ${msg}`
-        }
-        return result
-      }
-
-      // Layer 3: Ollama on Pi
-      try {
-        const ollamaOut = await sshPi("curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 http://localhost:11434/api/tags", 10000)
-        diag.ollama = ollamaOut.trim() === '200'
-        result.success = diag.ollama
-        result.message = diag.ollama
-          ? 'Pi is fully reachable. Network OK, SSH OK, Ollama responding.'
-          : 'Pi is on the network and SSH works, but Ollama is not responding. Try: Restart Ollama or Reboot Pi.'
-      } catch {
-        result.message = 'Pi is on the network and SSH works, but Ollama is not responding. Try: Restart Ollama or Reboot Pi.'
+        result.latencyMs = Date.now() - start
+        const msg = err?.message || 'Unknown error'
+        result.success = false
+        result.message = msg.includes('ECONNREFUSED')
+          ? 'Ollama is NOT running on this PC. Start it with: ollama serve'
+          : `PC Ollama unreachable: ${msg}`
       }
       return result
     }
@@ -385,10 +273,10 @@ function getHTML() {
     }
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 1.25rem;
       width: 100%;
-      max-width: 720px;
+      max-width: 480px;
     }
     .card {
       background: #1c1917;
@@ -556,11 +444,7 @@ function getHTML() {
   <div class="global-actions">
     <button class="btn btn-blue" onclick="refreshAll()" id="btn-refresh">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-2.2-5.9"/><path d="M21 3v6h-6"/></svg>
-      Refresh All
-    </button>
-    <button class="btn btn-green" onclick="wakeAll()" id="btn-wake-all">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 11-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
-      Wake All
+      Refresh
     </button>
   </div>
 
@@ -572,35 +456,20 @@ function getHTML() {
       <div class="card-header">
         <div class="card-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-          PC (Desktop)
+          PC (localhost)
         </div>
         <span id="badge-pc" class="offline-badge"><span class="dot-sm"></span>Checking</span>
       </div>
       <div id="info-pc"></div>
       <div class="actions" id="actions-pc"></div>
     </div>
-
-    <div class="card" id="card-pi">
-      <div id="loading-pi" class="loading-overlay hidden">
-        <svg class="spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="2"><path d="M21 12a9 9 0 11-6.2-8.6"/></svg>
-      </div>
-      <div class="card-header">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
-          Raspberry Pi
-        </div>
-        <span id="badge-pi" class="offline-badge"><span class="dot-sm"></span>Checking</span>
-      </div>
-      <div id="info-pi"></div>
-      <div class="actions" id="actions-pi"></div>
-    </div>
   </div>
 
   <div id="toast" class="toast hidden"></div>
 
   <div class="footer">
-    <p>Private AI — data stays on your devices</p>
-    <p style="margin-top:0.25rem">PC: <a href="${PC_URL}" target="_blank">${PC_URL}</a> &nbsp;|&nbsp; Pi: <a href="${PI_URL}" target="_blank">${PI_URL}</a></p>
+    <p>Private AI — data stays on your machine</p>
+    <p style="margin-top:0.25rem">Ollama: <a href="${PC_URL}" target="_blank">${PC_URL}</a></p>
     <p style="margin-top:0.25rem">Auto-refreshes every 15s &nbsp;|&nbsp; Port ${PORT}</p>
   </div>
 
@@ -651,28 +520,24 @@ function getHTML() {
       // Action buttons
       let btns = '';
       if (!ep.online) {
-        btns += actionBtn('Wake', 'green', 'wake', name,
+        btns += actionBtn('Wake', 'green', 'wake',
           '<path d="M18.36 6.64a9 9 0 11-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>');
       } else {
-        btns += actionBtn('Restart', 'amber', 'restart', name,
+        btns += actionBtn('Restart', 'amber', 'restart',
           '<path d="M21 12a9 9 0 11-2.2-5.9"/><path d="M21 3v6h-6"/>');
       }
-      btns += actionBtn('Ping', 'blue', 'ping', name,
+      btns += actionBtn('Ping', 'blue', 'ping',
         '<path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><circle cx="12" cy="20" r="1"/>');
       if (ep.online && !ep.modelReady) {
-        btns += actionBtn('Load Model', 'purple', 'load-model', name,
+        btns += actionBtn('Load Model', 'purple', 'load-model',
           '<path d="M21 12a9 9 0 11-6.2-8.6"/>');
       }
       if (ep.online) {
-        btns += actionBtn('Kill', 'red', 'kill', name,
+        btns += actionBtn('Kill', 'red', 'kill',
           '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>');
       }
-      btns += actionBtn('Diagnose', 'blue', 'diagnose', name,
+      btns += actionBtn('Diagnose', 'blue', 'diagnose',
         '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>');
-      if (name === 'pi' && !ep.online) {
-        btns += actionBtn('Reboot Pi', 'red', 'reboot', name,
-          '<path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>');
-      }
       actions.innerHTML = btns;
     }
 
@@ -681,8 +546,8 @@ function getHTML() {
         '</span><span class="info-value ' + cls + '">' + escHtml(String(value)) + '</span></div>';
     }
 
-    function actionBtn(label, color, action, endpoint, svgPath) {
-      return '<button class="btn btn-' + color + '" onclick="doAction(\\'' + action + '\\',\\'' + endpoint + '\\')">' +
+    function actionBtn(label, color, action, svgPath) {
+      return '<button class="btn btn-' + color + '" onclick="doAction(\\'' + action + '\\')">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + svgPath + '</svg>' +
         label + '</button>';
     }
@@ -700,13 +565,13 @@ function getHTML() {
 
       if (data.status === 'all_healthy') {
         bar.className = 'status-bar healthy';
-        text.textContent = 'All Systems Healthy';
+        text.textContent = 'Ollama Healthy';
       } else if (data.status === 'degraded') {
         bar.className = 'status-bar degraded';
-        text.textContent = 'Degraded — Some Endpoints Down';
+        text.textContent = 'Ollama Online (model not loaded)';
       } else {
         bar.className = 'status-bar offline';
-        text.textContent = 'All Endpoints Offline';
+        text.textContent = 'Ollama Offline';
       }
     }
 
@@ -722,15 +587,15 @@ function getHTML() {
       }
     }
 
-    async function doAction(action, endpoint) {
-      const loader = document.getElementById('loading-' + endpoint);
+    async function doAction(action) {
+      const loader = document.getElementById('loading-pc');
       loader.classList.remove('hidden');
 
       try {
         const res = await fetch(API + '/action', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, endpoint }),
+          body: JSON.stringify({ action }),
         });
         const data = await res.json();
         const toastType = data.action === 'diagnose' ? 'info' : (data.success ? 'success' : 'error');
@@ -741,35 +606,6 @@ function getHTML() {
         showToast('Action failed: ' + err.message, 'error');
       } finally {
         loader.classList.add('hidden');
-      }
-    }
-
-    async function wakeAll() {
-      document.getElementById('loading-pc').classList.remove('hidden');
-      document.getElementById('loading-pi').classList.remove('hidden');
-      try {
-        const [pcRes, piRes] = await Promise.all([
-          fetch(API + '/action', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'wake', endpoint: 'pc' }),
-          }),
-          fetch(API + '/action', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'wake', endpoint: 'pi' }),
-          }),
-        ]);
-        const pc = await pcRes.json();
-        const pi = await piRes.json();
-        showToast('PC: ' + pc.message + ' | Pi: ' + pi.message,
-          (pc.success && pi.success) ? 'success' : 'error');
-        setTimeout(refreshAll, 500);
-      } catch (err) {
-        showToast('Wake failed: ' + err.message, 'error');
-      } finally {
-        document.getElementById('loading-pc').classList.add('hidden');
-        document.getElementById('loading-pi').classList.add('hidden');
       }
     }
 
@@ -821,8 +657,8 @@ const server = createServer(async (req, res) => {
     req.on('data', (chunk) => (body += chunk))
     req.on('end', async () => {
       try {
-        const { action, endpoint } = JSON.parse(body)
-        const result = await runAction(action, endpoint)
+        const { action } = JSON.parse(body)
+        const result = await runAction(action)
         res.writeHead(200, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify(result))
       } catch (err) {
@@ -840,13 +676,11 @@ const server = createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log('')
   console.log('  ╔══════════════════════════════════════════╗')
-  console.log('  ║     Ollama Control Panel — Running       ║')
+  console.log('  ║     Ollama Control Panel - Running       ║')
   console.log(`  ║     http://localhost:${PORT}                ║`)
   console.log('  ╠══════════════════════════════════════════╣')
-  console.log(`  ║  PC Ollama:  ${PC_URL.padEnd(27)}║`)
-  console.log(`  ║  Pi Ollama:  ${PI_URL.padEnd(27)}║`)
-  console.log(`  ║  PC Model:   ${PC_MODEL.padEnd(27)}║`)
-  console.log(`  ║  Pi Model:   ${PI_MODEL.padEnd(27)}║`)
+  console.log(`  ║  Ollama:  ${PC_URL.padEnd(30)}║`)
+  console.log(`  ║  Model:   ${PC_MODEL.padEnd(30)}║`)
   console.log('  ╠══════════════════════════════════════════╣')
   console.log('  ║  Ctrl+C to stop                         ║')
   console.log('  ╚══════════════════════════════════════════╝')

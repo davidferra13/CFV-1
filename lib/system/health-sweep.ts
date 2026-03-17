@@ -4,7 +4,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { breakers, getCircuitBreakerHealth } from '@/lib/resilience/circuit-breaker'
-import { getOllamaConfig, getOllamaPiUrl, getModelForEndpoint } from '@/lib/ai/providers'
+import { getOllamaConfig, getModelForEndpoint } from '@/lib/ai/providers'
 import { pingEndpoint } from '@/lib/ai/ollama-wake'
 import type {
   ServiceDefinition,
@@ -89,19 +89,6 @@ export const SERVICE_REGISTRY: ServiceDefinition[] = [
       fix('load_model_pc', 'Load Model', 'Pre-load configured model', 'ollama_pc'),
     ],
   },
-  {
-    id: 'ollama_pi',
-    name: 'Ollama Pi',
-    tier: 4,
-    description: 'AI on Raspberry Pi',
-    dependsOn: [],
-    envVars: [],
-    fixActions: [
-      fix('wake_ollama_pi', 'Wake', 'Start Ollama on Pi via SSH', 'ollama_pi'),
-      fix('restart_ollama_pi', 'Restart', 'Restart Ollama on Pi via SSH', 'ollama_pi'),
-      fix('load_model_pi', 'Load Model', 'Pre-load model on Pi', 'ollama_pi'),
-    ],
-  },
   // Tier 5
   {
     id: 'stripe',
@@ -177,11 +164,11 @@ export const SERVICE_REGISTRY: ServiceDefinition[] = [
     id: 'beta_server',
     name: 'Beta Server',
     tier: 6,
-    description: 'PM2 on Raspberry Pi',
+    description: 'Next.js on localhost:3200',
     dependsOn: [],
     envVars: [],
     fixActions: [
-      fix('restart_beta_pm2', 'Restart PM2', 'Restart beta app on Pi', 'beta_server', true),
+      fix('restart_beta', 'Restart Beta', 'Restart beta server locally', 'beta_server', true),
     ],
   },
   {
@@ -293,28 +280,6 @@ async function checkOllamaPc(): Promise<ServiceHealthResult> {
   return result(def, 'healthy', `Ready (${ping.latencyMs}ms)`, ping.latencyMs)
 }
 
-async function checkOllamaPi(): Promise<ServiceHealthResult> {
-  const def = getDef('ollama_pi')
-  const piUrl = getOllamaPiUrl()
-  if (!piUrl) {
-    return result(def, 'unknown', 'Not configured', null, 'OLLAMA_PI_URL not set')
-  }
-
-  const ping = await pingEndpoint('pi', piUrl, 10000)
-
-  if (!ping.online) {
-    return result(def, 'error', 'Offline', null, ping.error || 'Unreachable')
-  }
-
-  if (!ping.modelReady) {
-    const r = result(def, 'degraded', `No model loaded`, ping.latencyMs)
-    r.error = `Run: ollama pull ${getModelForEndpoint('pi', 'standard')}`
-    return r
-  }
-
-  return result(def, 'healthy', `Ready (${ping.latencyMs}ms)`, ping.latencyMs)
-}
-
 function checkCircuitBreakerService(
   serviceId: ServiceId,
   breakerKey: keyof typeof breakers
@@ -340,36 +305,18 @@ function checkCircuitBreakerService(
 
 async function checkBetaServer(): Promise<ServiceHealthResult> {
   const def = getDef('beta_server')
-  const piUrl = getOllamaPiUrl()
-  if (!piUrl) {
-    return result(def, 'unknown', 'Pi not configured', null)
-  }
-
   try {
-    const { exec } = require('child_process')
-    const { promisify } = require('util')
-    const execAsync = promisify(exec)
-    const { stdout } = await execAsync(
-      'ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no pi "pm2 jlist"',
-      { timeout: 15000 }
-    )
-    const processes = JSON.parse(stdout)
-    const beta = processes.find((p: { name: string }) => p.name === 'chefflow-beta')
-    if (!beta) {
-      return result(def, 'error', 'PM2 process not found', null, 'chefflow-beta not in PM2 list')
+    const start = Date.now()
+    const res = await fetch('http://localhost:3200/api/health', {
+      signal: AbortSignal.timeout(5000),
+    })
+    const latency = Date.now() - start
+    if (res.ok) {
+      return result(def, 'healthy', `Running (${latency}ms)`, latency)
     }
-    if (beta.pm2_env?.status === 'online') {
-      return result(def, 'healthy', 'PM2 online', null)
-    }
-    return result(
-      def,
-      'error',
-      `PM2 status: ${beta.pm2_env?.status}`,
-      null,
-      `Process ${beta.pm2_env?.status}`
-    )
+    return result(def, 'degraded', `HTTP ${res.status}`, latency)
   } catch (err) {
-    return result(def, 'error', 'Cannot reach Pi', null, errMsg(err))
+    return result(def, 'error', 'Not running', null, errMsg(err))
   }
 }
 
@@ -406,8 +353,6 @@ async function checkService(def: ServiceDefinition): Promise<ServiceHealthResult
         return await checkDevServer()
       case 'ollama_pc':
         return await checkOllamaPc()
-      case 'ollama_pi':
-        return await checkOllamaPi()
       case 'stripe':
         return checkCircuitBreakerService('stripe', 'stripe')
       case 'resend':

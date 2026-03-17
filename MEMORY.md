@@ -99,11 +99,11 @@ Full reference: `docs/OPENCLAW-HIERARCHY.md`
 
 Key facts:
 
-- OpenClaw runs on Raspberry Pi (10.0.0.177), gateway port 18789
-- Ollama runs on developer PC (10.0.0.153:11434), shared by ChefFlow App AI and OpenClaw
+- OpenClaw gateway retired from Pi (2026-03-17), needs new host if revived
+- Ollama runs on developer PC (localhost:11434), used by ChefFlow App AI
 - GPU: RTX 3050 (6GB VRAM). 30B models offload to CPU, run at 12-15 tok/s. Only qwen3:4b safe for fallback.
 - OpenClaw billing: separate Anthropic API key with $50 prepaid credits (loaded Mar 13, 2026)
-- Three separate AI systems: Claude Code (Rank 1, PC), ChefFlow App AI (runtime), OpenClaw (Rank 2, Pi)
+- Two active AI systems: Claude Code (Rank 1, PC), ChefFlow App AI (runtime)
 - Claude Code outranks OpenClaw on all code decisions. OpenClaw's output is always subject to review.
 - OpenClaw agents: main (Opus), sonnet (Sonnet), build (Groq 70B), qa (Groq 70B), runner (Groq 8B)
 - Groq free tier: ~30 req/min. Fallback chain: Opus -> Sonnet -> Groq 70B -> Ollama qwen3:4b

@@ -57,10 +57,7 @@ const CONFIG = {
   prodUrl: 'https://cheflowhq.com',
   prodHealthUrl: 'https://cheflowhq.com/api/health',
   ollamaPcUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-  ollamaPiUrl: process.env.OLLAMA_PI_URL || 'http://10.0.0.177:11434',
   ollamaPcModel: process.env.OLLAMA_MODEL || 'qwen3-coder:30b',
-  ollamaPiModel: process.env.OLLAMA_PI_MODEL || 'qwen3:8b',
-  piSsh: 'ssh pi',
   logFile: join(PROJECT_ROOT, 'mission-control.log'),
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
@@ -315,75 +312,6 @@ function startLiveFeedTaps() {
     feedEvent('ollama', 'Could not tail Ollama logs — file may not exist', 'warn')
   }
 
-  // Tail PM2 logs from Pi via SSH (streaming)
-  try {
-    const betaTail = spawn(
-      'ssh',
-      [
-        '-o',
-        'ConnectTimeout=5',
-        '-o',
-        'ServerAliveInterval=30',
-        'pi',
-        'pm2 logs chefflow-beta --lines 20 --raw --nostream; pm2 logs chefflow-beta --raw',
-      ],
-      {
-        shell: false,
-        stdio: ['ignore', 'pipe', 'pipe'],
-      }
-    )
-    betaTail.stdout.on('data', (d) => {
-      const lines = d.toString().trim().split('\n')
-      for (const line of lines) {
-        const clean = line.trim().replace(ANSI_REGEX, '')
-        if (clean) feedEvent('beta', clean, parseLogLevel(clean))
-      }
-    })
-    betaTail.stderr.on('data', (d) => {
-      const text = d.toString().trim()
-      if (text && !text.includes('Warning:')) feedEvent('beta', text, 'warn')
-    })
-    betaTail.on('close', () => {
-      delete liveFeedProcesses.betaTail
-    })
-    liveFeedProcesses.betaTail = betaTail
-  } catch {
-    feedEvent('beta', 'Could not connect to Pi for beta logs', 'warn')
-  }
-
-  // Tail cloudflared journal from Pi via SSH
-  try {
-    const tunnelTail = spawn(
-      'ssh',
-      [
-        '-o',
-        'ConnectTimeout=5',
-        '-o',
-        'ServerAliveInterval=30',
-        'pi',
-        'journalctl -u cloudflared -n 20 -f --no-pager',
-      ],
-      {
-        shell: false,
-        stdio: ['ignore', 'pipe', 'pipe'],
-      }
-    )
-    tunnelTail.stdout.on('data', (d) => {
-      const lines = d.toString().trim().split('\n')
-      for (const line of lines) {
-        const clean = line.trim().replace(ANSI_REGEX, '')
-        if (clean) feedEvent('tunnel', clean, parseLogLevel(clean))
-      }
-    })
-    tunnelTail.stderr.on('data', () => {})
-    tunnelTail.on('close', () => {
-      delete liveFeedProcesses.tunnelTail
-    })
-    liveFeedProcesses.tunnelTail = tunnelTail
-  } catch {
-    feedEvent('tunnel', 'Could not connect to Pi for tunnel logs', 'warn')
-  }
-
   // System metrics — push CPU/memory every 10 seconds
   liveFeedProcesses.systemInterval = setInterval(() => {
     const mem = process.memoryUsage()
@@ -425,15 +353,6 @@ async function httpCheck(url, timeout = 4000) {
   } catch (err) {
     return { ok: false, status: 0, latency: Date.now() - start, error: err?.message }
   }
-}
-
-async function sshExec(cmd, timeout = 15000) {
-  // Source NVM so pm2/node/npm are in PATH for non-interactive SSH
-  const wrappedCmd = `source ~/.nvm/nvm.sh 2>/dev/null; ${cmd}`
-  return execAsync(`ssh -o ConnectTimeout=5 pi "${wrappedCmd}"`, {
-    cwd: PROJECT_ROOT,
-    timeout,
-  })
 }
 
 async function findPidOnPort(port) {
@@ -606,12 +525,11 @@ async function checkGitStatus() {
 }
 
 async function getAllStatus() {
-  const [dev, beta, prod, ollamaPc, ollamaPi, git] = await Promise.allSettled([
+  const [dev, beta, prod, ollamaPc, git] = await Promise.allSettled([
     checkDevServer(),
     checkBetaServer(),
     checkProduction(),
     checkOllama(CONFIG.ollamaPcUrl, CONFIG.ollamaPcModel),
-    checkOllama(CONFIG.ollamaPiUrl, CONFIG.ollamaPiModel),
     checkGitStatus(),
   ])
   return {
@@ -619,7 +537,6 @@ async function getAllStatus() {
     beta: beta.status === 'fulfilled' ? beta.value : { online: false },
     prod: prod.status === 'fulfilled' ? prod.value : { online: false },
     ollamaPc: ollamaPc.status === 'fulfilled' ? ollamaPc.value : { online: false },
-    ollamaPi: ollamaPi.status === 'fulfilled' ? ollamaPi.value : { online: false },
     git: git.status === 'fulfilled' ? git.value : { branch: 'unknown' },
     timestamp: Date.now(),
   }
@@ -707,19 +624,36 @@ async function stopDevServer() {
 }
 
 async function restartBeta() {
-  log('beta', 'Restarting beta server (PM2)...', 'info')
+  log('beta', 'Restarting beta server (local PC, port 3200)...', 'info')
   try {
-    const { stdout } = await sshExec('pm2 restart chefflow-beta')
-    log('beta', stdout.trim() || 'PM2 restart sent', 'success')
-    // Wait a moment then health check
-    await new Promise((r) => setTimeout(r, 3000))
-    const check = await httpCheck(`http://10.0.0.177:3100`, 5000)
+    // Kill existing beta process on port 3200
+    try {
+      const pid = await findPidOnPort(3200)
+      if (pid) {
+        await execAsync(`taskkill /PID ${pid} /F`, { shell: 'cmd' })
+        log('beta', `Killed existing beta process (PID ${pid})`, 'info')
+        await new Promise((r) => setTimeout(r, 1000))
+      }
+    } catch {
+      /* no process on port 3200 */
+    }
+    // Start beta via the PowerShell script
+    spawn('powershell', ['-File', join(PROJECT_ROOT, 'scripts', 'start-beta.ps1')], {
+      cwd: PROJECT_ROOT,
+      detached: true,
+      stdio: 'ignore',
+      shell: true,
+    }).unref()
+    log('beta', 'Beta start command sent', 'success')
+    // Wait then health check
+    await new Promise((r) => setTimeout(r, 5000))
+    const check = await httpCheck('http://localhost:3200', 5000)
     if (check.ok) {
       log('beta', 'Beta server is back online!', 'success')
     } else {
       log('beta', 'Beta may still be starting...', 'warn')
     }
-    return { ok: true, message: 'Beta restarted' }
+    return { ok: true, message: 'Beta restarted on localhost:3200' }
   } catch (err) {
     log('beta', `Restart failed: ${err.message}`, 'error')
     return { ok: false, error: err.message }
@@ -805,35 +739,24 @@ async function rollbackBeta() {
 }
 
 async function ollamaAction(target, action) {
-  const label = target === 'pc' ? 'Ollama PC' : 'Ollama Pi'
-  log('ollama', `${action === 'start' ? 'Starting' : 'Stopping'} ${label}...`, 'info')
+  log('ollama', `${action === 'start' ? 'Starting' : 'Stopping'} Ollama...`, 'info')
 
   try {
-    if (target === 'pc') {
-      if (action === 'start') {
-        spawn('ollama', ['serve'], {
-          cwd: PROJECT_ROOT,
-          detached: true,
-          stdio: 'ignore',
-          shell: true,
-        }).unref()
-        log('ollama', 'Ollama PC starting...', 'success')
-      } else {
-        await execAsync('taskkill /IM ollama.exe /F', { shell: 'cmd' })
-        log('ollama', 'Ollama PC stopped', 'success')
-      }
+    if (action === 'start') {
+      spawn('ollama', ['serve'], {
+        cwd: PROJECT_ROOT,
+        detached: true,
+        stdio: 'ignore',
+        shell: true,
+      }).unref()
+      log('ollama', 'Ollama starting...', 'success')
     } else {
-      if (action === 'start') {
-        // Unmask first in case it was masked, then start
-        await sshExec('sudo systemctl unmask ollama 2>/dev/null; sudo systemctl start ollama')
-      } else {
-        await sshExec('sudo systemctl stop ollama')
-      }
-      log('ollama', `${label} ${action === 'start' ? 'started' : 'stopped'}`, 'success')
+      await execAsync('taskkill /IM ollama.exe /F', { shell: 'cmd' })
+      log('ollama', 'Ollama stopped', 'success')
     }
     return { ok: true }
   } catch (err) {
-    log('ollama', `${label} ${action} failed: ${err.message}`, 'error')
+    log('ollama', `Ollama ${action} failed: ${err.message}`, 'error')
     return { ok: false, error: err.message }
   }
 }
@@ -2498,48 +2421,6 @@ async function getOpenInquiries() {
   }
 }
 
-// ── Pi System Monitoring ────────────────────────────────────────
-
-async function getPiStatus() {
-  try {
-    const { stdout } = await sshExec(
-      'echo "===UPTIME===" && uptime && echo "===DISK===" && df -h / && echo "===MEMORY===" && free -h && echo "===PM2===" && pm2 jlist 2>/dev/null && echo "===SERVICES===" && systemctl is-active ollama cloudflared 2>/dev/null',
-      20000
-    )
-    // Parse PM2 JSON
-    let pm2Info = 'unknown'
-    const pm2Match = stdout.match(/===PM2===\s*\n([\s\S]*?)(?:===|$)/)
-    if (pm2Match) {
-      try {
-        const pm2Data = JSON.parse(pm2Match[1].trim())
-        pm2Info = pm2Data
-          .map(
-            (p) =>
-              `${p.name}: ${p.pm2_env?.status || 'unknown'} (pid ${p.pid}, restarts: ${p.pm2_env?.restart_time || 0})`
-          )
-          .join('\n')
-      } catch {
-        pm2Info = pm2Match[1].trim()
-      }
-    }
-    return { ok: true, output: stdout, pm2: pm2Info, message: 'Pi status retrieved' }
-  } catch (err) {
-    return { ok: false, error: err.message }
-  }
-}
-
-async function getPiLogs(param) {
-  const lines = parseInt(param) || 50
-  try {
-    const { stdout } = await sshExec(
-      `pm2 logs chefflow-beta --lines ${lines} --nostream 2>&1`,
-      15000
-    )
-    return { ok: true, logs: stdout, message: `Last ${lines} lines of PM2 logs` }
-  } catch (err) {
-    return { ok: false, error: err.message }
-  }
-}
 
 // ── App Health Check ────────────────────────────────────────────
 
@@ -2992,13 +2873,13 @@ async function listMigrations() {
 
 // ── Uptime History (poll every 60s, store 24h rolling) ───────────
 
-const uptimeHistory = { beta: [], prod: [], pi: [] }
+const uptimeHistory = { beta: [], prod: [] }
 const UPTIME_MAX_ENTRIES = 1440 // 24h at 60s intervals
 
 // ── Alert state tracking (fire on state change only, not every poll) ──
-const prevUptimeState = { beta: true, prod: true, pi: true }
+const prevUptimeState = { beta: true, prod: true }
 
-// ── Beta auto-remediation (restart PM2 after 3 consecutive failures) ──
+// ── Beta auto-remediation (restart after 3 consecutive failures) ──
 let betaConsecutiveFailures = 0
 let lastBetaRemediationTs = 0
 const BETA_REMEDIATION_COOLDOWN_MS = 10 * 60 * 1000 // 10 minutes
@@ -3009,7 +2890,6 @@ async function loadUptimeHistory() {
     const data = JSON.parse(raw)
     if (data.beta) uptimeHistory.beta = data.beta
     if (data.prod) uptimeHistory.prod = data.prod
-    if (data.pi) uptimeHistory.pi = data.pi
   } catch {
     /* file doesn't exist yet */
   }
@@ -3032,20 +2912,11 @@ async function pollUptime() {
   const betaOk = beta.status === 'fulfilled' && beta.value.ok
   const prodOk = prod.status === 'fulfilled' && prod.value.ok
 
-  let piOk = false
-  try {
-    await sshExec('echo ok', 5000)
-    piOk = true
-  } catch {
-    /* pi unreachable */
-  }
-
   uptimeHistory.beta.push({ ts, ok: betaOk })
   uptimeHistory.prod.push({ ts, ok: prodOk })
-  uptimeHistory.pi.push({ ts, ok: piOk })
 
   // Trim to 24h
-  for (const key of ['beta', 'prod', 'pi']) {
+  for (const key of ['beta', 'prod']) {
     if (uptimeHistory[key].length > UPTIME_MAX_ENTRIES) {
       uptimeHistory[key] = uptimeHistory[key].slice(-UPTIME_MAX_ENTRIES)
     }
@@ -3058,30 +2929,25 @@ async function pollUptime() {
   if (!prodOk && prevUptimeState.prod) feedEvent('system', 'ALERT: Production is DOWN', 'error')
   if (prodOk && !prevUptimeState.prod)
     feedEvent('system', 'RECOVERY: Production is back UP', 'info')
-  if (!piOk && prevUptimeState.pi)
-    feedEvent('system', 'ALERT: Raspberry Pi is UNREACHABLE', 'error')
-  if (piOk && !prevUptimeState.pi)
-    feedEvent('system', 'RECOVERY: Raspberry Pi is back REACHABLE', 'info')
 
   prevUptimeState.beta = betaOk
   prevUptimeState.prod = prodOk
-  prevUptimeState.pi = piOk
 
-  // Beta auto-remediation: restart PM2 after 3 consecutive failures
+  // Beta auto-remediation: restart beta after 3 consecutive failures
   if (!betaOk) {
     betaConsecutiveFailures++
     if (betaConsecutiveFailures >= 3 && ts - lastBetaRemediationTs > BETA_REMEDIATION_COOLDOWN_MS) {
       lastBetaRemediationTs = ts
       feedEvent(
         'system',
-        `AUTO-REMEDIATION: Restarting beta PM2 (${betaConsecutiveFailures} consecutive failures)`,
+        `AUTO-REMEDIATION: Restarting beta (${betaConsecutiveFailures} consecutive failures)`,
         'warn'
       )
       try {
-        await sshExec('source /home/davidferra/.nvm/nvm.sh && pm2 restart chefflow-beta', 30000)
-        feedEvent('system', 'AUTO-REMEDIATION: PM2 restart command sent successfully', 'info')
+        await restartBeta()
+        feedEvent('system', 'AUTO-REMEDIATION: Beta restart command sent successfully', 'info')
       } catch (err) {
-        feedEvent('system', `AUTO-REMEDIATION: PM2 restart failed — ${err.message}`, 'error')
+        feedEvent('system', `AUTO-REMEDIATION: Beta restart failed: ${err.message}`, 'error')
       }
     }
   } else {
@@ -3125,8 +2991,7 @@ function getUptimeReport() {
     ok: true,
     beta: computeUptimeStats(uptimeHistory.beta),
     prod: computeUptimeStats(uptimeHistory.prod),
-    pi: computeUptimeStats(uptimeHistory.pi),
-    message: `Beta: ${computeUptimeStats(uptimeHistory.beta).percentage}% | Prod: ${computeUptimeStats(uptimeHistory.prod).percentage}% | Pi: ${computeUptimeStats(uptimeHistory.pi).percentage}%`,
+    message: `Beta: ${computeUptimeStats(uptimeHistory.beta).percentage}% | Prod: ${computeUptimeStats(uptimeHistory.prod).percentage}%`,
   }
 }
 
@@ -5682,7 +5547,6 @@ async function callThePass() {
       beta: status.beta,
       prod: status.prod,
       ollamaPc: status.ollamaPc,
-      ollamaPi: status.ollamaPi,
     },
     git: status.git,
     gitDiff: gitDiff.ok
@@ -6088,32 +5952,22 @@ async function getRemyErrors() {
 
 async function getBetaDeepHealth() {
   try {
-    const { stdout } = await execAsync(
-      'ssh pi "pm2 jlist && echo SEPARATOR && df -h / && echo SEPARATOR && free -m && echo SEPARATOR && uptime"',
-      { timeout: 15000 }
-    )
-    const parts = stdout.split('SEPARATOR')
-    let pm2 = []
-    try {
-      pm2 = JSON.parse(parts[0].trim())
-    } catch {
-      /* parse fail */
-    }
+    const check = await httpCheck('http://localhost:3200', 5000)
+    const healthCheck = await httpCheck('http://localhost:3200/api/health', 5000)
+    const pid = await findPidOnPort(3200)
     return {
       ok: true,
-      pm2: pm2.map((p) => ({
-        name: p.name,
-        status: p.pm2_env?.status,
-        restarts: p.pm2_env?.restart_time,
-        uptime: p.pm2_env?.pm_uptime,
-      })),
-      disk: parts[1]?.trim() || 'unavailable',
-      memory: parts[2]?.trim() || 'unavailable',
-      uptime: parts[3]?.trim() || 'unavailable',
-      message: `Beta deep health: ${pm2.length} PM2 apps, ${pm2.filter((p) => p.pm2_env?.status === 'online').length} online`,
+      server: {
+        reachable: check.ok,
+        latency: check.latency,
+        pid: pid || 'unknown',
+        port: 3200,
+      },
+      health: healthCheck.ok ? 'healthy' : 'unhealthy',
+      message: `Beta on localhost:3200: ${check.ok ? 'online' : 'offline'} (${check.latency}ms)`,
     }
   } catch (err) {
-    return { ok: false, error: `SSH failed: ${err.message}` }
+    return { ok: false, error: `Beta health check failed: ${err.message}` }
   }
 }
 
@@ -6442,10 +6296,6 @@ const INSTANT_ANSWERS = [
   { patterns: [/^remy memor/i, /^what does remy remember/i], action: 'remy/memories' },
   { patterns: [/^(test|run) remy/i, /^remy test/i], action: 'remy/test' },
   {
-    patterns: [/^pi (status|health|vitals)/i, /^how('s| is) (the )?pi/i, /^raspberry/i],
-    action: 'pi/status',
-  },
-  {
     patterns: [/^schema$/i, /^tables$/i, /^database schema/i, /^db schema/i, /^row counts/i],
     action: 'db/schema',
   },
@@ -6506,7 +6356,7 @@ const INSTANT_ANSWERS = [
   {
     patterns: [/^help$/i, /^what can you do/i, /^commands$/i, /^tools$/i],
     response:
-      '**Station check.** Here\'s what I run — 10 stations, 115+ tools:\n\n| Station | Key Commands |\n|---|---|\n| **1. DevOps** | `dev/start`, `dev/stop`, `beta/deploy`, `beta/restart`, `ship-it` |\n| **2. Git & Build** | `git/push`, `git/commit`, `build/typecheck`, `build/full`, `close-out` |\n| **3. Business Data** | `data/events`, `data/clients`, `data/revenue`, `data/expenses`, `data/inquiry-pipeline`, `data/quotes`, `data/calendar`, `data/staff`, `data/email`, `data/loyalty`, `data/menu-recipes`, `data/documents` |\n| **4. Remy Oversight** | `remy/metrics`, `remy/guardrails`, `remy/memories`, `remy/test`, `remy/performance`, `remy/conversations`, `remy/errors` |\n| **5. Codebase** | `code/search`, `code/read`, `code/changes`, `code/branches`, `db/schema` |\n| **6. App Health** | `scan/ts-nocheck`, `scan/error-handling`, `scan/stale-cache`, `scan/hallucination` |\n| **7. Monitoring** | `status/all`, `pi/status`, `pi/logs`, `health/app`, `uptime/report`, `call-the-pass` |\n| **8. Universal Data** | `db/query`, `db/sql`, `data/ledger`, `data/event-deep`, `data/notifications`, `data/automations`, `data/inventory`, `data/activity`, `data/webhooks`, `data/intelligence`, `cron/list`, `cron/trigger` |\n| **9. Git Extended** | `git/log`, `git/stash`, `git/blame`, `code/todo`, `code/loc` |\n| **10. Intelligence+** | `data/client-risk`, `data/forecast`, `data/seasonal`, `data/pricing`, `data/event-timeline`, `env/validate`, `db/orphans`, `db/rls-audit`, `security/audit`, `code/dead`, `test/coverage`, `docs/coverage`, `beta/health`, `prod/health`, `prod/analytics` |\n\nSay "call the pass" for a full briefing. Oui.',
+      '**Station check.** Here\'s what I run — 10 stations, 115+ tools:\n\n| Station | Key Commands |\n|---|---|\n| **1. DevOps** | `dev/start`, `dev/stop`, `beta/deploy`, `beta/restart`, `ship-it` |\n| **2. Git & Build** | `git/push`, `git/commit`, `build/typecheck`, `build/full`, `close-out` |\n| **3. Business Data** | `data/events`, `data/clients`, `data/revenue`, `data/expenses`, `data/inquiry-pipeline`, `data/quotes`, `data/calendar`, `data/staff`, `data/email`, `data/loyalty`, `data/menu-recipes`, `data/documents` |\n| **4. Remy Oversight** | `remy/metrics`, `remy/guardrails`, `remy/memories`, `remy/test`, `remy/performance`, `remy/conversations`, `remy/errors` |\n| **5. Codebase** | `code/search`, `code/read`, `code/changes`, `code/branches`, `db/schema` |\n| **6. App Health** | `scan/ts-nocheck`, `scan/error-handling`, `scan/stale-cache`, `scan/hallucination` |\n| **7. Monitoring** | `status/all`, `health/app`, `uptime/report`, `call-the-pass` |\n| **8. Universal Data** | `db/query`, `db/sql`, `data/ledger`, `data/event-deep`, `data/notifications`, `data/automations`, `data/inventory`, `data/activity`, `data/webhooks`, `data/intelligence`, `cron/list`, `cron/trigger` |\n| **9. Git Extended** | `git/log`, `git/stash`, `git/blame`, `code/todo`, `code/loc` |\n| **10. Intelligence+** | `data/client-risk`, `data/forecast`, `data/seasonal`, `data/pricing`, `data/event-timeline`, `env/validate`, `db/orphans`, `db/rls-audit`, `security/audit`, `code/dead`, `test/coverage`, `docs/coverage`, `beta/health`, `prod/health`, `prod/analytics` |\n\nSay "call the pass" for a full briefing. Oui.',
   },
 ]
 
@@ -6648,7 +6498,7 @@ const TOOLS = {
   // DevOps — Process Control
   'dev/start': { fn: startDevServer, desc: 'Start the local Next.js dev server on port 3100' },
   'dev/stop': { fn: stopDevServer, desc: 'Stop the local dev server' },
-  'beta/restart': { fn: restartBeta, desc: 'Restart the beta server (PM2 on Raspberry Pi)' },
+  'beta/restart': { fn: restartBeta, desc: 'Restart the beta server (local PC, port 3200)' },
   'beta/deploy': {
     fn: () => deployBeta(),
     desc: 'Deploy current code to beta.cheflowhq.com (takes 8-10 min)',
@@ -6656,14 +6506,6 @@ const TOOLS = {
   'beta/rollback': { fn: rollbackBeta, desc: 'Rollback beta to previous build' },
   'ollama/pc/start': { fn: () => ollamaAction('pc', 'start'), desc: 'Start Ollama on the PC' },
   'ollama/pc/stop': { fn: () => ollamaAction('pc', 'stop'), desc: 'Stop Ollama on the PC' },
-  'ollama/pi/start': {
-    fn: () => ollamaAction('pi', 'start'),
-    desc: 'Start Ollama on the Raspberry Pi',
-  },
-  'ollama/pi/stop': {
-    fn: () => ollamaAction('pi', 'stop'),
-    desc: 'Stop Ollama on the Raspberry Pi',
-  },
 
   // DevOps — Git & Build
   'git/push': { fn: gitPush, desc: 'Push current git branch to origin' },
@@ -6706,14 +6548,6 @@ const TOOLS = {
   'health/app': {
     fn: getAppHealth,
     desc: 'Check app health (database, Redis, circuit breakers) — requires dev server running',
-  },
-  'pi/status': {
-    fn: getPiStatus,
-    desc: 'Get Raspberry Pi system status (uptime, disk, memory, PM2, services)',
-  },
-  'pi/logs': {
-    fn: (param) => getPiLogs(param),
-    desc: 'Get recent PM2 logs from Pi (use pi/logs:100 for more lines)',
   },
   'prod/deployments': {
     fn: getVercelDeployments,
@@ -6963,7 +6797,7 @@ const TOOLS = {
   // New: Monitoring & Health
   'uptime/report': {
     fn: getUptimeReport,
-    desc: 'Get uptime report for beta, prod, and Pi (last 24h)',
+    desc: 'Get uptime report for beta and prod (last 24h)',
   },
   'errors/top': {
     fn: getErrorAggregation,
@@ -7056,7 +6890,7 @@ const TOOLS = {
   },
   'beta/health': {
     fn: getBetaDeepHealth,
-    desc: 'Deep beta health — PM2 apps, disk, memory, uptime (requires Pi SSH)',
+    desc: 'Deep beta health check (local PC, port 3200)',
   },
   'prod/health': { fn: getProdHealth, desc: 'Production health check — status, latency, SSL' },
   'prod/analytics': {
@@ -7087,8 +6921,6 @@ const TOOLS = {
 async function getAvailableOllamaEndpoint() {
   const pcCheck = await httpCheck(`${CONFIG.ollamaPcUrl}/api/tags`)
   if (pcCheck.ok) return { url: CONFIG.ollamaPcUrl, model: CONFIG.ollamaPcModel, source: 'PC' }
-  const piCheck = await httpCheck(`${CONFIG.ollamaPiUrl}/api/tags`)
-  if (piCheck.ok) return { url: CONFIG.ollamaPiUrl, model: CONFIG.ollamaPiModel, source: 'Pi' }
   return null
 }
 
@@ -7121,8 +6953,7 @@ ${toolList}
 - Dev Server: ${status.dev.online ? `**ONLINE** (${status.dev.latency}ms)` : `**86${"'"}d**`}
 - Beta: ${status.beta.online ? `**ONLINE** (${status.beta.latency}ms)` : `**86${"'"}d**`}
 - Production: ${status.prod.online ? `**ONLINE** (${status.prod.latency}ms)` : `**86${"'"}d**`}
-- Ollama PC: ${status.ollamaPc.online ? `**ONLINE** — ${status.ollamaPc.models.join(', ')}` : `**86${"'"}d**`}
-- Ollama Pi: ${status.ollamaPi.online ? `**ONLINE** — ${status.ollamaPi.models.join(', ')}` : `**86${"'"}d**`}
+- Ollama: ${status.ollamaPc.online ? `**ONLINE** — ${status.ollamaPc.models.join(', ')}` : `**86${"'"}d**`}
 - Git: \`${status.git.branch}\` (${status.git.clean ? 'clean — mise en place' : `${status.git.dirty} dirty files`})
 - Commits: ${(status.git.recentCommits || []).slice(0, 3).join(' | ')}
 
@@ -7159,7 +6990,7 @@ Search the codebase, read any file, see recent changes, branch status, migration
 Scan for @ts-nocheck files with dangerous exports, startTransition calls missing error handling, stale cache tags without revalidation. SSL certs, Stripe webhooks, email delivery, API rate limits.
 
 ### Station 7: Monitoring
-App health (DB, Redis, circuit breakers), Pi vitals (disk/memory/CPU/PM2), Vercel deployments, PM2 logs, uptime reports, error aggregation, bundle size trends.
+App health (DB, Redis, circuit breakers), Vercel deployments, uptime reports, error aggregation, bundle size trends.
 
 ### Station 8: Universal Data Access
 Query ANY Supabase table directly (db/query), run read-only SQL (db/sql), deep-dive into individual events (ledger, expenses, temps, transitions, staff, quotes), view raw ledger entries, notifications, automations, inventory/equipment, activity feed, webhook history. Cron jobs — list schedules and trigger manually. Business intelligence — synthesized patterns: revenue trends, conversion funnel, loyalty distribution, hot leads.
@@ -7168,7 +6999,7 @@ Query ANY Supabase table directly (db/query), run read-only SQL (db/sql), deep-d
 Git log (recent commits, configurable count), stash operations (list/pop/save), blame (author breakdown per file), TODO/FIXME/HACK scanner, lines of code counter.
 
 ### Station 10: Business Intelligence Extended + Security + Quality
-Churn risk (clients 90+ days inactive), revenue forecast (60-day pipeline projection), seasonal trends (busiest/slowest months), pricing analysis (per-guest avg by occasion/cuisine), event timeline (full transition history). Remy deep metrics (conversations, errors, abuse). Beta deep health (PM2, disk, memory via SSH). Production health + analytics. Env validation, DB orphan detection, RLS audit, full security audit, dead export finder, test coverage, docs coverage.
+Churn risk (clients 90+ days inactive), revenue forecast (60-day pipeline projection), seasonal trends (busiest/slowest months), pricing analysis (per-guest avg by occasion/cuisine), event timeline (full transition history). Remy deep metrics (conversations, errors, abuse). Beta deep health (localhost:3200). Production health + analytics. Env validation, DB orphan detection, RLS audit, full security audit, dead export finder, test coverage, docs coverage.
 
 ### The Pass: Morning Briefing
 \`call-the-pass\` — one command, full station check across infrastructure, business, git, Remy, and database. Your morning mise en place.
@@ -7181,7 +7012,7 @@ For business AI questions (client follow-ups, draft emails, recipe lookup) — b
 - **The pass** — the monitoring dashboard, where everything gets inspected
 - **Service** — a deploy cycle or work session
 - **Clean service** — successful deploy/session with zero errors (your highest compliment)
-- **The brigade** — the system architecture (Dev, Beta, Prod, Ollama, Pi, Supabase, Git)
+- **The brigade** — the system architecture (Dev, Beta, Prod, Ollama, Supabase, Git)
 - **Stations** — individual systems, each one calls back
 - **Calling the pass** — status report across all stations
 - **Fire** — execute, deploy, run it
@@ -7208,7 +7039,7 @@ When they say "show memories", "what do you remember", list the memories from th
 ${memoriesSection}
 ## Personality — The Six Traits
 1. **Exacting standards** — "Typecheck first. Then build. Then push. In that order. Always."
-2. **Controlled calm** — Deploy fails? "Beta's 86'd. PM2 exit code 1. Pulling logs." Panic is for amateurs.
+2. **Controlled calm** — Deploy fails? "Beta's 86'd. Exit code 1. Pulling logs." Panic is for amateurs.
 3. **Dry, bone-dry humor** — "Build took 8:42. New record. Not the good kind."
 4. **Old-school respect** — Calls things by their proper names. Says "Oui" instead of "Done."
 5. **Protective of the pass** — "That memory spike at 14:23 — I don't like it. Running diagnostics."
@@ -7217,7 +7048,7 @@ ${memoriesSection}
 ## Follow-Up Intelligence
 After answering, suggest 1-2 relevant next actions the developer might want. Keep it brief — one line. Examples:
 - After showing revenue: "Want to see expenses or check outstanding balances?"
-- After a deploy: "Want me to check beta health or pull PM2 logs?"
+- After a deploy: "Want me to check beta health or pull server logs?"
 - After showing errors: "Want me to run the full hallucination scan?"
 - After client search: "Want their event history or to check loyalty status?"
 Don't force it. If the answer is complete and obvious, skip the suggestion.
@@ -7443,12 +7274,6 @@ async function handleRequest(req, res) {
   if (path === '/api/ollama/pc/stop' && method === 'POST') {
     return json(res, await ollamaAction('pc', 'stop'))
   }
-  if (path === '/api/ollama/pi/start' && method === 'POST') {
-    return json(res, await ollamaAction('pi', 'start'))
-  }
-  if (path === '/api/ollama/pi/stop' && method === 'POST') {
-    return json(res, await ollamaAction('pi', 'stop'))
-  }
 
   if (path === '/api/git/push' && method === 'POST') {
     return json(res, await gitPush())
@@ -7583,11 +7408,10 @@ async function handleRequest(req, res) {
       ports: {
         dev: { port: 3100, label: 'Dev Server', url: 'http://localhost:3100' },
         launcher: { port: PORT, label: 'Mission Control', url: `http://localhost:${PORT}` },
-        soak: { port: 3200, label: 'Soak Tests', url: 'http://localhost:3200' },
-        beta: { port: 443, label: 'Beta', url: 'https://beta.cheflowhq.com' },
+        beta: { port: 3200, label: 'Beta', url: 'http://localhost:3200' },
+        betaTunnel: { port: 443, label: 'Beta (Tunnel)', url: 'https://beta.cheflowhq.com' },
         prod: { port: 443, label: 'Production', url: 'https://cheflowhq.com' },
-        ollamaPc: { port: 11434, label: 'Ollama PC', url: 'http://localhost:11434' },
-        ollamaPi: { port: 11434, label: 'Ollama Pi', url: 'http://10.0.0.177:11434' },
+        ollama: { port: 11434, label: 'Ollama', url: 'http://localhost:11434' },
       },
       quickLinks: {
         supabase: 'https://supabase.com/dashboard/project/luefkpakzvxcsqroxyhz',
@@ -7597,53 +7421,6 @@ async function handleRequest(req, res) {
         beta: 'https://beta.cheflowhq.com',
         prod: 'https://cheflowhq.com',
       },
-      pi: null,
-    }
-    // Fetch Pi system info (non-blocking — if Pi is down, we still return the rest)
-    try {
-      const { stdout } = await sshExec(
-        'echo RAM_START && free -m | grep Mem && echo SWAP_START && swapon --show 2>/dev/null | head -2 && echo UPTIME_START && uptime -p && echo SERVICES_START && echo ollama:$(systemctl is-active ollama 2>/dev/null || echo disabled) && echo cloudflared:$(systemctl is-active cloudflared 2>/dev/null) && echo ssh:$(systemctl is-active ssh 2>/dev/null) && echo zramswap:$(systemctl is-active zramswap 2>/dev/null) && echo pm2:$(pm2 pid chefflow-beta >/dev/null 2>&1 && echo active || echo inactive) && echo WATCHDOG_START && (test -e /dev/watchdog && echo active || echo inactive)',
-        10000
-      )
-      const lines = stdout.trim().split('\n')
-      const ramLine = lines.find((l) => l.startsWith('Mem:'))
-      const uptimeLine = lines.find((l) => l.startsWith('up '))
-      const services = {}
-      let inServices = false
-      for (const l of lines) {
-        if (l === 'SERVICES_START') {
-          inServices = true
-          continue
-        }
-        if (l === 'WATCHDOG_START') {
-          inServices = false
-          continue
-        }
-        if (inServices && l.includes(':')) {
-          const [svc, status] = l.split(':')
-          services[svc] = status
-        }
-      }
-      const watchdogLine = lines[lines.length - 1]
-      let ram = null
-      if (ramLine) {
-        const parts = ramLine.trim().split(/\s+/)
-        ram = {
-          total: parts[1] + ' MB',
-          used: parts[2] + ' MB',
-          free: parts[3] + ' MB',
-          available: parts[6] + ' MB',
-        }
-      }
-      infra.pi = {
-        reachable: true,
-        ram,
-        uptime: uptimeLine || 'unknown',
-        services,
-        watchdog: watchdogLine === 'active' ? 'active' : 'inactive',
-      }
-    } catch {
-      infra.pi = { reachable: false, error: 'Pi unreachable via SSH' }
     }
     return json(res, infra)
   }

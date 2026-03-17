@@ -27,37 +27,6 @@ GROQ_API_KEY=gsk_your_key_here
 # GROQ_MODEL_COMPLEX=llama-3.3-70b-versatile
 ```
 
-## Step 3: Configure OpenClaw Brigade on Pi
-
-SSH to the Pi and update the OpenClaw gateway config to use Groq for build/QA/runner agents:
-
-```bash
-# Set Groq as a provider
-ssh pi "sudo -u openclawcf HOME=/home/openclawcf /home/openclawcf/.npm-global/bin/openclaw --profile chefflow config set 'providers.groq.apiKey' 'gsk_your_key_here' --strict-json"
-
-ssh pi "sudo -u openclawcf HOME=/home/openclawcf /home/openclawcf/.npm-global/bin/openclaw --profile chefflow config set 'providers.groq.baseUrl' 'https://api.groq.com/openai/v1' --strict-json"
-
-# Assign Groq models to build/QA/runner roles
-ssh pi "sudo -u openclawcf HOME=/home/openclawcf /home/openclawcf/.npm-global/bin/openclaw --profile chefflow config set 'agents.build.model' 'groq/llama-3.3-70b-versatile' --strict-json"
-
-ssh pi "sudo -u openclawcf HOME=/home/openclawcf /home/openclawcf/.npm-global/bin/openclaw --profile chefflow config set 'agents.qa.model' 'groq/llama-3.3-70b-versatile' --strict-json"
-
-ssh pi "sudo -u openclawcf HOME=/home/openclawcf /home/openclawcf/.npm-global/bin/openclaw --profile chefflow config set 'agents.runner.model' 'groq/llama-3.1-8b-instant' --strict-json"
-
-# Set Ollama as fallback (when Groq rate-limits)
-ssh pi "sudo -u openclawcf HOME=/home/openclawcf /home/openclawcf/.npm-global/bin/openclaw --profile chefflow config set 'agents.build.fallback' 'ollama/qwen3:4b' --strict-json"
-
-ssh pi "sudo -u openclawcf HOME=/home/openclawcf /home/openclawcf/.npm-global/bin/openclaw --profile chefflow config set 'agents.qa.fallback' 'ollama/qwen3:4b' --strict-json"
-
-ssh pi "sudo -u openclawcf HOME=/home/openclawcf /home/openclawcf/.npm-global/bin/openclaw --profile chefflow config set 'agents.runner.fallback' 'ollama/qwen3:4b' --strict-json"
-
-# Restart the gateway
-ssh pi "sudo systemctl restart openclaw-chefflow"
-
-# Verify
-ssh pi "sudo -u openclawcf HOME=/home/openclawcf /home/openclawcf/.npm-global/bin/openclaw --profile chefflow models status"
-```
-
 ## Available Groq Models (Free Tier)
 
 | Model                   | Speed      | Context | Best For                                       |

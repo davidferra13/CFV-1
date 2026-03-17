@@ -73,7 +73,7 @@ const P1_START = 0
 const P1_VSCODE = 15
 const P1_NEXTJS = 45
 const P1_OLLAMA_PC = 75
-const P1_OLLAMA_PI = 105
+// P1_OLLAMA_PI removed (Pi retired 2026-03-17)
 const P1_ARROWS_LOCAL = 130
 
 // Phase 2: Cloud services — 240-420 (6 seconds)
@@ -372,7 +372,7 @@ export function SystemArchitectureComposition() {
   const vscodeStyle = useSlideIn(P1_VSCODE, 'left')
   const nextjsStyle = useSlideIn(P1_NEXTJS, 'up')
   const ollamaPcStyle = useSlideIn(P1_OLLAMA_PC, 'up')
-  const ollamaPiStyle = useSlideIn(P1_OLLAMA_PI, 'right')
+  // Pi Ollama removed (Pi retired 2026-03-17)
 
   // Phase 2: Cloud boxes
   const githubStyle = useSlideIn(P2_GITHUB, 'up')
@@ -405,7 +405,7 @@ export function SystemArchitectureComposition() {
 
   // Pulsing dots for live connections
   const pcPulse = usePulse(P1_OLLAMA_PC + 20, 45)
-  const piPulse = usePulse(P1_OLLAMA_PI + 20, 60)
+  // piPulse removed (Pi retired)
   const dbPulse = usePulse(P2_SUPABASE + 20, 50)
 
   // Phase labels
@@ -423,7 +423,7 @@ export function SystemArchitectureComposition() {
   const CLAUDE = { x: 30, y: 155, w: 88, h: 68 }
   const NEXTJS = { x: 150, y: 105, w: 100, h: 80 }
   const PC_OLLAMA = { x: 150, y: 210, w: 100, h: 68 }
-  const PI_OLLAMA = { x: 150, y: 295, w: 100, h: 68 }
+  // PI_OLLAMA removed (Pi retired 2026-03-17)
   const BROWSER = { x: 270, y: 70, w: 0, h: 0 } // Used for arrow targets
 
   // Box positions — cloud
@@ -539,23 +539,7 @@ export function SystemArchitectureComposition() {
         />
       </div>
 
-      <div style={ollamaPiStyle}>
-        <SystemBox
-          {...PI_OLLAMA}
-          fill={GREEN[50]}
-          stroke={GREEN[400]}
-          icon="🥧"
-          title="Pi Ollama"
-          subtitle="qwen3:8b"
-        />
-        <PulsingDot
-          x={PI_OLLAMA.x + PI_OLLAMA.w - 4}
-          y={PI_OLLAMA.y + 8}
-          color={GREEN[400]}
-          opacity={ollamaPiStyle.opacity as number}
-          pulse={piPulse}
-        />
-      </div>
+      {/* Pi Ollama node removed (Pi retired 2026-03-17) */}
 
       {/* ─── PHASE 2: Cloud Boxes ──────────────────────────────── */}
 
@@ -668,15 +652,8 @@ export function SystemArchitectureComposition() {
         labelOffset={{ x: 24, y: -4 }}
       />
 
-      {/* PC Ollama ↔ Pi Ollama */}
-      <Arrow
-        x1={PC_OLLAMA.x + PC_OLLAMA.w / 2}
-        y1={PC_OLLAMA.y + PC_OLLAMA.h}
-        x2={PI_OLLAMA.x + PI_OLLAMA.w / 2}
-        y2={PI_OLLAMA.y}
-        color={GREEN[400]}
-        progress={arrowLocalProgress}
-        dashed
+      {/* PC Ollama standalone (Pi retired) */}
+      {/* Arrow to Pi removed
         label="failover"
         labelOffset={{ x: 28, y: -4 }}
       />

@@ -10,8 +10,8 @@ export interface ScheduledJob {
   priority: number
   /** Only seed for tenants that exist — uses admin client */
   seedOnStartup: boolean
-  /** If true, lightweight enough to run on PC now. If false, defer until Pi. */
-  enabledWithoutPi: boolean
+  /** All jobs run on PC (Pi is permanently retired) */
+  enabled: boolean
 }
 
 export const SCHEDULED_JOBS: ScheduledJob[] = [
@@ -21,7 +21,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.SCHEDULED,
     seedOnStartup: true,
-    enabledWithoutPi: true,
+    enabled: true,
   },
   {
     taskType: 'scheduled.lead_scoring',
@@ -29,7 +29,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 2 * 60 * 60 * 1000,
     priority: AI_PRIORITY.SCHEDULED,
     seedOnStartup: true,
-    enabledWithoutPi: true,
+    enabled: true,
   },
   {
     taskType: 'scheduled.weekly_insights',
@@ -37,7 +37,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 7 * 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.BATCH,
     seedOnStartup: true,
-    enabledWithoutPi: false,
+    enabled: true,
   },
   {
     taskType: 'scheduled.revenue_goal',
@@ -45,7 +45,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 7 * 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.BATCH,
     seedOnStartup: true,
-    enabledWithoutPi: false,
+    enabled: true,
   },
   {
     taskType: 'scheduled.churn_prediction',
@@ -53,7 +53,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 7 * 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.BATCH,
     seedOnStartup: true,
-    enabledWithoutPi: false,
+    enabled: true,
   },
   {
     taskType: 'scheduled.food_cost_alert',
@@ -61,7 +61,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 7 * 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.SCHEDULED,
     seedOnStartup: true,
-    enabledWithoutPi: true,
+    enabled: true,
   },
   {
     taskType: 'scheduled.pipeline_bottleneck',
@@ -69,7 +69,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 7 * 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.BATCH,
     seedOnStartup: true,
-    enabledWithoutPi: false,
+    enabled: true,
   },
   {
     taskType: 'scheduled.cert_expiry',
@@ -77,7 +77,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.SCHEDULED,
     seedOnStartup: true,
-    enabledWithoutPi: true,
+    enabled: true,
   },
   {
     taskType: 'scheduled.food_recall',
@@ -85,7 +85,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.SCHEDULED,
     seedOnStartup: true,
-    enabledWithoutPi: true,
+    enabled: true,
   },
   {
     taskType: 'scheduled.quote_analysis',
@@ -93,7 +93,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 7 * 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.BATCH,
     seedOnStartup: true,
-    enabledWithoutPi: false,
+    enabled: true,
   },
   {
     taskType: 'scheduled.anomaly_detection',
@@ -101,7 +101,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.BATCH,
     seedOnStartup: true,
-    enabledWithoutPi: false,
+    enabled: true,
   },
   {
     taskType: 'scheduled.menu_engineering',
@@ -109,7 +109,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 30 * 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.BATCH,
     seedOnStartup: true,
-    enabledWithoutPi: false,
+    enabled: true,
   },
   {
     taskType: 'scheduled.stale_inquiry_scanner',
@@ -117,7 +117,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 6 * 60 * 60 * 1000,
     priority: AI_PRIORITY.SCHEDULED,
     seedOnStartup: true,
-    enabledWithoutPi: true,
+    enabled: true,
   },
   {
     taskType: 'scheduled.payment_overdue_scanner',
@@ -125,7 +125,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.SCHEDULED,
     seedOnStartup: true,
-    enabledWithoutPi: true,
+    enabled: true,
   },
   {
     taskType: 'scheduled.social_post_draft',
@@ -133,7 +133,7 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 7 * 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.BATCH,
     seedOnStartup: true,
-    enabledWithoutPi: false,
+    enabled: true,
   },
   {
     taskType: 'scheduled.client_sentiment',
@@ -141,6 +141,6 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     intervalMs: 7 * 24 * 60 * 60 * 1000,
     priority: AI_PRIORITY.BATCH,
     seedOnStartup: true,
-    enabledWithoutPi: false,
+    enabled: true,
   },
 ]

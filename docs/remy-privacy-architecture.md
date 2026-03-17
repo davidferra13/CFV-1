@@ -25,7 +25,7 @@ Chef types message in Remy drawer
         ↓
 Browser sends request to ChefFlow API
         ↓
-API routes to Ollama on private Pi infrastructure
+API routes to Ollama on localhost (local PC)
         ↓
 Ollama processes locally, generates response
         ↓
@@ -76,7 +76,7 @@ These services receive item-level data only (e.g., "broccoli price"), never PII 
 | File                                               | What Changed                                                                                         |
 | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `app/(chef)/settings/ai-privacy/page.tsx`          | Complete rewrite — 3-section transparency page + external API disclosure + anonymous metrics summary |
-| `components/ai-privacy/data-flow-schematic.tsx`    | Simplified to private loop diagram (Chef → Pi → Chef) with blocked external paths                    |
+| `components/ai-privacy/data-flow-schematic.tsx`    | Simplified to private loop diagram (Chef → Local Ollama → Chef) with blocked external paths          |
 | `components/ai-privacy/remy-onboarding-wizard.tsx` | Simplified — privacy mentioned once confidently, not belabored                                       |
 | `components/ai-privacy/remy-gate.tsx`              | Updated to factual, confident language                                                               |
 | `components/ai/remy-drawer.tsx`                    | Added "Send to Support" button, updated privacy language in welcome/footer                           |
@@ -110,7 +110,7 @@ Only populated when a chef explicitly taps "Send to Support" inside a conversati
 The `RemyPrivacySchematic` composition (1650 frames @ 30fps = 55 seconds):
 
 1. **"You talk to Remy"** (0-5s) — Chat mockup with message
-2. **"Remy processes it privately"** (5-15s) — Data packet travels to Pi, pulse animation
+2. **"Remy processes it privately"** (5-15s) — Data packet travels to local Ollama, pulse animation
 3. **"Your answer comes back"** (15-22s) — Closed loop, bidirectional arrows
 4. **"What doesn't happen"** (22-35s) — Blocked paths to OpenAI, Google, etc.
 5. **"Where your conversation lives"** (35-45s) — Browser/IndexedDB visualization
@@ -134,7 +134,7 @@ The existing `remy_conversations` and `remy_messages` tables are NOT dropped. Th
 | ---------------------------------------- | --------------------------------------------------- |
 | Proton Lumo: Zero-access encryption      | ChefFlow: No conversation storage on servers at all |
 | Apple PCC: Stateless computation         | ChefFlow: Conversations processed and discarded     |
-| Ollama/llamafile: 100% local             | ChefFlow: Ollama on private Pi infrastructure       |
+| Ollama/llamafile: 100% local             | ChefFlow: Ollama on local PC infrastructure         |
 | Brave Leo: IP stripping, no cloud AI     | ChefFlow: Private infrastructure only               |
 | DuckDuckGo AI Chat: Anonymous by default | ChefFlow: Privacy is structural, not configurable   |
 

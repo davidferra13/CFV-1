@@ -41,7 +41,7 @@ export interface IncidentReport {
   /** The raw error message, if any */
   error?: string
   /** Which endpoint was involved */
-  endpoint?: 'pc' | 'pi' | 'unknown'
+  endpoint?: 'pc' | 'unknown'
   /** Additional context (task IDs, durations, attempt counts, etc.) */
   context?: Record<string, unknown>
   /** What should be done about it */
@@ -141,21 +141,18 @@ export function writeIncident(report: IncidentReport): string | null {
 export function reportOllamaFailure(opts: {
   title: string
   error: string
-  endpoint: 'pc' | 'pi'
+  endpoint: 'pc'
   context?: Record<string, unknown>
 }): string | null {
   return writeIncident({
     severity: 'error',
     system: 'ollama',
     title: opts.title,
-    description: `Ollama on ${opts.endpoint.toUpperCase()} failed: ${opts.error}`,
+    description: `Ollama failed: ${opts.error}`,
     error: opts.error,
     endpoint: opts.endpoint,
     context: opts.context,
-    suggestedAction:
-      opts.endpoint === 'pc'
-        ? 'Check if Ollama is running on this machine. Run: ollama list'
-        : 'Check if the Raspberry Pi is reachable. Run: ping 10.0.0.177',
+    suggestedAction: 'Check if Ollama is running on this machine. Run: ollama list',
   })
 }
 
@@ -166,7 +163,7 @@ export function reportTaskFailure(opts: {
   taskType: string
   taskId: string
   error: string
-  endpoint: 'pc' | 'pi'
+  endpoint: 'pc'
   attempt: number
   maxAttempts: number
   durationMs: number
@@ -232,27 +229,20 @@ export function reportCircuitBreakerChange(opts: {
  */
 export function reportHealthDegraded(opts: {
   pcHealthy: boolean
-  piHealthy: boolean
   pcLatencyMs?: number | null
-  piLatencyMs?: number | null
   error?: string
 }): string | null {
-  const bothDown = !opts.pcHealthy && !opts.piHealthy
+  if (opts.pcHealthy) return null
   return writeIncident({
-    severity: bothDown ? 'critical' : 'warning',
+    severity: 'critical',
     system: 'health',
-    title: bothDown ? 'All Ollama Endpoints Offline' : 'Ollama Degraded',
-    description: bothDown
-      ? 'Both PC and Pi Ollama endpoints are unreachable. No AI processing is possible.'
-      : `Ollama is running in degraded mode. PC: ${opts.pcHealthy ? 'OK' : 'DOWN'}, Pi: ${opts.piHealthy ? 'OK' : 'DOWN'}.`,
+    title: 'Ollama Offline',
+    description: 'PC Ollama endpoint is unreachable. No AI processing is possible.',
     error: opts.error,
     context: {
       pc: { healthy: opts.pcHealthy, latencyMs: opts.pcLatencyMs },
-      pi: { healthy: opts.piHealthy, latencyMs: opts.piLatencyMs },
     },
-    suggestedAction: bothDown
-      ? 'Start Ollama on the PC (run: ollama serve) or check Pi connectivity (ping 10.0.0.177).'
-      : 'The down endpoint will be skipped. Tasks will route to the healthy endpoint.',
+    suggestedAction: 'Start Ollama on the PC (run: ollama serve).',
   })
 }
 
@@ -260,7 +250,7 @@ export function reportHealthDegraded(opts: {
  * Convenience: report a worker slot backoff (per-slot circuit breaker).
  */
 export function reportWorkerBackoff(opts: {
-  endpoint: 'pc' | 'pi'
+  endpoint: 'pc'
   consecutiveFailures: number
   backoffUntil: Date
 }): string | null {
@@ -293,9 +283,7 @@ function formatMarkdown(report: IncidentReport, timestamp: Date): string {
   lines.push(`**Severity:** ${report.severity}`)
   lines.push(`**System:** ${report.system}`)
   if (report.endpoint) {
-    lines.push(
-      `**Endpoint:** ${report.endpoint.toUpperCase()}${report.endpoint === 'pc' ? ' (localhost:11434)' : ' (10.0.0.177:11434)'}`
-    )
+    lines.push(`**Endpoint:** ${report.endpoint.toUpperCase()} (localhost:11434)`)
   }
   lines.push('')
 

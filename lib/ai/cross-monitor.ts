@@ -1,32 +1,13 @@
-// Cross-Monitor — Dual-Endpoint Supervisor
-// No 'use server' — pure utility module.
+// Cross-Monitor - PC Ollama Supervisor
+// No 'use server' - pure utility module.
 //
-// Best practices adopted from top companies:
+// Monitors the PC Ollama endpoint health with circuit breaker pattern.
+// Pi is permanently retired. PC monitors itself only.
 //
-//   Netflix (Hystrix):
-//     - Circuit breaker with half-open state for recovery detection
-//     - Bulkhead isolation (each endpoint has independent health state)
-//     - Fallback chains (PC → Pi → graceful degradation)
-//
-//   Google SRE:
-//     - Golden signals: latency, error rate, saturation (active tasks)
-//     - Health check with exponential backoff on repeated failures
-//     - Structured health grades: HEALTHY / DEGRADED / UNHEALTHY / UNKNOWN
-//
-//   AWS:
-//     - Multi-AZ health checking (PC = primary AZ, Pi = secondary AZ)
-//     - Retry with jitter to prevent thundering herd
-//     - Automated recovery actions with escalation levels
-//
-//   Kubernetes:
-//     - Liveness (is Ollama running?) + Readiness (is model loaded?) probes
-//     - Self-healing restart policies with backoff
-//     - Graceful shutdown handling
-//
-// SAFE ACTIONS — What the supervisor is allowed to do autonomously:
+// SAFE ACTIONS - What the supervisor is allowed to do autonomously:
 //   Level 0 (observe): Log warnings, update health state
 //   Level 1 (nudge):   Clear hung tasks from queue, re-route tasks
-//   Level 2 (restart): SSH restart Pi's Ollama, local restart PC's Ollama
+//   Level 2 (restart): Local restart PC's Ollama
 //   Level 3 (escalate): Notify via console log + dashboard badge (never email/SMS)
 //
 // What it is NEVER allowed to do:
@@ -34,9 +15,8 @@
 //   - Modify the database (except re-queuing hung tasks)
 //   - Send external notifications (email, SMS, Slack)
 //   - Make destructive changes to the system
-//   - Run arbitrary commands on the Pi
 
-import { getOllamaConfig, getOllamaPiUrl, getModelForEndpoint } from './providers'
+import { getOllamaConfig, getModelForEndpoint } from './providers'
 import { forceHealthCheck } from './llm-router'
 
 // ============================================
@@ -46,7 +26,7 @@ import { forceHealthCheck } from './llm-router'
 export type HealthGrade = 'healthy' | 'degraded' | 'unhealthy' | 'unknown'
 
 export interface EndpointHealthSnapshot {
-  name: 'pc' | 'pi'
+  name: 'pc'
   url: string
   grade: HealthGrade
   online: boolean
@@ -65,16 +45,16 @@ export interface EndpointHealthSnapshot {
 export interface SystemHealthReport {
   overall: HealthGrade
   endpoints: EndpointHealthSnapshot[]
-  dualMode: boolean
+  dualMode: false
   activeRecoveryActions: string[]
   lastReportAt: Date
-  uptimePercent: { pc: number; pi: number }
+  uptimePercent: { pc: number }
 }
 
 export interface RecoveryAction {
   level: 0 | 1 | 2 | 3
   action: string
-  target: 'pc' | 'pi' | 'system'
+  target: 'pc' | 'system'
   timestamp: Date
   success: boolean
   detail: string
@@ -85,28 +65,28 @@ export interface RecoveryAction {
 // ============================================
 
 interface MonitorState {
-  endpoints: Map<'pc' | 'pi', EndpointHealthSnapshot>
+  endpoint: EndpointHealthSnapshot | null
   recoveryLog: RecoveryAction[]
   running: boolean
   pollTimer: ReturnType<typeof setTimeout> | null
-  totalChecks: { pc: number; pi: number }
-  healthyChecks: { pc: number; pi: number }
+  totalChecks: number
+  healthyChecks: number
 }
 
 const state: MonitorState = {
-  endpoints: new Map(),
+  endpoint: null,
   recoveryLog: [],
   running: false,
   pollTimer: null,
-  totalChecks: { pc: 0, pi: 0 },
-  healthyChecks: { pc: 0, pi: 0 },
+  totalChecks: 0,
+  healthyChecks: 0,
 }
 
 // ============================================
 // CONSTANTS
 // ============================================
 
-/** Poll interval for cross-monitoring (30 seconds) */
+/** Poll interval for monitoring (30 seconds) */
 const MONITOR_INTERVAL_MS = 30_000
 
 /** Circuit breaker: failures before opening circuit */
@@ -129,18 +109,18 @@ const HEALTH_CHECK_TIMEOUT_MS = 8000
 // ============================================
 
 /**
- * Start the cross-monitoring supervisor loop.
- * Idempotent — calling multiple times is safe.
+ * Start the monitoring supervisor loop.
+ * Idempotent - calling multiple times is safe.
  */
 export function startCrossMonitor(): void {
   if (state.running) return
   state.running = true
-  console.log('[cross-monitor] Started — polling every', MONITOR_INTERVAL_MS, 'ms')
+  console.log('[cross-monitor] Started - polling every', MONITOR_INTERVAL_MS, 'ms')
   scheduleMonitorPoll()
 }
 
 /**
- * Stop the cross-monitoring supervisor.
+ * Stop the monitoring supervisor.
  */
 export function stopCrossMonitor(): void {
   state.running = false
@@ -155,28 +135,19 @@ export function stopCrossMonitor(): void {
  * Get the current system health report.
  */
 export function getSystemHealth(): SystemHealthReport {
-  const endpoints = Array.from(state.endpoints.values())
-  const piConfigured = !!getOllamaPiUrl()
-
-  const overall = computeOverallGrade(endpoints)
+  const endpoints = state.endpoint ? [state.endpoint] : []
+  const overall = endpoints.length === 0 ? ('unknown' as HealthGrade) : endpoints[0].grade
 
   return {
     overall,
     endpoints,
-    dualMode: piConfigured,
+    dualMode: false,
     activeRecoveryActions: state.recoveryLog
       .filter((r) => Date.now() - r.timestamp.getTime() < 300_000) // Last 5 min
       .map((r) => `[L${r.level}] ${r.action} on ${r.target}: ${r.detail}`),
     lastReportAt: new Date(),
     uptimePercent: {
-      pc:
-        state.totalChecks.pc > 0
-          ? Math.round((state.healthyChecks.pc / state.totalChecks.pc) * 100)
-          : 0,
-      pi:
-        state.totalChecks.pi > 0
-          ? Math.round((state.healthyChecks.pi / state.totalChecks.pi) * 100)
-          : 0,
+      pc: state.totalChecks > 0 ? Math.round((state.healthyChecks / state.totalChecks) * 100) : 0,
     },
   }
 }
@@ -189,19 +160,20 @@ export function getRecoveryLog(): RecoveryAction[] {
 }
 
 /**
- * Get the cached health snapshot for a specific endpoint.
+ * Get the cached health snapshot for the PC endpoint.
  * Returns null if the endpoint hasn't been checked yet.
  * Used by Remy and the router for load-aware routing decisions.
+ * Accepts 'pi' parameter for API compatibility but always returns PC snapshot.
  */
-export function getEndpointSnapshot(name: 'pc' | 'pi'): EndpointHealthSnapshot | null {
-  return state.endpoints.get(name) ?? null
+export function getEndpointSnapshot(_name: 'pc' | 'pi'): EndpointHealthSnapshot | null {
+  return state.endpoint ?? null
 }
 
 /**
- * Force an immediate health check on all endpoints.
+ * Force an immediate health check.
  */
 export async function forceMonitorCheck(): Promise<SystemHealthReport> {
-  await checkAllEndpoints()
+  await checkEndpoint()
   return getSystemHealth()
 }
 
@@ -214,7 +186,7 @@ function scheduleMonitorPoll(): void {
 
   state.pollTimer = setTimeout(async () => {
     try {
-      await checkAllEndpoints()
+      await checkEndpoint()
       await evaluateAndAct()
     } catch (err) {
       console.error('[cross-monitor] Poll error:', err)
@@ -223,32 +195,14 @@ function scheduleMonitorPoll(): void {
   }, MONITOR_INTERVAL_MS)
 }
 
-async function checkAllEndpoints(): Promise<void> {
+async function checkEndpoint(): Promise<void> {
   const config = getOllamaConfig()
-  const piUrl = getOllamaPiUrl()
-
-  // Check endpoints in parallel
-  const checks: Promise<void>[] = [checkEndpoint('pc', config.baseUrl)]
-  if (piUrl) {
-    checks.push(checkEndpoint('pi', piUrl))
-  }
-
-  await Promise.allSettled(checks)
-
-  // Also refresh the llm-router's health state
-  try {
-    await forceHealthCheck()
-  } catch {
-    // Non-critical — router will refresh on next use
-  }
-}
-
-async function checkEndpoint(name: 'pc' | 'pi', url: string): Promise<void> {
-  const existing = state.endpoints.get(name)
-  const expectedModel = getModelForEndpoint(name, 'standard')
+  const url = config.baseUrl
+  const existing = state.endpoint
+  const expectedModel = getModelForEndpoint('pc', 'standard')
 
   const snapshot: EndpointHealthSnapshot = {
-    name,
+    name: 'pc',
     url,
     grade: 'unknown',
     online: false,
@@ -265,19 +219,19 @@ async function checkEndpoint(name: 'pc' | 'pi', url: string): Promise<void> {
   }
 
   // Track checks for uptime calculation
-  state.totalChecks[name]++
+  state.totalChecks++
 
   // Circuit breaker: if open, check if enough time has passed for half-open
   if (snapshot.circuitState === 'open' && existing?.lastCheckedAt) {
     const elapsed = Date.now() - existing.lastCheckedAt.getTime()
     if (elapsed < CIRCUIT_OPEN_DURATION_MS) {
-      // Still in cooldown — skip check, keep circuit open
+      // Still in cooldown - skip check, keep circuit open
       snapshot.grade = 'unhealthy'
-      snapshot.error = `Circuit breaker open — retrying in ${Math.ceil((CIRCUIT_OPEN_DURATION_MS - elapsed) / 1000)}s`
-      state.endpoints.set(name, snapshot)
+      snapshot.error = `Circuit breaker open - retrying in ${Math.ceil((CIRCUIT_OPEN_DURATION_MS - elapsed) / 1000)}s`
+      state.endpoint = snapshot
       return
     }
-    // Enough time passed — try half-open
+    // Enough time passed - try half-open
     snapshot.circuitState = 'half-open'
   }
 
@@ -310,7 +264,7 @@ async function checkEndpoint(name: 'pc' | 'pi', url: string): Promise<void> {
     }
 
     snapshot.grade = 'unhealthy'
-    state.endpoints.set(name, snapshot)
+    state.endpoint = snapshot
     return
   }
 
@@ -325,14 +279,14 @@ async function checkEndpoint(name: 'pc' | 'pi', url: string): Promise<void> {
       snapshot.activeGeneration = (psData.models ?? []).length > 0
     }
   } catch {
-    // Non-critical — /api/ps failure just means we can't detect busy state
+    // Non-critical - /api/ps failure just means we can't detect busy state
   }
 
   // ── Grade the endpoint ──
   snapshot.consecutiveFailures = 0 // Reset on success
   snapshot.circuitState = 'closed' // Close circuit on success
   snapshot.lastHealthyAt = new Date()
-  state.healthyChecks[name]++
+  state.healthyChecks++
 
   if (!snapshot.modelReady) {
     snapshot.grade = 'degraded'
@@ -344,7 +298,14 @@ async function checkEndpoint(name: 'pc' | 'pi', url: string): Promise<void> {
     snapshot.grade = 'healthy'
   }
 
-  state.endpoints.set(name, snapshot)
+  state.endpoint = snapshot
+
+  // Also refresh the llm-router's health state
+  try {
+    await forceHealthCheck()
+  } catch {
+    // Non-critical - router will refresh on next use
+  }
 }
 
 // ============================================
@@ -353,86 +314,65 @@ async function checkEndpoint(name: 'pc' | 'pi', url: string): Promise<void> {
 
 /**
  * Evaluate current health state and take automated recovery actions.
- * Follows escalation levels:
- *   L0: Observe + log
- *   L1: Re-route tasks, clear hung items
- *   L2: Restart services
- *   L3: Escalate (dashboard notification)
  */
 async function evaluateAndAct(): Promise<void> {
-  for (const [name, snapshot] of state.endpoints) {
-    if (snapshot.grade === 'healthy') continue
+  const snapshot = state.endpoint
+  if (!snapshot || snapshot.grade === 'healthy') return
 
-    // L0: Always log degraded/unhealthy state
-    if (snapshot.grade === 'degraded') {
+  // L0: Always log degraded/unhealthy state
+  if (snapshot.grade === 'degraded') {
+    logRecoveryAction({
+      level: 0,
+      action: 'observe',
+      target: 'pc',
+      timestamp: new Date(),
+      success: true,
+      detail: `PC is degraded: ${snapshot.error}`,
+    })
+  }
+
+  // L3: PC is unhealthy - escalate (no fallback endpoint available)
+  if (snapshot.grade === 'unhealthy') {
+    logRecoveryAction({
+      level: 3,
+      action: 'escalate',
+      target: 'system',
+      timestamp: new Date(),
+      success: true,
+      detail: 'PC Ollama is unhealthy - AI features are offline',
+    })
+  }
+
+  // L2: Model not loaded - proactively preload it so first real request is fast
+  if (snapshot.grade === 'degraded' && snapshot.online && !snapshot.modelReady) {
+    try {
+      await fetch(`${snapshot.url}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: snapshot.configuredModel,
+          prompt: '',
+          keep_alive: '30m',
+        }),
+        signal: AbortSignal.timeout(30_000),
+      })
       logRecoveryAction({
-        level: 0,
-        action: 'observe',
-        target: name,
+        level: 2,
+        action: 'model-preload',
+        target: 'pc',
         timestamp: new Date(),
         success: true,
-        detail: `${name} is degraded: ${snapshot.error}`,
+        detail: `Preloaded ${snapshot.configuredModel} on PC`,
       })
-    }
-
-    // L1: Re-route if one endpoint is down but the other is up
-    if (snapshot.grade === 'unhealthy') {
-      const other = name === 'pc' ? 'pi' : 'pc'
-      const otherSnapshot = state.endpoints.get(other)
-
-      if (otherSnapshot?.grade === 'healthy') {
-        logRecoveryAction({
-          level: 1,
-          action: 're-route',
-          target: 'system',
-          timestamp: new Date(),
-          success: true,
-          detail: `${name} is down — all tasks routed to ${other}`,
-        })
-      } else {
-        // Both endpoints are unhealthy
-        logRecoveryAction({
-          level: 3,
-          action: 'escalate',
-          target: 'system',
-          timestamp: new Date(),
-          success: true,
-          detail: 'BOTH endpoints are unhealthy — AI features are offline',
-        })
-      }
-    }
-
-    // L2: Model not loaded — proactively preload it so first real request is fast
-    if (snapshot.grade === 'degraded' && snapshot.online && !snapshot.modelReady) {
-      try {
-        await fetch(`${snapshot.url}/api/generate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: snapshot.configuredModel,
-            prompt: '',
-            keep_alive: '30m',
-          }),
-          signal: AbortSignal.timeout(30_000),
-        })
-        logRecoveryAction({
-          level: 2,
-          action: 'model-preload',
-          target: name,
-          timestamp: new Date(),
-          success: true,
-          detail: `Preloaded ${snapshot.configuredModel} on ${name}`,
-        })
-      } catch (preloadErr) {
-        logRecoveryAction({
-          level: 2,
-          action: 'model-preload',
-          target: name,
-          timestamp: new Date(),
-          success: false,
-          detail: `Failed to preload on ${name}: ${preloadErr instanceof Error ? preloadErr.message : String(preloadErr)}`,
-        })
-      }
+    } catch (preloadErr) {
+      logRecoveryAction({
+        level: 2,
+        action: 'model-preload',
+        target: 'pc',
+        timestamp: new Date(),
+        success: false,
+        detail: `Failed to preload on PC: ${preloadErr instanceof Error ? preloadErr.message : String(preloadErr)}`,
+      })
     }
   }
 }
@@ -440,21 +380,6 @@ async function evaluateAndAct(): Promise<void> {
 // ============================================
 // HELPERS
 // ============================================
-
-function computeOverallGrade(endpoints: EndpointHealthSnapshot[]): HealthGrade {
-  if (endpoints.length === 0) return 'unknown'
-
-  const allHealthy = endpoints.every((e) => e.grade === 'healthy')
-  if (allHealthy) return 'healthy'
-
-  const anyHealthy = endpoints.some((e) => e.grade === 'healthy')
-  if (anyHealthy) return 'degraded'
-
-  const anyDegraded = endpoints.some((e) => e.grade === 'degraded')
-  if (anyDegraded) return 'degraded'
-
-  return 'unhealthy'
-}
 
 function logRecoveryAction(action: RecoveryAction): void {
   state.recoveryLog.push(action)

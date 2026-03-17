@@ -161,7 +161,7 @@ $timer.Add_Tick({
 
         $devOk = $status.dev.online
         $betaOk = $status.beta.online
-        $ollamaOk = $status.ollamaPc.online -or $status.ollamaPi.online
+        $ollamaOk = $status.ollamaPc.online
 
         $allOk = $devOk -and $betaOk -and $ollamaOk
         $anyDown = (-not $devOk) -or (-not $betaOk) -or (-not $ollamaOk)
