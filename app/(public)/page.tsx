@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
-import { Search } from 'lucide-react'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
 
@@ -46,12 +45,12 @@ const LandingBelowFold = dynamic(() => import('./_components/landing-below-fold'
 })
 
 const CATEGORIES = [
-  { label: 'Private Chefs', href: '/chefs?type=private-chef', emoji: '👨‍🍳' },
-  { label: 'Caterers', href: '/chefs?type=caterer', emoji: '🍽️' },
-  { label: 'Meal Prep', href: '/chefs?type=meal-prep', emoji: '🥗' },
-  { label: 'Restaurants', href: '/chefs?type=restaurant', emoji: '🏪' },
-  { label: 'Food Trucks', href: '/chefs?type=food-truck', emoji: '🚚' },
-  { label: 'Bakeries', href: '/chefs?type=bakery', emoji: '🧁' },
+  { label: 'Private Chefs', href: '/chefs', emoji: '👨‍🍳' },
+  { label: 'Caterers', href: '/discover?type=caterer', emoji: '🍽️' },
+  { label: 'Meal Prep', href: '/discover?type=meal_prep', emoji: '🥗' },
+  { label: 'Restaurants', href: '/discover?type=restaurant', emoji: '🏪' },
+  { label: 'Food Trucks', href: '/discover?type=food_truck', emoji: '🚚' },
+  { label: 'Bakeries', href: '/discover?type=bakery', emoji: '🧁' },
 ]
 
 export default function Home() {
@@ -73,14 +72,13 @@ export default function Home() {
 
           {/* Search bar */}
           <div className="mt-10 w-full max-w-2xl">
-            <form action="/chefs" method="get" className="flex items-center gap-2">
+            <form action="/discover" method="get" className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-500 pointer-events-none" />
                 <input
                   type="text"
                   name="q"
                   placeholder="What are you looking for?"
-                  className="h-14 w-full rounded-xl border border-stone-700 bg-stone-900/80 pl-[2.75rem] pr-4 text-base text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                  className="h-14 w-full rounded-xl border border-stone-700 bg-stone-900/80 px-4 text-base text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
                 />
               </div>
               <button
