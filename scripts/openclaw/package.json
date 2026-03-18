@@ -6,9 +6,14 @@
   "scripts": {
     "start": "node daemon.mjs",
     "status": "node status.mjs",
-    "dry-run": "DRY_RUN=1 node daemon.mjs"
+    "dry-run": "DRY_RUN=1 node daemon.mjs",
+    "import": "node geofabrik-import.mjs",
+    "import:parse-only": "node geofabrik-import.mjs --parse-only",
+    "import:sync-only": "node geofabrik-import.mjs --sync-only",
+    "import:dry-run": "DRY_RUN=1 node geofabrik-import.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0"
+    "@supabase/supabase-js": "^2.39.0",
+    "osm-pbf-parser": "^2.3.0"
   }
 }
