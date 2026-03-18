@@ -1,18 +1,16 @@
 #!/usr/bin/env node
 
-// Geofabrik Bulk Importer - Phase 1 of the two-phase acquisition strategy.
-// Downloads per-state US OSM extracts from Geofabrik, streams each through
-// filtering for food businesses, stores findings in the same format as
-// OpenClaw's crawler, then syncs to Supabase.
+// Geofabrik Global Bulk Importer - Phase 1 acquisition.
+// Downloads per-region OSM extracts from Geofabrik, streams each through
+// filtering for food businesses, stores findings LOCALLY on the Pi.
+// NO automatic sync to Supabase. Data moves only when you say so.
 //
-// State-by-state approach: download one state PBF (~50-500MB each), parse it,
-// save findings, delete the PBF, move to next. Resilient to network issues
-// and light on disk. Resumes from where it left off.
+// After completion, auto-starts OpenClaw for long-tail crawling.
 //
 // Usage:
-//   node geofabrik-import.mjs              # Full run: all states + sync
-//   node geofabrik-import.mjs --sync-only  # Skip download+parse, just sync
-//   DRY_RUN=1 node geofabrik-import.mjs   # Parse but don't write files or sync
+//   node geofabrik-import.mjs              # Full run: all regions, local only
+//   node geofabrik-import.mjs --sync-only  # Manual push to Supabase (you trigger this)
+//   DRY_RUN=1 node geofabrik-import.mjs   # Parse but don't write files
 
 import { createReadStream, existsSync, mkdirSync, writeFileSync, readFileSync, statSync, unlinkSync } from 'fs'
 import { join, dirname } from 'path'
@@ -27,64 +25,7 @@ const LOG_FILE = join(__dirname, 'geofabrik-import.log')
 const DRY_RUN = process.env.DRY_RUN === '1'
 const SYNC_ONLY = process.argv.includes('--sync-only')
 
-// Geofabrik per-state URL pattern
-const GEOFABRIK_BASE = 'https://download.geofabrik.de/north-america/us'
-
-// All 50 states + DC with Geofabrik slug names, ordered by priority
-// (matches OpenClaw's regions.json priority order)
-const STATES = [
-  { code: 'MA', slug: 'massachusetts', name: 'Massachusetts' },
-  { code: 'NH', slug: 'new-hampshire', name: 'New Hampshire' },
-  { code: 'VT', slug: 'vermont', name: 'Vermont' },
-  { code: 'ME', slug: 'maine', name: 'Maine' },
-  { code: 'CT', slug: 'connecticut', name: 'Connecticut' },
-  { code: 'RI', slug: 'rhode-island', name: 'Rhode Island' },
-  { code: 'NY', slug: 'new-york', name: 'New York' },
-  { code: 'NJ', slug: 'new-jersey', name: 'New Jersey' },
-  { code: 'PA', slug: 'pennsylvania', name: 'Pennsylvania' },
-  { code: 'DE', slug: 'delaware', name: 'Delaware' },
-  { code: 'MD', slug: 'maryland', name: 'Maryland' },
-  { code: 'VA', slug: 'virginia', name: 'Virginia' },
-  { code: 'WV', slug: 'west-virginia', name: 'West Virginia' },
-  { code: 'NC', slug: 'north-carolina', name: 'North Carolina' },
-  { code: 'SC', slug: 'south-carolina', name: 'South Carolina' },
-  { code: 'GA', slug: 'georgia', name: 'Georgia' },
-  { code: 'FL', slug: 'florida', name: 'Florida' },
-  { code: 'AL', slug: 'alabama', name: 'Alabama' },
-  { code: 'MS', slug: 'mississippi', name: 'Mississippi' },
-  { code: 'TN', slug: 'tennessee', name: 'Tennessee' },
-  { code: 'KY', slug: 'kentucky', name: 'Kentucky' },
-  { code: 'OH', slug: 'ohio', name: 'Ohio' },
-  { code: 'IN', slug: 'indiana', name: 'Indiana' },
-  { code: 'MI', slug: 'michigan', name: 'Michigan' },
-  { code: 'IL', slug: 'illinois', name: 'Illinois' },
-  { code: 'WI', slug: 'wisconsin', name: 'Wisconsin' },
-  { code: 'MN', slug: 'minnesota', name: 'Minnesota' },
-  { code: 'IA', slug: 'iowa', name: 'Iowa' },
-  { code: 'MO', slug: 'missouri', name: 'Missouri' },
-  { code: 'AR', slug: 'arkansas', name: 'Arkansas' },
-  { code: 'LA', slug: 'louisiana', name: 'Louisiana' },
-  { code: 'TX', slug: 'texas', name: 'Texas' },
-  { code: 'OK', slug: 'oklahoma', name: 'Oklahoma' },
-  { code: 'KS', slug: 'kansas', name: 'Kansas' },
-  { code: 'NE', slug: 'nebraska', name: 'Nebraska' },
-  { code: 'SD', slug: 'south-dakota', name: 'South Dakota' },
-  { code: 'ND', slug: 'north-dakota', name: 'North Dakota' },
-  { code: 'MT', slug: 'montana', name: 'Montana' },
-  { code: 'WY', slug: 'wyoming', name: 'Wyoming' },
-  { code: 'CO', slug: 'colorado', name: 'Colorado' },
-  { code: 'NM', slug: 'new-mexico', name: 'New Mexico' },
-  { code: 'AZ', slug: 'arizona', name: 'Arizona' },
-  { code: 'UT', slug: 'utah', name: 'Utah' },
-  { code: 'NV', slug: 'nevada', name: 'Nevada' },
-  { code: 'ID', slug: 'idaho', name: 'Idaho' },
-  { code: 'OR', slug: 'oregon', name: 'Oregon' },
-  { code: 'WA', slug: 'washington', name: 'Washington' },
-  { code: 'CA', slug: 'california', name: 'California' },
-  { code: 'AK', slug: 'alaska', name: 'Alaska' },
-  { code: 'HI', slug: 'hawaii', name: 'Hawaii' },
-  { code: 'DC', slug: 'district-of-columbia', name: 'District of Columbia' },
-]
+const GEOFABRIK_BASE = 'https://download.geofabrik.de'
 
 // Same food tags as OpenClaw's Overpass queries
 const FOOD_AMENITIES = new Set([
@@ -96,28 +37,251 @@ const FOOD_SHOPS = new Set([
   'cheese', 'chocolate', 'coffee', 'tea', 'seafood', 'farm'
 ])
 
-// Same type mapping as sync.mjs
-const TYPE_MAP = {
-  restaurant: 'restaurant',
-  cafe: 'cafe',
-  fast_food: 'fast_food',
-  ice_cream: 'dessert',
-  bar: 'bar',
-  pub: 'bar',
-  food_court: 'restaurant',
-  biergarten: 'bar',
-  bakery: 'bakery',
-  pastry: 'bakery',
-  confectionery: 'dessert',
-  deli: 'deli',
-  butcher: 'butcher',
-  cheese: 'specialty',
-  chocolate: 'dessert',
-  coffee: 'cafe',
-  tea: 'cafe',
-  seafood: 'seafood',
-  farm: 'farm',
+// ─── Global region registry ────────────────────────────────────────────────
+// Each entry: { code, slug, name, path }
+// code = directory name under crawler_findings/
+// slug = Geofabrik filename slug
+// path = URL path segment (continent/subregion)
+// For US states: code = "US/MA", stored as crawler_findings/US/MA/
+// For countries: code = "FR", stored as crawler_findings/FR/
+
+const REGIONS = [
+  // ── US States (highest priority) ──────────────────────────────────────
+  ...buildUSStates(),
+  // ── Rest of North America ─────────────────────────────────────────────
+  { code: 'CA_COUNTRY', slug: 'canada', name: 'Canada', path: 'north-america' },
+  { code: 'MX', slug: 'mexico', name: 'Mexico', path: 'north-america' },
+  { code: 'GL', slug: 'greenland', name: 'Greenland', path: 'north-america' },
+  // ── Central America ───────────────────────────────────────────────────
+  { code: 'BZ', slug: 'belize', name: 'Belize', path: 'central-america' },
+  { code: 'CR', slug: 'costa-rica', name: 'Costa Rica', path: 'central-america' },
+  { code: 'CU', slug: 'cuba', name: 'Cuba', path: 'central-america' },
+  { code: 'SV', slug: 'el-salvador', name: 'El Salvador', path: 'central-america' },
+  { code: 'GT', slug: 'guatemala', name: 'Guatemala', path: 'central-america' },
+  { code: 'HT_DO', slug: 'haiti-and-domrep', name: 'Haiti & Dominican Republic', path: 'central-america' },
+  { code: 'HN', slug: 'honduras', name: 'Honduras', path: 'central-america' },
+  { code: 'JM', slug: 'jamaica', name: 'Jamaica', path: 'central-america' },
+  { code: 'NI', slug: 'nicaragua', name: 'Nicaragua', path: 'central-america' },
+  { code: 'PA', slug: 'panama', name: 'Panama', path: 'central-america' },
+  { code: 'BS', slug: 'bahamas', name: 'Bahamas', path: 'central-america' },
+  // ── South America ─────────────────────────────────────────────────────
+  { code: 'AR', slug: 'argentina', name: 'Argentina', path: 'south-america' },
+  { code: 'BO', slug: 'bolivia', name: 'Bolivia', path: 'south-america' },
+  { code: 'BR', slug: 'brazil', name: 'Brazil', path: 'south-america' },
+  { code: 'CL', slug: 'chile', name: 'Chile', path: 'south-america' },
+  { code: 'CO', slug: 'colombia', name: 'Colombia', path: 'south-america' },
+  { code: 'EC', slug: 'ecuador', name: 'Ecuador', path: 'south-america' },
+  { code: 'GY', slug: 'guyana', name: 'Guyana', path: 'south-america' },
+  { code: 'PY', slug: 'paraguay', name: 'Paraguay', path: 'south-america' },
+  { code: 'PE', slug: 'peru', name: 'Peru', path: 'south-america' },
+  { code: 'SR', slug: 'suriname', name: 'Suriname', path: 'south-america' },
+  { code: 'UY', slug: 'uruguay', name: 'Uruguay', path: 'south-america' },
+  { code: 'VE', slug: 'venezuela', name: 'Venezuela', path: 'south-america' },
+  // ── Europe ────────────────────────────────────────────────────────────
+  { code: 'AL', slug: 'albania', name: 'Albania', path: 'europe' },
+  { code: 'AD', slug: 'andorra', name: 'Andorra', path: 'europe' },
+  { code: 'AT', slug: 'austria', name: 'Austria', path: 'europe' },
+  { code: 'BY', slug: 'belarus', name: 'Belarus', path: 'europe' },
+  { code: 'BE', slug: 'belgium', name: 'Belgium', path: 'europe' },
+  { code: 'BA', slug: 'bosnia-herzegovina', name: 'Bosnia-Herzegovina', path: 'europe' },
+  { code: 'BG', slug: 'bulgaria', name: 'Bulgaria', path: 'europe' },
+  { code: 'HR', slug: 'croatia', name: 'Croatia', path: 'europe' },
+  { code: 'CY', slug: 'cyprus', name: 'Cyprus', path: 'europe' },
+  { code: 'CZ', slug: 'czech-republic', name: 'Czech Republic', path: 'europe' },
+  { code: 'DK', slug: 'denmark', name: 'Denmark', path: 'europe' },
+  { code: 'EE', slug: 'estonia', name: 'Estonia', path: 'europe' },
+  { code: 'FI', slug: 'finland', name: 'Finland', path: 'europe' },
+  { code: 'FR', slug: 'france', name: 'France', path: 'europe' },
+  { code: 'GE', slug: 'georgia', name: 'Georgia', path: 'europe' },
+  { code: 'DE', slug: 'germany', name: 'Germany', path: 'europe' },
+  { code: 'GR', slug: 'greece', name: 'Greece', path: 'europe' },
+  { code: 'HU', slug: 'hungary', name: 'Hungary', path: 'europe' },
+  { code: 'IS', slug: 'iceland', name: 'Iceland', path: 'europe' },
+  { code: 'IE_GB_NI', slug: 'ireland-and-northern-ireland', name: 'Ireland & N. Ireland', path: 'europe' },
+  { code: 'IT', slug: 'italy', name: 'Italy', path: 'europe' },
+  { code: 'XK', slug: 'kosovo', name: 'Kosovo', path: 'europe' },
+  { code: 'LV', slug: 'latvia', name: 'Latvia', path: 'europe' },
+  { code: 'LI', slug: 'liechtenstein', name: 'Liechtenstein', path: 'europe' },
+  { code: 'LT', slug: 'lithuania', name: 'Lithuania', path: 'europe' },
+  { code: 'LU', slug: 'luxembourg', name: 'Luxembourg', path: 'europe' },
+  { code: 'MK', slug: 'macedonia', name: 'North Macedonia', path: 'europe' },
+  { code: 'MT', slug: 'malta', name: 'Malta', path: 'europe' },
+  { code: 'MD', slug: 'moldova', name: 'Moldova', path: 'europe' },
+  { code: 'MC', slug: 'monaco', name: 'Monaco', path: 'europe' },
+  { code: 'ME', slug: 'montenegro', name: 'Montenegro', path: 'europe' },
+  { code: 'NL', slug: 'netherlands', name: 'Netherlands', path: 'europe' },
+  { code: 'NO', slug: 'norway', name: 'Norway', path: 'europe' },
+  { code: 'PL', slug: 'poland', name: 'Poland', path: 'europe' },
+  { code: 'PT', slug: 'portugal', name: 'Portugal', path: 'europe' },
+  { code: 'RO', slug: 'romania', name: 'Romania', path: 'europe' },
+  { code: 'RS', slug: 'serbia', name: 'Serbia', path: 'europe' },
+  { code: 'SK', slug: 'slovakia', name: 'Slovakia', path: 'europe' },
+  { code: 'SI', slug: 'slovenia', name: 'Slovenia', path: 'europe' },
+  { code: 'ES', slug: 'spain', name: 'Spain', path: 'europe' },
+  { code: 'SE', slug: 'sweden', name: 'Sweden', path: 'europe' },
+  { code: 'CH', slug: 'switzerland', name: 'Switzerland', path: 'europe' },
+  { code: 'TR', slug: 'turkey', name: 'Turkey', path: 'europe' },
+  { code: 'UA', slug: 'ukraine', name: 'Ukraine', path: 'europe' },
+  { code: 'GB', slug: 'great-britain', name: 'Great Britain', path: 'europe' },
+  // ── Russia (root-level on Geofabrik) ──────────────────────────────────
+  { code: 'RU', slug: 'russia', name: 'Russia', path: '' },
+  // ── Asia ──────────────────────────────────────────────────────────────
+  { code: 'AF', slug: 'afghanistan', name: 'Afghanistan', path: 'asia' },
+  { code: 'AM', slug: 'armenia', name: 'Armenia', path: 'asia' },
+  { code: 'AZ', slug: 'azerbaijan', name: 'Azerbaijan', path: 'asia' },
+  { code: 'BD', slug: 'bangladesh', name: 'Bangladesh', path: 'asia' },
+  { code: 'BT', slug: 'bhutan', name: 'Bhutan', path: 'asia' },
+  { code: 'KH', slug: 'cambodia', name: 'Cambodia', path: 'asia' },
+  { code: 'CN', slug: 'china', name: 'China', path: 'asia' },
+  { code: 'GCC', slug: 'gcc-states', name: 'GCC States', path: 'asia' },
+  { code: 'IN', slug: 'india', name: 'India', path: 'asia' },
+  { code: 'ID', slug: 'indonesia', name: 'Indonesia', path: 'asia' },
+  { code: 'IR', slug: 'iran', name: 'Iran', path: 'asia' },
+  { code: 'IQ', slug: 'iraq', name: 'Iraq', path: 'asia' },
+  { code: 'IL_PS', slug: 'israel-and-palestine', name: 'Israel & Palestine', path: 'asia' },
+  { code: 'JP', slug: 'japan', name: 'Japan', path: 'asia' },
+  { code: 'JO', slug: 'jordan', name: 'Jordan', path: 'asia' },
+  { code: 'KZ', slug: 'kazakhstan', name: 'Kazakhstan', path: 'asia' },
+  { code: 'KG', slug: 'kyrgyzstan', name: 'Kyrgyzstan', path: 'asia' },
+  { code: 'LA', slug: 'laos', name: 'Laos', path: 'asia' },
+  { code: 'LB', slug: 'lebanon', name: 'Lebanon', path: 'asia' },
+  { code: 'MY_SG_BN', slug: 'malaysia-singapore-brunei', name: 'Malaysia, Singapore & Brunei', path: 'asia' },
+  { code: 'MV', slug: 'maldives', name: 'Maldives', path: 'asia' },
+  { code: 'MN', slug: 'mongolia', name: 'Mongolia', path: 'asia' },
+  { code: 'MM', slug: 'myanmar', name: 'Myanmar', path: 'asia' },
+  { code: 'NP', slug: 'nepal', name: 'Nepal', path: 'asia' },
+  { code: 'KP', slug: 'north-korea', name: 'North Korea', path: 'asia' },
+  { code: 'PK', slug: 'pakistan', name: 'Pakistan', path: 'asia' },
+  { code: 'PH', slug: 'philippines', name: 'Philippines', path: 'asia' },
+  { code: 'KR', slug: 'south-korea', name: 'South Korea', path: 'asia' },
+  { code: 'LK', slug: 'sri-lanka', name: 'Sri Lanka', path: 'asia' },
+  { code: 'SY', slug: 'syria', name: 'Syria', path: 'asia' },
+  { code: 'TW', slug: 'taiwan', name: 'Taiwan', path: 'asia' },
+  { code: 'TJ', slug: 'tajikistan', name: 'Tajikistan', path: 'asia' },
+  { code: 'TH', slug: 'thailand', name: 'Thailand', path: 'asia' },
+  { code: 'TL', slug: 'east-timor', name: 'East Timor', path: 'asia' },
+  { code: 'TM', slug: 'turkmenistan', name: 'Turkmenistan', path: 'asia' },
+  { code: 'UZ', slug: 'uzbekistan', name: 'Uzbekistan', path: 'asia' },
+  { code: 'VN', slug: 'vietnam', name: 'Vietnam', path: 'asia' },
+  { code: 'YE', slug: 'yemen', name: 'Yemen', path: 'asia' },
+  // ── Africa ────────────────────────────────────────────────────────────
+  { code: 'DZ', slug: 'algeria', name: 'Algeria', path: 'africa' },
+  { code: 'AO', slug: 'angola', name: 'Angola', path: 'africa' },
+  { code: 'BJ', slug: 'benin', name: 'Benin', path: 'africa' },
+  { code: 'BW', slug: 'botswana', name: 'Botswana', path: 'africa' },
+  { code: 'BF', slug: 'burkina-faso', name: 'Burkina Faso', path: 'africa' },
+  { code: 'BI', slug: 'burundi', name: 'Burundi', path: 'africa' },
+  { code: 'CM', slug: 'cameroon', name: 'Cameroon', path: 'africa' },
+  { code: 'CV', slug: 'cape-verde', name: 'Cape Verde', path: 'africa' },
+  { code: 'CF', slug: 'central-african-republic', name: 'Central African Republic', path: 'africa' },
+  { code: 'TD', slug: 'chad', name: 'Chad', path: 'africa' },
+  { code: 'CG', slug: 'congo-brazzaville', name: 'Congo-Brazzaville', path: 'africa' },
+  { code: 'CD', slug: 'congo-democratic-republic', name: 'Congo (DRC)', path: 'africa' },
+  { code: 'DJ', slug: 'djibouti', name: 'Djibouti', path: 'africa' },
+  { code: 'EG', slug: 'egypt', name: 'Egypt', path: 'africa' },
+  { code: 'GQ', slug: 'equatorial-guinea', name: 'Equatorial Guinea', path: 'africa' },
+  { code: 'ER', slug: 'eritrea', name: 'Eritrea', path: 'africa' },
+  { code: 'ET', slug: 'ethiopia', name: 'Ethiopia', path: 'africa' },
+  { code: 'GA', slug: 'gabon', name: 'Gabon', path: 'africa' },
+  { code: 'GH', slug: 'ghana', name: 'Ghana', path: 'africa' },
+  { code: 'GN', slug: 'guinea', name: 'Guinea', path: 'africa' },
+  { code: 'GW', slug: 'guinea-bissau', name: 'Guinea-Bissau', path: 'africa' },
+  { code: 'CI', slug: 'ivory-coast', name: 'Ivory Coast', path: 'africa' },
+  { code: 'KE', slug: 'kenya', name: 'Kenya', path: 'africa' },
+  { code: 'LS', slug: 'lesotho', name: 'Lesotho', path: 'africa' },
+  { code: 'LR', slug: 'liberia', name: 'Liberia', path: 'africa' },
+  { code: 'LY', slug: 'libya', name: 'Libya', path: 'africa' },
+  { code: 'MG', slug: 'madagascar', name: 'Madagascar', path: 'africa' },
+  { code: 'MW', slug: 'malawi', name: 'Malawi', path: 'africa' },
+  { code: 'ML', slug: 'mali', name: 'Mali', path: 'africa' },
+  { code: 'MR', slug: 'mauritania', name: 'Mauritania', path: 'africa' },
+  { code: 'MU', slug: 'mauritius', name: 'Mauritius', path: 'africa' },
+  { code: 'MA_COUNTRY', slug: 'morocco', name: 'Morocco', path: 'africa' },
+  { code: 'MZ', slug: 'mozambique', name: 'Mozambique', path: 'africa' },
+  { code: 'NA', slug: 'namibia', name: 'Namibia', path: 'africa' },
+  { code: 'NE', slug: 'niger', name: 'Niger', path: 'africa' },
+  { code: 'NG', slug: 'nigeria', name: 'Nigeria', path: 'africa' },
+  { code: 'RW', slug: 'rwanda', name: 'Rwanda', path: 'africa' },
+  { code: 'SN_GM', slug: 'senegal-and-gambia', name: 'Senegal & Gambia', path: 'africa' },
+  { code: 'SL', slug: 'sierra-leone', name: 'Sierra Leone', path: 'africa' },
+  { code: 'SO', slug: 'somalia', name: 'Somalia', path: 'africa' },
+  { code: 'ZA', slug: 'south-africa', name: 'South Africa', path: 'africa' },
+  { code: 'SS', slug: 'south-sudan', name: 'South Sudan', path: 'africa' },
+  { code: 'SD', slug: 'sudan', name: 'Sudan', path: 'africa' },
+  { code: 'SZ', slug: 'swaziland', name: 'Eswatini', path: 'africa' },
+  { code: 'TZ', slug: 'tanzania', name: 'Tanzania', path: 'africa' },
+  { code: 'TG', slug: 'togo', name: 'Togo', path: 'africa' },
+  { code: 'TN', slug: 'tunisia', name: 'Tunisia', path: 'africa' },
+  { code: 'UG', slug: 'uganda', name: 'Uganda', path: 'africa' },
+  { code: 'ZM', slug: 'zambia', name: 'Zambia', path: 'africa' },
+  { code: 'ZW', slug: 'zimbabwe', name: 'Zimbabwe', path: 'africa' },
+  // ── Oceania ───────────────────────────────────────────────────────────
+  { code: 'AU', slug: 'australia', name: 'Australia', path: 'australia-oceania' },
+  { code: 'NZ', slug: 'new-zealand', name: 'New Zealand', path: 'australia-oceania' },
+  { code: 'FJ', slug: 'fiji', name: 'Fiji', path: 'australia-oceania' },
+  { code: 'PG', slug: 'papua-new-guinea', name: 'Papua New Guinea', path: 'australia-oceania' },
+]
+
+function buildUSStates() {
+  const states = [
+    ['US/MA', 'massachusetts', 'Massachusetts'],
+    ['US/NH', 'new-hampshire', 'New Hampshire'],
+    ['US/VT', 'vermont', 'Vermont'],
+    ['US/ME', 'maine', 'Maine'],
+    ['US/CT', 'connecticut', 'Connecticut'],
+    ['US/RI', 'rhode-island', 'Rhode Island'],
+    ['US/NY', 'new-york', 'New York'],
+    ['US/NJ', 'new-jersey', 'New Jersey'],
+    ['US/PA', 'pennsylvania', 'Pennsylvania'],
+    ['US/DE', 'delaware', 'Delaware'],
+    ['US/MD', 'maryland', 'Maryland'],
+    ['US/VA', 'virginia', 'Virginia'],
+    ['US/WV', 'west-virginia', 'West Virginia'],
+    ['US/NC', 'north-carolina', 'North Carolina'],
+    ['US/SC', 'south-carolina', 'South Carolina'],
+    ['US/GA', 'georgia-us', 'Georgia (US)'],
+    ['US/FL', 'florida', 'Florida'],
+    ['US/AL', 'alabama', 'Alabama'],
+    ['US/MS', 'mississippi', 'Mississippi'],
+    ['US/TN', 'tennessee', 'Tennessee'],
+    ['US/KY', 'kentucky', 'Kentucky'],
+    ['US/OH', 'ohio', 'Ohio'],
+    ['US/IN', 'indiana', 'Indiana'],
+    ['US/MI', 'michigan', 'Michigan'],
+    ['US/IL', 'illinois', 'Illinois'],
+    ['US/WI', 'wisconsin', 'Wisconsin'],
+    ['US/MN', 'minnesota', 'Minnesota'],
+    ['US/IA', 'iowa', 'Iowa'],
+    ['US/MO', 'missouri', 'Missouri'],
+    ['US/AR', 'arkansas', 'Arkansas'],
+    ['US/LA', 'louisiana', 'Louisiana'],
+    ['US/TX', 'texas', 'Texas'],
+    ['US/OK', 'oklahoma', 'Oklahoma'],
+    ['US/KS', 'kansas', 'Kansas'],
+    ['US/NE', 'nebraska', 'Nebraska'],
+    ['US/SD', 'south-dakota', 'South Dakota'],
+    ['US/ND', 'north-dakota', 'North Dakota'],
+    ['US/MT', 'montana', 'Montana'],
+    ['US/WY', 'wyoming', 'Wyoming'],
+    ['US/CO', 'colorado', 'Colorado'],
+    ['US/NM', 'new-mexico', 'New Mexico'],
+    ['US/AZ', 'arizona', 'Arizona'],
+    ['US/UT', 'utah', 'Utah'],
+    ['US/NV', 'nevada', 'Nevada'],
+    ['US/ID', 'idaho', 'Idaho'],
+    ['US/OR', 'oregon', 'Oregon'],
+    ['US/WA', 'washington', 'Washington'],
+    ['US/CA', 'california', 'California'],
+    ['US/AK', 'alaska', 'Alaska'],
+    ['US/HI', 'hawaii', 'Hawaii'],
+    ['US/DC', 'district-of-columbia', 'District of Columbia'],
+  ]
+  return states.map(([code, slug, name]) => ({
+    code, slug, name, path: 'north-america/us'
+  }))
 }
+
+// ─── Utilities ──────────────────────────────────────────────────────────────
 
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}`
@@ -151,8 +315,8 @@ function loadProgress() {
   } catch {}
   return {
     startedAt: new Date().toISOString(),
-    completedStates: [],
-    stateResults: {},
+    completedRegions: [],
+    regionResults: {},
     totalBusinesses: 0,
     lastUpdated: new Date().toISOString(),
   }
@@ -164,30 +328,30 @@ function saveProgress(progress) {
   writeFileSync(PROGRESS_FILE, JSON.stringify(progress, null, 2))
 }
 
-// ─── Download one state PBF ─────────────────────────────────────────────────
+// ─── Download ───────────────────────────────────────────────────────────────
 
-function downloadState(state) {
-  const url = `${GEOFABRIK_BASE}/${state.slug}-latest.osm.pbf`
-  const pbfFile = join(__dirname, `${state.slug}-latest.osm.pbf`)
+function downloadRegion(region) {
+  const urlPath = region.path ? `${region.path}/${region.slug}` : region.slug
+  const url = `${GEOFABRIK_BASE}/${urlPath}-latest.osm.pbf`
+  const pbfFile = join(__dirname, `${region.slug}-latest.osm.pbf`)
 
-  log(`Downloading ${state.name} from Geofabrik...`)
+  log(`  Downloading from ${url}`)
 
   try {
     execSync(
       `wget -c -q --show-progress -O "${pbfFile}" "${url}"`,
-      { stdio: 'inherit', timeout: 1800000 } // 30 min max per state
+      { stdio: 'inherit', timeout: 3600000 }
     )
   } catch (err) {
-    // wget might exit non-zero even on success in some cases
     if (existsSync(pbfFile) && statSync(pbfFile).size > 1000) {
-      log(`wget exited with error but file exists, continuing`)
+      log(`  wget exited with error but file exists, continuing`)
     } else {
-      throw new Error(`Failed to download ${state.name}: ${err.message}`)
+      throw new Error(`Download failed: ${err.message}`)
     }
   }
 
   const size = statSync(pbfFile).size
-  log(`Downloaded ${state.name}: ${formatBytes(size)}`)
+  log(`  Downloaded: ${formatBytes(size)}`)
   return pbfFile
 }
 
@@ -234,8 +398,7 @@ function parseOSMElement(type, id, tags, lat, lon) {
   }
 }
 
-async function parsePBF(pbfFile, stateCode) {
-  // Dynamic import of the parser
+async function parsePBF(pbfFile, regionCode) {
   let createParser
   try {
     const mod = await import('osm-pbf-parser')
@@ -248,7 +411,7 @@ async function parsePBF(pbfFile, stateCode) {
   const parser = createParser()
   const fileStream = createReadStream(pbfFile)
 
-  const byCityMap = {} // { city: [businesses] }
+  const byCityMap = {}
   let totalFound = 0
   let totalNodes = 0
   let lastLogTime = Date.now()
@@ -264,8 +427,7 @@ async function parsePBF(pbfFile, stateCode) {
 
             if (isFoodBusiness(tags)) {
               const biz = parseOSMElement('node', item.id, tags, item.lat, item.lon)
-              // Override state to the known state code for this file
-              biz.address.state = biz.address.state || stateCode
+              biz.address.state = biz.address.state || regionCode
               const city = biz.address.city || '_unknown'
               if (!byCityMap[city]) byCityMap[city] = []
               byCityMap[city].push(biz)
@@ -273,10 +435,9 @@ async function parsePBF(pbfFile, stateCode) {
             }
           }
 
-          // Log progress every 30s
           const now = Date.now()
           if (now - lastLogTime > 30000) {
-            log(`  ...parsed ${(totalNodes / 1e6).toFixed(1)}M nodes, ${totalFound.toLocaleString()} food businesses`)
+            log(`  ...${(totalNodes / 1e6).toFixed(1)}M nodes, ${totalFound.toLocaleString()} food businesses`)
             lastLogTime = now
           }
         }
@@ -292,16 +453,17 @@ async function parsePBF(pbfFile, stateCode) {
   })
 }
 
-// ─── Save findings for one state ────────────────────────────────────────────
+// ─── Save findings locally ──────────────────────────────────────────────────
 
-function saveStateFindings(stateCode, byCityMap) {
+function saveRegionFindings(regionCode, byCityMap) {
   if (DRY_RUN) {
     const count = Object.values(byCityMap).reduce((sum, arr) => sum + arr.length, 0)
-    log(`  [DRY RUN] Would save ${count} businesses for ${stateCode}`)
+    log(`  [DRY RUN] Would save ${count} businesses for ${regionCode}`)
     return 0
   }
 
-  const stateDir = join(FINDINGS_DIR, 'US', stateCode)
+  // regionCode can be "US/MA" (nested) or "FR" (flat)
+  const stateDir = join(FINDINGS_DIR, regionCode)
   mkdirSync(stateDir, { recursive: true })
 
   let totalNew = 0
@@ -310,7 +472,6 @@ function saveStateFindings(stateCode, byCityMap) {
     const safeCity = city.replace(/[^a-zA-Z0-9 .-]/g, '').replace(/\s+/g, '_').toLowerCase()
     const filePath = join(stateDir, `${safeCity}.json`)
 
-    // Merge with existing (OpenClaw may have already crawled some)
     let existing = []
     try {
       if (existsSync(filePath)) {
@@ -332,15 +493,10 @@ function saveStateFindings(stateCode, byCityMap) {
   return totalNew
 }
 
-// ─── Sync to Supabase ───────────────────────────────────────────────────────
+// ─── Manual sync (--sync-only) ──────────────────────────────────────────────
 
 async function syncFindings() {
-  if (DRY_RUN) {
-    log('[DRY RUN] Would sync to Supabase')
-    return
-  }
-
-  log('Syncing all findings to Supabase...')
+  log('Syncing all local findings to Supabase...')
   const { syncToSupabase } = await import('./lib/sync.mjs')
   const result = await syncToSupabase()
   log(`Sync complete: ${result.synced} synced, ${result.skipped} skipped, ${result.failed} failed`)
@@ -352,82 +508,103 @@ async function main() {
   const startTime = Date.now()
 
   log('='.repeat(60))
-  log('Geofabrik Bulk Import - Phase 1 Acquisition')
-  log('State-by-state: download, parse, save, delete, next')
+  log('OpenClaw Geofabrik Global Import - Phase 1')
+  log(`${REGIONS.length} regions worldwide`)
+  log('ALL DATA STAYS LOCAL. No auto-sync.')
   log('='.repeat(60))
   if (DRY_RUN) log('*** DRY RUN MODE ***')
-  if (SYNC_ONLY) log('*** SYNC ONLY ***')
+  if (SYNC_ONLY) log('*** SYNC ONLY (manual push to Supabase) ***')
   log('')
 
   try {
-    if (!SYNC_ONLY) {
-      const progress = loadProgress()
-      const completedSet = new Set(progress.completedStates)
-
-      log(`${completedSet.size}/${STATES.length} states already done`)
-
-      for (const state of STATES) {
-        if (completedSet.has(state.code)) {
-          continue
-        }
-
-        log('')
-        log(`--- ${state.name} (${state.code}) ---`)
-        const stateStart = Date.now()
-
-        let pbfFile
-        try {
-          // Download
-          pbfFile = downloadState(state)
-
-          // Parse
-          const { byCityMap, totalFound } = await parsePBF(pbfFile, state.code)
-
-          // Save
-          const saved = saveStateFindings(state.code, byCityMap)
-
-          // Record progress
-          progress.completedStates.push(state.code)
-          progress.stateResults[state.code] = {
-            completedAt: new Date().toISOString(),
-            businessesFound: totalFound,
-            newBusinessesSaved: saved,
-            duration: formatDuration(Date.now() - stateStart),
-          }
-          progress.totalBusinesses += saved
-          saveProgress(progress)
-
-          // Clean up PBF to save disk
-          try { unlinkSync(pbfFile) } catch {}
-
-          log(`  Done in ${formatDuration(Date.now() - stateStart)} [${progress.completedStates.length}/${STATES.length}]`)
-
-        } catch (err) {
-          log(`  ERROR on ${state.name}: ${err.message}`)
-          log(`  Skipping to next state...`)
-          // Clean up partial download
-          if (pbfFile) try { unlinkSync(pbfFile) } catch {}
-          // Save progress so we can resume
-          saveProgress(progress)
-          continue
-        }
-      }
-
-      log('')
-      log(`All states processed. ${progress.completedStates.length}/${STATES.length} succeeded.`)
+    // Manual sync mode
+    if (SYNC_ONLY) {
+      await syncFindings()
+      return
     }
 
-    // Final sync
-    await syncFindings()
+    // Crawl mode: download, parse, save locally
+    const progress = loadProgress()
+    const completedSet = new Set(progress.completedRegions)
+
+    log(`${completedSet.size}/${REGIONS.length} regions already done`)
+
+    let consecutiveFailures = 0
+
+    for (const region of REGIONS) {
+      if (completedSet.has(region.code)) continue
+
+      log('')
+      log(`--- ${region.name} (${region.code}) ---`)
+      const regionStart = Date.now()
+
+      let pbfFile
+      try {
+        pbfFile = downloadRegion(region)
+        const { byCityMap, totalFound } = await parsePBF(pbfFile, region.code)
+        const saved = saveRegionFindings(region.code, byCityMap)
+
+        progress.completedRegions.push(region.code)
+        progress.regionResults[region.code] = {
+          completedAt: new Date().toISOString(),
+          businessesFound: totalFound,
+          newBusinessesSaved: saved,
+          duration: formatDuration(Date.now() - regionStart),
+        }
+        progress.totalBusinesses += saved
+        saveProgress(progress)
+
+        try { unlinkSync(pbfFile) } catch {}
+
+        consecutiveFailures = 0
+        log(`  Done in ${formatDuration(Date.now() - regionStart)} [${progress.completedRegions.length}/${REGIONS.length}]`)
+
+      } catch (err) {
+        consecutiveFailures++
+        log(`  ERROR on ${region.name}: ${err.message}`)
+
+        if (consecutiveFailures >= 5) {
+          log(`  5 consecutive failures, pausing 10 minutes...`)
+          await new Promise(r => setTimeout(r, 600000))
+          consecutiveFailures = 0
+        } else {
+          log(`  Skipping to next region...`)
+        }
+
+        if (pbfFile) try { unlinkSync(pbfFile) } catch {}
+        saveProgress(progress)
+        continue
+      }
+    }
 
     const elapsed = Date.now() - startTime
     log('')
     log('='.repeat(60))
-    log(`Geofabrik import complete in ${formatDuration(elapsed)}`)
-    log('='.repeat(60))
+    log(`Global import complete in ${formatDuration(elapsed)}`)
+    log(`${progress.completedRegions.length}/${REGIONS.length} regions succeeded`)
+    log(`${progress.totalBusinesses.toLocaleString()} total businesses saved locally`)
     log('')
-    log('Restart OpenClaw for ongoing long-tail refresh:')
-    log('  sudo systemctl start openclaw')
+    log('ALL DATA IS LOCAL. To push to Supabase:')
+    log('  node geofabrik-import.mjs --sync-only')
+    log('='.repeat(60))
+
+    // Write completion marker
+    writeFileSync(join(DATA_DIR, 'geofabrik-complete.json'), JSON.stringify({
+      completedAt: new Date().toISOString(),
+      totalRegions: progress.completedRegions.length,
+      totalBusinesses: progress.totalBusinesses,
+      duration: formatDuration(elapsed),
+    }, null, 2))
+
+    // Auto-start OpenClaw for long-tail crawling
+    log('')
+    log('Starting OpenClaw for long-tail refresh...')
+    try {
+      execSync('sudo systemctl start openclaw', { stdio: 'inherit', timeout: 10000 })
+      log('OpenClaw started.')
+    } catch {
+      log('Could not auto-start OpenClaw. Start manually: sudo systemctl start openclaw')
+    }
 
   } catch (err) {
     log(`FATAL: ${err.message}`)
