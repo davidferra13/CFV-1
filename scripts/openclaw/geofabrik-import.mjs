@@ -14,9 +14,10 @@
 
 import { createReadStream, existsSync, mkdirSync, writeFileSync, readFileSync, statSync, unlinkSync } from 'fs'
 import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { execSync } from 'child_process'
 
-const __dirname = dirname(new URL(import.meta.url).pathname)
+const __dirname = dirname(fileURLToPath(import.meta.url))
 const FINDINGS_DIR = join(__dirname, 'crawler_findings')
 const DATA_DIR = join(__dirname, 'data')
 const PROGRESS_FILE = join(DATA_DIR, 'geofabrik-progress.json')
@@ -337,14 +338,16 @@ function downloadRegion(region) {
 
   log(`  Downloading from ${url}`)
 
+  const isWindows = process.platform === 'win32'
+  const cmd = isWindows
+    ? `curl -L -C - -o "${pbfFile}" "${url}"`
+    : `wget -c -q --show-progress -O "${pbfFile}" "${url}"`
+
   try {
-    execSync(
-      `wget -c -q --show-progress -O "${pbfFile}" "${url}"`,
-      { stdio: 'inherit', timeout: 3600000 }
-    )
+    execSync(cmd, { stdio: 'inherit', timeout: 3600000 })
   } catch (err) {
     if (existsSync(pbfFile) && statSync(pbfFile).size > 1000) {
-      log(`  wget exited with error but file exists, continuing`)
+      log(`  Download tool exited with error but file exists, continuing`)
     } else {
       throw new Error(`Download failed: ${err.message}`)
     }
@@ -596,14 +599,20 @@ async function main() {
       duration: formatDuration(elapsed),
     }, null, 2))
 
-    // Auto-start OpenClaw for long-tail crawling
-    log('')
-    log('Starting OpenClaw for long-tail refresh...')
-    try {
-      execSync('sudo systemctl start openclaw', { stdio: 'inherit', timeout: 10000 })
-      log('OpenClaw started.')
-    } catch {
-      log('Could not auto-start OpenClaw. Start manually: sudo systemctl start openclaw')
+    // Auto-start OpenClaw for long-tail crawling (Pi only)
+    if (process.platform !== 'win32') {
+      log('')
+      log('Starting OpenClaw for long-tail refresh...')
+      try {
+        execSync('sudo systemctl start openclaw', { stdio: 'inherit', timeout: 10000 })
+        log('OpenClaw started.')
+      } catch {
+        log('Could not auto-start OpenClaw. Start manually: sudo systemctl start openclaw')
+      }
+    } else {
+      log('')
+      log('PC import done. Rsync findings to Pi when ready:')
+      log('  rsync -av scripts/openclaw/crawler_findings/ davidferra@raspberrypi.local:~/openclaw/crawler_findings/')
     }
 
   } catch (err) {
