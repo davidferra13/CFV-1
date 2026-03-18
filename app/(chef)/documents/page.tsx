@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { getEvents } from '@/lib/events/actions'
 import { getChefArchetype } from '@/lib/archetypes/actions'
+import { getEventOptionsForChef, getClientOptionsForChef } from '@/lib/receipts/library-actions'
+import { DocumentSearchClient } from '@/components/documents/document-search-client'
 import {
   DOCUMENT_TEMPLATE_CATALOG,
   type DocumentTemplateEntry,
@@ -230,20 +232,23 @@ export default async function DocumentsIndexPage({
     ;[snapshotFromDate, snapshotToDate] = [snapshotToDate, snapshotFromDate]
   }
 
-  const [events, recentSnapshots, archetype, archiveDrilldown] = await Promise.all([
-    ((await getEvents().catch(() => [])) || []) as EventListItem[],
-    getRecentDocumentSnapshots(400),
-    getChefArchetype(),
-    getTenantDocumentSnapshotDrilldown({
-      docType: snapshotDocFilter === 'any' ? null : snapshotDocFilter,
-      fromDate: snapshotFromDate,
-      toDate: snapshotToDate,
-      order: snapshotOrder,
-      query: snapshotSearch,
-      page: snapshotPage,
-      pageSize: 30,
-    }),
-  ])
+  const [events, recentSnapshots, archetype, archiveDrilldown, searchEvents, searchClients] =
+    await Promise.all([
+      ((await getEvents().catch(() => [])) || []) as EventListItem[],
+      getRecentDocumentSnapshots(400),
+      getChefArchetype(),
+      getTenantDocumentSnapshotDrilldown({
+        docType: snapshotDocFilter === 'any' ? null : snapshotDocFilter,
+        fromDate: snapshotFromDate,
+        toDate: snapshotToDate,
+        order: snapshotOrder,
+        query: snapshotSearch,
+        page: snapshotPage,
+        pageSize: 30,
+      }),
+      getEventOptionsForChef().catch(() => []),
+      getClientOptionsForChef().catch(() => []),
+    ])
   const pack = getArchetypeDocumentPack(archetype)
   const rawQuery = (searchParams?.q ?? '').trim()
   const query = rawQuery.toLowerCase()
@@ -339,6 +344,8 @@ export default async function DocumentsIndexPage({
           Open any dinner and generate every required sheet, or download blank templates.
         </p>
       </div>
+
+      <DocumentSearchClient events={searchEvents} clients={searchClients} />
 
       <Card className="p-6">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">

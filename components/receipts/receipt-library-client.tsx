@@ -38,14 +38,18 @@ function StatusBadge({ status }: { status: AllReceiptPhoto['uploadStatus'] }) {
   const map: Record<string, string> = {
     approved: 'bg-green-900 text-green-700',
     extracted: 'bg-sky-900 text-sky-700',
+    needs_review: 'bg-orange-900 text-orange-400',
     processing: 'bg-amber-900 text-amber-700',
     pending: 'bg-stone-800 text-stone-500',
+  }
+  const labelMap: Record<string, string> = {
+    needs_review: 'needs review',
   }
   return (
     <span
       className={`text-xs font-medium px-2 py-0.5 rounded-full ${map[status] ?? 'bg-stone-800'}`}
     >
-      {status}
+      {labelMap[status] ?? status}
     </span>
   )
 }
@@ -186,14 +190,25 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
             </div>
           </div>
 
-          {/* Pending state hint */}
-          {!extraction && receipt.uploadStatus !== 'approved' && (
-            <div className="text-sm text-stone-500 mb-3">
-              {receipt.uploadStatus === 'processing'
-                ? 'Processing…'
-                : 'Receipt uploaded. Run OCR to extract line items.'}
+          {/* Needs review hint */}
+          {receipt.uploadStatus === 'needs_review' && (
+            <div className="text-sm text-orange-400 mb-3 flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-orange-400 shrink-0" />
+              Low confidence extraction. Please review the data below carefully, correct any errors,
+              then approve.
             </div>
           )}
+
+          {/* Pending state hint */}
+          {!extraction &&
+            receipt.uploadStatus !== 'approved' &&
+            receipt.uploadStatus !== 'needs_review' && (
+              <div className="text-sm text-stone-500 mb-3">
+                {receipt.uploadStatus === 'processing'
+                  ? 'Processing...'
+                  : 'Receipt uploaded. Run OCR to extract line items.'}
+              </div>
+            )}
 
           {/* Line items */}
           {lineItems.length > 0 && (
@@ -286,16 +301,17 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
                   {processing ? 'Extracting…' : 'Auto-Extract'}
                 </Button>
               )}
-              {receipt.uploadStatus === 'extracted' && lineItems.length > 0 && (
-                <>
-                  <Button size="sm" variant="ghost" onClick={handleRunOCR} disabled={processing}>
-                    Re-extract
-                  </Button>
-                  <Button size="sm" onClick={handleApprove} disabled={approving}>
-                    {approving ? 'Approving…' : 'Approve → Add to Expenses'}
-                  </Button>
-                </>
-              )}
+              {(receipt.uploadStatus === 'extracted' || receipt.uploadStatus === 'needs_review') &&
+                lineItems.length > 0 && (
+                  <>
+                    <Button size="sm" variant="ghost" onClick={handleRunOCR} disabled={processing}>
+                      Re-extract
+                    </Button>
+                    <Button size="sm" onClick={handleApprove} disabled={approving}>
+                      {approving ? 'Approving...' : 'Approve → Add to Expenses'}
+                    </Button>
+                  </>
+                )}
             </div>
           )}
 
@@ -387,6 +403,7 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
             <option value="all">All statuses</option>
             <option value="pending">Pending</option>
             <option value="extracted">Extracted</option>
+            <option value="needs_review">Needs Review</option>
             <option value="approved">Approved</option>
           </select>
 

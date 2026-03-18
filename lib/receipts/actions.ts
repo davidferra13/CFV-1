@@ -15,6 +15,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { parseReceiptImage } from '@/lib/ai/parse-receipt'
+import { ensureReceiptFolder, createReceiptDocument } from '@/lib/documents/auto-organize'
+import { logDocumentActivity } from '@/lib/documents/activity-logging'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -216,6 +218,20 @@ export async function processReceiptOCR(receiptPhotoId: string) {
     .update({ upload_status: needsReview ? 'needs_review' : 'extracted' })
     .eq('id', receiptPhotoId)
 
+  // Log OCR activity (non-blocking)
+  logDocumentActivity({
+    tenantId: user.tenantId!,
+    userId: user.id,
+    action: needsReview ? 'receipt_ocr_needs_review' : 'receipt_ocr_completed',
+    entityType: 'receipt',
+    entityId: receiptPhotoId,
+    metadata: {
+      confidence: confidenceScore,
+      lineItemCount: lineItemRows.length,
+      storeName: extraction.storeName,
+    },
+  })
+
   // Always revalidate the library; per-event page only if event is set
   revalidatePath('/receipts')
   if (photo.event_id) revalidatePath(`/events/${photo.event_id}/receipts`)
@@ -341,8 +357,41 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
     .update({ upload_status: 'approved', approved_at: new Date().toISOString() })
     .eq('id', receiptPhotoId)
 
+  // Auto-organize: create chef_document in year/month folder (non-blocking)
+  try {
+    const receiptDate = extraction?.purchase_date ?? new Date().toISOString().split('T')[0]
+    const folderId = await ensureReceiptFolder(user.tenantId!, receiptDate)
+    await createReceiptDocument(user.tenantId!, {
+      receiptPhotoId,
+      storeName: extraction?.store_name ?? null,
+      purchaseDate: extraction?.purchase_date ?? null,
+      totalCents: extraction?.total_cents ?? null,
+      eventId: photo.event_id ?? null,
+      clientId: (photo as any).client_id ?? null,
+      folderId,
+      photoUrl: photo.photo_url,
+    })
+  } catch (err) {
+    console.error('[approveReceiptSummary] Auto-organize error (non-blocking):', err)
+  }
+
+  // Log approval activity (non-blocking)
+  logDocumentActivity({
+    tenantId: user.tenantId!,
+    userId: user.id,
+    action: 'receipt_approved',
+    entityType: 'receipt',
+    entityId: receiptPhotoId,
+    metadata: {
+      expensesCreated,
+      storeName: extraction?.store_name,
+      totalCents: extraction?.total_cents,
+    },
+  })
+
   revalidatePath('/receipts')
   revalidatePath('/financials')
+  revalidatePath('/documents')
   if (photo.event_id) {
     revalidatePath(`/events/${photo.event_id}/receipts`)
     revalidatePath(`/events/${photo.event_id}`)
