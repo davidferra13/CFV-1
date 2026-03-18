@@ -117,10 +117,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      # Non-blocking for now: reports critical vulns but does not fail the build.
-      # Remove "|| true" once all existing critical vulnerabilities are resolved.
       - name: Check for critical dependency vulnerabilities
-        run: npm audit --audit-level=critical --omit=dev || true
+        run: npm audit --audit-level=critical --omit=dev
 
   # ─────────────────────────────────────────────────────────────────────────────
   # Job 3: Build Check

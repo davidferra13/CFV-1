@@ -101,6 +101,7 @@ describe('D2: Server actions use tenantId from session', () => {
       'lib/notifications/send.ts',
       'lib/qol/metrics.ts',
       'lib/social/oauth/token-store.ts',
+      'lib/documents/activity-logging.ts',
     ])
 
     for (const file of files) {
