@@ -1,6 +1,6 @@
-// Contingency Plan Templates — Rule-Based Risk Assessment
+// Contingency Plan Templates - Rule-Based Risk Assessment
 // Standard "if X happens, do Y" plans based on event characteristics.
-// Every experienced caterer has these memorized — we're just writing them down.
+// Every experienced caterer has these memorized - we're just writing them down.
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -37,7 +37,7 @@ export type ContingencyVars = {
 
 /**
  * Generates contingency plans based on event characteristics.
- * Pure rules — every experienced caterer knows these.
+ * Pure rules - every experienced caterer knows these.
  */
 export function generateContingencyFormula(v: ContingencyVars): ContingencyResult {
   const plans: ContingencyPlan[] = []
@@ -120,7 +120,7 @@ export function generateContingencyFormula(v: ContingencyVars): ContingencyResul
       impact: 'moderate',
       mitigation:
         'Pack fragile items separately. Use insulated bags for cold/hot items. Leave 30 min early. Have backup route planned.',
-      triggerCondition: 'Day of event — depart on schedule.',
+      triggerCondition: 'Day of event - depart on schedule.',
     })
   }
 
@@ -149,8 +149,8 @@ export function generateContingencyFormula(v: ContingencyVars): ContingencyResul
       likelihood: 'low',
       impact: 'moderate',
       mitigation:
-        "Prepare one backup dish (simple, crowd-pleasing) that can replace any course. Read the room during service — if a course doesn't land, pivot gracefully.",
-      triggerCondition: 'During service — observe guest reactions.',
+        "Prepare one backup dish (simple, crowd-pleasing) that can replace any course. Read the room during service - if a course doesn't land, pivot gracefully.",
+      triggerCondition: 'During service - observe guest reactions.',
     })
   }
 

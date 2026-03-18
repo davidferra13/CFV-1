@@ -46,7 +46,7 @@ export function DeviceStatusBadge({ status, onlineStatus }: DeviceStatusBadgePro
       )}
       {config.label}
       {status === 'active' && onlineStatus && (
-        <span className="text-[10px] opacity-75">({onlineStatus})</span>
+        <span className="text-xxs opacity-75">({onlineStatus})</span>
       )}
     </span>
   )

@@ -1,6 +1,6 @@
 // Invoice PDF Generator
 // Converts the computed InvoiceData DTO into a formal PDF.
-// Reuses the data fetchers from lib/events/invoice-actions.ts — no duplicate queries.
+// Reuses the data fetchers from lib/events/invoice-actions.ts - no duplicate queries.
 // Multi-page allowed: invoices with many ledger entries may need more than one page.
 
 import { PDFLayout, MARGIN_X, CONTENT_WIDTH } from './pdf-layout'
@@ -72,7 +72,7 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
   const doc = pdf.doc
   const halfWidth = CONTENT_WIDTH / 2 - 4
 
-  // From (Chef) — left
+  // From (Chef) - left
   doc.setFontSize(8)
   doc.setFont('helvetica', 'bold')
   doc.text('FROM', MARGIN_X, pdf.y)
@@ -81,7 +81,7 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
   doc.text(chef.email, MARGIN_X, pdf.y + 8)
   if (chef.phone) doc.text(chef.phone, MARGIN_X, pdf.y + 12)
 
-  // To (Client) — right
+  // To (Client) - right
   doc.setFont('helvetica', 'bold')
   doc.text('TO', MARGIN_X + halfWidth + 4, pdf.y)
   doc.setFont('helvetica', 'normal')
@@ -120,7 +120,7 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
 
   if (quotedPriceCents) {
     const desc = event.occasion
-      ? `Private Chef Services — ${event.occasion}`
+      ? `Private Chef Services - ${event.occasion}`
       : 'Private Chef Services'
     const priceNote = pricePerPersonCents
       ? ` (${formatCents(pricePerPersonCents)} × ${event.guestCount} guests)`
@@ -169,7 +169,7 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
 
       const label = labelForEntryType(entry.entryType, entry.isRefund)
       const methodLabel = entry.paymentMethod ? ` (${entry.paymentMethod})` : ''
-      const left = `${entry.date} — ${label}${methodLabel}`
+      const left = `${entry.date} - ${label}${methodLabel}`
       const right = entry.isRefund
         ? `(${formatCents(Math.abs(entry.amountCents))})`
         : formatCents(entry.amountCents)
@@ -224,7 +224,7 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
   pdf.space(1)
   pdf.hr()
 
-  // Balance due — larger, bold
+  // Balance due - larger, bold
   const balanceLabel = isPaidInFull
     ? 'PAID IN FULL'
     : `BALANCE DUE: ${formatCents(balanceDueCents)}`

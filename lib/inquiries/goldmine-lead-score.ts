@@ -1,7 +1,7 @@
 /**
  * GOLDMINE-derived lead scoring formula.
  *
- * Pure deterministic function — formula > AI. Takes an inquiry's extracted
+ * Pure deterministic function - formula > AI. Takes an inquiry's extracted
  * fields and returns a 0-100 score with factor breakdown and tier.
  *
  * Weights derived from 49 real conversation threads (Nov 2023 – Oct 2024)
@@ -9,7 +9,7 @@
  * 8 declined. Each weight reflects the conversion lift that field presence
  * provides in the real dataset.
  *
- * NO 'use server' — importable from both build scripts and server actions.
+ * NO 'use server' - importable from both build scripts and server actions.
  */
 
 // ─── Weight Table (derived from GOLDMINE conversion analysis) ───────────
@@ -22,23 +22,23 @@
 
 const WEIGHTS = {
   // Top predictors (12pts each, 30%+ lift)
-  has_date: 12, // +32.6% lift — inquiries with specific dates are serious
-  has_pricing_quoted: 12, // +30.5% lift — if chef quoted price, deal is alive
-  multi_message: 12, // +38.7% lift — back-and-forth = engagement
+  has_date: 12, // +32.6% lift - inquiries with specific dates are serious
+  has_pricing_quoted: 12, // +30.5% lift - if chef quoted price, deal is alive
+  multi_message: 12, // +38.7% lift - back-and-forth = engagement
 
   // Strong predictors (8pts each, 15-30% lift)
-  has_budget: 8, // +26.2% lift — explicit budget signals buying intent
-  has_location: 8, // +18.5% lift — location = concrete event planning
+  has_budget: 8, // +26.2% lift - explicit budget signals buying intent
+  has_location: 8, // +18.5% lift - location = concrete event planning
 
   // Moderate predictors (5pts each, 5-15% lift)
-  has_guest_count: 5, // +13.8% lift — knowing headcount = further along
-  has_dietary: 5, // +14.3% lift — dietary details = event is real
+  has_guest_count: 5, // +13.8% lift - knowing headcount = further along
+  has_dietary: 5, // +14.3% lift - dietary details = event is real
 
-  // Neutral or negative (0pts — no positive lift in dataset)
-  has_occasion: 0, // -20.2% lift — casual inquiries convert MORE than occasion-specific
-  has_cannabis: 0, // -8.7% lift — no positive effect on conversion
-  has_referral: 0, // -7.1% lift — referral source doesn't predict outcome
-  airbnb_referral: 0, // -21.4% lift — Airbnb guests have lower close rate
+  // Neutral or negative (0pts - no positive lift in dataset)
+  has_occasion: 0, // -20.2% lift - casual inquiries convert MORE than occasion-specific
+  has_cannabis: 0, // -8.7% lift - no positive effect on conversion
+  has_referral: 0, // -7.1% lift - referral source doesn't predict outcome
+  airbnb_referral: 0, // -21.4% lift - Airbnb guests have lower close rate
 } as const
 
 // Maximum possible score (sum of all positive weights)

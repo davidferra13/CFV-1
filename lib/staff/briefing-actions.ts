@@ -152,7 +152,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
   // Build menu items list (grouped by course if available)
   const menuItems: string[] = (menuRows ?? []).map((item: any) => {
     const course = item.course ? `[${item.course}] ` : ''
-    const desc = item.description ? ` — ${item.description}` : ''
+    const desc = item.description ? ` - ${item.description}` : ''
     return `${course}${item.name}${desc}`
   })
 

@@ -2,12 +2,25 @@
 // Chef-only page for importing clients, recipes, receipts, documents, and files via AI parsing
 
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { requireChef } from '@/lib/auth/get-user'
 
 export const metadata: Metadata = { title: 'Smart Import - ChefFlow' }
 import { isAIConfigured } from '@/lib/ai/parse'
 import { createServerClient } from '@/lib/supabase/server'
-import { SmartImportHub, type ImportMode } from '@/components/import/smart-import-hub'
+import type { ImportMode } from '@/components/import/smart-import-hub'
+
+const SmartImportHub = dynamic(
+  () => import('@/components/import/smart-import-hub').then((m) => m.SmartImportHub),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        <div className="h-12 rounded-lg bg-stone-800 animate-pulse" />
+        <div className="h-64 rounded-lg bg-stone-800 animate-pulse" />
+      </div>
+    ),
+  }
+)
 import { getClientsForHistoricalImport } from '@/lib/events/historical-import-actions'
 import { Alert } from '@/components/ui/alert'
 import { getTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-settings'
@@ -69,7 +82,7 @@ export default async function ImportPage({ searchParams }: { searchParams: { mod
           <a
             href="https://aistudio.google.com/apikey"
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             className="underline"
           >
             Google Studio

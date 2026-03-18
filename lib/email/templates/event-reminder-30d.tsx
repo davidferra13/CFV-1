@@ -1,5 +1,5 @@
 // Event 30-Day Reminder Email
-// Sent to client 30 days before their event — softer "looking forward" tone
+// Sent to client 30 days before their event - softer "looking forward" tone
 
 import { Text, Button } from '@react-email/components'
 import * as React from 'react'
@@ -31,7 +31,7 @@ export function EventReminder30dEmail({
       <Text style={heading}>Looking forward to your event next month!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        Just a friendly heads-up — your <strong>{occasion}</strong> with <strong>{chefName}</strong>{' '}
+        Just a friendly heads-up - your <strong>{occasion}</strong> with <strong>{chefName}</strong>{' '}
         is about a month away. Here are the key details so far:
       </Text>
 
@@ -57,7 +57,7 @@ export function EventReminder30dEmail({
       </table>
 
       <Text style={paragraph}>
-        No action needed right now — we just wanted to make sure this is on your radar. If anything
+        No action needed right now - we just wanted to make sure this is on your radar. If anything
         has changed (guest count, location, dietary needs), you can update your details anytime
         through the portal.
       </Text>

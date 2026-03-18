@@ -190,7 +190,7 @@ export async function getPostEventTriggers(): Promise<PostEventTriggersResult | 
             : daysSinceEvent >= timing.daysAfter
               ? 'medium'
               : 'low',
-        title: `${timing.title} — ${clientName}`,
+        title: `${timing.title} - ${clientName}`,
         description: timing.description,
         daysOverdue: daysSinceEvent - timing.daysAfter,
         dueDate: dueDate.toISOString().split('T')[0],
@@ -207,7 +207,7 @@ export async function getPostEventTriggers(): Promise<PostEventTriggersResult | 
         clientName,
         taskType: 'review_request',
         priority: daysSinceEvent > timing.daysAfter + 7 ? 'medium' : 'low',
-        title: `${timing.title} — ${clientName}`,
+        title: `${timing.title} - ${clientName}`,
         description: timing.description,
         daysOverdue: daysSinceEvent - timing.daysAfter,
         dueDate: dueDate.toISOString().split('T')[0],
@@ -224,7 +224,7 @@ export async function getPostEventTriggers(): Promise<PostEventTriggersResult | 
         clientName,
         taskType: 'rebooking_nudge',
         priority: 'low',
-        title: `${timing.title} — ${clientName}`,
+        title: `${timing.title} - ${clientName}`,
         description: timing.description,
         daysOverdue: daysSinceEvent - timing.daysAfter,
         dueDate: dueDate.toISOString().split('T')[0],

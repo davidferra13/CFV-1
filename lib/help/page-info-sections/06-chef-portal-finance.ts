@@ -4,7 +4,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/finance': {
     title: 'Finance Hub',
     description:
-      'Central hub for all financial management — invoices, expenses, ledger, payments, reporting, and tax.',
+      'Central hub for all financial management - invoices, expenses, ledger, payments, reporting, and tax.',
     features: [
       'Quick revenue, refund, and profit metrics',
       '16 section tiles for every financial tool',
@@ -15,13 +15,13 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/financials': {
     title: 'Financial Dashboard',
-    description: 'Full financial dashboard — revenue, expenses, targets, and trends.',
+    description: 'Full financial dashboard - revenue, expenses, targets, and trends.',
     features: ['Revenue and expense tracking', 'Goal progress', 'Monthly trends', 'Profit margins'],
   },
 
   '/finance/overview': {
     title: 'Finance Overview',
-    description: 'High-level financial health — total revenue, expenses, and outstanding balances.',
+    description: 'High-level financial health - total revenue, expenses, and outstanding balances.',
     features: [
       'Total revenue collected',
       'Business expenses summary',
@@ -32,7 +32,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/finance/overview/outstanding-payments': {
     title: 'Outstanding Payments',
-    description: 'Past events with unpaid balances — follow up to collect.',
+    description: 'Past events with unpaid balances - follow up to collect.',
     features: [
       'Outstanding amount total',
       'Days overdue indicator',
@@ -42,7 +42,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/finance/overview/cash-flow': {
     title: 'Cash Flow',
-    description: 'Revenue vs. expenses over 12 months — see your cash position.',
+    description: 'Revenue vs. expenses over 12 months - see your cash position.',
     features: ['12-month rolling view', 'Gross and net revenue', 'Monthly expense breakdown'],
   },
 
@@ -60,7 +60,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/finance/invoices': {
     title: 'Invoices',
     description:
-      'All event invoices organized by status — draft, sent, paid, overdue, refunded, cancelled.',
+      'All event invoices organized by status - draft, sent, paid, overdue, refunded, cancelled.',
     features: [
       '6 status stages with totals',
       'Invoice value summaries',
@@ -71,7 +71,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/finance/invoices/draft': {
     title: 'Draft Invoices',
-    description: 'Invoices not yet sent to clients — review and finalize.',
+    description: 'Invoices not yet sent to clients - review and finalize.',
     features: ['Draft count and potential value', 'Quick send actions'],
   },
 
@@ -89,7 +89,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/finance/invoices/overdue': {
     title: 'Overdue Invoices',
-    description: 'Invoices past their due date — needs immediate attention.',
+    description: 'Invoices past their due date - needs immediate attention.',
     features: ['Overdue total', 'Days overdue indicator', 'Critical alerts for 30+ days'],
   },
 
@@ -108,7 +108,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/finance/expenses': {
     title: 'Expenses',
     description:
-      'All business expenses broken down by category — food, labor, marketing, and more.',
+      'All business expenses broken down by category - food, labor, marketing, and more.',
     features: [
       '7 expense categories',
       'Business vs. personal separation',
@@ -162,7 +162,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/finance/ledger': {
     title: 'Ledger',
     description:
-      'Immutable transaction log — the source of truth for all financial data in ChefFlow.',
+      'Immutable transaction log - the source of truth for all financial data in ChefFlow.',
     features: [
       'Total entries and revenue recorded',
       'Refunds recorded',
@@ -185,7 +185,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/finance/payments': {
     title: 'Payments',
-    description: 'All payment activity — deposits, installments, refunds, and failed payments.',
+    description: 'All payment activity - deposits, installments, refunds, and failed payments.',
     features: [
       'Total received and refunded',
       'Net received',
@@ -219,7 +219,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/finance/payouts': {
     title: 'Payouts',
-    description: 'How you receive money — Stripe and manual payment tracking.',
+    description: 'How you receive money - Stripe and manual payment tracking.',
     features: [
       'Gross revenue',
       'Total refunds',
@@ -270,7 +270,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/finance/reporting/revenue-by-client': {
     title: 'Revenue by Client',
-    description: 'Lifetime value per client — who generates the most revenue.',
+    description: 'Lifetime value per client - who generates the most revenue.',
     features: ['CSV export', 'Client LTV ranking', 'Top client highlight'],
   },
 
@@ -319,7 +319,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/finance/tax': {
     title: 'Tax Center',
     description:
-      'Tax preparation tools — mileage log, quarterly estimates, and accountant exports.',
+      'Tax preparation tools - mileage log, quarterly estimates, and accountant exports.',
     features: [
       'Mileage summary',
       'Quarterly tax estimates (Q1-Q4)',
@@ -419,7 +419,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/finance/sales-tax/remittances': {
     title: 'Tax Remittances',
-    description: "Sales tax remittance history — what you've sent to tax authorities.",
+    description: "Sales tax remittance history - what you've sent to tax authorities.",
     features: ['Remittance records', 'Filing dates', 'Amounts remitted'],
   },
 

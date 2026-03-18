@@ -17,7 +17,7 @@ export async function sendHolidayOutreachToClient(input: {
     await sendDirectOutreach({
       clientId: input.clientId,
       channel: input.channel,
-      subject: `${input.holidayName} — a note from your chef`,
+      subject: `${input.holidayName} - a note from your chef`,
       body: input.body,
     })
     return { ok: true }

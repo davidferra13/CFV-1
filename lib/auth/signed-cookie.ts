@@ -8,7 +8,7 @@
 const VALID_ROLES = ['chef', 'client', 'staff', 'partner'] as const
 
 function getSigningKey(): string {
-  // Use CRON_SECRET as the signing material — it's always set in production.
+  // Use CRON_SECRET as the signing material - it's always set in production.
   // In dev, fall back to a static string (cookie signing in dev is nice-to-have, not critical).
   return process.env.CRON_SECRET || 'chefflow-dev-cookie-key'
 }

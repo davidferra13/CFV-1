@@ -1,6 +1,6 @@
 'use server'
 
-// Multi-Event Day Detection — finds upcoming days where the chef has 2+ events
+// Multi-Event Day Detection - finds upcoming days where the chef has 2+ events
 // Used to surface scheduling conflicts and capacity warnings on the dashboard.
 
 import { requireChef } from '@/lib/auth/get-user'

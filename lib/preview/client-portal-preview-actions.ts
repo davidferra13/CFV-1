@@ -1,6 +1,6 @@
-// Client Portal Preview — Chef-scoped server actions
+// Client Portal Preview - Chef-scoped server actions
 // Fetches the exact same data a client would see, but authenticated as the chef.
-// No impersonation — chef session throughout, tenant-scoped at every query.
+// No impersonation - chef session throughout, tenant-scoped at every query.
 
 'use server'
 

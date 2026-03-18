@@ -1,4 +1,4 @@
-// Channel Metadata — Single source of truth for all channel display properties.
+// Channel Metadata - Single source of truth for all channel display properties.
 // Used by: inbox cards, inquiry badges, analytics charts, settings page.
 // Every channel in the system gets a color, icon name, and label defined here.
 

@@ -1,4 +1,4 @@
-// Scope Drift Detection — pure computation, no DB access, no 'use server'
+// Scope Drift Detection - pure computation, no DB access, no 'use server'
 // Compares an original quote snapshot to current event state and flags
 // material changes that may require a change order.
 

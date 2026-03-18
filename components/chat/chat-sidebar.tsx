@@ -74,11 +74,11 @@ export function ChatSidebar({
         </button>
         <div className="mt-3 flex flex-col items-center gap-2">
           <StickyNote className="w-4 h-4 text-stone-400" />
-          {notes.length > 0 && <span className="text-[10px] text-stone-400">{notes.length}</span>}
+          {notes.length > 0 && <span className="text-xxs text-stone-400">{notes.length}</span>}
           {initialInsights.length > 0 && (
             <>
               <Sparkles className="w-4 h-4 text-amber-400 mt-1" />
-              <span className="text-[10px] text-amber-500">{initialInsights.length}</span>
+              <span className="text-xxs text-amber-500">{initialInsights.length}</span>
             </>
           )}
         </div>

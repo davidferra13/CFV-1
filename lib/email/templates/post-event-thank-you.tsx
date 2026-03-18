@@ -1,6 +1,6 @@
 // Post-Event Thank You Email
 // Sent 3 days after event completion via Inngest background job.
-// Warm, personal tone — reinforces the experience and invites rebooking.
+// Warm, personal tone - reinforces the experience and invites rebooking.
 
 import { Button, Text, Hr } from '@react-email/components'
 import * as React from 'react'

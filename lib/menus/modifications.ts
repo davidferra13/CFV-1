@@ -26,7 +26,7 @@ export type LogModificationInput = z.infer<typeof LogModificationSchema>
 // --- Actions ---
 
 /**
- * Record a menu modification — what changed between proposed and served
+ * Record a menu modification - what changed between proposed and served
  */
 export async function logMenuModification(input: LogModificationInput) {
   const user = await requireChef()

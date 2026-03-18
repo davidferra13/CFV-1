@@ -1,5 +1,5 @@
 // Seasonal Palette Server Actions
-// CRUD for seasonal palettes — season notes, ingredients, go-to dishes.
+// CRUD for seasonal palettes - season notes, ingredients, go-to dishes.
 // Table added in migration 20260217000002_seasonal_palettes.sql.
 // Type assertions used until types/database.ts is regenerated.
 
@@ -12,7 +12,7 @@ import { z } from 'zod'
 import type { SeasonalPalette } from './types'
 import { DEFAULT_SEASONS } from './types'
 
-// Type assertion helper — seasonal_palettes not in generated types until migration applied
+// Type assertion helper - seasonal_palettes not in generated types until migration applied
 function fromSeasonalPalettes(supabase: any): any {
   return supabase.from('seasonal_palettes')
 }
@@ -32,7 +32,7 @@ const MicroWindowSchema = z.object({
     .regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format')
     .or(z.literal('')),
   notes: z.string().default(''),
-  // Legacy fields — accepted but not required
+  // Legacy fields - accepted but not required
   name: z.string().optional(),
   urgency: z.enum(['high', 'normal']).optional(),
 })
@@ -109,7 +109,7 @@ export async function getSeasonalPaletteById(paletteId: string): Promise<Seasona
 /**
  * Get the currently active palette (for Recipe Library banner and Schedule sidebar).
  * Only returns a palette if the chef has explicitly set one as active.
- * This makes the feature opt-in — no auto-detection.
+ * This makes the feature opt-in - no auto-detection.
  */
 export async function getActivePalette(): Promise<SeasonalPalette | null> {
   const user = await requireChef()

@@ -470,7 +470,7 @@ export default async function MarketplacePage() {
                             <a
                               href={lead.externalLink}
                               target="_blank"
-                              rel="noreferrer"
+                              rel="noopener noreferrer"
                               className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800"
                             >
                               Open TAC
@@ -550,7 +550,7 @@ export default async function MarketplacePage() {
                           <a
                             href={booking.externalLink}
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                             className="text-sm font-medium text-brand-500 hover:text-brand-400"
                           >
                             Open TAC
@@ -616,7 +616,7 @@ export default async function MarketplacePage() {
                             <a
                               href={item.externalLink}
                               target="_blank"
-                              rel="noreferrer"
+                              rel="noopener noreferrer"
                               className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800"
                             >
                               Open TAC
@@ -694,7 +694,7 @@ export default async function MarketplacePage() {
                             <a
                               href={item.externalLink}
                               target="_blank"
-                              rel="noreferrer"
+                              rel="noopener noreferrer"
                               className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800"
                             >
                               Open TAC
@@ -761,7 +761,7 @@ export default async function MarketplacePage() {
                         <a
                           href={booking.externalLink}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800"
                         >
                           Open TAC

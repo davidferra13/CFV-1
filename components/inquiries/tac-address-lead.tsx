@@ -135,7 +135,7 @@ export function TacAddressLead({
             Not Interested
           </Button>
         </div>
-        <p className="text-[11px] text-stone-400">
+        <p className="text-xs-tight text-stone-400">
           "Send a Menu" marks this lead as addressed - then open TakeAChef to send your initial
           menu. "Not Interested" declines the lead.
         </p>

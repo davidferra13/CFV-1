@@ -1,4 +1,4 @@
-// Menu constants — exported separately from server actions so they can be
+// Menu constants - exported separately from server actions so they can be
 // used in client components without triggering the 'use server' object export restriction.
 
 export const COMPONENT_CATEGORIES = [

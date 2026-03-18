@@ -83,20 +83,20 @@ export function GratuityPanel({ eventId }: { eventId: string }) {
 
       {result.verbalScript && (
         <div className="bg-stone-800 rounded p-2">
-          <div className="text-[11px] text-stone-400 mb-0.5">Verbal script</div>
+          <div className="text-xs-tight text-stone-400 mb-0.5">Verbal script</div>
           <div className="text-sm text-stone-300 italic">"{result.verbalScript}"</div>
         </div>
       )}
 
       {result.messageDraft && (
         <div className="bg-stone-800 rounded p-2">
-          <div className="text-[11px] text-stone-400 mb-0.5">Message line to include</div>
+          <div className="text-xs-tight text-stone-400 mb-0.5">Message line to include</div>
           <div className="text-sm text-stone-300">{result.messageDraft}</div>
         </div>
       )}
 
       <div className="text-xs text-stone-500">Timing: {result.timing}</div>
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Auto guidance · Adjust based on your read of the client relationship
       </p>
     </div>

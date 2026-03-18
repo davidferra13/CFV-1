@@ -4,7 +4,7 @@ export const CHEF_PORTAL_CORE_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/dashboard': {
     title: 'Dashboard',
     description:
-      'Your command center — see what needs attention right now, upcoming events, and key business metrics at a glance.',
+      'Your command center - see what needs attention right now, upcoming events, and key business metrics at a glance.',
     features: [
       "Today's schedule and prep tasks",
       'Priority action queue sorted by urgency',
@@ -12,7 +12,7 @@ export const CHEF_PORTAL_CORE_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
       'Revenue, expenses, and profit snapshot',
       'Client follow-up reminders and accountability',
       'Quote acceptance insights and pipeline forecast',
-      'Customizable widgets — enable, disable, and reorder from settings',
+      'Customizable widgets - enable, disable, and reorder from settings',
     ],
     annotations: [
       {
@@ -24,12 +24,12 @@ export const CHEF_PORTAL_CORE_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
         selector: '[data-info="queue"]',
         label: 'Priority Queue',
         description:
-          'Your most urgent tasks sorted by deadline — events, follow-ups, quotes that need action',
+          'Your most urgent tasks sorted by deadline - events, follow-ups, quotes that need action',
       },
       {
         selector: '[data-info="week-strip"]',
         label: 'Week Strip',
-        description: 'Quick view of your schedule for the next 7 days — tap any day to see details',
+        description: 'Quick view of your schedule for the next 7 days - tap any day to see details',
       },
       {
         selector: '[data-info="financials"]',
@@ -47,7 +47,7 @@ export const CHEF_PORTAL_CORE_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/commands': {
     title: 'Remy Command Center',
     description:
-      'Your AI assistant hub — talk to Remy, review past conversations, and manage AI settings.',
+      'Your AI assistant hub - talk to Remy, review past conversations, and manage AI settings.',
     features: [
       'Chat with Remy for business advice and drafting',
       'Review conversation history',
@@ -59,7 +59,7 @@ export const CHEF_PORTAL_CORE_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/remy': {
     title: 'Remy History',
     description:
-      'Browse everything Remy has created — drafts, suggestions, and past conversations.',
+      'Browse everything Remy has created - drafts, suggestions, and past conversations.',
     features: [
       'Search past AI-generated content',
       'View conversation history',
@@ -70,7 +70,7 @@ export const CHEF_PORTAL_CORE_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/queue': {
     title: 'Priority Queue',
     description:
-      'Everything that needs your attention, ranked by urgency across all domains — inquiries, events, quotes, finances, and more.',
+      'Everything that needs your attention, ranked by urgency across all domains - inquiries, events, quotes, finances, and more.',
     features: [
       'Items sorted by urgency (critical, high, normal, low)',
       'Domain filtering (inquiry, event, quote, financial, client, culinary)',
@@ -82,7 +82,7 @@ export const CHEF_PORTAL_CORE_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/daily': {
     title: 'Daily Operations',
     description:
-      'Your daily operational checklist — everything happening today in one focused view.',
+      'Your daily operational checklist - everything happening today in one focused view.',
     features: [
       'Day-of-party tasks and prep reminders',
       "Today's schedule at a glance",

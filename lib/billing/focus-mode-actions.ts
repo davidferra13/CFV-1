@@ -1,4 +1,4 @@
-// Focus Mode — Server Actions
+// Focus Mode - Server Actions
 // Separated from focus-mode.ts because 'use server' files cannot export non-async values.
 
 'use server'
@@ -12,7 +12,7 @@ import { CORE_MODULES } from '@/lib/billing/focus-mode'
 
 /**
  * Check if Focus Mode is enabled for the current chef.
- * Defaults to true (ON) for new users — clean sidebar out of the box.
+ * Defaults to true (ON) for new users - clean sidebar out of the box.
  */
 export async function isFocusModeEnabled(): Promise<boolean> {
   const user = await requireChef()

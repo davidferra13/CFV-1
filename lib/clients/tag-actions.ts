@@ -1,6 +1,6 @@
 'use server'
 
-// Client Tags — CRUD actions for the client_tags table.
+// Client Tags - CRUD actions for the client_tags table.
 // Tags are free-text labels (max 50 chars) scoped to a chef-tenant.
 
 import { requireChef } from '@/lib/auth/get-user'

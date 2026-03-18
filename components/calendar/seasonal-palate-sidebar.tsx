@@ -60,7 +60,7 @@ export function SeasonalPaleteSidebar({ month }: Props) {
 
         {/* Legend */}
         <div className="pt-3 border-t border-stone-800">
-          <div className="flex items-center gap-3 text-[10px] text-stone-300">
+          <div className="flex items-center gap-3 text-xxs text-stone-300">
             <span className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
               Peak season

@@ -131,7 +131,7 @@ export function RemySearchView({ onSelectConversation }: RemySearchViewProps) {
               <span className="text-sm text-white truncate font-medium">
                 {highlightMatch(result.conversation.title, query)}
               </span>
-              <span className="text-[10px] text-gray-500 shrink-0 ml-2">
+              <span className="text-xxs text-gray-500 shrink-0 ml-2">
                 {timeAgo(result.conversation.updatedAt)}
               </span>
             </div>

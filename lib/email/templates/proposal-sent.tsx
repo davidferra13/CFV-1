@@ -1,6 +1,6 @@
-// Proposal Sent — Client Notification Email
+// Proposal Sent - Client Notification Email
 // Sent to the client when the chef sends a unified proposal
-// (event details + menu + contract + payment — all in one link).
+// (event details + menu + contract + payment - all in one link).
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'

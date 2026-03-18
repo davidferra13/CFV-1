@@ -1,4 +1,4 @@
-// New Message — Chef Notification Email
+// New Message - Chef Notification Email
 // Sent to the chef when a client sends a chat message.
 // Rate-limited at call site: max one per thread per hour to avoid inbox spam.
 

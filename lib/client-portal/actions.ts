@@ -1,7 +1,7 @@
 'use server'
 
 // Client Portal Actions
-// Token-based magic-link access for clients — no account required.
+// Token-based magic-link access for clients - no account required.
 // Chefs generate a token on the client detail page and share it.
 // The token URL gives the client a read-mostly view of their events, quotes, and payments.
 
@@ -144,7 +144,7 @@ export async function revokeClientPortalToken(clientId: string): Promise<void> {
 }
 
 // ─── Public: look up client by portal token ────────────────────────────────────
-// No auth required — token IS the credential.
+// No auth required - token IS the credential.
 
 export async function getClientPortalData(token: string): Promise<ClientPortalData | null> {
   // Use admin client for public read (no user session)

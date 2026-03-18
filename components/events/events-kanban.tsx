@@ -124,12 +124,12 @@ function KanbanCard({ event }: { event: Event }) {
       )}
       <div className="flex items-center justify-between mt-2 gap-1">
         <span
-          className={`text-[10px] font-medium ${isPast && !isTerminal ? 'text-red-500' : 'text-stone-400'}`}
+          className={`text-xxs font-medium ${isPast && !isTerminal ? 'text-red-500' : 'text-stone-400'}`}
         >
           {format(new Date(event.event_date), 'MMM d')}
         </span>
         {event.quoted_price_cents != null && event.quoted_price_cents > 0 && (
-          <span className="text-[10px] font-medium text-stone-400">
+          <span className="text-xxs font-medium text-stone-400">
             {formatCurrency(event.quoted_price_cents)}
           </span>
         )}

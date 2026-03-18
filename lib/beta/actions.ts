@@ -52,13 +52,13 @@ function checkRateLimit(ip: string): boolean {
 
 /**
  * Submit a beta signup from the public /beta form.
- * Idempotent by email — re-submitting updates the existing record.
+ * Idempotent by email - re-submitting updates the existing record.
  * Sends welcome email to user + notification to admin (non-blocking).
  */
 export async function submitBetaSignup(
   input: BetaSignupInput
 ): Promise<{ success: boolean; error?: string }> {
-  // Honeypot check — bots fill hidden fields, real users never see them
+  // Honeypot check - bots fill hidden fields, real users never see them
   if (input.website) {
     return { success: true } // fake success so bots don't retry
   }
@@ -121,13 +121,13 @@ export async function submitBetaSignup(
       return { success: false, error: 'Something went wrong. Please try again.' }
     }
 
-    // Non-blocking side effects — only for new signups (not re-submissions)
+    // Non-blocking side effects - only for new signups (not re-submissions)
     if (isNewSignup) {
       // 1. Welcome email to the person who signed up
       try {
         await sendEmail({
           to: email,
-          subject: "You're on the list — ChefFlow Beta",
+          subject: "You're on the list - ChefFlow Beta",
           react: BetaWelcomeEmail({ name }),
         })
       } catch (err) {

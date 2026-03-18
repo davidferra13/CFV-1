@@ -1,4 +1,4 @@
-// Base Email Layout — Shared wrapper for all ChefFlow emails
+// Base Email Layout - Shared wrapper for all ChefFlow emails
 // Clean, professional design with chef branding
 
 import {
@@ -39,7 +39,7 @@ export function BaseLayout({ preview, children }: BaseLayoutProps) {
               <Link href={SITE_URL} style={footerLink}>
                 ChefFlow
               </Link>{' '}
-              — the business OS for private chefs.
+              - the business OS for private chefs.
             </Text>
           </Section>
         </Container>

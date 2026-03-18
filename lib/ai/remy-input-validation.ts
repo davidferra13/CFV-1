@@ -41,7 +41,7 @@ interface HistoryMessage {
 
 /**
  * Validate and sanitize the history array from a Remy API request body.
- * Returns a safe, truncated history array. Never throws — always returns a usable result.
+ * Returns a safe, truncated history array. Never throws - always returns a usable result.
  */
 export function validateHistory(raw: unknown, maxMessages = MAX_HISTORY_LENGTH): HistoryMessage[] {
   if (!Array.isArray(raw)) return []
@@ -208,11 +208,11 @@ function validateRecentErrors(raw: unknown): RecentErrorEntry[] | undefined {
   return safe.length > 0 ? safe : undefined
 }
 
-// ─── Recipe Generation Block (HARD RULE — AI NEVER GENERATES RECIPES) ────────
+// ─── Recipe Generation Block (HARD RULE - AI NEVER GENERATES RECIPES) ────────
 
 /**
  * Patterns that indicate the user is asking AI to generate, create, or suggest a recipe.
- * AI can ONLY search the chef's existing recipe book — never fabricate, generate, or pull
+ * AI can ONLY search the chef's existing recipe book - never fabricate, generate, or pull
  * recipes from anywhere. This check runs before any LLM call.
  */
 const RECIPE_GENERATION_PATTERNS = [
@@ -228,7 +228,7 @@ const RECIPE_GENERATION_PATTERNS = [
   /\badd\s+(a\s+|new\s+)?recipe\b/i,
   // "generate meal" / "suggest meal" / "meal plan" / "meal idea"
   /\b(generate|suggest|create|give me)\s+(a\s+)?(meal|dish|dinner|lunch|breakfast|menu item)\b/i,
-  // "suggest what I should cook for [event]" — word "suggest" before "what" breaks the simpler regex
+  // "suggest what I should cook for [event]" - word "suggest" before "what" breaks the simpler regex
   /\bsuggest\s+what\s+(I|we)\s+should\s+(cook|make|prepare|serve)\s+for\b/i,
   // "what should I cook for" (event-specific recipe generation)
   /\bwhat\s+(should|can|could)\s+(I|we)\s+(cook|make|prepare|serve)\s+for\b/i,
@@ -236,7 +236,7 @@ const RECIPE_GENERATION_PATTERNS = [
 
 /** The refusal message when recipe generation is detected */
 export const RECIPE_GENERATION_REFUSAL =
-  "I can't create, suggest, or generate recipes — that's your creative domain as the chef! " +
+  "I can't create, suggest, or generate recipes - that's your creative domain as the chef! " +
   "I can search through your existing recipe book if you'd like. " +
   'To add a new recipe, head to Recipes → New Recipe.'
 
@@ -253,7 +253,7 @@ const RECIPE_SEARCH_PATTERNS = [
   /\bwhat\s+recipes?\s+are\s+(in|on)\s+(my|our|the)\s+(recipe\s+book|library|list|collection)\b/i,
   // "recipe search/book/list"
   /\brecipe\s+(search|lookup|book|list|collection|library|catalog)\b/i,
-  // Possessive — "my/our/the recipes"
+  // Possessive - "my/our/the recipes"
   /\b(my|our|the|your|chef'?s?)\s+recipes?\b/i,
   // "do you/we have a recipe for X"
   /\bdo\s+(you|we)\s+have\s+.*\b(recipe|dish)/i,
@@ -268,7 +268,7 @@ const RECIPE_SEARCH_PATTERNS = [
  * Returns the refusal message if blocked, or null if the message is fine.
  */
 export function checkRecipeGenerationBlock(message: string): string | null {
-  // Allow recipe SEARCH queries — these are read-only lookups, not generation
+  // Allow recipe SEARCH queries - these are read-only lookups, not generation
   for (const pattern of RECIPE_SEARCH_PATTERNS) {
     if (pattern.test(message)) {
       return null
@@ -288,7 +288,7 @@ export function checkRecipeGenerationBlock(message: string): string | null {
 /**
  * Patterns that indicate the user is asking for something outside Remy's scope:
  * creative writing (poems, stories), philosophical questions, entertainment, etc.
- * Remy's expertise is in chef business management — not general AI tasks.
+ * Remy's expertise is in chef business management - not general AI tasks.
  */
 const OUT_OF_SCOPE_PATTERNS = [
   // Poetry, creative writing, storytelling (expanded to catch all variations)
@@ -317,7 +317,7 @@ const OUT_OF_SCOPE_PATTERNS = [
 
 /** The refusal message for out-of-scope requests */
 export const OUT_OF_SCOPE_REFUSAL =
-  "Ha — nice try, chef. I've got 40 years of kitchen wisdom and business chops, " +
+  "Ha - nice try, chef. I've got 40 years of kitchen wisdom and business chops, " +
   "but that's outside my station. Let's stay in our lane. " +
   "What's the real question? Are we talking about your business, your clients, or your events? " +
   "I'm all ears for those. 😄"
@@ -352,7 +352,7 @@ const DANGEROUS_ACTION_PATTERNS = [
   // Developer/admin/root mode activation
   /\b(developer|dev|admin|root|debug)\s+mode\b/i,
   /\b(switch|enter|activate|enable|turn)\s+(on\s+)?(developer|dev|admin|root|debug)\b/i,
-  // Data exfiltration — extracting all client data or financials
+  // Data exfiltration - extracting all client data or financials
   /\b(export|dump|extract|give me)\s+(all|every)\s+(client|customer|financial|revenue|payment|ledger)\s+(data|info|records?|entries|details)\b/i,
   // SQL/code injection attempts
   /\b(select|insert|update|drop|alter|truncate)\s+(from|into|table|database|schema)\b/i,
@@ -369,7 +369,7 @@ const DANGEROUS_ACTION_PATTERNS = [
 
 /** Refusal for dangerous/protected actions */
 export const DANGEROUS_ACTION_REFUSAL =
-  "I can't do that — that would require explicit confirmation and oversight. " +
+  "I can't do that - that would require explicit confirmation and oversight. " +
   "I'm here to help with your business: managing clients, events, finances, and recipes. " +
   'What can I actually help you with today? 😄'
 
@@ -452,7 +452,7 @@ export function sanitizeForPrompt(value: string | null | undefined): string {
   // Collapse excessive newlines (injection delimiter attempts)
   sanitized = sanitized.replace(/\n{4,}/g, '\n\n\n')
 
-  // Cap length — no single database field should be more than 2000 chars in a prompt
+  // Cap length - no single database field should be more than 2000 chars in a prompt
   if (sanitized.length > 2000) {
     sanitized = sanitized.slice(0, 2000) + '...'
   }
@@ -492,7 +492,7 @@ const INTERNAL_PATTERNS = [
  */
 export function sanitizeErrorForClient(
   err: unknown,
-  fallback = 'Remy ran into an issue — try again in a moment.'
+  fallback = 'Remy ran into an issue - try again in a moment.'
 ): string {
   const raw = err instanceof Error ? err.message : String(err)
 
@@ -504,7 +504,7 @@ export function sanitizeErrorForClient(
     }
   }
 
-  // Also cap length — prevent giant error messages
+  // Also cap length - prevent giant error messages
   if (raw.length > 200) {
     return fallback
   }
@@ -548,7 +548,7 @@ export function isUrlSafeForFetch(url: string): { safe: boolean; reason?: string
       return { safe: false, reason: 'Cannot fetch private network addresses.' }
     }
 
-    // Block link-local addresses (169.254.x.x — includes cloud metadata)
+    // Block link-local addresses (169.254.x.x - includes cloud metadata)
     if (hostname.startsWith('169.254.')) {
       return { safe: false, reason: 'Cannot fetch link-local addresses.' }
     }

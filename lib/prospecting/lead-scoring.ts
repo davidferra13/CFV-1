@@ -1,4 +1,4 @@
-// Lead Scoring — deterministic 0-100 score from structured prospect fields.
+// Lead Scoring - deterministic 0-100 score from structured prospect fields.
 // Formula > AI. No LLM calls. Pure math.
 
 import type { ProspectCategory } from './constants'
@@ -19,7 +19,7 @@ interface ProspectScoreInput {
   contactDirectPhone?: string | null
   socialProfiles?: Record<string, string> | null
   verified?: boolean
-  // Wave 3 — event signals
+  // Wave 3 - event signals
   eventSignals?: string | null
 }
 
@@ -51,7 +51,7 @@ export function computeLeadScore(input: ProspectScoreInput): number {
   const luxCount = input.luxuryIndicators?.length ?? 0
   score += Math.min(luxCount * 3, 15)
 
-  // 4. Contact quality (0-20) — the more real contact info, the higher
+  // 4. Contact quality (0-20) - the more real contact info, the higher
   let contactScore = 0
   if (input.phone) contactScore += 4
   if (input.email) contactScore += 4
@@ -64,7 +64,7 @@ export function computeLeadScore(input: ProspectScoreInput): number {
   // 5. Web verification (0-10)
   if (input.verified) score += 10
 
-  // 6. Intelligence depth (0-15) — having rich structured data
+  // 6. Intelligence depth (0-15) - having rich structured data
   let intelScore = 0
   if (input.eventTypesHosted && input.eventTypesHosted.length > 0) intelScore += 5
   if (input.membershipSize) intelScore += 5
@@ -76,7 +76,7 @@ export function computeLeadScore(input: ProspectScoreInput): number {
   // 7. Seasonal timing bonus (0-8)
   score += scoreSeasonalTiming(input.category)
 
-  // 8. Event signals bonus (0-7) — upcoming events detected on their site
+  // 8. Event signals bonus (0-7) - upcoming events detected on their site
   score += scoreEventSignals(input.eventSignals)
 
   return Math.min(score, 100)

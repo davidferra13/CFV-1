@@ -348,7 +348,7 @@ export function CommandResultCard({ result, onStatusChange }: CommandResultCardP
                     aria-label="Approval confirmation phrase"
                   />
                   {showPhraseMismatch && (
-                    <p className="mt-1 text-[11px] text-amber-300">Phrase does not match yet.</p>
+                    <p className="mt-1 text-xs-tight text-amber-300">Phrase does not match yet.</p>
                   )}
                 </div>
               )}

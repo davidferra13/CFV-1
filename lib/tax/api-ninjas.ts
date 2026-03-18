@@ -1,11 +1,11 @@
-// API Ninjas — free sales tax API by ZIP code
+// API Ninjas - free sales tax API by ZIP code
 // https://api-ninjas.com/api/salestax
 // 100,000 requests/month free, no credit card
 
 import { cacheGet, cacheSet } from '@/lib/cache/upstash'
 
 const API_NINJAS_BASE = 'https://api.api-ninjas.com/v1'
-const UPSTASH_TTL = 30 * 24 * 60 * 60 // 30 days — tax rates change rarely
+const UPSTASH_TTL = 30 * 24 * 60 * 60 // 30 days - tax rates change rarely
 
 // ─── In-Memory Cache ─────────────────────────────────────────────────────────
 // Same zip = same rate. Tax rates change very rarely.
@@ -65,7 +65,7 @@ export async function getSalesTaxRate(zipCode: string): Promise<SalesTaxResult |
       return redisCached
     }
   } catch {
-    // Redis down — fall through to API
+    // Redis down - fall through to API
   }
 
   try {
@@ -105,7 +105,7 @@ export async function getSalesTaxRate(zipCode: string): Promise<SalesTaxResult |
 
 /**
  * Calculate tax on an amount (in cents) for a given ZIP code.
- * Returns the full breakdown — state, county, city.
+ * Returns the full breakdown - state, county, city.
  */
 export async function calculateSalesTax(
   subtotalCents: number,

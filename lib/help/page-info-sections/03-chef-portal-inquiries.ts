@@ -4,7 +4,7 @@ export const CHEF_PORTAL_INQUIRIES_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/inquiries': {
     title: 'Inquiries',
     description:
-      'Your inquiry pipeline — track every catering request from first contact to conversion.',
+      'Your inquiry pipeline - track every catering request from first contact to conversion.',
     features: [
       'Filter by status (new, awaiting client, awaiting chef, quoted, confirmed, declined, expired)',
       'Inquiry count badges per status',
@@ -15,7 +15,7 @@ export const CHEF_PORTAL_INQUIRIES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/inquiries/new': {
     title: 'New Inquiry',
-    description: 'Log a new catering inquiry — capture the client request and event details.',
+    description: 'Log a new catering inquiry - capture the client request and event details.',
     features: [
       'Client info capture',
       'Event details (date, occasion, guest count)',
@@ -27,7 +27,7 @@ export const CHEF_PORTAL_INQUIRIES_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/inquiries/[id]': {
     title: 'Inquiry Detail',
     description:
-      'Full inquiry view — client info, event requirements, messaging thread, and conversion options.',
+      'Full inquiry view - client info, event requirements, messaging thread, and conversion options.',
     features: [
       'Client communication thread',
       'Event requirement summary',
@@ -45,13 +45,13 @@ export const CHEF_PORTAL_INQUIRIES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/inquiries/awaiting-response': {
     title: 'Awaiting Your Response',
-    description: 'Inquiries that need your attention — the client is waiting for you.',
+    description: 'Inquiries that need your attention - the client is waiting for you.',
     features: ['Action-needed list', 'Response time tracking', 'Quick reply options'],
   },
 
   '/inquiries/menu-drafting': {
     title: 'Menu Drafting',
-    description: 'Inquiries in the menu planning phase — creating menus for client review.',
+    description: 'Inquiries in the menu planning phase - creating menus for client review.',
     features: ['Menu draft status', 'Link to menu editor', 'Client preferences summary'],
   },
 
@@ -63,7 +63,7 @@ export const CHEF_PORTAL_INQUIRIES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/inquiries/declined': {
     title: 'Declined Inquiries',
-    description: "Inquiries that didn't convert — track reasons to improve your pipeline.",
+    description: "Inquiries that didn't convert - track reasons to improve your pipeline.",
     features: ['Decline reason tracking', 'Historical reference', 'Win-back opportunities'],
   },
 }

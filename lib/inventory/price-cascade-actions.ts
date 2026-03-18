@@ -56,7 +56,7 @@ const CascadeIngredientPriceSchema = z.object({
 
 /**
  * Preview the impact of changing an ingredient's price on all recipes that use it.
- * Does NOT write any changes — read-only analysis.
+ * Does NOT write any changes - read-only analysis.
  */
 export async function previewPriceCascade(
   ingredientId: string,
@@ -109,7 +109,7 @@ export async function previewPriceCascade(
   // Get all affected recipe IDs to fetch recipe details
   const recipeIds = [...new Set((recipeIngredients as any[]).map((ri: any) => ri.recipe_id))]
 
-  // Fetch recipe details — tenant-scoped (recipes use tenant_id)
+  // Fetch recipe details - tenant-scoped (recipes use tenant_id)
   const { data: recipes, error: recipesError } = await supabase
     .from('recipes')
     .select('id, name')

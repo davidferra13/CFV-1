@@ -93,15 +93,15 @@ function NoteCard({ note, showDate = false }: { note: ShiftNote; showDate?: bool
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <Badge variant="default" className="text-[10px]">
+            <Badge variant="default" className="text-xxs">
               {SHIFT_LABELS[note.shift] ?? note.shift}
             </Badge>
             {note.pinned && (
-              <Badge variant="warning" className="text-[10px]">
+              <Badge variant="warning" className="text-xxs">
                 Pinned
               </Badge>
             )}
-            <span className="text-[11px] text-stone-500">
+            <span className="text-xs-tight text-stone-500">
               {note.author_name} &middot;{' '}
               {showDate ? formatNoteDate(note.date) : formatNoteTime(note.created_at)}
             </span>
@@ -113,7 +113,7 @@ function NoteCard({ note, showDate = false }: { note: ShiftNote; showDate?: bool
             type="button"
             onClick={handlePin}
             disabled={isPending}
-            className="text-[11px] text-stone-500 hover:text-stone-300 px-1 disabled:opacity-40"
+            className="text-xs-tight text-stone-500 hover:text-stone-300 px-1 disabled:opacity-40"
             title={note.pinned ? 'Unpin' : 'Pin'}
           >
             {note.pinned ? 'Unpin' : 'Pin'}
@@ -122,7 +122,7 @@ function NoteCard({ note, showDate = false }: { note: ShiftNote; showDate?: bool
             type="button"
             onClick={handleDelete}
             disabled={isPending}
-            className="text-[11px] text-red-500 hover:text-red-400 px-1 disabled:opacity-40"
+            className="text-xs-tight text-red-500 hover:text-red-400 px-1 disabled:opacity-40"
           >
             Del
           </button>
@@ -172,7 +172,7 @@ export function ShiftNotesSection({
         <h2 className={`${compact ? 'text-sm' : 'text-base'} font-semibold text-stone-200`}>
           Shift Notes
           {hasAnyNotes && (
-            <Badge variant="info" className="ml-2 text-[10px]">
+            <Badge variant="info" className="ml-2 text-xxs">
               {todayNotes.length + pinnedNotes.length + yesterdayClosingNotes.length}
             </Badge>
           )}

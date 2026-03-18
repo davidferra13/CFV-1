@@ -1,4 +1,4 @@
-// Calendar constants — exported separately from server actions so they can be
+// Calendar constants - exported separately from server actions so they can be
 // used in client components without triggering the 'use server' object export restriction.
 
 export type CalendarFilters = {

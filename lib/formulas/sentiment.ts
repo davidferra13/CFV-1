@@ -1,4 +1,4 @@
-// Sentiment Analysis Formula — Keyword-Based Scoring
+// Sentiment Analysis Formula - Keyword-Based Scoring
 // Scores individual messages using weighted keyword matching.
 // Computes thread trends using score trajectory.
 // No AI needed for 80%+ of cases.

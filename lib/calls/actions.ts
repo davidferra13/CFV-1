@@ -102,7 +102,7 @@ const CreateCallSchema = z.object({
   duration_minutes: z.number().int().min(5).max(480).default(30),
   timezone: z.string().default('America/New_York'),
   title: z.string().max(200).nullable().optional(),
-  // Participants — at least one of client_id or contact_name must be set
+  // Participants - at least one of client_id or contact_name must be set
   client_id: z.string().uuid().nullable().optional(),
   contact_name: z.string().max(200).nullable().optional(),
   contact_phone: z.string().max(50).nullable().optional(),
@@ -485,7 +485,7 @@ const VALID_TRANSITIONS: Record<CallStatus, CallStatus[]> = {
 
 /**
  * Transition a call to a new status.
- * Enforces the FSM — rejects invalid transitions.
+ * Enforces the FSM - rejects invalid transitions.
  */
 export async function updateCallStatus(id: string, newStatus: CallStatus) {
   const user = await requireChef()
@@ -747,7 +747,7 @@ export async function cancelCall(id: string) {
 
 /**
  * Send a client notification email that a call has been scheduled.
- * Non-throwing — logs errors but does not fail the parent action.
+ * Non-throwing - logs errors but does not fail the parent action.
  */
 async function _notifyClientOfCall(callId: string, tenantId: string) {
   try {

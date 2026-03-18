@@ -1,4 +1,4 @@
-// Expense categorizer constants — no 'use server'
+// Expense categorizer constants - no 'use server'
 // Separate file so these can be imported by both server actions and client components.
 // (Next.js 'use server' files may only export async functions.)
 

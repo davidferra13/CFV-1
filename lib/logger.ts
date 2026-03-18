@@ -1,5 +1,5 @@
 /**
- * Structured Logger — ChefFlow V1
+ * Structured Logger - ChefFlow V1
  *
  * Provides a consistent JSON log format across all server-side code.
  * In development: pretty-prints to console.

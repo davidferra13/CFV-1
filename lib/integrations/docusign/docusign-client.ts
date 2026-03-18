@@ -235,7 +235,7 @@ export async function sendContractForSignature(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      emailSubject: contractData.emailSubject || 'Please sign your contract — ChefFlow',
+      emailSubject: contractData.emailSubject || 'Please sign your contract - ChefFlow',
       emailBlurb: contractData.emailBody || 'Please review and sign the attached contract.',
       documents: [
         {

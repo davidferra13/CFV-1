@@ -128,10 +128,10 @@ export class UnknownAppError extends AppError {
           })
         })
         .catch(() => {
-          // Swallow — module resolution failure is not critical
+          // Swallow - module resolution failure is not critical
         })
     } catch {
-      // Swallow — reporting must never affect error handling
+      // Swallow - reporting must never affect error handling
     }
   }
 }

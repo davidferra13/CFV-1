@@ -24,7 +24,7 @@ const ALLOWED_MIME_TYPES = [
   'image/webp',
 ] as const
 
-// Extension derived from MIME type only — never from filename (security)
+// Extension derived from MIME type only - never from filename (security)
 const MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -97,8 +97,8 @@ async function hydrateSignedUrls(
 /**
  * Chef uploads a single photo for an event.
  * formData keys:
- *   'photo'   — File (required)
- *   'caption' — string (optional)
+ *   'photo'   - File (required)
+ *   'caption' - string (optional)
  */
 export async function uploadEventPhoto(
   eventId: string,
@@ -155,7 +155,7 @@ export async function uploadEventPhoto(
   const ext = MIME_TO_EXT[file.type]
   const storagePath = `${user.tenantId}/${eventId}/${photoId}.${ext}`
 
-  // Attempt image compression via reSmush.it (non-blocking — fallback to original)
+  // Attempt image compression via reSmush.it (non-blocking - fallback to original)
   let uploadBody: File | Blob = file
   let uploadContentType = file.type
   let uploadSize = file.size
@@ -193,7 +193,7 @@ export async function uploadEventPhoto(
     return { success: false, error: `Upload failed: ${uploadError.message}` }
   }
 
-  // Determine display_order — append after the last active photo
+  // Determine display_order - append after the last active photo
   const { data: lastPhoto } = await supabase
     .from('event_photos')
     .select('display_order')
@@ -349,7 +349,7 @@ export async function getEventPhotosForClient(eventId: string): Promise<EventPho
 
 /**
  * Chef only. Soft-deletes the DB record and removes the storage object.
- * Storage removal is non-fatal — if it fails the record is still soft-deleted.
+ * Storage removal is non-fatal - if it fails the record is still soft-deleted.
  */
 export async function deleteEventPhoto(
   photoId: string
@@ -365,7 +365,7 @@ export async function deleteEventPhoto(
     .single()
 
   if (!photo) return { success: false, error: 'Photo not found' }
-  if (photo.deleted_at) return { success: true } // Already deleted — idempotent
+  if (photo.deleted_at) return { success: true } // Already deleted - idempotent
 
   // Soft-delete in DB first
   const { error: updateError } = await supabase

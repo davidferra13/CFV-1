@@ -1,4 +1,4 @@
-// Chef Scheduling Rules — Server Actions
+// Chef Scheduling Rules - Server Actions
 // Manages per-chef availability rules: blocked days, max events, buffer/lead time.
 // Used by event creation (soft warnings), inquiry intake, and public booking.
 
@@ -26,8 +26,8 @@ export type SchedulingRules = {
 
 export type DateRuleValidation = {
   allowed: boolean
-  blockers: string[] // hard blocks — shown as errors
-  warnings: string[] // soft warnings — shown as caution
+  blockers: string[] // hard blocks - shown as errors
+  warnings: string[] // soft warnings - shown as caution
 }
 
 // ── Schema ─────────────────────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ export async function getSchedulingRules(): Promise<SchedulingRules | null> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // cast as any — table not in generated types until migration is pushed
+  // cast as any - table not in generated types until migration is pushed
   const { data } = await supabase
     .from('chef_scheduling_rules')
     .select('*')
@@ -68,7 +68,7 @@ export async function upsertSchedulingRules(
   const validated = UpsertRulesSchema.parse(input)
   const supabase: any = createServerClient()
 
-  // cast as any — table not in generated types until migration is pushed
+  // cast as any - table not in generated types until migration is pushed
   const { error } = await supabase.from('chef_scheduling_rules').upsert(
     {
       tenant_id: user.tenantId!,
@@ -109,7 +109,7 @@ export async function validateDateAgainstRules(
   const blockers: string[] = []
   const warnings: string[] = []
 
-  // Fetch rules (may not exist yet) — cast as any until migration is pushed
+  // Fetch rules (may not exist yet) - cast as any until migration is pushed
   const { data: rules } = await supabase
     .from('chef_scheduling_rules')
     .select('*')
@@ -117,7 +117,7 @@ export async function validateDateAgainstRules(
     .single()
 
   if (!rules) {
-    // No rules configured — all dates allowed
+    // No rules configured - all dates allowed
     return { allowed: true, blockers: [], warnings: [] }
   }
 
@@ -147,7 +147,7 @@ export async function validateDateAgainstRules(
     }
   }
 
-  // 3. Min buffer days — find nearest event before or after
+  // 3. Min buffer days - find nearest event before or after
   if (r.min_buffer_days > 0) {
     const bufferBefore = new Date(proposed)
     bufferBefore.setUTCDate(proposed.getUTCDate() - r.min_buffer_days)
@@ -172,7 +172,7 @@ export async function validateDateAgainstRules(
     if (nearbyEvents && nearbyEvents.length > 0) {
       const nearest = nearbyEvents[0]
       warnings.push(
-        `Only ${r.min_buffer_days} day${r.min_buffer_days === 1 ? '' : 's'} buffer required between events — nearby event: "${nearest.occasion || 'Untitled'}" on ${nearest.event_date.slice(0, 10)}`
+        `Only ${r.min_buffer_days} day${r.min_buffer_days === 1 ? '' : 's'} buffer required between events - nearby event: "${nearest.occasion || 'Untitled'}" on ${nearest.event_date.slice(0, 10)}`
       )
     }
   }
@@ -204,7 +204,7 @@ export async function validateDateAgainstRules(
 
     if ((weekCount ?? 0) >= r.max_events_per_week) {
       warnings.push(
-        `You have ${weekCount} event${weekCount === 1 ? '' : 's'} this week — your limit is ${r.max_events_per_week}`
+        `You have ${weekCount} event${weekCount === 1 ? '' : 's'} this week - your limit is ${r.max_events_per_week}`
       )
     }
   }
@@ -232,7 +232,7 @@ export async function validateDateAgainstRules(
 
     if ((monthCount ?? 0) >= r.max_events_per_month) {
       warnings.push(
-        `You have ${monthCount} event${monthCount === 1 ? '' : 's'} this month — your limit is ${r.max_events_per_month}`
+        `You have ${monthCount} event${monthCount === 1 ? '' : 's'} this month - your limit is ${r.max_events_per_month}`
       )
     }
   }

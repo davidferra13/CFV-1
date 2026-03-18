@@ -100,7 +100,7 @@ export function PreServiceChecklist({ eventId, eventTitle, items, compact }: Pro
           <div className="space-y-1">
             {criticalItems.map((item) => (
               <div key={item.id} className="flex items-center gap-2 text-xs">
-                <Badge variant="error" className="text-[9px]">
+                <Badge variant="error" className="text-2xs">
                   !
                 </Badge>
                 <span className="text-red-300">{item.title}</span>
@@ -122,7 +122,7 @@ export function PreServiceChecklist({ eventId, eventTitle, items, compact }: Pro
               {doneItems}/{totalItems}
             </span>
             {allDone && (
-              <Badge variant="success" className="text-[10px]">
+              <Badge variant="success" className="text-xxs">
                 Complete
               </Badge>
             )}
@@ -201,7 +201,7 @@ export function PreServiceChecklist({ eventId, eventTitle, items, compact }: Pro
                         </div>
 
                         {item.priority === 'critical' && !done && (
-                          <Badge variant="error" className="text-[9px] flex-shrink-0">
+                          <Badge variant="error" className="text-2xs flex-shrink-0">
                             Critical
                           </Badge>
                         )}

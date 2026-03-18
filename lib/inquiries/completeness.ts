@@ -2,7 +2,7 @@
 // Scores an inquiry record 0–100 based on confirmed facts and context.
 // Weights: essential booking facts > important context > nice-to-have details.
 // Returns a score, tier, and top missing fields with suggested chef actions.
-// Pure utility — no DB access, accepts the inquiry object directly.
+// Pure utility - no DB access, accepts the inquiry object directly.
 
 export type InquiryCompletenessResult = {
   score: number // 0–100
@@ -39,7 +39,7 @@ type FieldCheck = {
 }
 
 const FIELDS: FieldCheck[] = [
-  // Essential — booking can't happen without these (60 pts)
+  // Essential - booking can't happen without these (60 pts)
   {
     label: 'Client linked',
     suggestion: 'Link to an existing client or create a new one',
@@ -72,7 +72,7 @@ const FIELDS: FieldCheck[] = [
       typeof i.confirmed_location === 'string' && i.confirmed_location.trim().length > 0,
   },
 
-  // Important — complete picture before quoting (30 pts)
+  // Important - complete picture before quoting (30 pts)
   {
     label: 'Allergy / dietary status',
     suggestion: 'Ask: any allergies or dietary restrictions? Even a "none" answer is important',
@@ -96,7 +96,7 @@ const FIELDS: FieldCheck[] = [
   },
   {
     label: 'Service style',
-    suggestion: 'Confirm service format — plated, family-style, cocktail, buffet?',
+    suggestion: 'Confirm service format - plated, family-style, cocktail, buffet?',
     weight: 7,
     filled: (i) =>
       typeof i.confirmed_service_expectations === 'string' &&
@@ -111,7 +111,7 @@ const FIELDS: FieldCheck[] = [
       (typeof i.referral_partner_id === 'string' && i.referral_partner_id.length > 0),
   },
 
-  // Nice-to-have — relationship context (10 pts)
+  // Nice-to-have - relationship context (10 pts)
   {
     label: 'Internal notes',
     suggestion: 'Add any context, observations, or follow-up notes',

@@ -12,36 +12,36 @@ type PaymentStatus = Database['public']['Enums']['payment_status']
 
 /**
  * Facts derived from event data and related records.
- * Every field is a boolean — either the fact is confirmed or it is not.
+ * Every field is a boolean - either the fact is confirmed or it is not.
  * The engine never guesses. Unknown = false.
  */
 export interface ConfirmedFacts {
-  // Stage 1 — Inquiry Intake
+  // Stage 1 - Inquiry Intake
   hasClient: boolean
   hasOccasion: boolean
   hasDate: boolean
   hasLocation: boolean
   hasGuestCount: boolean
 
-  // Stage 2 — Qualification
+  // Stage 2 - Qualification
   hasServeTimeWindow: boolean // serve_time is set
   hasMenuDirection: boolean // at least one menu attached
 
-  // Stage 3 — Menu Development
+  // Stage 3 - Menu Development
   hasMenuAttached: boolean // menus linked via menus.event_id
   hasMenuWithDishes: boolean // attached menu has dishes (relational)
   menuGravityStable: boolean // status >= proposed (menu shape unlikely to change)
 
-  // Stage 4 — Quote
+  // Stage 4 - Quote
   hasPricing: boolean // quoted_price_cents > 0
   hasDepositDefined: boolean // deposit_amount_cents > 0
 
-  // Stage 5 — Financial Commitment
+  // Stage 5 - Financial Commitment
   depositReceived: boolean // payment_status != 'unpaid'
   fullyPaid: boolean // payment_status == 'paid'
   isLegallyActionable: boolean // deposit received OR status >= paid
 
-  // Stage 6–9 — Operational readiness
+  // Stage 6–9 - Operational readiness
   guestCountStable: boolean // status >= accepted (client agreed)
   eventConfirmed: boolean // status >= confirmed
 
@@ -94,7 +94,7 @@ export type WorkCategory =
   | 'optional_early' // Reduces future stress, not required yet
 
 /**
- * Urgency level — drives dashboard ordering and visual treatment.
+ * Urgency level - drives dashboard ordering and visual treatment.
  */
 export type WorkUrgency =
   | 'fragile' // Will cause stacking if delayed
@@ -129,7 +129,7 @@ export interface WorkItem {
 
 /**
  * Everything the engine needs to evaluate a single event.
- * Passed in — the engine does NOT fetch from the database.
+ * Passed in - the engine does NOT fetch from the database.
  */
 export interface EventContext {
   event: {

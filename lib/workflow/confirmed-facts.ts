@@ -51,32 +51,32 @@ export function deriveConfirmedFacts(ctx: EventContext): ConfirmedFacts {
   const isCompleted = event.status === 'completed'
 
   return {
-    // Stage 1 — Inquiry Intake
+    // Stage 1 - Inquiry Intake
     hasClient: event.client != null,
     hasOccasion: (event.occasion ?? '').trim().length > 0,
     hasDate: event.event_date != null && event.event_date.length > 0,
     hasLocation: (event.location_address ?? '').trim().length > 0,
     hasGuestCount: event.guest_count > 0,
 
-    // Stage 2 — Qualification
+    // Stage 2 - Qualification
     hasServeTimeWindow: (event.serve_time ?? '').length > 0,
     hasMenuDirection: hasMenuAttached,
 
-    // Stage 3 — Menu Development
+    // Stage 3 - Menu Development
     hasMenuAttached,
     hasMenuWithDishes,
     menuGravityStable: statusAtLeast(event.status, 'proposed'),
 
-    // Stage 4 — Quote
+    // Stage 4 - Quote
     hasPricing: (event.quoted_price_cents ?? 0) > 0,
     hasDepositDefined: (event.deposit_amount_cents ?? 0) > 0,
 
-    // Stage 5 — Financial Commitment
+    // Stage 5 - Financial Commitment
     depositReceived,
     fullyPaid,
     isLegallyActionable: depositReceived || statusAtLeast(event.status, 'paid'),
 
-    // Stage 6–9 — Operational readiness
+    // Stage 6–9 - Operational readiness
     guestCountStable: statusAtLeast(event.status, 'accepted'),
     eventConfirmed: statusAtLeast(event.status, 'confirmed'),
 

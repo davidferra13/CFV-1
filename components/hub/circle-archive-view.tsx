@@ -198,7 +198,7 @@ export function CircleArchiveView({
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{config.icon}</span>
                     <span className={`text-xs font-medium ${config.color}`}>{config.label}</span>
-                    <span className="text-[10px] text-stone-600">
+                    <span className="text-xxs text-stone-600">
                       {new Date(milestone.date).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',

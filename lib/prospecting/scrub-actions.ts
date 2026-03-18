@@ -1,6 +1,6 @@
 'use server'
 
-// Prospecting Hub — AI Scrub Actions (v2.1 — deep intelligence)
+// Prospecting Hub - AI Scrub Actions (v2.1 - deep intelligence)
 // Uses local Ollama for lead generation + web search enrichment.
 // Admin-only. All prospect data is public.
 //
@@ -80,7 +80,7 @@ const ColdEmailFromAI = z.object({
 })
 
 // ── Ollama-safe limits ──────────────────────────────────────────────────────
-// Local Ollama — hard limits to prevent maxing out the machine.
+// Local Ollama - hard limits to prevent maxing out the machine.
 
 const MAX_PROSPECTS_PER_SCRUB = 10
 const MAX_WEB_ENRICHMENTS = 5
@@ -90,7 +90,7 @@ const APPROACH_COOLDOWN_MS = 3_000
 const MAX_CONSECUTIVE_FAILURES = 2
 const MAX_DEEP_CRAWL_PAGES = 3 // Contact, events, about pages per prospect
 
-// Phase time budgets (ms) — each phase gets its own deadline
+// Phase time budgets (ms) - each phase gets its own deadline
 const PHASE_1_TIMEOUT_MS = 120_000 // 2 min for Ollama generation
 const PHASE_VALIDATE_TIMEOUT_MS = 60_000 // 1 min for reality checks
 const PHASE_2_TIMEOUT_MS = 120_000 // 2 min for deep web enrichment (more pages now)
@@ -195,7 +195,7 @@ function extractContactInfo(text: string) {
   return { phones, emails, social }
 }
 
-// ── Deep Crawl — find and scrape subpages ───────────────────────────────────
+// ── Deep Crawl - find and scrape subpages ───────────────────────────────────
 
 const SUBPAGE_PATTERNS = [
   /contact/i,
@@ -287,7 +287,7 @@ async function deepCrawlSite(
 
 // ── Event Signal Detection (Wave 3) ─────────────────────────────────────────
 // Extracts upcoming event names and dates from crawled page text.
-// Looks for patterns like "April 15 — Spring Gala" or "Annual Member Dinner, March 2026"
+// Looks for patterns like "April 15 - Spring Gala" or "Annual Member Dinner, March 2026"
 
 const MONTH_NAMES = [
   'january',
@@ -469,7 +469,7 @@ export async function scrubProspects(query: string) {
 
   if (!query.trim()) throw new Error('Query is required')
 
-  // #7 — Rate limiting: prevent concurrent scrubs
+  // #7 - Rate limiting: prevent concurrent scrubs
   const { data: activeSessions } = await supabase
     .from('prospect_scrub_sessions')
     .select('id, status')
@@ -543,7 +543,7 @@ export async function scrubProspects(query: string) {
       throw new Error('AI did not generate any valid prospects. Try a different query.')
     }
 
-    // ─── Phase 1b: Reality check — web-validate each prospect (#1) ───
+    // ─── Phase 1b: Reality check - web-validate each prospect (#1) ───
 
     await updateProgress(
       supabase,
@@ -556,7 +556,7 @@ export async function scrubProspects(query: string) {
 
     for (const prospect of prospects) {
       if (Date.now() - validateStart > PHASE_VALIDATE_TIMEOUT_MS) {
-        // Time's up — accept remaining as unverified rather than dropping them
+        // Time's up - accept remaining as unverified rather than dropping them
         const remaining = prospects.slice(validatedProspects.length)
         for (const p of remaining) {
           validatedProspects.push({ ...p, verified: false })
@@ -574,7 +574,7 @@ export async function scrubProspects(query: string) {
         const verified = results.length > 0
         validatedProspects.push({ ...prospect, verified })
       } catch {
-        // Search failed — accept as unverified, don't drop
+        // Search failed - accept as unverified, don't drop
         validatedProspects.push({ ...prospect, verified: false })
       }
     }
@@ -726,7 +726,7 @@ export async function scrubProspects(query: string) {
           }
         }
 
-        // News intelligence — search for recent press/news
+        // News intelligence - search for recent press/news
         await updateProgress(supabase, session.id, `Gathering news on ${prospect.name}...`)
         const newsIntel = await gatherNewsIntel(prospect.name, prospect.city, prospect.state)
         if (newsIntel) enrichUpdates.news_intel = newsIntel
@@ -814,7 +814,7 @@ export async function scrubProspects(query: string) {
 
         if (!fullProspect) continue
 
-        // #9 — BUG FIX: Build enriched details string from web data
+        // #9 - BUG FIX: Build enriched details string from web data
         const enrichedLines: string[] = []
         if (fullProspect.website) enrichedLines.push(`Website: ${fullProspect.website}`)
         if (fullProspect.phone) enrichedLines.push(`Phone: ${fullProspect.phone}`)
@@ -968,7 +968,7 @@ export async function scrubProspects(query: string) {
       enriched: enrichedCount,
     }
   } catch (err) {
-    // #8 — Partial failure: if we already inserted prospects, mark completed-with-warning
+    // #8 - Partial failure: if we already inserted prospects, mark completed-with-warning
     if (insertedCount > 0) {
       await supabase
         .from('prospect_scrub_sessions')
@@ -993,7 +993,7 @@ export async function scrubProspects(query: string) {
       }
     }
 
-    // True failure — Phase 1 produced nothing
+    // True failure - Phase 1 produced nothing
     await supabase
       .from('prospect_scrub_sessions')
       .update({
@@ -1202,7 +1202,7 @@ export async function batchReEnrich() {
     .eq('chef_id', user.tenantId!)
     .or(`last_enriched_at.is.null,last_enriched_at.lt.${fourteenDaysAgo},verified.eq.false`)
     .not('status', 'in', '("converted","dead")')
-    .order('lead_score', { ascending: true }) // lowest scores first — most to gain
+    .order('lead_score', { ascending: true }) // lowest scores first - most to gain
     .limit(10)
 
   if (!staleProspects || staleProspects.length === 0) {

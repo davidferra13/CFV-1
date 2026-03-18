@@ -1,8 +1,8 @@
 /**
- * Culinary Composition Cheat Sheet — The Ultimate Word List
+ * Culinary Composition Cheat Sheet - The Ultimate Word List
  *
  * Every word you could use to describe food, organized by category and
- * importance tier. Used to inspire dish composition — ensuring you hit
+ * importance tier. Used to inspire dish composition - ensuring you hit
  * every dimension: texture, flavor, temperature, mouthfeel, aroma,
  * technique, visual, composition principles, and emotion.
  *
@@ -396,7 +396,7 @@ export const DEFAULT_CULINARY_WORDS: CulinaryWord[] = [
 ]
 
 // ─────────────────────────────────────────────
-// Board view styling — computed deterministically from word text
+// Board view styling - computed deterministically from word text
 // ─────────────────────────────────────────────
 
 export const BOARD_COLORS = [
@@ -421,7 +421,7 @@ export const BOARD_FONTS = [
   "'Rock Salt', cursive",
 ]
 
-/** Deterministic hash from a string — returns a positive integer */
+/** Deterministic hash from a string - returns a positive integer */
 export function wordHash(word: string): number {
   let hash = 0
   for (let i = 0; i < word.length; i++) {

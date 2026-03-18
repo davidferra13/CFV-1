@@ -140,7 +140,7 @@ export function ScaleForEventButton({ recipeId, eventName, guestCount }: Props) 
                   <span className="text-stone-200 truncate">{ing.name}</span>
                   <Badge
                     variant={CATEGORY_BADGE_VARIANT[ing.scalingCategory]}
-                    className={`text-[10px] shrink-0 ${CATEGORY_BADGE_CLASS[ing.scalingCategory]}`}
+                    className={`text-xxs shrink-0 ${CATEGORY_BADGE_CLASS[ing.scalingCategory]}`}
                   >
                     {getScalingCategoryLabel(ing.scalingCategory)}
                   </Badge>

@@ -1,4 +1,4 @@
-// Receipt Scanning Server Action — OCR.space Integration
+// Receipt Scanning Server Action - OCR.space Integration
 // Accepts an image file upload, runs OCR, parses receipt text,
 // and returns structured data for chef review. Does NOT auto-save.
 //
@@ -10,7 +10,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { scanReceiptFromBuffer } from '@/lib/ocr/ocr-space'
 import { parseReceiptText, type ParsedReceipt } from '@/lib/ocr/receipt-parser'
 
-// 'use server' files can only export async functions — no constants/types exported here.
+// 'use server' files can only export async functions - no constants/types exported here.
 // Types for the result are co-located at lib/ocr/receipt-parser.ts (ParsedReceipt, ParsedLineItem).
 
 /**
@@ -18,7 +18,7 @@ import { parseReceiptText, type ParsedReceipt } from '@/lib/ocr/receipt-parser'
  *
  * Accepts a FormData with a single file field named 'receipt'.
  * Returns the parsed receipt data for chef review/confirmation.
- * Does NOT create an expense automatically — the chef reviews and confirms.
+ * Does NOT create an expense automatically - the chef reviews and confirms.
  *
  * Returns:
  * - { success: true, data: ParsedReceipt, rawText: string } on success
@@ -30,7 +30,7 @@ export async function scanAndParseReceipt(formData: FormData): Promise<{
   rawText?: string
   error?: string
 }> {
-  // Auth check — tenant ID from session, never from request
+  // Auth check - tenant ID from session, never from request
   await requireChef()
 
   const file = formData.get('receipt') as File | null

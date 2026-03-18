@@ -154,7 +154,7 @@ export function ChannelComparison({ sources }: { sources: ChannelSourceStats[] }
                             />
                             <span className="font-medium text-stone-700">{row.sourceLabel}</span>
                             {isBest && (
-                              <span className="text-[10px] bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded-full font-medium">
+                              <span className="text-xxs bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded-full font-medium">
                                 TOP
                               </span>
                             )}

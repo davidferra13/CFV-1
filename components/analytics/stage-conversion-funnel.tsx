@@ -82,7 +82,7 @@ function Funnel({
                 <div className="flex items-center gap-3">
                   {!isFirst && stage.conversionFromPrev !== null && (
                     <span
-                      className={`text-[10px] ${stage.conversionFromPrev >= 70 ? 'text-emerald-600' : stage.conversionFromPrev >= 40 ? 'text-amber-600' : 'text-red-500'}`}
+                      className={`text-xxs ${stage.conversionFromPrev >= 70 ? 'text-emerald-600' : stage.conversionFromPrev >= 40 ? 'text-amber-600' : 'text-red-500'}`}
                     >
                       ↓ {stage.conversionFromPrev}%
                     </span>

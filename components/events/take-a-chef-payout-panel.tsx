@@ -135,7 +135,7 @@ export function TakeAChefPayoutPanel({ finance }: { finance: TakeAChefFinanceDat
           <a
             href={finance.externalLink}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="text-sm text-brand-500 hover:text-brand-400"
           >
             Open source booking

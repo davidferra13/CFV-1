@@ -1,4 +1,4 @@
-// Menu Upload Pipeline — Server Actions
+// Menu Upload Pipeline - Server Actions
 // Manages the upload-to-dish-index pipeline:
 // upload → extract text → parse with Ollama → chef review → dish index
 
@@ -262,7 +262,7 @@ export async function processFromPastedText(
 
 /**
  * Approve parsed dishes from a review and add them to the Dish Index.
- * Chef has reviewed/edited the parsed results — now commit to the index.
+ * Chef has reviewed/edited the parsed results - now commit to the index.
  */
 export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesBatchSchema>) {
   const user = await requireChef()
@@ -289,7 +289,7 @@ export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesB
     let dishId: string
 
     if (existing) {
-      // Dish exists — increment times_served and update dates
+      // Dish exists - increment times_served and update dates
       dishId = existing.id
       const updates: Record<string, unknown> = {
         times_served: existing.times_served + 1,
@@ -303,7 +303,7 @@ export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesB
       }
       await supabase.from('dish_index').update(updates).eq('id', dishId).eq('tenant_id', tenantId)
     } else {
-      // New dish — insert into index
+      // New dish - insert into index
       const { data: newDish, error: insertError } = await supabase
         .from('dish_index')
         .insert({

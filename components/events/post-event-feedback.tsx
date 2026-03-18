@@ -173,7 +173,7 @@ export function PostEventFeedback({
                   }`}
                 >
                   <span className="block text-sm">{opt.icon}</span>
-                  <span className="block mt-0.5 text-[10px]">{opt.label}</span>
+                  <span className="block mt-0.5 text-xxs">{opt.label}</span>
                 </button>
               ))}
             </div>

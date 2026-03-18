@@ -1,5 +1,5 @@
-// Remy — AI Chatbot Companion Types
-// No 'use server' — safe to import from any context (client, server, tests)
+// Remy - AI Chatbot Companion Types
+// No 'use server' - safe to import from any context (client, server, tests)
 
 // ─── Organization Types (Projects, Templates, Action Log) ──────────────────
 
@@ -55,7 +55,7 @@ export interface RemyMessage {
   navSuggestions?: NavigationSuggestion[]
   /** Memory items for management UI (only on memory-related messages) */
   memoryItems?: RemyMemoryItem[]
-  /** If true, shows a retry button — set on timeout/error messages */
+  /** If true, shows a retry button - set on timeout/error messages */
   isRetryable?: boolean
   /** The original user message that triggered this error (for retry) */
   retryMessage?: string
@@ -156,7 +156,7 @@ export interface RemyContext {
     relationshipItems: number
     estimatedMinutes: number
   }
-  /** Email digest — recent inbox activity for proactive awareness */
+  /** Email digest - recent inbox activity for proactive awareness */
   emailDigest?: {
     totalSinceYesterday: number
     inquiryCount: number
@@ -239,29 +239,29 @@ export interface RemyContext {
   pendingMenuApprovals?: Array<{ clientName: string }>
   /** Unread messages from inquiry leads */
   unreadInquiryMessages?: Array<{ leadName: string }>
-  /** Stale inquiries — no response in >3 days, sorted by urgency (proactive nudge) */
+  /** Stale inquiries - no response in >3 days, sorted by urgency (proactive nudge) */
   staleInquiries?: Array<{
     leadName: string
     daysSinceContact: number
     leadScore: number
     urgency: number
   }>
-  /** Overdue payments — past due date (proactive nudge) */
+  /** Overdue payments - past due date (proactive nudge) */
   overduePayments?: Array<{ clientName: string; amountCents: number; daysOverdue: number }>
-  /** Revenue pattern — busy/slow months from historical data */
+  /** Revenue pattern - busy/slow months from historical data */
   revenuePattern?: {
     busiestMonth: string
     slowestMonth: string
     monthlyAvgCents: number
   }
-  /** Client re-engagement signals — clients overdue for a booking based on their cadence */
+  /** Client re-engagement signals - clients overdue for a booking based on their cadence */
   clientReengagement?: Array<{
     clientName: string
     avgIntervalDays: number
     daysSinceLastBooking: number
     eventCount: number
   }>
-  /** Quote distribution — historical range for comparison intelligence */
+  /** Quote distribution - historical range for comparison intelligence */
   quoteDistribution?: {
     count: number
     minCents: number
@@ -270,7 +270,7 @@ export interface RemyContext {
     p25Cents: number
     p75Cents: number
   }
-  /** Profitability stats — aggregate margins across events */
+  /** Profitability stats - aggregate margins across events */
   profitabilityStats?: {
     eventCount: number
     avgMargin: number
@@ -278,7 +278,7 @@ export interface RemyContext {
     worstMargin: number
     avgProfitCents: number
   }
-  /** Upcoming payment deadlines — due within 7 days, not yet overdue */
+  /** Upcoming payment deadlines - due within 7 days, not yet overdue */
   upcomingPaymentDeadlines?: Array<{
     clientName: string
     occasion: string
@@ -286,7 +286,7 @@ export interface RemyContext {
     dueDate: string
     daysUntilDue: number
   }>
-  /** Expiring quotes — valid_until within 7 days */
+  /** Expiring quotes - valid_until within 7 days */
   expiringQuotes?: Array<{
     clientName: string
     occasion: string
@@ -294,12 +294,12 @@ export interface RemyContext {
     validUntil: string
     daysUntilExpiry: number
   }>
-  /** Inquiry velocity — week-over-week comparison */
+  /** Inquiry velocity - week-over-week comparison */
   inquiryVelocity?: {
     thisWeek: number
     lastWeek: number
   }
-  /** Conversion rate — inquiry to event */
+  /** Conversion rate - inquiry to event */
   conversionRate?: {
     total: number
     converted: number
@@ -354,9 +354,9 @@ export interface RemyContext {
     expectedCents: number
     eventCount: number
   }
-  /** Business intelligence summary — cross-engine synthesized insights */
+  /** Business intelligence summary - cross-engine synthesized insights */
   businessIntelligence?: string
-  /** Chef service configuration — what services/policies/extras the chef offers */
+  /** Chef service configuration - what services/policies/extras the chef offers */
   serviceConfigPrompt?: string
   /** Recent post-event survey results (for proactive awareness) */
   recentSurveyFeedback?: Array<{

@@ -1,4 +1,4 @@
-// SMS/WhatsApp Server Actions — Send messages and log them to unified inbox
+// SMS/WhatsApp Server Actions - Send messages and log them to unified inbox
 // Uses Twilio under the hood, stores in messages table alongside Gmail messages
 
 'use server'

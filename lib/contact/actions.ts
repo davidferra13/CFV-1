@@ -85,7 +85,7 @@ export async function submitContactForm(data: ContactFormData) {
 /**
  * Auto-assign a contact submission to the platform owner.
  * Creates an inquiry and marks the submission as claimed.
- * Uses admin client — this is a system-level operation, not user-initiated.
+ * Uses admin client - this is a system-level operation, not user-initiated.
  */
 async function autoAssignToOwner(
   supabase: any,

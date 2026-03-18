@@ -3,7 +3,7 @@ import type { PageInfoEntry } from '../page-info-types'
 export const PARTNER_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/partner/dashboard': {
     title: 'Partner Dashboard',
-    description: 'Your partner home base — stats, locations, and recent events.',
+    description: 'Your partner home base - stats, locations, and recent events.',
     features: [
       'Stats cards (locations, events, guests)',
       'Location grid',
@@ -30,7 +30,7 @@ export const PARTNER_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/partner/profile': {
     title: 'Partner Profile',
-    description: 'Edit your partner profile — name, description, contact info, and website.',
+    description: 'Edit your partner profile - name, description, contact info, and website.',
     features: ['Editable form fields', 'Cover image upload', 'Visibility status'],
   },
 
@@ -42,7 +42,7 @@ export const PARTNER_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/partner/locations/[id]': {
     title: 'Location Detail',
-    description: 'Full detail for a specific location — photos, stats, and event history.',
+    description: 'Full detail for a specific location - photos, stats, and event history.',
     features: ['Location stats', 'Photo gallery', 'Event history', 'Capacity info'],
   },
 }

@@ -32,7 +32,7 @@ export function SocialSlotCard({ post }: Props) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-1">
           <SocialPillarBadge pillar={post.pillar} />
-          <span className="text-[10px] text-stone-400">
+          <span className="text-xxs text-stone-400">
             {format(scheduled, 'EEE')}
             {' · '}
             {format(scheduled, 'h:mm a')}
@@ -56,7 +56,7 @@ export function SocialSlotCard({ post }: Props) {
           {post.title || <span className="text-stone-400 italic font-normal">Untitled post</span>}
         </p>
         {post.platforms.length > 0 && (
-          <p className="text-[10px] text-stone-400 mt-1">{post.platforms.join(', ')}</p>
+          <p className="text-xxs text-stone-400 mt-1">{post.platforms.join(', ')}</p>
         )}
       </div>
 

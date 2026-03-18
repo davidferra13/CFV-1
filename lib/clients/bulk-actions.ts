@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 /**
- * Bulk archive clients — soft-deletes clients by setting `deleted_at`.
+ * Bulk archive clients - soft-deletes clients by setting `deleted_at`.
  * The clients table has no `archived` column, so we use the existing
  * soft-delete pattern (`deleted_at` + `deleted_by`).
  * Only affects clients owned by the authenticated chef's tenant.

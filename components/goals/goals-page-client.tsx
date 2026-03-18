@@ -1,11 +1,19 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { Plus, Settings } from '@/components/ui/icons'
 import type { GoalsDashboard, GoalView, GoalCategory } from '@/lib/goals/types'
 import { GOAL_TYPE_TO_CATEGORY, GOAL_CATEGORY_META } from '@/lib/goals/types'
-import { LifeBalanceWheel } from '@/components/goals/life-balance-wheel'
+
+const LifeBalanceWheel = dynamic(
+  () => import('@/components/goals/life-balance-wheel').then((m) => m.LifeBalanceWheel),
+  {
+    loading: () => <div className="h-64 w-full rounded-lg bg-stone-800 animate-pulse" />,
+    ssr: false,
+  }
+)
 import { CategorySection } from '@/components/goals/category-section'
 import { CategoryOptInPanel } from '@/components/goals/category-opt-in-panel'
 import { GoalCheckInModal } from '@/components/goals/goal-check-in-modal'

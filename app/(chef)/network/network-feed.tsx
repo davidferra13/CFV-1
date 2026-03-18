@@ -2,6 +2,7 @@
 'use client'
 
 import { useEffect, useMemo, useState, useTransition } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { MapPin, Send } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
@@ -239,10 +240,11 @@ function FeedPostItem({ post }: { post: NetworkFeedPost }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           {post.author.profile_image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={post.author.profile_image_url}
               alt={name}
+              width={40}
+              height={40}
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (

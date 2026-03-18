@@ -1,4 +1,4 @@
-// Gmail Reconnect — Local callback server approach
+// Gmail Reconnect - Local callback server approach
 //
 // 1. Starts a tiny HTTP server on port 3333
 // 2. Opens Google OAuth with redirect_uri = http://localhost:3333/callback
@@ -41,7 +41,7 @@ const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 const REDIRECT_URI = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/google/connect/callback`
 
 async function main() {
-  console.log('Gmail Reconnect — Direct OAuth Flow')
+  console.log('Gmail Reconnect - Direct OAuth Flow')
   console.log('====================================')
   console.log('')
   console.log('Sign in with: dfprivatechef@gmail.com')

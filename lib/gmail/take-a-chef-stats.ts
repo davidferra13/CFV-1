@@ -1,4 +1,4 @@
-// TakeAChef Stats — Server actions for querying TakeAChef-specific inquiry stats.
+// TakeAChef Stats - Server actions for querying TakeAChef-specific inquiry stats.
 // Used by the dashboard widget and settings pages.
 
 'use server'
@@ -115,7 +115,7 @@ export async function getTakeAChefStats(): Promise<TakeAChefStats> {
 
 // ─── Daily Inquiry Count ────────────────────────────────────────────────
 // Tracks exactly how many TakeAChef inquiries the chef gets per day.
-// TakeAChef buries this by spamming duplicate emails — this cuts through.
+// TakeAChef buries this by spamming duplicate emails - this cuts through.
 
 export async function getTakeAChefDailyStats(): Promise<TakeAChefDailyStats> {
   const empty: TakeAChefDailyStats = {
@@ -193,7 +193,7 @@ export async function getTakeAChefDailyStats(): Promise<TakeAChefDailyStats> {
         .eq('channel', 'take_a_chef')
         .gte('first_contact_at', monthStart),
 
-      // Last 30 days — individual records for daily breakdown
+      // Last 30 days - individual records for daily breakdown
       supabase
         .from('inquiries')
         .select('first_contact_at')

@@ -47,13 +47,13 @@ export function NotificationBell({ collapsed = false }: { collapsed?: boolean })
           open
             ? 'bg-stone-800 text-stone-300'
             : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
-        } ${collapsed ? 'w-10 h-10' : 'w-8 h-8'}`}
+        } ${collapsed ? 'w-11 h-11' : 'w-11 h-11'} touch-manipulation`}
       >
         <Bell className="w-[18px] h-[18px]" />
 
         {/* Badge */}
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-bold text-white bg-red-500 rounded-full leading-none">
+          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-4 px-1 text-xxs font-bold text-white bg-red-500 rounded-full leading-none">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}

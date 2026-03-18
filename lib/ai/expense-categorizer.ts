@@ -1,6 +1,6 @@
 'use server'
 
-// Expense Auto-Categorizer — Formula Only
+// Expense Auto-Categorizer - Formula Only
 // 150+ keywords + amount-based heuristics. No AI needed.
 //
 // Previously used Ollama as fallback when keyword matching returned low confidence.

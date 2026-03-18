@@ -144,7 +144,7 @@ function ProductDetail({ product, onBack }: { product: FoodProduct; onBack: () =
         </div>
       )}
 
-      <p className="text-[10px] text-stone-600 text-right">
+      <p className="text-xxs text-stone-600 text-right">
         Source: Open Food Facts {product.barcode && `(${product.barcode})`}
       </p>
     </div>

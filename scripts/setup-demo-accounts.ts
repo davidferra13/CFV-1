@@ -1,7 +1,7 @@
-// @ts-nocheck — standalone script, Supabase client type mismatch with generated types
+// @ts-nocheck - standalone script, Supabase client type mismatch with generated types
 // Demo Account Bootstrap
 // Creates/updates persistent demo chef + demo client accounts in Supabase.
-// Idempotent — safe to run multiple times.
+// Idempotent - safe to run multiple times.
 //
 // Usage: npx tsx scripts/setup-demo-accounts.ts
 //
@@ -498,9 +498,9 @@ async function main() {
   console.log('  Demo Panel:     /demo (requires DEMO_MODE_ENABLED=true)')
   console.log('')
   console.log('  Next steps:')
-  console.log('    npm run demo:load   — load rich sample data')
-  console.log('    npm run demo:clear  — clear all demo data')
-  console.log('    npm run demo:reset  — clear + reload fresh')
+  console.log('    npm run demo:load   - load rich sample data')
+  console.log('    npm run demo:clear  - clear all demo data')
+  console.log('    npm run demo:reset  - clear + reload fresh')
 }
 
 main().catch((err) => {

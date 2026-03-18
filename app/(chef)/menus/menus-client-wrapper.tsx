@@ -157,7 +157,7 @@ function MenuCard({
                 {statusLabel(displayStatus)}
               </Badge>
               {isActive && (
-                <Badge variant="info" className="text-[10px]">
+                <Badge variant="info" className="text-xxs">
                   Active
                 </Badge>
               )}
@@ -647,7 +647,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                                   {course.dietaryTags.map((tag) => (
                                     <span
                                       key={tag}
-                                      className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-[10px] font-medium text-emerald-400"
+                                      className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-xxs font-medium text-emerald-400"
                                     >
                                       {tag}
                                     </span>
@@ -709,7 +709,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                               {quickViewData.allDietaryTags.map((tag) => (
                                 <span
                                   key={tag}
-                                  className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-[10px] font-medium text-emerald-400"
+                                  className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-xxs font-medium text-emerald-400"
                                 >
                                   {tag}
                                 </span>
@@ -724,7 +724,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                               {quickViewData.allAllergenFlags.map((flag) => (
                                 <span
                                   key={flag}
-                                  className="rounded bg-amber-900/40 px-1.5 py-0.5 text-[10px] font-medium text-amber-400"
+                                  className="rounded bg-amber-900/40 px-1.5 py-0.5 text-xxs font-medium text-amber-400"
                                 >
                                   {flag}
                                 </span>
@@ -788,7 +788,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                       <a
                         href={`/api/documents/${selectedMenuEvent.id}?type=foh`}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-600 bg-stone-800 px-4 text-sm font-medium text-stone-200 transition-colors hover:bg-stone-700"
                       >
                         <FileText className="mr-1.5 h-4 w-4" />
@@ -798,7 +798,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                       <a
                         href={`/api/documents/foh-preview/${selectedMenu.id}`}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-600 bg-stone-800 px-4 text-sm font-medium text-stone-200 transition-colors hover:bg-stone-700"
                       >
                         <FileText className="mr-1.5 h-4 w-4" />
@@ -854,7 +854,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                           : `/api/documents/foh-preview/${selectedMenu.id}`
                       }
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-600 px-4 text-sm font-medium text-white transition-colors hover:bg-brand-700"
                     >
                       {selectedMenuEvent ? 'View FOH PDF' : 'Preview FOH'}

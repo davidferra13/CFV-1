@@ -346,7 +346,7 @@ export function AvailabilityCalendarClient({
                         />
                       ))}
                       {overflow > 0 && (
-                        <span className="text-stone-400 text-[8px] leading-none">+{overflow}</span>
+                        <span className="text-stone-400 text-3xs leading-none">+{overflow}</span>
                       )}
                     </div>
                   )}
@@ -391,7 +391,7 @@ export function AvailabilityCalendarClient({
                             {item.title}
                             {isDraggable && (
                               <span
-                                className="ml-1.5 text-stone-500 text-[10px]"
+                                className="ml-1.5 text-stone-500 text-xxs"
                                 title="Drag to reschedule"
                               >
                                 &#x2725;

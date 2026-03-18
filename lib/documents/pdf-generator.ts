@@ -1,8 +1,8 @@
 // PDFKit-based Invoice PDF Generator
 // Uses PDFKit (server-side only) for professional-quality PDF output.
-// Reuses InvoiceData DTO from lib/events/invoice-actions.ts — no duplicate queries.
+// Reuses InvoiceData DTO from lib/events/invoice-actions.ts - no duplicate queries.
 // Brand color: terracotta orange #e88f47
-// All monetary amounts are in cents — divided by 100 for display.
+// All monetary amounts are in cents - divided by 100 for display.
 
 import PDFDocument from 'pdfkit'
 import type { InvoiceData } from '@/lib/events/invoice-actions'
@@ -110,7 +110,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     // ── HEADER SECTION ──────────────────────────────────────────────────
     y = 30
 
-    // Business name — left
+    // Business name - left
     doc
       .font('Helvetica-Bold')
       .fontSize(18)
@@ -119,7 +119,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
         width: CONTENT_WIDTH / 2,
       })
 
-    // "INVOICE" — right aligned
+    // "INVOICE" - right aligned
     doc
       .font('Helvetica-Bold')
       .fontSize(24)
@@ -131,14 +131,14 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
 
     y += 32
 
-    // Chef contact info — left
+    // Chef contact info - left
     doc.font('Helvetica').fontSize(9).fillColor(TEXT_SECONDARY)
     doc.text(data.chef.email, MARGIN_LEFT, y)
     if (data.chef.phone) {
       doc.text(data.chef.phone, MARGIN_LEFT, y + 12)
     }
 
-    // Invoice meta — right
+    // Invoice meta - right
     const metaX = PAGE_WIDTH - MARGIN_RIGHT - 160
     doc.font('Helvetica').fontSize(9).fillColor(TEXT_SECONDARY)
 
@@ -173,7 +173,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     // ── BILLED TO / EVENT INFO ──────────────────────────────────────────
     const colWidth = CONTENT_WIDTH / 2 - 10
 
-    // Bill To — left column
+    // Bill To - left column
     doc.font('Helvetica-Bold').fontSize(8).fillColor(TEXT_MUTED)
     doc.text('BILL TO', MARGIN_LEFT, y)
     y += 14
@@ -205,7 +205,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
         })
     }
 
-    // Event — right column
+    // Event - right column
     const rightX = MARGIN_LEFT + colWidth + 20
     doc.font('Helvetica-Bold').fontSize(8).fillColor(TEXT_MUTED)
     doc.text('EVENT', rightX, y - 14)
@@ -508,7 +508,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     doc.moveTo(tableLeft, y).lineTo(tableRight, y).strokeColor(BRAND_ORANGE).lineWidth(1.5).stroke()
     y += 12
 
-    // Balance due / Paid in full — larger, bold
+    // Balance due / Paid in full - larger, bold
     if (data.isPaidInFull) {
       doc.font('Helvetica-Bold').fontSize(14).fillColor(PAID_GREEN)
       doc.text('PAID IN FULL', MARGIN_LEFT, y, {

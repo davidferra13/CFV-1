@@ -1,4 +1,4 @@
-// Event Starting — Client Notification Email
+// Event Starting - Client Notification Email
 // Sent to the client when the chef marks the event as in_progress ("chef is on the way").
 
 import { Text } from '@react-email/components'

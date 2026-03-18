@@ -1,13 +1,13 @@
 /**
- * Event FSM — Pure Logic Layer
+ * Event FSM - Pure Logic Layer
  *
  * Contains ONLY the state machine rules and validation functions.
  * No 'use server', no Supabase calls, no side effects.
  * This module is safe to import in unit tests and client components.
  *
  * The authoritative enforcement is done by:
- *   1. This module (app layer — enforces permissions + rule set)
- *   2. DB trigger validate_event_state_transition() (DB layer — enforces rules)
+ *   1. This module (app layer - enforces permissions + rule set)
+ *   2. DB trigger validate_event_state_transition() (DB layer - enforces rules)
  */
 
 export type EventStatus =
@@ -41,8 +41,8 @@ export const TRANSITION_RULES: Record<EventStatus, EventStatus[]> = {
   paid: ['confirmed', 'cancelled'],
   confirmed: ['in_progress', 'cancelled'],
   in_progress: ['completed', 'cancelled'],
-  completed: [], // Terminal state — no further transitions
-  cancelled: [], // Terminal state — no further transitions
+  completed: [], // Terminal state - no further transitions
+  cancelled: [], // Terminal state - no further transitions
 }
 
 export type TransitionActor = 'chef' | 'client' | 'system'
@@ -77,7 +77,7 @@ export function getAllowedTransitions(from: EventStatus): EventStatus[] {
 
 /**
  * Returns true if the given actor is permitted to trigger the transition.
- * Does NOT check ownership — that is enforced in the server action layer.
+ * Does NOT check ownership - that is enforced in the server action layer.
  */
 export function isActorPermitted(
   from: EventStatus,

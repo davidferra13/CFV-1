@@ -1,5 +1,6 @@
 'use client'
 
+import NextImage from 'next/image'
 import type { SocialPlatform } from '@/lib/social/types'
 import { SOCIAL_PLATFORM_LABELS } from '@/lib/social/types'
 import { Image as ImageIcon } from '@/components/ui/icons'
@@ -53,35 +54,30 @@ export function SocialPlatformPreview({
       {/* Platform header */}
       <div className="flex items-center justify-between px-3 py-2 bg-stone-800 border-b border-stone-800">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-stone-700 flex items-center justify-center text-[10px] font-bold text-stone-400">
+          <div className="w-6 h-6 rounded-full bg-stone-700 flex items-center justify-center text-xxs font-bold text-stone-400">
             {accountName ? accountName[0].toUpperCase() : '?'}
           </div>
           <div>
             <div className="text-xs font-semibold text-stone-200">
               {accountName ?? 'Your Account'}
             </div>
-            <div className="text-[10px] text-stone-400">{platformLabel}</div>
+            <div className="text-xxs text-stone-400">{platformLabel}</div>
           </div>
         </div>
-        <div
-          className={`text-[10px] font-medium ${isOverLimit ? 'text-red-500' : 'text-stone-400'}`}
-        >
+        <div className={`text-xxs font-medium ${isOverLimit ? 'text-red-500' : 'text-stone-400'}`}>
           {charCount}/{charLimit}
         </div>
       </div>
 
       {/* Media preview */}
-      <div className="aspect-square bg-stone-800 flex items-center justify-center">
+      <div className="relative aspect-square bg-stone-800 flex items-center justify-center">
         {mediaUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <NextImage
             src={mediaUrl}
             alt="Post media"
+            fill
+            sizes="(max-width: 768px) 100vw, 400px"
             className="w-full h-full object-cover"
-            onError={(e) => {
-              const el = e.currentTarget
-              el.style.display = 'none'
-            }}
           />
         ) : (
           <div className="text-center text-stone-400">
@@ -107,12 +103,12 @@ export function SocialPlatformPreview({
           </p>
         )}
         {isOverLimit && (
-          <p className="text-[10px] text-red-500 font-medium">
+          <p className="text-xxs text-red-500 font-medium">
             ⚠ Caption exceeds {platformLabel} limit by {charCount - charLimit} characters
           </p>
         )}
         {hashtagLimit > 0 && hashtags.length > hashtagLimit && (
-          <p className="text-[10px] text-amber-600">
+          <p className="text-xxs text-amber-600">
             ⚠ {platformLabel} recommends max {hashtagLimit} hashtags
           </p>
         )}

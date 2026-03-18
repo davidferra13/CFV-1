@@ -1,6 +1,6 @@
 'use server'
 
-// Incident Reader — Server Action
+// Incident Reader - Server Action
 // Reads incident reports from data/incidents/ for the dashboard UI.
 
 import * as fs from 'fs'
@@ -198,8 +198,8 @@ function parseFirstLine(filepath: string): { severity: IncidentSeverity; title: 
     const content = fs.readFileSync(filepath, 'utf-8')
     const firstLine = content.split('\n')[0] || ''
 
-    // First line format: # SEVERITY — Title
-    const match = firstLine.match(/^#\s+(INFO|WARNING|ERROR|CRITICAL)\s+—\s+(.+)$/)
+    // First line format: # SEVERITY - Title
+    const match = firstLine.match(/^#\s+(INFO|WARNING|ERROR|CRITICAL)\s+-\s+(.+)$/)
     if (match) {
       const severityMap: Record<string, IncidentSeverity> = {
         INFO: 'info',

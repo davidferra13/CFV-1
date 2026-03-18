@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Report Actions
+// Commerce Engine V1 - Report Actions
 // Shift reports, daily sales summaries, by-product reports, by-channel reports.
 
 'use server'

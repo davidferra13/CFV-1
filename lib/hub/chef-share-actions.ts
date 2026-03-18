@@ -6,7 +6,7 @@ import { getOrCreateClientHubProfile } from './client-hub-actions'
 import type { HubGuestProfile } from './types'
 
 // ---------------------------------------------------------------------------
-// Chef Sharing — recommend chefs to friends
+// Chef Sharing - recommend chefs to friends
 // ---------------------------------------------------------------------------
 
 export interface ShareableChef {

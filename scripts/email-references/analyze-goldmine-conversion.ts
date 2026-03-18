@@ -10,7 +10,7 @@
  * - Pricing benchmarks by guest count, occasion, and cannabis preference
  * - Response time targets
  *
- * All analysis is deterministic — formula > AI.
+ * All analysis is deterministic - formula > AI.
  *
  * Run:
  *   npx tsx scripts/email-references/analyze-goldmine-conversion.ts
@@ -128,7 +128,7 @@ function analyzeResponseTime(threads: ThreadRecord[]) {
     }
   }
 
-  // Find sweet spot — response time window with highest conversion rate
+  // Find sweet spot - response time window with highest conversion rate
   const allWithResponse = threads.filter(
     (t) => t.first_response_minutes !== null && t.first_response_minutes > 0
   )
@@ -385,7 +385,7 @@ function deriveLeadScoreWeights(threads: ThreadRecord[]) {
     else if (absLift >= 5) weight = 5
     else weight = 2
 
-    // Negative lift means the field hurts conversion — set weight to 0
+    // Negative lift means the field hurts conversion - set weight to 0
     if (lift < 0) weight = 0
 
     // Bonus for fields present in most converted threads
@@ -604,7 +604,7 @@ function main() {
   console.log(`\nTop lead score factors:`)
   const sortedWeights = Object.entries(leadScoreWeights).sort((a, b) => b[1].weight - a[1].weight)
   for (const [key, w] of sortedWeights.slice(0, 8)) {
-    console.log(`  ${w.weight}pts — ${key} (${w.rationale})`)
+    console.log(`  ${w.weight}pts - ${key} (${w.rationale})`)
   }
 }
 

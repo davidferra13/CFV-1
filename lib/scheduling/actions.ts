@@ -868,7 +868,7 @@ export async function updateEventTravelTime(eventId: string, travelTimeMinutes: 
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // travel_time_minutes added in Layer 5 migration — type assertion until types regenerated
+  // travel_time_minutes added in Layer 5 migration - type assertion until types regenerated
   const { error } = await supabase
     .from('events')
     .update({ travel_time_minutes: travelTimeMinutes, updated_by: user.id })

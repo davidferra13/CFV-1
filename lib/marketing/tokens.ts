@@ -46,7 +46,7 @@ export function splitName(fullName: string): { first: string; last: string } {
 }
 
 /**
- * Available tokens for the UI toolbar — shown above the message body editor.
+ * Available tokens for the UI toolbar - shown above the message body editor.
  */
 export const AVAILABLE_TOKENS: Array<{ token: string; label: string }> = [
   { token: '{{first_name}}', label: 'First Name' },

@@ -4,7 +4,7 @@
  * Problem 1: Walk sprite sheet has overlapping character art between cells.
  *            Fix: extract cells, mask out adjacent character pixels using
  *            the gap between characters, then trim.
- * Problem 2: 8 images are full 2080x2048 canvases — trim to content.
+ * Problem 2: 8 images are full 2080x2048 canvases - trim to content.
  *
  * Run: node scripts/fix-remy-sprites.mjs
  */
@@ -106,7 +106,7 @@ async function fixOversizedImages() {
     const meta = await sharp(filePath).metadata()
 
     if (meta.width < 800 && meta.height < 800) {
-      console.log(`  ${file}: ${meta.width}x${meta.height} — already OK, skipping`)
+      console.log(`  ${file}: ${meta.width}x${meta.height} - already OK, skipping`)
       continue
     }
 

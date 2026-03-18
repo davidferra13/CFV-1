@@ -43,7 +43,7 @@ export type PortionInfo = {
   portionOz: number // standard cooked/served oz per guest
   portionNote: string // human-readable description of the standard
   rawFactor: number | null // multiply cooked oz × rawFactor = raw purchase oz
-  rawNote: string | null // e.g. "25% cooking loss — buy ~8 oz raw per guest"
+  rawNote: string | null // e.g. "25% cooking loss - buy ~8 oz raw per guest"
   totalOz: number // portionOz × guestCount
   totalLabel: string // formatted total e.g. "4.5 lbs cooked" or "6 cups"
   rawTotalLabel: string | null // formatted raw purchase total e.g. "5.8 lbs raw"
@@ -68,121 +68,121 @@ const STANDARDS: Partial<Record<string, Partial<Record<CoursePosition, RawStanda
       oz: 1.5,
       note: '1–2 oz cooked bite-size piece per guest',
       rawFactor: 1.33,
-      rawNote: '~25% cooking loss — buy ~2 oz raw per guest',
+      rawNote: '~25% cooking loss - buy ~2 oz raw per guest',
     },
     appetizer: {
       oz: 2.5,
-      note: '2–3 oz cooked — plated starter or passed bite',
+      note: '2–3 oz cooked - plated starter or passed bite',
       rawFactor: 1.3,
       rawNote: '~23% cooking loss',
     },
     first: {
       oz: 3.5,
-      note: '3–4 oz cooked — first-course protein',
+      note: '3–4 oz cooked - first-course protein',
       rawFactor: 1.3,
       rawNote: '~23% cooking loss',
     },
     main: {
       oz: 6.0,
-      note: '5–8 oz cooked — 6 oz is the industry standard for main course',
+      note: '5–8 oz cooked - 6 oz is the industry standard for main course',
       rawFactor: 1.33,
-      rawNote: '~25% cooking loss — buy ~8 oz raw per guest',
+      rawNote: '~25% cooking loss - buy ~8 oz raw per guest',
     },
     side: {
       oz: 2.0,
-      note: '~2 oz cooked — protein as a supporting element',
+      note: '~2 oz cooked - protein as a supporting element',
       rawFactor: 1.25,
       rawNote: '~20% cooking loss',
     },
     full_meal: {
       oz: 7.0,
-      note: '7–8 oz cooked — generous standalone protein entrée',
+      note: '7–8 oz cooked - generous standalone protein entrée',
       rawFactor: 1.33,
-      rawNote: '~25% cooking loss — buy ~9 oz raw per guest',
+      rawNote: '~25% cooking loss - buy ~9 oz raw per guest',
     },
   },
 
   soup: {
-    amuse: { oz: 2.0, note: '2 oz (60 ml) — shooter or small cup amuse' },
-    appetizer: { oz: 4.0, note: '4 oz (120 ml) — small appetizer bowl' },
-    first: { oz: 6.0, note: '6 oz (180 ml) — standard first-course soup bowl' },
-    main: { oz: 8.0, note: '8 oz (240 ml) — medium bowl' },
-    full_meal: { oz: 12.0, note: '12 oz (355 ml) — hearty standalone soup meal' },
+    amuse: { oz: 2.0, note: '2 oz (60 ml) - shooter or small cup amuse' },
+    appetizer: { oz: 4.0, note: '4 oz (120 ml) - small appetizer bowl' },
+    first: { oz: 6.0, note: '6 oz (180 ml) - standard first-course soup bowl' },
+    main: { oz: 8.0, note: '8 oz (240 ml) - medium bowl' },
+    full_meal: { oz: 12.0, note: '12 oz (355 ml) - hearty standalone soup meal' },
   },
 
   sauce: {
-    amuse: { oz: 0.5, note: '1 tbsp (15 ml) — pool, drizzle, or dip' },
+    amuse: { oz: 0.5, note: '1 tbsp (15 ml) - pool, drizzle, or dip' },
     appetizer: { oz: 1.0, note: '2 tbsp (30 ml) per plate' },
-    first: { oz: 1.0, note: '2 tbsp (30 ml) — add 25% extra for reduction waste' },
-    main: { oz: 1.5, note: '3 tbsp (45 ml) — make 20–25% extra (reduction waste)' },
-    side: { oz: 1.0, note: '2 tbsp (30 ml) — dipping or drizzle accompaniment' },
-    full_meal: { oz: 2.0, note: '4 tbsp (60 ml) — generous plated sauce' },
+    first: { oz: 1.0, note: '2 tbsp (30 ml) - add 25% extra for reduction waste' },
+    main: { oz: 1.5, note: '3 tbsp (45 ml) - make 20–25% extra (reduction waste)' },
+    side: { oz: 1.0, note: '2 tbsp (30 ml) - dipping or drizzle accompaniment' },
+    full_meal: { oz: 2.0, note: '4 tbsp (60 ml) - generous plated sauce' },
   },
 
   salad: {
-    amuse: { oz: 1.5, note: '1.5 oz dressed — micro salad or amuse garnish' },
-    appetizer: { oz: 2.5, note: '2–3 oz dressed — light passed or plated starter' },
-    first: { oz: 3.0, note: '3 oz dressed — standard first-course salad' },
-    main: { oz: 5.0, note: '4–6 oz dressed — main-course salad (no protein)' },
-    side: { oz: 2.5, note: '2–3 oz dressed — side salad' },
-    full_meal: { oz: 6.0, note: '6 oz dressed — generous standalone salad' },
+    amuse: { oz: 1.5, note: '1.5 oz dressed - micro salad or amuse garnish' },
+    appetizer: { oz: 2.5, note: '2–3 oz dressed - light passed or plated starter' },
+    first: { oz: 3.0, note: '3 oz dressed - standard first-course salad' },
+    main: { oz: 5.0, note: '4–6 oz dressed - main-course salad (no protein)' },
+    side: { oz: 2.5, note: '2–3 oz dressed - side salad' },
+    full_meal: { oz: 6.0, note: '6 oz dressed - generous standalone salad' },
   },
 
   starch: {
     appetizer: { oz: 2.0, note: '2 oz cooked starch element' },
-    first: { oz: 3.0, note: '3 oz cooked — first-course starch' },
-    main: { oz: 4.5, note: '4–5 oz cooked — standard starch accompaniment to protein' },
-    side: { oz: 4.0, note: '4 oz cooked — side starch portion' },
-    full_meal: { oz: 6.0, note: '6 oz cooked — hearty standalone starch dish' },
+    first: { oz: 3.0, note: '3 oz cooked - first-course starch' },
+    main: { oz: 4.5, note: '4–5 oz cooked - standard starch accompaniment to protein' },
+    side: { oz: 4.0, note: '4 oz cooked - side starch portion' },
+    full_meal: { oz: 6.0, note: '6 oz cooked - hearty standalone starch dish' },
   },
 
   pasta: {
-    appetizer: { oz: 2.5, note: '2.5 oz cooked (≈ 1.5 oz dry) — light pasta starter' },
-    first: { oz: 3.0, note: '3 oz cooked (≈ 2 oz dry) — classic Italian first-course portion' },
-    main: { oz: 5.0, note: '5 oz cooked (≈ 3 oz dry) — satisfying main-course pasta' },
-    side: { oz: 3.0, note: '3 oz cooked (≈ 2 oz dry) — side pasta' },
-    full_meal: { oz: 6.0, note: '6 oz cooked (≈ 4 oz dry) — generous pasta entrée' },
+    appetizer: { oz: 2.5, note: '2.5 oz cooked (≈ 1.5 oz dry) - light pasta starter' },
+    first: { oz: 3.0, note: '3 oz cooked (≈ 2 oz dry) - classic Italian first-course portion' },
+    main: { oz: 5.0, note: '5 oz cooked (≈ 3 oz dry) - satisfying main-course pasta' },
+    side: { oz: 3.0, note: '3 oz cooked (≈ 2 oz dry) - side pasta' },
+    full_meal: { oz: 6.0, note: '6 oz cooked (≈ 4 oz dry) - generous pasta entrée' },
   },
 
   vegetable: {
-    amuse: { oz: 1.5, note: '1.5 oz — raw crudité bite or cooked amuse garnish' },
+    amuse: { oz: 1.5, note: '1.5 oz - raw crudité bite or cooked amuse garnish' },
     appetizer: { oz: 2.5, note: '2–3 oz cooked or raw per serve' },
-    first: { oz: 3.0, note: '3 oz cooked — vegetable first course' },
+    first: { oz: 3.0, note: '3 oz cooked - vegetable first course' },
     main: {
       oz: 4.0,
-      note: '4 oz cooked — featured or side vegetable',
+      note: '4 oz cooked - featured or side vegetable',
       rawFactor: 1.15,
       rawNote: '~12% trim and cooking loss',
     },
     side: {
       oz: 4.0,
-      note: '4 oz cooked — standard vegetable side',
+      note: '4 oz cooked - standard vegetable side',
       rawFactor: 1.15,
       rawNote: '~12% trim and cooking loss',
     },
-    full_meal: { oz: 6.0, note: '6 oz cooked — vegetable main course (larger portion)' },
+    full_meal: { oz: 6.0, note: '6 oz cooked - vegetable main course (larger portion)' },
   },
 
   dessert: {
-    amuse: { oz: 1.5, note: '1.5 oz — mignardise, pre-dessert bite, or palate cleanser' },
-    appetizer: { oz: 2.0, note: '2 oz — light sweet starter or intermezzo' },
-    dessert: { oz: 4.0, note: '4 oz — standard plated dessert portion' },
-    full_meal: { oz: 5.0, note: '5 oz — generous standalone dessert (e.g., dessert dinner)' },
+    amuse: { oz: 1.5, note: '1.5 oz - mignardise, pre-dessert bite, or palate cleanser' },
+    appetizer: { oz: 2.0, note: '2 oz - light sweet starter or intermezzo' },
+    dessert: { oz: 4.0, note: '4 oz - standard plated dessert portion' },
+    full_meal: { oz: 5.0, note: '5 oz - generous standalone dessert (e.g., dessert dinner)' },
   },
 
   appetizer: {
-    amuse: { oz: 1.5, note: '1–2 oz per piece — 1 to 2 pieces per guest' },
-    appetizer: { oz: 3.5, note: '3–4 oz — plated appetizer or per-person board portion' },
-    first: { oz: 4.0, note: '4 oz — substantial appetizer-style first course' },
-    full_meal: { oz: 6.0, note: '6 oz — appetizer as a light standalone meal' },
+    amuse: { oz: 1.5, note: '1–2 oz per piece - 1 to 2 pieces per guest' },
+    appetizer: { oz: 3.5, note: '3–4 oz - plated appetizer or per-person board portion' },
+    first: { oz: 4.0, note: '4 oz - substantial appetizer-style first course' },
+    full_meal: { oz: 6.0, note: '6 oz - appetizer as a light standalone meal' },
   },
 
   bread: {
     appetizer: { oz: 1.5, note: '1–2 rolls, or 2 slices per guest' },
-    first: { oz: 2.0, note: '2 oz — bread course with butter or accompaniment' },
+    first: { oz: 2.0, note: '2 oz - bread course with butter or accompaniment' },
     main: { oz: 1.5, note: '1–2 slices served alongside the main' },
     side: { oz: 1.5, note: '1–2 pieces as table bread' },
-    full_meal: { oz: 3.0, note: '3 oz — generous bread service' },
+    full_meal: { oz: 3.0, note: '3 oz - generous bread service' },
   },
 
   condiment: {
@@ -256,7 +256,7 @@ const SCALING_RULES: Record<string, ScalingRule> = {
   protein: {
     exponent: 1.0,
     label: 'linear',
-    reason: 'Always buy by weight per guest — protein scales 1:1, no exceptions.',
+    reason: 'Always buy by weight per guest - protein scales 1:1, no exceptions.',
   },
   produce: {
     exponent: 1.0,
@@ -267,13 +267,13 @@ const SCALING_RULES: Record<string, ScalingRule> = {
     exponent: 0.92,
     label: 'near-linear',
     reason:
-      'Cream and butter slightly concentrate in larger batches — start with ~90–92% and taste.',
+      'Cream and butter slightly concentrate in larger batches - start with ~90–92% and taste.',
   },
   pantry: {
     exponent: 0.85,
     label: 'sub-linear',
     reason:
-      'Pantry items (stocks, canned goods, vinegars) are more efficient at scale — use 80–88%.',
+      'Pantry items (stocks, canned goods, vinegars) are more efficient at scale - use 80–88%.',
   },
   spice: {
     exponent: 0.75,
@@ -284,17 +284,17 @@ const SCALING_RULES: Record<string, ScalingRule> = {
   oil: {
     exponent: 0.88,
     label: 'sub-linear',
-    reason: 'Cooking fat coats larger volumes more efficiently — less oil needed proportionally.',
+    reason: 'Cooking fat coats larger volumes more efficiently - less oil needed proportionally.',
   },
   alcohol: {
     exponent: 0.9,
     label: 'slightly sub-linear',
-    reason: 'Wine and spirits concentrate as liquid reduces — flavor compounds carry further.',
+    reason: 'Wine and spirits concentrate as liquid reduces - flavor compounds carry further.',
   },
   baking: {
     exponent: 1.0,
     label: 'linear (chemistry)',
-    reason: 'Baking is chemistry — NEVER sub-scale leavening, eggs, or ratios. Always linear.',
+    reason: 'Baking is chemistry - NEVER sub-scale leavening, eggs, or ratios. Always linear.',
   },
   frozen: {
     exponent: 1.0,
@@ -304,13 +304,13 @@ const SCALING_RULES: Record<string, ScalingRule> = {
   canned: {
     exponent: 0.95,
     label: 'near-linear',
-    reason: 'Canned goods are near-linear — slight efficiency at large scale.',
+    reason: 'Canned goods are near-linear - slight efficiency at large scale.',
   },
   fresh_herb: {
     exponent: 0.9,
     label: 'slightly sub-linear',
     reason:
-      'Visual garnish uses are near-linear; flavoring uses concentrate — split the difference.',
+      'Visual garnish uses are near-linear; flavoring uses concentrate - split the difference.',
   },
   dry_herb: {
     exponent: 0.75,
@@ -321,7 +321,7 @@ const SCALING_RULES: Record<string, ScalingRule> = {
     exponent: 0.8,
     label: 'sub-linear',
     reason:
-      'Mustard, Worcestershire, fish sauce, hot sauce — punch-above-weight ingredients. Use 75–85%.',
+      'Mustard, Worcestershire, fish sauce, hot sauce - punch-above-weight ingredients. Use 75–85%.',
   },
   beverage: {
     exponent: 1.0,
@@ -331,7 +331,7 @@ const SCALING_RULES: Record<string, ScalingRule> = {
   specialty: {
     exponent: 0.85,
     label: 'sub-linear',
-    reason: 'Specialty ingredients tend to be flavor-forward — use 80–88% and taste.',
+    reason: 'Specialty ingredients tend to be flavor-forward - use 80–88% and taste.',
   },
   other: {
     exponent: 0.9,

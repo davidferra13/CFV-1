@@ -2,7 +2,7 @@
  * Bridge between deterministic email extractors and the Gmail sync pipeline.
  *
  * Runs instant regex extraction on raw email text, then computes a lead score.
- * No Ollama, no network calls — works offline, instantly, for free.
+ * No Ollama, no network calls - works offline, instantly, for free.
  *
  * Used by handleInquiry() to populate inquiry fields BEFORE attempting Ollama,
  * and by platform handlers to add lead scoring to already-parsed inquiries.
@@ -118,7 +118,7 @@ export function scoreInquiryFields(fields: {
       referral_signals: fields.referral_source ? [fields.referral_source] : [],
     },
     {
-      total_messages: 1, // First contact — single message
+      total_messages: 1, // First contact - single message
       has_pricing_quoted: false, // Chef hasn't quoted yet
     }
   )

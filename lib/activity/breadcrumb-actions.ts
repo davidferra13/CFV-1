@@ -1,4 +1,4 @@
-// Chef breadcrumb query server actions — reading + session grouping for retrace mode.
+// Chef breadcrumb query server actions - reading + session grouping for retrace mode.
 
 'use server'
 
@@ -83,7 +83,7 @@ function groupIntoSessions(breadcrumbs: BreadcrumbEntry[]): BreadcrumbSession[] 
     const curr = new Date(breadcrumbs[i].created_at).getTime()
 
     if (curr - prev > SESSION_GAP_MS) {
-      // Gap detected — finalize current session
+      // Gap detected - finalize current session
       sessions.push(buildSession(currentSession))
       currentSession = [breadcrumbs[i]]
     } else {

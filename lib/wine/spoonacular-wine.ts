@@ -1,4 +1,4 @@
-// Spoonacular Wine Pairing — uses existing SPOONACULAR_API_KEY
+// Spoonacular Wine Pairing - uses existing SPOONACULAR_API_KEY
 // https://spoonacular.com/food-api/docs#Wine-Pairing
 // Part of the same free tier (150 req/day)
 

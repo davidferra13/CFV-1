@@ -54,7 +54,7 @@ export type InitiateGiftCardPurchaseInput = z.infer<typeof InitiateGiftCardPurch
 export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseInput) {
   const validated = InitiateGiftCardPurchaseSchema.parse(input)
 
-  // Resolve logged-in user (if any) — gift card purchases are also open to guests
+  // Resolve logged-in user (if any) - gift card purchases are also open to guests
   const currentUser = await getCurrentUser()
   const supabase: any = createServerClient({ admin: true })
 
@@ -108,7 +108,7 @@ export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseIn
           currency: 'usd',
           unit_amount: validated.amountCents,
           product_data: {
-            name: `Gift Card — ${chefDisplayName}`,
+            name: `Gift Card - ${chefDisplayName}`,
             description: `$${amountFormatted} gift card for ${chefDisplayName}'s private chef services. Code will be emailed to ${validated.recipientEmail}.`,
           },
         },

@@ -4,7 +4,7 @@
 // Vertical timeline with icons, color coding, type filters, inline note creation,
 // and pinned notes at top.
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, memo } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import {
@@ -220,7 +220,7 @@ export function ClientTimeline({ clientId, initialItems, totalCount }: ClientTim
         <div className="px-5 py-3 border-b border-stone-800 bg-stone-850">
           <div className="flex items-center gap-1.5 mb-2">
             <Pin className="w-3 h-3 text-amber-500" />
-            <span className="text-[10px] font-semibold text-amber-500 uppercase tracking-wide">
+            <span className="text-xxs font-semibold text-amber-500 uppercase tracking-wide">
               Pinned
             </span>
           </div>
@@ -231,7 +231,7 @@ export function ClientTimeline({ clientId, initialItems, totalCount }: ClientTim
                 className="text-sm text-stone-200 bg-stone-800 rounded-lg px-3 py-2"
               >
                 <p className="text-stone-200">{item.description}</p>
-                <p className="text-[10px] text-stone-500 mt-1">
+                <p className="text-xxs text-stone-500 mt-1">
                   {formatTimeLabel(item.date)}
                   {item.metadata?.category && item.metadata.category !== 'general' && (
                     <span className="ml-1.5 text-stone-400">({item.metadata.category})</span>
@@ -268,7 +268,8 @@ export function ClientTimeline({ clientId, initialItems, totalCount }: ClientTim
 
 // ── Timeline Row ─────────────────────────────────────────────────────────────
 
-function TimelineRow({ item }: { item: TimelineItem }) {
+// Memoized: rendered in .map() for each timeline entry. Receives stable data objects.
+const TimelineRow = memo(function TimelineRow({ item }: { item: TimelineItem }) {
   const cfg = TYPE_CONFIG[item.type]
   const IconComponent = cfg.icon
   const timeLabel = formatTimeLabel(item.date)
@@ -286,19 +287,19 @@ function TimelineRow({ item }: { item: TimelineItem }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span
-            className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${cfg.badgeBg} ${cfg.badgeText}`}
+            className={`text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 ${cfg.badgeBg} ${cfg.badgeText}`}
           >
             {cfg.label}
           </span>
           <span className="text-xs text-stone-300 truncate">{item.title}</span>
-          {item.status && <span className="text-[10px] text-stone-500">({item.status})</span>}
+          {item.status && <span className="text-xxs text-stone-500">({item.status})</span>}
         </div>
         {item.description && (
           <p className="text-xs text-stone-400 mt-0.5 truncate">{item.description}</p>
         )}
       </div>
 
-      <span className="text-[11px] text-stone-500 shrink-0 mt-0.5">{timeLabel}</span>
+      <span className="text-xs-tight text-stone-500 shrink-0 mt-0.5">{timeLabel}</span>
     </div>
   )
 
@@ -306,7 +307,7 @@ function TimelineRow({ item }: { item: TimelineItem }) {
     return <Link href={item.linkUrl}>{inner}</Link>
   }
   return inner
-}
+})
 
 // ── Inline Note Form ─────────────────────────────────────────────────────────
 
@@ -351,7 +352,7 @@ function InlineNoteForm({
             />
             <span className="text-xs text-stone-400">Pin this note</span>
           </label>
-          <span className="text-[10px] text-stone-500">
+          <span className="text-xxs text-stone-500">
             {content.length}/{MAX_CHARS}
           </span>
         </div>

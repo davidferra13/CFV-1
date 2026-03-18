@@ -18,7 +18,7 @@ export function verifyCronAuth(authHeader: string | null): NextResponse | null {
   const expected = `Bearer ${secret}`
   const actual = authHeader ?? ''
 
-  // Timing-safe comparison — prevent timing attacks
+  // Timing-safe comparison - prevent timing attacks
   if (
     actual.length !== expected.length ||
     !timingSafeEqual(Buffer.from(actual), Buffer.from(expected))

@@ -1,5 +1,5 @@
-// Remy Nudge Rules — Deterministic rules for proactive mascot nudges.
-// All messages are pre-defined strings — no LLM calls.
+// Remy Nudge Rules - Deterministic rules for proactive mascot nudges.
+// All messages are pre-defined strings - no LLM calls.
 // Each rule evaluates against the activity tracker's session data.
 
 import type { SessionActivity } from '@/lib/ai/remy-activity-tracker'
@@ -9,7 +9,7 @@ import type { SessionActivity } from '@/lib/ai/remy-activity-tracker'
 export interface NudgeRule {
   /** Unique identifier for cooldown tracking */
   id: string
-  /** Deterministic condition — pure function, no side effects */
+  /** Deterministic condition - pure function, no side effects */
   condition: (activity: SessionActivity) => boolean
   /** What the speech bubble says */
   message: (activity: SessionActivity) => string
@@ -31,7 +31,7 @@ export const NUDGE_RULES: NudgeRule[] = [
       )
       return recentErrors.length >= 2
     },
-    message: () => 'Spotted some errors — want help?',
+    message: () => 'Spotted some errors - want help?',
     cooldownMinutes: 15,
   },
   {
@@ -53,7 +53,7 @@ export const NUDGE_RULES: NudgeRule[] = [
   {
     id: 'long-session',
     condition: (activity) => activity.sessionMinutes > 120,
-    message: () => "You've been at it a while — take a break, chef!",
+    message: () => "You've been at it a while - take a break, chef!",
     cooldownMinutes: 60,
   },
   {

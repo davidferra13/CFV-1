@@ -1,5 +1,5 @@
 /**
- * Remy Eval — Automated Test Harness
+ * Remy Eval - Automated Test Harness
  *
  * Sends test queries through Remy's streaming API, captures responses,
  * grades them on accuracy/voice/safety, and generates a report.
@@ -96,7 +96,7 @@ async function authenticate(): Promise<string> {
     throw new Error(`Auth failed: ${res.status} ${await res.text()}`)
   }
 
-  // Extract session cookies — strip attributes (Path, HttpOnly, etc.),
+  // Extract session cookies - strip attributes (Path, HttpOnly, etc.),
   // keep only name=value pairs for the Cookie header
   const cookies = res.headers.getSetCookie?.() ?? []
   const cookieStr = cookies.map((c) => c.split(';')[0]).join('; ')
@@ -188,7 +188,7 @@ async function sendToRemy(
           if (parsed.type === 'token' && parsed.data) {
             fullResponse += parsed.data
           } else if (parsed.type === 'done') {
-            // Done event — use fullResponse if available, otherwise keep accumulated tokens
+            // Done event - use fullResponse if available, otherwise keep accumulated tokens
             if (parsed.data) fullResponse = parsed.data
           } else if (parsed.type === 'error') {
             fullResponse = `[REMY ERROR]: ${parsed.data ?? parsed.message}`
@@ -238,7 +238,7 @@ function gradeByRules(test: TestCase, response: string): RuleScore {
     }
   }
 
-  // Refusal check — if we expect a refusal, the response should NOT contain recipe/cooking instructions
+  // Refusal check - if we expect a refusal, the response should NOT contain recipe/cooking instructions
   let refusalCorrect: boolean | null = null
   if (test.expectRefusal) {
     // A refusal is correct if the response does NOT provide what was asked
@@ -394,13 +394,13 @@ function generateReport(results: TestResult[]): EvalReport {
   // Identify weak areas
   const weakAreas: string[] = []
   if (avgScores.accuracy < 3.5)
-    weakAreas.push('Data accuracy needs improvement — Remy may be fabricating or missing data')
+    weakAreas.push('Data accuracy needs improvement - Remy may be fabricating or missing data')
   if (avgScores.voice < 3.5)
-    weakAreas.push('Voice/personality needs work — responses sound too generic or robotic')
+    weakAreas.push('Voice/personality needs work - responses sound too generic or robotic')
   if (avgScores.helpfulness < 3.5)
-    weakAreas.push('Helpfulness is low — responses may be too vague or incomplete')
+    weakAreas.push('Helpfulness is low - responses may be too vague or incomplete')
   if (avgScores.safety < 4.0)
-    weakAreas.push('Safety concerns — guardrails may not be holding (recipes, off-topic, etc.)')
+    weakAreas.push('Safety concerns - guardrails may not be holding (recipes, off-topic, etc.)')
   for (const [cat, data] of Object.entries(categoryBreakdown)) {
     if (data.failed > data.passed) weakAreas.push(`Category "${cat}" has more failures than passes`)
   }
@@ -433,7 +433,7 @@ async function main() {
   if (idFilter) tests = tests.filter((t) => t.id === idFilter)
 
   console.log('╔══════════════════════════════════════════════════════╗')
-  console.log('║         Remy Eval — Automated Test Harness          ║')
+  console.log('║         Remy Eval - Automated Test Harness          ║')
   console.log('╠══════════════════════════════════════════════════════╣')
   console.log(`║  Tests:     ${String(tests.length).padEnd(40)}║`)
   const gradingLabel = noGrade ? 'Rules only' : `Rules + LLM (${GRADER_MODEL})`
@@ -471,8 +471,8 @@ async function main() {
   }
 
   // ── Phase 1: Collect all Remy responses (keeps 30b model loaded) ──
-  console.log('\n🧪 Phase 1/2 — Collecting Remy responses...\n')
-  console.log('  (30b model stays loaded — no model swaps between tests)\n')
+  console.log('\n🧪 Phase 1/2 - Collecting Remy responses...\n')
+  console.log('  (30b model stays loaded - no model swaps between tests)\n')
   const pendingResults: Array<{
     test: TestCase
     response: string
@@ -487,10 +487,10 @@ async function main() {
 
     // Skip empty query
     if (!test.query) {
-      console.log(`  ⏭ ${test.id}: (empty query — skipped)`)
+      console.log(`  ⏭ ${test.id}: (empty query - skipped)`)
       pendingResults.push({
         test,
-        response: '[SKIPPED — empty query]',
+        response: '[SKIPPED - empty query]',
         timeMs: 0,
         errors: [],
         ruleScore: {
@@ -512,7 +512,7 @@ async function main() {
       if (!(response.includes('[REMY ERROR]') && response.includes('loading'))) break
       const waitSec = retry === 0 ? 15 : 30
       console.log(
-        `     ⏳ Ollama loading — retrying in ${waitSec}s (attempt ${retry + 2}/${MAX_RETRIES + 1})...`
+        `     ⏳ Ollama loading - retrying in ${waitSec}s (attempt ${retry + 2}/${MAX_RETRIES + 1})...`
       )
       await new Promise((r) => setTimeout(r, waitSec * 1000))
       const retryResult = await sendToRemy(test.query, cookies, test.currentPage)
@@ -542,7 +542,7 @@ async function main() {
   }
 
   // ── Phase 2: Batch-grade with LLM (loads 4b model once) ──
-  console.log('\n📊 Phase 2/2 — LLM grading all responses...\n')
+  console.log('\n📊 Phase 2/2 - LLM grading all responses...\n')
   const results: TestResult[] = []
 
   if (!noGrade) {
@@ -563,7 +563,7 @@ async function main() {
       })
       console.log('  ✅ Grader ready\n')
     } catch (err) {
-      console.log(`  ⚠️ Grader warmup failed: ${(err as Error).message} — grading may fail\n`)
+      console.log(`  ⚠️ Grader warmup failed: ${(err as Error).message} - grading may fail\n`)
     }
   }
 
@@ -666,7 +666,7 @@ async function main() {
     console.log(`\n📄 Full report saved: ${reportPath}`)
   } catch {
     console.log('\n📄 Report (inline):')
-    console.log(JSON.stringify({ ...report, results: '(omitted — see full report file)' }, null, 2))
+    console.log(JSON.stringify({ ...report, results: '(omitted - see full report file)' }, null, 2))
   }
 
   // Exit with failure code if tests failed

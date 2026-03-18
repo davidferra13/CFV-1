@@ -103,23 +103,23 @@ export function CarryForwardMatchPanel({ eventId }: { eventId: string }) {
                 <span className="text-stone-400">→</span>
                 <span className="text-stone-400">{match.neededIngredient}</span>
                 <span
-                  className={`text-[10px] px-1 rounded ml-auto ${match.matchType === 'exact' ? 'bg-green-900 text-green-700' : match.matchType === 'partial' ? 'bg-blue-900 text-blue-700' : 'bg-amber-900 text-amber-700'}`}
+                  className={`text-xxs px-1 rounded ml-auto ${match.matchType === 'exact' ? 'bg-green-900 text-green-700' : match.matchType === 'partial' ? 'bg-blue-900 text-blue-700' : 'bg-amber-900 text-amber-700'}`}
                 >
                   {match.matchType}
                 </span>
               </div>
               {match.estimatedSavingsCents && (
-                <div className="text-[11px] text-green-700">
+                <div className="text-xs-tight text-green-700">
                   Est. savings: {formatDollars(match.estimatedSavingsCents)}
                 </div>
               )}
-              {match.notes && <div className="text-[11px] text-stone-500">{match.notes}</div>}
+              {match.notes && <div className="text-xs-tight text-stone-500">{match.notes}</div>}
             </div>
           ))}
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Auto match · Verify quantities and freshness before using carry-forward items
       </p>
     </div>

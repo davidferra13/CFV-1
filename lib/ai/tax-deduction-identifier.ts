@@ -3,7 +3,7 @@
 // Tax Deduction Identifier
 // Scans the expense ledger and flags potentially missed or miscategorized deductions.
 // Routed to Ollama (financial PII).
-// Output is INSIGHT ONLY — never modifies ledger entries.
+// Output is INSIGHT ONLY - never modifies ledger entries.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -125,7 +125,7 @@ Return JSON: {
   }))
 
   const { result, source } = await withAiFallback(
-    // Formula: IRS rule-based analysis — deterministic
+    // Formula: IRS rule-based analysis - deterministic
     () => identifyDeductionsFormula(formulaExpenses, formulaMileage),
     // AI: enhanced analysis with contextual suggestions (when Ollama is online)
     () => parseWithOllama(systemPrompt, userContent, TaxDeductionResultSchema)

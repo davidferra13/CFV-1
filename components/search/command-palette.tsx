@@ -385,7 +385,7 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
             autoComplete="off"
             spellCheck={false}
           />
-          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-stone-500 bg-stone-800 border border-stone-700">
+          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-xxs font-mono text-stone-500 bg-stone-800 border border-stone-700">
             ESC
           </kbd>
         </div>
@@ -394,7 +394,7 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
         <div ref={listRef} className="max-h-[50vh] overflow-y-auto py-2" role="listbox">
           {grouped.map((group) => (
             <div key={group.section}>
-              <div className="px-4 py-1.5 text-[11px] font-bold text-stone-500 uppercase tracking-wider">
+              <div className="px-4 py-1.5 text-xs-tight font-bold text-stone-500 uppercase tracking-wider">
                 {group.section}
               </div>
               {group.items.map((item) => {
@@ -437,7 +437,7 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
                       )}
                     </div>
                     {isActive && (
-                      <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-stone-500 bg-stone-800 border border-stone-700">
+                      <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-xxs font-mono text-stone-500 bg-stone-800 border border-stone-700">
                         ↵
                       </kbd>
                     )}
@@ -457,7 +457,7 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
         </div>
 
         {/* Footer hints */}
-        <div className="flex items-center gap-4 px-4 py-2 border-t border-stone-800 text-[11px] text-stone-500">
+        <div className="flex items-center gap-4 px-4 py-2 border-t border-stone-800 text-xs-tight text-stone-500">
           <span className="flex items-center gap-1">
             <kbd className="px-1 py-0.5 rounded bg-stone-800 border border-stone-700 font-mono">
               ↑↓

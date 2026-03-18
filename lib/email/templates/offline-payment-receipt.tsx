@@ -79,7 +79,7 @@ export function OfflinePaymentReceiptEmail({
                 {loyaltyTier
                   ? `${loyaltyTier.charAt(0).toUpperCase() + loyaltyTier.slice(1)} Tier`
                   : ''}
-                {loyaltyTier && loyaltyPoints ? ' — ' : ''}
+                {loyaltyTier && loyaltyPoints ? ' - ' : ''}
                 {loyaltyPoints ? `${loyaltyPoints.toLocaleString()} points` : ''}
               </td>
             </tr>

@@ -32,7 +32,7 @@ export function DataFlowAnimated() {
             </div>
             <div>
               <div className="text-sm font-semibold text-red-900">Other AI Apps</div>
-              <div className="text-[11px] text-red-600">Data sent to third parties</div>
+              <div className="text-xs-tight text-red-600">Data sent to third parties</div>
             </div>
           </div>
 
@@ -40,17 +40,17 @@ export function DataFlowAnimated() {
           <div className="flex flex-col items-center gap-1 py-2">
             <div className="rounded-lg border border-red-200 bg-red-950 px-4 py-2 text-center">
               <div className="text-xs font-semibold text-red-900">You</div>
-              <div className="text-[10px] text-red-500">Client names, budgets...</div>
+              <div className="text-xxs text-red-500">Client names, budgets...</div>
             </div>
             <div className="text-red-400 text-xs">↓ sent to</div>
             <div className="rounded-lg border border-red-300 bg-red-900 px-4 py-2 text-center">
               <div className="text-xs font-semibold text-red-900">Their Servers</div>
-              <div className="text-[10px] text-red-500">OpenAI, Google, etc.</div>
+              <div className="text-xxs text-red-500">OpenAI, Google, etc.</div>
             </div>
             <div className="text-red-400 text-xs">→</div>
             <div className="rounded-lg border border-red-300 bg-red-900 px-4 py-2 text-center">
               <div className="text-xs font-semibold text-red-900">Third Parties</div>
-              <div className="text-[10px] text-red-500">Training, ads, leaks</div>
+              <div className="text-xxs text-red-500">Training, ads, leaks</div>
             </div>
           </div>
 
@@ -77,32 +77,32 @@ export function DataFlowAnimated() {
             </div>
             <div>
               <div className="text-sm font-semibold text-emerald-900">ChefFlow + Remy</div>
-              <div className="text-[11px] text-emerald-600">Data never leaves ChefFlow</div>
+              <div className="text-xs-tight text-emerald-600">Data never leaves ChefFlow</div>
             </div>
           </div>
 
           {/* Flow diagram */}
           <div className="flex flex-col items-center gap-1 py-2">
             <div className="rounded-lg border-2 border-dashed border-emerald-300 bg-emerald-950 p-3 space-y-2 w-full">
-              <div className="text-[10px] font-semibold text-emerald-800 text-center">
+              <div className="text-xxs font-semibold text-emerald-800 text-center">
                 ChefFlow (everything stays here)
               </div>
               <div className="flex items-center justify-center gap-2">
                 <div className="rounded-md border border-emerald-300 bg-emerald-900 px-3 py-1.5 text-center">
                   <div className="text-xs font-semibold text-emerald-900">Your Data</div>
-                  <div className="text-[10px] text-emerald-600">Clients, menus</div>
+                  <div className="text-xxs text-emerald-600">Clients, menus</div>
                 </div>
                 <div className="text-emerald-400 text-xs">⇄</div>
                 <div className="rounded-md border border-emerald-300 bg-emerald-900 px-3 py-1.5 text-center">
                   <div className="text-xs font-semibold text-emerald-900">Remy (AI)</div>
-                  <div className="text-[10px] text-emerald-600">Private servers</div>
+                  <div className="text-xxs text-emerald-600">Private servers</div>
                 </div>
               </div>
             </div>
             <div className="rounded-md border border-emerald-300 bg-emerald-200 px-3 py-1.5 text-center mt-1">
               <div className="flex items-center gap-1 justify-center">
                 <Shield className="h-3 w-3 text-emerald-700" />
-                <span className="text-[10px] font-bold text-emerald-800">
+                <span className="text-xxs font-bold text-emerald-800">
                   No Third-Party AI Services
                 </span>
               </div>

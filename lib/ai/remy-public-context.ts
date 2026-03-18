@@ -1,4 +1,4 @@
-// Remy — Public Layer Context Loader
+// Remy - Public Layer Context Loader
 // Loads ONLY public-safe data for the visitor-facing Remy.
 // No financials, no client lists, no internal notes.
 
@@ -64,7 +64,7 @@ export async function loadRemyPublicContext(tenantId: string): Promise<RemyPubli
       }
     }
   } catch {
-    // Table may not exist yet — no problem
+    // Table may not exist yet - no problem
   }
 
   return {

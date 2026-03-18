@@ -65,7 +65,7 @@ export async function evaluateAutomations(
             .maybeSingle()
 
           if (recentExecution) {
-            // Already fired recently — skip silently (no log entry)
+            // Already fired recently - skip silently (no log entry)
             continue
           }
         }
@@ -75,7 +75,7 @@ export async function evaluateAutomations(
 
         // ── Evaluate conditions ─────────────────────────────────────────
         if (!evaluateConditions(conditions, fullContext)) {
-          // Conditions not met — log as skipped
+          // Conditions not met - log as skipped
           await logExecution(supabase, tenantId, rule, fullContext, 'skipped')
           continue
         }

@@ -1,7 +1,7 @@
 // Pipeline Runner
 // Runs synthetic scenarios through ChefFlow's real AI prompt logic.
 // Calls Ollama directly using the same system prompts as the production modules.
-// No auth context required — operates on synthetic data only.
+// No auth context required - operates on synthetic data only.
 
 import { getOllamaConfig } from '@/lib/ai/providers'
 import { makeOllamaClient } from './ollama-client'
@@ -22,14 +22,14 @@ function getModulePrompts(scenario: SimScenario): { system: string; user: string
     case 'inquiry_parse':
       return {
         system: `You are a private chef's assistant. Extract structured information from an inquiry message.
-Return valid JSON only — no markdown, no prose.
+Return valid JSON only - no markdown, no prose.
 
 CRITICAL RULES:
-1. If the client's name is NOT clearly stated (as "My name is X", "I'm X", "— X" signature, or "This is X"), return name: null. Do NOT guess from email address, greeting, or context.
+1. If the client's name is NOT clearly stated (as "My name is X", "I'm X", "- X" signature, or "This is X"), return name: null. Do NOT guess from email address, greeting, or context.
 2. If a specific number of guests is NOT stated, return guestCount: null. Vague phrases ("a few friends", "some colleagues", "small group") are NOT guest counts.
 3. NEVER fabricate data that isn't in the email.
 4. Only extract information explicitly written in the message. Never infer or guess.
-5. A greeting like "Hi there" or "Hello" is NOT a client name — return null.
+5. A greeting like "Hi there" or "Hello" is NOT a client name - return null.
 6. If no email address is written, return null for clientEmail.
 7. If no phone number is written, return null for clientPhone.
 8. If no date is explicitly stated, return null for eventDate.
@@ -46,7 +46,7 @@ Output: { "clientName": null, "guestCount": null, "occasion": "anniversary", "ev
 Input: "Hey, what are your rates?"
 Output: { "clientName": null, "guestCount": null, "occasion": null, "eventDate": null, "clientEmail": null, "clientPhone": null, "eventTime": null, "location": null, "dietaryRestrictions": [], "budgetCents": null, "notes": null }
 
-Input: "We're a group of friends looking to do something fun. — Rachel"
+Input: "We're a group of friends looking to do something fun. - Rachel"
 Output: { "clientName": "Rachel", "guestCount": null, "occasion": null, "eventDate": null, "clientEmail": null, "clientPhone": null, "eventTime": null, "location": null, "dietaryRestrictions": [], "budgetCents": null, "notes": null }`,
         user: `Extract inquiry details from this message. Return null for any field not explicitly present.
 
@@ -70,7 +70,7 @@ Return JSON: {
     case 'client_parse':
       return {
         system: `You are a private chef's assistant. Extract structured client information from notes.
-Return valid JSON only — no markdown, no prose.
+Return valid JSON only - no markdown, no prose.
 Be conservative: use null for missing fields. Do not invent contact details.`,
         user: `Extract client information from these notes:
 
@@ -103,10 +103,10 @@ Return JSON: {
         system: `You are a food safety expert. Analyze a proposed menu against each guest's dietary restrictions.
 
 Follow these steps in order:
-Step 1 — List every guest and their restrictions.
-Step 2 — For EVERY (dish × guest) combination, create one row with a riskLevel.
-Step 3 — Scan for severe allergens: nuts, shellfish, gluten/celiac, dairy.
-Step 4 — If ANY guest has a severe allergen restriction, safetyFlags MUST contain
+Step 1 - List every guest and their restrictions.
+Step 2 - For EVERY (dish × guest) combination, create one row with a riskLevel.
+Step 3 - Scan for severe allergens: nuts, shellfish, gluten/celiac, dairy.
+Step 4 - If ANY guest has a severe allergen restriction, safetyFlags MUST contain
           at least one warning string. An empty safetyFlags array is only valid
           when NO guest has any restriction at all.
 
@@ -117,7 +117,7 @@ Risk levels:
   - unknown: insufficient information to determine
 
 Always err toward "may_contain" not "safe" when uncertain.
-Return valid JSON only — no markdown.`,
+Return valid JSON only - no markdown.`,
         user: `Menu dishes:
 ${menuItems.map((m) => `- ${m.name}${m.description ? ': ' + m.description : ''}`).join('\n')}
 
@@ -125,7 +125,7 @@ Guest dietary profiles:
 ${guests.map((g) => `- ${g.name}: ${g.restrictions || 'No restrictions noted'}`).join('\n')}
 
 Return JSON with a row for every dish × guest pair:
-{ "rows": [{"dish":"...","guestName":"...","riskLevel":"safe|may_contain|contains|unknown","triggerAllergen":"...or null","notes":"...or null"}], "safetyFlags": ["warning strings — must not be empty if any guest has restrictions"], "confidence": "high|medium|low" }`,
+{ "rows": [{"dish":"...","guestName":"...","riskLevel":"safe|may_contain|contains|unknown","triggerAllergen":"...or null","notes":"...or null"}], "safetyFlags": ["warning strings - must not be empty if any guest has restrictions"], "confidence": "high|medium|low" }`,
       }
     }
 
@@ -156,8 +156,8 @@ MANDATORY RULES:
 1. Subject line MUST contain the client's first or full name (${clientName}).
 2. Email body MUST mention the occasion (${occasion}) and guest count (${guestCount}).
 3. Email body MUST NOT contain any placeholder text like "[occasion]" or "[client name]".
-4. Write as a specific email to this specific person — not a template.
-5. Match the tone to the stage — formal for early stages, warm for post-service.
+4. Write as a specific email to this specific person - not a template.
+5. Match the tone to the stage - formal for early stages, warm for post-service.
 6. Every email must reference client-specific details.
 7. signOff must be a real closing (e.g. "Warm regards, Chef David").
 
@@ -194,7 +194,7 @@ Return JSON: {
       return {
         system: `You are a creative private chef. Suggest three distinct menu options for an upcoming event.
 Each menu should be cohesive, delicious, and appropriate for the occasion and dietary needs.
-Return valid JSON only — no markdown.`,
+Return valid JSON only - no markdown.`,
         user: `Suggest 3 menu options for:
 Occasion: ${occasion}
 Guests: ${guestCount}
@@ -214,7 +214,7 @@ Return JSON: { "menus": [{ "name": "menu title", "description": "brief concept",
 
       return {
         system: `You are a private chef drafting a quote for an event.
-Use this exact pricing formula — do not deviate:
+Use this exact pricing formula - do not deviate:
 
   Per-person rates (service fee only):
     buffet or family-style → $85/person
@@ -228,7 +228,7 @@ Use this exact pricing formula — do not deviate:
   deposit = total × 0.50  (round to nearest $50)
 
 Line items must include: service fee, grocery estimate, and travel surcharge (if any).
-Return valid JSON only — no markdown.`,
+Return valid JSON only - no markdown.`,
         user: `Draft a quote for:
 Guests: ${guestCount}
 Occasion: ${occasion}
@@ -279,7 +279,7 @@ function calculateQuoteDeterministic(scenario: SimScenario): PipelineOutput {
 
   const lineItems = [
     {
-      description: `Private chef service — ${style} (${guestCount} guests × $${perPerson})`,
+      description: `Private chef service - ${style} (${guestCount} guests × $${perPerson})`,
       amountCents: serviceFee * 100,
     },
     { description: 'Grocery estimate (30%)', amountCents: groceryEstimate * 100 },
@@ -320,12 +320,12 @@ export async function runScenario(scenario: SimScenario): Promise<PipelineOutput
     return {
       rawOutput: null,
       durationMs: 0,
-      error: 'Could not build module prompts — invalid scenario context',
+      error: 'Could not build module prompts - invalid scenario context',
     }
   }
 
   try {
-    // stream: false is passed via `as any` — Ollama returns ChatResponse, not an iterator
+    // stream: false is passed via `as any` - Ollama returns ChatResponse, not an iterator
     const response = (await ollama.chat({
       model: config.model,
       messages: [

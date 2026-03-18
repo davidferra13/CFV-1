@@ -3,7 +3,7 @@ import type { PageInfoEntry } from '../page-info-types'
 export const CHEF_PORTAL_MARKETING_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/marketing': {
     title: 'Marketing Hub',
-    description: 'Email campaigns, sequences, and templates — reach your clients and prospects.',
+    description: 'Email campaigns, sequences, and templates - reach your clients and prospects.',
     features: [
       'Campaign list with status (draft, scheduled, sending, sent, cancelled)',
       'Recipient count and send date',

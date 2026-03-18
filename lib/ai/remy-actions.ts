@@ -1,8 +1,8 @@
 'use server'
 
-// Remy — Main Server Action
-// PRIVACY: Processes chef messages with full business context — must stay local via Ollama.
-// Output is DRAFT ONLY — chef reviews all suggestions and approves all actions.
+// Remy - Main Server Action
+// PRIVACY: Processes chef messages with full business context - must stay local via Ollama.
+// Output is DRAFT ONLY - chef reviews all suggestions and approves all actions.
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
@@ -91,7 +91,7 @@ AVAILABLE PAGES (suggest these when relevant):
 /remy - Remy history (everything Remy has saved)
 `.trim()
 
-// Scoped route map for Focus Mode — only core workflows
+// Scoped route map for Focus Mode - only core workflows
 const NAV_ROUTE_MAP_FOCUS = `
 AVAILABLE PAGES (suggest these when relevant):
 /dashboard - Dashboard overview
@@ -138,64 +138,64 @@ function formatMemoriesForPrompt(memories: RemyMemory[]): string {
   }
 
   sections.push(
-    "\nUse these memories naturally — reference them when relevant, but don't recite them mechanically."
+    "\nUse these memories naturally - reference them when relevant, but don't recite them mechanically."
   )
 
   return sections.join('\n')
 }
 
-// ─── Seasonal & Holiday Intelligence (deterministic — pure date math) ───────
+// ─── Seasonal & Holiday Intelligence (deterministic - pure date math) ───────
 
 function getSeasonalContext(month: number, day: number, season: string): string {
   const hints: string[] = []
 
   // Upcoming holidays & busy periods (within ~2 weeks)
   const holidays: Array<{ month: number; dayStart: number; dayEnd: number; label: string }> = [
-    { month: 0, dayStart: 1, dayEnd: 2, label: "New Year's — post-holiday detox menus popular" },
+    { month: 0, dayStart: 1, dayEnd: 2, label: "New Year's - post-holiday detox menus popular" },
     {
       month: 1,
       dayStart: 7,
       dayEnd: 14,
-      label: "Valentine's Day approaching — romantic dinners peak",
+      label: "Valentine's Day approaching - romantic dinners peak",
     },
     {
       month: 1,
       dayStart: 14,
       dayEnd: 15,
-      label: "Valentine's Day — busiest date-night booking day",
+      label: "Valentine's Day - busiest date-night booking day",
     },
-    { month: 2, dayStart: 10, dayEnd: 17, label: "St. Patrick's Day coming — Irish-themed events" },
+    { month: 2, dayStart: 10, dayEnd: 17, label: "St. Patrick's Day coming - Irish-themed events" },
     {
       month: 3,
       dayStart: 1,
       dayEnd: 21,
-      label: 'Easter/Passover season — family gatherings spike',
+      label: 'Easter/Passover season - family gatherings spike',
     },
     {
       month: 4,
       dayStart: 1,
       dayEnd: 15,
-      label: "Mother's Day approaching — brunch bookings surge",
+      label: "Mother's Day approaching - brunch bookings surge",
     },
-    { month: 4, dayStart: 20, dayEnd: 31, label: 'Memorial Day weekend — outdoor events ramp up' },
-    { month: 5, dayStart: 10, dayEnd: 21, label: "Father's Day approaching — BBQ/grill events" },
-    { month: 6, dayStart: 1, dayEnd: 4, label: 'July 4th — outdoor entertaining peak' },
-    { month: 8, dayStart: 1, dayEnd: 7, label: 'Labor Day — end-of-summer parties' },
-    { month: 9, dayStart: 20, dayEnd: 31, label: 'Halloween approaching — themed events' },
+    { month: 4, dayStart: 20, dayEnd: 31, label: 'Memorial Day weekend - outdoor events ramp up' },
+    { month: 5, dayStart: 10, dayEnd: 21, label: "Father's Day approaching - BBQ/grill events" },
+    { month: 6, dayStart: 1, dayEnd: 4, label: 'July 4th - outdoor entertaining peak' },
+    { month: 8, dayStart: 1, dayEnd: 7, label: 'Labor Day - end-of-summer parties' },
+    { month: 9, dayStart: 20, dayEnd: 31, label: 'Halloween approaching - themed events' },
     {
       month: 10,
       dayStart: 15,
       dayEnd: 28,
-      label: 'Thanksgiving approaching — biggest cooking holiday',
+      label: 'Thanksgiving approaching - biggest cooking holiday',
     },
-    { month: 10, dayStart: 28, dayEnd: 30, label: 'Thanksgiving — peak family dining' },
+    { month: 10, dayStart: 28, dayEnd: 30, label: 'Thanksgiving - peak family dining' },
     {
       month: 11,
       dayStart: 1,
       dayEnd: 25,
-      label: 'Holiday season — corporate parties & family gatherings peak',
+      label: 'Holiday season - corporate parties & family gatherings peak',
     },
-    { month: 11, dayStart: 26, dayEnd: 31, label: "New Year's Eve prep — party bookings surge" },
+    { month: 11, dayStart: 26, dayEnd: 31, label: "New Year's Eve prep - party bookings surge" },
   ]
 
   for (const h of holidays) {
@@ -215,17 +215,17 @@ function getSeasonalContext(month: number, day: number, season: string): string 
 
   // Busy/slow period awareness
   if (month >= 10 || month === 0) {
-    hints.push('Peak booking season — holiday parties, corporate events, family gatherings')
+    hints.push('Peak booking season - holiday parties, corporate events, family gatherings')
   } else if (month >= 5 && month <= 7) {
-    hints.push('Wedding & outdoor event season — high demand period')
+    hints.push('Wedding & outdoor event season - high demand period')
   } else if (month >= 1 && month <= 2) {
-    hints.push('Traditionally slower booking period — good time for menu development & marketing')
+    hints.push('Traditionally slower booking period - good time for menu development & marketing')
   }
 
   return hints.filter(Boolean).join('. ')
 }
 
-// ─── Sentiment Detection (deterministic — regex, no LLM) ────────────────────
+// ─── Sentiment Detection (deterministic - regex, no LLM) ────────────────────
 // Detects chef mood from message patterns to adjust Remy's tone.
 
 type ChefSentiment = 'neutral' | 'stressed' | 'frustrated' | 'excited' | 'grateful'
@@ -263,19 +263,19 @@ function detectSentiment(message: string): ChefSentiment {
 function getSentimentInstruction(sentiment: ChefSentiment): string {
   switch (sentiment) {
     case 'stressed':
-      return '\nTONE ADJUSTMENT: The chef sounds stressed. Be extra calm, reassuring, and efficient. Lead with the most helpful action, minimize chatter. "I got you, chef — here\'s what we do..."'
+      return '\nTONE ADJUSTMENT: The chef sounds stressed. Be extra calm, reassuring, and efficient. Lead with the most helpful action, minimize chatter. "I got you, chef - here\'s what we do..."'
     case 'frustrated':
-      return '\nTONE ADJUSTMENT: The chef sounds frustrated. Acknowledge it briefly, skip the pleasantries, get straight to solving the problem. Be direct and action-oriented. No "I understand" speeches — just fix it.'
+      return '\nTONE ADJUSTMENT: The chef sounds frustrated. Acknowledge it briefly, skip the pleasantries, get straight to solving the problem. Be direct and action-oriented. No "I understand" speeches - just fix it.'
     case 'excited':
-      return '\nTONE ADJUSTMENT: The chef is excited! Match their energy — be enthusiastic and celebrate with them. Build on the momentum.'
+      return '\nTONE ADJUSTMENT: The chef is excited! Match their energy - be enthusiastic and celebrate with them. Build on the momentum.'
     case 'grateful':
-      return '\nTONE ADJUSTMENT: The chef is expressing gratitude. Be warm but brief — a quick "always, chef" and then keep moving. Don\'t over-acknowledge.'
+      return '\nTONE ADJUSTMENT: The chef is expressing gratitude. Be warm but brief - a quick "always, chef" and then keep moving. Don\'t over-acknowledge.'
     default:
       return ''
   }
 }
 
-// ─── Daily Briefing Builder (deterministic — pure context analysis) ──────────
+// ─── Daily Briefing Builder (deterministic - pure context analysis) ──────────
 // Generates a "Good morning, chef" daily briefing from available context data.
 // Only triggers on first message of day (detected by empty conversation history).
 
@@ -335,12 +335,12 @@ function buildDailyBriefing(context: Awaited<ReturnType<typeof loadRemyContext>>
 
   if (items.length === 0) return ''
 
-  return `\nDAILY BRIEFING (include this naturally in your first response if the chef hasn't asked something specific — use it as a "Good [time], chef" opener):
+  return `\nDAILY BRIEFING (include this naturally in your first response if the chef hasn't asked something specific - use it as a "Good [time], chef" opener):
 ${items.join('\n')}
-Keep it breezy — don't list everything robotically. Lead with the most urgent item and mention 1-2 others.`
+Keep it breezy - don't list everything robotically. Lead with the most urgent item and mention 1-2 others.`
 }
 
-// ─── Workload Awareness (deterministic — event density analysis) ─────────────
+// ─── Workload Awareness (deterministic - event density analysis) ─────────────
 // Detects when the chef has a heavy week and adjusts advice accordingly.
 
 function getWorkloadContext(context: Awaited<ReturnType<typeof loadRemyContext>>): string {
@@ -357,7 +357,7 @@ function getWorkloadContext(context: Awaited<ReturnType<typeof loadRemyContext>>
   )
 
   if (thisWeekEvents.length >= 5) {
-    return '\nWORKLOAD ALERT: The chef has 5+ events this week — they are PACKED. Be extra efficient in responses. Discourage taking on new bookings unless asked. Prioritize prep tips and time management.'
+    return '\nWORKLOAD ALERT: The chef has 5+ events this week - they are PACKED. Be extra efficient in responses. Discourage taking on new bookings unless asked. Prioritize prep tips and time management.'
   }
   if (thisWeekEvents.length >= 3) {
     return '\nWORKLOAD NOTE: Busy week ahead (3+ events). Be mindful of time pressure when making suggestions. Focus on efficiency.'
@@ -365,7 +365,7 @@ function getWorkloadContext(context: Awaited<ReturnType<typeof loadRemyContext>>
   return ''
 }
 
-// ─── Repeat Question Detection (deterministic — word overlap) ────────────────
+// ─── Repeat Question Detection (deterministic - word overlap) ────────────────
 // Detects when the chef is asking something similar to a previous message in
 // this conversation. If so, instructs Remy to give a different/better answer.
 
@@ -399,7 +399,7 @@ function detectRepeatQuestion(currentMessage: string, history: RemyMessage[]): s
     const overlapRatio = overlap / Math.min(currentWords.size, prevWords.size)
 
     if (overlapRatio >= 0.7) {
-      return "\nREPEAT QUESTION DETECTED: The chef is asking something very similar to an earlier message in this conversation. They probably weren't satisfied with your previous answer. Give a DIFFERENT, MORE DETAILED response this time. Don't repeat the same answer — add new information, try a different angle, or ask what specifically they're looking for."
+      return "\nREPEAT QUESTION DETECTED: The chef is asking something very similar to an earlier message in this conversation. They probably weren't satisfied with your previous answer. Give a DIFFERENT, MORE DETAILED response this time. Don't repeat the same answer - add new information, try a different angle, or ask what specifically they're looking for."
     }
   }
 
@@ -418,14 +418,14 @@ function buildRemySystemPrompt(
 
   // Full personality guide
   parts.push(REMY_PERSONALITY)
-  // Few-shot examples — show Remy how to respond, not just what to be
+  // Few-shot examples - show Remy how to respond, not just what to be
   parts.push(REMY_FEW_SHOT_EXAMPLES)
   parts.push(REMY_DRAFT_INSTRUCTIONS)
   parts.push(REMY_PRIVACY_NOTE)
   parts.push(REMY_TOPIC_GUARDRAILS)
   parts.push(REMY_ANTI_INJECTION)
 
-  // Time awareness — Remy knows when it is
+  // Time awareness - Remy knows when it is
   const now = new Date()
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   const hour = now.getHours()
@@ -440,7 +440,7 @@ function buildRemySystemPrompt(
             ? 'evening'
             : 'night'
 
-  // Seasonal & holiday awareness (deterministic — pure date math)
+  // Seasonal & holiday awareness (deterministic - pure date math)
   const month = now.getMonth() // 0-11
   const day = now.getDate()
   const season =
@@ -455,9 +455,9 @@ function buildRemySystemPrompt(
   const seasonalContext = getSeasonalContext(month, day, season)
 
   parts.push(`\nCURRENT TIME: ${dayNames[now.getDay()]}, ${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}, ${now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} (${timeOfDay})
-Season: ${season}${seasonalContext ? ` — ${seasonalContext}` : ''}
-Be aware of the time — if it's early morning or late at night, acknowledge it naturally. If an event is tomorrow, convey urgency. Match energy to the moment.
-Use seasonal awareness naturally — mention what's in season, upcoming holidays that affect bookings, or busy/slow periods when relevant to the conversation.`)
+Season: ${season}${seasonalContext ? ` - ${seasonalContext}` : ''}
+Be aware of the time - if it's early morning or late at night, acknowledge it naturally. If an event is tomorrow, convey urgency. Match energy to the moment.
+Use seasonal awareness naturally - mention what's in season, upcoming holidays that affect bookings, or busy/slow periods when relevant to the conversation.`)
 
   // Workload awareness
   const workload = getWorkloadContext(context)
@@ -471,7 +471,7 @@ Use seasonal awareness naturally — mention what's in season, upcoming holidays
 
   // Business context
   parts.push(`\nBUSINESS CONTEXT:
-- Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` — "${context.tagline}"` : ''}
+- Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` - "${context.tagline}"` : ''}
 - Clients: ${context.clientCount} total
 - Upcoming events: ${context.upcomingEventCount}
 - Open inquiries: ${context.openInquiryCount}${context.pendingQuoteCount ? `\n- Pending quotes: ${context.pendingQuoteCount}` : ''}${context.monthRevenueCents !== undefined ? `\n- Month revenue: $${(context.monthRevenueCents / 100).toFixed(2)}` : ''}`)
@@ -492,7 +492,7 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
     parts.push(`\nRECENT CLIENTS: ${context.recentClients.map((c) => c.name).join(', ')}`)
   }
 
-  // Email digest — proactive communication awareness
+  // Email digest - proactive communication awareness
   if (context.emailDigest && context.emailDigest.totalSinceYesterday > 0) {
     const d = context.emailDigest
     const emailLines: string[] = [
@@ -508,11 +508,11 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
             : e.classification === 'existing_thread'
               ? ' [CLIENT REPLY]'
               : ''
-        emailLines.push(`- From: ${e.from} — "${e.subject}"${cls}`)
+        emailLines.push(`- From: ${e.from} - "${e.subject}"${cls}`)
       }
     }
     emailLines.push(
-      'You can search, read, or summarize emails. Draft replies are always drafts — never auto-sent.'
+      'You can search, read, or summarize emails. Draft replies are always drafts - never auto-sent.'
     )
     parts.push(emailLines.join('\n'))
   }
@@ -568,7 +568,7 @@ ${aars
 
   // Business intelligence summary (cross-engine synthesis)
   if (context.businessIntelligence) {
-    parts.push(`\nBUSINESS INTELLIGENCE (from 25 analytics engines — use when discussing business health, pricing, growth, or client retention):
+    parts.push(`\nBUSINESS INTELLIGENCE (from 25 analytics engines - use when discussing business health, pricing, growth, or client retention):
 ${context.businessIntelligence}
 Reference these insights when the chef asks about their business, pricing strategy, client health, capacity, or growth.`)
   }
@@ -577,7 +577,7 @@ Reference these insights when the chef asks about their business, pricing strate
   if (context.revenuePattern) {
     const rp = context.revenuePattern
     parts.push(
-      `\nREVENUE PATTERN: Busiest month: ${rp.busiestMonth}, Slowest month: ${rp.slowestMonth}, Monthly avg: $${(rp.monthlyAvgCents / 100).toFixed(0)}. Use this when discussing bookings, pricing, or business strategy — suggest filling slow months with promotions or raising rates during peak months.`
+      `\nREVENUE PATTERN: Busiest month: ${rp.busiestMonth}, Slowest month: ${rp.slowestMonth}, Monthly avg: $${(rp.monthlyAvgCents / 100).toFixed(0)}. Use this when discussing bookings, pricing, or business strategy - suggest filling slow months with promotions or raising rates during peak months.`
     )
   }
 
@@ -594,14 +594,14 @@ Reference these insights when the chef asks about their business, pricing strate
     parts.push(memoryBlock)
   }
 
-  // Proactive nudge instructions — surface urgent items once per conversation
+  // Proactive nudge instructions - surface urgent items once per conversation
   const nudgeItems: string[] = []
   if (context.staleInquiries && context.staleInquiries.length > 0) {
     const urgentOnes = context.staleInquiries.filter((i) => i.leadScore >= 60)
     const regularOnes = context.staleInquiries.filter((i) => i.leadScore < 60)
     if (urgentOnes.length > 0) {
       nudgeItems.push(
-        `🔴 HIGH-VALUE LEADS GOING COLD: ${urgentOnes.map((i) => `${i.leadName} (score: ${i.leadScore}, ${i.daysSinceContact} days stale — respond ASAP)`).join('; ')}`
+        `🔴 HIGH-VALUE LEADS GOING COLD: ${urgentOnes.map((i) => `${i.leadName} (score: ${i.leadScore}, ${i.daysSinceContact} days stale - respond ASAP)`).join('; ')}`
       )
     }
     if (regularOnes.length > 0) {
@@ -636,7 +636,7 @@ Reference these insights when the chef asks about their business, pricing strate
   if (nudgeItems.length > 0) {
     parts.push(`\nPROACTIVE AWARENESS (mention these ONCE if relevant, don't repeat every message):
 ${nudgeItems.map((n) => `- ${n}`).join('\n')}
-If the chef's question relates to one of these, weave it in naturally. Otherwise, mention at the end of your FIRST response only — "By the way..." or "Quick heads up..." — then drop it.`)
+If the chef's question relates to one of these, weave it in naturally. Otherwise, mention at the end of your FIRST response only - "By the way..." or "Quick heads up..." - then drop it.`)
   }
 
   // Navigation routes (scoped by Focus Mode)
@@ -649,14 +649,14 @@ If the chef's question relates to one of these, weave it in naturally. Otherwise
     if (sentimentInstruction) parts.push(sentimentInstruction)
   }
 
-  // Grounding rule — critical for preventing hallucinations
+  // Grounding rule - critical for preventing hallucinations
   parts.push(`\nGROUNDING RULE (CRITICAL):
 You may ONLY reference clients, events, inquiries, and facts that appear in the BUSINESS CONTEXT, UPCOMING EVENTS, RECENT CLIENTS, or WHAT YOU REMEMBER sections above.
-If a section says "0" or is empty, that means there are NONE — do not invent any.
+If a section says "0" or is empty, that means there are NONE - do not invent any.
 If you have no data to work with, be honest: "Looks like you're just getting started" or "I don't see any events yet."
 NEVER fabricate names, dates, or details to sound helpful.`)
 
-  // Repeat question detection (deterministic — word overlap analysis)
+  // Repeat question detection (deterministic - word overlap analysis)
   if (userMessage && conversationHistory.length > 0) {
     const repeatInstruction = detectRepeatQuestion(userMessage, conversationHistory)
     if (repeatInstruction) parts.push(repeatInstruction)
@@ -665,7 +665,7 @@ NEVER fabricate names, dates, or details to sound helpful.`)
   // Response instructions
   parts.push(`\nRESPONSE FORMAT:
 Return JSON: { "response": "your text reply", "navSuggestions": [{ "label": "Page Name", "href": "/route", "description": "optional" }] }
-Only include navSuggestions when genuinely helpful — don't spam links on every response.
+Only include navSuggestions when genuinely helpful - don't spam links on every response.
 Present all suggestions as drafts. Never claim to have taken autonomous actions.`)
 
   return parts.join('\n')
@@ -742,11 +742,11 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
     }
 
     if (task.status === 'pending') {
-      summaries.push(`I've drafted "${name}" for your review — check the card below.`)
+      summaries.push(`I've drafted "${name}" for your review - check the card below.`)
       continue
     }
 
-    // Status: done — summarize the data
+    // Status: done - summarize the data
     if (task.taskType === 'client.search' && task.data) {
       const d = task.data as { clients: Array<{ name: string }> }
       if (d.clients.length === 0) summaries.push('No matching clients found.')
@@ -760,7 +760,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
         available: boolean
         conflicts?: Array<{ occasion: string }>
       }
-      if (d.available) summaries.push(`${d.date} is available — no events booked.`)
+      if (d.available) summaries.push(`${d.date} is available - no events booked.`)
       else
         summaries.push(
           `${d.date} is not available. You have: ${d.conflicts?.map((c) => c.occasion).join(', ') ?? 'a conflict'}`
@@ -796,7 +796,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
   return summaries.join('\n\n')
 }
 
-// ─── Memory Intent Detection (regex — no LLM needed) ───────────────────────
+// ─── Memory Intent Detection (regex - no LLM needed) ───────────────────────
 
 const MEMORY_LIST_PATTERNS = [
   /\b(what|show|list|see|view|display)\b.*(you\s+)?remember/i,
@@ -851,7 +851,7 @@ async function handleMemoryList(): Promise<RemyResponse> {
 
   if (memories.length === 0) {
     return {
-      text: 'I don\'t have any memories saved yet. As we chat, I\'ll pick up on your preferences, client details, and business rules — or you can tell me directly. Try saying "remember that I prefer organic produce" to add one.',
+      text: 'I don\'t have any memories saved yet. As we chat, I\'ll pick up on your preferences, client details, and business rules - or you can tell me directly. Try saying "remember that I prefer organic produce" to add one.',
       intent: 'memory',
       memoryItems: [],
     }
@@ -866,7 +866,7 @@ async function handleMemoryList(): Promise<RemyResponse> {
   }
 
   const lines: string[] = [
-    `Here's everything I remember (${memories.length} memories). You can delete any of these — just tap the X next to it.\n`,
+    `Here's everything I remember (${memories.length} memories). You can delete any of these - just tap the X next to it.\n`,
   ]
 
   for (const [category, items] of grouped) {
@@ -996,7 +996,7 @@ async function handleMemoryAdd(message: string): Promise<RemyResponse> {
   })
 
   return {
-    text: `Got it — I'll remember that. Saved under **${formatCategoryLabel(category)}**.\n\n• ${fact}\n\nYou can say "show my memories" anytime to review or clean up what I know.`,
+    text: `Got it - I'll remember that. Saved under **${formatCategoryLabel(category)}**.\n\n• ${fact}\n\nYou can say "show my memories" anytime to review or clean up what I know.`,
     intent: 'memory',
   }
 }
@@ -1012,7 +1012,7 @@ export async function sendRemyMessage(
   await requirePro('remy')
 
   // ─── GUARDRAILS (before any LLM call) ──────────────────────────
-  // Admins bypass ALL guardrails — they can do whatever they want
+  // Admins bypass ALL guardrails - they can do whatever they want
   const admin = await isRemyAdmin()
 
   if (!admin) {
@@ -1140,7 +1140,7 @@ export async function sendRemyMessage(
       }
     }
 
-    // ─── INSTANT ANSWER path (Formula > AI — skip Ollama for simple facts) ──
+    // ─── INSTANT ANSWER path (Formula > AI - skip Ollama for simple facts) ──
     if (classification.intent === 'question') {
       const instant = tryInstantAnswer(userMessage, context)
       if (instant) {

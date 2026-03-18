@@ -13,7 +13,7 @@ function hasKey(): boolean {
 
 export function encryptOAuthToken(plaintext: string): string {
   if (!hasKey()) {
-    // In production, refuse to store tokens in plaintext — fail closed
+    // In production, refuse to store tokens in plaintext - fail closed
     if (process.env.NODE_ENV === 'production') {
       throw new Error(
         'SOCIAL_TOKEN_ENCRYPTION_KEY is required in production. ' +
@@ -22,7 +22,7 @@ export function encryptOAuthToken(plaintext: string): string {
     }
     if (!warned) {
       console.warn(
-        '[integration-crypto] SOCIAL_TOKEN_ENCRYPTION_KEY not set — tokens stored in plaintext. ' +
+        '[integration-crypto] SOCIAL_TOKEN_ENCRYPTION_KEY not set - tokens stored in plaintext. ' +
           'Set a 32-byte base64 key to enable encryption.'
       )
       warned = true
@@ -38,14 +38,14 @@ export function decryptOAuthToken(ciphertext: string): string {
   // Detect if the value is encrypted (format: iv:authTag:ciphertext, all base64)
   const parts = ciphertext.split(':')
   if (parts.length !== 3) {
-    // Plaintext token (pre-encryption migration) — return as-is
+    // Plaintext token (pre-encryption migration) - return as-is
     return ciphertext
   }
 
   try {
     return decryptToken(ciphertext)
   } catch {
-    // If decryption fails, it's likely a plaintext token — return as-is
+    // If decryption fails, it's likely a plaintext token - return as-is
     return ciphertext
   }
 }

@@ -366,7 +366,7 @@ export function CalendarView({
             style={{ backgroundColor: dotColor }}
           />
           {!isPrep && arg.timeText && (
-            <span className="text-[10px] font-medium flex-shrink-0 opacity-75">{arg.timeText}</span>
+            <span className="text-xxs font-medium flex-shrink-0 opacity-75">{arg.timeText}</span>
           )}
           <span className="text-xs font-medium truncate">{arg.event.title}</span>
         </div>
@@ -383,8 +383,8 @@ export function CalendarView({
           />
           <span className="text-xs font-semibold truncate">{arg.event.title}</span>
         </div>
-        <div className="text-[10px] opacity-80 truncate mt-0.5">{props.clientName}</div>
-        {arg.timeText && <div className="text-[10px] opacity-70">{arg.timeText}</div>}
+        <div className="text-xxs opacity-80 truncate mt-0.5">{props.clientName}</div>
+        {arg.timeText && <div className="text-xxs opacity-70">{arg.timeText}</div>}
       </div>
     )
   }
@@ -505,7 +505,7 @@ export function CalendarView({
               ].map(([key, label]) => (
                 <div key={key} className="flex items-center justify-between">
                   <span>{label}</span>
-                  <kbd className="px-1.5 py-0.5 bg-stone-800 rounded text-[10px] font-mono font-medium text-stone-300">
+                  <kbd className="px-1.5 py-0.5 bg-stone-800 rounded text-xxs font-mono font-medium text-stone-300">
                     {key}
                   </kbd>
                 </div>

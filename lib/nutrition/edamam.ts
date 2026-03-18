@@ -1,8 +1,8 @@
-// Edamam Nutrition Analysis API — allergen detection + nutrition data
+// Edamam Nutrition Analysis API - allergen detection + nutrition data
 // https://developer.edamam.com/edamam-nutrition-api
 // Free tier: 10K calls/month. Results cached in Upstash (30 days) to stay well under limit.
 //
-// This module uses Edamam's STRUCTURED allergen/health labels — not AI interpretation.
+// This module uses Edamam's STRUCTURED allergen/health labels - not AI interpretation.
 // Formula > AI: the API returns definitive caution flags, we surface them directly.
 
 import { cacheGet, cacheSet } from '@/lib/cache/upstash'
@@ -88,7 +88,7 @@ export async function analyzeRecipe(
       return cached
     }
   } catch {
-    // Cache miss is fine — proceed to API call
+    // Cache miss is fine - proceed to API call
   }
 
   // Call Edamam
@@ -145,7 +145,7 @@ export async function analyzeRecipe(
     try {
       await cacheSet(cacheKey, result, 30 * 24 * 60 * 60)
     } catch {
-      // Cache write failed — result still returned
+      // Cache write failed - result still returned
     }
 
     return result
@@ -166,7 +166,7 @@ function deriveAllergens(healthLabels: string[], cautions: string[]): string[] {
   const healthLabelSet = new Set(healthLabels)
   const allergens: string[] = []
 
-  // Check each major allergen — if the *_FREE label is missing, it's present
+  // Check each major allergen - if the *_FREE label is missing, it's present
   for (const [freeLabel, allergenName] of Object.entries(MAJOR_ALLERGEN_HEALTH_LABELS)) {
     if (!healthLabelSet.has(freeLabel)) {
       allergens.push(allergenName)
@@ -197,7 +197,7 @@ function formatLabel(label: string): string {
 
 /**
  * Create a deterministic hash from ingredient lines for cache key.
- * Simple string hash — doesn't need to be cryptographic, just consistent.
+ * Simple string hash - doesn't need to be cryptographic, just consistent.
  */
 function hashIngredients(ingredients: string[]): string {
   const normalized = ingredients

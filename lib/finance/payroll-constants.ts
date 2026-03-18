@@ -1,4 +1,4 @@
-// Payroll tax constants — NOT 'use server'; safe to import in both client and server contexts
+// Payroll tax constants - NOT 'use server'; safe to import in both client and server contexts
 
 /** Employee + employer share */
 export const SS_TAX_RATE = 0.062 // 6.2% each side

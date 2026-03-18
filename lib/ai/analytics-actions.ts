@@ -1,6 +1,6 @@
 'use server'
 
-// Analytics Intelligence — Break-Even, Client LTV, Recipe Cost Optimization
+// Analytics Intelligence - Break-Even, Client LTV, Recipe Cost Optimization
 // PRIVACY: Handles financial data → local Ollama only (for LLM features).
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -10,7 +10,7 @@ import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { z } from 'zod'
 
 // ============================================
-// 1. BREAK-EVEN ANALYSIS (pure math — no Ollama)
+// 1. BREAK-EVEN ANALYSIS (pure math - no Ollama)
 // ============================================
 
 export interface BreakEvenResult {
@@ -96,7 +96,7 @@ export async function analyzeBreakEven(eventName: string): Promise<BreakEvenResu
 }
 
 // ============================================
-// 2. CLIENT LTV (pure math — no Ollama)
+// 2. CLIENT LTV (pure math - no Ollama)
 // ============================================
 
 export interface ClientLTVResult {

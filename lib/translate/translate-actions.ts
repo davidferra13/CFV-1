@@ -16,7 +16,7 @@ export type TranslationResult = {
 
 /**
  * Translate a single text string to a target language.
- * Non-blocking — returns null on failure.
+ * Non-blocking - returns null on failure.
  */
 export async function translateSingleText(
   text: string,
@@ -48,7 +48,7 @@ export type MenuTranslationResult = {
 /**
  * Translate multiple menu item names/descriptions at once.
  * More efficient than translating one at a time.
- * Non-blocking — items that fail get null.
+ * Non-blocking - items that fail get null.
  */
 export async function translateMenuItemsBatch(
   items: string[],

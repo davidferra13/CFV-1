@@ -6,9 +6,9 @@
  * MealMe, Kroger, Gemini) is consistently failing.
  *
  * States:
- *   CLOSED   — Normal operation. Requests pass through.
- *   OPEN     — Circuit is tripped. Fast-fail without calling the service.
- *   HALF_OPEN — Trial mode. One request allowed through to test recovery.
+ *   CLOSED   - Normal operation. Requests pass through.
+ *   OPEN     - Circuit is tripped. Fast-fail without calling the service.
+ *   HALF_OPEN - Trial mode. One request allowed through to test recovery.
  *
  * This is an in-memory implementation. State resets on cold start (serverless).
  * For persistent state across instances, wire to Redis (Upstash).
@@ -50,7 +50,7 @@ const DEFAULT_OPTIONS: Required<CircuitBreakerOptions> = {
 
 /**
  * Returns (or creates) a circuit breaker for the given service name.
- * Call once at module level — the breaker is shared across requests.
+ * Call once at module level - the breaker is shared across requests.
  */
 export function getCircuitBreaker(serviceName: string, options: CircuitBreakerOptions = {}) {
   const opts: Required<CircuitBreakerOptions> = { ...DEFAULT_OPTIONS, ...options }
@@ -106,7 +106,7 @@ export function getCircuitBreaker(serviceName: string, options: CircuitBreakerOp
         if (cb.state === 'CLOSED' && cb.failures >= opts.failureThreshold) {
           transition(serviceName, 'OPEN', opts)
         } else if (cb.state === 'HALF_OPEN') {
-          // Trial request failed — back to OPEN
+          // Trial request failed - back to OPEN
           transition(serviceName, 'OPEN', opts)
         }
 
@@ -163,6 +163,26 @@ function transition(
     })
   } catch {
     // Incident reporting must never crash the circuit breaker
+  }
+
+  // Send developer email alert when circuit OPENS
+  if (to === 'OPEN') {
+    try {
+      const { sendDeveloperAlert } = require('../email/developer-alerts')
+      sendDeveloperAlert({
+        severity: 'error' as const,
+        system: serviceName,
+        title: `Circuit breaker OPEN: ${serviceName}`,
+        description: `The ${serviceName} service hit ${cb.failures} consecutive failures. All requests will fast-fail until the circuit resets.`,
+        context: {
+          service: serviceName,
+          previousState: from,
+          failures: String(cb.failures),
+        },
+      })
+    } catch {
+      // Alert sending must never crash the circuit breaker
+    }
   }
 }
 

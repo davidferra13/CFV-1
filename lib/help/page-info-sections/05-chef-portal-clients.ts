@@ -4,7 +4,7 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/clients': {
     title: 'Clients',
     description:
-      'Your complete client roster — manage relationships, send invitations, and track engagement.',
+      'Your complete client roster - manage relationships, send invitations, and track engagement.',
     features: [
       'Client list with health scores',
       'Send portal invitations via email',
@@ -42,7 +42,7 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/clients/new': {
     title: 'Add Client',
-    description: 'Create a new client profile — name, contact info, and dietary preferences.',
+    description: 'Create a new client profile - name, contact info, and dietary preferences.',
     features: [
       'Client info form',
       'Dietary restrictions',
@@ -54,7 +54,7 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/clients/[id]': {
     title: 'Client Detail',
     description:
-      'Full client profile — event history, communication log, preferences, and financial relationship.',
+      'Full client profile - event history, communication log, preferences, and financial relationship.',
     features: [
       'Client profile and contact info',
       'Event history timeline',
@@ -68,7 +68,7 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/clients/[id]/recurring': {
     title: 'Recurring Events',
     description:
-      'Set up recurring event subscriptions for this client — weekly, monthly, or custom.',
+      'Set up recurring event subscriptions for this client - weekly, monthly, or custom.',
     features: ['Recurring schedule setup', 'Auto-event creation', 'Frequency options'],
   },
 
@@ -80,7 +80,7 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/clients/inactive': {
     title: 'Inactive Clients',
-    description: 'Clients without recent activity — potential re-engagement opportunities.',
+    description: 'Clients without recent activity - potential re-engagement opportunities.',
     features: ['Inactive client list', 'Last activity date', 'Re-engagement prompts'],
   },
 
@@ -109,7 +109,7 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/clients/vip': {
     title: 'VIP Clients',
-    description: 'Your highest-value clients — special tier management and priority treatment.',
+    description: 'Your highest-value clients - special tier management and priority treatment.',
     features: ['VIP tier assignment', 'Lifetime value ranking', 'Special perks tracking'],
   },
 
@@ -121,14 +121,14 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/clients/communication': {
     title: 'Communication Hub',
-    description: 'Unified view of all client communication — notes, follow-ups, and touchpoints.',
+    description: 'Unified view of all client communication - notes, follow-ups, and touchpoints.',
     features: ['Communication log', 'Notes by client', 'Follow-up tasks', 'Upcoming touchpoints'],
   },
 
   '/clients/communication/notes': {
     title: 'Client Notes',
     description:
-      'Notes and observations organized by client — personal details, preferences, and context.',
+      'Notes and observations organized by client - personal details, preferences, and context.',
     features: ['Per-client notes', 'Searchable history', 'Tagged notes'],
   },
 
@@ -146,31 +146,31 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/clients/history': {
     title: 'Client History Hub',
-    description: 'Complete historical view of client relationships — events, menus, and spending.',
+    description: 'Complete historical view of client relationships - events, menus, and spending.',
     features: ['Event history', 'Past menus served', 'Spending trends'],
   },
 
   '/clients/history/event-history': {
     title: 'Event History',
-    description: 'All events for each client — past, present, and future.',
+    description: 'All events for each client - past, present, and future.',
     features: ['Chronological event list', 'Status and outcome tracking', 'Revenue per event'],
   },
 
   '/clients/history/past-menus': {
     title: 'Past Menus',
-    description: "Menus you've served to each client — avoid repeats, track favorites.",
+    description: "Menus you've served to each client - avoid repeats, track favorites.",
     features: ['Menu history by client', 'Dish frequency', 'Favorite dish indicators'],
   },
 
   '/clients/history/spending-history': {
     title: 'Spending History',
-    description: 'Revenue history per client — track lifetime value and spending patterns.',
+    description: 'Revenue history per client - track lifetime value and spending patterns.',
     features: ['Revenue timeline', 'Average event value', 'Spending trends'],
   },
 
   '/clients/insights': {
     title: 'Client Insights',
-    description: 'Analytics about your client base — top spenders, most frequent, and at-risk.',
+    description: 'Analytics about your client base - top spenders, most frequent, and at-risk.',
     features: [
       'Top clients by revenue',
       'Most frequent bookers',
@@ -187,14 +187,14 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/clients/insights/most-frequent': {
     title: 'Most Frequent',
-    description: 'Clients who book most often — your loyal regulars.',
+    description: 'Clients who book most often - your loyal regulars.',
     features: ['Booking frequency ranking', 'Average time between bookings', 'Retention rate'],
   },
 
   '/clients/insights/at-risk': {
     title: 'At-Risk Clients',
     description:
-      'Clients showing signs of churning — long gaps between bookings or declining engagement.',
+      'Clients showing signs of churning - long gaps between bookings or declining engagement.',
     features: ['Churn risk indicators', 'Days since last booking', 'Re-engagement suggestions'],
   },
 
@@ -206,13 +206,13 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/clients/preferences/allergies': {
     title: 'Allergy Tracking',
-    description: 'Client allergies — critical safety information for event planning.',
+    description: 'Client allergies - critical safety information for event planning.',
     features: ['Allergy list by client', 'Severity indicators', 'Cross-reference with menus'],
   },
 
   '/clients/preferences/dietary-restrictions': {
     title: 'Dietary Restrictions',
-    description: 'Dietary requirements across your client base — vegan, kosher, gluten-free, etc.',
+    description: 'Dietary requirements across your client base - vegan, kosher, gluten-free, etc.',
     features: [
       'Restriction categories',
       'Client count per restriction',
@@ -222,19 +222,19 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/clients/preferences/dislikes': {
     title: 'Food Dislikes',
-    description: "Foods your clients don't enjoy — helps avoid menu missteps.",
+    description: "Foods your clients don't enjoy - helps avoid menu missteps.",
     features: ['Dislike list by client', 'Ingredient-level tracking'],
   },
 
   '/clients/preferences/favorite-dishes': {
     title: 'Favorite Dishes',
-    description: 'Dishes your clients love — great for repeat bookings and personalization.',
+    description: 'Dishes your clients love - great for repeat bookings and personalization.',
     features: ['Favorite tracking', 'Recipe cross-reference', 'Personalization suggestions'],
   },
 
   '/clients/loyalty': {
     title: 'Loyalty Program',
-    description: 'Manage your client loyalty program — points, rewards, and referrals.',
+    description: 'Manage your client loyalty program - points, rewards, and referrals.',
     features: ['Points system overview', 'Reward tiers', 'Referral tracking', 'Redemption history'],
   },
 
@@ -252,7 +252,7 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/clients/loyalty/referrals': {
     title: 'Referral Tracking',
-    description: 'Track client referrals — who referred whom and the resulting bookings.',
+    description: 'Track client referrals - who referred whom and the resulting bookings.',
     features: ['Referral chain tracking', 'Conversion rates', 'Referral rewards issued'],
   },
 }

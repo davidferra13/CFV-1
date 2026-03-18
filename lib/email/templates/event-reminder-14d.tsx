@@ -1,5 +1,5 @@
 // Event 14-Day Reminder Email
-// Sent to client 14 days before their event — "two weeks out" tone
+// Sent to client 14 days before their event - "two weeks out" tone
 
 import { Text, Button } from '@react-email/components'
 import * as React from 'react'
@@ -73,7 +73,7 @@ export function EventReminder14dEmail({
       </table>
 
       <Text style={paragraph}>
-        Now is a great time to review everything and make any last adjustments — guest count,
+        Now is a great time to review everything and make any last adjustments - guest count,
         dietary needs, timing, or special requests. The sooner any changes are confirmed, the better{' '}
         {chefName} can prepare.
       </Text>

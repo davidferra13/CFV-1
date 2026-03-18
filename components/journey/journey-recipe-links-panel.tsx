@@ -416,7 +416,7 @@ export function JourneyRecipeLinksPanel({
 
               {link.adaptation_notes && (
                 <div className="rounded-lg border border-stone-700 bg-stone-800 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-stone-500">
+                  <p className="text-xs-tight uppercase tracking-wide text-stone-500">
                     Adaptation Notes
                   </p>
                   <p className="text-sm text-stone-300 mt-1 whitespace-pre-wrap">
@@ -427,7 +427,7 @@ export function JourneyRecipeLinksPanel({
 
               {link.outcome_notes && (
                 <div className="rounded-lg border border-stone-700 bg-stone-800 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-stone-500 flex items-center gap-1">
+                  <p className="text-xs-tight uppercase tracking-wide text-stone-500 flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Outcome Notes
                   </p>

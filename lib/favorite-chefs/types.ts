@@ -1,4 +1,4 @@
-// Favorite Chefs — Shared Types
+// Favorite Chefs - Shared Types
 // Extracted from server action file to avoid 'use server' export restrictions.
 
 export type FavoriteChef = {

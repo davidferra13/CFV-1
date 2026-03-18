@@ -1,4 +1,4 @@
-// Quote Rejected — Chef Notification Email
+// Quote Rejected - Chef Notification Email
 // Sent to the chef when a client declines a quote.
 
 import { Text, Link } from '@react-email/components'

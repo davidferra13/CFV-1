@@ -1,8 +1,8 @@
-// Sender Reputation — self-improving email filter
+// Sender Reputation - self-improving email filter
 // Tracks how the chef interacts with emails from each sender domain.
 // Domains that are consistently dismissed get auto-classified as marketing.
 //
-// NOT a 'use server' file — imported by classify.ts (which IS 'use server').
+// NOT a 'use server' file - imported by classify.ts (which IS 'use server').
 
 import { createServerClient } from '@/lib/supabase/server'
 import type { EmailClassification } from './types'
@@ -89,7 +89,7 @@ export async function recordSenderAction(
 
 /**
  * Check if a sender domain has a known reputation. Used as Layer 5
- * in the classification pipeline — runs after heuristics, before Ollama.
+ * in the classification pipeline - runs after heuristics, before Ollama.
  */
 export async function checkSenderReputation(
   tenantId: string,
@@ -126,7 +126,7 @@ export async function checkSenderReputation(
     }
   }
 
-  // 'trusted' and 'unknown' — let later layers handle it
+  // 'trusted' and 'unknown' - let later layers handle it
   return null
 }
 

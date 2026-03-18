@@ -30,7 +30,7 @@ export type PlatformReconciliation = {
 
 /**
  * Get cross-tenant reconciliation for platform admin.
- * No tenant scoping — uses admin client.
+ * No tenant scoping - uses admin client.
  */
 export async function getPlatformReconciliation(): Promise<PlatformReconciliation> {
   await requireAdmin()

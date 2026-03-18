@@ -578,9 +578,7 @@ export function SocialPostEditor({
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-stone-300 truncate">{asset.asset_name}</p>
                             {link.is_primary && (
-                              <span className="text-[10px] text-emerald-600 font-medium">
-                                Primary
-                              </span>
+                              <span className="text-xxs text-emerald-600 font-medium">Primary</span>
                             )}
                           </div>
                           <button
@@ -782,7 +780,7 @@ export function SocialPostEditor({
                         <div className="w-full h-full bg-stone-800 flex flex-col items-center justify-center gap-1">
                           <Film className="w-6 h-6 text-stone-400" />
                           {asset.duration_seconds && (
-                            <span className="text-[10px] text-stone-400">
+                            <span className="text-xxs text-stone-400">
                               {asset.duration_seconds}s
                             </span>
                           )}
@@ -794,7 +792,7 @@ export function SocialPostEditor({
                         </div>
                       )}
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <p className="text-[10px] text-white truncate">{asset.asset_name}</p>
+                        <p className="text-xxs text-white truncate">{asset.asset_name}</p>
                       </div>
                     </button>
                   )

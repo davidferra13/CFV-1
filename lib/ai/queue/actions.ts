@@ -1,6 +1,6 @@
 'use server'
 
-// AI Task Queue — Server Actions
+// AI Task Queue - Server Actions
 // Enqueue, claim, complete, fail, approve, reject tasks.
 // Uses admin client for worker operations (no user session needed).
 // Uses server client for chef-facing operations (RLS enforced).
@@ -73,7 +73,7 @@ async function releaseClaimAfterIncrementFailure(input: {
 }
 
 // ============================================
-// ENQUEUE — Add a task to the queue
+// ENQUEUE - Add a task to the queue
 // ============================================
 
 /**
@@ -91,7 +91,7 @@ export async function enqueueTask(
 
   const supabase: any = createAdminClient()
 
-  // Queue depth guard — prevent runaway enqueuing
+  // Queue depth guard - prevent runaway enqueuing
   const { count, error: depthError } = await supabase
     .from('ai_task_queue')
     .select('id', { count: 'exact', head: true })
@@ -115,7 +115,7 @@ export async function enqueueTask(
     }
   }
 
-  // Deduplication — don't enqueue the same task type if one is already pending/processing
+  // Deduplication - don't enqueue the same task type if one is already pending/processing
   // (only for scheduled/reactive tasks, not on-demand)
   if ((input.priority ?? definition.defaultPriority) < 800) {
     const { data: existing, error: dedupeError } = await supabase
@@ -179,7 +179,7 @@ export async function enqueueTask(
 }
 
 // ============================================
-// CLAIM — Worker grabs the next task
+// CLAIM - Worker grabs the next task
 // ============================================
 
 /**
@@ -243,7 +243,7 @@ export async function claimNextTask(): Promise<AiQueueItem | null> {
   }
 
   if (!claimed) {
-    // Another worker claimed it first (race condition) — try again
+    // Another worker claimed it first (race condition) - try again
     return null
   }
 
@@ -276,7 +276,7 @@ export async function claimNextTask(): Promise<AiQueueItem | null> {
 }
 
 // ============================================
-// COMPLETE — Task finished successfully
+// COMPLETE - Task finished successfully
 // ============================================
 
 /**
@@ -365,7 +365,7 @@ export async function completeTask(taskId: string, result: Record<string, unknow
 }
 
 // ============================================
-// FAIL — Task execution failed
+// FAIL - Task execution failed
 // ============================================
 
 /**
@@ -404,7 +404,7 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
   const attempts = task.attempts ?? 1
 
   if (attempts >= task.max_attempts) {
-    // Permanently failed — move to dead
+    // Permanently failed - move to dead
     const { error: deadError } = await supabase
       .from('ai_task_queue')
       .update({
@@ -484,7 +484,7 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
 }
 
 // ============================================
-// APPROVE / REJECT — Chef reviews draft results
+// APPROVE / REJECT - Chef reviews draft results
 // ============================================
 
 /**
@@ -524,7 +524,7 @@ export async function rejectTask(taskId: string, reason?: string): Promise<void>
 }
 
 // ============================================
-// QUERY — Chef-facing task listing
+// QUERY - Chef-facing task listing
 // ============================================
 
 /**
@@ -704,7 +704,7 @@ export async function claimNextTaskForEndpoint(endpoint: 'pc' | 'pi'): Promise<A
   }
 
   if (!claimed) {
-    // Another worker/slot claimed it — not an error
+    // Another worker/slot claimed it - not an error
     return null
   }
 
@@ -744,7 +744,7 @@ export async function claimNextTaskForEndpoint(endpoint: 'pc' | 'pi'): Promise<A
  * Selection priority:
  *   1. Tasks explicitly targeted at this endpoint
  *   2. Auto-routed tasks that match this endpoint's affinity
- *   3. Any remaining task (work stealing — idle endpoint helps the other)
+ *   3. Any remaining task (work stealing - idle endpoint helps the other)
  */
 function pickBestCandidate(
   candidates: Array<{ id: string; target_endpoint: string | null; priority: number }>,
@@ -762,7 +762,7 @@ function pickBestCandidate(
     if (endpoint === 'pi' && task.priority < 800) return task.id // Pi handles background
   }
 
-  // Tier 3: Work stealing — take any auto task (idle endpoint helps out)
+  // Tier 3: Work stealing - take any auto task (idle endpoint helps out)
   // This is the "work stealing" pattern from Google Borg / Netflix Mantis
   const anyAuto = autoTasks[0]
   if (anyAuto) return anyAuto.id

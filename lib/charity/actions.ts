@@ -147,7 +147,7 @@ export async function getCharityMisc(): Promise<CharityMiscItem[]> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // All queries are independent — run in parallel
+  // All queries are independent - run in parallel
   const [
     { data: clientNotes },
     { data: inquiryNotes },
@@ -186,14 +186,14 @@ export async function getCharityMisc(): Promise<CharityMiscItem[]> {
       .eq('tenant_id', user.tenantId!)
       .or(buildCharityOrFilter(['tag']))
       .limit(20),
-    // Prospects — text columns (uses chef_id, not tenant_id)
+    // Prospects - text columns (uses chef_id, not tenant_id)
     supabase
       .from('prospects')
       .select('id, name, notes, talking_points, created_at')
       .eq('chef_id', user.tenantId!)
       .or(buildCharityOrFilter(['notes', 'talking_points', 'description']))
       .limit(20),
-    // Prospects — all (for array field post-filtering)
+    // Prospects - all (for array field post-filtering)
     supabase
       .from('prospects')
       .select('id, name, tags, event_types_hosted, created_at')

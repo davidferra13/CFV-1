@@ -68,7 +68,7 @@ export async function cloneEvent(
     }
   }
 
-  // Build the new event payload — copy all relevant fields, reset status to draft
+  // Build the new event payload - copy all relevant fields, reset status to draft
   const newEventPayload: Record<string, unknown> = {
     tenant_id: user.tenantId!,
     client_id: clientId,

@@ -21,7 +21,7 @@ export type DetectedLocation = {
 /**
  * Detect the current user's location from their IP address.
  * Returns null if detection fails (e.g., local dev, VPN, rate limit).
- * Non-blocking — callers should handle null gracefully.
+ * Non-blocking - callers should handle null gracefully.
  */
 export async function detectMyLocation(): Promise<DetectedLocation | null> {
   try {
@@ -61,7 +61,7 @@ export type CountryDetails = {
 /**
  * Get enriched country details from a 2-letter country code.
  * Useful for showing client's local currency, timezone, etc.
- * Non-blocking — returns null on failure.
+ * Non-blocking - returns null on failure.
  */
 export async function getCountryDetails(countryCode: string): Promise<CountryDetails | null> {
   try {

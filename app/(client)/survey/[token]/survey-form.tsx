@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { submitSurveyResponse } from '@/lib/surveys/actions'
 import { Button } from '@/components/ui/button'
+import { Alert } from '@/components/ui/alert'
 
 type Props = {
   token: string
@@ -64,25 +65,30 @@ export function SurveyForm({ token }: Props) {
     }
     setLoading(true)
     setError(null)
-    const result = await submitSurveyResponse({
-      token,
-      npsScore,
-      overallRating,
-      foodQualityRating,
-      serviceRating,
-      valueRating,
-      presentationRating,
-      wouldRebook,
-      highlightText,
-      improvementText,
-      testimonialText,
-      consentToDisplay,
-    })
-    setLoading(false)
-    if (result.ok) {
-      setSubmitted(true)
-    } else {
-      setError(result.error ?? 'Something went wrong. Please try again.')
+    try {
+      const result = await submitSurveyResponse({
+        token,
+        npsScore,
+        overallRating,
+        foodQualityRating,
+        serviceRating,
+        valueRating,
+        presentationRating,
+        wouldRebook,
+        highlightText,
+        improvementText,
+        testimonialText,
+        consentToDisplay,
+      })
+      if (result.ok) {
+        setSubmitted(true)
+      } else {
+        setError(result.error ?? 'Something went wrong. Please try again.')
+      }
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -103,11 +109,7 @@ export function SurveyForm({ token }: Props) {
       onSubmit={handleSubmit}
       className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-6 space-y-6"
     >
-      {error && (
-        <div className="rounded-lg bg-red-950 border border-red-200 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      {error && <Alert variant="error">{error}</Alert>}
 
       {/* NPS */}
       <div className="space-y-2">
@@ -123,7 +125,7 @@ export function SurveyForm({ token }: Props) {
               onClick={() => setNpsScore(i)}
               className={`w-9 h-9 rounded-lg text-sm font-medium border transition-colors ${
                 npsScore === i
-                  ? 'bg-stone-900 text-white border-stone-900'
+                  ? 'bg-brand-600 text-white border-brand-600'
                   : 'bg-stone-900 text-stone-300 border-stone-700 hover:border-stone-400'
               }`}
             >

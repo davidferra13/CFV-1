@@ -395,10 +395,10 @@ export function PackingListClient({
               </div>
             </div>
             <div className="text-right">
-              <p className="text-[10px] text-sky-400 uppercase tracking-wide">
+              <p className="text-xxs text-sky-400 uppercase tracking-wide">
                 {weather.isHistorical ? 'Actual' : 'Forecast'}
               </p>
-              <p className="text-[10px] text-sky-500">Open-Meteo</p>
+              <p className="text-xxs text-sky-500">Open-Meteo</p>
             </div>
           </div>
 

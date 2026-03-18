@@ -1,4 +1,4 @@
-// Remy Agent — Restricted Actions
+// Remy Agent - Restricted Actions
 // Actions that Remy CANNOT perform. Always returns tier 3 held with explanation.
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -18,7 +18,7 @@ function restrictedAction(
     safety: 'restricted',
     description,
     inputSchema: '{}',
-    tierNote: `ALWAYS tier 3 — ${explanation}`,
+    tierNote: `ALWAYS tier 3 - ${explanation}`,
 
     async executor() {
       return {
@@ -46,7 +46,7 @@ export const restrictedAgentActions: AgentActionDefinition[] = [
     'agent.ledger_write',
     'Record Payment / Ledger Entry',
     'Record a payment, deposit, refund, tip, or adjustment to the financial ledger.',
-    'Financial ledger entries must be recorded manually for audit accuracy. The ledger is immutable and append-only — AI cannot write to it.',
+    'Financial ledger entries must be recorded manually for audit accuracy. The ledger is immutable and append-only - AI cannot write to it.',
     'Go to the event page → Payments tab → Record Payment. Or navigate to Finance → Record Entry.'
   ),
   restrictedAction(
@@ -78,7 +78,7 @@ export const restrictedAgentActions: AgentActionDefinition[] = [
     'Go to the event page → Payments → Record Adjustment with a negative amount, or contact your payment processor.'
   ),
 
-  // ─── Recipe Generation — PERMANENTLY RESTRICTED ──────────────────────────
+  // ─── Recipe Generation - PERMANENTLY RESTRICTED ──────────────────────────
   // Recipes are the chef's creative work. AI has zero role in authoring them.
   // AI may search/cost/scale recipes (read-only math), but never create or modify.
 
@@ -86,21 +86,21 @@ export const restrictedAgentActions: AgentActionDefinition[] = [
     'agent.create_recipe',
     'Create Recipe',
     'Generate a new recipe from a description.',
-    "AI cannot generate, fabricate, or create recipes — ever. Recipes are the chef's creative work and intellectual property. AI will never tell a chef what to cook or how to cook it.",
+    "AI cannot generate, fabricate, or create recipes - ever. Recipes are the chef's creative work and intellectual property. AI will never tell a chef what to cook or how to cook it.",
     'Go to Recipes → New Recipe and enter your recipe manually.'
   ),
   restrictedAction(
     'agent.update_recipe',
     'Update Recipe',
     'Update an existing recipe via AI.',
-    "AI cannot modify recipe content — ever. Recipes are the chef's creative work. Only the chef edits recipes directly.",
+    "AI cannot modify recipe content - ever. Recipes are the chef's creative work. Only the chef edits recipes directly.",
     'Go to Recipes → find the recipe → Edit to update it manually.'
   ),
   restrictedAction(
     'agent.add_ingredient',
     'Add Ingredient to Recipe',
     'Add an ingredient to an existing recipe via AI.',
-    'AI cannot add, remove, or modify recipe ingredients — ever. Recipe ingredients must be entered manually by the chef.',
+    'AI cannot add, remove, or modify recipe ingredients - ever. Recipe ingredients must be entered manually by the chef.',
     'Go to Recipes → find the recipe → Ingredients section to add ingredients manually.'
   ),
 ]

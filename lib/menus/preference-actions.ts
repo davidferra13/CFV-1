@@ -1,4 +1,4 @@
-// Menu Preferences — Client-facing server actions
+// Menu Preferences - Client-facing server actions
 // Allows clients to submit a "menu brief" before the chef builds the menu.
 // Stores cuisine preferences, dietary notes, loves/hates, and selection mode.
 
@@ -35,7 +35,7 @@ export type SubmitPreferencesInput = z.infer<typeof SubmitPreferencesSchema>
 
 /**
  * Submit menu preferences for an event.
- * Upserts — if preferences already exist for this event, they're replaced.
+ * Upserts - if preferences already exist for this event, they're replaced.
  */
 export async function submitMenuPreferences(input: SubmitPreferencesInput) {
   const user = await requireClient()
@@ -116,7 +116,7 @@ export async function submitMenuPreferences(input: SubmitPreferencesInput) {
 
 /**
  * Get menu preferences for an event.
- * Works for both chefs (tenant scope) and clients (client scope — RLS handles it).
+ * Works for both chefs (tenant scope) and clients (client scope - RLS handles it).
  */
 export async function getMenuPreferences(eventId: string) {
   const supabase: any = createServerClient()

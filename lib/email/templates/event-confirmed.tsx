@@ -31,7 +31,7 @@ export function EventConfirmedEmail({
       <Text style={heading}>Event confirmed!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        Great news — <strong>{chefName}</strong> has confirmed your event. Everything is set and
+        Great news - <strong>{chefName}</strong> has confirmed your event. Everything is set and
         your chef is preparing for a wonderful experience.
       </Text>
       <table style={detailsTable}>

@@ -205,7 +205,7 @@ export function ClientPhotoGallery({
                 onClick={() => setLightboxIndex(index)}
               />
               {/* Category badge */}
-              <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-black/60 text-white">
+              <span className="absolute top-1 left-1 text-xxs px-1.5 py-0.5 rounded bg-black/60 text-white">
                 {photo.category}
               </span>
               {/* Hover overlay */}

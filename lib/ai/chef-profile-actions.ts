@@ -1,6 +1,6 @@
 'use server'
 
-// Chef Culinary Profile — Server Actions
+// Chef Culinary Profile - Server Actions
 // 12 structured Q&A questions that Remy reads to understand the chef deeply.
 // Injected into Remy's system prompt as the CULINARY PROFILE section.
 

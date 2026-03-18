@@ -1,4 +1,4 @@
-// Review Submitted — Chef Notification Email
+// Review Submitted - Chef Notification Email
 // Sent to the chef when a client submits a review for a completed event.
 
 import { Text, Link } from '@react-email/components'

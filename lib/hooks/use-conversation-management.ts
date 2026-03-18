@@ -65,7 +65,7 @@ export function useConversationManagement(setDrawerView: Dispatch<SetStateAction
         setMessages(remyMsgs)
         setIsFirstExchange(remyMsgs.length === 0)
       } else if (mapped.length === 0) {
-        // Brand new user — inject Remy welcome message (once per device)
+        // Brand new user - inject Remy welcome message (once per device)
         const welcomeShown =
           typeof window !== 'undefined' && localStorage.getItem(REMY_WELCOME_SHOWN_KEY)
         if (!welcomeShown) {
@@ -119,7 +119,9 @@ export function useConversationManagement(setDrawerView: Dispatch<SetStateAction
         const conv = await createLocalConversation()
         // If a project is specified, move the conversation into it
         if (projectId) {
-          moveConversation(conv.id, projectId).catch(() => {})
+          moveConversation(conv.id, projectId).catch((err) => {
+            console.error('[non-blocking] moveConversation failed:', err)
+          })
         }
         setCurrentConversationId(conv.id)
         setMessages([])
@@ -137,7 +139,9 @@ export function useConversationManagement(setDrawerView: Dispatch<SetStateAction
           ...prev,
         ])
         // Auto-prune old conversations (non-blocking)
-        pruneOldConversations().catch(() => {})
+        pruneOldConversations().catch((err) => {
+          console.error('[non-blocking] pruneOldConversations failed:', err)
+        })
       } catch (err) {
         console.error('[remy] Failed to create conversation:', err)
         toast.error('Failed to start new conversation')

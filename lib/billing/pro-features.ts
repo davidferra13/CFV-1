@@ -5,7 +5,7 @@
 // Server actions use the slug to identify which feature is being gated.
 // The registry is also used on the billing page to show "what you get with Pro."
 //
-// NOT a server action file — no 'use server'.
+// NOT a server action file - no 'use server'.
 
 export type ProFeature = {
   slug: string
@@ -203,7 +203,7 @@ export const PRO_FEATURES: ProFeature[] = [
   },
 ]
 
-/** Set of all Pro feature slugs — used for quick lookup. */
+/** Set of all Pro feature slugs - used for quick lookup. */
 export const PRO_FEATURE_SLUGS = new Set(PRO_FEATURES.map((f) => f.slug))
 
 /** Look up a Pro feature by slug. */

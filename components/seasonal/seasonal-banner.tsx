@@ -62,7 +62,7 @@ export function SeasonalBanner({
                 }`}
               >
                 {w.ingredient}
-                {isEnding && <span className="text-[10px] opacity-70">ending soon</span>}
+                {isEnding && <span className="text-xxs opacity-70">ending soon</span>}
               </span>
             )
           })}
@@ -75,7 +75,7 @@ export function SeasonalBanner({
                 className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-900 text-amber-700 ring-1 ring-amber-800"
               >
                 {w.ingredient}
-                <span className="text-[10px] opacity-70">ending soon</span>
+                <span className="text-xxs opacity-70">ending soon</span>
               </span>
             ))}
         </div>

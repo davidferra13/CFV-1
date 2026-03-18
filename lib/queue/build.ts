@@ -1,4 +1,4 @@
-// Priority Queue — Builder
+// Priority Queue - Builder
 // Calls all providers in parallel, merges, deduplicates, sorts by score.
 
 import type { SupabaseClient } from '@supabase/supabase-js'

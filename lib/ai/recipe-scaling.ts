@@ -4,8 +4,8 @@
 // Migrated from Gemini to Ollama for AI policy compliance.
 // Recipe data (names, ingredient lists, cooking methods) is private chef IP
 // and must stay local per AI-POLICY.md Section 3.
-// Beyond simple multiplication — AI adjusts technique notes when scaling.
-// Output is DRAFT ONLY — chef must confirm scaled recipe before using.
+// Beyond simple multiplication - AI adjusts technique notes when scaling.
+// Output is DRAFT ONLY - chef must confirm scaled recipe before using.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -17,7 +17,7 @@ export interface ScaledIngredient {
   originalQuantity: string
   scaledQuantity: string
   unit: string
-  scalingNote: string | null // e.g. "reduce seasoning by 15% — doesn't scale linearly"
+  scalingNote: string | null // e.g. "reduce seasoning by 15% - doesn't scale linearly"
 }
 
 export interface ScaledRecipe {
@@ -84,10 +84,10 @@ export async function scaleRecipeWithAI(
 Your job is to scale recipes accurately, applying culinary expertise to adjust ingredients and techniques.
 
 Key scaling rules to apply:
-- Salt, acids (lemon juice, vinegar), spices, aromatics: scale at 60-75% — they don't scale linearly
+- Salt, acids (lemon juice, vinegar), spices, aromatics: scale at 60-75% - they don't scale linearly
 - Fats for cooking (oil for searing): scale by pan count, not recipe multiplier
 - Leavening agents in baking: use 75% of the mathematically scaled amount
-- Herbs, seasonings: taste and adjust — suggest conservative starting amounts
+- Herbs, seasonings: taste and adjust - suggest conservative starting amounts
 - Broth/liquids for braises: scale conservatively (less evaporation per unit at large scale)
 - Heat and timing: flag when technique changes are needed (e.g., saute to roast)
 - Equipment: flag when volume requires different equipment

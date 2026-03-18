@@ -48,7 +48,7 @@ function RatingSelector({
           </button>
         ))}
       </div>
-      {value > 0 && <p className="text-[10px] text-stone-500 mt-0.5">{RATING_LABELS[value - 1]}</p>}
+      {value > 0 && <p className="text-xxs text-stone-500 mt-0.5">{RATING_LABELS[value - 1]}</p>}
     </div>
   )
 }

@@ -101,9 +101,9 @@ function SessionCard({ session }: { session: BreadcrumbSession }) {
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-stone-300">{dateLabel}</span>
             <span className="text-xs text-stone-300">{timeLabel}</span>
-            <span className="text-[10px] text-stone-300">· {durationLabel}</span>
+            <span className="text-xxs text-stone-300">· {durationLabel}</span>
             {interactions.length > 0 && (
-              <span className="text-[10px] bg-stone-800 text-stone-500 px-1.5 py-0.5 rounded-full">
+              <span className="text-xxs bg-stone-800 text-stone-500 px-1.5 py-0.5 rounded-full">
                 +{interactions.length} action{interactions.length === 1 ? '' : 's'}
               </span>
             )}
@@ -181,9 +181,7 @@ function BreadcrumbRow({
 
       {/* Content */}
       <div className="flex-1 min-w-0 flex items-center gap-2">
-        <span className="text-[10px] text-stone-300 font-medium flex-shrink-0 w-7">
-          {config.icon}
-        </span>
+        <span className="text-xxs text-stone-300 font-medium flex-shrink-0 w-7">{config.icon}</span>
         <span
           className={`text-xs truncate ${
             isPageView
@@ -196,7 +194,7 @@ function BreadcrumbRow({
       </div>
 
       {/* Timestamp */}
-      <span className="text-[10px] text-stone-300 flex-shrink-0 tabular-nums">{time}</span>
+      <span className="text-xxs text-stone-300 flex-shrink-0 tabular-nums">{time}</span>
     </div>
   )
 

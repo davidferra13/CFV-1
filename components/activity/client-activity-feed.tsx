@@ -137,7 +137,7 @@ function ActorBadge({ type }: { type: string }) {
   }
   const c = config[type] || config.system
   return (
-    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${c.bg}`}>
+    <span className={`text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${c.bg}`}>
       {c.label}
     </span>
   )

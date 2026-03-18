@@ -1,4 +1,4 @@
-// YouTube Shorts OAuth adapter — Google OAuth 2.0.
+// YouTube Shorts OAuth adapter - Google OAuth 2.0.
 //
 // YouTube uses Google's OAuth 2.0 system (same app as Google Calendar if configured).
 // Access tokens expire in 1 hour; refresh tokens are long-lived if the user granted

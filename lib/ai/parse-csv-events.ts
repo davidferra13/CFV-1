@@ -1,6 +1,6 @@
 // CSV Events Parser
 // Deterministic column-detection parser for historical event data.
-// No AI required — handles any spreadsheet format a chef might export.
+// No AI required - handles any spreadsheet format a chef might export.
 // Mirrors the pattern established in parse-csv-clients.ts.
 
 // ============================================
@@ -28,9 +28,9 @@ export type ParsedEventRow = {
   event_date: string // YYYY-MM-DD or raw string if date is unparseable
   client_name: string
   occasion: string
-  guest_count: string // raw string — empty if not found
+  guest_count: string // raw string - empty if not found
   location_city: string
-  amount_dollars: string // dollar string e.g. "1500.00" — empty if not found
+  amount_dollars: string // dollar string e.g. "1500.00" - empty if not found
   payment_method: string // empty if not found
   notes: string
 }
@@ -193,7 +193,7 @@ function normalizeDate(raw: string): string {
   // Already YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
 
-  // Try JS Date parsing — handles "Jan 15, 2024", "1/15/2024", "15/01/2024", etc.
+  // Try JS Date parsing - handles "Jan 15, 2024", "1/15/2024", "15/01/2024", etc.
   const parsed = new Date(s)
   if (!isNaN(parsed.getTime())) {
     const yyyy = parsed.getFullYear()

@@ -1,4 +1,4 @@
-// Remy Agent — Draft Email Actions
+// Remy Agent - Draft Email Actions
 // Generate email drafts: thank-you, referral, testimonial, quote cover letter,
 // decline, cancellation, payment reminder, re-engagement, milestone, food safety.
 
@@ -78,9 +78,9 @@ export const draftEmailAgentActions: AgentActionDefinition[] = [
     description:
       'Generate an email draft: thank-you, referral request, testimonial request, quote cover letter, decline, cancellation, payment reminder, re-engagement, milestone recognition, or food safety incident report.',
     inputSchema:
-      '{ "description": "string — what kind of email and for whom, e.g. Draft a thank-you email for Sarah Johnson" }',
+      '{ "description": "string - what kind of email and for whom, e.g. Draft a thank-you email for Sarah Johnson" }',
     tierNote:
-      'ALWAYS tier 2 — chef reviews the draft. Remy drafts but NEVER sends emails directly.',
+      'ALWAYS tier 2 - chef reviews the draft. Remy drafts but NEVER sends emails directly.',
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
@@ -99,7 +99,7 @@ export const draftEmailAgentActions: AgentActionDefinition[] = [
           actionType: 'agent.draft_email',
           summary: `Draft ${draftLabel}${parsed.clientName ? ` for ${parsed.clientName}` : ''}`,
           fields,
-          warnings: ['This creates a DRAFT only — it will NOT be sent automatically.'],
+          warnings: ['This creates a DRAFT only - it will NOT be sent automatically.'],
           safety: 'reversible',
         },
         commitPayload: { ...parsed, _rawDescription: description },

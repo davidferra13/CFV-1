@@ -1,4 +1,4 @@
-// Pure computation — no server dependency, no 'use server'
+// Pure computation - no server dependency, no 'use server'
 // Menu diversity analysis for the professional momentum dashboard
 
 export type MenuDiversitySignal = {

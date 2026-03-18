@@ -166,7 +166,7 @@ export async function getRecentClientActivity(options?: {
     daysBack: options?.daysBack ?? 30,
     cursor: options?.cursor || null,
     actorType: 'client',
-    // session_heartbeat is internal — written to DB for engagement scoring, never shown in feeds
+    // session_heartbeat is internal - written to DB for engagement scoring, never shown in feeds
     excludeEventTypes: ['session_heartbeat'],
   })
 }

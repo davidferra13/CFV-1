@@ -93,7 +93,7 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
                 }`}
               >
                 <span
-                  className={`shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                  className={`shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-xxs font-bold ${
                     isActive ? 'bg-blue-600 text-white' : 'bg-blue-200 text-blue-600'
                   }`}
                 >
@@ -105,10 +105,10 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
                   >
                     {step.label}
                     {isActive && (
-                      <span className="ml-1 text-[10px] text-blue-500">← you are here</span>
+                      <span className="ml-1 text-xxs text-blue-500">← you are here</span>
                     )}
                   </p>
-                  <p className="text-[11px] text-blue-600/80">{step.detail}</p>
+                  <p className="text-xs-tight text-blue-600/80">{step.detail}</p>
                 </div>
               </div>
             )
@@ -116,7 +116,7 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
           <button
             type="button"
             onClick={handleDismiss}
-            className="text-[11px] text-blue-500 hover:text-blue-700 underline underline-offset-2 ml-2 mt-1"
+            className="text-xs-tight text-blue-500 hover:text-blue-700 underline underline-offset-2 ml-2 mt-1"
           >
             Got it, don't show again
           </button>

@@ -134,7 +134,7 @@ export async function getCashFlowProjection(): Promise<CashFlowProjection | null
   // Runway: if net is negative, how many months until cash runs out? (simplified)
   let runwayMonths: number | null = null
   if (avgNet < 0) {
-    // Losing money — estimate months remaining (simplified, assumes no savings data)
+    // Losing money - estimate months remaining (simplified, assumes no savings data)
     runwayMonths = 0 // can't calculate without cash balance, but flag the warning
   }
 

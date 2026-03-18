@@ -62,7 +62,7 @@ const VALID_TRANSITIONS: Record<InquiryStatus, InquiryStatus[]> = {
   awaiting_client: ['awaiting_chef', 'quoted', 'declined', 'expired'],
   awaiting_chef: ['awaiting_client', 'quoted', 'declined'],
   quoted: ['confirmed', 'declined', 'expired'],
-  confirmed: [], // terminal — converts to event
+  confirmed: [], // terminal - converts to event
   declined: [], // terminal
   expired: ['new'], // can be reopened
 }
@@ -412,7 +412,7 @@ export async function createInquiry(input: CreateInquiryInput) {
   const validated = CreateInquirySchema.parse(input)
   const supabase: any = createServerClient()
 
-  // Email validation (local-only — no external API call during form submission)
+  // Email validation (local-only - no external API call during form submission)
   if (validated.client_email) {
     try {
       const emailCheck = validateEmailLocal(validated.client_email)
@@ -425,7 +425,7 @@ export async function createInquiry(input: CreateInquiryInput) {
         }
       }
     } catch (err) {
-      // Non-blocking — if the validator itself fails, let the inquiry through
+      // Non-blocking - if the validator itself fails, let the inquiry through
       console.error('[createInquiry] Email validation failed (non-blocking):', err)
     }
   }
@@ -545,7 +545,7 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Automation evaluation failed (non-blocking):', err)
   }
 
-  // Enqueue Remy reactive AI task — auto-score lead (non-blocking)
+  // Enqueue Remy reactive AI task - auto-score lead (non-blocking)
   try {
     const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
     await onInquiryCreated(user.tenantId!, inquiry.id, clientId ?? null, {
@@ -560,7 +560,7 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Remy reactive enqueue failed (non-blocking):', err)
   }
 
-  // Push notification — new inquiry (non-blocking)
+  // Push notification - new inquiry (non-blocking)
   try {
     const { notifyNewInquiry } = await import('@/lib/notifications/onesignal')
     await notifyNewInquiry(user.id, validated.client_name, validated.confirmed_date || 'date TBD')
@@ -729,7 +729,7 @@ export async function getInquiryById(id: string) {
 // ============================================
 
 /**
- * Update inquiry fields (NOT status — use transitionInquiry)
+ * Update inquiry fields (NOT status - use transitionInquiry)
  */
 export async function updateInquiry(id: string, input: UpdateInquiryInput) {
   const user = await requireChef()
@@ -1033,7 +1033,7 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
         expired: {
           action: 'inquiry_expired_to_client',
           title: 'Inquiry expired',
-          body: 'Your inquiry has expired — reach out to rebook',
+          body: 'Your inquiry has expired - reach out to rebook',
           actionUrl: '/my-inquiries',
         },
       }
@@ -1482,7 +1482,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
     conversationText
   )
 
-  // Check for accepted quote on this inquiry — use its pricing if available
+  // Check for accepted quote on this inquiry - use its pricing if available
   const { data: acceptedQuote } = await supabase
     .from('quotes')
     .select('id, total_quoted_cents, deposit_amount_cents, pricing_model')
@@ -1969,7 +1969,7 @@ export interface FirstContactInquiry {
 }
 
 /**
- * Get inquiries that have never been contacted — no outbound messages,
+ * Get inquiries that have never been contacted - no outbound messages,
  * no linked conversation. These leads need the chef's first response.
  */
 export async function getInquiriesNeedingFirstContact(): Promise<FirstContactInquiry[]> {
@@ -2013,7 +2013,7 @@ export async function getInquiriesNeedingFirstContact(): Promise<FirstContactInq
     (linkedConversations || []).map((c: any) => c.context_id).filter(Boolean)
   )
 
-  // Build result — only inquiries without outbound contact
+  // Build result - only inquiries without outbound contact
   const results: FirstContactInquiry[] = []
 
   for (const inq of inquiries) {

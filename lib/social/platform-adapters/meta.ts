@@ -1,10 +1,10 @@
-// Meta OAuth adapter — covers Instagram Business and Facebook Pages.
+// Meta OAuth adapter - covers Instagram Business and Facebook Pages.
 //
 // Meta uses a single OAuth app for both platforms. The flow:
 //   1. Chef authorises via facebook.com/dialog/oauth with combined scopes.
 //   2. Callback exchanges the short-lived code for a short-lived user access token.
 //   3. We immediately exchange that for a long-lived token (60-day expiry).
-//   4. We list the chef's FB Pages and let them pick one (UI step — callback stores
+//   4. We list the chef's FB Pages and let them pick one (UI step - callback stores
 //      the first page found; the UI lets them switch if they have multiple).
 //   5. The chosen page's Page Access Token is stored for Facebook posts.
 //   6. If that page has a linked Instagram Business account, its ID is also stored.

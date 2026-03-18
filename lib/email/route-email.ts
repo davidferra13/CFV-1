@@ -1,4 +1,4 @@
-// Generic email router — maps notification RouteInput to an email send.
+// Generic email router - maps notification RouteInput to an email send.
 // Called from channel-router.ts as Phase 2 email dispatch.
 // Uses the generic notification template so it works for any action type.
 

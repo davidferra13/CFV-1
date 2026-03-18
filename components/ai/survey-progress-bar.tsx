@@ -20,7 +20,7 @@ export function SurveyProgressBar({ answered }: SurveyProgressBarProps) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-[10px] text-stone-400 tabular-nums whitespace-nowrap">
+      <span className="text-xxs text-stone-400 tabular-nums whitespace-nowrap">
         {answered}/{SURVEY_TOTAL_QUESTIONS}
       </span>
     </div>

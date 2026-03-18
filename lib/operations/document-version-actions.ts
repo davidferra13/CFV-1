@@ -139,7 +139,7 @@ export async function getDocumentVersions(
 
 /**
  * Revert to a previous version by copying its snapshot forward as a new version.
- * This is non-destructive — it creates a new version with the old content.
+ * This is non-destructive - it creates a new version with the old content.
  */
 export async function revertToVersion(versionId: string) {
   const user = await requireChef()

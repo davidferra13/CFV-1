@@ -3,13 +3,13 @@ import type { PageInfoEntry } from '../page-info-types'
 export const CHEF_PORTAL_SOCIAL_MEDIA_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/social': {
     title: 'Social Hub',
-    description: 'Social media management — plan, create, and schedule posts.',
+    description: 'Social media management - plan, create, and schedule posts.',
     features: ['Post calendar', 'Content creation', 'Platform connections', 'Analytics'],
   },
 
   '/social/planner': {
     title: 'Social Planner',
-    description: 'Monthly social media calendar — plan and schedule posts.',
+    description: 'Monthly social media calendar - plan and schedule posts.',
     features: ['Monthly calendar view', 'Post scheduling', 'Content ideas'],
   },
 

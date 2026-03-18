@@ -1,4 +1,4 @@
-// Booking Page Settings — Server Actions
+// Booking Page Settings - Server Actions
 // Chefs manage their public booking page: slug, enable/disable, headline, bio, notice period.
 // Extended for dual booking model: inquiry_first vs instant_book.
 
@@ -129,7 +129,7 @@ export async function upsertBookingSettings(
 }
 
 /**
- * Public booking configuration — no auth required.
+ * Public booking configuration - no auth required.
  * Returns the booking model, pricing, and deposit config for the public booking page.
  */
 export type PublicBookingConfig = {

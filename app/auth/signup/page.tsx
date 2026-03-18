@@ -232,7 +232,7 @@ function SignUpForm() {
                 onChange={(e) =>
                   setChefFormData({ ...chefFormData, business_name: e.target.value })
                 }
-                helperText="How you'd like to be known — a personal name works perfectly"
+                helperText="How you'd like to be known - a personal name works perfectly"
               />
 
               <Input

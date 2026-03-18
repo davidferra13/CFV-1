@@ -3,6 +3,7 @@
 // Shows chef bio, partner venues with seasonal photos, and booking links
 
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { PartnerShowcase } from '@/components/public/partner-showcase'
@@ -163,24 +164,26 @@ export default async function ChefProfilePage({ params }: Props) {
         <div className="max-w-5xl mx-auto px-6 text-center">
           {chef.logo_url && (
             <div className="flex justify-center mb-6">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={getOptimizedImageUrl(chef.logo_url, {
                   width: 440,
                   height: 128,
                   fit: 'fit',
                 })}
                 alt={`${chef.display_name} logo`}
+                width={220}
+                height={64}
                 className="max-h-16 max-w-[220px] object-contain"
               />
             </div>
           )}
 
           {chef.profile_image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={getOptimizedAvatar(chef.profile_image_url, 224)}
               alt={chef.display_name}
+              width={112}
+              height={112}
               className="w-28 h-28 rounded-full object-cover mx-auto mb-6 ring-4 ring-white shadow-lg"
             />
           ) : (

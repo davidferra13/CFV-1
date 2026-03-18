@@ -1,6 +1,6 @@
 'use server'
 
-// Remy — Weather Awareness (Phase 6A)
+// Remy - Weather Awareness (Phase 6A)
 // Fetches weather forecasts for upcoming events using Open-Meteo (free, no API key).
 // Used by the proactive alert engine to warn about bad weather for outdoor events.
 // PRIVACY: Only sends location text (city/address) to Open-Meteo for geocoding.
@@ -282,7 +282,7 @@ export async function formatWeatherAlerts(alerts: EventWeatherAlert[]): Promise<
       day: 'numeric',
     })
 
-    lines.push(`${icon} **${eventLabel}${clientLabel}** — ${dateLabel} @ ${alert.location}`)
+    lines.push(`${icon} **${eventLabel}${clientLabel}** - ${dateLabel} @ ${alert.location}`)
     lines.push(`  ${alert.alertMessage}`)
     lines.push(
       `  ${alert.forecast.weatherDescription}, ${alert.forecast.tempLowF}–${alert.forecast.tempHighF}°F`

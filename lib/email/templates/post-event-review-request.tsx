@@ -1,6 +1,6 @@
 // Post-Event Review Request Email
 // Sent 7 days after event completion via Inngest background job.
-// Friendly nudge to leave a review — helps the chef build their reputation.
+// Friendly nudge to leave a review - helps the chef build their reputation.
 
 import { Button, Text, Hr } from '@react-email/components'
 import * as React from 'react'
@@ -29,7 +29,7 @@ export function PostEventReviewRequestEmail({
 
       <Text style={paragraph}>
         A week ago, <strong>{chefName}</strong> had the pleasure of cooking for your{' '}
-        <strong>{occasion}</strong> on {eventDate}. We hope the memories are still fresh — and
+        <strong>{occasion}</strong> on {eventDate}. We hope the memories are still fresh - and
         delicious.
       </Text>
 
@@ -45,8 +45,8 @@ export function PostEventReviewRequestEmail({
       <Hr style={divider} />
 
       <Text style={muted}>
-        It only takes a minute. Your honest feedback — whether it is praise, suggestions, or both —
-        is genuinely valued.
+        It only takes a minute. Your honest feedback, whether it is praise, suggestions, or both, is
+        genuinely valued.
       </Text>
     </BaseLayout>
   )

@@ -1,6 +1,6 @@
 'use server'
 
-// Admin Email Actions — direct and broadcast email via Resend
+// Admin Email Actions - direct and broadcast email via Resend
 // Uses the service role to query all chefs, then sends via Resend.
 
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -116,7 +116,7 @@ export async function sendAdminBroadcastEmail(
       const { error } = await resend.emails.send({
         from: `${FROM_NAME} <${FROM_EMAIL}>`,
         bcc: batch,
-        to: FROM_EMAIL, // BCC pattern — "to" is the sender, everyone else is BCC
+        to: FROM_EMAIL, // BCC pattern - "to" is the sender, everyone else is BCC
         subject: subject.trim(),
         html: `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">

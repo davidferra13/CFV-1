@@ -1,4 +1,4 @@
-// Priority Queue — Type Definitions
+// Priority Queue - Type Definitions
 // Pure types. No logic. No imports beyond database types.
 
 // ============================================

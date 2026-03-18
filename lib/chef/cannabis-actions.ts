@@ -67,7 +67,7 @@ const UpdateChefCannabisGuestSchema = z.object({
 
 /**
  * Returns true if the given auth user ID has an active cannabis tier.
- * Admins always have access — no manual grant required.
+ * Admins always have access - no manual grant required.
  * Used by the chef layout to conditionally show the cannabis nav section.
  */
 export async function hasCannabisAccess(authUserId: string): Promise<boolean> {

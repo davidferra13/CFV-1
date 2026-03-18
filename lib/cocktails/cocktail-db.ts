@@ -1,4 +1,4 @@
-// TheCocktailDB — free cocktail recipe API, no key required
+// TheCocktailDB - free cocktail recipe API, no key required
 // https://www.thecocktaildb.com/api.php
 // Free for personal/educational use, no signup
 
@@ -48,7 +48,7 @@ export async function getCocktailById(id: string): Promise<Cocktail | null> {
 }
 
 /**
- * Get a random cocktail — great for "cocktail of the day" features.
+ * Get a random cocktail - great for "cocktail of the day" features.
  */
 export async function getRandomCocktail(): Promise<Cocktail | null> {
   try {
@@ -101,7 +101,7 @@ export async function getCategories(): Promise<string[]> {
 }
 
 function mapCocktail(raw: any): Cocktail {
-  // Extract ingredients — API stores them as strIngredient1..15
+  // Extract ingredients - API stores them as strIngredient1..15
   const ingredients: { ingredient: string; measure: string }[] = []
   for (let i = 1; i <= 15; i++) {
     const ingredient = raw[`strIngredient${i}`]

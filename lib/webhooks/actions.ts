@@ -12,7 +12,7 @@ export async function createWebhookEndpoint(input: {
 }) {
   const user = await requireChef()
 
-  // SECURITY: Validate URL to prevent SSRF — blocks private IPs, requires HTTPS
+  // SECURITY: Validate URL to prevent SSRF - blocks private IPs, requires HTTPS
   const targetUrl = validateWebhookUrl(input.url).toString()
 
   const supabase: any = createServerClient()

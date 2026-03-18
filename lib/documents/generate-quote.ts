@@ -1,5 +1,5 @@
 // Quote/Proposal PDF Generator
-// Client-facing document: menu first, price after — never lead with the number.
+// Client-facing document: menu first, price after - never lead with the number.
 // Sections: Header → Menu → Pricing → Terms → CTA
 // Warm, professional tone. Sent via link or PDF attachment.
 // MUST fit on ONE page.
@@ -98,7 +98,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
     loyalty_points: number | null
   } | null
 
-  // Resolve event details — either from the linked event or from the linked inquiry
+  // Resolve event details - either from the linked event or from the linked inquiry
   let eventDetails: QuoteDocumentData['event'] = {
     occasion: null,
     eventDate: null,
@@ -328,7 +328,7 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
   pdf.space(3)
 
   // ── SECTION 2: MENU ───────────────────────────────────────────────────────
-  // Always present menu before price — never lead with the number.
+  // Always present menu before price - never lead with the number.
   pdf.sectionHeader('YOUR MENU', 11, true)
 
   if (event.occasion) {
@@ -382,7 +382,7 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
   // ── SECTION 3: INVESTMENT ─────────────────────────────────────────────────
   pdf.sectionHeader('YOUR INVESTMENT', 11, true)
 
-  // Single line item — menu first means the number lands in context, not first
+  // Single line item - menu first means the number lands in context, not first
   const pricingLabel =
     quote.pricingModel === 'per_person' && quote.pricePerPersonCents
       ? `${formatCents(quote.pricePerPersonCents)} per person`

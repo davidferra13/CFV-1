@@ -3,7 +3,7 @@
 import { useRef, useCallback, useState } from 'react'
 
 /**
- * Throttle a callback — fires at most once per intervalMs.
+ * Throttle a callback - fires at most once per intervalMs.
  * Useful for preventing duplicate form submissions or rapid-fire button clicks.
  *
  * @example

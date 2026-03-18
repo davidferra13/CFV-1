@@ -1,6 +1,6 @@
 'use server'
 
-// Remy Conversation Actions — create, list, load, and manage conversation threads
+// Remy Conversation Actions - create, list, load, and manage conversation threads
 // PRIVACY: Conversations are tenant-scoped. RLS on the tables enforces ownership.
 
 import { z } from 'zod'
@@ -186,7 +186,7 @@ export async function autoTitleConversation(
       .eq('id', conversationId)
       .eq('tenant_id', tenantId)
   } catch (err) {
-    // Non-blocking — if title generation fails, keep the default
+    // Non-blocking - if title generation fails, keep the default
     console.error('[non-blocking] Auto-title failed:', err)
   }
 }
@@ -242,7 +242,7 @@ export async function summarizeConversationHistory(
     })
 
     const result = await parseWithOllama(
-      'Summarize this earlier conversation between a chef and their AI assistant Remy. Keep it concise — 2-4 sentences capturing the key topics, decisions, and facts.',
+      'Summarize this earlier conversation between a chef and their AI assistant Remy. Keep it concise - 2-4 sentences capturing the key topics, decisions, and facts.',
       condensed,
       SummarySchema,
       { modelTier: 'fast', cache: false }

@@ -1,4 +1,4 @@
-// Menu Showcase — Server actions for the chef's menu portfolio
+// Menu Showcase - Server actions for the chef's menu portfolio
 // Showcase menus are visible to the chef's clients so they can browse
 // past work, pick menus, and use them as starting points.
 
@@ -35,7 +35,7 @@ export async function toggleShowcase(menuId: string, isShowcase: boolean) {
 }
 
 /**
- * Get the chef's menu library for an event — templates, showcase, recent menus.
+ * Get the chef's menu library for an event - templates, showcase, recent menus.
  * Used by the Menu Library Picker on the event detail page.
  * Returns menus with dish counts, sorted by relevance.
  */

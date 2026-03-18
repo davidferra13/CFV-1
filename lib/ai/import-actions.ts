@@ -359,7 +359,7 @@ export async function importBrainDump(parsed: BrainDumpResult): Promise<BrainDum
     try {
       await supabase.from('chef_documents').insert({
         tenant_id: user.tenantId!,
-        title: `Brain dump note — ${note.type.replace(/_/g, ' ')}`,
+        title: `Brain dump note - ${note.type.replace(/_/g, ' ')}`,
         document_type: 'note',
         content_text: note.content,
         summary: note.suggestedAction,

@@ -136,15 +136,15 @@ export function VendorPriceInsights({
       <CardContent className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-stone-500">Recent Changes</p>
+            <p className="text-xs-tight uppercase tracking-wide text-stone-500">Recent Changes</p>
             <p className="text-base font-semibold text-stone-100">{alerts.length}</p>
           </div>
           <div className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-stone-500">Price Increases</p>
+            <p className="text-xs-tight uppercase tracking-wide text-stone-500">Price Increases</p>
             <p className="text-base font-semibold text-red-300">{upCount}</p>
           </div>
           <div className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-stone-500">Price Drops</p>
+            <p className="text-xs-tight uppercase tracking-wide text-stone-500">Price Drops</p>
             <p className="text-base font-semibold text-emerald-300">{downCount}</p>
           </div>
         </div>
@@ -199,7 +199,7 @@ export function VendorPriceInsights({
                     <tr key={alert.key} className="border-b border-stone-800">
                       <td className="px-3 py-2 text-stone-200">
                         <p>{alert.item_name}</p>
-                        <p className="text-[11px] text-stone-500">/{alert.unit}</p>
+                        <p className="text-xs-tight text-stone-500">/{alert.unit}</p>
                       </td>
                       <td className="px-3 py-2 text-stone-400">{alert.vendor_name ?? 'Vendor'}</td>
                       <td className="px-3 py-2 text-stone-100 font-medium">
@@ -259,7 +259,7 @@ export function VendorPriceInsights({
                       <p className="text-sm font-medium text-stone-100 truncate">
                         {trend.item_name}
                       </p>
-                      <p className="text-[11px] text-stone-500">
+                      <p className="text-xs-tight text-stone-500">
                         {trend.vendor_name ?? 'Vendor'} / {trend.unit}
                       </p>
                     </div>

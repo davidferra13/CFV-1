@@ -3,7 +3,7 @@
 // Allergen Risk Matrix
 // Privacy-first: guest PII (allergies, dietary restrictions) routed to local Ollama.
 // Scans every proposed dish on the event against every attending guest's restrictions.
-// Output is DRAFT ONLY — requires chef confirmation, never writes canon data.
+// Output is DRAFT ONLY - requires chef confirmation, never writes canon data.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -83,7 +83,7 @@ export async function getEventAllergenRisk(eventId: string): Promise<AllergenRis
   if (menuItems.length === 0) {
     return {
       rows: [],
-      safetyFlags: ['No menu items assigned yet — add dishes to run allergen analysis.'],
+      safetyFlags: ['No menu items assigned yet - add dishes to run allergen analysis.'],
       confidence: 'low',
     }
   }
@@ -124,7 +124,7 @@ For every (dish, guest) pair, determine the risk level:
   - contains: the dish definitively contains an allergen relevant to this guest
   - unknown: insufficient ingredient information to assess
 
-Always be conservative — when uncertain, use "may_contain" not "safe".
+Always be conservative - when uncertain, use "may_contain" not "safe".
 SAFETY PRIORITY: Severe allergies (nuts, shellfish, gluten celiac) should be flagged even for "may_contain" scenarios.
 Return valid JSON only, no markdown.`
 
@@ -150,7 +150,7 @@ Return JSON: { "rows": [{"dish":"...","guestName":"...","riskLevel":"safe|may_co
   }))
 
   const { result, source } = await withAiFallback(
-    // Formula: FDA Big 9 + common allergen keyword lookup — deterministic
+    // Formula: FDA Big 9 + common allergen keyword lookup - deterministic
     () => buildAllergenMatrixFormula(formulaGuests, formulaMenuItems),
     // AI: enhanced analysis with contextual reasoning (when Ollama is online)
     () => parseWithOllama(systemPrompt, userContent, AllergenRiskResultSchema)

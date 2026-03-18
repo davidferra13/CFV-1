@@ -2,7 +2,7 @@
 
 // Equipment Depreciation Plain-Language Explainer
 // Pure formula: straight-line depreciation is textbook math. No AI needed.
-// Output is INFORMATIONAL ONLY — always recommends consulting a CPA.
+// Output is INFORMATIONAL ONLY - always recommends consulting a CPA.
 //
 // Previously used Ollama for "prettier" plain-English explanations.
 // Removed: the formula already generates clear explanations, and AI adds

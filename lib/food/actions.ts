@@ -1,4 +1,4 @@
-// Food & Cocktail Lookup — Server Actions
+// Food & Cocktail Lookup - Server Actions
 // Wraps Open Food Facts and TheCocktailDB utilities for use in client components.
 // Both APIs are free, no key needed.
 

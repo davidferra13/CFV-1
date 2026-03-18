@@ -1,10 +1,10 @@
-// Module Definitions — single source of truth for the progressive disclosure system.
+// Module Definitions - single source of truth for the progressive disclosure system.
 // Each module maps to a nav group or feature area that can be toggled on/off by the chef.
-// NOT a server action file — no 'use server'.
+// NOT a server action file - no 'use server'.
 //
 // Two independent concepts:
-//   1. Tier (Free vs Pro) — controls what you CAN access (monetization)
-//   2. Module toggle — controls what you SEE (UX personalization)
+//   1. Tier (Free vs Pro) - controls what you CAN access (monetization)
+//   2. Module toggle - controls what you SEE (UX personalization)
 //
 // A module can be toggled off even if the chef has Pro access (they just don't want to see it).
 // A Free user can toggle on a Pro module, but they'll see upgrade prompts on those pages.

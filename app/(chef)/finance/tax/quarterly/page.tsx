@@ -10,7 +10,10 @@ export default async function QuarterlyEstimatesPage() {
   const currentYear = new Date().getFullYear()
   await requireChef()
 
-  const summary = await getTaxSummaryForYear(currentYear).catch(() => null)
+  const summary = await getTaxSummaryForYear(currentYear).catch((err) => {
+    console.error('[tax-quarterly] Failed to load tax summary:', err)
+    return null
+  })
 
   return (
     <div className="space-y-6">

@@ -156,7 +156,7 @@ export function OutreachLogPanel({ prospectId, log }: OutreachLogPanelProps) {
                       {OUTREACH_TYPE_LABELS[entry.outreach_type as OutreachType] ||
                         entry.outreach_type}
                     </span>
-                    <span className="text-[10px] text-stone-500">
+                    <span className="text-xxs text-stone-500">
                       {format(new Date(entry.created_at), 'MMM d, h:mm a')}
                     </span>
                   </div>

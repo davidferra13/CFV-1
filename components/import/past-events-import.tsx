@@ -106,6 +106,11 @@ export function PastEventsImport({
   const [inputMode, setInputMode] = useState<InputMode>('manual')
   const [rows, setRows] = useState<EventRow[]>([emptyRow()])
   const [results, setResults] = useState<HistoricalEventResult[]>([])
+  const [loyaltyResult, setLoyaltyResult] = useState<{
+    eventsProcessed: number
+    totalPointsAwarded: number
+    tierChanges: { clientName: string; oldTier: string; newTier: string }[]
+  } | null>(null)
   const [confirmed, setConfirmed] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -179,6 +184,7 @@ export function PastEventsImport({
       const inputs = validRows.map(rowToInput)
       const response = await importHistoricalEvents(inputs)
       setResults(response.results)
+      setLoyaltyResult(response.loyalty || null)
       setPhase('done')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save events')
@@ -190,6 +196,7 @@ export function PastEventsImport({
     setPhase('form')
     setRows([emptyRow()])
     setResults([])
+    setLoyaltyResult(null)
     setConfirmed(false)
     setError(null)
     setCsvText('')
@@ -616,6 +623,27 @@ export function PastEventsImport({
             </div>
           ))}
         </div>
+      )}
+
+      {/* Loyalty backfill results */}
+      {loyaltyResult && loyaltyResult.eventsProcessed > 0 && (
+        <Alert variant="info" title="Loyalty points retroactively applied">
+          <p>
+            {loyaltyResult.totalPointsAwarded.toLocaleString()} points awarded across{' '}
+            {loyaltyResult.eventsProcessed} event{loyaltyResult.eventsProcessed !== 1 ? 's' : ''}.
+          </p>
+          {loyaltyResult.tierChanges.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {loyaltyResult.tierChanges.map((tc, i) => (
+                <li key={i} className="text-sm">
+                  <span className="font-medium">{tc.clientName}</span>:{' '}
+                  <span className="capitalize">{tc.oldTier}</span> &rarr;{' '}
+                  <span className="capitalize font-medium">{tc.newTier}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Alert>
       )}
 
       <div className="flex gap-3 pt-2">

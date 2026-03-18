@@ -107,9 +107,9 @@ export function GroceryConsolidationPanel({ eventId }: { eventId: string }) {
                   </span>
                   <span className="text-stone-400">{ing.name}</span>
                   {ing.substitution && (
-                    <span className="text-amber-600 text-[11px]">→ sub: {ing.substitution}</span>
+                    <span className="text-amber-600 text-xs-tight">→ sub: {ing.substitution}</span>
                   )}
-                  <span className="text-stone-400 text-[11px] ml-auto">
+                  <span className="text-stone-400 text-xs-tight ml-auto">
                     {ing.usedIn.join(', ')}
                   </span>
                 </div>
@@ -125,7 +125,7 @@ export function GroceryConsolidationPanel({ eventId }: { eventId: string }) {
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Auto draft · Verify quantities match your final recipe scaling
       </p>
     </div>

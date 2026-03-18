@@ -1,6 +1,6 @@
 // CRUD for social_platform_credentials.
 // All reads decrypt tokens; all writes encrypt tokens.
-// Uses the admin (service role) client — never exposed to the browser.
+// Uses the admin (service role) client - never exposed to the browser.
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { encryptToken, decryptToken } from './crypto'
@@ -19,7 +19,7 @@ export type PlatformCredential = {
   externalAccountName: string | null
   externalAccountUsername: string | null
   externalAccountAvatarUrl: string | null
-  /** Decrypted access token — ready to use in API calls */
+  /** Decrypted access token - ready to use in API calls */
   accessToken: string
   /** Decrypted refresh token, or null */
   refreshToken: string | null
@@ -52,9 +52,9 @@ export type UpsertCredentialInput = {
   externalAccountName?: string | null
   externalAccountUsername?: string | null
   externalAccountAvatarUrl?: string | null
-  /** Plaintext — will be encrypted before storage */
+  /** Plaintext - will be encrypted before storage */
   accessToken: string
-  /** Plaintext — will be encrypted before storage */
+  /** Plaintext - will be encrypted before storage */
   refreshToken?: string | null
   tokenExpiresAt?: Date | null
   additionalData?: Record<string, unknown>
@@ -132,7 +132,7 @@ export async function listConnections(tenantId: string): Promise<ConnectionSumma
   }))
 }
 
-/** Fetch all active credentials with expiring tokens (within next 24h) — for refresh sweep */
+/** Fetch all active credentials with expiring tokens (within next 24h) - for refresh sweep */
 export async function listExpiringCredentials(): Promise<PlatformCredential[]> {
   const supabase = createAdminClient()
   const in24h = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()

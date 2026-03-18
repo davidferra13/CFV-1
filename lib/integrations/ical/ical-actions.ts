@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 
-// iCal feed management — enable/disable and get the feed URL.
+// iCal feed management - enable/disable and get the feed URL.
 
 export async function getICalFeedStatus() {
   await requirePro('integrations')

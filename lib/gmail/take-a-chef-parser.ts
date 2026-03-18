@@ -135,7 +135,7 @@ const TYPE_PATTERNS: Array<{ pattern: RegExp; type: TacEmailType }> = [
   { pattern: /new booking confirmed\s*\(order id/i, type: 'tac_booking_confirmed' },
   { pattern: /guest contact details for your upcoming booking/i, type: 'tac_customer_info' },
   { pattern: /you have a message for the on/i, type: 'tac_client_message' },
-  // Payment patterns (TBD — refine when we get a sample payment email)
+  // Payment patterns (TBD - refine when we get a sample payment email)
   { pattern: /payment (has been|confirmed|processed|sent)/i, type: 'tac_payment' },
   { pattern: /your payout/i, type: 'tac_payment' },
   { pattern: /transfer.*completed/i, type: 'tac_payment' },
@@ -365,7 +365,7 @@ export function extractTacLinkIdentity(link: string | null | undefined): {
   }
 }
 
-// ─── Field Extraction — New Inquiry ──────────────────────────────────────
+// ─── Field Extraction - New Inquiry ──────────────────────────────────────
 
 function parseInquiryEmail(
   subject: string,
@@ -396,7 +396,7 @@ function parseInquiryEmail(
   const eventDateRaw = dateMatch?.[1]?.trim() || null
   const eventDate = parseTacDateRangeStart(eventDateRaw)
 
-  // Guest count — "No. of guests: Mid-size group (7 to 15 people)" or similar
+  // Guest count - "No. of guests: Mid-size group (7 to 15 people)" or similar
   const guestMatch = body.match(/No\.\s*of\s*guests?:\*?\*?\s*(.+)/i)
   const guestCountText = guestMatch?.[1]?.trim() || null
   let guestCountNumber: number | null = null
@@ -406,7 +406,7 @@ function parseInquiryEmail(
     if (singleNum) {
       guestCountNumber = parseInt(singleNum[1], 10)
     } else {
-      // Try range like "7 to 15" — take the midpoint
+      // Try range like "7 to 15" - take the midpoint
       const rangeMatch = guestCountText.match(/(\d+)\s*(?:to|-)\s*(\d+)/)
       if (rangeMatch) {
         guestCountNumber = Math.ceil(
@@ -416,7 +416,7 @@ function parseInquiryEmail(
     }
   }
 
-  // Price per person — "Price per person: from 101 USD to 174 USD"
+  // Price per person - "Price per person: from 101 USD to 174 USD"
   const priceMatch = body.match(/(?:Price per person|Price range):\*?\*?\s*(.+)/i)
   const pricePerPersonRange = priceMatch?.[1]?.trim() || null
   let priceMinCents: number | null = null
@@ -450,7 +450,7 @@ function parseInquiryEmail(
   const occasionMatch = body.match(/Occasion:\*?\*?\s*(.+)/i)
   const occasion = occasionMatch?.[1]?.trim() || null
 
-  // Client notes — everything between "SOMETHING TO ADD" and "PARTNER"
+  // Client notes - everything between "SOMETHING TO ADD" and "PARTNER"
   const notesMatch = body.match(
     /SOMETHING TO ADD[\s\S]*?Notes?:\*?\*?\s*([\s\S]*?)(?=PARTNER|If you are interested|$)/i
   )
@@ -500,7 +500,7 @@ function parseInquiryEmail(
   }
 }
 
-// ─── Field Extraction — Booking Confirmed ────────────────────────────────
+// ─── Field Extraction - Booking Confirmed ────────────────────────────────
 
 function parseBookingEmail(
   subject: string,
@@ -513,45 +513,45 @@ function parseBookingEmail(
   const orderId = orderMatch?.[1] || ''
   if (!orderId) warnings.push('Could not extract Order ID from subject')
 
-  // Amount — "Amount: 1000 USD"
+  // Amount - "Amount: 1000 USD"
   const amountMatch = body.match(/Amount:\*?\*?\s*([\d,.]+)\s*USD/i)
   const amountUsd = amountMatch ? parseFloat(amountMatch[1].replace(',', '')) : null
   const amountCents = amountUsd !== null ? Math.round(amountUsd * 100) : null
 
-  // Payment gateway — "Payment gateway: Stripe (Domestic)"
+  // Payment gateway - "Payment gateway: Stripe (Domestic)"
   const gatewayMatch = body.match(/Payment gateway:\*?\*?\s*(.+)/i)
   const paymentGateway = gatewayMatch?.[1]?.trim() || null
 
-  // Request type — "Request: Multiple services"
+  // Request type - "Request: Multiple services"
   const requestMatch = body.match(/Request:\*?\*?\s*(.+)/i)
   const requestType = requestMatch?.[1]?.trim() || null
 
-  // Address — "Address: North Conway, Conway, NH"
+  // Address - "Address: North Conway, Conway, NH"
   const addressMatch = body.match(/Address:\*?\*?\s*(.+)/i)
   const address = addressMatch?.[1]?.trim() || null
 
-  // Service dates — "Service dates: 18 Sept 2025 - 21 Sept 2025"
+  // Service dates - "Service dates: 18 Sept 2025 - 21 Sept 2025"
   const datesMatch = body.match(/(?:Service date[s]?|Date):\*?\*?\s*(.+)/i)
   const serviceDates = datesMatch?.[1]?.trim() || null
   const primaryServiceDate = parseTacDateRangeStart(serviceDates)
 
-  // Time / meal slot label — "Time: Dinner"
+  // Time / meal slot label - "Time: Dinner"
   const timeMatch = body.match(/Time:\*?\*?\s*(.+)/i)
   const serviceTimeLabel = timeMatch?.[1]?.trim() || null
 
-  // Occasion — "Occasion: Dinner"
+  // Occasion - "Occasion: Dinner"
   const occasionMatch = body.match(/Occasion:\*?\*?\s*(.+)/i)
   const occasion = occasionMatch?.[1]?.trim() || null
 
-  // Guests (client name) — "Guests: Jessica Zoll"
+  // Guests (client name) - "Guests: Jessica Zoll"
   const guestsMatch = body.match(/Guests?:\*?\*?\s*(.+)/i)
   const clientName = guestsMatch?.[1]?.trim() || null
 
-  // Partner — "Partner: Take a Chef"
+  // Partner - "Partner: Take a Chef"
   const partnerMatch = body.match(/Partner:\*?\*?\s*(.+)/i)
   const partnerName = partnerMatch?.[1]?.trim() || null
 
-  // CTA link — "Manage your guest"
+  // CTA link - "Manage your guest"
   const { ctaLink, ctaUriToken, identityKeys } = extractTacLinkIdentity(
     extractTacCtaLink(body, 'Manage your guest|Message your guest')
   )
@@ -586,7 +586,7 @@ function parseBookingEmail(
   }
 }
 
-// ─── Field Extraction — Customer Information ─────────────────────────────
+// ─── Field Extraction - Customer Information ─────────────────────────────
 
 function parseCustomerInfoEmail(
   subject: string,
@@ -594,12 +594,12 @@ function parseCustomerInfoEmail(
 ): { data: TacParsedCustomerInfo; warnings: string[] } {
   const warnings: string[] = []
 
-  // Guest name — "Guest name: Jessica Zoll"
+  // Guest name - "Guest name: Jessica Zoll"
   const nameMatch = body.match(/Guest name\s*:\*?\*?\s*(.+)/i)
   const guestName = nameMatch?.[1]?.trim() || null
   if (!guestName) warnings.push('Could not extract guest name from customer info email')
 
-  // Phone number — "Phone number: +1 XXXXXXXXXX"
+  // Phone number - "Phone number: +1 XXXXXXXXXX"
   const phoneMatch = body.match(/Phone (?:number|#)\s*:\*?\*?\s*(\+?[\d\s()-]+)/i)
   const phoneNumber = phoneMatch?.[1]?.trim() || null
 
@@ -617,7 +617,7 @@ function parseCustomerInfoEmail(
   const bookingLocation = contextMatch?.[1]?.trim() || null
   const bookingDate = contextMatch?.[2]?.trim() || null
 
-  // CTA link — "Manage your guest"
+  // CTA link - "Manage your guest"
   const { ctaLink, ctaUriToken, identityKeys } = extractTacLinkIdentity(
     extractTacCtaLink(body, 'Manage your guest|Message your guest')
   )
@@ -638,7 +638,7 @@ function parseCustomerInfoEmail(
   }
 }
 
-// ─── Field Extraction — Client Message ───────────────────────────────────
+// ─── Field Extraction - Client Message ───────────────────────────────────
 
 function parseMessageEmail(
   subject: string,
@@ -656,7 +656,7 @@ function parseMessageEmail(
   const eventDate =
     normalizeTacDateValue(dateMatch?.[1]?.trim() || null) || dateMatch?.[1]?.trim() || null
 
-  // CTA link — "Guest's message"
+  // CTA link - "Guest's message"
   const { ctaLink, ctaUriToken, identityKeys } = extractTacLinkIdentity(
     extractTacCtaLink(body, "Guest's message|View message|Message your guest")
   )
@@ -673,7 +673,7 @@ function parseMessageEmail(
   }
 }
 
-// ─── Field Extraction — Payment / Payout ─────────────────────────────────
+// ─── Field Extraction - Payment / Payout ─────────────────────────────────
 
 function parsePaymentEmail(
   subject: string,

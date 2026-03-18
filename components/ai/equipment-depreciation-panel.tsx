@@ -77,7 +77,7 @@ export function EquipmentDepreciationPanel() {
                 ${item.annualDeductionDollars.toFixed(0)}/yr
               </span>
             </div>
-            <div className="text-[11px] text-stone-500">
+            <div className="text-xs-tight text-stone-500">
               {item.depreciationMethod} · Year {item.yearInSchedule} · Fully depreciated:{' '}
               {item.fullyDepreciatedDate} · Remaining value: $
               {item.remainingValueDollars.toFixed(0)}
@@ -90,7 +90,7 @@ export function EquipmentDepreciationPanel() {
         ))}
       </div>
 
-      <div className="flex items-start gap-2 text-[11px] text-stone-400 bg-stone-800 border border-stone-700 rounded p-2">
+      <div className="flex items-start gap-2 text-xs-tight text-stone-400 bg-stone-800 border border-stone-700 rounded p-2">
         <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500" />
         {result.disclaimer}
       </div>

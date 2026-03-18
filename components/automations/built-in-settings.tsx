@@ -236,7 +236,7 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
         >
           {clientRemindersEnabled && (
             <div className="mt-2 space-y-1.5">
-              <p className="text-[11px] text-stone-400 mb-2">
+              <p className="text-xs-tight text-stone-400 mb-2">
                 Each reminder fires once per event. Uncheck any you don&apos;t want.
               </p>
               {[
@@ -375,7 +375,7 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
         >
           {autoResponseEnabled && (
             <div className="mt-2">
-              <label className="text-[11px] text-stone-500 mb-1 block">
+              <label className="text-xs-tight text-stone-500 mb-1 block">
                 Template message (use [Name], [Date], [Occasion] as placeholders)
               </label>
               <textarea
@@ -386,7 +386,7 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
                 className="w-full text-xs border border-stone-600 rounded-md px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
                 maxLength={2000}
               />
-              <p className="text-[10px] text-stone-400 mt-1">
+              <p className="text-xxs text-stone-400 mt-1">
                 {autoResponseTemplate.length}/2000 chars
               </p>
             </div>

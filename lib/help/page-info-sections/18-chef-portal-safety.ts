@@ -16,7 +16,7 @@ export const CHEF_PORTAL_SAFETY_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/safety/incidents': {
     title: 'Safety Incidents',
     description:
-      'Document safety incidents — food safety, injuries, equipment failures, near-misses.',
+      'Document safety incidents - food safety, injuries, equipment failures, near-misses.',
     features: [
       'Incident list with dates',
       'Category (food safety, injury, equipment, near-miss)',
@@ -32,7 +32,7 @@ export const CHEF_PORTAL_SAFETY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/safety/incidents/[id]': {
     title: 'Incident Detail',
-    description: 'Full incident report — details, resolution, and follow-up actions.',
+    description: 'Full incident report - details, resolution, and follow-up actions.',
     features: ['Incident details', 'Resolution status', 'Follow-up actions'],
   },
 }

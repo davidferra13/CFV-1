@@ -1,9 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 // Partner Portal Dashboard
 // The partner's home base - stats, location cards, recent events, and their
 // partnership origin story. Tone: pride, warmth, validation.
 // No financial data shown here. Exposure IS the value.
 
+import NextImage from 'next/image'
 import { getPartnerPortalData } from '@/lib/partners/portal-actions'
 import { format } from 'date-fns'
 import { MapPin, CalendarDays, Users, Image, Heart } from '@/components/ui/icons'
@@ -109,10 +109,12 @@ export default async function PartnerDashboardPage() {
                   >
                     {/* Cover image */}
                     {coverImg ? (
-                      <div className="h-36 bg-stone-800 overflow-hidden">
-                        <img
+                      <div className="relative h-36 bg-stone-800 overflow-hidden">
+                        <NextImage
                           src={coverImg}
                           alt={location.name}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 50vw"
                           className="w-full h-full object-cover"
                         />
                       </div>

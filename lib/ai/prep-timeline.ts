@@ -3,7 +3,7 @@
 // Prep Timeline Generator
 // AI creates a backward-scheduled prep plan from service time through all recipe prep needs.
 // Routed to Gemini (creative scheduling, not PII).
-// Output is DRAFT ONLY — chef approves/edits before using.
+// Output is DRAFT ONLY - chef approves/edits before using.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -106,8 +106,8 @@ Rules for backward scheduling:
 1. Work backward from service time
 2. Account for plating time (3–5 min per course at scale)
 3. Note which tasks can run in parallel (e.g. roast in oven while making sauce)
-4. Flag the critical path — tasks with zero slack
-5. Account for ${guestCount} guests — scaling affects timing
+4. Flag the critical path - tasks with zero slack
+5. Account for ${guestCount} guests - scaling affects timing
 6. Add 15–20% buffer to all estimates
 
 Return JSON: {

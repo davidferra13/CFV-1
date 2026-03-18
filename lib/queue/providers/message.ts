@@ -1,4 +1,4 @@
-// Priority Queue — Message Provider
+// Priority Queue - Message Provider
 // Surfaces: outbound draft messages needing approval, approved messages needing send
 
 import type { SupabaseClient } from '@supabase/supabase-js'

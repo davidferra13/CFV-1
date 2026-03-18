@@ -44,7 +44,7 @@ export function ActiveClientsCard({ clients }: ActiveClientsCardProps) {
             className="flex items-center justify-between text-xs hover:bg-stone-50 rounded px-2 py-1.5 -mx-2 transition-colors"
           >
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-brand-900 text-brand-700 flex items-center justify-center text-[10px] font-bold">
+              <span className="w-6 h-6 rounded-full bg-brand-900 text-brand-700 flex items-center justify-center text-xxs font-bold">
                 {client.client_name.charAt(0).toUpperCase()}
               </span>
               <span className="font-medium text-stone-800">{client.client_name}</span>

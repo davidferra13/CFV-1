@@ -165,7 +165,7 @@ async function refreshQuickBooksToken(tenantId: string): Promise<string> {
       .eq('tenant_id', tenantId)
       .eq('provider', 'quickbooks')
 
-    throw new Error('QuickBooks token refresh failed — reconnection required')
+    throw new Error('QuickBooks token refresh failed - reconnection required')
   }
 
   const tokens = (await response.json()) as {

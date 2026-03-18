@@ -108,14 +108,14 @@ export function TempSafetyPanel({ eventId }: { eventId: string }) {
                 </span>
               </div>
               <p className="text-xs text-stone-400">{v.issue}</p>
-              <p className="text-[11px] text-stone-500">{v.regulatoryRef}</p>
+              <p className="text-xs-tight text-stone-500">{v.regulatoryRef}</p>
               <p className="text-xs text-brand-400">→ {v.recommendation}</p>
             </div>
           ))}
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         <AiSourceBadge source={result._aiSource} />
         {result._aiSource ? ' · ' : ''}
         Confidence:{' '}

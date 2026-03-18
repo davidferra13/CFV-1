@@ -89,11 +89,11 @@ export function ReviewRequestPanel({ eventId }: { eventId: string }) {
       {view === 'email' && (
         <div className="space-y-2">
           <div className="bg-stone-800 rounded p-2">
-            <div className="text-[11px] text-stone-400 mb-0.5">Subject</div>
+            <div className="text-xs-tight text-stone-400 mb-0.5">Subject</div>
             <div className="text-sm text-stone-300">{result.subject}</div>
           </div>
           <div className="bg-stone-800 rounded p-2">
-            <div className="text-[11px] text-stone-400 mb-0.5">Body</div>
+            <div className="text-xs-tight text-stone-400 mb-0.5">Body</div>
             <div className="text-sm text-stone-300 whitespace-pre-wrap">{result.body}</div>
           </div>
           <Button
@@ -110,7 +110,7 @@ export function ReviewRequestPanel({ eventId }: { eventId: string }) {
         <div className="space-y-2">
           <div className="bg-stone-800 rounded p-2">
             <div className="text-sm text-stone-300">{result.shortVersion}</div>
-            <div className="text-[11px] text-stone-400 mt-1">
+            <div className="text-xs-tight text-stone-400 mt-1">
               {result.shortVersion.length} characters
             </div>
           </div>
@@ -124,7 +124,7 @@ export function ReviewRequestPanel({ eventId }: { eventId: string }) {
       <div className="text-xs text-stone-500">
         Best platform: <span className="font-medium">{result.reviewPlatformSuggestion}</span>
       </div>
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Auto draft · Review before sending - personalize if needed
       </p>
     </div>

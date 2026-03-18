@@ -45,7 +45,7 @@ export async function markCarPacked(
 }
 
 /**
- * Reset packing status — for corrections before departure.
+ * Reset packing status - for corrections before departure.
  * Clears car_packed and car_packed_at so the chef can re-check.
  */
 export async function resetPackingStatus(

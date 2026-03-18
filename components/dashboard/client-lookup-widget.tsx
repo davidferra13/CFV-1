@@ -112,7 +112,7 @@ export function ClientLookupWidget() {
                     </Link>
                     {client.loyalty_tier && (
                       <span
-                        className={`text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${TIER_COLORS[client.loyalty_tier] ?? 'bg-stone-600 text-stone-200'}`}
+                        className={`text-xxs font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${TIER_COLORS[client.loyalty_tier] ?? 'bg-stone-600 text-stone-200'}`}
                       >
                         {client.loyalty_tier}
                       </span>

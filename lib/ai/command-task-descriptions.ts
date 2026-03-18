@@ -1,5 +1,5 @@
-// Ask Remy — Task Descriptions
-// No 'use server' — imported by both intent parser (for system prompt) and UI (for labels)
+// Ask Remy - Task Descriptions
+// No 'use server' - imported by both intent parser (for system prompt) and UI (for labels)
 
 export interface TaskDescription {
   type: string
@@ -18,21 +18,21 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Find Client',
     description: 'Search for clients by name or partial name. Returns matching clients.',
-    inputSchema: '{ "query": "string — client name or partial name to search for" }',
+    inputSchema: '{ "query": "string - client name or partial name to search for" }',
   },
   {
     type: 'calendar.availability',
     tier: 1,
     name: 'Check Availability',
     description: 'Check if a specific date is free (no confirmed events booked).',
-    inputSchema: '{ "date": "string — YYYY-MM-DD format, e.g. 2026-03-15" }',
+    inputSchema: '{ "date": "string - YYYY-MM-DD format, e.g. 2026-03-15" }',
   },
   {
     type: 'event.list_upcoming',
     tier: 1,
     name: 'List Upcoming Events',
     description: "Show the chef's next upcoming events with status and client names.",
-    inputSchema: '{ "limit": "number — optional, max events to return, defaults to 5" }',
+    inputSchema: '{ "limit": "number - optional, max events to return, defaults to 5" }',
   },
   {
     type: 'finance.summary',
@@ -46,9 +46,9 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 2,
     name: 'Draft Follow-Up Email',
     description:
-      'Generate a personalized follow-up email draft to a specific client. Draft only — never sent automatically.',
-    inputSchema: '{ "clientName": "string — client full name or first name" }',
-    tierNote: 'ALWAYS tier 2, even if the chef says "send" — never auto-send emails.',
+      'Generate a personalized follow-up email draft to a specific client. Draft only - never sent automatically.',
+    inputSchema: '{ "clientName": "string - client full name or first name" }',
+    tierNote: 'ALWAYS tier 2, even if the chef says "send" - never auto-send emails.',
   },
   {
     type: 'event.create_draft',
@@ -57,8 +57,8 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     description:
       'Parse a natural language event description into a structured event draft for chef review.',
     inputSchema:
-      '{ "description": "string — full event description including date, guests, occasion, location, client name" }',
-    tierNote: 'ALWAYS tier 2 — chef must review and confirm before saving.',
+      '{ "description": "string - full event description including date, guests, occasion, location, client name" }',
+    tierNote: 'ALWAYS tier 2 - chef must review and confirm before saving.',
   },
 
   // ─── Remy-expanded tasks ────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Recent Clients',
     description: 'List the 5 most recently added clients with their names.',
-    inputSchema: '{ "limit": "number — optional, defaults to 5" }',
+    inputSchema: '{ "limit": "number - optional, defaults to 5" }',
   },
   {
     type: 'client.details',
@@ -76,7 +76,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Client Details',
     description:
       'Look up a specific client by name and return their profile details and event history.',
-    inputSchema: '{ "clientName": "string — client full name or first name to look up" }',
+    inputSchema: '{ "clientName": "string - client full name or first name to look up" }',
   },
   {
     type: 'event.details',
@@ -84,7 +84,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Event Details',
     description:
       'Get full details for a specific event including client, date, status, and guest count.',
-    inputSchema: '{ "eventName": "string — event occasion or description to search for" }',
+    inputSchema: '{ "eventName": "string - event occasion or description to search for" }',
   },
   {
     type: 'event.list_by_status',
@@ -93,7 +93,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     description:
       'List events filtered by a specific status (draft, proposed, accepted, paid, confirmed, in_progress, completed, cancelled).',
     inputSchema:
-      '{ "status": "string — one of: draft, proposed, accepted, paid, confirmed, in_progress, completed, cancelled" }',
+      '{ "status": "string - one of: draft, proposed, accepted, paid, confirmed, in_progress, completed, cancelled" }',
   },
   {
     type: 'inquiry.list_open',
@@ -109,7 +109,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Inquiry Details',
     description:
       'Get details for a specific inquiry by searching for it by client name or description.',
-    inputSchema: '{ "query": "string — client name or inquiry description to search for" }',
+    inputSchema: '{ "query": "string - client name or inquiry description to search for" }',
   },
   {
     type: 'finance.monthly_snapshot',
@@ -125,14 +125,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Search Recipes',
     description:
       "Search the chef's existing recipe book by name or keyword. Returns only recipes the chef has manually saved. NEVER generates, fabricates, or suggests new recipes.",
-    inputSchema: '{ "query": "string — recipe name or keyword to search for" }',
+    inputSchema: '{ "query": "string - recipe name or keyword to search for" }',
   },
   {
     type: 'menu.list',
     tier: 1,
     name: 'List Menus',
     description: 'Show all menus, optionally filtered by status (draft, shared, locked, archived).',
-    inputSchema: '{ "status": "string — optional, one of: draft, shared, locked, archived" }',
+    inputSchema: '{ "status": "string - optional, one of: draft, shared, locked, archived" }',
   },
   {
     type: 'scheduling.next_available',
@@ -140,7 +140,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Next Available Date',
     description: 'Find the next date with no events booked, starting from a given date.',
     inputSchema:
-      '{ "startDate": "string — optional, YYYY-MM-DD to start searching from, defaults to today" }',
+      '{ "startDate": "string - optional, YYYY-MM-DD to start searching from, defaults to today" }',
   },
 
   // ─── Web / Internet tasks ────────────────────────────────────────────────────
@@ -150,9 +150,9 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Web Search',
     description:
-      'Search the internet for public information. Use this for food trends, supplier info, industry news, competitor research, or any question that needs current web data. NEVER use this to search for recipes — AI does not generate, suggest, or retrieve recipes from anywhere.',
+      'Search the internet for public information. Use this for food trends, supplier info, industry news, competitor research, or any question that needs current web data. NEVER use this to search for recipes - AI does not generate, suggest, or retrieve recipes from anywhere.',
     inputSchema:
-      '{ "query": "string — search query", "limit": "number — optional, max results, defaults to 5" }',
+      '{ "query": "string - search query", "limit": "number - optional, max results, defaults to 5" }',
   },
   {
     type: 'web.read',
@@ -160,7 +160,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Read Web Page',
     description:
       'Fetch and read the content of a specific URL. Use when the chef shares a link or when a web search result needs deeper reading.',
-    inputSchema: '{ "url": "string — full URL to fetch and read" }',
+    inputSchema: '{ "url": "string - full URL to fetch and read" }',
   },
 
   // ─── Phase 2 tasks ──────────────────────────────────────────────────────────
@@ -171,7 +171,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Dietary/Allergy Check',
     description:
       "Cross-check a client's dietary restrictions and allergies against menu items. Flags dangerous conflicts. Use when the chef mentions allergies, dietary needs, or asks to check a menu for a client.",
-    inputSchema: '{ "clientName": "string — client name to look up restrictions for" }',
+    inputSchema: '{ "clientName": "string - client name to look up restrictions for" }',
   },
   {
     type: 'chef.favorite_chefs',
@@ -186,7 +186,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Culinary Profile',
     description:
-      "Show the chef's culinary identity — their cooking philosophy, signature dishes, favorite cuisines, techniques, and food memories.",
+      "Show the chef's culinary identity - their cooking philosophy, signature dishes, favorite cuisines, techniques, and food memories.",
     inputSchema: '{}',
   },
   {
@@ -194,9 +194,9 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 2,
     name: 'Prep Timeline',
     description:
-      'Generate a detailed prep timeline for an event — includes shopping, prep, cooking, plating, and service times. Requires Ollama.',
-    inputSchema: '{ "eventName": "string — event name or occasion to generate a timeline for" }',
-    tierNote: 'ALWAYS tier 2 — chef should review the timeline before committing to it.',
+      'Generate a detailed prep timeline for an event - includes shopping, prep, cooking, plating, and service times. Requires Ollama.',
+    inputSchema: '{ "eventName": "string - event name or occasion to generate a timeline for" }',
+    tierNote: 'ALWAYS tier 2 - chef should review the timeline before committing to it.',
   },
   {
     type: 'nudge.list',
@@ -213,14 +213,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     description:
       'Parse a natural language grocery list into structured items with quantities, units, and categories.',
     inputSchema:
-      '{ "items": "string — comma-separated list of grocery items, e.g. 2 lbs chicken, 1 bunch cilantro" }',
+      '{ "items": "string - comma-separated list of grocery items, e.g. 2 lbs chicken, 1 bunch cilantro" }',
   },
   {
     type: 'document.search',
     tier: 1,
     name: 'Search Documents',
     description: "Search the chef's saved documents by title.",
-    inputSchema: '{ "query": "string — document title or keyword to search for" }',
+    inputSchema: '{ "query": "string - document title or keyword to search for" }',
   },
   {
     type: 'document.list_folders',
@@ -234,17 +234,17 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 2,
     name: 'Create Folder',
     description: 'Create a new document folder.',
-    inputSchema: '{ "name": "string — folder name" }',
-    tierNote: 'Tier 2 — chef confirms before creating.',
+    inputSchema: '{ "name": "string - folder name" }',
+    tierNote: 'Tier 2 - chef confirms before creating.',
   },
   {
     type: 'email.generic',
     tier: 2,
     name: 'Draft Email',
     description:
-      "Draft a general email based on the chef's description. Draft only — never auto-sent.",
-    inputSchema: '{ "description": "string — what the email should be about and who it is for" }',
-    tierNote: 'ALWAYS tier 2 — never auto-send emails.',
+      "Draft a general email based on the chef's description. Draft only - never auto-sent.",
+    inputSchema: '{ "description": "string - what the email should be about and who it is for" }',
+    tierNote: 'ALWAYS tier 2 - never auto-send emails.',
   },
 
   // ─── Operations Intelligence ─────────────────────────────────────────────────
@@ -256,7 +256,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     description:
       'Scale a recipe to a specific number of guests. Adjusts all ingredient quantities proportionally.',
     inputSchema:
-      '{ "recipeName": "string — recipe name to scale", "guestCount": "number — target number of guests/servings" }',
+      '{ "recipeName": "string - recipe name to scale", "guestCount": "number - target number of guests/servings" }',
   },
   {
     type: 'ops.packing_list',
@@ -264,7 +264,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Packing List',
     description:
       'Generate a comprehensive packing list for an event including equipment, service ware, transport supplies, and safety items.',
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
   {
     type: 'ops.cross_contamination',
@@ -272,7 +272,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Cross-Contamination Risk Analysis',
     description:
       "Analyze cross-contamination risks for an event based on the client's allergies and the menu. Flags critical risks and suggests safe practices.",
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
 
   // ─── Analytics Intelligence ──────────────────────────────────────────────────
@@ -282,8 +282,8 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Break-Even Analysis',
     description:
-      'Calculate the break-even point for an event — how many guests needed to cover costs, plus profit margin.',
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+      'Calculate the break-even point for an event - how many guests needed to cover costs, plus profit margin.',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
   {
     type: 'analytics.client_ltv',
@@ -291,7 +291,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Client Lifetime Value',
     description:
       "Calculate a client's total revenue, event count, average event value, tenure, and loyalty tier.",
-    inputSchema: '{ "clientName": "string — client name" }',
+    inputSchema: '{ "clientName": "string - client name" }',
   },
   {
     type: 'analytics.recipe_cost',
@@ -299,7 +299,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Recipe Cost Optimization',
     description:
       "Analyze a recipe's ingredient costs and suggest substitutions to reduce costs without sacrificing quality. Requires Ollama.",
-    inputSchema: '{ "recipeName": "string — recipe name to optimize" }',
+    inputSchema: '{ "recipeName": "string - recipe name to optimize" }',
   },
 
   // ─── Client-Facing Intelligence ──────────────────────────────────────────────
@@ -310,14 +310,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Event Recap',
     description:
       'Get a comprehensive recap of an event including client, date, menu, status, and financials.',
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
   {
     type: 'client.menu_explanation',
     tier: 1,
     name: 'Menu Explanation',
     description: "Get a detailed breakdown of a menu's courses, descriptions, and dietary tags.",
-    inputSchema: '{ "menuName": "string — menu name to explain" }',
+    inputSchema: '{ "menuName": "string - menu name to explain" }',
   },
 
   // ─── Navigation & Awareness ───────────────────────────────────────────────
@@ -329,7 +329,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     description:
       'Navigate the chef to a specific page in ChefFlow. Use when the chef says "take me to", "show me", "go to", "open", or asks where something is. Returns the route so the UI can navigate.',
     inputSchema:
-      '{ "route": "string — app route to navigate to, e.g. /events, /clients/new, /financials" }',
+      '{ "route": "string - app route to navigate to, e.g. /events, /clients/new, /financials" }',
   },
   {
     type: 'loyalty.status',
@@ -337,7 +337,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Loyalty Status',
     description:
       "Look up a client's loyalty program status: tier (Bronze/Silver/Gold/Platinum), points balance, points to next tier, lifetime events, and rewards available.",
-    inputSchema: '{ "clientName": "string — client name to look up loyalty status for" }',
+    inputSchema: '{ "clientName": "string - client name to look up loyalty status for" }',
   },
   {
     type: 'safety.event_allergens',
@@ -345,14 +345,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Event Allergen Check',
     description:
       "Cross-reference ALL guests' allergies and dietary restrictions against the event's menu items. Flags dangerous conflicts and suggests accommodations. Use for any multi-guest event safety check.",
-    inputSchema: '{ "eventName": "string — event occasion or description to check allergens for" }',
+    inputSchema: '{ "eventName": "string - event occasion or description to check allergens for" }',
   },
   {
     type: 'waitlist.list',
     tier: 1,
     name: 'View Waitlist',
     description:
-      'Show all clients currently on the waitlist — their requested dates, occasions, and status.',
+      'Show all clients currently on the waitlist - their requested dates, occasions, and status.',
     inputSchema: '{}',
   },
   {
@@ -360,8 +360,8 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Compare Quotes',
     description:
-      'Show all quote versions for an event side-by-side — pricing, items, deposit, and status for each version.',
-    inputSchema: '{ "eventName": "string — event occasion or description to compare quotes for" }',
+      'Show all quote versions for an event side-by-side - pricing, items, deposit, and status for each version.',
+    inputSchema: '{ "eventName": "string - event occasion or description to compare quotes for" }',
   },
 
   // ─── Email Awareness ────────────────────────────────────────────────────────
@@ -372,7 +372,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Recent Emails',
     description:
       "Show the chef's most recent emails with sender, subject, and classification. Use when the chef asks what emails came in, what's new, or wants to see their inbox.",
-    inputSchema: '{ "limit": "number — optional, max emails to show, defaults to 10" }',
+    inputSchema: '{ "limit": "number - optional, max emails to show, defaults to 10" }',
   },
   {
     type: 'email.search',
@@ -380,7 +380,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Search Emails',
     description:
       'Search emails by sender name, email address, subject, or body content. Use when the chef asks about a specific email, what someone said, or looks for a specific message.',
-    inputSchema: '{ "query": "string — search term (name, email, subject, or keyword)" }',
+    inputSchema: '{ "query": "string - search term (name, email, subject, or keyword)" }',
   },
   {
     type: 'email.thread',
@@ -388,7 +388,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Email Thread',
     description:
       'Show the full email conversation thread. Use when the chef wants to see the back-and-forth with a client or review an email chain.',
-    inputSchema: '{ "threadId": "string — Gmail thread ID to look up" }',
+    inputSchema: '{ "threadId": "string - Gmail thread ID to look up" }',
   },
   {
     type: 'email.inbox_summary',
@@ -403,9 +403,9 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 2,
     name: 'Draft Email Reply',
     description:
-      "Draft a reply to a specific email. Loads the original email and any thread context to write a contextual, warm response in the chef's voice. Draft only — never auto-sent.",
-    inputSchema: '{ "messageId": "string — Gmail message ID to reply to" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews and sends manually. Never auto-send.',
+      "Draft a reply to a specific email. Loads the original email and any thread context to write a contextual, warm response in the chef's voice. Draft only - never auto-sent.",
+    inputSchema: '{ "messageId": "string - Gmail message ID to reply to" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews and sends manually. Never auto-send.',
   },
 
   // ─── Communication Draft Templates ──────────────────────────────────────────
@@ -416,8 +416,8 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Thank-You Note',
     description:
       'Draft a heartfelt thank-you note to a client after an event. References specific event details.',
-    inputSchema: '{ "clientName": "string — client name" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+    inputSchema: '{ "clientName": "string - client name" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before sending.',
   },
   {
     type: 'draft.referral_request',
@@ -425,8 +425,8 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Referral Request',
     description:
       'Draft a warm, non-pushy referral request to a loyal client asking if they know anyone who might enjoy your services.',
-    inputSchema: '{ "clientName": "string — client name" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+    inputSchema: '{ "clientName": "string - client name" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before sending.',
   },
   {
     type: 'draft.testimonial_request',
@@ -434,16 +434,16 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Testimonial Request',
     description:
       'Draft a friendly testimonial request to a client who recently had a great experience.',
-    inputSchema: '{ "clientName": "string — client name" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+    inputSchema: '{ "clientName": "string - client name" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before sending.',
   },
   {
     type: 'draft.quote_cover_letter',
     tier: 2,
     name: 'Quote Cover Letter',
     description: 'Draft a professional cover letter to accompany a quote/proposal for an event.',
-    inputSchema: '{ "eventName": "string — event occasion or description" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+    inputSchema: '{ "eventName": "string - event occasion or description" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before sending.',
   },
   {
     type: 'draft.decline_response',
@@ -451,32 +451,32 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Decline Response',
     description: 'Draft a gracious decline to a booking request when the chef cannot take the job.',
     inputSchema:
-      '{ "clientName": "string — client name", "reason": "string — optional reason for declining" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+      '{ "clientName": "string - client name", "reason": "string - optional reason for declining" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before sending.',
   },
   {
     type: 'draft.cancellation_response',
     tier: 2,
     name: 'Cancellation Response',
     description: 'Draft an empathetic response to a client who cancelled their event.',
-    inputSchema: '{ "eventName": "string — event occasion or name to find the cancelled event" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+    inputSchema: '{ "eventName": "string - event occasion or name to find the cancelled event" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before sending.',
   },
   {
     type: 'draft.payment_reminder',
     tier: 2,
     name: 'Payment Reminder',
     description: 'Draft a friendly payment reminder to a client with an outstanding balance.',
-    inputSchema: '{ "clientName": "string — client name" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+    inputSchema: '{ "clientName": "string - client name" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before sending.',
   },
   {
     type: 'draft.re_engagement',
     tier: 2,
     name: 'Re-Engagement Email',
     description: "Draft a warm re-engagement email to a client who hasn't booked in a while.",
-    inputSchema: '{ "clientName": "string — client name" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+    inputSchema: '{ "clientName": "string - client name" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before sending.',
   },
   {
     type: 'draft.milestone_recognition',
@@ -485,8 +485,8 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     description:
       'Draft a milestone celebration email for a loyal client (e.g., 5th event, 10th event, anniversary).',
     inputSchema:
-      '{ "clientName": "string — client name", "milestone": "string — optional milestone description" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+      '{ "clientName": "string - client name", "milestone": "string - optional milestone description" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before sending.',
   },
   {
     type: 'draft.food_safety_incident',
@@ -494,8 +494,8 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Food Safety Incident Report',
     description:
       'Draft a formal food safety incident report for internal records and regulatory purposes.',
-    inputSchema: '{ "description": "string — description of the incident" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before filing.',
+    inputSchema: '{ "description": "string - description of the incident" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before filing.',
   },
 
   // ─── Phase 1: Wire Existing Features ──────────────────────────────────────
@@ -505,9 +505,9 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 2,
     name: 'Generate Contract',
     description:
-      'Generate a draft contract/proposal for an event. Includes service details, pricing, terms, and cancellation policy. Draft only — chef must review and consult attorney.',
-    inputSchema: '{ "eventName": "string — event occasion or description" }',
-    tierNote: 'ALWAYS tier 2 — legal document, chef must review.',
+      'Generate a draft contract/proposal for an event. Includes service details, pricing, terms, and cancellation policy. Draft only - chef must review and consult attorney.',
+    inputSchema: '{ "eventName": "string - event occasion or description" }',
+    tierNote: 'ALWAYS tier 2 - legal document, chef must review.',
   },
   {
     type: 'contingency.plan',
@@ -515,15 +515,15 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Contingency Planning',
     description:
       'Generate "if X goes wrong, do Y" contingency plans for an event. Identifies top risks based on venue, menu, dietary restrictions, and guest count.',
-    inputSchema: '{ "eventName": "string — event occasion or description" }',
-    tierNote: 'ALWAYS tier 2 — chef picks which plans to save.',
+    inputSchema: '{ "eventName": "string - event occasion or description" }',
+    tierNote: 'ALWAYS tier 2 - chef picks which plans to save.',
   },
   {
     type: 'seasonal.produce',
     tier: 1,
     name: 'Seasonal Produce',
     description:
-      "Show what's in season right now — fruits, vegetables, herbs, seafood, and specialty items grouped by category with chef tips. Use when the chef asks what to source, what's in season, or what's at peak.",
+      "Show what's in season right now - fruits, vegetables, herbs, seafood, and specialty items grouped by category with chef tips. Use when the chef asks what to source, what's in season, or what's at peak.",
     inputSchema: '{}',
   },
   {
@@ -532,8 +532,8 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Consolidated Grocery List',
     description:
       'Consolidate all recipe ingredients for an event into a single shopping list grouped by store section. Flags dietary conflicts and suggests substitutions.',
-    inputSchema: '{ "eventName": "string — event occasion or description" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before shopping.',
+    inputSchema: '{ "eventName": "string - event occasion or description" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before shopping.',
   },
 
   // ─── Phase 2: Financial Intelligence ──────────────────────────────────────
@@ -551,24 +551,24 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'P&L Report',
     description:
-      'Profit & Loss report for a specific month — revenue, refunds, expenses by category, profit margin. Defaults to current month.',
+      'Profit & Loss report for a specific month - revenue, refunds, expenses by category, profit margin. Defaults to current month.',
     inputSchema:
-      '{ "month": "number — optional, 1-12", "year": "number — optional, defaults to current year" }',
+      '{ "month": "number - optional, 1-12", "year": "number - optional, defaults to current year" }',
   },
   {
     type: 'finance.tax_summary',
     tier: 1,
     name: 'Tax Summary',
     description:
-      'Tax preparation summary — all deductible expenses by category, mileage deduction at IRS rate, total deductible amount. Defaults to current year.',
-    inputSchema: '{ "year": "number — optional, defaults to current year" }',
+      'Tax preparation summary - all deductible expenses by category, mileage deduction at IRS rate, total deductible amount. Defaults to current year.',
+    inputSchema: '{ "year": "number - optional, defaults to current year" }',
   },
   {
     type: 'finance.pricing',
     tier: 1,
     name: 'Pricing Analysis',
     description:
-      "Analyze the chef's pricing — average per-head rate, min/max, breakdown by service style, and trend (increasing/decreasing/stable).",
+      "Analyze the chef's pricing - average per-head rate, min/max, breakdown by service style, and trend (increasing/decreasing/stable).",
     inputSchema: '{}',
   },
 
@@ -579,8 +579,8 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Utilization Analysis',
     description:
-      'Analyze workload density for the next N days — booked vs free days, double-booked days, consecutive event streaks, and whether the chef can take more work.',
-    inputSchema: '{ "days": "number — optional, how many days to look ahead, defaults to 14" }',
+      'Analyze workload density for the next N days - booked vs free days, double-booked days, consecutive event streaks, and whether the chef can take more work.',
+    inputSchema: '{ "days": "number - optional, how many days to look ahead, defaults to 14" }',
   },
 
   // ─── Phase 4: Relationship Intelligence ───────────────────────────────────
@@ -590,7 +590,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Upcoming Milestones',
     description:
-      'Surface upcoming client milestones — birthdays, anniversaries, Nth-event celebrations, and client anniversary dates within the next 2 weeks. Suggests personalized actions.',
+      'Surface upcoming client milestones - birthdays, anniversaries, Nth-event celebrations, and client anniversary dates within the next 2 weeks. Suggests personalized actions.',
     inputSchema: '{}',
   },
   {
@@ -606,7 +606,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Client Acquisition Funnel',
     description:
-      'Analyze the inquiry-to-booking pipeline — conversion rate, best referral sources, revenue by source. Shows where the best clients come from.',
+      'Analyze the inquiry-to-booking pipeline - conversion rate, best referral sources, revenue by source. Shows where the best clients come from.',
     inputSchema: '{}',
   },
 
@@ -617,7 +617,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Goals Dashboard',
     description:
-      "Show the chef's goals with progress tracking — revenue targets, event counts, client growth. Use when the chef asks how they're tracking.",
+      "Show the chef's goals with progress tracking - revenue targets, event counts, client growth. Use when the chef asks how they're tracking.",
     inputSchema: '{}',
   },
   {
@@ -651,9 +651,9 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Compare Events',
     description:
-      'Compare two events side-by-side — revenue, expenses, profit, per-head rate, margin. Use when the chef asks which event was more profitable.',
+      'Compare two events side-by-side - revenue, expenses, profit, per-head rate, margin. Use when the chef asks which event was more profitable.',
     inputSchema:
-      '{ "event1": "string — first event name/occasion", "event2": "string — second event name/occasion" }',
+      '{ "event1": "string - first event name/occasion", "event2": "string - second event name/occasion" }',
   },
 
   // ─── Phase 7: Day-of Support ──────────────────────────────────────────────
@@ -663,7 +663,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Morning Briefing',
     description:
-      "Full operational briefing for today — events with timelines, dietary reminders, staff confirmed, equipment needed, overdue todos, new inquiries, and pending payments. Use when the chef says good morning, what's today look like, or asks for their briefing.",
+      "Full operational briefing for today - events with timelines, dietary reminders, staff confirmed, equipment needed, overdue todos, new inquiries, and pending payments. Use when the chef says good morning, what's today look like, or asks for their briefing.",
     inputSchema: '{}',
   },
 
@@ -674,16 +674,16 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Cancellation Impact',
     description:
-      'Analyze the financial and scheduling impact of a cancellation — lost revenue, monthly impact percentage, and rebooking opportunities from the waitlist.',
-    inputSchema: '{ "eventName": "string — event occasion or description that was cancelled" }',
+      'Analyze the financial and scheduling impact of a cancellation - lost revenue, monthly impact percentage, and rebooking opportunities from the waitlist.',
+    inputSchema: '{ "eventName": "string - event occasion or description that was cancelled" }',
   },
   {
     type: 'workflow.post_event',
     tier: 1,
     name: 'Post-Event Sequence',
     description:
-      'Show the post-event checklist — log expenses, save debrief, send thank-you, request testimonial, log mileage. Tracks what has and has not been done.',
-    inputSchema: '{ "eventName": "string — event occasion or description" }',
+      'Show the post-event checklist - log expenses, save debrief, send thank-you, request testimonial, log mileage. Tracks what has and has not been done.',
+    inputSchema: '{ "eventName": "string - event occasion or description" }',
   },
 
   // ─── Phase 8-9: Operational Intelligence ──────────────────────────────────
@@ -694,7 +694,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Ingredient Substitution',
     description:
       'Find allergy-safe substitutions for an ingredient. Returns alternatives with reasons (e.g., dairy-free, nut-free, vegan). Use when the chef asks "what can I use instead of X?"',
-    inputSchema: '{ "ingredient": "string — ingredient to find substitutions for" }',
+    inputSchema: '{ "ingredient": "string - ingredient to find substitutions for" }',
   },
 
   // ─── Batch 2: Complete Domain Coverage ─────────────────────────────────────
@@ -704,7 +704,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'client.spending',
     tier: 1,
     name: 'Client Spending Analysis',
-    description: 'Show spending summary across all clients — top spenders, average spend, trends.',
+    description: 'Show spending summary across all clients - top spenders, average spend, trends.',
     inputSchema: '{}',
   },
   {
@@ -726,14 +726,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Next Best Actions',
     description:
-      'AI-suggested next actions for each client — follow up, upsell, re-engage, celebrate.',
+      'AI-suggested next actions for each client - follow up, upsell, re-engage, celebrate.',
     inputSchema: '{}',
   },
   {
     type: 'client.cooling',
     tier: 1,
     name: 'Cooling Clients',
-    description: 'Show clients going dormant — no recent bookings, declining engagement.',
+    description: 'Show clients going dormant - no recent bookings, declining engagement.',
     inputSchema: '{}',
   },
   {
@@ -741,27 +741,27 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Client LTV Trajectory',
     description: 'Show lifetime value projection and spending trajectory for a specific client.',
-    inputSchema: '{ "clientName": "string — client name to look up" }',
+    inputSchema: '{ "clientName": "string - client name to look up" }',
   },
   {
     type: 'client.menu_history',
     tier: 1,
     name: 'Client Menu History',
-    description: 'Show what menus/dishes a client has been served — avoid repeats, spot favorites.',
-    inputSchema: '{ "clientName": "string — client name to look up" }',
+    description: 'Show what menus/dishes a client has been served - avoid repeats, spot favorites.',
+    inputSchema: '{ "clientName": "string - client name to look up" }',
   },
   {
     type: 'client.referral_health',
     tier: 1,
     name: 'Referral Health',
-    description: 'Referral pipeline health — who refers, conversion rate, top referrers.',
+    description: 'Referral pipeline health - who refers, conversion rate, top referrers.',
     inputSchema: '{}',
   },
   {
     type: 'client.nda_status',
     tier: 1,
     name: 'NDA Status',
-    description: 'Show NDA status for clients — signed, expiring, missing.',
+    description: 'Show NDA status for clients - signed, expiring, missing.',
     inputSchema: '{}',
   },
   {
@@ -769,7 +769,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Client Payment Plans',
     description: 'Show payment plan installments for a specific event.',
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
 
   // Event Intelligence
@@ -778,14 +778,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Dietary Conflict Check',
     description: 'Check for allergen/dietary conflicts between guests and the event menu.',
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
   {
     type: 'event.debrief',
     tier: 1,
     name: 'Event Debrief',
     description: 'Get the post-event debrief form/blanks for an event.',
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
   {
     type: 'event.countdown',
@@ -794,14 +794,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     description:
       'Show countdown timer and days until a specific event, or all upcoming countdowns.',
     inputSchema:
-      '{ "eventName": "string — optional, event name. If omitted shows all countdowns" }',
+      '{ "eventName": "string - optional, event name. If omitted shows all countdowns" }',
   },
   {
     type: 'event.invoice',
     tier: 1,
     name: 'Invoice Lookup',
-    description: 'Look up the invoice for an event — line items, payments, balance due.',
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+    description: 'Look up the invoice for an event - line items, payments, balance due.',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
 
   // Inquiry Intelligence
@@ -809,7 +809,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'inquiry.follow_ups',
     tier: 1,
     name: 'Stale Inquiries',
-    description: 'Show inquiries that need follow-up — going cold, no response in 3+ days.',
+    description: 'Show inquiries that need follow-up - going cold, no response in 3+ days.',
     inputSchema: '{}',
   },
   {
@@ -826,14 +826,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Menu Food Cost',
     description:
-      'Show food cost analysis — cost per guest, food cost %, recipe costs across menus.',
+      'Show food cost analysis - cost per guest, food cost %, recipe costs across menus.',
     inputSchema: '{}',
   },
   {
     type: 'menu.dish_index',
     tier: 1,
     name: 'Dish Index',
-    description: 'Search all dishes across all menus — find which menu has a specific dish.',
+    description: 'Search all dishes across all menus - find which menu has a specific dish.',
     inputSchema: '{}',
   },
   {
@@ -857,7 +857,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Recipe Nutrition',
     description: 'Look up nutritional information for a specific recipe.',
-    inputSchema: '{ "recipeName": "string — recipe name to look up" }',
+    inputSchema: '{ "recipeName": "string - recipe name to look up" }',
   },
   {
     type: 'recipe.production_logs',
@@ -872,7 +872,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'finance.cash_flow',
     tier: 1,
     name: 'Cash Flow Forecast',
-    description: 'Project cash flow for the next 90 days — inflows, outflows, net position.',
+    description: 'Project cash flow for the next 90 days - inflows, outflows, net position.',
     inputSchema: '{}',
   },
   {
@@ -908,7 +908,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Payment Plan Lookup',
     description: 'Show payment plan installments for an event.',
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
   {
     type: 'finance.recurring_invoices',
@@ -922,7 +922,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Tax Package',
     description:
-      'Year-end tax package — deductible expenses, income categories, quarterly breakdown.',
+      'Year-end tax package - deductible expenses, income categories, quarterly breakdown.',
     inputSchema: '{}',
   },
   {
@@ -938,21 +938,21 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'vendor.invoices',
     tier: 1,
     name: 'Vendor Invoices',
-    description: 'Show vendor invoices — what you owe suppliers.',
-    inputSchema: '{ "vendorId": "string — optional, filter by vendor" }',
+    description: 'Show vendor invoices - what you owe suppliers.',
+    inputSchema: '{ "vendorId": "string - optional, filter by vendor" }',
   },
   {
     type: 'vendor.price_insights',
     tier: 1,
     name: 'Vendor Price Insights',
-    description: 'Price trend analysis across vendors — inflation, savings opportunities.',
+    description: 'Price trend analysis across vendors - inflation, savings opportunities.',
     inputSchema: '{}',
   },
   {
     type: 'vendor.payment_aging',
     tier: 1,
     name: 'Vendor Payment Aging',
-    description: 'Show outstanding vendor payments by age — current, 30, 60, 90+ days.',
+    description: 'Show outstanding vendor payments by age - current, 30, 60, 90+ days.',
     inputSchema: '{}',
   },
 
@@ -962,7 +962,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Equipment Rentals',
     description: 'Show equipment rental history and costs, optionally for a specific event.',
-    inputSchema: '{ "eventId": "string — optional, event name to filter by" }',
+    inputSchema: '{ "eventId": "string - optional, event name to filter by" }',
   },
 
   // Staff Intelligence
@@ -971,36 +971,36 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Staff Availability',
     description: 'Show which staff are available on a specific date.',
-    inputSchema: '{ "date": "string — YYYY-MM-DD format, defaults to today" }',
+    inputSchema: '{ "date": "string - YYYY-MM-DD format, defaults to today" }',
   },
   {
     type: 'staff.briefing',
     tier: 1,
     name: 'Staff Briefing',
-    description: 'Generate a staff briefing for an event — roles, timing, menu, guest notes.',
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+    description: 'Generate a staff briefing for an event - roles, timing, menu, guest notes.',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
   {
     type: 'staff.clock_summary',
     tier: 1,
     name: 'Staff Clock Summary',
     description: 'Show time clock entries and hours worked for an event.',
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
   {
     type: 'staff.performance',
     tier: 1,
     name: 'Staff Performance',
     description:
-      'Performance scoreboard — reliability, quality, professionalism scores by staff member.',
+      'Performance scoreboard - reliability, quality, professionalism scores by staff member.',
     inputSchema: '{}',
   },
   {
     type: 'staff.labor_dashboard',
     tier: 1,
     name: 'Labor Dashboard',
-    description: 'Monthly labor cost breakdown — hours, wages, labor-to-revenue ratio.',
-    inputSchema: '{ "month": "number — optional, 1-12", "year": "number — optional" }',
+    description: 'Monthly labor cost breakdown - hours, wages, labor-to-revenue ratio.',
+    inputSchema: '{ "month": "number - optional, 1-12", "year": "number - optional" }',
   },
 
   // Scheduling Intelligence
@@ -1009,14 +1009,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Capacity Check',
     description: 'Check booking capacity for a date, or show overall capacity settings.',
-    inputSchema: '{ "date": "string — optional, YYYY-MM-DD to check specific date" }',
+    inputSchema: '{ "date": "string - optional, YYYY-MM-DD to check specific date" }',
   },
   {
     type: 'scheduling.prep_blocks',
     tier: 1,
     name: 'Prep Blocks',
     description: 'Show prep time blocks for the week, or for a specific event.',
-    inputSchema: '{ "eventId": "string — optional, event name to filter by" }',
+    inputSchema: '{ "eventId": "string - optional, event name to filter by" }',
   },
   {
     type: 'scheduling.protected_time',
@@ -1029,7 +1029,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'scheduling.gaps',
     tier: 1,
     name: 'Scheduling Gaps',
-    description: 'Find gaps and conflicts in your scheduling — missed prep, overlapping events.',
+    description: 'Find gaps and conflicts in your scheduling - missed prep, overlapping events.',
     inputSchema: '{}',
   },
 
@@ -1052,7 +1052,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'analytics.demand_forecast',
     tier: 1,
     name: 'Demand Forecast',
-    description: 'Seasonal demand heatmap — predict busy months based on historical data.',
+    description: 'Seasonal demand heatmap - predict busy months based on historical data.',
     inputSchema: '{}',
   },
   {
@@ -1068,13 +1068,13 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     name: 'Pricing Suggestions',
     description: 'Data-driven pricing suggestion based on guest count and event type.',
     inputSchema:
-      '{ "guestCount": "number — number of guests", "pricingModel": "string — per_person, flat_rate, or custom", "occasion": "string — optional, e.g. dinner, brunch, wedding" }',
+      '{ "guestCount": "number - number of guests", "pricingModel": "string - per_person, flat_rate, or custom", "occasion": "string - optional, e.g. dinner, brunch, wedding" }',
   },
   {
     type: 'analytics.response_time',
     tier: 1,
     name: 'Response Time Metrics',
-    description: 'How fast you respond to inquiries — average, median, trends.',
+    description: 'How fast you respond to inquiries - average, median, trends.',
     inputSchema: '{}',
   },
   {
@@ -1089,14 +1089,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Referral Analytics',
     description:
-      'Full referral analytics — funnel, top referrers, acquisition by source, time series.',
+      'Full referral analytics - funnel, top referrers, acquisition by source, time series.',
     inputSchema: '{}',
   },
   {
     type: 'analytics.quote_loss',
     tier: 1,
     name: 'Quote Loss Analysis',
-    description: 'Why quotes get declined — reason breakdown and trends.',
+    description: 'Why quotes get declined - reason breakdown and trends.',
     inputSchema: '{}',
   },
   {
@@ -1113,14 +1113,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Goal History',
     description: 'Show progress snapshots for a specific goal over time.',
-    inputSchema: '{ "goalId": "string — goal ID" }',
+    inputSchema: '{ "goalId": "string - goal ID" }',
   },
   {
     type: 'goals.check_ins',
     tier: 1,
     name: 'Goal Check-ins',
     description: 'Show recent check-in entries for a specific goal.',
-    inputSchema: '{ "goalId": "string — goal ID" }',
+    inputSchema: '{ "goalId": "string - goal ID" }',
   },
 
   // Protection & Compliance
@@ -1128,7 +1128,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'protection.certifications',
     tier: 1,
     name: 'Certification Status',
-    description: 'Show food safety certifications — active, expiring soon, missing.',
+    description: 'Show food safety certifications - active, expiring soon, missing.',
     inputSchema: '{}',
   },
   {
@@ -1136,7 +1136,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Business Health Score',
     description:
-      'Overall business health score and checklist — insurance, certs, contracts, compliance.',
+      'Overall business health score and checklist - insurance, certs, contracts, compliance.',
     inputSchema: '{}',
   },
 
@@ -1152,7 +1152,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'loyalty.gift_cards',
     tier: 1,
     name: 'Gift Cards',
-    description: 'Show gift card inventory — balances, status, purchasers.',
+    description: 'Show gift card inventory - balances, status, purchasers.',
     inputSchema: '{}',
   },
 
@@ -1161,14 +1161,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'inventory.status',
     tier: 1,
     name: 'Inventory Status',
-    description: 'Show inventory levels — items on hand, low stock alerts, reorder points.',
+    description: 'Show inventory levels - items on hand, low stock alerts, reorder points.',
     inputSchema: '{}',
   },
   {
     type: 'inventory.purchase_orders',
     tier: 1,
     name: 'Purchase Orders',
-    description: 'Show recent purchase orders — status, vendor, totals.',
+    description: 'Show recent purchase orders - status, vendor, totals.',
     inputSchema: '{}',
   },
 
@@ -1186,8 +1186,8 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'guest.list',
     tier: 1,
     name: 'Guest List',
-    description: 'Show guest list for an event — names, dietary restrictions, RSVP status.',
-    inputSchema: '{ "eventName": "string — event name or occasion" }',
+    description: 'Show guest list for an event - names, dietary restrictions, RSVP status.',
+    inputSchema: '{ "eventName": "string - event name or occasion" }',
   },
 
   // Marketing Intelligence
@@ -1195,7 +1195,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'marketing.campaigns',
     tier: 1,
     name: 'Campaign Status',
-    description: 'Show marketing campaigns — send counts, open rates, click rates.',
+    description: 'Show marketing campaigns - send counts, open rates, click rates.',
     inputSchema: '{}',
   },
   {
@@ -1211,7 +1211,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'reviews.summary',
     tier: 1,
     name: 'Reviews Summary',
-    description: 'Show client reviews — ratings, comments, average score.',
+    description: 'Show client reviews - ratings, comments, average score.',
     inputSchema: '{}',
   },
 
@@ -1220,7 +1220,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'gmail.sender_reputation',
     tier: 1,
     name: 'Sender Reputation',
-    description: 'Show email sender reputation scores — who sends important vs spam emails.',
+    description: 'Show email sender reputation scores - who sends important vs spam emails.',
     inputSchema: '{}',
   },
 
@@ -1519,7 +1519,7 @@ export function buildTaskListForPrompt(): string {
     ensureAgentActionsRegistered()
     agentSection = buildAgentTaskListForPrompt()
   } catch {
-    // Agent actions not available — skip
+    // Agent actions not available - skip
   }
 
   const legacySection = TASK_DESCRIPTIONS.map(
@@ -1539,7 +1539,7 @@ export function getTaskName(taskType: string): string {
     const action = getAgentAction(taskType)
     if (action) return action.name
   } catch {
-    // Agent registry not available — fall through
+    // Agent registry not available - fall through
   }
   return TASK_DESCRIPTIONS.find((t) => t.type === taskType)?.name ?? taskType
 }

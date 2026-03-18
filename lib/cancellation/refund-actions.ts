@@ -257,7 +257,7 @@ export async function initiateRefund(input: InitiateRefundInput): Promise<Refund
       domain: 'financial',
       entityType: 'ledger_entry',
       entityId: ledgerEntryId || stripeRefundId || eventId,
-      summary: `Initiated refund: $${(amountCents / 100).toFixed(2)} — ${reason}`,
+      summary: `Initiated refund: $${(amountCents / 100).toFixed(2)} - ${reason}`,
       context: {
         amount_cents: amountCents,
         reason,

@@ -1,6 +1,6 @@
 'use server'
 
-// Dormancy Re-Engagement — Surface clients who need reconnecting.
+// Dormancy Re-Engagement - Surface clients who need reconnecting.
 // Uses the client_financial_summary view's is_dormant flag and days_since_last_event.
 // Threshold: 90+ days since last event counts as re-engagement worthy.
 // Used on the chef dashboard to prompt outreach.

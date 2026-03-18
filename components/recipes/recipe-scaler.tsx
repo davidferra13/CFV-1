@@ -198,7 +198,7 @@ export function RecipeScaler({ recipeId, recipeName, originalYield, yieldUnit }:
                   <span className="text-center text-stone-400 text-xs">{ing.unit}</span>
                   <Badge
                     variant={CATEGORY_BADGE_VARIANT[ing.scalingCategory]}
-                    className={`text-[10px] ${CATEGORY_BADGE_CLASS[ing.scalingCategory]}`}
+                    className={`text-xxs ${CATEGORY_BADGE_CLASS[ing.scalingCategory]}`}
                   >
                     {ing.scalingCategory}
                   </Badge>

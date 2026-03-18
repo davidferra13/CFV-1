@@ -1,6 +1,6 @@
 'use server'
 
-// Grocery Price Quote — automated ingredient pricing via Spoonacular + Kroger + MealMe APIs.
+// Grocery Price Quote - automated ingredient pricing via Spoonacular + Kroger + MealMe APIs.
 // Queries all configured services concurrently for each ingredient and stores the results.
 // Falls back to last_price_cents from the Recipe Book if all APIs return nothing.
 //
@@ -188,8 +188,8 @@ async function getEventIngredients(eventId: string, tenantId: string): Promise<R
 
 // ─── Spoonacular API ──────────────────────────────────────────────────────────
 // Uses two endpoints:
-//   1. /food/ingredients/search — find ingredient ID by name
-//   2. /food/ingredients/{id}/information — get cost for specific quantity + unit
+//   1. /food/ingredients/search - find ingredient ID by name
+//   2. /food/ingredients/{id}/information - get cost for specific quantity + unit
 // Returns cents for the requested quantity (Spoonacular handles unit conversion).
 
 async function getSpoonacularPrice(
@@ -229,7 +229,7 @@ async function getSpoonacularPrice(
 // ─── Kroger API ───────────────────────────────────────────────────────────────
 // Uses client_credentials OAuth flow (token cached in module scope for 30 min).
 // Searches by ingredient name and returns the shelf price of the best match.
-// Note: returns price per package, not scaled to recipe quantity — used as a
+// Note: returns price per package, not scaled to recipe quantity - used as a
 // reference data point for the average, not a quantity-adjusted total.
 
 let krogerToken: { token: string; expiresAt: number } | null = null
@@ -335,7 +335,7 @@ async function getMealMePrice(name: string, zipCode: string | null): Promise<num
     if (!storeRes.ok) return null
 
     const storeData = await storeRes.json()
-    // MealMe returns stores sorted by distance — take the first grocery result
+    // MealMe returns stores sorted by distance - take the first grocery result
     const store = (storeData.stores ?? storeData.data ?? [])[0]
     if (!store?.store_id) return null
 
@@ -475,7 +475,7 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
         getMealMePrice(ing.name, chefZip),
       ])
 
-      // USDA NE lookup — free, no API call, already Northeast-regional.
+      // USDA NE lookup - free, no API call, already Northeast-regional.
       // Only applied when the recipe unit matches the USDA unit family to avoid
       // nonsensical math (e.g. USDA price/pint × recipe quantity in cups).
       const usdaEntry = lookupUsdaPrice(ing.name)
@@ -489,7 +489,7 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
       const adjSpoonacular = spoonacularCents ? Math.round(spoonacularCents * multiplier) : null
       const adjKroger = krogerCents ? Math.round(krogerCents * multiplier) : null
 
-      // Average all NE-calibrated sources (USDA is already NE — no multiplier)
+      // Average all NE-calibrated sources (USDA is already NE - no multiplier)
       const apiPrices = [adjSpoonacular, adjKroger, usdaCents, mealMeCents].filter(
         (p): p is number => p !== null
       )
@@ -817,10 +817,10 @@ async function buildResultFromRow(
     ingredientName: item.ingredient_name,
     quantity: Number(item.quantity),
     unit: item.unit ?? '',
-    category: null, // not stored per-item in DB — null for cached results
+    category: null, // not stored per-item in DB - null for cached results
     spoonacularCents: item.spoonacular_price_cents,
     krogerCents: item.kroger_price_cents,
-    usdaCents: null, // not stored per-item in DB — null for cached results
+    usdaCents: null, // not stored per-item in DB - null for cached results
     mealMeCents: item.mealme_price_cents ?? null,
     averageCents: item.average_price_cents,
     recipeBookCents: null,
@@ -843,7 +843,7 @@ async function buildResultFromRow(
     items,
     spoonacularTotalCents: row.spoonacular_total_cents,
     krogerTotalCents: row.kroger_total_cents,
-    usdaTotalCents: null, // not stored in DB — null for cached results
+    usdaTotalCents: null, // not stored in DB - null for cached results
     mealMeTotalCents: row.mealme_total_cents ?? null,
     mealMeConfigured: !!process.env.MEALME_API_KEY,
     averageTotalCents: row.average_total_cents ?? 0,
@@ -853,7 +853,7 @@ async function buildResultFromRow(
     budgetCeilingCents,
     quotedPriceCents,
     actualGroceryCostCents: row.actual_grocery_cost_cents ?? null,
-    // Supabase returns DECIMAL columns as strings — parse to number before use in the UI
+    // Supabase returns DECIMAL columns as strings - parse to number before use in the UI
     accuracyDeltaPct: row.accuracy_delta_pct != null ? Number(row.accuracy_delta_pct) : null,
     isFromCache,
   }

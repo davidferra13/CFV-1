@@ -337,7 +337,7 @@ export function ChannelDashboard({ initialData }: { initialData: ChannelAnalytic
                         )
                       })}
                     </div>
-                    <span className="text-[10px] text-stone-400 mt-1 whitespace-nowrap rotate-[-45deg] origin-top-left translate-y-2">
+                    <span className="text-xxs text-stone-400 mt-1 whitespace-nowrap rotate-[-45deg] origin-top-left translate-y-2">
                       {entry.month}
                     </span>
                   </div>
@@ -435,7 +435,7 @@ export function ChannelDashboard({ initialData }: { initialData: ChannelAnalytic
                             />
                             {s.sourceLabel}
                             {isBest && (
-                              <span className="text-[10px] bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded-full font-medium">
+                              <span className="text-xxs bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded-full font-medium">
                                 TOP
                               </span>
                             )}

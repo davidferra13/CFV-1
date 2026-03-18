@@ -66,6 +66,7 @@ export function EventHubLinkPanel({ groupToken, eventId }: EventHubLinkPanelProp
         <Link
           href={`/hub/g/${token}`}
           target="_blank"
+          rel="noopener noreferrer"
           className="rounded-lg bg-[#e88f47] px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
         >
           View Circle

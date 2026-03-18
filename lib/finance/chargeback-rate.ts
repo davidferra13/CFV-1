@@ -1,4 +1,4 @@
-// Chargeback Rate Monitor — pure computation, no server action.
+// Chargeback Rate Monitor - pure computation, no server action.
 // Tracks dispute/chargeback rate against industry safe thresholds.
 
 export type ChargebackRate = {

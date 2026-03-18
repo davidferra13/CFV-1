@@ -1,4 +1,4 @@
-// Intent Notifications — fires chef notifications when clients take high-value actions.
+// Intent Notifications - fires chef notifications when clients take high-value actions.
 // Called as a fire-and-forget side effect from /api/activity/track.
 // Never throws; all errors are caught and logged.
 
@@ -123,7 +123,7 @@ export async function checkAndFireIntentNotifications(
         title: `${clientName} opened your proposal`,
         body: occasion
           ? `They are reviewing the proposal for ${occasion}.`
-          : 'They are reviewing your proposal — consider sending a follow-up message.',
+          : 'They are reviewing your proposal - consider sending a follow-up message.',
         actionUrl: `/events/${entityId}`,
         clientId,
         eventId: entityId,

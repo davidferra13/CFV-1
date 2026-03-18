@@ -1,6 +1,6 @@
-// Google Calendar Sync — Core Utilities
+// Google Calendar Sync - Core Utilities
 // ICS generation + Google Calendar API calls.
-// Uses google_connections table (not chef_settings — that table does not exist).
+// Uses google_connections table (not chef_settings - that table does not exist).
 // All token management is delegated to lib/gmail/google-auth.ts.
 
 'use server'
@@ -121,7 +121,7 @@ export async function syncEventToGoogleCalendar(
       return { success: false, error: 'Google Calendar not connected' }
     }
 
-    // Fetch event details — cast to any because google_calendar_event_id may not be in
+    // Fetch event details - cast to any because google_calendar_event_id may not be in
     // the generated types yet (migration pending push)
     const { data: event } = await supabase
       .from('events')
@@ -201,7 +201,7 @@ export async function syncEventToGoogleCalendar(
     }
 
     // Store Google event ID back on the ChefFlow event
-    // cast as any — columns not in generated types until migration is pushed
+    // cast as any - columns not in generated types until migration is pushed
     await supabase
       .from('events')
       .update({
@@ -257,7 +257,7 @@ export async function deleteEventFromGoogleCalendar(
       headers: { Authorization: `Bearer ${accessToken}` },
     })
 
-    // 404 means already deleted — treat as success
+    // 404 means already deleted - treat as success
     if (!response.ok && response.status !== 404) {
       const err = await response.text()
       return { success: false, error: `Google Calendar delete failed: ${err}` }

@@ -77,7 +77,7 @@ export function ResponseTimeWidget({ summary }: ResponseTimeWidgetProps) {
                       ? `${Math.round(summary.avgResponseTimeHours * 60)}m`
                       : `${summary.avgResponseTimeHours}h`}
                   </p>
-                  <p className="text-[10px] text-stone-500">avg response</p>
+                  <p className="text-xxs text-stone-500">avg response</p>
                 </div>
               )}
             </div>

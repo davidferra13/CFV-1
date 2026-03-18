@@ -1,6 +1,6 @@
 'use server'
 
-// Directory Outreach — Email Actions
+// Directory Outreach - Email Actions
 // Sends transactional emails to businesses that opted in (submitted or claimed).
 // All sends are non-blocking side effects with logging.
 // Respects opt-out preferences before sending.

@@ -2,7 +2,7 @@
 
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useEffect, useMemo, useTransition } from 'react'
 import {
   updateMyProfile,
   type UpdateClientProfileInput,
@@ -176,6 +176,71 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
 
   const [children, setChildren] = useState<string[]>(profile.children || [])
   const [familyNotes, setFamilyNotes] = useState(profile.family_notes || '')
+
+  // Track unsaved changes
+  const initialState = useMemo(
+    () =>
+      JSON.stringify({
+        fullName: profile.full_name,
+        preferredName: profile.preferred_name || '',
+        partnerName: profile.partner_name || '',
+        phone: profile.phone || '',
+        address: profile.address || '',
+        dietaryRestrictions: profile.dietary_restrictions || [],
+        dietaryProtocols: profile.dietary_protocols || [],
+        allergies: profile.allergies || [],
+        dislikes: profile.dislikes || [],
+        spiceTolerance: profile.spice_tolerance || '',
+        favoriteCuisines: profile.favorite_cuisines || [],
+        favoriteDishes: profile.favorite_dishes || [],
+        wineBeveragePreferences: profile.wine_beverage_preferences || '',
+        parkingInstructions: profile.parking_instructions || '',
+        accessInstructions: profile.access_instructions || '',
+        kitchenSize: profile.kitchen_size || '',
+        kitchenConstraints: profile.kitchen_constraints || '',
+        houseRules: profile.house_rules || '',
+        equipmentAvailable: profile.equipment_available || [],
+        children: profile.children || [],
+        familyNotes: profile.family_notes || '',
+      }),
+    [profile]
+  )
+
+  const currentState = JSON.stringify({
+    fullName,
+    preferredName,
+    partnerName,
+    phone,
+    address,
+    dietaryRestrictions,
+    dietaryProtocols,
+    allergies,
+    dislikes,
+    spiceTolerance,
+    favoriteCuisines,
+    favoriteDishes,
+    wineBeveragePreferences,
+    parkingInstructions,
+    accessInstructions,
+    kitchenSize,
+    kitchenConstraints,
+    houseRules,
+    equipmentAvailable,
+    children,
+    familyNotes,
+  })
+
+  const isDirty = currentState !== initialState
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault()
+      }
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [isDirty])
 
   const handleSave = () => {
     setError(null)

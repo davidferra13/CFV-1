@@ -167,7 +167,7 @@ async function resolveAudience(
 }
 
 // ============================================
-// CAMPAIGNS — CRUD
+// CAMPAIGNS - CRUD
 // ============================================
 
 export async function createCampaign(input: CampaignInput) {
@@ -352,7 +352,7 @@ export async function sendCampaignNow(campaignId: string) {
 
     const { first, last } = splitName(client.full_name)
 
-    // Insert recipient row first — its ID is the unsubscribe token
+    // Insert recipient row first - its ID is the unsubscribe token
     const { data: recipientRow } = await supabase
       .from('campaign_recipients')
       .insert({
@@ -445,7 +445,7 @@ export async function sendCampaignNow(campaignId: string) {
 // ============================================
 
 /**
- * Public unsubscribe — called from the /unsubscribe page.
+ * Public unsubscribe - called from the /unsubscribe page.
  * Uses the campaign_recipient row ID as a token (no auth required).
  * NOTE: This action uses createServerClient but the /unsubscribe page uses
  * the Supabase admin client (lib/supabase/admin.ts) to bypass RLS.
@@ -957,7 +957,7 @@ export async function enrollInSequence(
 }
 
 /**
- * Process pending sequence enrollments — send due emails and advance steps.
+ * Process pending sequence enrollments - send due emails and advance steps.
  * Called from /api/scheduled/sequences cron (daily).
  */
 export async function processSequences() {

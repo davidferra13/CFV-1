@@ -108,7 +108,7 @@ export async function createExpense(input: CreateExpenseInput) {
       domain: 'financial',
       entityType: 'expense',
       entityId: data.id,
-      summary: `Added expense: $${(validated.amount_cents / 100).toFixed(2)} — ${validated.description || validated.category}`,
+      summary: `Added expense: $${(validated.amount_cents / 100).toFixed(2)} - ${validated.description || validated.category}`,
       context: {
         amount_cents: validated.amount_cents,
         category: validated.category,
@@ -583,7 +583,7 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
 }
 
 /**
- * Get budget guardrail — shows chef how much they can spend before shopping
+ * Get budget guardrail - shows chef how much they can spend before shopping
  */
 export async function getBudgetGuardrail(eventId: string) {
   const user = await requireChef()

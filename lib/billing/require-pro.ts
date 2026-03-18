@@ -19,8 +19,8 @@ import { isAdmin } from '@/lib/auth/admin'
 /**
  * Enforce Pro tier for the current chef session.
  * Throws ProFeatureRequiredError if the chef is on the Free tier.
- * Admins always bypass — they have full Pro access regardless of subscription.
- * @param featureSlug — identifies which Pro feature was attempted (for analytics/UI)
+ * Admins always bypass - they have full Pro access regardless of subscription.
+ * @param featureSlug - identifies which Pro feature was attempted (for analytics/UI)
  */
 export async function requirePro(featureSlug: string): Promise<AuthUser> {
   const user = await requireChef()

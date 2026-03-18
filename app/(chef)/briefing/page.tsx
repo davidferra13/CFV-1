@@ -90,7 +90,7 @@ export default async function BriefingPage() {
                 className={`rounded-lg border px-4 py-3 flex items-center justify-between transition-colors hover:brightness-110 ${severityColor(alert.severity)}`}
               >
                 <div className="flex items-center gap-3">
-                  <Badge variant={severityBadge(alert.severity)} className="text-[10px] uppercase">
+                  <Badge variant={severityBadge(alert.severity)} className="text-xxs uppercase">
                     {alert.severity}
                   </Badge>
                   <div>
@@ -132,21 +132,21 @@ export default async function BriefingPage() {
                   <p className="text-lg font-bold text-stone-100">
                     {briefing.yesterdayRecap.eventsCompleted}
                   </p>
-                  <p className="text-[11px] text-stone-400">Events done</p>
+                  <p className="text-xs-tight text-stone-400">Events done</p>
                 </div>
               )}
               <div className="rounded-lg bg-stone-800/50 px-3 py-2.5 text-center">
                 <p className="text-lg font-bold text-emerald-400">
                   {briefing.yesterdayRecap.tasksCompleted}
                 </p>
-                <p className="text-[11px] text-stone-400">Tasks done</p>
+                <p className="text-xs-tight text-stone-400">Tasks done</p>
               </div>
               {briefing.yesterdayRecap.tasksMissed > 0 && (
                 <div className="rounded-lg bg-red-950/30 border border-red-900/30 px-3 py-2.5 text-center">
                   <p className="text-lg font-bold text-red-400">
                     {briefing.yesterdayRecap.tasksMissed}
                   </p>
-                  <p className="text-[11px] text-stone-400">Tasks missed</p>
+                  <p className="text-xs-tight text-stone-400">Tasks missed</p>
                 </div>
               )}
               {briefing.yesterdayRecap.inquiriesReceived > 0 && (
@@ -154,7 +154,7 @@ export default async function BriefingPage() {
                   <p className="text-lg font-bold text-brand-400">
                     {briefing.yesterdayRecap.inquiriesReceived}
                   </p>
-                  <p className="text-[11px] text-stone-400">New inquiries</p>
+                  <p className="text-xs-tight text-stone-400">New inquiries</p>
                 </div>
               )}
               {briefing.yesterdayRecap.expensesLogged > 0 && (
@@ -162,7 +162,7 @@ export default async function BriefingPage() {
                   <p className="text-lg font-bold text-stone-100">
                     {briefing.yesterdayRecap.expensesLogged}
                   </p>
-                  <p className="text-[11px] text-stone-400">Expenses logged</p>
+                  <p className="text-xs-tight text-stone-400">Expenses logged</p>
                 </div>
               )}
             </div>
@@ -214,7 +214,7 @@ export default async function BriefingPage() {
                           <span className="font-medium text-stone-100">{event.title}</span>
                           <Badge
                             variant={event.status === 'confirmed' ? 'success' : 'info'}
-                            className="text-[10px]"
+                            className="text-xxs"
                           >
                             {event.status}
                           </Badge>
@@ -284,7 +284,7 @@ export default async function BriefingPage() {
                 <CardTitle className="text-sm text-amber-400">
                   Carried Over ({briefing.carriedOverTasks.length})
                 </CardTitle>
-                <Badge variant="warning" className="text-[10px]">
+                <Badge variant="warning" className="text-xxs">
                   Overdue
                 </Badge>
               </div>
@@ -314,7 +314,7 @@ export default async function BriefingPage() {
                           ? 'warning'
                           : 'default'
                     }
-                    className="text-[10px]"
+                    className="text-xxs"
                   >
                     {task.priority}
                   </Badge>
@@ -367,7 +367,7 @@ export default async function BriefingPage() {
                                 ? 'warning'
                                 : 'default'
                         }
-                        className="text-[10px]"
+                        className="text-xxs"
                       >
                         {task.status === 'in_progress' ? 'In Progress' : task.priority}
                       </Badge>
@@ -413,7 +413,7 @@ export default async function BriefingPage() {
                       <p className="text-sm text-stone-300">
                         {staff.tasks_done}/{staff.tasks_assigned}
                       </p>
-                      <p className="text-[11px] text-stone-500">tasks done</p>
+                      <p className="text-xs-tight text-stone-500">tasks done</p>
                     </div>
                   </div>
                   {/* Mini progress bar */}

@@ -85,7 +85,7 @@ function EventMenuRow({ entry }: { entry: MenuHistoryEntry }) {
                     {dish.allergenFlags.map((f) => (
                       <span
                         key={f}
-                        className="text-[10px] px-1 py-0.5 rounded bg-red-950 text-red-600 font-medium"
+                        className="text-xxs px-1 py-0.5 rounded bg-red-950 text-red-600 font-medium"
                       >
                         {f}
                       </span>
@@ -93,7 +93,7 @@ function EventMenuRow({ entry }: { entry: MenuHistoryEntry }) {
                     {dish.dietaryTags.map((t) => (
                       <span
                         key={t}
-                        className="text-[10px] px-1 py-0.5 rounded bg-emerald-950 text-emerald-700"
+                        className="text-xxs px-1 py-0.5 rounded bg-emerald-950 text-emerald-700"
                       >
                         {t}
                       </span>

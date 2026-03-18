@@ -1,4 +1,4 @@
-// Equipment Inventory — Server Actions
+// Equipment Inventory - Server Actions
 // Tracks owned equipment (with maintenance) and rental costs per event.
 
 'use server'
@@ -144,7 +144,7 @@ export async function getEquipmentDueForMaintenance() {
   const today = new Date()
   return (data ?? []).filter((item: any) => {
     if (!item.maintenance_interval_days) return false
-    if (!item.last_maintained_at) return true // never maintained — overdue
+    if (!item.last_maintained_at) return true // never maintained - overdue
     const nextDue = addDays(new Date(item.last_maintained_at), item.maintenance_interval_days)
     return isBefore(nextDue, today)
   })

@@ -165,7 +165,7 @@ export function AgendaView({
                 >
                   {/* Date column */}
                   <div className="flex-shrink-0 w-14 text-center pt-0.5">
-                    <div className="text-[10px] font-semibold text-stone-300 uppercase tracking-wider">
+                    <div className="text-xxs font-semibold text-stone-300 uppercase tracking-wider">
                       {day.dayOfWeek.slice(0, 3)}
                     </div>
                     <div
@@ -225,7 +225,7 @@ export function AgendaView({
                               </div>
                             </div>
                             <span
-                              className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                              className={`text-xxs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${
                                 STATUS_BADGE_COLORS[props.status] || 'bg-stone-800 text-stone-300'
                               }`}
                             >

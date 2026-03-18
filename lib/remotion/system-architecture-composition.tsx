@@ -1,5 +1,5 @@
 /**
- * SystemArchitectureComposition — Remotion animation for the full ChefFlow stack.
+ * SystemArchitectureComposition - Remotion animation for the full ChefFlow stack.
  *
  * Animated schematic showing every piece of the system and how they connect:
  *   Phase 1: Your Desk (VS Code → Next.js → Ollama PC + Pi)
@@ -68,7 +68,7 @@ const RED = {
 
 /* ─── Timing (frames @ 30fps) ─────────────────────────────────── */
 
-// Phase 1: Local (your desk) — 0-240 (8 seconds)
+// Phase 1: Local (your desk) - 0-240 (8 seconds)
 const P1_START = 0
 const P1_VSCODE = 15
 const P1_NEXTJS = 45
@@ -76,7 +76,7 @@ const P1_OLLAMA_PC = 75
 // P1_OLLAMA_PI removed (Pi retired 2026-03-17)
 const P1_ARROWS_LOCAL = 130
 
-// Phase 2: Cloud services — 240-420 (6 seconds)
+// Phase 2: Cloud services - 240-420 (6 seconds)
 const P2_START = 180
 const P2_GITHUB = 195
 const P2_VERCEL = 225
@@ -84,7 +84,7 @@ const P2_SUPABASE = 250
 const P2_STRIPE = 270
 const P2_APIS = 290
 
-// Phase 3: Full picture + flow — 420-600 (6 seconds)
+// Phase 3: Full picture + flow - 420-600 (6 seconds)
 const P3_START = 330
 const P3_ARROWS = 345
 const P3_LABELS = 375
@@ -418,7 +418,7 @@ export function SystemArchitectureComposition() {
   // Cloud zone (right half)
   const CZ = { x: 334, y: 40, w: 290, h: 340 }
 
-  // Box positions — local
+  // Box positions - local
   const VSCODE = { x: 30, y: 70, w: 88, h: 68 }
   const CLAUDE = { x: 30, y: 155, w: 88, h: 68 }
   const NEXTJS = { x: 150, y: 105, w: 100, h: 80 }
@@ -426,7 +426,7 @@ export function SystemArchitectureComposition() {
   // PI_OLLAMA removed (Pi retired 2026-03-17)
   const BROWSER = { x: 270, y: 70, w: 0, h: 0 } // Used for arrow targets
 
-  // Box positions — cloud
+  // Box positions - cloud
   const GITHUB = { x: 350, y: 65, w: 88, h: 68 }
   const VERCEL = { x: 462, y: 65, w: 88, h: 68 }
   const SUPABASE = { x: 350, y: 160, w: 88, h: 74 }
@@ -462,7 +462,7 @@ export function SystemArchitectureComposition() {
             letterSpacing: '-0.01em',
           }}
         >
-          ChefFlow — Full System Architecture
+          ChefFlow - Full System Architecture
         </span>
       </div>
 

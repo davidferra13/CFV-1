@@ -145,6 +145,7 @@ export function withApiGuard<
 
       let body = undefined as TBody
       if (options.bodySchema) {
+        // Non-JSON requests (form submissions, empty bodies) will fail JSON parse - this is expected
         const rawBody = await request.json().catch(() => undefined)
         const parsed = validateSchema(options.bodySchema, rawBody, 'body')
         if (parsed instanceof NextResponse) return parsed

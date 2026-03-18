@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
@@ -93,11 +94,13 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
         <div className="relative h-[340px] sm:h-[420px] overflow-hidden">
           {proposal.coverPhotoUrl ? (
             <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={proposal.coverPhotoUrl}
                 alt=""
+                fill
+                sizes="100vw"
                 className="absolute inset-0 h-full w-full object-cover"
+                priority
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-stone-950" />
             </>

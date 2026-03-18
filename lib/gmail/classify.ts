@@ -1,5 +1,5 @@
-// Email Classification — 7-Layer Deterministic Filter + Ollama Fallback
-// PRIVACY: Processes known client email list + email body — must stay local.
+// Email Classification - 7-Layer Deterministic Filter + Ollama Fallback
+// PRIVACY: Processes known client email list + email body - must stay local.
 //
 // Classification order (each layer short-circuits if matched):
 //   1.   Platform detection (TakeAChef, Thumbtack, Wix Forms, etc.) → dedicated parser
@@ -7,7 +7,7 @@
 //   2.   Gmail label check (SPAM, CATEGORY_PROMOTIONS, etc.) → marketing/spam
 //   3.   RFC header check (List-Unsubscribe, Precedence: bulk) → marketing
 //   4.   Heuristic check (known domains, noreply + body patterns) → marketing
-//   4.5. Inquiry heuristic (Formula > AI — Airbnb referrals, dates, guests, etc.) → inquiry
+//   4.5. Inquiry heuristic (Formula > AI - Airbnb referrals, dates, guests, etc.) → inquiry
 //   5.   Sender reputation (learned from chef's triage behavior) → marketing
 //   6.   Ollama AI classification (fallback when deterministic layers miss)
 
@@ -41,7 +41,7 @@ CATEGORIES:
 - "inquiry": A NEW request about booking a private dinner, catering event, or chef services. Look for: date mentions, guest counts, occasion references (birthday, anniversary, dinner party), menu questions, dietary requirements, pricing questions, availability questions, or any "I'd like to book..." language.
 - "existing_thread": A reply or follow-up to an ongoing conversation about a known booking or inquiry. This is a CONTINUATION, not a new inquiry. If the sender is in the known client list, lean toward this unless it's clearly a brand new request.
 - "personal": A personal message unrelated to the chef's business. Family, friends, non-food topics.
-- "marketing": Automated emails — newsletters, promotions, social media notifications, service updates, receipts from online purchases, subscription emails.
+- "marketing": Automated emails - newsletters, promotions, social media notifications, service updates, receipts from online purchases, subscription emails.
 - "spam": Unsolicited junk, phishing attempts, or clearly irrelevant mass emails.
 
 SIGNALS FOR "inquiry" (high confidence):
@@ -51,9 +51,9 @@ SIGNALS FOR "inquiry" (high confidence):
 - Asks about pricing, availability, or menus
 - Mentions dietary restrictions or food allergies in context of a request
 - Uses language like "I'd love to book", "are you available", "how much for", "we're planning"
-- Mentions Airbnb, vacation rental, VRBO, or "the host recommended you" — this is the DOMINANT inquiry pattern for this chef
+- Mentions Airbnb, vacation rental, VRBO, or "the host recommended you" - this is the DOMINANT inquiry pattern for this chef
 - Mentions Maine/NH locations (Portland, Kennebunk, Ogunquit, Naples, Harrison, North Conway, etc.)
-- Mentions cannabis, THC, infused dining, or edibles — this chef offers cannabis-infused dining
+- Mentions cannabis, THC, infused dining, or edibles - this chef offers cannabis-infused dining
 - References the chef's website or says "I submitted a form/request"
 
 SIGNALS FOR "existing_thread":
@@ -62,11 +62,11 @@ SIGNALS FOR "existing_thread":
 - Menu selections: "We'll go with the ribeye", "Let's do the salad and the steak"
 - Logistics: parking directions, arrival time, address, "what time should you arrive"
 - Payment discussion: "venmo or zelle", "do you need a deposit", price confirmations
-- Post-event thank-you and feedback — "the meal was amazing", "thank you so much"
+- Post-event thank-you and feedback - "the meal was amazing", "thank you so much"
 
 SIGNALS AGAINST "inquiry":
 - Sender is in the known client email list AND the email reads like a reply (lean toward "existing_thread")
-- Post-event gratitude — this is existing_thread, NOT a new inquiry
+- Post-event gratitude - this is existing_thread, NOT a new inquiry
 - No mention of food, events, or booking
 - Automated/template language with unsubscribe links (marketing)
 
@@ -83,7 +83,7 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
 /**
  * Check if an email is from any known platform with a dedicated parser.
  * Returns the platform name if detected, null otherwise.
- * Used to short-circuit Ollama classification — platform emails don't need AI.
+ * Used to short-circuit Ollama classification - platform emails don't need AI.
  */
 export function detectPlatformEmail(fromAddress: string): string | null {
   if (isTakeAChefEmail(fromAddress)) return 'TakeAChef/Private Chef Manager'
@@ -101,10 +101,10 @@ export function detectPlatformEmail(fromAddress: string): string | null {
 /**
  * Layer 1.5: Partner/referrer domain detection.
  * Known business partners who refer clients (e.g., Ember Brand Fire).
- * These emails are always leads — route as inquiry with high confidence.
+ * These emails are always leads - route as inquiry with high confidence.
  *
  * Learned from GOLDMINE: 19 emails from emberbrandfire.com (Colleen Hartigan,
- * Chris Gasbarro) — event coordination, referrals, booking logistics.
+ * Chris Gasbarro) - event coordination, referrals, booking logistics.
  */
 const PARTNER_DOMAINS: Record<string, string> = {
   'emberbrandfire.com': 'Ember Brand Fire',
@@ -116,7 +116,7 @@ export function detectPartnerEmail(fromAddress: string): string | null {
 }
 
 /**
- * Layer 2: Check Gmail's own labels. Gmail classifies billions of emails —
+ * Layer 2: Check Gmail's own labels. Gmail classifies billions of emails;
  * its labels are the single most reliable spam/marketing signal available.
  */
 function checkGmailLabels(labelIds: string[]): EmailClassification | null {
@@ -202,7 +202,7 @@ function checkEmailHeaders(
 }
 
 /**
- * Layer 4: Heuristic — known marketing domains + sender patterns + body signals.
+ * Layer 4: Heuristic - known marketing domains + sender patterns + body signals.
  * Catches remaining marketing emails that Gmail labels and RFC headers missed.
  */
 function isObviousMarketingOrNotification(
@@ -262,7 +262,7 @@ function isObviousMarketingOrNotification(
     return `Noreply sender with marketing subject pattern`
   }
 
-  // Body-level unsubscribe detection — requires 2+ signals to avoid false positives
+  // Body-level unsubscribe detection - requires 2+ signals to avoid false positives
   const bodyLower = body.slice(0, 5000).toLowerCase()
   const unsubscribePatterns = [
     'unsubscribe',
@@ -309,7 +309,7 @@ export function detectObviousInquiry(
   const bodyLower = body.slice(0, 5000).toLowerCase()
   const text = `${subj} ${bodyLower}`
 
-  // If sender is already a known client, skip — let Ollama decide between
+  // If sender is already a known client, skip - let Ollama decide between
   // existing_thread and new inquiry from a returning client
   if (knownClientEmails.some((e) => e.toLowerCase() === addr)) {
     return null
@@ -365,7 +365,7 @@ export function detectObviousInquiry(
     signals.push('price_or_booking_ask')
   }
 
-  // Signal: Airbnb/vacation rental referral (+2 — dominant inquiry pattern)
+  // Signal: Airbnb/vacation rental referral (+2 - dominant inquiry pattern)
   const hasAirbnbRef =
     /\b(?:airbnb|air\s*b\s*n\s*b|vrbo|vacation\s+rental)\b/i.test(text) &&
     /\b(?:host|staying|renting|rental|property|cabin|cottage|lodge|house)\b/i.test(text)
@@ -401,7 +401,7 @@ export function detectObviousInquiry(
     signals.push('cannabis')
   }
 
-  // Signal: Local geography — Maine/NH (+1)
+  // Signal: Local geography - Maine/NH (+1)
   const hasLocalGeo =
     /\b(?:maine|new\s+hampshire|portland|kennebunk(?:port)?|ogunquit|york|scarborough|cape\s+elizabeth|freeport|camden|rockport|bar\s+harbor|acadia|kittery|naples|harrison|norway|bridgton|portsmouth|hampton|north\s+conway|conway|lincoln|loon\s+mountain|bretton\s+woods|white\s+mountains|lake\s+winnipesaukee|meredith|wolfeboro|sunapee|tuftonboro|sullivan|dracut|ipswich|pepperell)\b/i.test(
       text
@@ -426,12 +426,12 @@ export function detectObviousInquiry(
   // positively on geography/date but are NOT new inquiries.
   let negativeScore = 0
 
-  // Subject starts with Re: — reply, not a new inquiry
+  // Subject starts with Re: - reply, not a new inquiry
   if (/^Re:/i.test(subject)) {
     negativeScore += 1
   }
 
-  // Post-event praise language (strong negative — this is a thank-you, not a booking)
+  // Post-event praise language (strong negative - this is a thank-you, not a booking)
   if (
     /\b(?:remarkable|outstanding|incredible|extraordinary|amazing|wonderful)\s+(?:meal|dinner|evening|feast|experience|time)\b/i.test(
       text
@@ -452,7 +452,7 @@ export function detectObviousInquiry(
     signals.push('neg:gratitude')
   }
 
-  // Logistics confirmation (not a new inquiry — existing thread)
+  // Logistics confirmation (not a new inquiry - existing thread)
   if (
     /^Re:/i.test(subject) &&
     /\b(?:sounds\s+good|works\s+for\s+(?:us|me)|(?:let'?s|we'?ll)\s+(?:do\s+(?:that|it)|go\s+with)|perfect|confirmed|see\s+you\s+(?:then|there|on|at))\b/i.test(
@@ -503,13 +503,13 @@ export async function classifyEmail(
   metadata?: ClassifyEmailMetadata
 ): Promise<EmailClassification> {
   // ─── Layer 1: Platform detection ──────────────────────────────────────
-  // Platform emails are handled by dedicated parsers — not by Ollama.
+  // Platform emails are handled by dedicated parsers - not by Ollama.
   const platformCheck = detectPlatformEmail(fromAddress)
   if (platformCheck) {
     return {
       category: 'inquiry',
       confidence: 'high',
-      reasoning: `${platformCheck} email detected by sender domain — routed to dedicated parser`,
+      reasoning: `${platformCheck} email detected by sender domain - routed to dedicated parser`,
       is_food_related: true,
     }
   }
@@ -521,13 +521,13 @@ export async function classifyEmail(
     return {
       category: 'inquiry',
       confidence: 'high',
-      reasoning: `Partner referral detected: ${partnerCheck} — always ingested as lead`,
+      reasoning: `Partner referral detected: ${partnerCheck} - always ingested as lead`,
       is_food_related: true,
     }
   }
 
   // ─── Layer 2: Gmail label check ───────────────────────────────────────
-  // Gmail classifies billions of emails — its labels are the most reliable signal.
+  // Gmail classifies billions of emails - its labels are the most reliable signal.
   if (metadata?.labelIds) {
     const labelResult = checkGmailLabels(metadata.labelIds)
     if (labelResult) return labelResult
@@ -562,7 +562,7 @@ export async function classifyEmail(
   if (inquiryCheck) return inquiryCheck
 
   // ─── Layer 5: Sender reputation ───────────────────────────────────────
-  // Learned from the chef's triage behavior — domains they keep dismissing.
+  // Learned from the chef's triage behavior - domains they keep dismissing.
   if (metadata?.tenantId) {
     try {
       const domain = fromAddress.toLowerCase().split('@')[1]
@@ -571,7 +571,7 @@ export async function classifyEmail(
         if (reputationResult) return reputationResult
       }
     } catch (err) {
-      // Non-blocking — reputation check failure should never block classification
+      // Non-blocking - reputation check failure should never block classification
       console.error('[Gmail Classify] Sender reputation check failed:', err)
     }
   }
@@ -607,7 +607,7 @@ ${body.slice(0, 3000)}`
     return {
       category: 'personal',
       confidence: 'low',
-      reasoning: 'Classification failed (Ollama error) — not ingested into triage',
+      reasoning: 'Classification failed (Ollama error) - not ingested into triage',
       is_food_related: false,
     }
   }

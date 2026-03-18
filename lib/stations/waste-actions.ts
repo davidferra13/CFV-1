@@ -1,4 +1,4 @@
-// Station Clipboard System — Waste Tracking Actions
+// Station Clipboard System - Waste Tracking Actions
 // Chef-only. Logs waste events and provides summaries by reason, station, and value.
 
 'use server'

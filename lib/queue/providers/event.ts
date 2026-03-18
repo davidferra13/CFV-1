@@ -1,6 +1,6 @@
-// Priority Queue — Event Provider
+// Priority Queue - Event Provider
 // Converts existing WorkItems from the Work Surface engine into scored QueueItems.
-// Stages 1-13 only — post-event stages (14-17) handled by dedicated providers.
+// Stages 1-13 only - post-event stages (14-17) handled by dedicated providers.
 
 import type { QueueItem, ScoreInputs } from '../types'
 import type { WorkItem, WorkUrgency } from '@/lib/workflow/types'
@@ -35,7 +35,7 @@ const STAGE_ICONS: Record<string, string> = {
 export function convertWorkItemsToQueueItems(workItems: WorkItem[]): QueueItem[] {
   const now = new Date()
 
-  // Filter to stages 1-13 only — post-event handled by dedicated providers
+  // Filter to stages 1-13 only - post-event handled by dedicated providers
   const preEventItems = workItems.filter((wi) => wi.stageNumber <= 13)
 
   return preEventItems.map((wi) => {

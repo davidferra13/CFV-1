@@ -1,6 +1,6 @@
-// Pricing Intelligence — Deterministic Percentile Math
+// Pricing Intelligence - Deterministic Percentile Math
 // Analyzes historical pricing data using standard statistics.
-// No AI needed — this is percentile math and comparison logic.
+// No AI needed - this is percentile math and comparison logic.
 // Every pricing tool on the planet does this with math, not LLMs.
 
 // ── Types (match the AI version exactly) ───────────────────────────────────
@@ -66,7 +66,7 @@ function mean(values: number[]): number {
 
 /**
  * Calculates pricing intelligence using percentile math on historical data.
- * Pure statistics — no AI, no network, deterministic.
+ * Pure statistics - no AI, no network, deterministic.
  * Returns the exact same type as the AI version for drop-in compatibility.
  */
 export function calculatePricingFormula(

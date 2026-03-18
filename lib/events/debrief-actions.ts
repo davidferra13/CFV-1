@@ -2,7 +2,7 @@
 
 // Post-Event Debrief Actions
 // Drives the fill-in-the-blanks capture flow that appears after a dinner.
-// Every section saves independently — no one big submit.
+// Every section saves independently - no one big submit.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -215,7 +215,7 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
 
 /**
  * Chef saves client insights learned during the event.
- * Fun Q&A answers are merged — existing answers are never overwritten.
+ * Fun Q&A answers are merged - existing answers are never overwritten.
  */
 export async function saveClientInsights(
   eventId: string,
@@ -262,7 +262,7 @@ export async function saveClientInsights(
     updatePayload.vibe_notes = data.vibe_notes || null
   }
 
-  // Merge fun_qa_answers — never obliterate previously set answers
+  // Merge fun_qa_answers - never obliterate previously set answers
   if (data.fun_qa_answers && Object.keys(data.fun_qa_answers).length > 0) {
     const { data: current } = await supabase
       .from('clients')
@@ -309,7 +309,9 @@ export async function saveClientInsights(
     summary: 'Updated client profile from post-event debrief',
     context: { eventId, fields: Object.keys(updatePayload) },
     clientId,
-  }).catch(() => {})
+  }).catch((err) => {
+    console.error('[non-blocking] debrief client activity log failed:', err)
+  })
 
   return { success: true }
 }
@@ -383,7 +385,7 @@ export async function saveRecipeDebrief(
     return { success: false, error: 'Recipe not linked to this event' }
   }
 
-  // Build update payload — only include provided fields
+  // Build update payload - only include provided fields
   const updatePayload: Record<string, unknown> = {}
   if (data.notes !== undefined) updatePayload.notes = data.notes || null
   if (data.method_detailed !== undefined)
@@ -418,7 +420,9 @@ export async function saveRecipeDebrief(
     entityId: recipeId,
     summary: 'Updated recipe notes from post-event debrief',
     context: { eventId, fields: Object.keys(updatePayload) },
-  }).catch(() => {})
+  }).catch((err) => {
+    console.error('[non-blocking] debrief recipe activity log failed:', err)
+  })
 
   return { success: true }
 }
@@ -427,7 +431,7 @@ export async function saveRecipeDebrief(
 
 /**
  * Chef saves their outcome notes and star rating.
- * Autosaves on blur / on star click — called frequently.
+ * Autosaves on blur / on star click - called frequently.
  */
 export async function saveDebriefReflection(
   eventId: string,
@@ -475,7 +479,7 @@ export async function saveDebriefReflection(
 
 /**
  * Marks the debrief as complete. Sets debrief_completed_at = now().
- * Idempotent — safe to call if already completed.
+ * Idempotent - safe to call if already completed.
  */
 export async function completeDebrief(
   eventId: string
@@ -495,7 +499,7 @@ export async function completeDebrief(
   }
 
   if (event.debrief_completed_at) {
-    // Already complete — idempotent
+    // Already complete - idempotent
     return { success: true }
   }
 
@@ -523,12 +527,14 @@ export async function completeDebrief(
     summary: `Completed post-event debrief for ${event.occasion || 'event'}`,
     context: { eventId },
     clientId: event.client_id ?? undefined,
-  }).catch(() => {})
+  }).catch((err) => {
+    console.error('[non-blocking] debrief completion activity log failed:', err)
+  })
 
   return { success: true }
 }
 
-// ─── AI Draft — Reflection Notes ─────────────────────────────────────────────
+// ─── AI Draft - Reflection Notes ─────────────────────────────────────────────
 
 /**
  * Generate a draft of the chef's outcome/reflection notes using AI.
@@ -578,7 +584,7 @@ export async function generateDebriefDraft(
     .map((d: { course_name: string; name: string }) => `${d.course_name}: ${d.name}`)
     .join(', ')
 
-  const prompt = `You are helping a private chef write private reflection notes after a dinner service. Write 2-3 sentences in the first person, casual and honest, as if jotting a quick note to yourself right after the event. Focus on the experience — what went well, what to remember next time.
+  const prompt = `You are helping a private chef write private reflection notes after a dinner service. Write 2-3 sentences in the first person, casual and honest, as if jotting a quick note to yourself right after the event. Focus on the experience - what went well, what to remember next time.
 
 Event details:
 - Client: ${clientName}

@@ -1,4 +1,4 @@
-// Email HTML templates — plain HTML with inline styles for broad email client support.
+// Email HTML templates - plain HTML with inline styles for broad email client support.
 
 /** Base email shell. All action-specific emails compose into this. */
 export function baseTemplate({

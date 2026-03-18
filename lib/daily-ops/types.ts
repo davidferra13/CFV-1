@@ -1,4 +1,4 @@
-// Daily Ops — Type Definitions
+// Daily Ops - Type Definitions
 // Pure types for the Daily Plan system.
 // No logic. No imports beyond what's needed for typing.
 

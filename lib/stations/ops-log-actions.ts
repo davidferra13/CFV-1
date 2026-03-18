@@ -1,4 +1,4 @@
-// Station Clipboard System — Operations Log Actions
+// Station Clipboard System - Operations Log Actions
 // Chef-only. Append-only operations log for audit trail of all station activities.
 
 'use server'
@@ -49,7 +49,7 @@ export type OpsLogFilterInput = z.infer<typeof OpsLogFilterSchema>
 // ============================================
 
 /**
- * Append an entry to the operations log. This is append-only — entries are never modified or deleted.
+ * Append an entry to the operations log. This is append-only - entries are never modified or deleted.
  */
 export async function appendOpsLog(input: AppendOpsLogInput) {
   const user = await requireChef()

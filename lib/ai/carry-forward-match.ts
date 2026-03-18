@@ -4,7 +4,7 @@
 // Takes the list of available leftover ingredients (from lib/events/carry-forward.ts)
 // and matches them against an upcoming event's ingredient needs.
 // Routed to Ollama (internal inventory + financial data).
-// Output is SUGGESTION ONLY — chef confirms before any inventory transfer.
+// Output is SUGGESTION ONLY - chef confirms before any inventory transfer.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -44,7 +44,7 @@ export async function matchCarryForwardToEvent(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  // event_menu_components is not in generated types — table exists in DB but not yet in types/database.ts
+  // event_menu_components is not in generated types - table exists in DB but not yet in types/database.ts
   const [leftovers, recipesResult] = await Promise.all([
     getAvailableCarryForwardItems(targetEventId),
     (supabase.from as Function)('event_menu_components')
@@ -84,7 +84,7 @@ export async function matchCarryForwardToEvent(
     if (recipe) {
       const ingredients = Array.isArray(recipe.recipe_ingredients) ? recipe.recipe_ingredients : []
       for (const ing of ingredients) {
-        // recipe_ingredients uses ingredient_id FK — we build a placeholder string for AI matching
+        // recipe_ingredients uses ingredient_id FK - we build a placeholder string for AI matching
         neededIngredients.push(
           `${ing.quantity ?? ''} ${ing.unit ?? ''} (ingredient_id: ${ing.ingredient_id})`.trim()
         )
@@ -96,7 +96,7 @@ export async function matchCarryForwardToEvent(
     return {
       matches: [],
       totalEstimatedSavingsCents: 0,
-      summary: 'No recipe ingredients found for this event — add menu components with recipes.',
+      summary: 'No recipe ingredients found for this event - add menu components with recipes.',
       confidence: 'low',
     }
   }
@@ -108,7 +108,7 @@ Match types:
   partial: same category (e.g. "heavy cream" partially covers "crème fraîche")
   substitution: different but compatible (e.g. "pancetta" can substitute "guanciale")
 
-Be conservative — only flag as substitution if the swap is clearly culinarily appropriate.
+Be conservative - only flag as substitution if the swap is clearly culinarily appropriate.
 Return valid JSON only.`
 
   const userContent = `
@@ -129,7 +129,7 @@ Return JSON: {
 }`
 
   const { result, source } = await withAiFallback(
-    // Formula: Levenshtein fuzzy match + culinary substitution groups — deterministic
+    // Formula: Levenshtein fuzzy match + culinary substitution groups - deterministic
     () => matchCarryForwardFormula(leftovers, neededIngredients),
     // AI: enhanced matching with culinary context (when Ollama is online)
     () => parseWithOllama(systemPrompt, userContent, CarryForwardMatchResultSchema)

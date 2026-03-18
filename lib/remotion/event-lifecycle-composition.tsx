@@ -1,5 +1,5 @@
 /**
- * EventLifecycleComposition — Remotion animation showing the 8-state event lifecycle.
+ * EventLifecycleComposition - Remotion animation showing the 8-state event lifecycle.
  *
  * Animates each state as a node in a flowing timeline:
  *  draft → proposed → accepted → paid → confirmed → in_progress → completed

@@ -1,6 +1,6 @@
 'use server'
 
-// Business Insights — Deterministic Decision Tree
+// Business Insights - Deterministic Decision Tree
 // Rules-based insight generation from computed business metrics.
 // No AI needed: the thresholds are defined, the recommendations are specific,
 // and template strings produce consistent, honest results every time.

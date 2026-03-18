@@ -38,7 +38,7 @@ export interface SeasonalMenuResult {
   dishSeasonality: DishSeasonalityScore[]
   topDishes: SeasonalDishPerformance[]
   currentSeasonRecommendations: string[]
-  menuDiversityScore: number // 0-100 — how varied the menu is across seasons
+  menuDiversityScore: number // 0-100 - how varied the menu is across seasons
   totalDishesTracked: number
 }
 
@@ -298,7 +298,7 @@ export async function getSeasonalMenuCorrelation(): Promise<SeasonalMenuResult |
     )
   }
 
-  // Menu diversity score — how varied dishes are across seasons
+  // Menu diversity score - how varied dishes are across seasons
   const seasonsWithDishes = patterns.filter((p) => p.topDishes.length > 0).length
   const uniqueDishesPerSeason = patterns.map((p) => new Set(p.topDishes.map((d) => d.name)))
   const allDishes = new Set(dishSeasonMap.keys())

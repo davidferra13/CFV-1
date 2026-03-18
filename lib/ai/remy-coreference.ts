@@ -1,8 +1,8 @@
-// Remy — Coreference Resolution (Phase 3A)
+// Remy - Coreference Resolution (Phase 3A)
 // Deterministic entity tracker for conversational follow-ups.
 // Tracks entities mentioned across conversation turns so pronouns
 // like "her", "it", "that event" resolve correctly.
-// NO LLM — pure regex + entity matching.
+// NO LLM - pure regex + entity matching.
 
 import type { RemyMessage } from '@/lib/ai/remy-types'
 

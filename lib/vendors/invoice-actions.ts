@@ -73,7 +73,7 @@ export async function createInvoice(input: CreateInvoiceInput) {
 
     if (lineError) {
       console.error('[invoices] createInvoice lineItems error:', lineError)
-      // Invoice was created, but line items failed — log and continue
+      // Invoice was created, but line items failed - log and continue
     }
   }
 

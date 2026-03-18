@@ -99,9 +99,7 @@ export function CategoryOptInPanel({
                 {isEnabled && !locked && (
                   <Check className="h-3.5 w-3.5 text-brand-600 flex-shrink-0" />
                 )}
-                {locked && (
-                  <span className="text-[10px] text-stone-400 flex-shrink-0">Always on</span>
-                )}
+                {locked && <span className="text-xxs text-stone-400 flex-shrink-0">Always on</span>}
               </div>
             </button>
           )

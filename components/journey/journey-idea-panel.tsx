@@ -482,7 +482,7 @@ export function JourneyIdeaPanel({
 
               {idea.expected_impact && (
                 <div className="rounded-md bg-stone-800 border border-stone-700 p-2.5 text-sm">
-                  <p className="text-[11px] uppercase tracking-wide text-stone-500 flex items-center gap-1">
+                  <p className="text-xs-tight uppercase tracking-wide text-stone-500 flex items-center gap-1">
                     <Lightbulb className="w-3.5 h-3.5" />
                     Expected Impact
                   </p>

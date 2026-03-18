@@ -187,7 +187,7 @@ async function getOrCreateThread(input: {
     }
   }
 
-  // 3. No existing thread found — create a new one
+  // 3. No existing thread found - create a new one
   const { data: created, error } = await supabase
     .from('conversation_threads' as any)
     .insert({

@@ -1,5 +1,5 @@
 /**
- * ProductExplainerComposition — Remotion animation for the landing page.
+ * ProductExplainerComposition - Remotion animation for the landing page.
  *
  * Shows the ChefFlow workflow in 4 steps:
  *  1. Inquiry arrives
@@ -45,7 +45,7 @@ const STEPS = [
     icon: '📬',
     label: 'Inquiry',
     title: 'A client reaches out',
-    description: 'Inquiry captured with all the details — date, guests, dietary needs.',
+    description: 'Inquiry captured with all the details - date, guests, dietary needs.',
   },
   {
     icon: '📅',
@@ -57,7 +57,7 @@ const STEPS = [
     icon: '📄',
     label: 'Quote',
     title: 'Send the proposal',
-    description: 'Client gets a professional link — review, approve, done.',
+    description: 'Client gets a professional link - review, approve, done.',
   },
   {
     icon: '💳',

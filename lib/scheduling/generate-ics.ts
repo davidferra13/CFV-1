@@ -1,7 +1,7 @@
 // ICS Calendar Event Generator
 // Extracted from calendar-sync.ts to avoid the @ts-nocheck overhead of the
 // deferred Google Calendar OAuth code in that file.
-// generateICS is a pure function — no DB access, no auth required.
+// generateICS is a pure function - no DB access, no auth required.
 
 /**
  * Generate an RFC 5545-compliant iCalendar (.ics) string for a single event.

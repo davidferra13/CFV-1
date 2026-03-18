@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Register Session Actions
+// Commerce Engine V1 - Register Session Actions
 // POS shift management: open/close/suspend register, track cash drawer.
 
 'use server'

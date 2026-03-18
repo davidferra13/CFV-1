@@ -4,14 +4,14 @@
 //
 // Stores per-event cross-contamination checklists in the existing
 // event_safety_checklists table. Uses items with "XC_" key prefix
-// to distinguish from standard pre-service safety items — no new
+// to distinguish from standard pre-service safety items - no new
 // migration needed.
 //
 // Each allergen generates 4 protocol items:
-//   XC_<ALLERGEN>_BOARD   — dedicated cutting board
-//   XC_<ALLERGEN>_UTENSIL — utensils washed and sanitized
-//   XC_<ALLERGEN>_STAFF   — staff briefed on severity
-//   XC_<ALLERGEN>_PLATE   — service plates visually marked
+//   XC_<ALLERGEN>_BOARD   - dedicated cutting board
+//   XC_<ALLERGEN>_UTENSIL - utensils washed and sanitized
+//   XC_<ALLERGEN>_STAFF   - staff briefed on severity
+//   XC_<ALLERGEN>_PLATE   - service plates visually marked
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -131,7 +131,7 @@ export async function getOrCreateCrossContaminationChecklist(eventId: string, al
     }
   }
 
-  // No safety checklist exists — create one with only XC items
+  // No safety checklist exists - create one with only XC items
   const xcItems = buildItemsForAllergens(allergens)
   const { data: created, error } = await supabase
     .from('event_safety_checklists')

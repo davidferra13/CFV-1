@@ -1,4 +1,4 @@
-// Instant Booking Confirmation — Client Email
+// Instant Booking Confirmation - Client Email
 // Sent to the client after they complete an instant booking and payment via the public page.
 
 import { Text, Link } from '@react-email/components'

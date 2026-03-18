@@ -1,6 +1,6 @@
 'use server'
 
-// Prospecting Hub — Wave 4: Pipeline & Outreach Actions
+// Prospecting Hub - Wave 4: Pipeline & Outreach Actions
 // Pipeline stage management, follow-up sequences, AI call scripts,
 // outreach logging, CSV import, geographic clustering.
 
@@ -490,7 +490,7 @@ export async function importProspectsFromCSV(csvText: string) {
 
   const rows = parseCSV(csvText)
   if (rows.length === 0) throw new Error('No valid rows found in CSV')
-  if (rows.length > 500) throw new Error('CSV too large — max 500 prospects per import')
+  if (rows.length > 500) throw new Error('CSV too large - max 500 prospects per import')
 
   // Fetch all existing prospect names for fuzzy dedup (one query, not N queries)
   const { data: existingProspects } = await supabase
@@ -844,7 +844,7 @@ export async function runAutoPipelineRules(): Promise<{
           prospect_id: prospect.id,
           chef_id: user.tenantId!,
           outreach_type: 'note',
-          notes: 'Auto-moved to Lost — no outreach activity for 14+ days',
+          notes: 'Auto-moved to Lost - no outreach activity for 14+ days',
         })
 
         staleToLost++
@@ -993,7 +993,7 @@ export async function mergeProspects(keepId: string, mergeId: string): Promise<{
     prospect_id: keepId,
     chef_id: user.tenantId!,
     note_type: 'general',
-    content: `Merged with "${merge.name}" — data combined, duplicate removed.`,
+    content: `Merged with "${merge.name}" - data combined, duplicate removed.`,
   })
 
   // Delete the merged prospect
@@ -1371,7 +1371,7 @@ export async function getConversionFunnelStats(): Promise<{
 
   const stageDurations = new Map<string, number[]>()
   if (history && history.length > 0) {
-    // Group transitions by prospect — track time from entry to exit per stage
+    // Group transitions by prospect - track time from entry to exit per stage
     const entryTimes = new Map<string, Map<string, string>>()
     for (const h of history) {
       const key = h.from_stage || '__initial'

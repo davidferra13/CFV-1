@@ -1,5 +1,5 @@
-// AI Scrub Prompt — Ollama system + user prompts for lead generation
-// NOT a 'use server' file — just prompt text exports.
+// AI Scrub Prompt - Ollama system + user prompts for lead generation
+// NOT a 'use server' file - just prompt text exports.
 
 import { PROSPECT_CATEGORIES } from './constants'
 
@@ -14,7 +14,7 @@ RULES:
 - When the user asks for a number (e.g. "top 10"), generate that many, up to a maximum of 10. If no number is specified, generate 5.
 - Auto-assign each prospect a type ("organization" or "individual") and a category from this list: ${categoryList}. Use "other" only if nothing else fits.
 - Include as much actionable intelligence as possible. The chef calling these prospects needs to sound like they already know the person/place.
-- Provide a specific approach strategy for each prospect — not generic "be professional" advice, but targeted guidance like "mention their recent gala" or "ask for the F&B director, not the front desk."
+- Provide a specific approach strategy for each prospect - not generic "be professional" advice, but targeted guidance like "mention their recent gala" or "ask for the F&B director, not the front desk."
 
 OUTPUT FORMAT:
 Return a JSON array of prospect objects. Each object must have these fields:
@@ -33,17 +33,17 @@ Return a JSON array of prospect objects. Each object must have these fields:
   "gatekeeperNotes": "How to get past the front desk to the decision maker",
   "bestTimeToCall": "Best day/time to reach them",
   "annualEventsEstimate": "How often they host private events or entertain",
-  "membershipSize": "For clubs — approximate member count. Omit for individuals.",
+  "membershipSize": "For clubs - approximate member count. Omit for individuals.",
   "avgEventBudget": "Estimated catering/private dining spend per event",
   "eventTypesHosted": ["array", "of", "event", "types"],
   "seasonalNotes": "Peak season, best time to pitch, seasonal patterns",
   "luxuryIndicators": ["array", "of", "wealth", "signals"],
   "talkingPoints": "2-3 specific things the chef should mention to build rapport on the call",
-  "approachStrategy": "1 paragraph — exactly how to pitch a private chef to THIS specific prospect",
+  "approachStrategy": "1 paragraph - exactly how to pitch a private chef to THIS specific prospect",
   "competitorsPresent": "Who currently handles their catering/private dining if known"
 }
 
-Return ONLY valid JSON — an array of objects. No markdown, no commentary.`
+Return ONLY valid JSON - an array of objects. No markdown, no commentary.`
 
 export function buildScrubUserPrompt(query: string): string {
   return `Find prospects matching this request:\n\n"${query}"\n\nGenerate a detailed dossier for each prospect. Be thorough and specific. Return JSON array.`
@@ -51,7 +51,7 @@ export function buildScrubUserPrompt(query: string): string {
 
 export const APPROACH_SYSTEM_PROMPT = `You are a sales strategist for a private chef. Given intelligence gathered about a specific prospect, write:
 1. "talkingPoints": 2-3 specific, personalized things the chef should mention on the phone to build rapport and demonstrate they've done their homework
-2. "approachStrategy": A 1-paragraph strategy for how to approach this specific prospect about private chef services — tone, angle, what to emphasize, what to avoid
+2. "approachStrategy": A 1-paragraph strategy for how to approach this specific prospect about private chef services - tone, angle, what to emphasize, what to avoid
 
 Be concrete and actionable. Not generic advice. Reference specific details about the prospect.
 Return ONLY valid JSON: { "talkingPoints": "...", "approachStrategy": "..." }`
@@ -92,16 +92,16 @@ export function buildApproachUserPrompt(prospect: {
 
 export const COLD_EMAIL_SYSTEM_PROMPT = `You are a cold outreach email writer for a private chef. You write personalized, warm-but-professional first-contact emails that:
 
-1. Open with something SPECIFIC about the prospect — a recent event they hosted, their venue's reputation, a news article, their social media presence — anything that proves you did your homework
-2. Briefly introduce the private chef service (1-2 sentences max — not a pitch deck)
+1. Open with something SPECIFIC about the prospect - a recent event they hosted, their venue's reputation, a news article, their social media presence - anything that proves you did your homework
+2. Briefly introduce the private chef service (1-2 sentences max - not a pitch deck)
 3. Propose a specific, low-commitment next step (15-min call, send a sample menu, attend their next event as a tasting)
-4. Keep it under 150 words — busy people don't read long cold emails
+4. Keep it under 150 words - busy people don't read long cold emails
 5. Sound human. No corporate buzzwords, no "I hope this email finds you well," no "synergy"
 
 The tone should be: confident but not arrogant, friendly but not casual, specific but not creepy.
 
 Return ONLY valid JSON: { "subject": "Email subject line", "body": "Full email body" }
-Do NOT include [Your Name] or [Chef Name] placeholders — end the email naturally with just a sign-off like "Best," or "Cheers," on its own line.`
+Do NOT include [Your Name] or [Chef Name] placeholders - end the email naturally with just a sign-off like "Best," or "Cheers," on its own line.`
 
 export function buildColdEmailPrompt(prospect: {
   name: string
@@ -153,7 +153,7 @@ export const COMPETITOR_INTEL_SYSTEM_PROMPT = `You are a competitive intelligenc
 RULES:
 - Extract every venue, organization, or individual mentioned in testimonials, portfolio, client lists, or case studies
 - For each venue/client, estimate their event frequency and budget tier based on context clues
-- Focus on organizations and venues — these are the prospects we want to approach
+- Focus on organizations and venues - these are the prospects we want to approach
 - Auto-assign each prospect a type ("organization" or "individual") and a category from this list: ${categoryList}
 
 OUTPUT FORMAT:
@@ -162,7 +162,7 @@ Return a JSON array (wrapped in { "prospects": [...] }) of prospect objects with
   "name": "Venue or client name extracted from competitor's site",
   "prospectType": "organization" or "individual",
   "category": "from the allowed list",
-  "description": "Why this is a good target — what the competitor did for them",
+  "description": "Why this is a good target - what the competitor did for them",
   "city": "City if mentioned",
   "state": "State if mentioned",
   "region": "Region if mentioned",
@@ -257,11 +257,11 @@ export function buildLookalikePrompt(sourceProspect: {
 export const FOLLOW_UP_SEQUENCE_SYSTEM_PROMPT = `You are a sales email strategist for a private chef. Given a prospect profile and the initial cold outreach email, write a 3-email follow-up sequence.
 
 RULES:
-- Email 1 (Day 0): This is the initial outreach email — already written. You are writing emails 2 and 3.
-- Email 2 (Day 5): A value-add follow-up. Don't repeat the pitch. Instead, offer something of value — a seasonal menu preview, a success story from a similar client, a relevant industry insight. Reference the first email naturally ("I reached out last week about...").
+- Email 1 (Day 0): This is the initial outreach email - already written. You are writing emails 2 and 3.
+- Email 2 (Day 5): A value-add follow-up. Don't repeat the pitch. Instead, offer something of value - a seasonal menu preview, a success story from a similar client, a relevant industry insight. Reference the first email naturally ("I reached out last week about...").
 - Email 3 (Day 12): A brief, friendly final check-in. Short (under 75 words). Creates gentle urgency without being pushy. Gives them an easy out ("If this isn't the right time, no worries at all").
-- All emails should feel like they're from the same person — consistent tone, no corporate buzzwords
-- No [Your Name] or [Chef Name] placeholders — end with natural sign-offs
+- All emails should feel like they're from the same person - consistent tone, no corporate buzzwords
+- No [Your Name] or [Chef Name] placeholders - end with natural sign-offs
 - Each email should be shorter than the previous one
 - Reference specific details about the prospect to maintain the personalized feel
 
@@ -305,17 +305,17 @@ export function buildFollowUpSequencePrompt(prospect: {
 export const AI_CALL_SCRIPT_SYSTEM_PROMPT = `You are a sales call coach for a private chef. Given a prospect profile with all gathered intelligence, write a personalized cold call script.
 
 STRUCTURE:
-1. **Opening Hook** (10 seconds): A specific, personalized opener that grabs attention. Mention something about THEM — their recent event, their venue's reputation, a news article. NOT "Hi, I'm a chef."
+1. **Opening Hook** (10 seconds): A specific, personalized opener that grabs attention. Mention something about THEM - their recent event, their venue's reputation, a news article. NOT "Hi, I'm a chef."
 2. **Quick Value Prop** (15 seconds): One sentence explaining what you do and why it matters to THEM specifically. Connect your service to their specific needs.
 3. **The Ask** (10 seconds): Propose a specific, low-commitment next step. "Would you be open to a 10-minute call this week to see if there's a fit?" or "Could I send over a seasonal menu for your review?"
 4. **Objection Handlers** (3 common ones):
    - "We already have a caterer" → Response
    - "We're not interested" → Response
    - "Send me some info" → Response (turn this into a meeting)
-5. **Voicemail Script** (20 seconds): What to say if you get voicemail — shorter, with a clear callback reason.
+5. **Voicemail Script** (20 seconds): What to say if you get voicemail - shorter, with a clear callback reason.
 
 RULES:
-- Use natural, conversational language — not robotic scripts
+- Use natural, conversational language - not robotic scripts
 - Include specific details about the prospect throughout
 - Keep the main script under 200 words (not counting objection handlers)
 - The voicemail script should be under 50 words

@@ -1,4 +1,4 @@
-// Dietary Check — Shared Types
+// Dietary Check - Shared Types
 // Extracted from server action file to avoid 'use server' export restrictions.
 
 export interface DietaryFlag {

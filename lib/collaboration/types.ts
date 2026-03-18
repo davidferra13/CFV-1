@@ -1,11 +1,11 @@
-// Chef Collaboration System — Shared Types
+// Chef Collaboration System - Shared Types
 // Defines roles, statuses, and permissions for cross-chef event collaboration.
 
 export type CollaboratorRole =
-  | 'primary' // Runs the event — full permissions (what new primary gets on handoff)
-  | 'co_host' // Equal partner — most permissions, configurable
-  | 'sous_chef' // Supports primary — limited to kitchen-side actions
-  | 'observer' // Read-only — typically the original chef after handoff
+  | 'primary' // Runs the event - full permissions (what new primary gets on handoff)
+  | 'co_host' // Equal partner - most permissions, configurable
+  | 'sous_chef' // Supports primary - limited to kitchen-side actions
+  | 'observer' // Read-only - typically the original chef after handoff
 
 export type CollaboratorStatus =
   | 'pending' // Invitation sent, awaiting response

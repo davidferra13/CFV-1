@@ -1,7 +1,7 @@
 'use server'
 
 // Server actions for social platform connection management.
-// Returns connection status — no tokens are ever sent to the browser.
+// Returns connection status - no tokens are ever sent to the browser.
 // Connect/disconnect flow goes through API routes (which need HTTP redirects).
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -15,7 +15,7 @@ import type { SocialPlatform } from '@/lib/social/types'
 import { revalidatePath } from 'next/cache'
 
 // ── Public shape returned to the UI ──────────────────────────────────────────
-// Deliberately omits access_token, refresh_token — never sent to the browser.
+// Deliberately omits access_token, refresh_token - never sent to the browser.
 
 export type SocialConnectionStatus = {
   platform: SocialPlatform
@@ -100,7 +100,7 @@ export async function getSocialConnections(): Promise<SocialConnectionStatus[]> 
 // ── getConnectedPlatformSet ───────────────────────────────────────────────────
 
 /**
- * Lightweight set of connected platforms — used by the post editor UI.
+ * Lightweight set of connected platforms - used by the post editor UI.
  */
 export async function getConnectedPlatformSet(): Promise<Set<SocialPlatform>> {
   const chef = await requireChef()
@@ -114,7 +114,7 @@ export async function getConnectedPlatformSet(): Promise<Set<SocialPlatform>> {
 
 /**
  * Retrieves the full decrypted token record for a platform.
- * Used exclusively by the publishing engine — never called from client components.
+ * Used exclusively by the publishing engine - never called from client components.
  */
 export async function getSocialConnectionToken(
   tenantId: string,

@@ -124,7 +124,7 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
                   <td className="py-1 pr-3 text-stone-400">{row.guestName}</td>
                   <td className="py-1 pr-3">
                     <span
-                      className={`px-1.5 py-0.5 rounded text-[11px] font-medium ${RISK_COLORS[row.riskLevel]}`}
+                      className={`px-1.5 py-0.5 rounded text-xs-tight font-medium ${RISK_COLORS[row.riskLevel]}`}
                     >
                       {RISK_LABELS[row.riskLevel]}
                     </span>
@@ -137,7 +137,7 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         <AiSourceBadge source={result._aiSource} />
         {result._aiSource ? ' · ' : ''}
         Confidence:{' '}

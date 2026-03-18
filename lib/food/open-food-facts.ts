@@ -1,4 +1,4 @@
-// Open Food Facts — free, open-source food product database
+// Open Food Facts - free, open-source food product database
 // https://world.openfoodfacts.org/data
 // No key, no signup, unlimited, community-maintained
 // 2.8M+ products from 150+ countries

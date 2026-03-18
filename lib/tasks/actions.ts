@@ -1,4 +1,4 @@
-// Task Management — Core CRUD Server Actions
+// Task Management - Core CRUD Server Actions
 // Chef-only. Manages daily tasks, assignments, and completion tracking.
 
 'use server'
@@ -122,7 +122,7 @@ export async function getActiveStations() {
     .order('name')
 
   if (error) {
-    // stations table may not exist yet — return empty
+    // stations table may not exist yet - return empty
     console.error('[getActiveStations] Error:', error)
     return []
   }
@@ -161,7 +161,7 @@ export async function createTask(input: CreateTaskInput) {
     throw new Error('Failed to create task')
   }
 
-  // Non-blocking notification — notify chef when a task is assigned to a staff member
+  // Non-blocking notification - notify chef when a task is assigned to a staff member
   if (data.assigned_to) {
     try {
       // Look up the staff member name for the notification
@@ -192,7 +192,7 @@ export async function updateTask(id: string, input: UpdateTaskInput) {
   const validated = UpdateTaskSchema.parse(input)
   const supabase: any = createServerClient()
 
-  // Build update payload — only include fields that were explicitly provided
+  // Build update payload - only include fields that were explicitly provided
   const updatePayload: Record<string, unknown> = {}
   if (validated.title !== undefined) updatePayload.title = validated.title
   if (validated.description !== undefined) updatePayload.description = validated.description
@@ -372,7 +372,7 @@ export async function completeTask(
       notes: notes ?? null,
     })
   } catch (err) {
-    // Non-blocking — log failures don't prevent task completion
+    // Non-blocking - log failures don't prevent task completion
     console.error('[completeTask] Completion log failed:', err)
   }
 

@@ -1,4 +1,4 @@
-// Admin Time Tracking — Server Actions
+// Admin Time Tracking - Server Actions
 // Logs administrative time (emails, calls, planning, etc.) with optional event linkage.
 // Extends the event's effective hourly rate calculation to include all true overhead.
 
@@ -33,7 +33,7 @@ const LogAdminTimeSchema = z.object({
 
 export type LogAdminTimeInput = z.infer<typeof LogAdminTimeSchema>
 
-// NOTE: ADMIN_TIME_CATEGORIES has been moved to './constants' — import from there instead.
+// NOTE: ADMIN_TIME_CATEGORIES has been moved to './constants' - import from there instead.
 
 // ============================================
 // ACTIONS

@@ -1,5 +1,5 @@
-// Remy — Client Layer Context Loader
-// Loads ONLY this client's data — scoped by tenant + client ID.
+// Remy - Client Layer Context Loader
+// Loads ONLY this client's data - scoped by tenant + client ID.
 // PRIVACY: Client data = PII → must use Ollama. No cloud models.
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -40,7 +40,7 @@ export interface RemyClientContext {
 
 /**
  * Load client-scoped context for the authenticated client.
- * Uses the client's session — physically cannot access other clients' data.
+ * Uses the client's session - physically cannot access other clients' data.
  */
 export async function loadRemyClientContext(
   clientId: string,
@@ -209,7 +209,7 @@ export function formatClientContext(ctx: RemyClientContext): string {
     parts.push(`\nYOUR UPCOMING EVENTS:`)
     for (const e of ctx.upcomingEvents) {
       parts.push(
-        `- ${e.occasion ?? 'Event'} on ${e.date ?? '(date TBD)'} — ${e.guestCount ?? '?'} guests — Status: ${e.status}${e.venueAddress ? ` — Venue: ${e.venueAddress}` : ''}`
+        `- ${e.occasion ?? 'Event'} on ${e.date ?? '(date TBD)'} - ${e.guestCount ?? '?'} guests - Status: ${e.status}${e.venueAddress ? ` - Venue: ${e.venueAddress}` : ''}`
       )
     }
   } else {
@@ -246,7 +246,7 @@ export function formatClientContext(ctx: RemyClientContext): string {
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
 You may ONLY reference events, quotes, and details that appear in the sections above.
-If a section is empty, that means there are none — do not invent any.
+If a section is empty, that means there are none - do not invent any.
 NEVER fabricate event dates, amounts, or details.`)
 
   return parts.join('\n')

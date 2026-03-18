@@ -2,7 +2,7 @@
 
 // Client Photo Actions
 // Upload, retrieve, delete, caption photos for a client's site documentation.
-// Chef-only — clients cannot see these photos.
+// Chef-only - clients cannot see these photos.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'

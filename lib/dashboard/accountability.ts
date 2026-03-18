@@ -5,7 +5,7 @@
 // - "Follow-ups overdue" list (events completed >24h ago with no follow-up sent)
 // - "This Week" accountability summary
 //
-// No ledger writes, no lifecycle transitions — read-only queries only.
+// No ledger writes, no lifecycle transitions - read-only queries only.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'

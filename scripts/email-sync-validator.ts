@@ -1,4 +1,4 @@
-// @ts-nocheck — standalone script, Supabase client type mismatch with generated types
+// @ts-nocheck - standalone script, Supabase client type mismatch with generated types
 // Email Sync Validator
 // Resets email sync data, triggers a fresh sync, cross-validates against
 // the "Dinner Email Export" Gmail label, and produces a detailed report.
@@ -99,7 +99,7 @@ async function getAccessToken(
     .single()
 
   if (!conn?.refresh_token)
-    throw new Error('No Google connection — connect Gmail in Settings first')
+    throw new Error('No Google connection - connect Gmail in Settings first')
 
   const expiresAt = conn.token_expires_at ? new Date(conn.token_expires_at) : new Date(0)
   if (conn.access_token && expiresAt.getTime() > Date.now() + 5 * 60 * 1000) {
@@ -218,7 +218,7 @@ async function runLiveSync(devServerUrl: string): Promise<any> {
 
   const cronSecret = process.env.CRON_SECRET
   if (!cronSecret) {
-    console.log('  CRON_SECRET not set — calling sync via server action instead')
+    console.log('  CRON_SECRET not set - calling sync via server action instead')
     // Fall back to direct function import (requires Next.js context)
     throw new Error('CRON_SECRET required for standalone sync. Set it in .env.local')
   }
@@ -434,7 +434,7 @@ async function crossValidateLabel(
           .maybeSingle()
 
         if (!syncEntry) {
-          // Not in sync log — we missed this email
+          // Not in sync log - we missed this email
           result.missingFromSyncLog++
           try {
             const meta = await getMessageMetadata(accessToken, msgRef.id)
@@ -457,7 +457,7 @@ async function crossValidateLabel(
 
         result.foundInSyncLog++
 
-        // The label says "dinner" — so we expect classification = inquiry
+        // The label says "dinner" - so we expect classification = inquiry
         const isInquiry =
           syncEntry.classification === 'inquiry' ||
           syncEntry.action_taken === 'created_inquiry' ||
@@ -473,7 +473,7 @@ async function crossValidateLabel(
           })
         } else {
           result.classifiedAsOther++
-          // This is a disagreement — label says dinner, AI says something else
+          // This is a disagreement - label says dinner, AI says something else
           try {
             const meta = await getMessageMetadata(accessToken, msgRef.id)
             result.disagreements.push({
@@ -645,7 +645,7 @@ function printReport(
   if (syncAnalysis.platformEmails.length > 0) {
     console.log(`\n── Platform Emails (${syncAnalysis.platformEmails.length}) ──`)
     for (const pe of syncAnalysis.platformEmails.slice(0, 20)) {
-      console.log(`  [${pe.classification}] ${pe.from} — ${pe.subject?.slice(0, 60)}`)
+      console.log(`  [${pe.classification}] ${pe.from} - ${pe.subject?.slice(0, 60)}`)
     }
     if (syncAnalysis.platformEmails.length > 20) {
       console.log(`  ... and ${syncAnalysis.platformEmails.length - 20} more`)
@@ -656,17 +656,17 @@ function printReport(
   if (syncAnalysis.errors.length > 0) {
     console.log(`\n── Errors (${syncAnalysis.errors.length}) ──`)
     for (const e of syncAnalysis.errors) {
-      console.log(`  ${e.from} — ${e.error}`)
+      console.log(`  ${e.from} - ${e.error}`)
     }
   }
 
   // Low confidence
   if (syncAnalysis.lowConfidence.length > 0) {
     console.log(
-      `\n── Low Confidence (${syncAnalysis.lowConfidence.length}) — potential misclassifications ──`
+      `\n── Low Confidence (${syncAnalysis.lowConfidence.length}) - potential misclassifications ──`
     )
     for (const lc of syncAnalysis.lowConfidence) {
-      console.log(`  [${lc.classification}] ${lc.from} — ${lc.subject?.slice(0, 60)}`)
+      console.log(`  [${lc.classification}] ${lc.from} - ${lc.subject?.slice(0, 60)}`)
     }
   }
 
@@ -689,19 +689,19 @@ function printReport(
 
     if (crossVal.disagreements.length > 0) {
       console.log(
-        `\n  DISAGREEMENTS (${crossVal.disagreements.length}) — label says dinner, AI says:`
+        `\n  DISAGREEMENTS (${crossVal.disagreements.length}) - label says dinner, AI says:`
       )
       for (const d of crossVal.disagreements) {
         console.log(
-          `    [${d.classification}/${d.confidence}] ${d.from} — ${d.subject?.slice(0, 50)}`
+          `    [${d.classification}/${d.confidence}] ${d.from} - ${d.subject?.slice(0, 50)}`
         )
       }
     }
 
     if (crossVal.missingEmails.length > 0) {
-      console.log(`\n  MISSING (${crossVal.missingEmails.length}) — in label but never synced:`)
+      console.log(`\n  MISSING (${crossVal.missingEmails.length}) - in label but never synced:`)
       for (const m of crossVal.missingEmails.slice(0, 20)) {
-        console.log(`    ${m.from} — ${m.subject?.slice(0, 50)} (${m.date})`)
+        console.log(`    ${m.from} - ${m.subject?.slice(0, 50)} (${m.date})`)
       }
       if (crossVal.missingEmails.length > 20) {
         console.log(`    ... and ${crossVal.missingEmails.length - 20} more`)
@@ -750,7 +750,7 @@ function printReport(
 
   for (const check of checks) {
     const icon = check.pass ? 'PASS' : 'FAIL'
-    console.log(`  [${icon}] ${check.name} — ${check.detail}`)
+    console.log(`  [${icon}] ${check.name} - ${check.detail}`)
   }
 
   const allPassed = checks.every((c) => c.pass)

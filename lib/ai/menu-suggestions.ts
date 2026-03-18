@@ -1,8 +1,8 @@
 'use server'
 
 // Menu Suggestions Generator
-// PRIVACY: Sends dietary restrictions, allergies, client event data — must stay local.
-// Output is DRAFT ONLY — suggestions for the chef's consideration.
+// PRIVACY: Sends dietary restrictions, allergies, client event data - must stay local.
+// Output is DRAFT ONLY - suggestions for the chef's consideration.
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
@@ -32,16 +32,16 @@ const MenuSuggestionsSchema = z.array(MenuSuggestionSchema).min(3).max(3)
 
 const SYSTEM_PROMPT = `You are assisting a private chef by suggesting menu structures for an upcoming event.
 
-IMPORTANT: You are NOT creating recipes. You are suggesting menu structures using dishes the chef already knows or has in their recipe book. You are organizing courses and suggesting pairings — the chef decides how to execute.
+IMPORTANT: You are NOT creating recipes. You are suggesting menu structures using dishes the chef already knows or has in their recipe book. You are organizing courses and suggesting pairings - the chef decides how to execute.
 
 RULES:
 - Suggest exactly 3 distinct menu options with different themes/approaches
 - Each menu should have 3-5 courses (appetizer, salad, main, dessert, etc.)
 - If the chef's recipe list is provided, prioritize dishes from it
-- All dishes must respect the dietary restrictions and allergies — no exceptions
+- All dishes must respect the dietary restrictions and allergies - no exceptions
 - Allergies are SAFETY-CRITICAL: never suggest a dish that could contain a listed allergen
 - Rationale should explain why this menu fits THIS specific event (occasion, guest count, season)
-- Keep dish descriptions to 1 sentence — the chef knows how to cook, they don't need instructions
+- Keep dish descriptions to 1 sentence - the chef knows how to cook, they don't need instructions
 
 EXAMPLE OUTPUT:
 [
@@ -52,7 +52,7 @@ EXAMPLE OUTPUT:
       { "course": "Main", "dish": "Braised short ribs", "description": "Red wine braised short ribs with creamy polenta and gremolata." },
       { "course": "Dessert", "dish": "Panna cotta", "description": "Vanilla bean panna cotta with seasonal berry compote." }
     ],
-    "rationale": "A comforting Italian menu that works well for an intimate fall dinner of 6 guests — hearty, shareable, and low-stress to plate."
+    "rationale": "A comforting Italian menu that works well for an intimate fall dinner of 6 guests - hearty, shareable, and low-stress to plate."
   }
 ]
 

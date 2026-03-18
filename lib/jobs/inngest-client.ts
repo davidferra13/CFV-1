@@ -1,4 +1,4 @@
-// Inngest Client — Background Job Engine for ChefFlow
+// Inngest Client - Background Job Engine for ChefFlow
 // Handles delayed/scheduled tasks like post-event follow-up emails.
 // Free tier: 25K runs/month.
 //

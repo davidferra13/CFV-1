@@ -1,5 +1,5 @@
 // Inquiry Notes Server Actions
-// CRUD for rich chef notes on inquiries — categories, pins, image attachments, recipe links
+// CRUD for rich chef notes on inquiries - categories, pins, image attachments, recipe links
 
 'use server'
 

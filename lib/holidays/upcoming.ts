@@ -49,7 +49,7 @@ export function getNextOccurrence(holiday: Holiday, from: Date = new Date()): Da
 
   if (holidayDay >= today) return thisYearDate
 
-  // Passed — get next year's
+  // Passed - get next year's
   return getHolidayDate(holiday, thisYear + 1)
 }
 

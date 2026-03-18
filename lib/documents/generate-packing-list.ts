@@ -1,9 +1,9 @@
-// Packing List Generator — Working Document
+// Packing List Generator - Working Document
 // Used at home during packing. Organizes prepped food by transport zone,
 // lists the equipment kit, and gives component verification counts per course.
-// Distinct from the Non-Negotiables Checklist (Printed Sheet #3) — that covers
+// Distinct from the Non-Negotiables Checklist (Printed Sheet #3) - that covers
 // personal/operational items. This covers what the prep list produced.
-// MUST fit on ONE page — no exceptions.
+// MUST fit on ONE page - no exceptions.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -44,14 +44,14 @@ export type PackingListData = {
   // Component verification counts per course
   courseVerification: { courseNumber: number; courseName: string; count: number }[]
   totalFoodItems: number
-  // Equipment — single source of truth, passed to both PDF and interactive UI
+  // Equipment - single source of truth, passed to both PDF and interactive UI
   standardKitItems: string[] // always-bring kit (defined here, not in client component)
   mustBringEquipment: string[] // from client.equipment_must_bring[]
   eventEquipment: string[] // triggered by service_style / special_requests
   // Site info
   kitchenNotes: string | null
   houseRules: string | null
-  // Allergy alert — safety-critical
+  // Allergy alert - safety-critical
   allergies: string[]
 }
 
@@ -149,7 +149,7 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
       const dishIds = dishes.map((d: any) => d.id)
       const dishMap = new Map<string, any>(dishes.map((d: any) => [d.id, d]))
 
-      // Fetch only make-ahead components — these are what get packed
+      // Fetch only make-ahead components - these are what get packed
       // Note: transport_category was added in migration 20260301000001.
       // Using .returns<>() to override inferred type until types/database.ts is regenerated
       // via `supabase gen types typescript --linked > types/database.ts`.
@@ -311,12 +311,12 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
 
   pdf.space(2)
 
-  // ─── Food: Cooler — Cold & Liquid ──────────────────────────────────────────
+  // ─── Food: Cooler - Cold & Liquid ──────────────────────────────────────────
 
   if (coldItems.length > 0) {
-    pdf.sectionHeader('COOLER — COLD ITEMS', 11, true)
+    pdf.sectionHeader('COOLER - COLD ITEMS', 11, true)
     for (const item of coldItems) {
-      const label = item.storage_notes ? `${item.name} — ${item.storage_notes}` : item.name
+      const label = item.storage_notes ? `${item.name} - ${item.storage_notes}` : item.name
       pdf.checkbox(label, 9, `C${item.course_number}`)
     }
     pdf.space(1)
@@ -325,9 +325,9 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   // ─── Food: Frozen (pack last) ───────────────────────────────────────────────
 
   if (frozenItems.length > 0) {
-    pdf.sectionHeader('COOLER — FROZEN (pack last, on top)', 11, true)
+    pdf.sectionHeader('COOLER - FROZEN (pack last, on top)', 11, true)
     for (const item of frozenItems) {
-      const label = item.storage_notes ? `${item.name} — ${item.storage_notes}` : item.name
+      const label = item.storage_notes ? `${item.name} - ${item.storage_notes}` : item.name
       pdf.checkbox(label, 9, `C${item.course_number}`)
     }
     pdf.space(1)
@@ -336,9 +336,9 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   // ─── Food: Room Temp ───────────────────────────────────────────────────────
 
   if (roomTempItems.length > 0) {
-    pdf.sectionHeader('DRY BAG — ROOM TEMP', 11, true)
+    pdf.sectionHeader('DRY BAG - ROOM TEMP', 11, true)
     for (const item of roomTempItems) {
-      const label = item.storage_notes ? `${item.name} — ${item.storage_notes}` : item.name
+      const label = item.storage_notes ? `${item.name} - ${item.storage_notes}` : item.name
       pdf.checkbox(label, 9, `C${item.course_number}`)
     }
     pdf.space(1)
@@ -347,9 +347,9 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   // ─── Food: Fragile ─────────────────────────────────────────────────────────
 
   if (fragileItems.length > 0) {
-    pdf.sectionHeader('FRAGILE — own padded container, nothing stacked on top', 11, true)
+    pdf.sectionHeader('FRAGILE - own padded container, nothing stacked on top', 11, true)
     for (const item of fragileItems) {
-      const label = item.storage_notes ? `${item.name} — ${item.storage_notes}` : item.name
+      const label = item.storage_notes ? `${item.name} - ${item.storage_notes}` : item.name
       pdf.checkbox(label, 9, `C${item.course_number}`)
     }
     pdf.space(1)
@@ -403,7 +403,7 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
     pdf.sectionHeader('COMPONENT VERIFICATION', 11, true)
     for (const { courseNumber, courseName, count } of courseVerification) {
       pdf.text(
-        `Course ${courseNumber} — ${courseName}: ${count} item${count !== 1 ? 's' : ''}`,
+        `Course ${courseNumber} - ${courseName}: ${count} item${count !== 1 ? 's' : ''}`,
         9,
         'normal',
         2

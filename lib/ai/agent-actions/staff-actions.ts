@@ -1,4 +1,4 @@
-// Remy Agent — Staff Management Actions
+// Remy Agent - Staff Management Actions
 // Assign staff to events, record hours, create staff members.
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -45,7 +45,7 @@ export const staffAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Add a new staff member to your team.',
     inputSchema:
-      '{ "description": "string — e.g. Add Maria Garcia, sous chef, $25/hour, phone 503-555-1234" }',
+      '{ "description": "string - e.g. Add Maria Garcia, sous chef, $25/hour, phone 503-555-1234" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -115,7 +115,7 @@ export const staffAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Assign a staff member to work an event.',
-    inputSchema: '{ "description": "string — e.g. Put Maria on the Johnson dinner this Saturday" }',
+    inputSchema: '{ "description": "string - e.g. Put Maria on the Johnson dinner this Saturday" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs, ctx) {
@@ -201,7 +201,7 @@ export const staffAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Log hours worked by a staff member at an event.',
-    inputSchema: '{ "description": "string — e.g. Maria worked 6 hours at the Johnson dinner" }',
+    inputSchema: '{ "description": "string - e.g. Maria worked 6 hours at the Johnson dinner" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs, ctx) {

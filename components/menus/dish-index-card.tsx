@@ -57,24 +57,24 @@ export function DishIndexCard({ dish }: DishIndexCardProps) {
               <p className="text-xs text-stone-500 line-clamp-1 mb-2">{dish.description}</p>
             )}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-medium bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full">
+              <span className="text-xxs font-medium bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full">
                 {courseLabel}
               </span>
-              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${rotationColor}`}>
+              <span className={`text-xxs font-medium px-2 py-0.5 rounded-full ${rotationColor}`}>
                 {rotationLabel}
               </span>
               {dish.dietary_tags && dish.dietary_tags.length > 0 && (
-                <span className="text-[10px] bg-green-900/40 text-green-400 px-2 py-0.5 rounded-full">
+                <span className="text-xxs bg-green-900/40 text-green-400 px-2 py-0.5 rounded-full">
                   {dish.dietary_tags.join(', ')}
                 </span>
               )}
               {dish.linked_recipe_id && (
-                <span className="text-[10px] bg-blue-900/40 text-blue-400 px-2 py-0.5 rounded-full">
+                <span className="text-xxs bg-blue-900/40 text-blue-400 px-2 py-0.5 rounded-full">
                   Recipe linked
                 </span>
               )}
               {dish.recipes?.calories_per_serving != null && (
-                <span className="text-[10px] bg-stone-800 text-stone-300 px-2 py-0.5 rounded-full">
+                <span className="text-xxs bg-stone-800 text-stone-300 px-2 py-0.5 rounded-full">
                   {dish.recipes.calories_per_serving} kcal/serv
                 </span>
               )}
@@ -82,9 +82,9 @@ export function DishIndexCard({ dish }: DishIndexCardProps) {
           </div>
           <div className="text-right flex-shrink-0">
             <p className="text-lg font-semibold text-stone-300">{dish.times_served}</p>
-            <p className="text-[10px] text-stone-600">times served</p>
+            <p className="text-xxs text-stone-600">times served</p>
             {dish.last_served && (
-              <p className="text-[10px] text-stone-600 mt-1">
+              <p className="text-xxs text-stone-600 mt-1">
                 Last:{' '}
                 {new Date(dish.last_served).toLocaleDateString('en-US', {
                   month: 'short',

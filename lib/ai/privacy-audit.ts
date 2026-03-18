@@ -1,6 +1,6 @@
 // Privacy Routing Audit Map
 // Single source of truth for which AI modules must use local Ollama vs cloud Gemini.
-// No 'use server' — importable from any context.
+// No 'use server' - importable from any context.
 //
 // Rules (from CLAUDE.md):
 //   - Client PII (names, emails, phones, addresses) → Ollama
@@ -28,7 +28,7 @@ export interface AIModuleRouting {
  * Used by the simulation system, privacy audits, and observability dashboard.
  */
 export const AI_MODULE_ROUTING: Record<string, AIModuleRouting> = {
-  // ── Ollama (Local) — Private Data ─────────────────────────────────
+  // ── Ollama (Local) - Private Data ─────────────────────────────────
 
   // Client data parsing
   'parse-client': {
@@ -190,7 +190,7 @@ export const AI_MODULE_ROUTING: Record<string, AIModuleRouting> = {
     reason: 'Known client email list + email body',
   },
 
-  // ── Gemini (Cloud) — Non-PII Tasks ────────────────────────────────
+  // ── Gemini (Cloud) - Non-PII Tasks ────────────────────────────────
 
   // Creative / marketing
   'menu-suggestions': {
@@ -308,7 +308,7 @@ export const AI_MODULE_ROUTING: Record<string, AIModuleRouting> = {
     reason: 'Recipe nutritional data',
   },
 
-  // Email drafting (ACE system — uses inquiry data, not raw PII)
+  // Email drafting (ACE system - uses inquiry data, not raw PII)
   correspondence: {
     provider: 'gemini',
     modelTier: 'standard',

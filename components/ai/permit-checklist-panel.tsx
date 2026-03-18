@@ -97,17 +97,17 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
             key={item.step}
             className={`flex items-start gap-2 text-xs p-2 rounded ${item.isRequired ? 'bg-stone-800' : 'bg-stone-800 opacity-75'}`}
           >
-            <div className="w-5 h-5 rounded-full bg-brand-900 text-brand-400 flex items-center justify-center text-[10px] font-medium flex-shrink-0 mt-0.5">
+            <div className="w-5 h-5 rounded-full bg-brand-900 text-brand-400 flex items-center justify-center text-xxs font-medium flex-shrink-0 mt-0.5">
               {item.step}
             </div>
             <div className="flex-1">
               <div className="text-stone-300 font-medium">{item.task}</div>
-              <div className="text-stone-400 text-[11px]">
+              <div className="text-stone-400 text-xs-tight">
                 {item.leadTimeDays} days before expiry{item.notes ? ' · ' + item.notes : ''}
               </div>
             </div>
             {!item.isRequired && (
-              <span className="text-[10px] text-stone-400 flex-shrink-0">optional</span>
+              <span className="text-xxs text-stone-400 flex-shrink-0">optional</span>
             )}
           </div>
         ))}
@@ -115,7 +115,7 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
 
       <div className="text-xs text-stone-400 bg-stone-800 rounded p-2">{result.keyContacts}</div>
 
-      <div className="flex items-start gap-2 text-[11px] text-amber-800 bg-amber-950 border border-amber-200 rounded p-2">
+      <div className="flex items-start gap-2 text-xs-tight text-amber-800 bg-amber-950 border border-amber-200 rounded p-2">
         <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
         {result.disclaimer}
       </div>

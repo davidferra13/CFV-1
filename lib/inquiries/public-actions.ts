@@ -1,5 +1,5 @@
 // Public Inquiry Submission Server Action
-// No auth required — uses admin client for public form submissions
+// No auth required - uses admin client for public form submissions
 // Auto-creates: client record, inquiry record, draft event
 
 'use server'
@@ -52,7 +52,7 @@ export type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
 /**
  * Submit a public inquiry from the chef profile page.
  * Creates three linked records in one shot:
- * 1. Client (idempotent — reuses existing by email)
+ * 1. Client (idempotent - reuses existing by email)
  * 2. Inquiry (status: 'new', channel: 'website')
  * 3. Draft Event (status: 'draft', TBD placeholders for missing fields)
  */
@@ -269,7 +269,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     console.error('[submitPublicInquiry] Circle creation failed (non-blocking):', circleErr)
   }
 
-  // Send acknowledgment email to client (non-blocking — never fails the submission)
+  // Send acknowledgment email to client (non-blocking - never fails the submission)
   try {
     const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
     await sendInquiryReceivedEmail({
@@ -309,7 +309,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   if (eventError) {
     console.error('[submitPublicInquiry] Event creation error:', eventError)
-    // Inquiry was created — don't fail entirely, just log
+    // Inquiry was created - don't fail entirely, just log
     // Chef can still see the inquiry + client
     return { success: true, inquiryCreated: true, eventCreated: false }
   }
@@ -326,7 +326,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   // 6. Link inquiry to the created event
   await supabase.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
 
-  // 7. Enqueue Remy reactive AI task — auto-score lead (non-blocking)
+  // 7. Enqueue Remy reactive AI task - auto-score lead (non-blocking)
   try {
     const { evaluateAutomations } = await import('@/lib/automations/engine')
     await evaluateAutomations(tenantId, 'inquiry_created', {
@@ -370,7 +370,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     console.error('[submitPublicInquiry] Remy reactive enqueue failed (non-blocking):', err)
   }
 
-  // 8. Push notification — new inquiry from website (non-blocking)
+  // 8. Push notification - new inquiry from website (non-blocking)
   try {
     const { getChefAuthUserId } = await import('@/lib/notifications/actions')
     const chefUserId = await getChefAuthUserId(tenantId)

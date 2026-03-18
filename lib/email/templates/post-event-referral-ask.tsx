@@ -1,6 +1,6 @@
 // Post-Event Referral Ask Email
 // Sent 14 days after event completion via Inngest background job.
-// Warm, non-pushy request to spread the word — leverages word-of-mouth.
+// Warm, non-pushy request to spread the word - leverages word-of-mouth.
 
 import { Button, Text, Hr } from '@react-email/components'
 import * as React from 'react'
@@ -43,7 +43,7 @@ export function PostEventReferralAskEmail({
       <Hr style={divider} />
 
       <Text style={paragraph}>
-        Simply forward this email or share the link above. No pressure — just a gentle invitation to
+        Simply forward this email or share the link above. No pressure - just a gentle invitation to
         spread the joy of great food.
       </Text>
 

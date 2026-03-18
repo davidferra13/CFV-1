@@ -1,5 +1,5 @@
 // Pure utility functions for the Revenue Path Calculator.
-// No 'use server' — this file is imported by both server actions and client components.
+// No 'use server' - this file is imported by both server actions and client components.
 
 import type {
   ServiceType,
@@ -33,7 +33,7 @@ export function computeEffectivePrice(
 
 /**
  * Computes the full ServiceMixPlan from the current calculator state.
- * Pure function — no side effects, no server calls.
+ * Pure function - no side effects, no server calls.
  */
 export function computeServiceMixPlan(
   items: Array<{
@@ -92,7 +92,7 @@ export function computeAutoSuggestMix(
   while (remaining > 0) {
     const best = sorted.find((st) => st.effectivePriceCents <= remaining)
     if (!best) {
-      // Nothing fits — add 1 of the cheapest available to give the chef a starting point
+      // Nothing fits - add 1 of the cheapest available to give the chef a starting point
       const cheapest = sorted[sorted.length - 1]
       result[cheapest.id] = (result[cheapest.id] ?? 0) + 1
       break

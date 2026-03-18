@@ -1,16 +1,16 @@
 /**
  * Ollama-based extraction for the GOLDMINE build pipeline.
  *
- * NO 'use server' — this is a build script module, not a server action.
+ * NO 'use server' - this is a build script module, not a server action.
  * Calls Ollama directly via the ollama npm package.
  *
  * Used for freeform fields that regex can't reliably extract:
  * client names, occasion normalization, service style, referral interpretation.
  *
  * Model routing:
- *   first-contact → standard (qwen3-coder:30b) — structured JSON extraction
- *   follow-up → fast (qwen3:4b) — shorter responses, simpler classification
- *   outbound → fast (qwen3:4b) — supplementary enrichment
+ *   first-contact → standard (qwen3-coder:30b) - structured JSON extraction
+ *   follow-up → fast (qwen3:4b) - shorter responses, simpler classification
+ *   outbound → fast (qwen3:4b) - supplementary enrichment
  */
 
 import { Ollama } from 'ollama'
@@ -105,7 +105,7 @@ export async function ollamaCallWithFallback<T>(
     }
   }
 
-  // 3 strikes — return null, deterministic results still valid
+  // 3 strikes - return null, deterministic results still valid
   return null
 }
 

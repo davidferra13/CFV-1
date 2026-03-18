@@ -1,4 +1,4 @@
-// Remy Agent — Grocery Actions
+// Remy Agent - Grocery Actions
 // Run grocery price quotes and log actual costs.
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -39,8 +39,8 @@ export const groceryAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description:
       "Price-check groceries for an event. Queries ingredient prices from multiple sources based on the event's menu and recipes.",
-    inputSchema: '{ "eventIdentifier": "string — event occasion or client name" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews pricing results.',
+    inputSchema: '{ "eventIdentifier": "string - event occasion or client name" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews pricing results.',
 
     async executor(inputs, ctx) {
       const identifier = String(inputs.eventIdentifier ?? inputs.description ?? '')
@@ -84,7 +84,7 @@ export const groceryAgentActions: AgentActionDefinition[] = [
           return {
             success: false,
             message:
-              'No grocery quote generated — make sure the event has a menu with recipes and ingredients.',
+              'No grocery quote generated - make sure the event has a menu with recipes and ingredients.',
           }
         }
         return {
@@ -110,8 +110,8 @@ export const groceryAgentActions: AgentActionDefinition[] = [
     description:
       'Record the actual amount spent on groceries for an event (vs. the estimated quote).',
     inputSchema:
-      '{ "description": "string — e.g. Spent $340 on groceries for the Johnson dinner" }',
-    tierNote: 'ALWAYS tier 2 — financial data requires chef confirmation.',
+      '{ "description": "string - e.g. Spent $340 on groceries for the Johnson dinner" }',
+    tierNote: 'ALWAYS tier 2 - financial data requires chef confirmation.',
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')

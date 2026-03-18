@@ -1,4 +1,4 @@
-// Quote Expired — Client Notification Email
+// Quote Expired - Client Notification Email
 // Sent to the client when their received quote has passed its valid-until date.
 
 import { Text } from '@react-email/components'

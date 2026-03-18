@@ -1,4 +1,4 @@
-// Chef Calendar Entry Actions — Server Actions
+// Chef Calendar Entry Actions - Server Actions
 // Full CRUD for chef_calendar_entries.
 // Handles personal, business, and intention-type calendar entries
 // with revenue tracking and public availability signal support.
@@ -368,7 +368,7 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
     .select('id, client_id')
 
   if (error) {
-    // Unique violations expected for already-notified clients — not a hard error
+    // Unique violations expected for already-notified clients - not a hard error
     console.warn(
       '[notifyClientsOfPublicSignal] Some rows skipped (already notified):',
       error.message

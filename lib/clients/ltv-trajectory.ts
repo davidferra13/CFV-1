@@ -3,7 +3,7 @@
 // Client LTV Trajectory
 // Computes event-by-event cumulative lifetime value for a specific client.
 // Used on the client detail page to show the revenue growth story over time.
-// No new DB schema needed — derives from existing ledger/events data.
+// No new DB schema needed - derives from existing ledger/events data.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'

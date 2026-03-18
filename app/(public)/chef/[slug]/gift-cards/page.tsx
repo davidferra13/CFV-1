@@ -2,6 +2,7 @@
 // Server component: resolves chef from slug, renders client form.
 // No authentication required - open to anyone.
 
+import Image from 'next/image'
 import { getPublicChefProfile } from '@/lib/profile/actions'
 import { notFound } from 'next/navigation'
 import { GiftCardPurchaseForm } from './gift-card-form'
@@ -27,10 +28,11 @@ export default async function GiftCardStorePage({ params }: Props) {
         {/* Header */}
         <div className="text-center mb-8">
           {chef.profile_image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={chef.profile_image_url}
               alt={chef.display_name}
+              width={64}
+              height={64}
               className="w-16 h-16 rounded-full object-cover mx-auto mb-4 ring-4 ring-white shadow"
             />
           )}

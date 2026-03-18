@@ -34,7 +34,7 @@ export type UploadStandaloneResult =
 // ─── Upload ──────────────────────────────────────────────────────────────────
 
 /**
- * Upload a receipt from anywhere — no event state restriction, event optional.
+ * Upload a receipt from anywhere - no event state restriction, event optional.
  * Works for:
  *   - Active events (same as quick-capture)
  *   - Past events (completed, cancelled)
@@ -42,9 +42,9 @@ export type UploadStandaloneResult =
  *   - No event at all (supply runs, annual purchases, etc.)
  *
  * formData key: 'receipt' (File)
- * opts.eventId  — optional, if provided must belong to this chef
- * opts.clientId — optional, direct client association
- * opts.notes    — optional context note
+ * opts.eventId  - optional, if provided must belong to this chef
+ * opts.clientId - optional, direct client association
+ * opts.notes    - optional context note
  */
 export async function uploadStandaloneReceipt(
   formData: FormData,
@@ -53,7 +53,7 @@ export async function uploadStandaloneReceipt(
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // If an eventId was provided, verify it belongs to this chef (security check — no state restriction)
+  // If an eventId was provided, verify it belongs to this chef (security check - no state restriction)
   if (opts.eventId) {
     const { data: event } = await supabase
       .from('events')
@@ -111,7 +111,7 @@ export async function uploadStandaloneReceipt(
 
   if (signError || !signedData?.signedUrl) {
     await supabase.storage.from(RECEIPTS_BUCKET).remove([storagePath])
-    return { success: false, error: 'Failed to generate access URL — please try again' }
+    return { success: false, error: 'Failed to generate access URL - please try again' }
   }
 
   const { data: photoRecord, error: dbError } = await supabase
@@ -131,7 +131,7 @@ export async function uploadStandaloneReceipt(
   if (dbError || !photoRecord) {
     console.error('[uploadStandaloneReceipt] DB insert error:', dbError)
     await supabase.storage.from(RECEIPTS_BUCKET).remove([storagePath])
-    return { success: false, error: 'Failed to register receipt — please try again' }
+    return { success: false, error: 'Failed to register receipt - please try again' }
   }
 
   revalidatePath('/receipts')
@@ -140,7 +140,7 @@ export async function uploadStandaloneReceipt(
     revalidatePath(`/events/${opts.eventId}/receipts`)
   }
 
-  // Background OCR — non-blocking
+  // Background OCR - non-blocking
   processReceiptOCR(photoRecord.id).catch((err) => {
     console.error('[uploadStandaloneReceipt] Background OCR error:', err)
   })
@@ -161,7 +161,7 @@ export type AllReceiptPhoto = {
   storagePath: string | null
   notes: string | null
   ocrRaw: string | null
-  uploadStatus: 'pending' | 'processing' | 'extracted' | 'approved'
+  uploadStatus: 'pending' | 'processing' | 'extracted' | 'needs_review' | 'approved'
   approvedAt: string | null
   createdAt: string
   extraction: {
@@ -300,7 +300,7 @@ export async function getAllReceiptsForChef(
 
 // ─── Helper for selectors ─────────────────────────────────────────────────────
 
-/** Fetch all events for the chef — used to populate the event selector on the upload form. */
+/** Fetch all events for the chef - used to populate the event selector on the upload form. */
 export async function getEventOptionsForChef(): Promise<EventOption[]> {
   const user = await requireChef()
   const supabase: any = createServerClient()
@@ -314,11 +314,11 @@ export async function getEventOptionsForChef(): Promise<EventOption[]> {
 
   return (data ?? []).map((e: any) => ({
     id: e.id,
-    label: e.occasion ? `${e.occasion} (${e.event_date})` : `Event — ${e.event_date}`,
+    label: e.occasion ? `${e.occasion} (${e.event_date})` : `Event - ${e.event_date}`,
   }))
 }
 
-/** Fetch all clients for the chef — used to populate the client selector on the upload form. */
+/** Fetch all clients for the chef - used to populate the client selector on the upload form. */
 export async function getClientOptionsForChef(): Promise<ClientOption[]> {
   const user = await requireChef()
   const supabase: any = createServerClient()

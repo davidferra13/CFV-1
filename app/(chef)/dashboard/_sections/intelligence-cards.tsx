@@ -97,7 +97,7 @@ export async function IntelligenceCards() {
                   >
                     <span className="text-sm shrink-0">{alert.icon}</span>
                     <span className="text-xs text-red-300 truncate flex-1">{alert.title}</span>
-                    <span className="text-[10px] text-red-400 shrink-0">{alert.action} &rarr;</span>
+                    <span className="text-xxs text-red-400 shrink-0">{alert.action} &rarr;</span>
                   </Link>
                 ))}
               </div>
@@ -114,9 +114,7 @@ export async function IntelligenceCards() {
                   >
                     <span className="text-sm shrink-0">{alert.icon}</span>
                     <span className="text-xs text-amber-300 truncate flex-1">{alert.title}</span>
-                    <span className="text-[10px] text-amber-400 shrink-0">
-                      {alert.action} &rarr;
-                    </span>
+                    <span className="text-xxs text-amber-400 shrink-0">{alert.action} &rarr;</span>
                   </Link>
                 ))}
               </div>

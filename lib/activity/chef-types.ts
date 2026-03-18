@@ -1,4 +1,4 @@
-// Chef Activity Log — Type Definitions
+// Chef Activity Log - Type Definitions
 
 export type ChefActivityDomain =
   | 'event'

@@ -1,4 +1,4 @@
-// Resend Client — Singleton initialization
+// Resend Client - Singleton initialization
 // Used by all email sending functions
 
 import { Resend } from 'resend'

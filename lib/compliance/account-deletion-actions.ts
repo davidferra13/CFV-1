@@ -91,7 +91,7 @@ export async function requestAccountDeletion(
   const email = chef?.email || authUser.email
 
   // 5. Generate reactivation token and set soft-delete columns
-  // SECURITY: 256-bit token (vs 122-bit UUID v4) — higher entropy for security-critical recovery token
+  // SECURITY: 256-bit token (vs 122-bit UUID v4) - higher entropy for security-critical recovery token
   const reactivationToken = randomBytes(32).toString('hex')
   const scheduledFor = new Date()
   scheduledFor.setDate(scheduledFor.getDate() + 30)
@@ -113,7 +113,7 @@ export async function requestAccountDeletion(
     throw new Error('Failed to process deletion request')
   }
 
-  // 6. DO NOT ban immediately — user keeps full access for the 30-day grace period.
+  // 6. DO NOT ban immediately - user keeps full access for the 30-day grace period.
   // The cron purge bans the auth user when the grace period expires.
   // This lets the chef export data, wrap up business, and cancel if they change their mind.
 
@@ -310,7 +310,7 @@ export async function getAccountDeletionStatus(): Promise<DeletionStatus> {
 
 /**
  * Executes the final account purge after the 30-day grace period.
- * Admin-only — called by the cron job, not by the user.
+ * Admin-only - called by the cron job, not by the user.
  *
  * Steps:
  * 1. Anonymize financial records (preserves amounts for 7-year retention)
@@ -402,7 +402,7 @@ export async function executeFinalPurge(chefId: string): Promise<{
       const { error: deleteError } = await adminClient.auth.admin.deleteUser(chef.auth_user_id)
       if (deleteError) {
         ;(log as any).error('[purge] Auth user deletion failed', { error: deleteError, chefId })
-        // This is non-fatal — the account is already anonymized and marked deleted
+        // This is non-fatal - the account is already anonymized and marked deleted
       } else {
         await logDeletionAudit({ ...auditBase, action: 'auth_user_deleted' })
       }

@@ -2,7 +2,7 @@
 
 // Invoice Actions
 // Computes invoice data from the ledger-first financial model.
-// There is no separate invoices table — the invoice is a live view over:
+// There is no separate invoices table - the invoice is a live view over:
 //   events (quoted price, occasion, dates) + ledger_entries (payment history) + clients + chefs
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -83,7 +83,7 @@ export type InvoiceData = {
       city: number
     }
     zipCode: string
-  } | null // null = tax lookup failed or no zip code — treat as $0 tax
+  } | null // null = tax lookup failed or no zip code - treat as $0 tax
   loyalty?: {
     tier: 'bronze' | 'silver' | 'gold' | 'platinum'
     pointsBalance: number
@@ -122,7 +122,7 @@ export async function generateInvoiceNumber(tenantId: string): Promise<string> {
 /**
  * Assign an invoice number to an event if one doesn't exist yet.
  * Called when the event first receives a payment.
- * Idempotent — does nothing if invoice_number is already set.
+ * Idempotent - does nothing if invoice_number is already set.
  */
 export async function assignInvoiceNumber(eventId: string) {
   const supabase: any = createServerClient({ admin: true })
@@ -251,7 +251,7 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
 
 /**
  * Fetch invoice data for a client viewing their own event.
- * Scoped to the client's own entity — no cross-client access.
+ * Scoped to the client's own entity - no cross-client access.
  */
 export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceData | null> {
   const user = await requireClient()
@@ -544,7 +544,7 @@ type SalesTaxInfo = {
 /**
  * Non-blocking sales tax lookup.
  * If the API is down, the key is missing, or the zip is empty, returns null.
- * The caller treats null as $0 tax — the invoice is still valid without it.
+ * The caller treats null as $0 tax - the invoice is still valid without it.
  */
 async function lookupSalesTax(
   subtotalCents: number,

@@ -1,5 +1,5 @@
 // Business Constants
-// Extracted from legacy ChefFlow codebase — stable operational data
+// Extracted from legacy ChefFlow codebase - stable operational data
 // Used across inquiry pipeline, events, financials, and client management
 
 // ============================================================

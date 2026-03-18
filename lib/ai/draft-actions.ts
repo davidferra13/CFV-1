@@ -1,8 +1,8 @@
 'use server'
 
-// Communication Draft Generators — 10 Queue-Powered Templates
+// Communication Draft Generators - 10 Queue-Powered Templates
 // PRIVACY: All drafts contain client PII → must stay local via Ollama.
-// ALL drafts are tier 2 (approval required) — never auto-sent.
+// ALL drafts are tier 2 (approval required) - never auto-sent.
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
@@ -157,7 +157,7 @@ export async function generateThankYouDraft(
     guestCount: (event as any)?.guest_count,
   }
 
-  // Build the event description explicitly — avoid Ollama confusing event types from vibe_notes
+  // Build the event description explicitly - avoid Ollama confusing event types from vibe_notes
   const eventOccasion = (event as any)?.occasion ?? 'recent event'
 
   const { result, source } = await withAiFallback(
@@ -165,7 +165,7 @@ export async function generateThankYouDraft(
     () =>
       parseWithOllama(
         `You are ${chefName}, a private chef writing a heartfelt thank-you note to a client after an event. First person singular "I". Warm, genuine, not generic. Reference specific details about their event. Keep it 3-4 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
-        `Write a thank-you note for:\nClient: ${client.full_name} (first name: ${firstName(client.full_name)})\nEvent: ${eventOccasion} on ${(event as any)?.event_date ?? 'N/A'}\nIMPORTANT: This is a "${eventOccasion}" — do NOT confuse with other event types.\nGuests: ${(event as any)?.guest_count ?? 'N/A'}\nLocation: ${(event as any)?.location ?? 'N/A'}`,
+        `Write a thank-you note for:\nClient: ${client.full_name} (first name: ${firstName(client.full_name)})\nEvent: ${eventOccasion} on ${(event as any)?.event_date ?? 'N/A'}\nIMPORTANT: This is a "${eventOccasion}" - do NOT confuse with other event types.\nGuests: ${(event as any)?.guest_count ?? 'N/A'}\nLocation: ${(event as any)?.location ?? 'N/A'}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
       )
@@ -357,7 +357,7 @@ export async function generateDeclineResponseDraft(
     () => declineResponseTemplate(templateVars),
     () =>
       parseWithOllama(
-        `You are ${chefName}, a private chef writing a gracious decline to a potential booking. First person singular "I". Be warm and empathetic — express genuine regret, briefly explain if appropriate, and leave the door open for future opportunities. Suggest alternatives if possible. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
+        `You are ${chefName}, a private chef writing a gracious decline to a potential booking. First person singular "I". Be warm and empathetic - express genuine regret, briefly explain if appropriate, and leave the door open for future opportunities. Suggest alternatives if possible. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a decline response for:
 Client: ${resolvedName} (first name: ${firstName(resolvedName)})
 Reason for declining: ${reason ?? 'scheduling conflict'}`,
@@ -472,7 +472,7 @@ export async function generatePaymentReminderDraft(clientName: string): Promise<
     () => paymentReminderTemplate(templateVars),
     () =>
       parseWithOllama(
-        `You are ${chefName}, a private chef writing a friendly payment reminder. First person singular "I". Be warm and professional — never threatening or aggressive. Gently reference the event and the outstanding amount. Offer to help if there are any questions. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
+        `You are ${chefName}, a private chef writing a friendly payment reminder. First person singular "I". Be warm and professional - never threatening or aggressive. Gently reference the event and the outstanding amount. Offer to help if there are any questions. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a payment reminder for:
 Client: ${client.full_name} (first name: ${firstName(client.full_name)})
 Event: ${lastEvent?.occasion ?? 'recent event'} on ${lastEvent?.event_date ?? 'N/A'}
@@ -519,7 +519,7 @@ export async function generateReEngagementDraft(clientName: string): Promise<Dra
     () => reEngagementTemplate(templateVars),
     () =>
       parseWithOllama(
-        `You are ${chefName}, a private chef reaching out to a client you haven't heard from in a while. First person singular "I". Be warm and casual — not salesy. Reference your history together, mention something seasonal or exciting you're doing, and invite them to reconnect. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
+        `You are ${chefName}, a private chef reaching out to a client you haven't heard from in a while. First person singular "I". Be warm and casual - not salesy. Reference your history together, mention something seasonal or exciting you're doing, and invite them to reconnect. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a re-engagement email for:
 Client: ${client.full_name} (first name: ${firstName(client.full_name)})
 Last event: ${lastEvent?.occasion ?? 'N/A'} on ${lastEvent?.event_date ?? 'a while ago'}
@@ -677,10 +677,10 @@ export async function generateConfirmationDraft(eventIdOrClientName: string): Pr
     : 'TBD'
   const guestCount = event?.guest_count ?? 'TBD'
 
-  const subject = `Booking Confirmed — ${occasion}`
+  const subject = `Booking Confirmed - ${occasion}`
   const body = `Hi ${firstName(clientName)},
 
-Great news — your booking is confirmed! Here are the details:
+Great news - your booking is confirmed! Here are the details:
 
 Event: ${occasion}
 Date: ${eventDate}
@@ -707,7 +707,7 @@ ${chefName}`
 // QUEUE HANDLER ADAPTER
 // ============================================
 // These functions adapt the above generators for the queue worker.
-// The worker calls handler(payload, tenantId) — these bridge that to
+// The worker calls handler(payload, tenantId) - these bridge that to
 // the server-action-style functions above.
 
 export async function handleDraftTask(

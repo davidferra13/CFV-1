@@ -1,7 +1,7 @@
 'use server'
 
 // Take a Chef Manual Capture Server Action
-// Structured form capture — no AI required.
+// Structured form capture - no AI required.
 // Chef fills out the booking details directly from their TakeaChef notification.
 // Pattern follows: lib/inquiries/public-actions.ts (submitPublicInquiry)
 
@@ -98,7 +98,7 @@ export async function captureTakeAChefBooking(
         console.error('[captureTakeAChefBooking] Client creation failed (non-fatal):', clientErr)
       }
     } else {
-      // No email — create a minimal client record with placeholder email
+      // No email - create a minimal client record with placeholder email
       const { data: newClient } = await supabase
         .from('clients')
         .insert({
@@ -163,7 +163,7 @@ export async function captureTakeAChefBooking(
         success: true,
         inquiryId: inquiry.id,
         clientCreated,
-        error: 'Client creation failed — event not created',
+        error: 'Client creation failed - event not created',
       }
     }
 

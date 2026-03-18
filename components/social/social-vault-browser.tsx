@@ -247,7 +247,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
                 )}
                 {/* Usage badge */}
                 {(usageCounts[asset.id] ?? 0) > 0 && (
-                  <div className="absolute top-1.5 right-1.5 bg-black/60 text-white text-[10px] rounded px-1.5 py-0.5">
+                  <div className="absolute top-1.5 right-1.5 bg-black/60 text-white text-xxs rounded px-1.5 py-0.5">
                     {usageCounts[asset.id]} post{(usageCounts[asset.id] ?? 0) !== 1 ? 's' : ''}
                   </div>
                 )}
@@ -264,7 +264,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
               {/* Info */}
               <div className="px-3 py-2">
                 <p className="text-xs font-medium text-stone-200 truncate">{asset.asset_name}</p>
-                <p className="text-[10px] text-stone-400 mt-0.5">
+                <p className="text-xxs text-stone-400 mt-0.5">
                   {formatBytes(asset.file_size_bytes)}
                 </p>
                 {asset.asset_tags.length > 0 && (
@@ -272,13 +272,13 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
                     {asset.asset_tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-500"
+                        className="text-xxs px-1.5 py-0.5 rounded bg-stone-800 text-stone-500"
                       >
                         {tag}
                       </span>
                     ))}
                     {asset.asset_tags.length > 3 && (
-                      <span className="text-[10px] text-stone-400">
+                      <span className="text-xxs text-stone-400">
                         +{asset.asset_tags.length - 3}
                       </span>
                     )}
@@ -291,7 +291,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
                 <button
                   type="button"
                   onClick={() => openEdit(asset)}
-                  className="flex items-center gap-1 text-[11px] text-stone-500 hover:text-stone-300 transition-colors"
+                  className="flex items-center gap-1 text-xs-tight text-stone-500 hover:text-stone-300 transition-colors"
                 >
                   <Tag className="w-3 h-3" />
                   Edit
@@ -300,7 +300,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
                   type="button"
                   onClick={() => handleArchive(asset.id)}
                   disabled={isPending}
-                  className="flex items-center gap-1 text-[11px] text-stone-400 hover:text-red-500 transition-colors ml-auto"
+                  className="flex items-center gap-1 text-xs-tight text-stone-400 hover:text-red-500 transition-colors ml-auto"
                 >
                   <Archive className="w-3 h-3" />
                   Remove

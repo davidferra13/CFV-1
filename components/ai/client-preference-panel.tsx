@@ -71,31 +71,31 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
       </div>
 
       <div className="bg-brand-950 border border-brand-700 rounded p-3">
-        <div className="text-[11px] text-brand-600 font-medium mb-0.5">Top Tip</div>
+        <div className="text-xs-tight text-brand-600 font-medium mb-0.5">Top Tip</div>
         <div className="text-sm text-stone-200">{result.topTip}</div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-xs">
         <div>
-          <div className="text-[11px] font-medium text-stone-500 uppercase tracking-wide mb-1">
+          <div className="text-xs-tight font-medium text-stone-500 uppercase tracking-wide mb-1">
             Communication
           </div>
           <div className="text-stone-300">{result.communicationStyle}</div>
         </div>
         <div>
-          <div className="text-[11px] font-medium text-stone-500 uppercase tracking-wide mb-1">
+          <div className="text-xs-tight font-medium text-stone-500 uppercase tracking-wide mb-1">
             Budget Pattern
           </div>
           <div className="text-stone-300">{result.budgetPattern}</div>
         </div>
         <div>
-          <div className="text-[11px] font-medium text-stone-500 uppercase tracking-wide mb-1">
+          <div className="text-xs-tight font-medium text-stone-500 uppercase tracking-wide mb-1">
             Booking Pattern
           </div>
           <div className="text-stone-300">{result.bookingPattern}</div>
         </div>
         <div>
-          <div className="text-[11px] font-medium text-stone-500 uppercase tracking-wide mb-1">
+          <div className="text-xs-tight font-medium text-stone-500 uppercase tracking-wide mb-1">
             Relationship
           </div>
           <div className="text-stone-300">{result.relationshipNotes}</div>
@@ -104,7 +104,7 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
 
       {result.cuisinePreferences.length > 0 && (
         <div className="text-xs">
-          <div className="text-[11px] font-medium text-stone-500 uppercase tracking-wide mb-1">
+          <div className="text-xs-tight font-medium text-stone-500 uppercase tracking-wide mb-1">
             Cuisine Preferences
           </div>
           <div className="flex flex-wrap gap-1">
@@ -119,7 +119,7 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
 
       {result.avoidances.length > 0 && (
         <div className="text-xs">
-          <div className="text-[11px] font-medium text-stone-500 uppercase tracking-wide mb-1">
+          <div className="text-xs-tight font-medium text-stone-500 uppercase tracking-wide mb-1">
             Avoidances
           </div>
           <div className="flex flex-wrap gap-1">
@@ -132,7 +132,7 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">Auto insight · Not saved to client record</p>
+      <p className="text-xs-tight text-stone-400">Auto insight · Not saved to client record</p>
     </div>
   )
 }

@@ -76,21 +76,21 @@ export type TranscriptResult = z.infer<typeof TranscriptResponseSchema>['parsed'
 // SYSTEM PROMPT
 // ============================================
 
-const TRANSCRIPT_SYSTEM_PROMPT = `You are a data extraction assistant for a private chef's management system (ChefFlow). Your job is to parse a CONVERSATION TRANSCRIPT — a real exchange between a chef and a potential or existing client — and extract structured data.
+const TRANSCRIPT_SYSTEM_PROMPT = `You are a data extraction assistant for a private chef's management system (ChefFlow). Your job is to parse a CONVERSATION TRANSCRIPT - a real exchange between a chef and a potential or existing client - and extract structured data.
 
 The transcript may be from: a phone call, text messages, emails, DMs, meeting notes, or voice-to-text transcription.
 
 IDENTIFY THE PARTIES:
-- The chef (the person using ChefFlow) — their info is NOT extracted as a client.
-- The client/prospect — their info IS extracted.
+- The chef (the person using ChefFlow) - their info is NOT extracted as a client.
+- The client/prospect - their info IS extracted.
 - If it's unclear who is who, treat the person asking for chef services as the client.
 
 EXTRACT INTO THESE CATEGORIES:
 
-1. CLIENTS — anyone mentioned who is or could be a client.
-2. EVENTS — any specific event discussed (date, guest count, occasion, location, budget, dietary needs, service style).
-3. INQUIRIES — if this is a first contact or new request, capture it as an inquiry with channel and budget range.
-4. NOTES — follow-ups, dietary updates, scheduling notes, preferences, action items, or anything useful that doesn't fit the above.
+1. CLIENTS - anyone mentioned who is or could be a client.
+2. EVENTS - any specific event discussed (date, guest count, occasion, location, budget, dietary needs, service style).
+3. INQUIRIES - if this is a first contact or new request, capture it as an inquiry with channel and budget range.
+4. NOTES - follow-ups, dietary updates, scheduling notes, preferences, action items, or anything useful that doesn't fit the above.
 
 RULES:
 - One transcript can produce MULTIPLE clients (e.g., "My friend Lisa might want to book too").
@@ -116,7 +116,7 @@ NOTE fields:
 EXAMPLE:
 
 Input: "hey chef this is Lisa. so my mom's bday is march 22, wanting to do a nice dinner at her place in Wellesley. prob 8 people. she's lactose intolerant btw, and my aunt has a tree nut allergy. thinking maybe $150 a head? also my friend Dave might reach out to you for his wedding in september, I gave him your number"
-Output: { "parsed": { "clients": [{ "full_name": "Lisa", "dietary_restrictions": [], "allergies": [], "referral_source": null, "vibe_notes": null, "field_confidence": { "full_name": "confirmed" } }, { "full_name": "Lisa's mother", "dietary_restrictions": ["lactose intolerant"], "allergies": [], "field_confidence": { "full_name": "inferred", "dietary_restrictions": "confirmed" } }, { "full_name": "Dave", "referral_source": "referral", "referral_source_detail": "Referred by Lisa", "field_confidence": { "full_name": "confirmed" } }], "events": [{ "client_name": "Lisa", "event_date": "2026-03-22", "guest_count": 8, "occasion": "Birthday dinner (Lisa's mother)", "location": "Wellesley", "budget_cents": 120000, "dietary_restrictions": ["lactose intolerant", "tree nut allergy"], "service_style": null, "notes": "At mother's place" }], "inquiries": [{ "client_name": "Dave", "channel": "phone", "event_date": null, "guest_count": null, "occasion": "Wedding", "budget_range_min_cents": null, "budget_range_max_cents": null, "notes": "September wedding, referred by Lisa, may reach out" }], "notes": [{ "type": "action_item", "content": "Lisa's aunt has tree nut allergy — flag for menu planning", "related_client": "Lisa" }] }, "confidence": "high", "warnings": ["Lisa's mother's name not provided — stored as 'Lisa's mother'", "Dave's wedding details are sparse — he hasn't reached out yet"] }
+Output: { "parsed": { "clients": [{ "full_name": "Lisa", "dietary_restrictions": [], "allergies": [], "referral_source": null, "vibe_notes": null, "field_confidence": { "full_name": "confirmed" } }, { "full_name": "Lisa's mother", "dietary_restrictions": ["lactose intolerant"], "allergies": [], "field_confidence": { "full_name": "inferred", "dietary_restrictions": "confirmed" } }, { "full_name": "Dave", "referral_source": "referral", "referral_source_detail": "Referred by Lisa", "field_confidence": { "full_name": "confirmed" } }], "events": [{ "client_name": "Lisa", "event_date": "2026-03-22", "guest_count": 8, "occasion": "Birthday dinner (Lisa's mother)", "location": "Wellesley", "budget_cents": 120000, "dietary_restrictions": ["lactose intolerant", "tree nut allergy"], "service_style": null, "notes": "At mother's place" }], "inquiries": [{ "client_name": "Dave", "channel": "phone", "event_date": null, "guest_count": null, "occasion": "Wedding", "budget_range_min_cents": null, "budget_range_max_cents": null, "notes": "September wedding, referred by Lisa, may reach out" }], "notes": [{ "type": "action_item", "content": "Lisa's aunt has tree nut allergy - flag for menu planning", "related_client": "Lisa" }] }, "confidence": "high", "warnings": ["Lisa's mother's name not provided - stored as 'Lisa's mother'", "Dave's wedding details are sparse - he hasn't reached out yet"] }
 
 RESPOND WITH ONLY valid JSON (no markdown, no explanation).`
 

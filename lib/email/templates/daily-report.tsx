@@ -1,4 +1,4 @@
-// Daily Report — Chef Morning Email
+// Daily Report - Chef Morning Email
 // Sent every morning with a full business snapshot.
 
 import { Text, Link, Hr } from '@react-email/components'
@@ -35,7 +35,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
   const hasExpiringQuotes = content.expiringQuoteDetails.length > 0
 
   return (
-    <BaseLayout preview={`Daily Report — ${formatDate(reportDate)}`}>
+    <BaseLayout preview={`Daily Report - ${formatDate(reportDate)}`}>
       <Text style={heading}>Good morning, {chefName}</Text>
       <Text style={subheading}>{formatDate(reportDate)}</Text>
 
@@ -46,7 +46,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
           <div key={i} style={eventRow}>
             <Text style={eventTime}>{event.serveTime || 'TBD'}</Text>
             <Text style={eventDetail}>
-              <strong>{event.occasion || 'Event'}</strong> — {event.clientName}
+              <strong>{event.occasion || 'Event'}</strong> - {event.clientName}
               {event.guestCount ? ` (${event.guestCount} guests)` : ''}
             </Text>
           </div>
@@ -119,7 +119,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
       {/* ─── Operations ───────────────────────────────────── */}
       <Text style={sectionTitle}>Operations</Text>
       <Text style={paragraph}>
-        Response time: <strong>{content.avgResponseTimeHours ?? '—'}h avg</strong>
+        Response time: <strong>{content.avgResponseTimeHours ?? '-'}h avg</strong>
         {content.overdueResponses > 0 && (
           <span style={{ color: '#dc2626' }}> · {content.overdueResponses} overdue (&gt;24h)</span>
         )}
@@ -160,7 +160,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
               <Text style={warningText}>High-intent signals:</Text>
               {content.highIntentVisits.map((v, i) => (
                 <Text key={i} style={listItem}>
-                  • <strong>{v.clientName}</strong> —{' '}
+                  • <strong>{v.clientName}</strong> -{' '}
                   {v.eventType.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                 </Text>
               ))}
@@ -180,7 +180,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
                 month: 'short',
                 day: 'numeric',
               })}{' '}
-              — {c.eventCount} events booked
+              - {c.eventCount} events booked
             </Text>
           ))}
         </>
@@ -193,7 +193,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
           <Text style={sectionTitle}>Upcoming Milestones</Text>
           {content.upcomingMilestones.map((m, i) => (
             <Text key={i} style={listItem}>
-              • <strong>{m.clientName}</strong> — {m.label}
+              • <strong>{m.clientName}</strong> - {m.label}
             </Text>
           ))}
         </>
@@ -206,7 +206,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
           <Text style={sectionTitle}>Re-engage These Clients</Text>
           {content.dormantClients.map((c, i) => (
             <Text key={i} style={listItem}>
-              • <strong>{c.clientName}</strong> — {c.daysSinceLastEvent} days since last event
+              • <strong>{c.clientName}</strong> - {c.daysSinceLastEvent} days since last event
             </Text>
           ))}
         </>
@@ -219,7 +219,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
           <Text style={sectionTitle}>Action Items</Text>
           {content.nextBestActions.map((a, i) => (
             <Text key={i} style={listItem}>
-              • <strong>{a.label}</strong> — {a.clientName}: {a.description}
+              • <strong>{a.label}</strong> - {a.clientName}: {a.description}
             </Text>
           ))}
         </>

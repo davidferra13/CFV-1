@@ -92,7 +92,7 @@ async function EventsList({ status }: { status: EventStatus }) {
                   {event.occasion || 'Untitled Event'}
                 </Link>
                 {isDemoEvent(event) && (
-                  <Badge variant="info" className="ml-2 text-[10px] px-1.5 py-0">
+                  <Badge variant="info" className="ml-2 text-xxs px-1.5 py-0">
                     Sample
                   </Badge>
                 )}

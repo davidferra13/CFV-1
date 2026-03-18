@@ -1,7 +1,7 @@
 'use server'
 
-// Remy — Morning Briefing Generator (Phase 2B)
-// Generates a daily briefing from business data. 100% deterministic — no LLM.
+// Remy - Morning Briefing Generator (Phase 2B)
+// Generates a daily briefing from business data. 100% deterministic - no LLM.
 // Designed to run at a configurable time (default 7 AM) via cron.
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -105,7 +105,7 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
       const days = Math.floor(
         (Date.now() - new Date(inq.updated_at).getTime()) / (1000 * 60 * 60 * 24)
       )
-      return `${inq.lead_name ?? 'Unknown'}${inq.event_type ? ` (${inq.event_type})` : ''} — ${days}d waiting`
+      return `${inq.lead_name ?? 'Unknown'}${inq.event_type ? ` (${inq.event_type})` : ''} - ${days}d waiting`
     })
     sections.push({ heading: 'Inquiries Waiting', items, priority: 'normal' })
   }
@@ -127,7 +127,7 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
       const daysUntil = Math.ceil((bdThisYear.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
       const label =
         daysUntil === 0 ? 'today!' : daysUntil === 1 ? 'tomorrow' : `in ${daysUntil} days`
-      birthdayItems.push(`${c.full_name} — ${label}`)
+      birthdayItems.push(`${c.full_name} - ${label}`)
     }
   }
   if (birthdayItems.length > 0) {
@@ -146,7 +146,7 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
   // Build the briefing text
   const dayName = now.toLocaleDateString('en-US', { weekday: 'long' })
   const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
-  const lines: string[] = [`**Good morning, chef** — ${dayName}, ${dateStr}\n`]
+  const lines: string[] = [`**Good morning, chef** - ${dayName}, ${dateStr}\n`]
 
   if (sections.length === 0 && (weekEventCount ?? 0) === 0) {
     lines.push(

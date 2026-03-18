@@ -1,4 +1,4 @@
-// Daily Ops — Plan Engine
+// Daily Ops - Plan Engine
 // Pure computation: categorizes items from all existing systems into 4 swim lanes.
 // No database calls. Receives pre-fetched data and returns a DailyPlan.
 
@@ -10,7 +10,7 @@ import type { NextBestAction } from '@/lib/clients/next-best-action'
 import type { ChefTodo } from '@/lib/todos/actions'
 
 // ============================================
-// INPUT TYPE — everything pre-fetched by the server action
+// INPUT TYPE - everything pre-fetched by the server action
 // ============================================
 
 export interface PlanEngineInput {
@@ -179,7 +179,7 @@ export function buildDailyPlan(input: PlanEngineInput): DailyPlan {
       title: qi.title,
       description:
         qi.context.primaryLabel +
-        (qi.context.secondaryLabel ? ` — ${qi.context.secondaryLabel}` : ''),
+        (qi.context.secondaryLabel ? ` - ${qi.context.secondaryLabel}` : ''),
       href: qi.href,
       timeEstimateMinutes: queueItemTimeEstimate(qi.domain),
       priority: urgencyToPriority(qi.urgency),
@@ -201,7 +201,7 @@ export function buildDailyPlan(input: PlanEngineInput): DailyPlan {
       id: key,
       lane: dopCategoryToLane(task.taskCategory),
       title: task.taskLabel,
-      description: `${task.clientName} — ${task.eventOccasion ?? 'Event'} (${task.phase})`,
+      description: `${task.clientName} - ${task.eventOccasion ?? 'Event'} (${task.phase})`,
       href: task.scheduleHref,
       timeEstimateMinutes: dopTaskTimeEstimate(task.taskCategory),
       priority: task.isOverdue ? 1 : 2,
@@ -228,8 +228,8 @@ export function buildDailyPlan(input: PlanEngineInput): DailyPlan {
     items.push({
       id: key,
       lane: 'quick_admin',
-      title: `Send follow-up — ${fu.clientName}`,
-      description: `${fu.occasion ?? 'Event'} — ${fu.hoursOverdue}h overdue`,
+      title: `Send follow-up - ${fu.clientName}`,
+      description: `${fu.occasion ?? 'Event'} - ${fu.hoursOverdue}h overdue`,
       href: `/clients/${fu.clientId}#messages`,
       timeEstimateMinutes: 3,
       priority: 1,
@@ -248,7 +248,7 @@ export function buildDailyPlan(input: PlanEngineInput): DailyPlan {
     items.push({
       id: key,
       lane: nbaToLane(nba.actionType),
-      title: `${nba.label} — ${nba.clientName}`,
+      title: `${nba.label} - ${nba.clientName}`,
       description: nba.description,
       href: nba.href,
       timeEstimateMinutes: nba.urgency === 'critical' ? 3 : 5,
@@ -448,7 +448,7 @@ function generateRemySummary(
   const prepMin = prepLane?.totalTimeMinutes ?? 0
 
   if (totalItems === 0) {
-    return "Nothing on the board today. Your calendar's clear — perfect day to experiment with new recipes or take some well-earned time off."
+    return "Nothing on the board today. Your calendar's clear - perfect day to experiment with new recipes or take some well-earned time off."
   }
 
   const parts: string[] = []
@@ -461,13 +461,13 @@ function generateRemySummary(
         `You've got ${e.occasion ?? 'an event'} for ${e.clientName} today (${e.guestCount} guests, serve at ${e.serveTime}).`
       )
     } else {
-      parts.push(`Big day — ${todayEvents.length} events on the schedule.`)
+      parts.push(`Big day - ${todayEvents.length} events on the schedule.`)
     }
   }
 
   // Admin estimate
   if (adminMin > 0 && adminMin <= 20) {
-    parts.push(`Clear the admin in about ${adminMin} minutes — it's mostly quick stuff.`)
+    parts.push(`Clear the admin in about ${adminMin} minutes - it's mostly quick stuff.`)
   } else if (adminMin > 20) {
     parts.push(`${adminLane!.items.length} admin items today (around ${adminMin} min).`)
   }
@@ -485,7 +485,7 @@ function generateRemySummary(
   // Protected time
   if (protectedTime.length > 0) {
     const block = protectedTime[0]
-    parts.push(`Don't forget — you blocked off time for "${block.title}."`)
+    parts.push(`Don't forget - you blocked off time for "${block.title}."`)
   }
 
   // If admin is light, emphasize it

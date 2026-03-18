@@ -1,11 +1,11 @@
 /**
- * EventOpsComposition — Remotion animation explaining event operations features.
+ * EventOpsComposition - Remotion animation explaining event operations features.
  *
  * Covers the 4 operational areas:
- *  1. Staff Assignments — who's working, hours, pay
- *  2. Temperature Logs — food safety compliance
- *  3. Contingency Plans — what-if scenarios
- *  4. Menu Modifications — what changed from the plan
+ *  1. Staff Assignments - who's working, hours, pay
+ *  2. Temperature Logs - food safety compliance
+ *  3. Contingency Plans - what-if scenarios
+ *  4. Menu Modifications - what changed from the plan
  */
 
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion'
@@ -79,9 +79,9 @@ const FEATURES = [
     name: 'Menu Modifications',
     description: 'Track what changed on service day vs the plan',
     details: [
-      '🔀 Substituted — swapped one ingredient for another',
-      '➕ Added — served something not on the original menu',
-      '❌ Not Served — item was planned but not made',
+      '🔀 Substituted - swapped one ingredient for another',
+      '➕ Added - served something not on the original menu',
+      '❌ Not Served - item was planned but not made',
     ],
     color: '#d1fae5',
     borderColor: '#6ee7b7',

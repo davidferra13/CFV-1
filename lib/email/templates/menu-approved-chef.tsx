@@ -1,4 +1,4 @@
-// Menu Approved — Chef Notification Email
+// Menu Approved - Chef Notification Email
 // Sent to the chef when a client approves the menu for their event.
 
 import { Text, Link } from '@react-email/components'
@@ -25,7 +25,7 @@ export function MenuApprovedChefEmail({
       <Text style={heading}>Menu approved</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>
-        Great news — <strong>{clientName}</strong> has approved the menu for{' '}
+        Great news - <strong>{clientName}</strong> has approved the menu for{' '}
         <strong>{occasion}</strong>.
       </Text>
 

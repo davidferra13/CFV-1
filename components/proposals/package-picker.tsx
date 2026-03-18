@@ -1,10 +1,10 @@
-/* eslint-disable @next/next/no-img-element, jsx-a11y/alt-text */
 'use client'
 
+import NextImage from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Check, Image } from '@/components/ui/icons'
+import { Check, Image as ImageIcon } from '@/components/ui/icons'
 
 type Template = {
   id: string
@@ -42,7 +42,13 @@ export function PackagePicker({ templates, selectedId, onSelect }: Props) {
             >
               {t.coverPhotoUrl ? (
                 <div className="h-28 bg-stone-800 overflow-hidden relative">
-                  <img src={t.coverPhotoUrl} alt={t.name} className="w-full h-full object-cover" />
+                  <NextImage
+                    src={t.coverPhotoUrl}
+                    alt={t.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="w-full h-full object-cover"
+                  />
                   {isSelected && (
                     <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-brand-600 flex items-center justify-center">
                       <Check className="h-4 w-4 text-white" />
@@ -51,7 +57,7 @@ export function PackagePicker({ templates, selectedId, onSelect }: Props) {
                 </div>
               ) : (
                 <div className="h-28 bg-stone-800 flex items-center justify-center relative">
-                  <Image className="h-8 w-8 text-stone-300" />
+                  <ImageIcon className="h-8 w-8 text-stone-300" />
                   {isSelected && (
                     <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-brand-600 flex items-center justify-center">
                       <Check className="h-4 w-4 text-white" />

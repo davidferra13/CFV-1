@@ -1,4 +1,4 @@
-// Client Revenue Concentration Risk — pure computation, no server action.
+// Client Revenue Concentration Risk - pure computation, no server action.
 // Identifies over-reliance on a single client for revenue.
 
 export type ConcentrationRisk = {

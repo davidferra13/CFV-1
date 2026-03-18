@@ -83,7 +83,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
             <Link
               href="/activity"
               onClick={() => setOpen(false)}
-              className="text-[10px] font-medium text-brand-500 hover:text-brand-400"
+              className="text-xxs font-medium text-brand-500 hover:text-brand-400"
             >
               View all
             </Link>
@@ -103,7 +103,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
                   className="flex items-start gap-2 py-1.5 px-2 rounded-md hover:bg-stone-800 transition-colors"
                 >
                   <span
-                    className={`text-[9px] font-medium px-1 py-0.5 rounded shrink-0 mt-0.5 ${config.bgColor} ${config.color}`}
+                    className={`text-2xs font-medium px-1 py-0.5 rounded shrink-0 mt-0.5 ${config.bgColor} ${config.color}`}
                   >
                     {config.label}
                   </span>
@@ -111,7 +111,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
                     <p className="text-xs text-stone-300 leading-snug line-clamp-2">
                       {entry.summary}
                     </p>
-                    <p className="text-[10px] text-stone-400 mt-0.5">
+                    <p className="text-xxs text-stone-400 mt-0.5">
                       {formatTimeAgo(entry.created_at)}
                     </p>
                   </div>

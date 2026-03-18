@@ -17,7 +17,14 @@ export default async function AdminSystemPage() {
   let qol = null
   let error = null
   try {
-    ;[health, qol] = await Promise.all([getSystemHealthStats(), getQolMetricsSummary(30)])
+    const results = await Promise.allSettled([getSystemHealthStats(), getQolMetricsSummary(30)])
+    health = results[0].status === 'fulfilled' ? results[0].value : null
+    qol = results[1].status === 'fulfilled' ? results[1].value : null
+    if (results[0].status === 'rejected')
+      console.error('[admin-system] Health stats failed:', results[0].reason)
+    if (results[1].status === 'rejected')
+      console.error('[admin-system] QoL metrics failed:', results[1].reason)
+    if (!health && !qol) error = 'Failed to load system stats'
   } catch (err) {
     error = 'Failed to load system stats'
     console.error('[Admin] System health error:', err)
@@ -108,7 +115,7 @@ export default async function AdminSystemPage() {
                 <p className="text-xl font-bold text-slate-900 mt-1">
                   {qol?.duplicateCreatePreventedCount ?? 0}
                 </p>
-                <p className="text-[11px] text-slate-500 mt-1">
+                <p className="text-xs-tight text-slate-500 mt-1">
                   Replay success rate:{' '}
                   {qol ? `${Math.round((qol.offlineReplaySuccessRate ?? 0) * 100)}%` : '0%'}
                 </p>

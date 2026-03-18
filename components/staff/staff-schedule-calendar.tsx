@@ -6,10 +6,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import {
-  getStaffSchedules,
-  deleteShift,
-} from '@/lib/staff/staff-scheduling-actions'
+import { getStaffSchedules, deleteShift } from '@/lib/staff/staff-scheduling-actions'
 import { listStaffMembers } from '@/lib/staff/actions'
 import { ShiftForm } from './shift-form'
 
@@ -175,9 +172,7 @@ export function StaffScheduleCalendar() {
     : staffMembers
 
   function getShiftsForCell(staffId: string, date: string): Shift[] {
-    return shifts.filter(
-      (s) => s.staff_member_id === staffId && s.shift_date === date
-    )
+    return shifts.filter((s) => s.staff_member_id === staffId && s.shift_date === date)
   }
 
   return (
@@ -211,11 +206,20 @@ export function StaffScheduleCalendar() {
           >
             <option value="">All Staff</option>
             {staffMembers.map((m) => (
-              <option key={m.id} value={m.id}>{m.name}</option>
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
             ))}
           </select>
 
-          <Button onClick={() => { setEditingShift(null); setPrefillDate(null); setPrefillStaffId(null); setShowForm(true) }}>
+          <Button
+            onClick={() => {
+              setEditingShift(null)
+              setPrefillDate(null)
+              setPrefillStaffId(null)
+              setShowForm(true)
+            }}
+          >
             + Add Shift
           </Button>
         </div>
@@ -282,9 +286,7 @@ export function StaffScheduleCalendar() {
               <tr key={member.id} className="hover:bg-stone-50/50">
                 <td className="border-b border-r border-stone-200 px-3 py-2">
                   <div className="text-sm font-medium text-stone-800">{member.name}</div>
-                  <div className="text-xs text-stone-400">
-                    {member.role.replace(/_/g, ' ')}
-                  </div>
+                  <div className="text-xs text-stone-400">{member.role.replace(/_/g, ' ')}</div>
                 </td>
                 {weekDates.map((d) => {
                   const dateStr = formatDate(d)
@@ -311,14 +313,16 @@ export function StaffScheduleCalendar() {
                               {formatTime(shift.start_time)} - {formatTime(shift.end_time)}
                             </div>
                             {shift.events && (
-                              <div className="truncate text-[10px] opacity-75">
+                              <div className="truncate text-xxs opacity-75">
                                 {shift.events.title}
                               </div>
                             )}
                             <div className="flex items-center gap-1 mt-0.5">
-                              <span className={`inline-block rounded px-1 py-0.5 text-[10px] ${
-                                STATUS_BADGES[shift.status] ?? ''
-                              }`}>
+                              <span
+                                className={`inline-block rounded px-1 py-0.5 text-xxs ${
+                                  STATUS_BADGES[shift.status] ?? ''
+                                }`}
+                              >
                                 {shift.status.replace(/_/g, ' ')}
                               </span>
                               <button
@@ -326,7 +330,7 @@ export function StaffScheduleCalendar() {
                                   e.stopPropagation()
                                   handleDeleteShift(shift.id)
                                 }}
-                                className="ml-auto text-[10px] text-red-400 hover:text-red-600"
+                                className="ml-auto text-xxs text-red-400 hover:text-red-600"
                                 title="Delete shift"
                               >
                                 x
@@ -344,9 +348,7 @@ export function StaffScheduleCalendar() {
         </table>
       </div>
 
-      {isPending && (
-        <div className="text-center text-xs text-stone-400">Updating...</div>
-      )}
+      {isPending && <div className="text-center text-xs text-stone-400">Updating...</div>}
     </div>
   )
 }

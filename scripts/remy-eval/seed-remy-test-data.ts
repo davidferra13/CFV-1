@@ -1,5 +1,5 @@
 /**
- * Remy Eval — Seed Test Data
+ * Remy Eval - Seed Test Data
  *
  * Populates the agent test account with rich, realistic, internally consistent
  * mock data so the Remy eval harness has real context to work with.
@@ -48,7 +48,7 @@ const C = {
 } as const
 
 const E = {
-  // Events — named by client + occasion for traceability
+  // Events - named by client + occasion for traceability
   henderson_mediterranean: 'e0a10002-0001-4000-8000-000000000001',
   henderson_birthday: 'e0a10002-0001-4000-8000-000000000002',
   henderson_holiday: 'e0a10002-0001-4000-8000-000000000003',
@@ -307,7 +307,7 @@ async function seedClients() {
       dietary_restrictions: ['vegan'],
       allergies: [],
       vibe_notes:
-        'Tech exec at Acme Corp. All corporate events. Vegan, very specific about sourcing — only organic. Quiet, detail-oriented, always on time.',
+        'Tech exec at Acme Corp. All corporate events. Vegan, very specific about sourcing - only organic. Quiet, detail-oriented, always on time.',
       preferred_contact_method: 'email' as const,
       address: '1 Kendall Square, Cambridge, MA 02139',
     },
@@ -326,7 +326,7 @@ async function seedClients() {
       dietary_restrictions: [],
       allergies: ['shellfish'],
       vibe_notes:
-        'Wine pairing enthusiast. Intimate dinner parties, usually 6-8 guests. Tends to pay late — always follows through but needs a gentle reminder around day 7-8.',
+        'Wine pairing enthusiast. Intimate dinner parties, usually 6-8 guests. Tends to pay late - always follows through but needs a gentle reminder around day 7-8.',
       preferred_contact_method: 'email' as const,
       address: '15 Beacon Street, Boston, MA 02108',
     },
@@ -345,7 +345,7 @@ async function seedClients() {
       dietary_restrictions: [],
       allergies: ['dairy'],
       vibe_notes:
-        'Great family, two kids (ages 8 and 11) both dairy-free. Last booking was 11 weeks ago — overdue for re-engagement. Love casual family-style service.',
+        'Great family, two kids (ages 8 and 11) both dairy-free. Last booking was 11 weeks ago - overdue for re-engagement. Love casual family-style service.',
       preferred_contact_method: 'phone' as const,
       address: '200 Walden Street, Concord, MA 01742',
     },
@@ -364,7 +364,7 @@ async function seedClients() {
       dietary_restrictions: [],
       allergies: ['shellfish'],
       vibe_notes:
-        'New client. SHELLFISH ALLERGY IS SEVERE — carries EpiPen. Engagement dinner coming up. Very excited, first time hiring a private chef.',
+        'New client. SHELLFISH ALLERGY IS SEVERE - carries EpiPen. Engagement dinner coming up. Very excited, first time hiring a private chef.',
       preferred_contact_method: 'text' as const,
       address: '55 Summer Street, Boston, MA 02110',
     },
@@ -383,7 +383,7 @@ async function seedClients() {
       dietary_restrictions: [],
       allergies: [],
       vibe_notes:
-        'Irish heritage, loves rustic farm-to-table. Has a barn venue in Lexington — incredible space. Knows his whiskey. Very social, always invites the chef to eat with guests at the end.',
+        'Irish heritage, loves rustic farm-to-table. Has a barn venue in Lexington - incredible space. Knows his whiskey. Very social, always invites the chef to eat with guests at the end.',
       preferred_contact_method: 'phone' as const,
       address: '8 Farm Lane, Lexington, MA 02420',
     },
@@ -402,7 +402,7 @@ async function seedClients() {
       dietary_restrictions: [],
       allergies: ['tree nuts'],
       vibe_notes:
-        'Large family gatherings, usually 25-40 guests. Budget-conscious but always pays on time. Maria (wife) handles desserts herself — never offer to make dessert. TREE NUT ALLERGY — David.',
+        'Large family gatherings, usually 25-40 guests. Budget-conscious but always pays on time. Maria (wife) handles desserts herself - never offer to make dessert. TREE NUT ALLERGY - David.',
       preferred_contact_method: 'text' as const,
       address: '340 Main Street, Medford, MA 02155',
     },
@@ -421,7 +421,7 @@ async function seedClients() {
       dietary_restrictions: ['gluten-free'],
       allergies: [],
       vibe_notes:
-        "David Garcia's wife. Handles desserts herself — never offer to make dessert. Gluten-free. Always at the Garcia family events.",
+        "David Garcia's wife. Handles desserts herself - never offer to make dessert. Gluten-free. Always at the Garcia family events.",
       preferred_contact_method: 'text' as const,
       address: '340 Main Street, Medford, MA 02155',
     },
@@ -440,7 +440,7 @@ async function seedClients() {
       dietary_restrictions: [],
       allergies: [],
       vibe_notes:
-        'Highest-value client. Luxury tasting menus, $200+/head. Wine collector — pairs everything from her cellar. Beacon Hill brownstone. Very private, no social media posting of events ever.',
+        'Highest-value client. Luxury tasting menus, $200+/head. Wine collector - pairs everything from her cellar. Beacon Hill brownstone. Very private, no social media posting of events ever.',
       preferred_contact_method: 'email' as const,
       address: '3 Louisburg Square, Boston, MA 02108',
     },
@@ -459,7 +459,7 @@ async function seedClients() {
       dietary_restrictions: ['gluten-free'],
       allergies: [],
       vibe_notes:
-        'Young couple. Ryan photographs everything for Instagram — presentation matters more than usual. Jessica is gluten-free. First anniversary dinner was a hit.',
+        'Young couple. Ryan photographs everything for Instagram - presentation matters more than usual. Jessica is gluten-free. First anniversary dinner was a hit.',
       preferred_contact_method: 'instagram' as const,
       address: '120 Newbury Street, Boston, MA 02116',
     },
@@ -478,7 +478,7 @@ async function seedClients() {
       dietary_restrictions: ['vegetarian'],
       allergies: [],
       vibe_notes:
-        'Indian spice expert — knows her stuff. Books cooking classes, not dinner parties. Always brings 8-10 friends. Very energetic, great reviews.',
+        'Indian spice expert - knows her stuff. Books cooking classes, not dinner parties. Always brings 8-10 friends. Very energetic, great reviews.',
       preferred_contact_method: 'email' as const,
       address: '75 Hampshire Street, Cambridge, MA 02139',
     },
@@ -516,7 +516,7 @@ async function seedClients() {
       dietary_restrictions: [],
       allergies: ['peanuts'],
       vibe_notes:
-        'New client. Have a tasting scheduled — menu pending approval. Tim Morrison has a PEANUT ALLERGY (moderate). Wife Amanda does the planning.',
+        'New client. Have a tasting scheduled - menu pending approval. Tim Morrison has a PEANUT ALLERGY (moderate). Wife Amanda does the planning.',
       preferred_contact_method: 'email' as const,
       address: '25 Maple Avenue, Newton, MA 02458',
     },
@@ -535,7 +535,7 @@ async function seedClients() {
       dietary_restrictions: [],
       allergies: [],
       vibe_notes:
-        'Classic American comfort food. Big 4th of July tradition — hosts 40+ every year. Linda (wife) makes the pies. Very loyal, been booking for 3 years. Easy client.',
+        'Classic American comfort food. Big 4th of July tradition - hosts 40+ every year. Linda (wife) makes the pies. Very loyal, been booking for 3 years. Easy client.',
       preferred_contact_method: 'phone' as const,
       address: '180 Lincoln Road, Sudbury, MA 01776',
     },
@@ -660,7 +660,7 @@ async function seedEvents() {
       location_zip: '02108',
       status: 'completed' as const,
       kitchen_notes:
-        'Wine pairing brunch. Shellfish-free (Victoria). $2,100 — PAYMENT STILL OUTSTANDING.',
+        'Wine pairing brunch. Shellfish-free (Victoria). $2,100 - PAYMENT STILL OUTSTANDING.',
     },
     {
       id: E.davis_wine_dinner,
@@ -851,7 +851,7 @@ async function seedEvents() {
       location_zip: '02138',
       status: 'confirmed' as const,
       kitchen_notes:
-        'Outdoor garden setting. Pescatarian options for James. Spring menu — asparagus, lamb, pea shoots.',
+        'Outdoor garden setting. Pescatarian options for James. Spring menu - asparagus, lamb, pea shoots.',
     },
     {
       id: E.rothschild_spring_tasting,
@@ -947,7 +947,7 @@ async function seedEvents() {
       location_city: 'Cambridge',
       location_zip: '02138',
       status: 'cancelled' as const,
-      kitchen_notes: 'Cancelled — Hendersons traveled to Vermont instead.',
+      kitchen_notes: 'Cancelled - Hendersons traveled to Vermont instead.',
     },
     {
       id: E.chen_product_launch,
@@ -978,14 +978,14 @@ async function seedLedgerEntries() {
   // Each entry must be consistent with the event it references.
   // amount_cents is positive for revenue, negative for refunds.
   const entries = [
-    // Henderson Mediterranean ($3,200 total — deposit + final)
+    // Henderson Mediterranean ($3,200 total - deposit + final)
     {
       tenant_id: TENANT_ID,
       event_id: E.henderson_mediterranean,
       client_id: C.henderson,
       entry_type: 'deposit' as const,
       amount_cents: 160000,
-      description: 'Deposit — 50%',
+      description: 'Deposit - 50%',
       payment_method: 'zelle' as const,
       created_at: isoTimestamp(-50),
     },
@@ -999,14 +999,14 @@ async function seedLedgerEntries() {
       payment_method: 'zelle' as const,
       created_at: isoTimestamp(-44),
     },
-    // Henderson Birthday ($4,800 — deposit + final + tip)
+    // Henderson Birthday ($4,800 - deposit + final + tip)
     {
       tenant_id: TENANT_ID,
       event_id: E.henderson_birthday,
       client_id: C.henderson,
       entry_type: 'deposit' as const,
       amount_cents: 240000,
-      description: 'Deposit — 50%',
+      description: 'Deposit - 50%',
       payment_method: 'venmo' as const,
       created_at: isoTimestamp(-125),
     },
@@ -1026,7 +1026,7 @@ async function seedLedgerEntries() {
       client_id: C.henderson,
       entry_type: 'tip' as const,
       amount_cents: 96000,
-      description: 'Tip — generous!',
+      description: 'Tip - generous!',
       payment_method: 'cash' as const,
       created_at: isoTimestamp(-119),
     },
@@ -1037,7 +1037,7 @@ async function seedLedgerEntries() {
       client_id: C.martinez,
       entry_type: 'deposit' as const,
       amount_cents: 2400000,
-      description: 'Wedding deposit — 50%',
+      description: 'Wedding deposit - 50%',
       payment_method: 'check' as const,
       created_at: isoTimestamp(-200),
     },
@@ -1084,7 +1084,7 @@ async function seedLedgerEntries() {
       payment_method: 'zelle' as const,
       created_at: isoTimestamp(-85),
     },
-    // Davis Brunch ($2,100) — UNPAID, no ledger entry (this tests "outstanding" detection)
+    // Davis Brunch ($2,100) - UNPAID, no ledger entry (this tests "outstanding" detection)
     // Rothschild Winter Tasting ($1,350 = 6 guests × $225)
     {
       tenant_id: TENANT_ID,
@@ -1092,7 +1092,7 @@ async function seedLedgerEntries() {
       client_id: C.rothschild,
       entry_type: 'payment' as const,
       amount_cents: 135000,
-      description: 'Tasting menu — 6 guests × $225',
+      description: 'Tasting menu - 6 guests × $225',
       payment_method: 'check' as const,
       created_at: isoTimestamp(-19),
     },
@@ -1103,7 +1103,7 @@ async function seedLedgerEntries() {
       client_id: C.rothschild,
       entry_type: 'payment' as const,
       amount_cents: 1000000,
-      description: 'Charity gala — 50 guests × $200',
+      description: 'Charity gala - 50 guests × $200',
       payment_method: 'check' as const,
       created_at: isoTimestamp(-95),
     },
@@ -1136,7 +1136,7 @@ async function seedLedgerEntries() {
       client_id: C.obrien,
       entry_type: 'payment' as const,
       amount_cents: 320000,
-      description: 'Farm table dinner — 16 guests',
+      description: 'Farm table dinner - 16 guests',
       payment_method: 'zelle' as const,
       created_at: isoTimestamp(-38),
     },
@@ -1147,7 +1147,7 @@ async function seedLedgerEntries() {
       client_id: C.garcia,
       entry_type: 'payment' as const,
       amount_cents: 360000,
-      description: 'Quinceañera — 40 guests',
+      description: 'Quinceañera - 40 guests',
       payment_method: 'cash' as const,
       created_at: isoTimestamp(-53),
     },
@@ -1158,7 +1158,7 @@ async function seedLedgerEntries() {
       client_id: C.foster,
       entry_type: 'payment' as const,
       amount_cents: 320000,
-      description: 'Retirement party — 30 guests',
+      description: 'Retirement party - 30 guests',
       payment_method: 'check' as const,
       created_at: isoTimestamp(-23),
     },
@@ -1169,7 +1169,7 @@ async function seedLedgerEntries() {
       client_id: C.patel,
       entry_type: 'payment' as const,
       amount_cents: 180000,
-      description: 'Indian spice workshop — 10 guests',
+      description: 'Indian spice workshop - 10 guests',
       payment_method: 'venmo' as const,
       created_at: isoTimestamp(-48),
     },
@@ -1180,7 +1180,7 @@ async function seedLedgerEntries() {
       client_id: C.sullivan,
       entry_type: 'payment' as const,
       amount_cents: 240000,
-      description: '4th of July BBQ — 45 guests',
+      description: '4th of July BBQ - 45 guests',
       payment_method: 'check' as const,
       created_at: isoTimestamp(-239),
     },
@@ -1201,7 +1201,7 @@ async function seedLedgerEntries() {
       client_id: C.rothschild,
       entry_type: 'deposit' as const,
       amount_cents: 80000,
-      description: 'Spring tasting deposit — 50%',
+      description: 'Spring tasting deposit - 50%',
       payment_method: 'check' as const,
       created_at: isoTimestamp(-5),
     },
@@ -1220,7 +1220,7 @@ async function seedExpenses() {
       tenant_id: TENANT_ID,
       event_id: E.henderson_mediterranean,
       category: 'groceries' as const,
-      description: 'Whole Foods — seafood, produce, oils',
+      description: 'Whole Foods - seafood, produce, oils',
       amount_cents: 42000,
       payment_method: 'card' as const,
       expense_date: daysAgo(47),
@@ -1242,7 +1242,7 @@ async function seedExpenses() {
       tenant_id: TENANT_ID,
       event_id: E.martinez_wedding,
       category: 'groceries' as const,
-      description: 'Wedding ingredients — full order',
+      description: 'Wedding ingredients - full order',
       amount_cents: 680000,
       payment_method: 'card' as const,
       expense_date: daysAgo(183),
@@ -1292,7 +1292,7 @@ async function seedExpenses() {
       tenant_id: TENANT_ID,
       event_id: E.rothschild_tasting,
       category: 'specialty_items' as const,
-      description: 'White truffle — 2 oz from Urbani',
+      description: 'White truffle - 2 oz from Urbani',
       amount_cents: 32000,
       payment_method: 'card' as const,
       expense_date: daysAgo(22),
@@ -1443,7 +1443,7 @@ async function seedRecipes() {
       name: 'Peruvian Ceviche',
       category: 'appetizer' as const,
       method:
-        'Dice fresh sea bass into 1cm cubes. Marinate in lime juice (leche de tigre) with red onion, aji amarillo, cilantro, salt. 15 min max — fish should be opaque on outside, raw center. Serve with sweet potato and corn.',
+        'Dice fresh sea bass into 1cm cubes. Marinate in lime juice (leche de tigre) with red onion, aji amarillo, cilantro, salt. 15 min max - fish should be opaque on outside, raw center. Serve with sweet potato and corn.',
       servings: 6,
       prep_time_minutes: 25,
       cook_time_minutes: 0,
@@ -1553,7 +1553,7 @@ async function seedIngredients() {
 async function seedRecipeIngredients() {
   console.log('📋 Seeding recipe ingredients (lobster bisque)...')
 
-  // Lobster bisque ingredients — realistic quantities for 6 servings
+  // Lobster bisque ingredients - realistic quantities for 6 servings
   const recipeIngredients = [
     {
       id: RI.lb_lobster,
@@ -1740,7 +1740,7 @@ async function seedMessages() {
   console.log('💬 Seeding inquiry messages...')
 
   const messages = [
-    // New lead Sarah — 2 messages
+    // New lead Sarah - 2 messages
     {
       tenant_id: TENANT_ID,
       inquiry_id: I.newlead_sarah,
@@ -1761,7 +1761,7 @@ async function seedMessages() {
       status: 'sent' as const,
       created_at: isoTimestamp(-2),
     },
-    // Referral lead — 1 message
+    // Referral lead - 1 message
     {
       tenant_id: TENANT_ID,
       inquiry_id: I.newlead_james,
@@ -1772,7 +1772,7 @@ async function seedMessages() {
       status: 'logged' as const,
       created_at: isoTimestamp(-1),
     },
-    // Awaiting chef — 3 messages
+    // Awaiting chef - 3 messages
     {
       tenant_id: TENANT_ID,
       inquiry_id: I.awaitingchef,
@@ -1798,7 +1798,7 @@ async function seedMessages() {
       inquiry_id: I.awaitingchef,
       direction: 'inbound' as const,
       channel: 'email' as const,
-      body: 'That sounds great! Two guests are vegetarian, one is lactose intolerant. The venue is an old barn in Salem — it has a kitchen. Call me anytime after 2pm.',
+      body: 'That sounds great! Two guests are vegetarian, one is lactose intolerant. The venue is an old barn in Salem - it has a kitchen. Call me anytime after 2pm.',
       subject: 'Re: Re: Rehearsal dinner inquiry',
       status: 'logged' as const,
       created_at: isoTimestamp(-3),
@@ -1988,7 +1988,7 @@ async function seedMemories() {
       tenant_id: TENANT_ID,
       category: 'client_insight',
       content:
-        '[eval] Victoria Davis tends to pay late — always send a gentle reminder around day 7',
+        '[eval] Victoria Davis tends to pay late - always send a gentle reminder around day 7',
       importance: 7,
       content_hash: sha256('eval-mem-6'),
       related_client_id: C.davis,
@@ -1997,7 +1997,7 @@ async function seedMemories() {
       tenant_id: TENANT_ID,
       category: 'client_insight',
       content:
-        "[eval] The Martinez family loves when I recreate dishes from their wedding — it's their love language",
+        "[eval] The Martinez family loves when I recreate dishes from their wedding - it's their love language",
       importance: 6,
       content_hash: sha256('eval-mem-7'),
       related_client_id: C.martinez,
@@ -2006,7 +2006,7 @@ async function seedMemories() {
       tenant_id: TENANT_ID,
       category: 'client_insight',
       content:
-        '[eval] Emma Rothschild is extremely private — never post photos of her events on social media',
+        '[eval] Emma Rothschild is extremely private - never post photos of her events on social media',
       importance: 9,
       content_hash: sha256('eval-mem-8'),
       related_client_id: C.rothschild,
@@ -2016,7 +2016,7 @@ async function seedMemories() {
       tenant_id: TENANT_ID,
       category: 'scheduling_pattern',
       content:
-        '[eval] Never book more than 2 events in the same weekend — quality drops on the third',
+        '[eval] Never book more than 2 events in the same weekend - quality drops on the third',
       importance: 8,
       content_hash: sha256('eval-mem-9'),
     },
@@ -2095,7 +2095,7 @@ async function seedReviews() {
       client_id: C.henderson,
       rating: 5,
       feedback_text:
-        'The crudo bar was incredible and the service was impeccable. James had no idea — the surprise was perfect.',
+        'The crudo bar was incredible and the service was impeccable. James had no idea - the surprise was perfect.',
       display_consent: true,
       created_at: isoTimestamp(-118),
     },
@@ -2105,7 +2105,7 @@ async function seedReviews() {
       client_id: C.obrien,
       rating: 5,
       feedback_text:
-        "Best farm-to-table dinner I've ever hosted. Everything was local, everything was fresh. Even invited the chef to join us for dessert — felt like family.",
+        "Best farm-to-table dinner I've ever hosted. Everything was local, everything was fresh. Even invited the chef to join us for dessert - felt like family.",
       display_consent: true,
       created_at: isoTimestamp(-38),
     },
@@ -2183,7 +2183,7 @@ async function main() {
   const isClean = process.argv.includes('--clean')
 
   console.log('╔══════════════════════════════════════════════════════╗')
-  console.log('║         Remy Eval — Test Data Seeder                ║')
+  console.log('║         Remy Eval - Test Data Seeder                ║')
   console.log('╠══════════════════════════════════════════════════════╣')
   console.log(`║  Tenant:  ${TENANT_ID}   ║`)
   console.log(

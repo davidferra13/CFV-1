@@ -1,13 +1,13 @@
 /**
- * RemyPrivacySchematic — Remotion composition showing exactly how Remy's
+ * RemyPrivacySchematic - Remotion composition showing exactly how Remy's
  * data flow works. 6 scenes, ~55 seconds at 30fps.
  *
- * Scene 1: "You talk to Remy" — chef types a message
- * Scene 2: "Remy processes it privately" — message travels to Pi, comes back
- * Scene 3: "Your answer comes back" — closed loop visible
- * Scene 4: "What doesn't happen" — blocked paths to external services
- * Scene 5: "Where your conversation lives" — browser-local storage
- * Scene 6: "The bottom line" — summary
+ * Scene 1: "You talk to Remy" - chef types a message
+ * Scene 2: "Remy processes it privately" - message travels to Pi, comes back
+ * Scene 3: "Your answer comes back" - closed loop visible
+ * Scene 4: "What doesn't happen" - blocked paths to external services
+ * Scene 5: "Where your conversation lives" - browser-local storage
+ * Scene 6: "The bottom line" - summary
  */
 
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion'
@@ -172,7 +172,7 @@ function Scene1() {
                 lineHeight: 1.5,
               }}
             >
-              Help me plan a menu for Saturday&apos;s dinner party — 8 guests, two with nut
+              Help me plan a menu for Saturday&apos;s dinner party - 8 guests, two with nut
               allergies
             </div>
           </div>
@@ -209,7 +209,7 @@ function Scene2() {
           Remy processes it privately
         </div>
         <div style={{ fontSize: 14, color: STONE[500], marginTop: 6, fontFamily: FONT }}>
-          On ChefFlow&apos;s own infrastructure — not in the cloud
+          On ChefFlow&apos;s own infrastructure - not in the cloud
         </div>
       </div>
 
@@ -414,7 +414,7 @@ function Scene3() {
           Your answer comes back
         </div>
         <div style={{ fontSize: 14, color: STONE[500], marginTop: 6, fontFamily: FONT }}>
-          A closed loop — the data never leaves
+          A closed loop - the data never leaves
         </div>
       </div>
 
@@ -534,7 +534,7 @@ function Scene3() {
             fontWeight="700"
             fontFamily={FONT}
           >
-            🔒 Closed loop — nothing exits ChefFlow
+            🔒 Closed loop - nothing exits ChefFlow
           </text>
 
           <text
@@ -705,12 +705,12 @@ function Scene5() {
                 marginBottom: 8,
               }}
             >
-              🗂️ Your Browser — IndexedDB
+              🗂️ Your Browser - IndexedDB
             </div>
             <div style={{ fontSize: 10, color: STONE[500], fontFamily: FONT, lineHeight: 1.6 }}>
-              📝 Menu planning — 5 messages{'\n'}
-              📝 Event prep — 3 messages{'\n'}
-              📝 Client follow-up — 2 messages
+              📝 Menu planning - 5 messages{'\n'}
+              📝 Event prep - 3 messages{'\n'}
+              📝 Client follow-up - 2 messages
             </div>
           </div>
 

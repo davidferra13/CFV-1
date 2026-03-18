@@ -1,6 +1,6 @@
 // Real-Time Chat Subscriptions
 // Uses Supabase Realtime for message delivery, typing indicators, and presence
-// Client-side only — used in 'use client' components
+// Client-side only - used in 'use client' components
 
 import { createClient } from '@/lib/supabase/client'
 import type { ChatMessage } from './types'
@@ -76,7 +76,7 @@ export function subscribeToInboxUpdates(
 }
 
 // ============================================
-// TYPING INDICATORS (Broadcast — ephemeral)
+// TYPING INDICATORS (Broadcast - ephemeral)
 // ============================================
 
 export interface TypingState {

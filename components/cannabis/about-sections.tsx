@@ -228,7 +228,7 @@ export function AboutFeatureStatus({ items }: { items: FeatureItem[] }) {
               {item.label}
             </span>
             <span
-              className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider"
+              className="text-xxs font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider"
               style={{ background: s.bg, color: s.color }}
             >
               {s.text}

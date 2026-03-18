@@ -1,5 +1,5 @@
 // Beta Survey utility types and pure helper functions.
-// This file has NO 'use server' directive — pure computation only.
+// This file has NO 'use server' directive - pure computation only.
 // Imported by both actions.ts and UI components.
 
 // ─── Question Definition Types ─────────────────────────────────────────────────
@@ -128,7 +128,7 @@ export function extractFixedColumns(answers: Record<string, unknown>) {
     result.overall_satisfaction = answers.overall_satisfaction
   }
 
-  // Would pay — derive from text answer
+  // Would pay - derive from text answer
   if (typeof answers.would_pay === 'string') {
     const lower = answers.would_pay.toLowerCase()
     if (lower.includes('yes') || lower.includes('definitely')) {
@@ -136,7 +136,7 @@ export function extractFixedColumns(answers: Record<string, unknown>) {
     } else if (lower.includes('no') || lower.includes('probably not')) {
       result.would_pay = false
     }
-    // "Maybe" stays null — neither yes nor no
+    // "Maybe" stays null - neither yes nor no
   } else if (typeof answers.would_pay === 'boolean') {
     result.would_pay = answers.would_pay
   }
@@ -157,7 +157,7 @@ export function extractFixedColumns(answers: Record<string, unknown>) {
 
 /**
  * Compute aggregated stats across a set of beta survey responses.
- * Pure synchronous function — no DB calls.
+ * Pure synchronous function - no DB calls.
  */
 export function computeBetaSurveyStats(responses: BetaSurveyResponse[]): BetaSurveyStats {
   const submitted = responses.filter((r) => r.submitted_at !== null)

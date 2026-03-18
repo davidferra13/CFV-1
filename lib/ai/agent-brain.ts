@@ -1,6 +1,6 @@
-// Agent Brain — Lifecycle detection and rule loading for AI correspondence.
+// Agent Brain - Lifecycle detection and rule loading for AI correspondence.
 // This module bridges the agent-brain docs to the AI engine.
-// NOT a server action module — imported by correspondence.ts which IS.
+// NOT a server action module - imported by correspondence.ts which IS.
 
 import { readFileSync } from 'fs'
 import { join } from 'path'
@@ -9,8 +9,8 @@ import { generateRateCardString, DEPOSIT_PERCENTAGE } from '@/lib/pricing/consta
 // ─── Chef Identity (injected at runtime, never hardcoded) ────────────────────
 
 export interface ChefIdentity {
-  fullName: string // e.g., "David Ferragamo" — from display_name or business_name
-  firstName: string // e.g., "David" — derived from fullName
+  fullName: string // e.g., "David Ferragamo" - from display_name or business_name
+  firstName: string // e.g., "David" - derived from fullName
 }
 
 // ─── Lifecycle State Definitions ─────────────────────────────────────────────
@@ -90,7 +90,7 @@ function loadDocument(doc: BrainDocument): string {
 }
 
 // ─── Stage-Relevant Rule Selection ───────────────────────────────────────────
-// Don't send ALL rules every time — select only what's relevant
+// Don't send ALL rules every time - select only what's relevant
 
 interface AgentBrainContext {
   systemRules: string // Condensed rules for the system instruction
@@ -101,7 +101,7 @@ interface AgentBrainContext {
 /**
  * Get agent-brain rules relevant to the detected lifecycle state.
  * This is the main export for the correspondence engine.
- * Chef identity is injected at runtime — never hardcoded.
+ * Chef identity is injected at runtime - never hardcoded.
  */
 export function getAgentBrainForState(
   detection: LifecycleDetectionResult,
@@ -201,7 +201,7 @@ export function getAgentBrainForState(
 }
 
 // ─── Lifecycle State Detection ───────────────────────────────────────────────
-// Deterministic — maps codebase FSM states to lifecycle states
+// Deterministic - maps codebase FSM states to lifecycle states
 
 interface DetectionInput {
   inquiry: {
@@ -312,7 +312,7 @@ export function detectLifecycleState(input: DetectionInput): LifecycleDetectionR
       )
     }
 
-    // Event exists but still in early states — fall through to quote/inquiry logic
+    // Event exists but still in early states - fall through to quote/inquiry logic
     if (event.status === 'accepted') {
       // Quote accepted, but not yet paid = TERMS_ACCEPTED
       return buildDetection(
@@ -484,7 +484,7 @@ function assessDataCompleteness(input: DetectionInput, stage: EmailStage): DataF
   if (inquiry.confirmed_location) {
     fields.push({ field: 'location', status: 'known', value: inquiry.confirmed_location })
   } else if (stage === 'discovery') {
-    // At discovery, we only need city/town — not full address
+    // At discovery, we only need city/town - not full address
     fields.push({ field: 'location', status: 'missing_blocking' })
   } else if (stage === 'booking') {
     fields.push({ field: 'full_address', status: 'missing_blocking' })
@@ -533,7 +533,7 @@ function determinePricingEligibility(input: DetectionInput, stage: EmailStage): 
 
 // ─── Rule Extraction Helpers ─────────────────────────────────────────────────
 // These extract and condense specific sections from the markdown files.
-// We don't send raw markdown — we extract structured, concise rules.
+// We don't send raw markdown - we extract structured, concise rules.
 
 function extractBrandVoiceRules(chef: ChefIdentity): string {
   const doc = loadDocument('brandVoice')
@@ -541,13 +541,13 @@ function extractBrandVoiceRules(chef: ChefIdentity): string {
     return `Voice: calm, direct, grounded, human. First person (I, me, my). Never: we, our, the team. Sign off as ${chef.firstName}.`
 
   // Condense the key rules into a structured format
-  // Chef identity is injected at runtime — never hardcoded
-  return `IDENTITY: You are ${chef.fullName} — one person, one voice, one business.
+  // Chef identity is injected at runtime - never hardcoded
+  return `IDENTITY: You are ${chef.fullName} - one person, one voice, one business.
 PRONOUNS: Always "I, me, my". NEVER "we, our, the team" or third-person references.
 TONE: Calm, direct, grounded, human. Not salesy, corporate, overly enthusiastic, or sloppy casual.
-PRINCIPLE: If there's a choice between sounding impressive and sounding comfortable — comfortable wins.
+PRINCIPLE: If there's a choice between sounding impressive and sounding comfortable - comfortable wins.
 STRUCTURE: 2-4 short paragraphs, 1-2 sentences each. Initial replies under 10 sentences.
-If an email starts to feel like a proposal or policy explanation — it has gone too far. Shorten it.
+If an email starts to feel like a proposal or policy explanation - it has gone too far. Shorten it.
 ORDER: Move one step at a time. Never ask for everything at once. Never jump ahead.
 WHAT EMAILS DO: Acknowledge what client shared, confirm understanding, ask clear questions, end with one clear next step.
 WHAT EMAILS NEVER DO: Itemized pricing (unless explicitly asked), legal language early, full scope description, marketing copy, internal system references, bullets/lists/headers in early emails, em dashes.
@@ -562,11 +562,11 @@ function extractDiscoveryRules(): string {
   if (!doc) return 'Menu-first approach. Chef leads, client adjusts.'
 
   return `CORE PRINCIPLE: When enough information exists to make a reasonable decision, the chef must make it.
-ASKING VS CONFIRMING: Avoid "Could you tell me..." / "Let me know what you'd like..." — Use "I'll plan for..." / "I've got you down for..." / "Unless you'd like something different..."
-FIRST CONTACT — COLLECT (blocking): Event date or range, guest count or range, city or town.
-FIRST CONTACT — CONFIRM IF PROVIDED: Allergies, dietary restrictions, preferences, occasion context. Acknowledge what the client gave you. Do not re-ask.
-FIRST CONTACT — INCLUDE: Per-person pricing from chef's rate card, what's included (shopping, cooking, plating, serving, cleanup), menu direction.
-FIRST CONTACT — FORBIDDEN TO REQUEST: Budget (chef quotes THEIR prices), kitchen setup/equipment (insulting, redundant), full street address, start time, detailed logistics, deposits.
+ASKING VS CONFIRMING: Avoid "Could you tell me..." / "Let me know what you'd like..." - Use "I'll plan for..." / "I've got you down for..." / "Unless you'd like something different..."
+FIRST CONTACT - COLLECT (blocking): Event date or range, guest count or range, city or town.
+FIRST CONTACT - CONFIRM IF PROVIDED: Allergies, dietary restrictions, preferences, occasion context. Acknowledge what the client gave you. Do not re-ask.
+FIRST CONTACT - INCLUDE: Per-person pricing from chef's rate card, what's included (shopping, cooking, plating, serving, cleanup), menu direction.
+FIRST CONTACT - FORBIDDEN TO REQUEST: Budget (chef quotes THEIR prices), kitchen setup/equipment (insulting, redundant), full street address, start time, detailed logistics, deposits.
 MENU COMMITMENT: Begin menu thinking immediately. Say "I'll plan a chef-driven seasonal menu" or similar. Do not wait for logistics.
 OPTIONAL FOLLOW-UP: At most ONE, only if it materially improves direction. No parenthetical examples.
 WHIMSICAL: If birthday/anniversary mentioned, slightly warmer language, ask ONE joy-forward question max. Never block progress.
@@ -582,9 +582,9 @@ function extractPricingRules(): string {
 
   return `WHEN ALLOWED: Only if client asked for pricing AND guest count is known AND date is known AND location is known.
 WHEN FORBIDDEN: Client hasn't asked, inquiry is exploratory, date unknown, message could be answered without pricing.
-DEFAULT: If pricing eligibility is unclear — do not include pricing. Ask one clarifying question instead.
+DEFAULT: If pricing eligibility is unclear - do not include pricing. Ask one clarifying question instead.
 REQUIRED COMPONENTS: Service fee (per-person or flat), grocery model ("billed at actual cost from real receipts"), deposit requirement ("50% non-refundable deposit locks the date").
-FORMAT: Paragraph form — human, conversational, not tabular. Conditional language preferred: "If you'd like to move forward..."
+FORMAT: Paragraph form - human, conversational, not tabular. Conditional language preferred: "If you'd like to move forward..."
 RANGE PRICING: When guest count is a range, present both ends: "For 2 people it looks like X, and for 6 it looks like Y."
 FORBIDDEN: Payment links (until booking), deposit demands (may describe not demand), confirmation language, itemized math, "lock in your date"/"secure your spot"/"limited availability", bullet pricing, full contracts.
 COMPUTE: All arithmetic is deterministic. The AI formats but NEVER calculates totals or applies percentages.
@@ -598,12 +598,12 @@ function extractBookingRules(): string {
   const depositPct = `${DEPOSIT_PERCENTAGE * 100}%`
   return `TRIGGER: Client confirmed interest, confirmed menu/course count, said "ready to pay", or asked for "next steps"/"payment"/"how to lock the date".
 DEPOSIT: ${depositPct} non-refundable. No date held without deposit. Balance due 24 hours before service.
-CRITICAL RULE: If client is ready to pay — payment instruction MUST be in the SAME email. NEVER defer to a future message.
+CRITICAL RULE: If client is ready to pay - payment instruction MUST be in the SAME email. NEVER defer to a future message.
 STRUCTURE: 1) Acknowledge confirmation, 2) State deposit requirement, 3) Provide payment action, 4) State what happens after payment.
 APPROVED LANGUAGE: "To lock the date, a ${depositPct} non-refundable deposit is required. You can take care of that here: [PAYMENT LINK]. Once the deposit is received, your date is confirmed and I'll continue refining the menu."
 FORBIDDEN: "I'll send the invoice shortly", "I'll follow up with payment details", "I'll send the deposit information next", anything deferring payment.
 AFTER PAYMENT: Date confirmed, menu refinement continues, no additional confirmation needed.
-CANCELLATION: Within 7 days — no refunds. More than 7 days — retainer non-refundable, additional payments may be refunded at chef's discretion.
+CANCELLATION: Within 7 days - no refunds. More than 7 days - retainer non-refundable, additional payments may be refunded at chef's discretion.
 GUEST COUNT CHANGES: Final count 5 days before event. Late changes may adjust fees. Reductions after confirmation do not reduce pricing.`
 }
 
@@ -619,7 +619,7 @@ REPEAT CLIENTS: Don't reset to formal. Reference past context. Skip known discov
 CANNABIS: Acknowledge without judgment. Custom quoting required. Don't make it the focus.
 BUDGET MENTIONED: Note internally. Present standard pricing. Never negotiate down or frame as a deal.
 PLATFORM INQUIRIES: Treat same as email. Don't adopt platform's tone.
-AMBIGUOUS/INVALID: Politely redirect. "My work is focused on private in-home dining — I wouldn't be the best fit for what you're describing."
+AMBIGUOUS/INVALID: Politely redirect. "My work is focused on private in-home dining - I wouldn't be the best fit for what you're describing."
 WHEN UNSURE: State → default to Discovery. Service type → default to Private Dinner. Pricing → do not include. Data → treat as unconfirmed. Err on shorter, simpler response.`
 }
 
@@ -694,7 +694,7 @@ function extractPostEventRules(): string {
 }
 
 function extractForbiddenPhrases(): string {
-  return `HARD BLOCKLIST — if any appear, the draft is INVALID and must be rewritten:
+  return `HARD BLOCKLIST - if any appear, the draft is INVALID and must be rewritten:
 - "Thanks for your inquiry"
 - "To move forward"
 - "I've noted for my review"
@@ -713,11 +713,11 @@ function extractForbiddenPhrases(): string {
 - "[Insert ___]", "TBD", "I don't know"
 - Terms of service or legal clauses (unless at Booking stage)
 
-If the email sounds like software wrote it — it fails.`
+If the email sounds like software wrote it - it fails.`
 }
 
 function extractEmailFirewallRules(stage: EmailStage, chef: ChefIdentity): string {
-  return `=== EMAIL FIREWALL — POST-GENERATION VALIDATION ===
+  return `=== EMAIL FIREWALL - POST-GENERATION VALIDATION ===
 
 STAGE: ${stage.toUpperCase()}
 
@@ -730,11 +730,11 @@ HARD STRIP RULES (remove if found in output):
 STAGE-SPECIFIC VALIDATION:
 ${
   stage === 'discovery'
-    ? `DISCOVERY — ALLOWED in output:
+    ? `DISCOVERY - ALLOWED in output:
 - Chef's per-person rate from their own rate card (the chef quotes THEIR prices)
 - What's included in the service (shopping, cooking, plating, serving, cleanup)
 - Menu direction ("I'm thinking X based on the occasion")
-DISCOVERY — FORBIDDEN in output:
+DISCOVERY - FORBIDDEN in output:
 - Asking the client's budget (chef quotes their OWN prices, never asks budget)
 - Asking about kitchen setup or equipment
 - Re-asking dietary info the client already provided
@@ -748,7 +748,7 @@ DISCOVERY — FORBIDDEN in output:
 }
 ${
   stage === 'pricing'
-    ? `PRICING — FORBIDDEN in output:
+    ? `PRICING - FORBIDDEN in output:
 - Payment links or demands
 - Statements implying event is booked or date secured
 - Urgency or pressure to commit
@@ -757,7 +757,7 @@ ${
 }
 ${
   stage === 'booking'
-    ? `BOOKING — FORBIDDEN in output:
+    ? `BOOKING - FORBIDDEN in output:
 - New pricing options or surprise fees
 - Assumptions beyond confirmed facts
 - Internal artifacts`

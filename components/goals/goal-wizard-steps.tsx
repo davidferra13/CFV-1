@@ -171,7 +171,7 @@ function StepGoalType({
                           <div className="flex items-center gap-1.5">
                             <p className="font-medium text-stone-100 text-sm">{meta.label}</p>
                             {meta.trackingMethod === 'manual_count' && (
-                              <span className="text-[10px] text-stone-400 border border-stone-700 rounded px-1 py-px">
+                              <span className="text-xxs text-stone-400 border border-stone-700 rounded px-1 py-px">
                                 manual
                               </span>
                             )}

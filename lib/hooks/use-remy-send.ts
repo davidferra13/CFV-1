@@ -129,7 +129,7 @@ export function useRemySend(config: UseRemySendConfig) {
   const abortControllerRef = useRef<AbortController | null>(null)
   const router = useRouter()
 
-  // Coreference resolution — track entities across conversation turns
+  // Coreference resolution - track entities across conversation turns
   const entityContextRef = useRef<EntityContext>(createEntityContext())
 
   // Rebuild entity context when messages change (e.g., loading a conversation)
@@ -243,7 +243,7 @@ export function useRemySend(config: UseRemySendConfig) {
       const message = (text ?? input).trim()
       if (!message || loading) return
 
-      // Check for debug commands — intercept before API call
+      // Check for debug commands - intercept before API call
       const debugEvent = DEBUG_COMMANDS[message.toLowerCase()]
       if (debugEvent) {
         setInput('')
@@ -258,7 +258,7 @@ export function useRemySend(config: UseRemySendConfig) {
         return
       }
 
-      // Auto-approve learning — check if any tasks in the last response are "always approved"
+      // Auto-approve learning - check if any tasks in the last response are "always approved"
       // (chef has approved this task type 5+ times, never rejected)
       const lastRemyForAutoApprove = [...messages]
         .reverse()
@@ -284,16 +284,18 @@ export function useRemySend(config: UseRemySendConfig) {
                   console.log(
                     `[remy-auto-approve] Task type "${task.taskType}" qualifies for auto-approval (${counts.approved} approvals, 0 rejections)`
                   )
-                  // Don't auto-execute yet — just add a hint to the task card
+                  // Don't auto-execute yet - just add a hint to the task card
                   // Future: could auto-execute tier 1 tasks that qualify
                 }
               }
             })
-            .catch(() => {})
+            .catch((err) => {
+              console.error('[non-blocking] remy auto-approve check failed:', err)
+            })
         }
       }
 
-      // Conversational follow-through — "yes" / "do it" / "go ahead" executes last suggestion
+      // Conversational follow-through - "yes" / "do it" / "go ahead" executes last suggestion
       const followThroughPattern =
         /^(yes|yep|yeah|yea|ya|do it|go ahead|go for it|sure|approved|approve|ok do it|ok go|let'?s do it|please do|make it happen|send it|ship it|confirm|confirmed|ok|okay)\.?$/i
       if (followThroughPattern.test(message)) {
@@ -355,7 +357,7 @@ export function useRemySend(config: UseRemySendConfig) {
         }
       }
 
-      // Session recap — intercept client-side, no API call (Formula > AI)
+      // Session recap - intercept client-side, no API call (Formula > AI)
       const recapPattern =
         /^(what did we do|session recap|recap today|what have we done|summarize (this |our )?session)/i
       if (recapPattern.test(message)) {
@@ -389,7 +391,7 @@ export function useRemySend(config: UseRemySendConfig) {
             const successCount = todayActions.filter((a) => a.status === 'success').length
             const errorCount = todayActions.filter((a) => a.status === 'error').length
 
-            recapContent = `Here's what we've done today, chef:\n\n${lines.join('\n')}\n\n**${todayActions.length} total actions** — ${successCount} successful${errorCount > 0 ? `, ${errorCount} had issues` : ''}.`
+            recapContent = `Here's what we've done today, chef:\n\n${lines.join('\n')}\n\n**${todayActions.length} total actions** - ${successCount} successful${errorCount > 0 ? `, ${errorCount} had issues` : ''}.`
           }
 
           const recapMsg: RemyMessage = {
@@ -433,7 +435,9 @@ export function useRemySend(config: UseRemySendConfig) {
             },
             ...prev,
           ])
-          pruneOldConversations().catch(() => {})
+          pruneOldConversations().catch((err) => {
+            console.error('[non-blocking] pruneOldConversations failed:', err)
+          })
         } catch (err) {
           console.error('[remy] Failed to create conversation:', err)
           toast.error('Failed to start conversation')
@@ -466,7 +470,7 @@ export function useRemySend(config: UseRemySendConfig) {
 
         timeoutId = setTimeout(() => controller.abort(), 120_000)
 
-        // Coreference resolution — extract entities from user message & resolve pronouns
+        // Coreference resolution - extract entities from user message & resolve pronouns
         const turnIndex = messages.length
         const userEntities = extractEntities(message, turnIndex)
         entityContextRef.current = updateEntityContext(entityContextRef.current, userEntities)
@@ -567,11 +571,11 @@ export function useRemySend(config: UseRemySendConfig) {
             const summary = generateConversationSummary(updatedMessages)
             saveSummary(currentConversationId, summary)
           } catch {
-            // Non-blocking — summary generation is supplemental
+            // Non-blocking - summary generation is supplemental
           }
         }
 
-        // Cross-chat digest — record this exchange for the mascot to reference
+        // Cross-chat digest - record this exchange for the mascot to reference
         updateChannelDigest('drawer', message, cleanContent)
 
         const hasTasks = tasks && tasks.length > 0 && tasks.some((t) => t.status === 'done')
@@ -584,7 +588,11 @@ export function useRemySend(config: UseRemySendConfig) {
         playNotificationSound()
 
         saveLocalMessage(convId, 'remy', cleanContent, { tasks, navSuggestions })
-          .then(() => trimConversationMessages(convId).catch(() => {}))
+          .then(() =>
+            trimConversationMessages(convId).catch((err) => {
+              console.error('[non-blocking] trimConversationMessages failed:', err)
+            })
+          )
           .catch((err) => console.error('[non-blocking] Save remy msg failed', err))
 
         // Log task executions to the action log (non-blocking)
@@ -598,7 +606,9 @@ export function useRemySend(config: UseRemySendConfig) {
               status: task.status === 'done' || task.status === 'pending' ? 'success' : 'error',
               result: task.error ?? (task.data ? JSON.stringify(task.data).slice(0, 200) : null),
               duration: 0,
-            }).catch(() => {})
+            }).catch((err) => {
+              console.error('[non-blocking] logAction failed:', err)
+            })
           }
         }
 
@@ -626,7 +636,7 @@ export function useRemySend(config: UseRemySendConfig) {
             id: generateId(),
             role: 'remy',
             content:
-              'Request timed out — the AI model was probably still loading. Hit retry and I should be ready!',
+              'Request timed out - the AI model was probably still loading. Hit retry and I should be ready!',
             timestamp: new Date().toISOString(),
             isRetryable: true,
             retryMessage: message,
@@ -643,7 +653,7 @@ export function useRemySend(config: UseRemySendConfig) {
             id: generateId(),
             role: 'remy',
             content: isOllamaOffline
-              ? "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!"
+              ? "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!"
               : errMsg,
             timestamp: new Date().toISOString(),
             isRetryable: true,

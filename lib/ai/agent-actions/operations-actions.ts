@@ -1,4 +1,4 @@
-// Remy Agent — Operations Actions
+// Remy Agent - Operations Actions
 // Schedule calls, create todos, log expenses on the chef's behalf.
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -70,7 +70,7 @@ export const operationsAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Schedule a call or consultation with a client.',
     inputSchema:
-      '{ "description": "string — e.g. Phone call with Sarah Johnson tomorrow at 2pm, 30 minutes, discuss menu options" }',
+      '{ "description": "string - e.g. Phone call with Sarah Johnson tomorrow at 2pm, 30 minutes, discuss menu options" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -110,7 +110,7 @@ export const operationsAgentActions: AgentActionDefinition[] = [
 
     async commitAction(payload) {
       if (!payload.client_id)
-        return { success: false, message: 'Client not found — create client first.' }
+        return { success: false, message: 'Client not found - create client first.' }
 
       const scheduledAt =
         payload.scheduled_date && payload.scheduled_time
@@ -149,7 +149,7 @@ export const operationsAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Create a task/todo item for the chef.',
     inputSchema:
-      '{ "description": "string — e.g. Order extra plates for the Johnson event by Friday, high priority" }',
+      '{ "description": "string - e.g. Order extra plates for the Johnson event by Friday, high priority" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -199,8 +199,8 @@ export const operationsAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Log a business expense (groceries, equipment, supplies, etc.).',
     inputSchema:
-      '{ "description": "string — e.g. $85 at Whole Foods for the Johnson dinner groceries" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews amount and category.',
+      '{ "description": "string - e.g. $85 at Whole Foods for the Johnson dinner groceries" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews amount and category.',
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
@@ -219,7 +219,7 @@ export const operationsAgentActions: AgentActionDefinition[] = [
       return {
         preview: {
           actionType: 'agent.log_expense',
-          summary: `Log expense: $${(parsed.amount_cents / 100).toFixed(2)} — ${parsed.description}`,
+          summary: `Log expense: $${(parsed.amount_cents / 100).toFixed(2)} - ${parsed.description}`,
           fields,
           safety: 'reversible',
         },

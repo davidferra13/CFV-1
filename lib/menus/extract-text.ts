@@ -1,10 +1,10 @@
 // Text extraction from uploaded menu files
 // Supports: PDF, images (OCR via Tesseract.js), DOCX, TXT
-// All processing is LOCAL — no data leaves the machine
+// All processing is LOCAL - no data leaves the machine
 
 'use server'
 
-// Max extraction time per file — prevents malicious/malformed files from hanging the server
+// Max extraction time per file - prevents malicious/malformed files from hanging the server
 const EXTRACTION_TIMEOUT_MS = 30_000 // 30 seconds
 
 /**

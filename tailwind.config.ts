@@ -33,6 +33,13 @@ const config: Config = {
           accent: '#f5f3ef',
         },
       },
+      fontSize: {
+        '4xs': '7px',
+        '3xs': '8px',
+        '2xs': '9px',
+        xxs: '10px',
+        'xs-tight': '11px',
+      },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
       },

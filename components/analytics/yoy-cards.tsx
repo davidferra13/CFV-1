@@ -47,19 +47,17 @@ function YoYCard({ metric, isCurrency = false }: { metric: YoYMetric; isCurrency
 
   return (
     <Card className="p-3">
-      <p className="text-[10px] text-stone-500 font-medium uppercase tracking-wide truncate">
+      <p className="text-xxs text-stone-500 font-medium uppercase tracking-wide truncate">
         {metric.label}
       </p>
       <p className="text-sm font-bold text-stone-100 mt-1 truncate">{fmt(metric.currentYear)}</p>
       <div className={`flex items-center gap-1 mt-1 ${trendColor}`}>
         <TrendIcon className="h-3 w-3 shrink-0" />
-        <span className="text-[10px] font-medium">
+        <span className="text-xxs font-medium">
           {metric.changePercent !== null ? `${metric.changePercent}%` : '-'}
         </span>
       </div>
-      <p className="text-[10px] text-stone-400 mt-0.5 truncate">
-        {fmt(metric.previousYear)} prior yr
-      </p>
+      <p className="text-xxs text-stone-400 mt-0.5 truncate">{fmt(metric.previousYear)} prior yr</p>
     </Card>
   )
 }

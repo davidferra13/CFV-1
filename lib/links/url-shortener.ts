@@ -1,4 +1,4 @@
-// URL Shortener — shorturl.at, free, no key required
+// URL Shortener - shorturl.at, free, no key required
 // https://shorturl.at/
 // No signup, no limits, permanent redirects
 // Also includes ulvis.net API as backup (100 req/hour)

@@ -1,4 +1,4 @@
-// Grocery Consolidation Formula — Deterministic
+// Grocery Consolidation Formula - Deterministic
 // Combines duplicate ingredients, assigns store sections, flags dietary conflicts.
 // No AI needed for any of these: they're arithmetic, lookup tables, and keyword matching.
 //

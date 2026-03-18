@@ -1,4 +1,4 @@
-// TakeAChef Transcript Paste — Server actions for bulk-inserting pasted conversation messages.
+// TakeAChef Transcript Paste - Server actions for bulk-inserting pasted conversation messages.
 // Used by the TacTranscriptPaste component.
 
 'use server'

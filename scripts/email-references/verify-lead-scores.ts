@@ -157,9 +157,9 @@ console.log(`Expired avg score:   ${avgExpired} (n=${expiredScores.length})`)
 console.log(`Difference:          +${avgConverted - avgExpired} points`)
 
 if (avgConverted > avgExpired) {
-  console.log('\n✓ PASS — Converted threads score higher than expired threads')
+  console.log('\n✓ PASS - Converted threads score higher than expired threads')
 } else {
-  console.log('\n✗ FAIL — Converted threads do NOT score higher (formula needs tuning)')
+  console.log('\n✗ FAIL - Converted threads do NOT score higher (formula needs tuning)')
 }
 
 console.log('\n=== Top 5 Booked/Likely-Booked Threads ===')

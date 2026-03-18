@@ -164,7 +164,7 @@ const ClientTableRow = memo(function ClientTableRow({ client }: { client: Client
       <TableCell className="font-medium">
         {client.full_name}
         {isDemoClient(client) && (
-          <Badge variant="info" className="ml-2 text-[10px] px-1.5 py-0">
+          <Badge variant="info" className="ml-2 text-xxs px-1.5 py-0">
             Sample
           </Badge>
         )}

@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Event Bridge Actions
+// Commerce Engine V1 - Event Bridge Actions
 // Create commerce sales from events and sync event payments to the commerce layer.
 
 'use server'
@@ -142,7 +142,7 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
     .eq('id', saleId)
     .eq('tenant_id', tenantId)
 
-  // Link existing event payments to the sale (read-only — don't modify ledger)
+  // Link existing event payments to the sale (read-only - don't modify ledger)
   let paymentsLinked = 0
   const { data: ledgerPayments } = await supabase
     .from('ledger_entries')

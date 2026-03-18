@@ -526,7 +526,7 @@ export function DishDetailClient({
                     {'☆'.repeat(5 - (f.rating as number))}
                   </span>
                   {f.would_serve_again === false && (
-                    <span className="text-[10px] bg-red-900/50 text-red-400 px-1.5 py-0.5 rounded">
+                    <span className="text-xxs bg-red-900/50 text-red-400 px-1.5 py-0.5 rounded">
                       Would not serve again
                     </span>
                   )}
@@ -537,7 +537,7 @@ export function DishDetailClient({
                 {!!f.execution_notes && (
                   <p className="text-xs text-stone-500 mt-0.5">{String(f.execution_notes)}</p>
                 )}
-                <p className="text-[10px] text-stone-700 mt-1">
+                <p className="text-xxs text-stone-700 mt-1">
                   {new Date(f.created_at as string).toLocaleDateString()}
                 </p>
               </div>

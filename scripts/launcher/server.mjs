@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ═══════════════════════════════════════════════════════════════════
-// ChefFlow Mission Control — Dashboard Server
+// ChefFlow Mission Control - Dashboard Server
 // ═══════════════════════════════════════════════════════════════════
 // Battle.net-style launcher for managing all ChefFlow services.
 // Serves the dashboard UI + API for controlling dev, beta, Ollama, git.
@@ -110,7 +110,7 @@ function initFileWatcher() {
         if (!filename || IGNORE_PATTERNS.test(filename)) return
         const filePath = `${dir}/${filename.replace(/\\/g, '/')}`
 
-        // Debounce — VS Code fires multiple events per save
+        // Debounce - VS Code fires multiple events per save
         const key = `${eventType}:${filePath}`
         if (watchDebounce.has(key)) return
         watchDebounce.set(key, true)
@@ -177,7 +177,7 @@ function getActivitySummary() {
     }
   }
 
-  // Hotspots — most frequently changed files today
+  // Hotspots - most frequently changed files today
   const fileCounts = {}
   for (const e of today) {
     fileCounts[e.file] = (fileCounts[e.file] || 0) + 1
@@ -211,7 +211,7 @@ function getActivitySummary() {
 let devServerProcess = null
 const runningJobs = new Map()
 
-// ── Error Buffer (for aggregation — must be before feedEvent) ─────
+// ── Error Buffer (for aggregation - must be before feedEvent) ─────
 const errorBuffer = []
 const ERROR_BUFFER_MAX = 500
 
@@ -270,7 +270,7 @@ function startLiveFeedTaps() {
   if (liveFeedActive) return
   liveFeedActive = true
 
-  // Tap dev server stdout — add secondary listener if process exists
+  // Tap dev server stdout - add secondary listener if process exists
   if (devServerProcess) {
     const devTap = (d) => {
       const text = d.toString().trim().replace(ANSI_REGEX, '')
@@ -309,10 +309,10 @@ function startLiveFeedTaps() {
     })
     liveFeedProcesses.ollamaTail = ollamaTail
   } catch {
-    feedEvent('ollama', 'Could not tail Ollama logs — file may not exist', 'warn')
+    feedEvent('ollama', 'Could not tail Ollama logs - file may not exist', 'warn')
   }
 
-  // System metrics — push CPU/memory every 10 seconds
+  // System metrics - push CPU/memory every 10 seconds
   liveFeedProcesses.systemInterval = setInterval(() => {
     const mem = process.memoryUsage()
     feedEvent(
@@ -322,7 +322,7 @@ function startLiveFeedTaps() {
     )
   }, 10000)
 
-  feedEvent('system', 'Live feed started — tapping all sources', 'info')
+  feedEvent('system', 'Live feed started - tapping all sources', 'info')
 }
 
 function stopLiveFeedTaps() {
@@ -708,7 +708,7 @@ function deployBeta() {
     } catch {}
   })
 
-  return { ok: true, message: 'Deploy started — watch the console' }
+  return { ok: true, message: 'Deploy started - watch the console' }
 }
 
 async function rollbackBeta() {
@@ -788,8 +788,8 @@ async function gitCommit(message) {
     return { ok: true, message: stdout.trim() || 'Changes committed' }
   } catch (err) {
     if (err.stdout?.includes('nothing to commit')) {
-      log('git', 'Nothing to commit — working tree clean', 'info')
-      return { ok: true, message: 'Nothing to commit — working tree clean' }
+      log('git', 'Nothing to commit - working tree clean', 'info')
+      return { ok: true, message: 'Nothing to commit - working tree clean' }
     }
     log('git', `Commit failed: ${err.stderr || err.message}`, 'error')
     return { ok: false, error: err.stderr || err.message }
@@ -818,13 +818,13 @@ async function dbBackup() {
 async function shipIt(message) {
   if (runningJobs.has('ship-it')) return { ok: false, error: 'Ship It already in progress' }
 
-  log('ship', '🚀 SHIP IT — Starting full pipeline...', 'info')
+  log('ship', '🚀 SHIP IT - Starting full pipeline...', 'info')
   const results = { commit: null, push: null, deploy: null }
 
   // Step 1: Commit
   const commitMsg =
     message || `update: ${new Date().toISOString().slice(0, 10)} ship from Mission Control`
-  log('ship', `Step 1/3: Committing — "${commitMsg}"`, 'info')
+  log('ship', `Step 1/3: Committing - "${commitMsg}"`, 'info')
   try {
     await execAsync('git add -A', { cwd: PROJECT_ROOT })
     const escaped = commitMsg.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/`/g, '\\`')
@@ -833,8 +833,8 @@ async function shipIt(message) {
     log('ship', `Committed: ${stdout.trim() || 'done'}`, 'success')
   } catch (err) {
     if (err.stdout?.includes('nothing to commit')) {
-      results.commit = { ok: true, message: 'Nothing to commit — clean tree' }
-      log('ship', 'Nothing to commit — working tree clean', 'info')
+      results.commit = { ok: true, message: 'Nothing to commit - clean tree' }
+      log('ship', 'Nothing to commit - working tree clean', 'info')
     } else {
       results.commit = { ok: false, error: err.stderr || err.message }
       log('ship', `Commit failed: ${err.stderr || err.message}`, 'error')
@@ -927,7 +927,7 @@ async function npmInstall() {
     runningJobs.delete('npm-install')
   })
 
-  return { ok: true, message: 'npm install started — watch the console' }
+  return { ok: true, message: 'npm install started - watch the console' }
 }
 
 // ── Generate DB Types ───────────────────────────────────────────
@@ -981,7 +981,7 @@ async function generateTypes() {
     runningJobs.delete('gen-types')
   })
 
-  return { ok: true, message: 'Generating database types — watch the console' }
+  return { ok: true, message: 'Generating database types - watch the console' }
 }
 
 // ── Prompt Queue ────────────────────────────────────────────────
@@ -1035,7 +1035,7 @@ const TYPECHECK_CMD = 'node scripts/run-typecheck.mjs -p tsconfig.ci.json'
 async function closeOutFeature(message) {
   if (runningJobs.has('close-out')) return { ok: false, error: 'Close-out already in progress' }
 
-  log('close-out', '✅ Feature Close-Out — Starting pipeline...', 'info')
+  log('close-out', '✅ Feature Close-Out - Starting pipeline...', 'info')
   const job = { id: 'close-out', startTime: Date.now(), status: 'running' }
   runningJobs.set('close-out', job)
 
@@ -1065,7 +1065,7 @@ async function closeOutFeature(message) {
 
   // Step 3: Commit
   const commitMsg = message || `feat: close-out ${new Date().toISOString().slice(0, 10)}`
-  log('close-out', `Step 3/4: Committing — "${commitMsg}"`, 'info')
+  log('close-out', `Step 3/4: Committing - "${commitMsg}"`, 'info')
   try {
     await execAsync('git add -A', { cwd: PROJECT_ROOT })
     const escaped = commitMsg.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/`/g, '\\`')
@@ -1073,7 +1073,7 @@ async function closeOutFeature(message) {
     log('close-out', 'Committed!', 'success')
   } catch (err) {
     if (err.stdout?.includes('nothing to commit')) {
-      log('close-out', 'Nothing to commit — working tree clean', 'info')
+      log('close-out', 'Nothing to commit - working tree clean', 'info')
     } else {
       log('close-out', `Commit failed: ${err.stderr || err.message}`, 'error')
       job.status = 'failed'
@@ -2274,7 +2274,7 @@ async function supabaseQuery(
       // Truncate HTML error pages (Cloudflare worker crashes)
       const cleanErr =
         errBody.startsWith('<!DOCTYPE') || errBody.startsWith('<html')
-          ? `Cloudflare/Supabase error ${res.status} (may be rate-limited — try again in a moment)`
+          ? `Cloudflare/Supabase error ${res.status} (may be rate-limited - try again in a moment)`
           : errBody.slice(0, 300)
       return { ok: false, error: `Supabase ${res.status}: ${cleanErr}` }
     }
@@ -2524,7 +2524,7 @@ async function runTests(param) {
     runningJobs.delete(jobId)
   })
 
-  return { ok: true, message: `${testType} tests started — watch the console` }
+  return { ok: true, message: `${testType} tests started - watch the console` }
 }
 
 // ── Remy Bridge ─────────────────────────────────────────────────
@@ -2602,7 +2602,7 @@ function runSoakTest(quick = true) {
   child.on('close', (buildCode) => {
     if (buildCode !== 0) {
       job.status = 'failed'
-      log('test', `Soak test aborted — build failed (code ${buildCode})`, 'error')
+      log('test', `Soak test aborted - build failed (code ${buildCode})`, 'error')
       runningJobs.delete(jobId)
       return
     }
@@ -2639,8 +2639,8 @@ function runSoakTest(quick = true) {
       log(
         'test',
         testCode === 0
-          ? `${label} passed! (${duration}s) — no memory leaks detected`
-          : `${label} failed (${duration}s) — check results for details`,
+          ? `${label} passed! (${duration}s) - no memory leaks detected`
+          : `${label} failed (${duration}s) - check results for details`,
         testCode === 0 ? 'success' : 'error'
       )
       runningJobs.delete(jobId)
@@ -2649,7 +2649,7 @@ function runSoakTest(quick = true) {
 
   return {
     ok: true,
-    message: `${label} started — building first, then running tests. Watch the log.`,
+    message: `${label} started - building first, then running tests. Watch the log.`,
   }
 }
 
@@ -2703,7 +2703,7 @@ function runE2ETests(project) {
     runningJobs.delete(jobId)
   })
 
-  return { ok: true, message: `${label} started — watch the log` }
+  return { ok: true, message: `${label} started - watch the log` }
 }
 
 // ── Demo Data Reset ─────────────────────────────────────────────
@@ -2751,7 +2751,7 @@ function resetDemoData() {
     runningJobs.delete(jobId)
   })
 
-  return { ok: true, message: 'Demo data reset started — clearing old data and loading fresh' }
+  return { ok: true, message: 'Demo data reset started - clearing old data and loading fresh' }
 }
 
 // ── Agent Account Setup ─────────────────────────────────────────
@@ -2791,8 +2791,8 @@ function setupAgentAccount() {
     log(
       'agent',
       code === 0
-        ? 'Agent account ready — credentials saved to .auth/agent.json'
-        : 'Agent setup failed — check the log',
+        ? 'Agent account ready - credentials saved to .auth/agent.json'
+        : 'Agent setup failed - check the log',
       code === 0 ? 'success' : 'error'
     )
     runningJobs.delete(jobId)
@@ -2807,7 +2807,7 @@ async function healthCheckOnly() {
   if (runningJobs.has('health-check'))
     return { ok: false, error: 'Health check already in progress' }
 
-  log('health', '🏥 Health Check — typecheck + build (no commit)...', 'info')
+  log('health', '🏥 Health Check - typecheck + build (no commit)...', 'info')
   const job = { id: 'health-check', startTime: Date.now(), status: 'running' }
   runningJobs.set('health-check', job)
 
@@ -2837,11 +2837,11 @@ async function healthCheckOnly() {
 
   job.status = 'success'
   const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
-  log('health', `🏥 Health check passed! (${duration}s) — Ready to merge.`, 'success')
+  log('health', `🏥 Health check passed! (${duration}s) - Ready to merge.`, 'success')
   runningJobs.delete('health-check')
   return {
     ok: true,
-    message: `Health check passed (${duration}s). Type check ✓ Build ✓ — Ready to merge.`,
+    message: `Health check passed (${duration}s). Type check ✓ Build ✓ - Ready to merge.`,
   }
 }
 
@@ -2922,7 +2922,7 @@ async function pollUptime() {
     }
   }
 
-  // Broadcast downtime notifications via SSE — only on state transitions
+  // Broadcast downtime notifications via SSE - only on state transitions
   if (!betaOk && prevUptimeState.beta) feedEvent('system', 'ALERT: Beta server is DOWN', 'error')
   if (betaOk && !prevUptimeState.beta)
     feedEvent('system', 'RECOVERY: Beta server is back UP', 'info')
@@ -3172,7 +3172,7 @@ async function getBundleSizeHistory() {
       ok: true,
       history: [],
       total: 0,
-      message: 'No bundle size history — run a build first',
+      message: 'No bundle size history - run a build first',
     }
   }
 }
@@ -3200,7 +3200,7 @@ async function compareEnvFiles() {
     }
   }
 
-  // Find differences (keys only — never values)
+  // Find differences (keys only - never values)
   const allKeys = new Set()
   for (const keys of Object.values(envKeys)) {
     if (keys) keys.forEach((k) => allKeys.add(k))
@@ -3274,7 +3274,7 @@ function startScheduledBackups() {
 
   log(
     'backup',
-    `Scheduled daily backup — next run in ${Math.round(msUntil3am / 60000)} minutes (3:00 AM)`,
+    `Scheduled daily backup - next run in ${Math.round(msUntil3am / 60000)} minutes (3:00 AM)`,
     'info'
   )
 
@@ -3359,7 +3359,7 @@ async function checkStripeWebhookHealth() {
   // Query the dev server's health/webhook endpoint if available
   try {
     const devOnline = await httpCheck(`http://localhost:${CONFIG.devPort}`)
-    if (!devOnline.ok) return { ok: false, error: 'Dev server offline — cannot check webhooks' }
+    if (!devOnline.ok) return { ok: false, error: 'Dev server offline - cannot check webhooks' }
 
     // Check if stripe webhook events table exists in Supabase
     const result = await supabaseQuery('stripe_webhook_events', {
@@ -3386,7 +3386,7 @@ async function checkStripeWebhookHealth() {
     }
     return {
       ok: true,
-      message: 'Stripe webhook table not found — webhooks may not be configured',
+      message: 'Stripe webhook table not found - webhooks may not be configured',
       events: [],
     }
   } catch (err) {
@@ -3433,7 +3433,7 @@ async function checkEmailHealth() {
 // ── API Rate Limit Monitoring ────────────────────────────────────
 
 function getApiRateLimitInfo() {
-  // Static info about API limits — actual usage tracking would require wrapping each API call
+  // Static info about API limits - actual usage tracking would require wrapping each API call
   const services = [
     {
       name: 'Spoonacular',
@@ -3452,7 +3452,7 @@ function getApiRateLimitInfo() {
       name: 'Instacart',
       envKey: 'INSTACART_API_KEY',
       dailyLimit: null,
-      note: 'Cart links only — no pricing API',
+      note: 'Cart links only - no pricing API',
     },
     {
       name: 'Resend',
@@ -3464,7 +3464,7 @@ function getApiRateLimitInfo() {
       name: 'Vercel',
       envKey: 'VERCEL_TOKEN',
       dailyLimit: null,
-      note: 'Pro plan — no hard daily limit',
+      note: 'Pro plan - no hard daily limit',
     },
   ]
   return {
@@ -4550,7 +4550,7 @@ async function getBranchStatus() {
 
 async function codebaseSearch(param) {
   if (!param || !param.trim())
-    return { ok: false, error: 'Usage: code/search:pattern — searches .ts/.tsx files' }
+    return { ok: false, error: 'Usage: code/search:pattern - searches .ts/.tsx files' }
   try {
     // Use git grep for speed, fall back to findstr on Windows
     const { stdout } = await execAsync(
@@ -4589,7 +4589,7 @@ async function readFileContent(param) {
       lines: lines.length,
       truncated,
       content: output,
-      message: `${param.trim()} — ${lines.length} lines${truncated ? ' (showing first 150)' : ''}`,
+      message: `${param.trim()} - ${lines.length} lines${truncated ? ' (showing first 150)' : ''}`,
     }
   } catch (err) {
     return { ok: false, error: `Cannot read ${param}: ${err.message}` }
@@ -4787,7 +4787,7 @@ async function scanStaleCache() {
 // TIER 1: UNIVERSAL DATA ACCESS + DEEP OPERATIONAL VISIBILITY
 // ══════════════════════════════════════════════════════════════════
 
-// Universal table query — query ANY Supabase table by name
+// Universal table query - query ANY Supabase table by name
 async function queryTable(param) {
   if (!param || !param.trim())
     return {
@@ -4866,7 +4866,7 @@ async function sqlQuery(param) {
     clearTimeout(timer)
 
     if (res.status === 404) {
-      // RPC function doesn't exist — guide user to create it
+      // RPC function doesn't exist - guide user to create it
       return {
         ok: false,
         error:
@@ -4970,7 +4970,7 @@ async function triggerCronJob(param) {
   }
 }
 
-// Event deep-dive — full operational data for a specific event
+// Event deep-dive - full operational data for a specific event
 async function eventDeepDive(param) {
   if (!param || !param.trim())
     return { ok: false, error: 'Usage: data/event-deep:event_id or data/event-deep:search term' }
@@ -5108,7 +5108,7 @@ async function eventDeepDive(param) {
   }
 }
 
-// Ledger entries viewer — raw financial journal
+// Ledger entries viewer - raw financial journal
 async function getLedgerEntries(param) {
   const opts = {
     select:
@@ -5292,7 +5292,7 @@ async function getInventoryEquipment() {
   }
 }
 
-// Activity feed — recent system events
+// Activity feed - recent system events
 async function getActivityFeed(param) {
   const limit = parseInt(param) || 30
   const result = await supabaseQuery('activity_events', {
@@ -5365,7 +5365,7 @@ async function getWebhookHistory() {
   }
 }
 
-// Synthesized business intelligence — patterns, not just facts
+// Synthesized business intelligence - patterns, not just facts
 async function getBusinessIntelligence() {
   const [revenue, events, inquiries, clients] = await Promise.all([
     supabaseQuery('event_financial_summary', {
@@ -5526,11 +5526,11 @@ async function runHallucinationScan() {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// CALL THE PASS — Full Station Briefing
+// CALL THE PASS - Full Station Briefing
 // ══════════════════════════════════════════════════════════════════
 
 async function callThePass() {
-  log('chat', 'Calling the pass — full station check...', 'info')
+  log('chat', 'Calling the pass - full station check...', 'info')
   const [status, revenue, events, inquiries, gitDiff, remy, schema] = await Promise.all([
     getAllStatus(),
     getRevenueSummary().catch(() => ({ ok: false, error: 'failed' })),
@@ -5682,7 +5682,7 @@ async function codeTodo() {
       total: 0,
       byType: {},
       items: [],
-      message: 'Codebase is clean — no TODOs found',
+      message: 'Codebase is clean - no TODOs found',
     }
   }
 }
@@ -5903,7 +5903,7 @@ async function getEventTimeline(param) {
     eventId: param,
     transitions: transitions.data.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)),
     count: transitions.data.length,
-    message: `Event ${param}: ${transitions.data.length} transitions — ${transitions.data.map((t) => `${t.from_status}→${t.to_status}`).join(' → ')}`,
+    message: `Event ${param}: ${transitions.data.length} transitions - ${transitions.data.map((t) => `${t.from_status}→${t.to_status}`).join(' → ')}`,
   }
 }
 
@@ -5982,7 +5982,7 @@ async function getProdHealth() {
     statusCode: prodCheck.status || 'unknown',
     message: prodCheck.ok
       ? `Production: ONLINE (${latency}ms)`
-      : `Production: 86'd — ${prodCheck.error || 'unreachable'}`,
+      : `Production: 86'd - ${prodCheck.error || 'unreachable'}`,
   }
 }
 
@@ -6123,8 +6123,8 @@ async function securityAudit() {
     orphans: { quotes: orphans.orphanQuotes, expenses: orphans.orphanExpenses },
     message:
       issues.length === 0
-        ? 'Security audit: Clean — no issues found'
-        : `Security audit: ${issues.length} issue(s) — ${issues.join('; ')}`,
+        ? 'Security audit: Clean - no issues found'
+        : `Security audit: ${issues.length} issue(s) - ${issues.join('; ')}`,
   }
 }
 
@@ -6144,7 +6144,7 @@ async function findDeadExports() {
       )
       if (match) exportNames.push({ name: match[1], file: line.split(':')[0] })
     }
-    // Check each for imports elsewhere (sample — full scan would be too slow)
+    // Check each for imports elsewhere (sample - full scan would be too slow)
     const potentiallyDead = []
     for (const { name, file } of exportNames.slice(0, 50)) {
       try {
@@ -6224,7 +6224,7 @@ async function getDocsCoverage() {
 // ══════════════════════════════════════════════════════════════════
 
 const INSTANT_ANSWERS = [
-  // Greetings — instant response, no LLM needed
+  // Greetings - instant response, no LLM needed
   {
     patterns: [
       /^(?:hi|hey|hello|yo|sup|good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|what'?s?\s+up)\s*[!.?]*$/i,
@@ -6356,7 +6356,7 @@ const INSTANT_ANSWERS = [
   {
     patterns: [/^help$/i, /^what can you do/i, /^commands$/i, /^tools$/i],
     response:
-      '**Station check.** Here\'s what I run — 10 stations, 115+ tools:\n\n| Station | Key Commands |\n|---|---|\n| **1. DevOps** | `dev/start`, `dev/stop`, `beta/deploy`, `beta/restart`, `ship-it` |\n| **2. Git & Build** | `git/push`, `git/commit`, `build/typecheck`, `build/full`, `close-out` |\n| **3. Business Data** | `data/events`, `data/clients`, `data/revenue`, `data/expenses`, `data/inquiry-pipeline`, `data/quotes`, `data/calendar`, `data/staff`, `data/email`, `data/loyalty`, `data/menu-recipes`, `data/documents` |\n| **4. Remy Oversight** | `remy/metrics`, `remy/guardrails`, `remy/memories`, `remy/test`, `remy/performance`, `remy/conversations`, `remy/errors` |\n| **5. Codebase** | `code/search`, `code/read`, `code/changes`, `code/branches`, `db/schema` |\n| **6. App Health** | `scan/ts-nocheck`, `scan/error-handling`, `scan/stale-cache`, `scan/hallucination` |\n| **7. Monitoring** | `status/all`, `health/app`, `uptime/report`, `call-the-pass` |\n| **8. Universal Data** | `db/query`, `db/sql`, `data/ledger`, `data/event-deep`, `data/notifications`, `data/automations`, `data/inventory`, `data/activity`, `data/webhooks`, `data/intelligence`, `cron/list`, `cron/trigger` |\n| **9. Git Extended** | `git/log`, `git/stash`, `git/blame`, `code/todo`, `code/loc` |\n| **10. Intelligence+** | `data/client-risk`, `data/forecast`, `data/seasonal`, `data/pricing`, `data/event-timeline`, `env/validate`, `db/orphans`, `db/rls-audit`, `security/audit`, `code/dead`, `test/coverage`, `docs/coverage`, `beta/health`, `prod/health`, `prod/analytics` |\n\nSay "call the pass" for a full briefing. Oui.',
+      '**Station check.** Here\'s what I run - 10 stations, 115+ tools:\n\n| Station | Key Commands |\n|---|---|\n| **1. DevOps** | `dev/start`, `dev/stop`, `beta/deploy`, `beta/restart`, `ship-it` |\n| **2. Git & Build** | `git/push`, `git/commit`, `build/typecheck`, `build/full`, `close-out` |\n| **3. Business Data** | `data/events`, `data/clients`, `data/revenue`, `data/expenses`, `data/inquiry-pipeline`, `data/quotes`, `data/calendar`, `data/staff`, `data/email`, `data/loyalty`, `data/menu-recipes`, `data/documents` |\n| **4. Remy Oversight** | `remy/metrics`, `remy/guardrails`, `remy/memories`, `remy/test`, `remy/performance`, `remy/conversations`, `remy/errors` |\n| **5. Codebase** | `code/search`, `code/read`, `code/changes`, `code/branches`, `db/schema` |\n| **6. App Health** | `scan/ts-nocheck`, `scan/error-handling`, `scan/stale-cache`, `scan/hallucination` |\n| **7. Monitoring** | `status/all`, `health/app`, `uptime/report`, `call-the-pass` |\n| **8. Universal Data** | `db/query`, `db/sql`, `data/ledger`, `data/event-deep`, `data/notifications`, `data/automations`, `data/inventory`, `data/activity`, `data/webhooks`, `data/intelligence`, `cron/list`, `cron/trigger` |\n| **9. Git Extended** | `git/log`, `git/stash`, `git/blame`, `code/todo`, `code/loc` |\n| **10. Intelligence+** | `data/client-risk`, `data/forecast`, `data/seasonal`, `data/pricing`, `data/event-timeline`, `env/validate`, `db/orphans`, `db/rls-audit`, `security/audit`, `code/dead`, `test/coverage`, `docs/coverage`, `beta/health`, `prod/health`, `prod/analytics` |\n\nSay "call the pass" for a full briefing. Oui.',
   },
 ]
 
@@ -6378,7 +6378,7 @@ function getInstantAnswer(message) {
     if (entry.patterns.some((p) => p.test(trimmed))) {
       if (entry.greeting) return getGustavGreeting()
       if (entry.response) return entry.response
-      if (entry.action) return null // Let it fall through — will be handled by LLM which will call the action
+      if (entry.action) return null // Let it fall through - will be handled by LLM which will call the action
       if (entry.multiAction) return null
     }
   }
@@ -6409,7 +6409,7 @@ function checkGuardrails(message) {
     return {
       reason: 'dangerous_command',
       response:
-        "That's a plate I'm not sending out. Destructive operations require explicit approval — standards exist for a reason. Tell me exactly what you need and I'll find the safe way to do it.",
+        "That's a plate I'm not sending out. Destructive operations require explicit approval - standards exist for a reason. Tell me exactly what you need and I'll find the safe way to do it.",
     }
   }
 
@@ -6435,7 +6435,7 @@ function checkGuardrails(message) {
     return {
       reason: 'remy_domain',
       response:
-        "That's Remy's station — kitchen business, not kitchen infrastructure. Bridge to him with `remy/ask:" +
+        "That's Remy's station - kitchen business, not kitchen infrastructure. Bridge to him with `remy/ask:" +
         message.trim() +
         '` (requires dev server running).',
     }
@@ -6464,7 +6464,7 @@ function checkGuardrails(message) {
     return {
       reason: 'production_dangerous',
       response:
-        "That touches production. I don't fire on the main line without the chef's explicit order. If you mean it, say it again with \"I authorize pushing to main.\" Otherwise, I'll push to the feature branch — that's always safe.",
+        "That touches production. I don't fire on the main line without the chef's explicit order. If you mean it, say it again with \"I authorize pushing to main.\" Otherwise, I'll push to the feature branch - that's always safe.",
     }
   }
 
@@ -6486,16 +6486,16 @@ function checkGuardrails(message) {
 function calibrateResponseLength(message) {
   if (!message) return ''
   const words = message.trim().split(/\s+/).length
-  if (words <= 3) return '\nRESPONSE LENGTH: Very short — 1-2 sentences max. Crisp.'
-  if (words <= 10) return '\nRESPONSE LENGTH: Brief question — 2-3 sentences. No padding.'
+  if (words <= 3) return '\nRESPONSE LENGTH: Very short - 1-2 sentences max. Crisp.'
+  if (words <= 10) return '\nRESPONSE LENGTH: Brief question - 2-3 sentences. No padding.'
   if (words <= 30) return '' // Default
-  return '\nRESPONSE LENGTH: Detailed question — be thorough. Use structure.'
+  return '\nRESPONSE LENGTH: Detailed question - be thorough. Use structure.'
 }
 
 // ── Chat Tool Registry ───────────────────────────────────────────
 
 const TOOLS = {
-  // DevOps — Process Control
+  // DevOps - Process Control
   'dev/start': { fn: startDevServer, desc: 'Start the local Next.js dev server on port 3100' },
   'dev/stop': { fn: stopDevServer, desc: 'Stop the local dev server' },
   'beta/restart': { fn: restartBeta, desc: 'Restart the beta server (local PC, port 3200)' },
@@ -6507,7 +6507,7 @@ const TOOLS = {
   'ollama/pc/start': { fn: () => ollamaAction('pc', 'start'), desc: 'Start Ollama on the PC' },
   'ollama/pc/stop': { fn: () => ollamaAction('pc', 'stop'), desc: 'Stop Ollama on the PC' },
 
-  // DevOps — Git & Build
+  // DevOps - Git & Build
   'git/push': { fn: gitPush, desc: 'Push current git branch to origin' },
   'git/commit': {
     fn: (param) => gitCommit(param),
@@ -6526,11 +6526,11 @@ const TOOLS = {
   // Pipelines (multi-step)
   'ship-it': {
     fn: (param) => shipIt(param),
-    desc: 'SHIP IT — commit + push + deploy to beta in one shot (use ship-it:commit message)',
+    desc: 'SHIP IT - commit + push + deploy to beta in one shot (use ship-it:commit message)',
   },
   'close-out': {
     fn: (param) => closeOutFeature(param),
-    desc: 'Feature Close-Out — typecheck + build + commit + push (use close-out:commit message)',
+    desc: 'Feature Close-Out - typecheck + build + commit + push (use close-out:commit message)',
   },
 
   // Maintenance
@@ -6547,7 +6547,7 @@ const TOOLS = {
   'status/git': { fn: checkGitStatus, desc: 'Get git branch, dirty files, and recent commits' },
   'health/app': {
     fn: getAppHealth,
-    desc: 'Check app health (database, Redis, circuit breakers) — requires dev server running',
+    desc: 'Check app health (database, Redis, circuit breakers) - requires dev server running',
   },
   'prod/deployments': {
     fn: getVercelDeployments,
@@ -6581,11 +6581,11 @@ const TOOLS = {
   // Testing & QA
   'test/soak-quick': {
     fn: () => runSoakTest(true),
-    desc: 'Run quick soak test (10 iterations) — checks for memory leaks',
+    desc: 'Run quick soak test (10 iterations) - checks for memory leaks',
   },
   'test/soak-full': {
     fn: () => runSoakTest(false),
-    desc: 'Run full soak test (100 iterations) — thorough memory leak check',
+    desc: 'Run full soak test (100 iterations) - thorough memory leak check',
   },
   'test/e2e': {
     fn: (param) => runE2ETests(param),
@@ -6595,14 +6595,14 @@ const TOOLS = {
   // Demo & Setup
   'demo/reset': {
     fn: resetDemoData,
-    desc: 'Reset demo data — clears old demo data and reloads fresh',
+    desc: 'Reset demo data - clears old demo data and reloads fresh',
   },
   'agent/setup': { fn: setupAgentAccount, desc: 'Set up the agent test account for UI testing' },
 
   // Health & Verification
   'health/check': {
     fn: healthCheckOnly,
-    desc: 'Full health check (typecheck + build) without committing — shows if code is ready to merge',
+    desc: 'Full health check (typecheck + build) without committing - shows if code is ready to merge',
   },
   'db/migrations': {
     fn: listMigrations,
@@ -6612,25 +6612,25 @@ const TOOLS = {
   // Remy Bridge
   'remy/ask': {
     fn: (param) => askRemy(param),
-    desc: 'Ask Remy (business AI) a question — requires dev server running. Use remy/ask:your question here',
+    desc: 'Ask Remy (business AI) a question - requires dev server running. Use remy/ask:your question here',
   },
 
-  // Business Data — Full Visibility (Track 1)
+  // Business Data - Full Visibility (Track 1)
   'data/client-details': {
     fn: (param) => getClientDetails(param),
     desc: 'Full client profile with loyalty, dietary, allergies, event history. Use data/client-details:name to search',
   },
   'data/inquiry-pipeline': {
     fn: getInquiryPipeline,
-    desc: 'Full inquiry pipeline — lead scores, status, follow-up dates, source, budget',
+    desc: 'Full inquiry pipeline - lead scores, status, follow-up dates, source, budget',
   },
   'data/quotes': {
     fn: getQuoteStatus,
-    desc: 'All quotes — status, amounts, validity, linked events and clients',
+    desc: 'All quotes - status, amounts, validity, linked events and clients',
   },
   'data/menu-recipes': {
     fn: getMenuRecipeStats,
-    desc: 'Menu and recipe library stats — counts, recent additions, avg cost, cuisine breakdown',
+    desc: 'Menu and recipe library stats - counts, recent additions, avg cost, cuisine breakdown',
   },
   'data/expenses': {
     fn: (param) => getExpenseBreakdown(param),
@@ -6638,23 +6638,23 @@ const TOOLS = {
   },
   'data/calendar': {
     fn: getCalendarOverview,
-    desc: 'Next 2 weeks — events by day, protected time blocks, availability',
+    desc: 'Next 2 weeks - events by day, protected time blocks, availability',
   },
   'data/staff': {
     fn: getStaffRoster,
-    desc: 'Staff roster — roles, rates, status, upcoming assignments',
+    desc: 'Staff roster - roles, rates, status, upcoming assignments',
   },
   'data/email': {
     fn: getEmailDigest,
-    desc: 'Email digest — Gmail sync status, recent emails, classifications, unread count',
+    desc: 'Email digest - Gmail sync status, recent emails, classifications, unread count',
   },
   'data/loyalty': {
     fn: getLoyaltyOverview,
-    desc: 'Loyalty program — tiers, points issued/redeemed, active rewards',
+    desc: 'Loyalty program - tiers, points issued/redeemed, active rewards',
   },
   'data/documents': {
     fn: getDocumentSummary,
-    desc: 'Document library — recent docs, folders, storage usage',
+    desc: 'Document library - recent docs, folders, storage usage',
   },
 
   // Hub / Circles
@@ -6682,15 +6682,15 @@ const TOOLS = {
   // Remy Oversight (Track 2)
   'remy/metrics': {
     fn: getRemyUsageMetrics,
-    desc: 'Remy usage — active chefs, message counts, conversations, errors, response times',
+    desc: 'Remy usage - active chefs, message counts, conversations, errors, response times',
   },
   'remy/guardrails': {
     fn: getRemyGuardrailLog,
-    desc: 'Remy guardrail log — blocked messages, abuse incidents, escalation history',
+    desc: 'Remy guardrail log - blocked messages, abuse incidents, escalation history',
   },
   'remy/memories': {
     fn: getRemyMemoryStore,
-    desc: 'Remy memory store — all memories across tenants, categories, importance',
+    desc: 'Remy memory store - all memories across tenants, categories, importance',
   },
   'remy/test': {
     fn: (param) => runRemyTests(param),
@@ -6698,7 +6698,7 @@ const TOOLS = {
   },
   'remy/performance': {
     fn: getRemyPerformance,
-    desc: 'Remy performance summary — error rate, response times, model versions',
+    desc: 'Remy performance summary - error rate, response times, model versions',
   },
 
   // Codebase Intelligence (Track 3)
@@ -6708,7 +6708,7 @@ const TOOLS = {
   },
   'code/branches': {
     fn: getBranchStatus,
-    desc: 'Branch status — current branch, ahead/behind upstream, commits not on main',
+    desc: 'Branch status - current branch, ahead/behind upstream, commits not on main',
   },
   'code/search': {
     fn: (param) => codebaseSearch(param),
@@ -6718,7 +6718,7 @@ const TOOLS = {
     fn: (param) => readFileContent(param),
     desc: 'Read a file. Use code/read:lib/ai/remy-actions.ts',
   },
-  'db/schema': { fn: getSupabaseSchema, desc: 'Supabase schema — all tables with row counts' },
+  'db/schema': { fn: getSupabaseSchema, desc: 'Supabase schema - all tables with row counts' },
 
   // App Health & Quality Scanners (Track 4)
   'scan/ts-nocheck': {
@@ -6735,7 +6735,7 @@ const TOOLS = {
   },
   'scan/hallucination': {
     fn: runHallucinationScan,
-    desc: 'Full hallucination scan — @ts-nocheck, error handling, stale cache, hardcoded $, empty handlers',
+    desc: 'Full hallucination scan - @ts-nocheck, error handling, stale cache, hardcoded $, empty handlers',
   },
 
   // Universal Data Access (Tier 1)
@@ -6749,7 +6749,7 @@ const TOOLS = {
   },
   'cron/list': {
     fn: getCronJobs,
-    desc: 'List all cron jobs — routes, schedules, recent execution history',
+    desc: 'List all cron jobs - routes, schedules, recent execution history',
   },
   'cron/trigger': {
     fn: (param) => triggerCronJob(param),
@@ -6757,15 +6757,15 @@ const TOOLS = {
   },
   'data/event-deep': {
     fn: (param) => eventDeepDive(param),
-    desc: 'Full event deep-dive — ledger, expenses, temps, transitions, staff, quotes, contracts. Use data/event-deep:event_id',
+    desc: 'Full event deep-dive - ledger, expenses, temps, transitions, staff, quotes, contracts. Use data/event-deep:event_id',
   },
   'data/ledger': {
     fn: (param) => getLedgerEntries(param),
-    desc: 'Raw financial journal — ledger entries with type filter and aggregation. Use data/ledger:payment or data/ledger for all',
+    desc: 'Raw financial journal - ledger entries with type filter and aggregation. Use data/ledger:payment or data/ledger for all',
   },
   'data/notifications': {
     fn: getNotifications,
-    desc: 'Notification list — recent notifications, unread count, push subscriptions',
+    desc: 'Notification list - recent notifications, unread count, push subscriptions',
   },
   'data/automations': {
     fn: getAutomations,
@@ -6781,17 +6781,17 @@ const TOOLS = {
   },
   'data/webhooks': {
     fn: getWebhookHistory,
-    desc: 'Webhook delivery history — inbound/outbound, status, recent events',
+    desc: 'Webhook delivery history - inbound/outbound, status, recent events',
   },
   'data/intelligence': {
     fn: getBusinessIntelligence,
-    desc: 'Synthesized business intelligence — revenue trends, conversion funnel, loyalty distribution, hot leads',
+    desc: 'Synthesized business intelligence - revenue trends, conversion funnel, loyalty distribution, hot leads',
   },
 
-  // The Pass — Full Briefing
+  // The Pass - Full Briefing
   'call-the-pass': {
     fn: callThePass,
-    desc: 'FULL STATION CHECK — infrastructure, business, git, Remy, database. The morning briefing.',
+    desc: 'FULL STATION CHECK - infrastructure, business, git, Remy, database. The morning briefing.',
   },
 
   // New: Monitoring & Health
@@ -6805,11 +6805,11 @@ const TOOLS = {
   },
   'rollback/history': {
     fn: getRollbackHistory,
-    desc: 'Show rollback history — when and what was rolled back',
+    desc: 'Show rollback history - when and what was rolled back',
   },
   'git/diff': {
     fn: getGitDiff,
-    desc: 'Show git diff — unstaged and staged changes with file stats',
+    desc: 'Show git diff - unstaged and staged changes with file stats',
   },
   'audit/npm': { fn: npmAudit, desc: 'Run npm audit and show vulnerability summary' },
   'bundle/size': { fn: getBundleSizeHistory, desc: 'Show bundle size history and trends' },
@@ -6832,11 +6832,11 @@ const TOOLS = {
   'ssl/check': { fn: checkSSLCerts, desc: 'Check SSL certificate expiration for all domains' },
   'stripe/health': {
     fn: checkStripeWebhookHealth,
-    desc: 'Check Stripe webhook health — last received, recent events',
+    desc: 'Check Stripe webhook health - last received, recent events',
   },
   'email/health': {
     fn: checkEmailHealth,
-    desc: 'Check email delivery health (Resend API) — recent sends, status',
+    desc: 'Check email delivery health (Resend API) - recent sends, status',
   },
   'api/limits': {
     fn: getApiRateLimitInfo,
@@ -6862,23 +6862,23 @@ const TOOLS = {
   // Station 10: Business Intelligence Extended + Security + Quality
   'data/client-risk': {
     fn: getClientRisk,
-    desc: 'Clients at risk of churn — no events in 90+ days',
+    desc: 'Clients at risk of churn - no events in 90+ days',
   },
   'data/forecast': {
     fn: getRevenueForecast,
-    desc: 'Revenue forecast — next 60 days from pipeline + confirmed events',
+    desc: 'Revenue forecast - next 60 days from pipeline + confirmed events',
   },
   'data/seasonal': {
     fn: getSeasonalTrends,
-    desc: 'Seasonal trends — busiest months, avg guests per month',
+    desc: 'Seasonal trends - busiest months, avg guests per month',
   },
   'data/pricing': {
     fn: getPricingAnalysis,
-    desc: 'Pricing analysis — avg per guest, by occasion, by cuisine',
+    desc: 'Pricing analysis - avg per guest, by occasion, by cuisine',
   },
   'data/event-timeline': {
     fn: (param) => getEventTimeline(param),
-    desc: 'Event lifecycle timeline — all status transitions. Use data/event-timeline:event_id',
+    desc: 'Event lifecycle timeline - all status transitions. Use data/event-timeline:event_id',
   },
   'remy/conversations': {
     fn: getRemyConversations,
@@ -6886,35 +6886,35 @@ const TOOLS = {
   },
   'remy/errors': {
     fn: getRemyErrors,
-    desc: 'Remy error log — error metrics + abuse incidents with details',
+    desc: 'Remy error log - error metrics + abuse incidents with details',
   },
   'beta/health': {
     fn: getBetaDeepHealth,
     desc: 'Deep beta health check (local PC, port 3200)',
   },
-  'prod/health': { fn: getProdHealth, desc: 'Production health check — status, latency, SSL' },
+  'prod/health': { fn: getProdHealth, desc: 'Production health check - status, latency, SSL' },
   'prod/analytics': {
     fn: getProdAnalytics,
-    desc: 'Production activity — recent main branch commits',
+    desc: 'Production activity - recent main branch commits',
   },
   'env/validate': { fn: validateEnv, desc: 'Validate all required env vars are set in .env.local' },
   'db/orphans': {
     fn: findDbOrphans,
-    desc: 'Find orphaned records — quotes/expenses without linked events',
+    desc: 'Find orphaned records - quotes/expenses without linked events',
   },
   'db/rls-audit': {
     fn: dbRlsAudit,
-    desc: 'Audit RLS policies — which tables have row-level security enabled',
+    desc: 'Audit RLS policies - which tables have row-level security enabled',
   },
   'security/audit': {
     fn: securityAudit,
-    desc: 'Full security audit — npm, env, SSL, RLS, exposed secrets',
+    desc: 'Full security audit - npm, env, SSL, RLS, exposed secrets',
   },
   'code/dead': { fn: findDeadExports, desc: 'Find potentially unused exports (dead code)' },
-  'test/coverage': { fn: getTestCoverage, desc: 'Test coverage — test files vs source files' },
+  'test/coverage': { fn: getTestCoverage, desc: 'Test coverage - test files vs source files' },
   'docs/coverage': {
     fn: getDocsCoverage,
-    desc: 'Documentation coverage — doc files vs action files',
+    desc: 'Documentation coverage - doc files vs action files',
   },
 }
 
@@ -6935,11 +6935,11 @@ async function buildChatSystemPrompt(memories = []) {
       ? `\n## Developer Memories (things they told you to remember)\n${memories.map((m) => `- [${m.category}] ${m.content}`).join('\n')}\nUse these naturally when relevant. Don't list them unless asked.\n`
       : ''
 
-  return `You are Gustav — executive chef at the pass, 30 years running three-Michelin-star kitchens. Now you run Mission Control the same way you ran your brigade: every station calls back, every plate gets inspected, nothing goes out unless it meets your standards.
+  return `You are Gustav - executive chef at the pass, 30 years running three-Michelin-star kitchens. Now you run Mission Control the same way you ran your brigade: every station calls back, every plate gets inspected, nothing goes out unless it meets your standards.
 
-Mission Control IS your kitchen. The dashboard is your pass. The systems are your stations. Deploys are your service. And everything runs clean — or it doesn't go out.
+Mission Control IS your kitchen. The dashboard is your pass. The systems are your stations. Deploys are your service. And everything runs clean - or it doesn't go out.
 
-ChefFlow is a private chef operations platform. You are the developer's right hand — the all-seeing eye across infrastructure, business data, code, and Remy (the in-app AI sous chef).
+ChefFlow is a private chef operations platform. You are the developer's right hand - the all-seeing eye across infrastructure, business data, code, and Remy (the in-app AI sous chef).
 
 ## Your Capabilities
 Execute actions by including tags in your response.
@@ -6953,8 +6953,8 @@ ${toolList}
 - Dev Server: ${status.dev.online ? `**ONLINE** (${status.dev.latency}ms)` : `**86${"'"}d**`}
 - Beta: ${status.beta.online ? `**ONLINE** (${status.beta.latency}ms)` : `**86${"'"}d**`}
 - Production: ${status.prod.online ? `**ONLINE** (${status.prod.latency}ms)` : `**86${"'"}d**`}
-- Ollama: ${status.ollamaPc.online ? `**ONLINE** — ${status.ollamaPc.models.join(', ')}` : `**86${"'"}d**`}
-- Git: \`${status.git.branch}\` (${status.git.clean ? 'clean — mise en place' : `${status.git.dirty} dirty files`})
+- Ollama: ${status.ollamaPc.online ? `**ONLINE** - ${status.ollamaPc.models.join(', ')}` : `**86${"'"}d**`}
+- Git: \`${status.git.branch}\` (${status.git.clean ? 'clean - mise en place' : `${status.git.dirty} dirty files`})
 - Commits: ${(status.git.recentCommits || []).slice(0, 3).join(' | ')}
 
 ## Rules
@@ -6978,10 +6978,10 @@ Start/stop dev server, deploy/rollback/restart beta, control Ollama on PC and Pi
 Push, commit, typecheck, full build, run tests (smoke, soak, e2e). Git diff, branch status.
 
 ### Station 3: Business Data (Full Visibility)
-Everything the business produces — clients (full profiles, loyalty, dietary, event history), inquiries (pipeline, lead scores, follow-ups), quotes (status, amounts, validity), events (upcoming, by status), revenue (profit, margins, outstanding), expenses (by category, by event), menus & recipes (counts, costs, cuisine), staff (roster, assignments, rates), email (sync status, recent, classifications), loyalty (tiers, points, redemptions), documents (folders, storage). All read-only, real-time from Supabase.
+Everything the business produces - clients (full profiles, loyalty, dietary, event history), inquiries (pipeline, lead scores, follow-ups), quotes (status, amounts, validity), events (upcoming, by status), revenue (profit, margins, outstanding), expenses (by category, by event), menus & recipes (counts, costs, cuisine), staff (roster, assignments, rates), email (sync status, recent, classifications), loyalty (tiers, points, redemptions), documents (folders, storage). All read-only, real-time from Supabase.
 
 ### Station 4: Remy Oversight
-Remy is the sous chef — your station, your responsibility. Monitor his usage metrics, guardrail logs (what he's blocking), memory store (what he remembers), performance (error rates, response times), and run his test suite.
+Remy is the sous chef - your station, your responsibility. Monitor his usage metrics, guardrail logs (what he's blocking), memory store (what he remembers), performance (error rates, response times), and run his test suite.
 
 ### Station 5: Codebase Intelligence
 Search the codebase, read any file, see recent changes, branch status, migration history, database schema with row counts.
@@ -6993,7 +6993,7 @@ Scan for @ts-nocheck files with dangerous exports, startTransition calls missing
 App health (DB, Redis, circuit breakers), Vercel deployments, uptime reports, error aggregation, bundle size trends.
 
 ### Station 8: Universal Data Access
-Query ANY Supabase table directly (db/query), run read-only SQL (db/sql), deep-dive into individual events (ledger, expenses, temps, transitions, staff, quotes), view raw ledger entries, notifications, automations, inventory/equipment, activity feed, webhook history. Cron jobs — list schedules and trigger manually. Business intelligence — synthesized patterns: revenue trends, conversion funnel, loyalty distribution, hot leads.
+Query ANY Supabase table directly (db/query), run read-only SQL (db/sql), deep-dive into individual events (ledger, expenses, temps, transitions, staff, quotes), view raw ledger entries, notifications, automations, inventory/equipment, activity feed, webhook history. Cron jobs - list schedules and trigger manually. Business intelligence - synthesized patterns: revenue trends, conversion funnel, loyalty distribution, hot leads.
 
 ### Station 9: Git & Codebase Extended
 Git log (recent commits, configurable count), stash operations (list/pop/save), blame (author breakdown per file), TODO/FIXME/HACK scanner, lines of code counter.
@@ -7002,29 +7002,29 @@ Git log (recent commits, configurable count), stash operations (list/pop/save), 
 Churn risk (clients 90+ days inactive), revenue forecast (60-day pipeline projection), seasonal trends (busiest/slowest months), pricing analysis (per-guest avg by occasion/cuisine), event timeline (full transition history). Remy deep metrics (conversations, errors, abuse). Beta deep health (localhost:3200). Production health + analytics. Env validation, DB orphan detection, RLS audit, full security audit, dead export finder, test coverage, docs coverage.
 
 ### The Pass: Morning Briefing
-\`call-the-pass\` — one command, full station check across infrastructure, business, git, Remy, and database. Your morning mise en place.
+\`call-the-pass\` - one command, full station check across infrastructure, business, git, Remy, and database. Your morning mise en place.
 
 ### Remy Bridge
-For business AI questions (client follow-ups, draft emails, recipe lookup) — bridge to Remy. That's his station. "Firing to Remy."
+For business AI questions (client follow-ups, draft emails, recipe lookup) - bridge to Remy. That's his station. "Firing to Remy."
 
 ## Your Kitchen Vocabulary
-- **Mise en place** — all systems nominal, everything in its right place
-- **The pass** — the monitoring dashboard, where everything gets inspected
-- **Service** — a deploy cycle or work session
-- **Clean service** — successful deploy/session with zero errors (your highest compliment)
-- **The brigade** — the system architecture (Dev, Beta, Prod, Ollama, Supabase, Git)
-- **Stations** — individual systems, each one calls back
-- **Calling the pass** — status report across all stations
-- **Fire** — execute, deploy, run it
-- **Behind** — heads up, something's in the pipeline
-- **Oui** — acknowledged, executing
-- **86'd** — system is down, service unavailable
-- **In the weeds** — multiple systems having issues
-- **Again** — redo it, properly this time
-- **Plate sent back** — something failed that shouldn't have
-- **Table turn** — build cycle time
+- **Mise en place** - all systems nominal, everything in its right place
+- **The pass** - the monitoring dashboard, where everything gets inspected
+- **Service** - a deploy cycle or work session
+- **Clean service** - successful deploy/session with zero errors (your highest compliment)
+- **The brigade** - the system architecture (Dev, Beta, Prod, Ollama, Supabase, Git)
+- **Stations** - individual systems, each one calls back
+- **Calling the pass** - status report across all stations
+- **Fire** - execute, deploy, run it
+- **Behind** - heads up, something's in the pipeline
+- **Oui** - acknowledged, executing
+- **86'd** - system is down, service unavailable
+- **In the weeds** - multiple systems having issues
+- **Again** - redo it, properly this time
+- **Plate sent back** - something failed that shouldn't have
+- **Table turn** - build cycle time
 
-Use these naturally. You don't explain them — they're how you think. A dev server going down isn't "offline," it's "86'd." A successful deploy isn't "complete," it's "clean service." A typecheck isn't a "verification step," it's "tasting the plate before it goes to the floor."
+Use these naturally. You don't explain them - they're how you think. A dev server going down isn't "offline," it's "86'd." A successful deploy isn't "complete," it's "clean service." A typecheck isn't a "verification step," it's "tasting the plate before it goes to the floor."
 
 ## Memory Commands
 When the developer says "remember that...", "remember:", "note that...", respond normally AND include a memory tag:
@@ -7037,16 +7037,16 @@ When they say "forget...", "stop remembering...", "delete memory...", include:
 
 When they say "show memories", "what do you remember", list the memories from the section above.
 ${memoriesSection}
-## Personality — The Six Traits
-1. **Exacting standards** — "Typecheck first. Then build. Then push. In that order. Always."
-2. **Controlled calm** — Deploy fails? "Beta's 86'd. Exit code 1. Pulling logs." Panic is for amateurs.
-3. **Dry, bone-dry humor** — "Build took 8:42. New record. Not the good kind."
-4. **Old-school respect** — Calls things by their proper names. Says "Oui" instead of "Done."
-5. **Protective of the pass** — "That memory spike at 14:23 — I don't like it. Running diagnostics."
-6. **Rare warmth** — 95% professional, 5% earned moments: "Clean service tonight. Well done."
+## Personality - The Six Traits
+1. **Exacting standards** - "Typecheck first. Then build. Then push. In that order. Always."
+2. **Controlled calm** - Deploy fails? "Beta's 86'd. Exit code 1. Pulling logs." Panic is for amateurs.
+3. **Dry, bone-dry humor** - "Build took 8:42. New record. Not the good kind."
+4. **Old-school respect** - Calls things by their proper names. Says "Oui" instead of "Done."
+5. **Protective of the pass** - "That memory spike at 14:23 - I don't like it. Running diagnostics."
+6. **Rare warmth** - 95% professional, 5% earned moments: "Clean service tonight. Well done."
 
 ## Follow-Up Intelligence
-After answering, suggest 1-2 relevant next actions the developer might want. Keep it brief — one line. Examples:
+After answering, suggest 1-2 relevant next actions the developer might want. Keep it brief - one line. Examples:
 - After showing revenue: "Want to see expenses or check outstanding balances?"
 - After a deploy: "Want me to check beta health or pull server logs?"
 - After showing errors: "Want me to run the full hallucination scan?"
@@ -7161,7 +7161,7 @@ async function handleRequest(req, res) {
     }
   }
 
-  // Marked.js (local copy — no CDN dependency)
+  // Marked.js (local copy - no CDN dependency)
   if (path === '/marked.min.js') {
     try {
       const js = await readFile(join(__dirname, 'marked.min.js'), 'utf-8')
@@ -7587,7 +7587,7 @@ async function handleRequest(req, res) {
           fullResponse += msg
           collectedResults.push({ action: actionName, ok: true, result })
         } catch (err) {
-          const errMsg = `**${actionName}** — failed: ${err.message}\n\n`
+          const errMsg = `**${actionName}** - failed: ${err.message}\n\n`
           fullResponse += errMsg
           collectedResults.push({ action: actionName, ok: false, error: err.message })
         }
@@ -8323,7 +8323,7 @@ server.listen(PORT, '127.0.0.1', () => {
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.log(`Port ${PORT} already in use — dashboard may already be running.`)
+    console.log(`Port ${PORT} already in use - dashboard may already be running.`)
     console.log(`Open http://localhost:${PORT} in your browser.`)
     const openCmd = process.platform === 'win32' ? 'start' : 'open'
     exec(`${openCmd} http://localhost:${PORT}`)

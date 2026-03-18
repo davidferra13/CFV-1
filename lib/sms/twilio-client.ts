@@ -1,4 +1,4 @@
-// Twilio SMS/WhatsApp Client — Infrastructure for multi-channel messaging
+// Twilio SMS/WhatsApp Client - Infrastructure for multi-channel messaging
 // Requires: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER in .env.local
 // WhatsApp: TWILIO_WHATSAPP_NUMBER (format: whatsapp:+1234567890)
 //
@@ -25,7 +25,7 @@ interface SendResult {
 }
 
 /**
- * Send an SMS via Twilio REST API (no SDK dependency — just fetch)
+ * Send an SMS via Twilio REST API (no SDK dependency - just fetch)
  */
 export async function sendSMS(to: string, body: string): Promise<SendResult> {
   if (!isTwilioConfigured()) {

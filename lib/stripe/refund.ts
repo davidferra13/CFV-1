@@ -1,7 +1,7 @@
 // Stripe Refund Utility
 // Called by lib/cancellation/refund-actions.ts when initiating a refund for a Stripe payment.
 // The resulting charge.refunded webhook fires automatically and the existing handleRefund()
-// in the webhook handler writes the ledger entry — so callers must NOT write a ledger
+// in the webhook handler writes the ledger entry - so callers must NOT write a ledger
 // entry for Stripe refunds (double-entry prevention).
 
 import { breakers } from '@/lib/resilience/circuit-breaker'

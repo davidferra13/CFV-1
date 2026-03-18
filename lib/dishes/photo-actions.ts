@@ -2,7 +2,7 @@
 
 // Dish & Recipe Photo Actions
 // Upload or remove a single hero photo for a recipe (canonical) or a dish (per-event plating).
-// Both use the public dish-photos bucket — permanent URLs stored directly in the DB.
+// Both use the public dish-photos bucket - permanent URLs stored directly in the DB.
 // No signed URLs needed since these are portfolio/showcase images.
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -22,7 +22,7 @@ const ALLOWED_MIME_TYPES = [
   'image/webp',
 ] as const
 
-// Extension derived from MIME type only — never from filename (security)
+// Extension derived from MIME type only - never from filename (security)
 const MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',

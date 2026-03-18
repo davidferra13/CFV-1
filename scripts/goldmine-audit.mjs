@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * GOLDMINE Email Intelligence — Comprehensive Validation Audit
+ * GOLDMINE Email Intelligence - Comprehensive Validation Audit
  *
- * Pure Node.js — zero browser, zero Playwright, zero network calls, zero timeouts.
+ * Pure Node.js - zero browser, zero Playwright, zero network calls, zero timeouts.
  * Imports every GOLDMINE function directly, runs 200+ test cases against every
  * regex, weight, threshold, scoring rule, and integration path.
  *
@@ -107,7 +107,7 @@ function assertNotNull(testName, value, details = '') {
 const startTime = Date.now()
 console.log('')
 console.log('============================================================')
-console.log('  GOLDMINE Email Intelligence — Validation Audit')
+console.log('  GOLDMINE Email Intelligence - Validation Audit')
 console.log(`  ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`)
 console.log('============================================================')
 console.log('')
@@ -365,7 +365,7 @@ console.log('[BUDGET] Testing budget mention extraction...')
   assertLenGte('Budget: "$75/guest"', r6, 1)
   assertEq('Budget: "$75/guest" per_person', r6[0]?.per_person, true)
 
-  // Budget context (no dollar sign) — regex requires "budget of|is|around|about"
+  // Budget context (no dollar sign) - regex requires "budget of|is|around|about"
   const r7 = extractBudgetMentions('Our budget is 800')
   assertLenGte('Budget: "budget is 800"', r7, 1)
   assertEq('Budget: "budget is 800" = 80000 cents', r7[0]?.amount_cents, 80000)
@@ -743,8 +743,8 @@ On Mon, Mar 1, 2026, Chef David wrote:
 
   const r2 = extractAllDeterministicFields('Re: Dinner', bodyWithQuote)
   // The date/budget from quoted text should NOT be extracted
-  assertLen('Master: quoted text stripped — no date from reply', r2.dates, 0)
-  assertLen('Master: quoted text stripped — no budget from reply', r2.budget_mentions, 0)
+  assertLen('Master: quoted text stripped - no date from reply', r2.dates, 0)
+  assertLen('Master: quoted text stripped - no budget from reply', r2.budget_mentions, 0)
 
   // Signature stripping
   const bodyWithSig = `Interested in dinner for June 20.
@@ -756,7 +756,7 @@ Sent from my iPhone`
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CATEGORY 12: Lead Scoring — computeLeadScore
+// CATEGORY 12: Lead Scoring - computeLeadScore
 // ═══════════════════════════════════════════════════════════════════════════
 
 startCategory('Lead Scoring')
@@ -783,7 +783,7 @@ console.log('[SCORING] Testing computeLeadScore...')
   assertEq('Score: all true = hot', rMax.tier, 'hot')
 
   // Verify MAX_RAW = 62 (12+12+12+8+8+5+5+0+0+0+0)
-  // Wait — occasion=0, cannabis=0, referral=0, airbnb=0 → MAX_RAW = 12+12+12+8+8+5+5 = 62
+  // Wait - occasion=0, cannabis=0, referral=0, airbnb=0 → MAX_RAW = 12+12+12+8+8+5+5 = 62
   // score = round((62/62)*100) = 100 ✓
 
   // Neutral fields (occasion, cannabis, referral, airbnb) should NOT add points
@@ -1007,7 +1007,7 @@ console.log('[PRICING] Testing pricing benchmark lookups...')
   // Fallback bucket with sample < 2 should return null from format
   const s3 = formatBenchmarkSuggestion(4)
   // 4 guests → 3-6 bucket (sample=1) → fallback overall (sample=20 >= 2) → should still format
-  // Wait — formatBenchmarkSuggestion calls getGoldminePricingBenchmark which returns overall (sample=20)
+  // Wait - formatBenchmarkSuggestion calls getGoldminePricingBenchmark which returns overall (sample=20)
   // Then checks sample >= 2 → true → formats
   assertNotNull('Pricing: format for 4 guests (overall fallback)', s3)
 
@@ -1033,7 +1033,7 @@ console.log('[INTEGRATION] Testing extractAndScoreEmail full pipeline...')
 {
   // Realistic inquiry email
   const subject = 'Private chef for birthday weekend - June 15-16'
-  const body = `Hi there! We found you on Airbnb — our host at the cottage in Kennebunkport
+  const body = `Hi there! We found you on Airbnb - our host at the cottage in Kennebunkport
 recommended you for a birthday dinner.
 
 We're a group of 8 guests and would love a multi-course dinner on Saturday June 15.
@@ -1080,7 +1080,7 @@ jane.smith@email.com`
   })
   assertGt('Integration: thread context boosts score', r2.score.lead_score, result.score.lead_score)
 
-  // Minimal email — cold score
+  // Minimal email - cold score
   const r3 = extractAndScoreEmail('Hey', 'Just checking in')
   assertEq('Integration: minimal = 0', r3.score.lead_score, 0)
   assertEq('Integration: minimal = cold', r3.score.lead_tier, 'cold')
@@ -1143,7 +1143,7 @@ console.log('[PLATFORM] Testing scoreInquiryFields bridge...')
 
   // Note: scoreInquiryFields always sets total_messages=1, has_pricing_quoted=false
   // So multi_message and pricing_quoted bonuses are NOT available through this bridge
-  // (correct — first contact from platform = single message, no pricing yet)
+  // (correct - first contact from platform = single message, no pricing yet)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1154,7 +1154,7 @@ startCategory('Platform Detection')
 console.log('[PLATFORM] Testing platform email detection...')
 
 {
-  // Note: these check the is* functions — we test the mapping via detectPlatformEmail
+  // Note: these check the is* functions - we test the mapping via detectPlatformEmail
   const platforms = [
     ['support@takeachef.com', 'TakeAChef'],
     ['noreply@privatechefmanager.com', 'TakeAChef'],
@@ -1206,7 +1206,7 @@ console.log('[PARTNER] Testing partner domain detection...')
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CATEGORY 19: Layer 4.5 — Inquiry Heuristic
+// CATEGORY 19: Layer 4.5 - Inquiry Heuristic
 // ═══════════════════════════════════════════════════════════════════════════
 
 startCategory('Inquiry Heuristic (Layer 4.5)')
@@ -1444,7 +1444,7 @@ On Mon, Jan 1, 2026 at 3pm, Chef wrote:
   assertLenGte('Edge: $12,500 parsed', r7, 1)
   assertEq('Edge: $12,500 = 1250000 cents', r7[0]?.amount_cents, 1250000)
 
-  // Multiple dates in one email — all captured
+  // Multiple dates in one email - all captured
   const r8 = extractDates('Available June 15 or June 22 or July 4')
   assertGte('Edge: multiple dates extracted', r8.length, 2)
 
@@ -1470,11 +1470,11 @@ console.log('[ARTIFACTS] Testing regression fixture files...')
   const conversionPath = path.join(process.cwd(), 'data/email-references/goldmine/conversion-intelligence.json')
 
   // NOTE: These fixture files are only generated by running the GOLDMINE build
-  // pipeline with real email data (PII — gitignored). On a clean machine or CI,
-  // these won't exist. Tests are conditional — skipped if file doesn't exist.
+  // pipeline with real email data (PII - gitignored). On a clean machine or CI,
+  // these won't exist. Tests are conditional - skipped if file doesn't exist.
 
   const fixturesExist = fs.existsSync(fixturesPath)
-  // Use a soft assertion — report as info, not failure
+  // Use a soft assertion - report as info, not failure
   if (!fixturesExist) {
     console.log('  [SKIP] regression-fixtures.json not found (run email:build:goldmine to generate)')
   }
@@ -1571,7 +1571,7 @@ console.log('[WEIGHTS] Verifying scoring weights are mathematically sound...')
   assertEq('Weight: top 3 = 58', top3.score, 58)
   assertEq('Weight: top 3 = warm', top3.tier, 'warm')
 
-  // Scoring is monotonic — adding fields never decreases score
+  // Scoring is monotonic - adding fields never decreases score
   let prevScore = 0
   const fields = ['has_date', 'has_pricing_quoted', 'multi_message', 'has_budget',
     'has_location', 'has_guest_count', 'has_dietary']
@@ -1590,7 +1590,7 @@ console.log('[WEIGHTS] Verifying scoring weights are mathematically sound...')
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// DONE — Generate Report
+// DONE - Generate Report
 // ═══════════════════════════════════════════════════════════════════════════
 
 const duration = ((Date.now() - startTime) / 1000).toFixed(1)
@@ -1634,7 +1634,7 @@ fs.mkdirSync(reportDir, { recursive: true })
 
 const categories = Object.entries(categoryResults)
 
-let md = `# GOLDMINE Email Intelligence — Validation Report
+let md = `# GOLDMINE Email Intelligence - Validation Report
 
 > **Generated:** ${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
 > **Duration:** ${duration}s
@@ -1675,7 +1675,7 @@ md += `## Category Details\n\n`
 
 for (const [name, data] of categories) {
   const pct = data.total > 0 ? Math.round((data.passed / data.total) * 100) : 0
-  md += `### ${name} — ${pct}% (${data.passed}/${data.total})\n\n`
+  md += `### ${name} - ${pct}% (${data.passed}/${data.total})\n\n`
   if (data.failed === 0) {
     md += `All ${data.total} tests passed.\n\n`
   } else {
@@ -1688,29 +1688,29 @@ for (const [name, data] of categories) {
 }
 
 md += `---\n\n## What This Audit Validates\n\n`
-md += `1. **Phone extraction** — US format variations, dedup, short number rejection\n`
-md += `2. **Email extraction** — standard + complex addresses, case-insensitive dedup\n`
-md += `3. **Date extraction** — all 12 months (full + short names), slash dates, year inference, ordinals\n`
-md += `4. **Guest count extraction** — numeric, word numbers, ranges, implicit (partner/wife), "dinner for N"\n`
-md += `5. **Budget extraction** — dollar amounts, per-person rates, budget context, ranges, cent conversion\n`
-md += `6. **Dietary extraction** — all 23 dietary/allergy patterns, specific allergen capture, dedup\n`
-md += `7. **Cannabis extraction** — 5 keywords, food-context gating for "infused", special "cannabis meal for N"\n`
-md += `8. **Occasion extraction** — 27 occasion patterns including holidays, corporate, personal celebrations\n`
-md += `9. **Location extraction** — 40+ ME/NH/MA towns, generic "in City, State" pattern, dedup\n`
-md += `10. **Referral signals** — 13 referral types including Airbnb host (dual-signal requirement)\n`
-md += `11. **Master extractor** — all extractors combined, quoted text stripping, signature stripping\n`
-md += `12. **Lead scoring formula** — all 11 weights, boundary conditions (hot/warm/cold), factor text\n`
-md += `13. **Score from extraction bridge** — mapping from raw fields to scoring inputs, thread context\n`
-md += `14. **Pricing benchmarks** — 4 guest buckets, fallback logic, format suggestions\n`
-md += `15. **Extract & score integration** — full pipeline from raw email to fields + score\n`
-md += `16. **Platform parser bridge** — scoreInquiryFields for TakeAChef/Yhangry/etc\n`
-md += `17. **Platform detection (Layer 1)** — 9 platform domains\n`
-md += `18. **Partner detection (Layer 1.5)** — Ember Brand Fire domain\n`
-md += `19. **Inquiry heuristic (Layer 4.5)** — 10 positive signals, 3 negative signals, thresholds\n`
-md += `20. **Realistic email scenarios** — 5 real-world email patterns end-to-end\n`
-md += `21. **Edge cases** — empty input, unicode, 50K char stress, quoted text isolation\n`
-md += `22. **Data artifacts** — regression fixtures, thread map, rulepack, conversion intelligence\n`
-md += `23. **Weight derivation** — mathematical soundness, monotonicity proof\n`
+md += `1. **Phone extraction** - US format variations, dedup, short number rejection\n`
+md += `2. **Email extraction** - standard + complex addresses, case-insensitive dedup\n`
+md += `3. **Date extraction** - all 12 months (full + short names), slash dates, year inference, ordinals\n`
+md += `4. **Guest count extraction** - numeric, word numbers, ranges, implicit (partner/wife), "dinner for N"\n`
+md += `5. **Budget extraction** - dollar amounts, per-person rates, budget context, ranges, cent conversion\n`
+md += `6. **Dietary extraction** - all 23 dietary/allergy patterns, specific allergen capture, dedup\n`
+md += `7. **Cannabis extraction** - 5 keywords, food-context gating for "infused", special "cannabis meal for N"\n`
+md += `8. **Occasion extraction** - 27 occasion patterns including holidays, corporate, personal celebrations\n`
+md += `9. **Location extraction** - 40+ ME/NH/MA towns, generic "in City, State" pattern, dedup\n`
+md += `10. **Referral signals** - 13 referral types including Airbnb host (dual-signal requirement)\n`
+md += `11. **Master extractor** - all extractors combined, quoted text stripping, signature stripping\n`
+md += `12. **Lead scoring formula** - all 11 weights, boundary conditions (hot/warm/cold), factor text\n`
+md += `13. **Score from extraction bridge** - mapping from raw fields to scoring inputs, thread context\n`
+md += `14. **Pricing benchmarks** - 4 guest buckets, fallback logic, format suggestions\n`
+md += `15. **Extract & score integration** - full pipeline from raw email to fields + score\n`
+md += `16. **Platform parser bridge** - scoreInquiryFields for TakeAChef/Yhangry/etc\n`
+md += `17. **Platform detection (Layer 1)** - 9 platform domains\n`
+md += `18. **Partner detection (Layer 1.5)** - Ember Brand Fire domain\n`
+md += `19. **Inquiry heuristic (Layer 4.5)** - 10 positive signals, 3 negative signals, thresholds\n`
+md += `20. **Realistic email scenarios** - 5 real-world email patterns end-to-end\n`
+md += `21. **Edge cases** - empty input, unicode, 50K char stress, quoted text isolation\n`
+md += `22. **Data artifacts** - regression fixtures, thread map, rulepack, conversion intelligence\n`
+md += `23. **Weight derivation** - mathematical soundness, monotonicity proof\n`
 md += `\n---\n*Generated by GOLDMINE Validation Audit in ${duration}s*\n`
 
 const reportPath = path.join(reportDir, 'goldmine-audit.md')

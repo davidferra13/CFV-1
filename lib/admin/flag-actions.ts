@@ -1,6 +1,6 @@
 'use server'
 
-// Admin Feature Flag Actions — toggle per-chef flags
+// Admin Feature Flag Actions - toggle per-chef flags
 // Writes to chef_feature_flags table via service role.
 // All mutations are audit-logged.
 

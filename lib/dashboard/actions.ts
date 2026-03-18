@@ -11,7 +11,7 @@ import { z } from 'zod'
 import { formatMinutesAsDuration } from '@/lib/events/time-tracking'
 
 // ============================================
-// 1. Outstanding Payments — events with money owed
+// 1. Outstanding Payments - events with money owed
 // ============================================
 
 export async function getOutstandingPayments() {
@@ -111,7 +111,7 @@ export async function getDashboardQuoteStats() {
 }
 
 // ============================================
-// 3. Inquiry Budget Mix — recent lead quality signal
+// 3. Inquiry Budget Mix - recent lead quality signal
 // ============================================
 
 export type DashboardInquiryBudgetMix = {
@@ -206,7 +206,7 @@ export async function getDashboardInquiryBudgetMix(windowDays = 90) {
 }
 
 // ============================================
-// 4. Event Counts — this month + YTD
+// 4. Event Counts - this month + YTD
 // ============================================
 
 export async function getDashboardEventCounts() {
@@ -841,7 +841,7 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
 }
 
 // ============================================
-// 8. Top Events by Profit — this month's best performers
+// 8. Top Events by Profit - this month's best performers
 // ============================================
 
 export type TopProfitEvent = {
@@ -970,7 +970,7 @@ export async function logDashboardHours(input: LogDashboardHoursInput) {
       action,
       domain: 'operational',
       entityType: 'hours_log',
-      summary: `Logged ${formatMinutesAsDuration(validated.minutes)} — ${categoryLabel}`,
+      summary: `Logged ${formatMinutesAsDuration(validated.minutes)} - ${categoryLabel}`,
       context: {
         minutes: validated.minutes,
         logged_for: loggedFor,

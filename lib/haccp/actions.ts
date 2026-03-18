@@ -8,7 +8,7 @@ import type { HACCPPlanData } from './types'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 
-// haccp_plans may not be in generated types yet — cast as needed
+// haccp_plans may not be in generated types yet - cast as needed
 function fromHACCP(supabase: any): any {
   return (supabase as any).from('haccp_plans')
 }

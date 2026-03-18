@@ -16,7 +16,15 @@ import { showUndoToast } from '@/components/ui/undo-toast'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { LocationMap } from '@/components/ui/location-map'
+import dynamic from 'next/dynamic'
+
+const LocationMap = dynamic(
+  () => import('@/components/ui/location-map').then((m) => m.LocationMap),
+  {
+    loading: () => <div className="h-[200px] rounded-lg bg-stone-800 animate-pulse" />,
+    ssr: false,
+  }
+)
 import { formatDisplayDate } from './helpers'
 
 type MediaFormState = {
@@ -460,7 +468,7 @@ export function JourneyMediaPanel({
                 key={`scrapbook-${item.id}`}
                 href={item.media_url}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="block rounded-lg overflow-hidden border border-stone-700 bg-stone-800 hover:opacity-90"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -546,7 +554,7 @@ export function JourneyMediaPanel({
                 <a
                   href={item.media_url}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-2 rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-300 hover:bg-stone-700"
                 >
                   <FileText className="w-4 h-4 text-stone-500" />
@@ -575,7 +583,7 @@ export function JourneyMediaPanel({
               <a
                 href={item.media_url}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="inline-flex text-xs text-brand-500 hover:text-brand-400"
               >
                 View original source

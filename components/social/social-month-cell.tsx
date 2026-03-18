@@ -53,27 +53,27 @@ export function SocialMonthCell({ month, year, posts }: Props) {
         {/* Status mini-pills */}
         <div className="flex flex-wrap gap-1">
           {published > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-700 font-medium">
+            <span className="text-xxs px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-700 font-medium">
               {published} done
             </span>
           )}
           {queued > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-950 text-violet-700 font-medium">
+            <span className="text-xxs px-1.5 py-0.5 rounded bg-violet-950 text-violet-700 font-medium">
               {queued} queued
             </span>
           )}
           {approved > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-950 text-sky-700 font-medium">
+            <span className="text-xxs px-1.5 py-0.5 rounded bg-sky-950 text-sky-700 font-medium">
               {approved} approved
             </span>
           )}
           {draft > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-950 text-amber-700 font-medium">
+            <span className="text-xxs px-1.5 py-0.5 rounded bg-amber-950 text-amber-700 font-medium">
               {draft} drafts
             </span>
           )}
           {ideas > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-500 font-medium">
+            <span className="text-xxs px-1.5 py-0.5 rounded bg-stone-800 text-stone-500 font-medium">
               {ideas} ideas
             </span>
           )}

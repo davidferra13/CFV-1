@@ -302,7 +302,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
                 <p className="text-xs font-medium text-stone-200 group-hover:text-brand-400">
                   {tpl.label}
                 </p>
-                <p className="text-[11px] text-stone-500 mt-0.5">{tpl.description}</p>
+                <p className="text-xs-tight text-stone-500 mt-0.5">{tpl.description}</p>
               </button>
             ))}
           </div>
@@ -506,7 +506,7 @@ function ActionConfigForm({
     case 'create_notification':
       return (
         <div className="space-y-2 pl-3 border-l-2 border-amber-200">
-          <p className="text-[11px] text-stone-500">{fieldHint}</p>
+          <p className="text-xs-tight text-stone-500">{fieldHint}</p>
           <div>
             <label className="block text-xs text-stone-500 mb-0.5">Notification title</label>
             <input
@@ -533,7 +533,7 @@ function ActionConfigForm({
     case 'create_follow_up_task':
       return (
         <div className="space-y-2 pl-3 border-l-2 border-blue-200">
-          <p className="text-[11px] text-stone-500">{fieldHint}</p>
+          <p className="text-xs-tight text-stone-500">{fieldHint}</p>
           <div>
             <label className="block text-xs text-stone-500 mb-0.5">Task description</label>
             <input
@@ -561,7 +561,7 @@ function ActionConfigForm({
     case 'create_internal_note':
       return (
         <div className="pl-3 border-l-2 border-emerald-200 space-y-1">
-          <p className="text-[11px] text-stone-500">{fieldHint}</p>
+          <p className="text-xs-tight text-stone-500">{fieldHint}</p>
           <label className="block text-xs text-stone-500">Note text</label>
           <textarea
             value={config.note || ''}

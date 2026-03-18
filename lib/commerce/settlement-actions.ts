@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Settlement Actions
+// Commerce Engine V1 - Settlement Actions
 // Track Stripe payouts, map payments to settlements, view settlement history.
 
 'use server'

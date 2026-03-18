@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
-import { useState, useEffect, useRef, useTransition } from 'react'
+import { useState, useEffect, useRef, useTransition, memo } from 'react'
+import { toast } from 'sonner'
 import type { HubMedia } from '@/lib/hub/types'
 import { createHubMedia, deleteHubMedia, getMediaUrl } from '@/lib/hub/media-actions'
 import { createClient } from '@/lib/supabase/client'
@@ -50,6 +51,7 @@ export function HubPhotoGallery({ groupId, media, profileToken, canPost }: HubPh
       setItems((prev) => [newMedia, ...prev])
     } catch (err) {
       console.error('Upload failed:', err)
+      toast.error('Photo upload failed. Please try again.')
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -65,6 +67,7 @@ export function HubPhotoGallery({ groupId, media, profileToken, canPost }: HubPh
         await deleteHubMedia({ mediaId, profileToken })
       } catch {
         setItems(previous)
+        toast.error('Failed to delete photo.')
       }
     })
     setLightboxIdx(null)
@@ -182,8 +185,9 @@ export function HubPhotoGallery({ groupId, media, profileToken, canPost }: HubPh
   )
 }
 
-// Thumbnail component that lazily loads signed URL
-function PhotoThumbnail({
+// Memoized: rendered in .map() for each photo in the gallery grid.
+// Note: parent should wrap onClick and getUrl with useCallback.
+const PhotoThumbnail = memo(function PhotoThumbnail({
   item,
   onClick,
   getUrl,
@@ -218,4 +222,4 @@ function PhotoThumbnail({
       )}
     </button>
   )
-}
+})

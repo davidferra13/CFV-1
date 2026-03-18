@@ -246,7 +246,7 @@ export type ClientSuggestion = {
   daysDormant: number | null
   avgSpendCents: number
   lifetimeValueCents: number
-  reason: string // e.g. "Dormant 45 days — avg $1,200 booking"
+  reason: string // e.g. "Dormant 45 days - avg $1,200 booking"
   rank: number
   status: 'pending' | 'contacted' | 'booked' | 'declined' | 'dismissed'
   suggestionId?: string // set if row exists in goal_client_suggestions table
@@ -356,7 +356,7 @@ export type ServiceType = {
   sortOrder: number
   createdAt: string
   updatedAt: string
-  /** Computed client-side — never stored. Depends on pricingModel + typicalGuestCount. */
+  /** Computed client-side - never stored. Depends on pricingModel + typicalGuestCount. */
   effectivePriceCents: number
 }
 
@@ -576,7 +576,7 @@ export const GOAL_TYPE_META: GoalTypeMeta[] = [
   {
     type: 'weekly_workouts',
     label: 'Weekly Workouts',
-    description: 'Stay physically fit — track workouts per week on average.',
+    description: 'Stay physically fit - track workouts per week on average.',
     unit: 'count',
     icon: 'Dumbbell',
     trackingMethod: 'manual_count',
@@ -593,7 +593,7 @@ export const GOAL_TYPE_META: GoalTypeMeta[] = [
   {
     type: 'family_dinners',
     label: 'Family Dinners',
-    description: 'Cook at home for your family — not as a job.',
+    description: 'Cook at home for your family - not as a job.',
     unit: 'count',
     icon: 'Home',
     trackingMethod: 'manual_count',

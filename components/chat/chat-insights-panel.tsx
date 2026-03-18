@@ -79,7 +79,7 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
       <div className="flex items-center gap-1.5 mb-2">
         <Sparkles className="w-3 h-3 text-amber-500" />
         <span className="text-xs font-medium text-amber-700">Smart Suggestions</span>
-        <span className="text-[10px] text-amber-500">({insights.length})</span>
+        <span className="text-xxs text-amber-500">({insights.length})</span>
       </div>
 
       <div className="space-y-1.5">
@@ -95,10 +95,10 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-stone-200">{insight.title}</p>
                 {insight.detail && (
-                  <p className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">{insight.detail}</p>
+                  <p className="text-xxs text-stone-500 mt-0.5 line-clamp-2">{insight.detail}</p>
                 )}
                 <div className="flex items-center gap-1 mt-1">
-                  <span className="text-[10px] text-amber-600">
+                  <span className="text-xxs text-amber-600">
                     {Math.round(insight.confidence * 100)}% confidence
                   </span>
                 </div>
@@ -111,7 +111,7 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
                 type="button"
                 onClick={() => handleAccept(insight.id)}
                 disabled={isPending}
-                className="flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-medium text-green-700 bg-green-900 rounded hover:bg-green-200 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-0.5 px-2 py-0.5 text-xxs font-medium text-green-700 bg-green-900 rounded hover:bg-green-200 disabled:opacity-50 transition-colors"
               >
                 <Check className="w-2.5 h-2.5" />
                 Save as Note
@@ -120,7 +120,7 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
                 type="button"
                 onClick={() => handleDismiss(insight.id)}
                 disabled={isPending}
-                className="flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-medium text-stone-500 bg-stone-800 rounded hover:bg-stone-700 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-0.5 px-2 py-0.5 text-xxs font-medium text-stone-500 bg-stone-800 rounded hover:bg-stone-700 disabled:opacity-50 transition-colors"
               >
                 <X className="w-2.5 h-2.5" />
                 Dismiss

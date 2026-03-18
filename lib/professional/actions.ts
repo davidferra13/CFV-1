@@ -24,7 +24,7 @@ const ACHIEVE_TYPES = [
   'other',
 ] as const
 
-// NOTE: ACHIEVE_TYPE_LABELS has been moved to './constants' — import from there instead.
+// NOTE: ACHIEVE_TYPE_LABELS has been moved to './constants' - import from there instead.
 
 const AchievementSchema = z.object({
   achieve_type: z.enum(ACHIEVE_TYPES).default('other'),
@@ -130,7 +130,7 @@ const GOAL_CATEGORIES = [
   'other',
 ] as const
 
-// NOTE: GOAL_CATEGORY_LABELS has been moved to './constants' — import from there instead.
+// NOTE: GOAL_CATEGORY_LABELS has been moved to './constants' - import from there instead.
 
 const LearningGoalSchema = z.object({
   title: z.string().min(1, 'Title is required'),

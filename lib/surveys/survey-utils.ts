@@ -1,5 +1,5 @@
 // Survey utility types and pure helper functions.
-// This file has NO 'use server' directive — pure computation only.
+// This file has NO 'use server' directive - pure computation only.
 // Imported by both actions.ts (for the ChefSurveyRow type) and UI pages.
 
 export type ChefSurveyRow = {
@@ -36,7 +36,7 @@ export type SurveyStats = {
 
 /**
  * Compute aggregated stats across a set of survey rows.
- * Pure synchronous function — no DB calls.
+ * Pure synchronous function - no DB calls.
  */
 export function computeSurveyStats(surveys: ChefSurveyRow[]): SurveyStats {
   const submitted = surveys.filter((s) => s.submitted_at !== null)

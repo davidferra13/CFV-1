@@ -1,4 +1,4 @@
-// Email Validation — Rapid Email Verifier (free, open source, no key)
+// Email Validation - Rapid Email Verifier (free, open source, no key)
 // https://rapid-email-verifier.fly.dev
 // No signup, no storage, GDPR compliant
 // Also includes local validation (no API call needed for obvious issues)
@@ -50,7 +50,7 @@ const DISPOSABLE_DOMAINS = new Set([
 ])
 
 /**
- * Quick local email validation — no API call.
+ * Quick local email validation - no API call.
  * Catches format errors, typos, and disposable emails.
  */
 export function validateEmailLocal(email: string): EmailValidationResult {
@@ -104,7 +104,7 @@ export function suggestEmailCorrection(email: string): string | null {
 }
 
 /**
- * Full email validation via API — checks MX records, SMTP, etc.
+ * Full email validation via API - checks MX records, SMTP, etc.
  * Use for important emails (new client signups, invoice recipients).
  * Falls back to local validation if API is unavailable.
  */
@@ -129,7 +129,7 @@ export async function validateEmail(email: string): Promise<EmailValidationResul
       method: 'api',
     }
   } catch {
-    // API unreachable — local validation is good enough
+    // API unreachable - local validation is good enough
     return localResult
   }
 }

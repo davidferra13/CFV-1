@@ -1,5 +1,5 @@
 // Inquiry Client Actions
-// Read-only access for the client portal — clients can view their own inquiries.
+// Read-only access for the client portal - clients can view their own inquiries.
 // RLS policies (inquiries_client_select, inquiry_transitions_client_select) were
 // established in Layer 2 (20260215000002_layer_2_inquiry_messaging.sql).
 
@@ -120,14 +120,14 @@ export async function getClientInquiryById(inquiryId: string): Promise<ClientInq
 
   if (error || !inquiry) return null
 
-  // Fetch transition history — RLS policy covers this
+  // Fetch transition history - RLS policy covers this
   const { data: transitions } = await supabase
     .from('inquiry_state_transitions')
     .select('id, from_status, to_status, transitioned_at, reason')
     .eq('inquiry_id', inquiryId)
     .order('transitioned_at', { ascending: true })
 
-  // Fetch linked quotes — quotes_client_can_view_own RLS policy covers this
+  // Fetch linked quotes - quotes_client_can_view_own RLS policy covers this
   const { data: quotes } = await supabase
     .from('quotes')
     .select('id, quote_name, total_quoted_cents, status, pricing_model, sent_at')

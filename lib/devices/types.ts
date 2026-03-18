@@ -1,4 +1,4 @@
-// Device Kiosk & Fleet Management — Type Definitions
+// Device Kiosk & Fleet Management - Type Definitions
 
 export type DeviceType = 'ipad' | 'android' | 'browser'
 export type DeviceStatus = 'pending_pair' | 'active' | 'disabled' | 'revoked'

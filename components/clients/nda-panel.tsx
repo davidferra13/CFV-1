@@ -296,7 +296,7 @@ export function NdaPanel({ clientId, initialNdas }: Props) {
                       {nda.restrictions.map((r) => (
                         <span
                           key={r}
-                          className="rounded bg-stone-700/50 px-1.5 py-0.5 text-[10px] text-stone-400"
+                          className="rounded bg-stone-700/50 px-1.5 py-0.5 text-xxs text-stone-400"
                         >
                           {r}
                         </span>
@@ -306,7 +306,7 @@ export function NdaPanel({ clientId, initialNdas }: Props) {
 
                   {nda.notes && <p className="mt-1 text-xs text-stone-500">{nda.notes}</p>}
 
-                  <p className="mt-1 text-[10px] text-stone-600">
+                  <p className="mt-1 text-xxs text-stone-600">
                     Created {new Date(nda.created_at).toLocaleDateString()}
                     {nda.signed_date && ` | Signed ${nda.signed_date}`}
                     {nda.expiry_date && ` | Expires ${nda.expiry_date}`}

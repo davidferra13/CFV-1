@@ -1113,7 +1113,7 @@ export async function uploadChefProfileImage(
   const ext = PROFILE_IMAGE_MIME_TO_EXT[file.type] || 'jpg'
   const storagePath = `${user.entityId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
 
-  // Attempt image compression via reSmush.it (non-blocking — fallback to original)
+  // Attempt image compression via reSmush.it (non-blocking - fallback to original)
   let uploadBody: File | Blob = file
   try {
     const fileBuffer = Buffer.from(await file.arrayBuffer())

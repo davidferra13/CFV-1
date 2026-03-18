@@ -1,6 +1,6 @@
 // LinkedIn publishing adapter.
 // Uses the UGC Posts API (v2) to publish text + image posts to the chef's profile.
-// Images are shared via originalUrl (external URL — no binary upload needed).
+// Images are shared via originalUrl (external URL - no binary upload needed).
 // Tokens expire in 60 days; refresh tokens are issued when r_emailaddress scope is included.
 
 import type { SocialPost } from '@/lib/social/types'

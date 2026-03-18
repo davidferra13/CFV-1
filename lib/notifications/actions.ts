@@ -68,7 +68,7 @@ export async function createNotification({
     metadata,
   })
 
-  // Sanitize title and body — strip control characters (newlines, tabs, carriage returns)
+  // Sanitize title and body - strip control characters (newlines, tabs, carriage returns)
   // to prevent misleading multi-line SMS/push notifications from user-controlled data
   // (e.g., crafted event names or client names).
   const sanitizedTitle = title
@@ -136,7 +136,7 @@ export async function createNotification({
   }
 
   // Fire out-of-app channels (email, push, SMS) as a non-blocking side effect.
-  // routeNotification never throws — all errors are caught and logged internally.
+  // routeNotification never throws - all errors are caught and logged internally.
   routeNotification({
     notificationId: notification.id,
     tenantId,

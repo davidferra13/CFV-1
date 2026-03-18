@@ -1,4 +1,4 @@
-// Remy Agent — Inquiry Actions
+// Remy Agent - Inquiry Actions
 // Create, update, transition, convert inquiries on the chef's behalf.
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -58,8 +58,8 @@ export const inquiryAgentActions: AgentActionDefinition[] = [
     description:
       'Log a new inquiry/lead from any channel. Parses client info, event details, budget, and source.',
     inputSchema:
-      '{ "description": "string — inquiry details, e.g. Got a text from Jane Doe (jane@mail.com) asking about a birthday dinner for 8 on April 5, budget $800-1200" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before saving.',
+      '{ "description": "string - inquiry details, e.g. Got a text from Jane Doe (jane@mail.com) asking about a birthday dinner for 8 on April 5, budget $800-1200" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before saving.',
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
@@ -101,7 +101,7 @@ export const inquiryAgentActions: AgentActionDefinition[] = [
       const warnings: string[] = []
       if (!clientId && parsed.client_name)
         warnings.push(
-          `Client "${parsed.client_name}" not found — will be stored as an unlinked lead.`
+          `Client "${parsed.client_name}" not found - will be stored as an unlinked lead.`
         )
 
       return {
@@ -153,8 +153,8 @@ export const inquiryAgentActions: AgentActionDefinition[] = [
     description:
       'Transition an inquiry to a new status (e.g., new → awaiting_client, quoted → confirmed).',
     inputSchema:
-      '{ "inquiryIdentifier": "string — client name or occasion to find the inquiry", "toStatus": "string — target: awaiting_client, awaiting_chef, quoted, confirmed, declined, expired" }',
-    tierNote: 'ALWAYS tier 2 — status changes require chef confirmation.',
+      '{ "inquiryIdentifier": "string - client name or occasion to find the inquiry", "toStatus": "string - target: awaiting_client, awaiting_chef, quoted, confirmed, declined, expired" }',
+    tierNote: 'ALWAYS tier 2 - status changes require chef confirmation.',
 
     async executor(inputs, ctx) {
       const identifier = String(inputs.inquiryIdentifier ?? '').toLowerCase()
@@ -221,8 +221,8 @@ export const inquiryAgentActions: AgentActionDefinition[] = [
     safety: 'significant',
     description:
       'Convert a confirmed inquiry into a draft event. The inquiry must be in "confirmed" status.',
-    inputSchema: '{ "inquiryIdentifier": "string — client name or occasion to find the inquiry" }',
-    tierNote: 'ALWAYS tier 2 — creates a new event from the inquiry.',
+    inputSchema: '{ "inquiryIdentifier": "string - client name or occasion to find the inquiry" }',
+    tierNote: 'ALWAYS tier 2 - creates a new event from the inquiry.',
 
     async executor(inputs) {
       const identifier = String(inputs.inquiryIdentifier ?? '').toLowerCase()

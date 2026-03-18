@@ -142,8 +142,8 @@ export async function getClientIntelligenceContext(
   else if (churnScore >= 40) churnLevel = 'high'
   else if (churnScore >= 20) churnLevel = 'moderate'
 
-  if (churnLevel === 'critical') insights.push('High churn risk — consider re-engagement outreach')
-  else if (churnLevel === 'high') insights.push('Elevated churn risk — client may be drifting')
+  if (churnLevel === 'critical') insights.push('High churn risk - consider re-engagement outreach')
+  else if (churnLevel === 'high') insights.push('Elevated churn risk - client may be drifting')
 
   // ─── Rebooking Prediction ───
   const months = events.map((e: any) => new Date(e.event_date).getMonth() + 1)
@@ -210,7 +210,7 @@ export async function getClientIntelligenceContext(
       : null
 
   if (trend === 'growing') insights.push('Revenue per event is trending upward')
-  else if (trend === 'declining') insights.push('Revenue per event is declining — review pricing')
+  else if (trend === 'declining') insights.push('Revenue per event is declining - review pricing')
 
   return {
     churnRisk: {

@@ -102,7 +102,7 @@ export async function publishTikTok(
 
     return {
       success: false,
-      error: 'TikTok publish timed out — will retry',
+      error: 'TikTok publish timed out - will retry',
       retriable: true,
     }
   } catch (err) {

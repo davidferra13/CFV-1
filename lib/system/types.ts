@@ -1,7 +1,7 @@
-// System Nerve Center — Shared Types
+// System Nerve Center - Shared Types
 // Used by health-sweep, heal-actions, API routes, and the dashboard UI.
 
-/** Dependency tiers — checked in order. If a lower tier fails, higher tiers skip. */
+/** Dependency tiers - checked in order. If a lower tier fails, higher tiers skip. */
 export type ServiceTier = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
 /** Every monitorable service in ChefFlow */

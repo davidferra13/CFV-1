@@ -4,8 +4,8 @@
 
 export function CannabisTierBadge({ size = 'sm' }: { size?: 'xs' | 'sm' | 'md' }) {
   const styles = {
-    xs: 'text-[9px] px-1.5 py-0.5',
-    sm: 'text-[10px] px-2 py-0.5',
+    xs: 'text-2xs px-1.5 py-0.5',
+    sm: 'text-xxs px-2 py-0.5',
     md: 'text-xs px-2.5 py-1',
   }
 

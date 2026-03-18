@@ -103,7 +103,7 @@ export default async function AdminCommandCenterPage() {
                   {conversation.tenantName ?? conversation.tenantId} - {conversation.contextType}
                 </p>
                 <p className="text-sm text-stone-200 truncate">{conversation.lastMessagePreview}</p>
-                <p className="text-[11px] text-stone-500">
+                <p className="text-xs-tight text-stone-500">
                   {formatDate(conversation.lastMessageAt)}
                 </p>
               </Link>
@@ -129,7 +129,7 @@ export default async function AdminCommandCenterPage() {
                   {notification.action}
                 </p>
                 <p className="text-sm text-stone-200 truncate">{notification.title}</p>
-                <p className="text-[11px] text-stone-500">{formatDate(notification.createdAt)}</p>
+                <p className="text-xs-tight text-stone-500">{formatDate(notification.createdAt)}</p>
               </div>
             ))}
             {notifications.items.length === 0 ? (

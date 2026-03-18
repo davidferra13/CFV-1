@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import {
@@ -106,10 +107,11 @@ function PartnerPill({ partner }: { partner: DirectoryPartner }) {
   return (
     <div className="flex items-center gap-2.5 rounded-lg bg-stone-800 px-3 py-2">
       {partner.cover_image_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={partner.cover_image_url}
           alt={partner.name}
+          width={32}
+          height={32}
           className="h-8 w-8 rounded-md object-cover flex-shrink-0"
         />
       ) : (
@@ -137,9 +139,9 @@ function PartnerPill({ partner }: { partner: DirectoryPartner }) {
       )}
       <div className="min-w-0 flex-1">
         <p className="text-xs font-semibold text-stone-200 truncate">{partner.name}</p>
-        {cityState && <p className="text-[11px] text-stone-300 truncate">{cityState}</p>}
+        {cityState && <p className="text-xs-tight text-stone-300 truncate">{cityState}</p>}
       </div>
-      <span className="flex-shrink-0 rounded-full bg-stone-700/70 px-2 py-0.5 text-[10px] font-medium text-stone-300">
+      <span className="flex-shrink-0 rounded-full bg-stone-700/70 px-2 py-0.5 text-xxs font-medium text-stone-300">
         {PARTNER_TYPE_LABELS[normalizeDirectoryValue(partner.partner_type)] || 'Partner'}
       </span>
     </div>
@@ -148,7 +150,7 @@ function PartnerPill({ partner }: { partner: DirectoryPartner }) {
 
 function DiscoveryChip({ label }: { label: string }) {
   return (
-    <span className="rounded-full border border-stone-700 bg-stone-950 px-2.5 py-1 text-[11px] font-medium text-stone-300">
+    <span className="rounded-full border border-stone-700 bg-stone-950 px-2.5 py-1 text-xs-tight font-medium text-stone-300">
       {label}
     </span>
   )
@@ -180,10 +182,11 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
     <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-stone-900 shadow-[0_2px_20px_rgb(0,0,0,0.06)] ring-1 ring-stone-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_40px_rgb(0,0,0,0.25)] hover:ring-brand-600">
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 to-brand-50">
         {heroImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={heroImage}
             alt={chef.display_name}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -199,7 +202,7 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
           <div className="flex flex-wrap gap-2">
             <span
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold backdrop-blur-sm ${
+              className={`rounded-full px-3 py-1 text-xs-tight font-semibold backdrop-blur-sm ${
                 chef.discovery.accepting_inquiries
                   ? 'bg-emerald-900/85 text-emerald-300'
                   : 'bg-amber-950/90 text-amber-300'
@@ -208,7 +211,7 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
               {availabilityLabel}
             </span>
             {chef.discovery.review_count > 0 && chef.discovery.avg_rating != null && (
-              <span className="rounded-full bg-stone-900/90 px-3 py-1 text-[11px] font-semibold text-stone-200 backdrop-blur-sm">
+              <span className="rounded-full bg-stone-900/90 px-3 py-1 text-xs-tight font-semibold text-stone-200 backdrop-blur-sm">
                 {chef.discovery.avg_rating.toFixed(1)} stars - {chef.discovery.review_count} reviews
               </span>
             )}
@@ -283,7 +286,7 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
 
         {hasPartners && (
           <div className="mt-4">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-stone-300">
+            <p className="mb-2 text-xs-tight font-semibold uppercase tracking-wider text-stone-300">
               Where I Cook
             </p>
             <div className="space-y-1.5">
@@ -291,7 +294,7 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
                 <PartnerPill key={partner.id} partner={partner} />
               ))}
               {extraCount > 0 && (
-                <p className="text-center text-[11px] text-stone-300">
+                <p className="text-center text-xs-tight text-stone-300">
                   + {extraCount} more venue{extraCount !== 1 ? 's' : ''}
                 </p>
               )}

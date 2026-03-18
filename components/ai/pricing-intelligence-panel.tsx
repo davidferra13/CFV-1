@@ -104,25 +104,25 @@ export function PricingIntelligencePanel({ eventId }: { eventId: string }) {
           <div className="text-lg font-semibold text-stone-200">
             {formatDollars(result.suggestedMinCents)}
           </div>
-          <div className="text-[11px] text-stone-500">Minimum</div>
+          <div className="text-xs-tight text-stone-500">Minimum</div>
         </div>
         <div className="text-center p-2 bg-brand-950 rounded border border-brand-700">
           <div className="text-lg font-semibold text-brand-400">
             {formatDollars(result.suggestedPerHeadCents)}
             <span className="text-sm">/head</span>
           </div>
-          <div className="text-[11px] text-stone-500">Per Guest</div>
+          <div className="text-xs-tight text-stone-500">Per Guest</div>
         </div>
         <div className="text-center p-2 bg-stone-800 rounded">
           <div className="text-lg font-semibold text-stone-200">
             {formatDollars(result.suggestedMaxCents)}
           </div>
-          <div className="text-[11px] text-stone-500">Maximum</div>
+          <div className="text-xs-tight text-stone-500">Maximum</div>
         </div>
       </div>
 
       <p className="text-xs text-stone-400">{result.rationale}</p>
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         <AiSourceBadge source={result._aiSource} />
         {result._aiSource ? ' · ' : ''}
         Based on {result.comparableEvents} comparable events · Confidence:{' '}

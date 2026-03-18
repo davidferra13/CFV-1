@@ -28,7 +28,7 @@ export type OAuthConfig = {
 export const OAUTH_CONFIGS: Record<SocialOAuthPlatform, OAuthConfig> = {
   instagram: {
     platform: 'instagram',
-    // Instagram Business uses Facebook Login — same OAuth endpoint as Facebook
+    // Instagram Business uses Facebook Login - same OAuth endpoint as Facebook
     authUrl: 'https://www.facebook.com/v21.0/dialog/oauth',
     tokenUrl: 'https://graph.facebook.com/v21.0/oauth/access_token',
     scopes: [

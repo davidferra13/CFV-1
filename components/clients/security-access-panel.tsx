@@ -71,7 +71,7 @@ export function SecurityAccessPanel({ clientId, ...initial }: Props) {
               />
             </svg>
             <h3 className="font-medium text-stone-200">Security & Access</h3>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-900 text-amber-700 font-medium">
+            <span className="text-xxs px-1.5 py-0.5 rounded-full bg-amber-900 text-amber-700 font-medium">
               Sensitive
             </span>
           </div>

@@ -1,4 +1,4 @@
-// PDF Layout Helper — wraps jsPDF with a position-tracked, one-page-aware API
+// PDF Layout Helper - wraps jsPDF with a position-tracked, one-page-aware API
 // All documents MUST fit on one US Letter page (215.9mm × 279.4mm)
 // Font sizes and spacing auto-compact to enforce the single-page constraint
 
@@ -52,7 +52,7 @@ export class PDFLayout {
     this.y += mm * this.fontScale
   }
 
-  /** Document title — large, bold, centered */
+  /** Document title - large, bold, centered */
   title(text: string, size: number = 14) {
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
@@ -61,7 +61,7 @@ export class PDFLayout {
     this.y += this.lineHeight(size) + 1
   }
 
-  /** Section header — bold, full width, with optional separator line */
+  /** Section header - bold, full width, with optional separator line */
   sectionHeader(text: string, size: number = 11, withLine: boolean = true) {
     if (withLine) {
       this.doc.setDrawColor(60, 60, 60)
@@ -76,7 +76,7 @@ export class PDFLayout {
     this.y += this.lineHeight(size) + 1
   }
 
-  /** Course header — bold, slightly smaller than section header */
+  /** Course header - bold, slightly smaller than section header */
   courseHeader(text: string, size: number = 10) {
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
@@ -97,7 +97,7 @@ export class PDFLayout {
     this.y += this.lineHeight(size)
   }
 
-  /** Compact header info bar — multiple key-value pairs on one line */
+  /** Compact header info bar - multiple key-value pairs on one line */
   headerBar(pairs: Array<[string, string]>, size: number = 8) {
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
@@ -114,7 +114,7 @@ export class PDFLayout {
     this.y += this.lineHeight(size) + 0.5
   }
 
-  /** Body text — wraps to content width */
+  /** Body text - wraps to content width */
   text(
     text: string,
     size: number = 9,
@@ -135,7 +135,7 @@ export class PDFLayout {
     }
   }
 
-  /** Bullet point — indented with bullet character */
+  /** Bullet point - indented with bullet character */
   bullet(text: string, size: number = 9, indent: number = 4) {
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
@@ -153,7 +153,7 @@ export class PDFLayout {
     }
   }
 
-  /** Checkbox row — square box + text (for checklist) */
+  /** Checkbox row - square box + text (for checklist) */
   checkbox(text: string, size: number = 10, extraInfo?: string, preChecked?: boolean) {
     const s = this.scaledSize(size)
     const boxSize = s * 0.38
@@ -188,7 +188,7 @@ export class PDFLayout {
     this.y += lh
   }
 
-  /** Warning box — bordered, bold text, high visibility */
+  /** Warning box - bordered, bold text, high visibility */
   warningBox(text: string, size: number = 11) {
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
@@ -222,7 +222,7 @@ export class PDFLayout {
     this.y += 2
   }
 
-  /** Footer text — positioned at the very bottom of the page */
+  /** Footer text - positioned at the very bottom of the page */
   footer(text: string, size: number = 8) {
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
@@ -232,7 +232,7 @@ export class PDFLayout {
     this.doc.setTextColor(0, 0, 0)
   }
 
-  /** Custom footer — replaces the default footer text if set by chef in print preferences */
+  /** Custom footer - replaces the default footer text if set by chef in print preferences */
   customFooter(text: string, size: number = 8) {
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
@@ -242,7 +242,7 @@ export class PDFLayout {
     this.doc.setTextColor(0, 0, 0)
   }
 
-  /** Attribution line — who generated this document and when. Sits just above the footer. */
+  /** Attribution line - who generated this document and when. Sits just above the footer. */
   generatedBy(name: string, docType?: string) {
     const timestamp = new Date().toLocaleString('en-US', {
       dateStyle: 'medium',

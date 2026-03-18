@@ -130,7 +130,7 @@ export function TacStatusPrompt({
           className="flex flex-col items-start rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:bg-stone-800 disabled:opacity-50 transition-colors"
         >
           <span className="text-sm font-medium text-stone-200">Still Discussing</span>
-          <span className="text-[11px] text-stone-400 mt-0.5">
+          <span className="text-xs-tight text-stone-400 mt-0.5">
             No change - conversation ongoing
           </span>
         </button>
@@ -141,7 +141,7 @@ export function TacStatusPrompt({
           className="flex flex-col items-start rounded-md border border-brand-700 bg-brand-950/30 px-3 py-2 text-left hover:bg-brand-950 disabled:opacity-50 transition-colors"
         >
           <span className="text-sm font-medium text-stone-200">Sent Proposal</span>
-          <span className="text-[11px] text-stone-400 mt-0.5">
+          <span className="text-xs-tight text-stone-400 mt-0.5">
             Moves to Quoted - waiting on them
           </span>
         </button>
@@ -152,7 +152,7 @@ export function TacStatusPrompt({
           className="flex flex-col items-start rounded-md border border-green-200 bg-green-950/30 px-3 py-2 text-left hover:bg-green-950 disabled:opacity-50 transition-colors"
         >
           <span className="text-sm font-medium text-stone-200">They Want to Book</span>
-          <span className="text-[11px] text-stone-400 mt-0.5">
+          <span className="text-xs-tight text-stone-400 mt-0.5">
             Moves to Confirmed - booking locked in
           </span>
         </button>
@@ -163,7 +163,9 @@ export function TacStatusPrompt({
           className="flex flex-col items-start rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:bg-stone-800 disabled:opacity-50 transition-colors"
         >
           <span className="text-sm font-medium text-stone-200">Changed Their Mind</span>
-          <span className="text-[11px] text-stone-400 mt-0.5">Closes inquiry - lead declined</span>
+          <span className="text-xs-tight text-stone-400 mt-0.5">
+            Closes inquiry - lead declined
+          </span>
         </button>
       </div>
 

@@ -27,7 +27,7 @@ export type DeferredTransferSummary = {
 
 /**
  * List all chefs with deferred (un-transferred) payments.
- * Admin only — no tenant scoping.
+ * Admin only - no tenant scoping.
  */
 export async function listDeferredTransferChefs(): Promise<DeferredTransferSummary[]> {
   const supabase = createServerClient({ admin: true })

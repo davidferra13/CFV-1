@@ -30,7 +30,7 @@ export type SurveyPublic = {
 // ─── Survey creation (admin client, called from transition hook) ──────────────
 
 /**
- * Creates a survey for a completed event. Idempotent — if a survey already
+ * Creates a survey for a completed event. Idempotent - if a survey already
  * exists for this event, the existing token is returned.
  */
 export async function createSurveyForEvent(
@@ -61,7 +61,7 @@ export async function createSurveyForEvent(
   return data.token
 }
 
-// ─── sendClientSurvey — chef-triggered survey send ───────────────────────────
+// ─── sendClientSurvey - chef-triggered survey send ───────────────────────────
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 

@@ -1,4 +1,4 @@
-// Public portal SEO health check — pure computation
+// Public portal SEO health check - pure computation
 
 export type SEOHealthItem = {
   key: string
@@ -37,13 +37,13 @@ export function computeSEOHealth(profile: {
             key: 'bio',
             label: 'Bio/Description',
             status: 'warning',
-            detail: 'Bio is short — aim for 100+ characters',
+            detail: 'Bio is short - aim for 100+ characters',
           }
         : {
             key: 'bio',
             label: 'Bio/Description',
             status: 'fail',
-            detail: 'No bio — add a compelling description',
+            detail: 'No bio - add a compelling description',
           }
   )
 
@@ -54,7 +54,7 @@ export function computeSEOHealth(profile: {
           key: 'headline',
           label: 'Headline/Tagline',
           status: 'fail',
-          detail: 'Missing — add a headline',
+          detail: 'Missing - add a headline',
         }
   )
 
@@ -65,7 +65,7 @@ export function computeSEOHealth(profile: {
           key: 'photo',
           label: 'Profile Photo',
           status: 'fail',
-          detail: 'Missing — upload a professional photo',
+          detail: 'Missing - upload a professional photo',
         }
   )
 
@@ -99,7 +99,7 @@ export function computeSEOHealth(profile: {
           key: 'photos',
           label: 'Portfolio Photos',
           status: 'warning',
-          detail: `Only ${profile.portfolio_photo_count} — aim for 3+`,
+          detail: `Only ${profile.portfolio_photo_count} - aim for 3+`,
         }
   )
 

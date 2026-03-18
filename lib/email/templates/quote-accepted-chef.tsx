@@ -1,4 +1,4 @@
-// Quote Accepted — Chef Notification Email
+// Quote Accepted - Chef Notification Email
 // Sent to the chef when a client formally accepts a quote.
 
 import { Text, Link } from '@react-email/components'
@@ -29,7 +29,7 @@ export function QuoteAcceptedChefEmail({
       <Text style={heading}>Quote accepted</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>
-        Great news — <strong>{clientName}</strong> has accepted your quote for{' '}
+        Great news - <strong>{clientName}</strong> has accepted your quote for{' '}
         <strong>{quoteName}</strong>.
       </Text>
 

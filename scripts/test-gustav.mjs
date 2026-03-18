@@ -1,8 +1,8 @@
-// Gustav stress test — send real messages via Ollama, verify responses
+// Gustav stress test - send real messages via Ollama, verify responses
 // Gustav runs in Mission Control (browser), but its brain is Ollama.
 // We test the Ollama backend directly with Gustav's system prompt.
 
-const GUSTAV_SYSTEM = `You are Gustav, the Mission Control AI for ChefFlow — a private chef business platform. You help the developer manage infrastructure, deployment, and operations. You are concise, direct, and helpful. You have access to system status, deployment info, and can help troubleshoot issues.`;
+const GUSTAV_SYSTEM = `You are Gustav, the Mission Control AI for ChefFlow - a private chef business platform. You help the developer manage infrastructure, deployment, and operations. You are concise, direct, and helpful. You have access to system status, deployment info, and can help troubleshoot issues.`;
 
 const tests = [
   {
@@ -65,7 +65,7 @@ async function main() {
       const reply = data.message?.content || '';
       const thinking = data.message?.thinking || '';
       if (!reply && thinking) {
-        console.log(`(Model used ${thinking.length} chars of thinking but produced no content — may need /no_think or more tokens)`);
+        console.log(`(Model used ${thinking.length} chars of thinking but produced no content - may need /no_think or more tokens)`);
       }
       const evalCount = data.eval_count || 0;
       const tokPerSec = evalCount / ((data.eval_duration || 1) / 1e9);
@@ -92,7 +92,7 @@ async function main() {
   console.log('='.repeat(50));
   for (const r of results) {
     const speed = r.tokPerSec ? ` @ ${r.tokPerSec} tok/s` : '';
-    console.log(`${r.pass ? '✓' : '✗'} ${r.test} — ${r.time}ms${speed}`);
+    console.log(`${r.pass ? '✓' : '✗'} ${r.test} - ${r.time}ms${speed}`);
   }
   const passCount = results.filter((r) => r.pass).length;
   console.log(`\n${passCount}/${results.length} passed`);

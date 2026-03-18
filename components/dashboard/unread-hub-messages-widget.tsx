@@ -33,7 +33,7 @@ export function UnreadHubMessagesWidget({ groups }: Props) {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium text-stone-100 truncate">{g.groupName}</p>
-                <span className="rounded-full bg-brand-900 text-brand-300 px-1.5 py-0.5 text-[10px] font-semibold shrink-0">
+                <span className="rounded-full bg-brand-900 text-brand-300 px-1.5 py-0.5 text-xxs font-semibold shrink-0">
                   {g.unreadCount}
                 </span>
               </div>
@@ -41,7 +41,7 @@ export function UnreadHubMessagesWidget({ groups }: Props) {
                 <p className="text-xs text-stone-500 truncate mt-0.5">{g.lastMessagePreview}</p>
               )}
             </div>
-            <span className="text-[10px] text-stone-500 shrink-0 ml-2">
+            <span className="text-xxs text-stone-500 shrink-0 ml-2">
               {g.lastMessageAt
                 ? formatDistanceToNow(new Date(g.lastMessageAt), { addSuffix: true })
                 : ''}

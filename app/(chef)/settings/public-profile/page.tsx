@@ -29,7 +29,7 @@ export default async function PublicProfileSettingsPage() {
           </p>
         </div>
         {profile.slug && (
-          <Link href={`/chef/${profile.slug}`} target="_blank">
+          <Link href={`/chef/${profile.slug}`} target="_blank" rel="noopener noreferrer">
             <Button variant="secondary">Client&apos;s View</Button>
           </Link>
         )}

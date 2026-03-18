@@ -179,7 +179,7 @@ export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatu
   }
 }
 
-// ─── Update status from webhook (no auth — uses chef ID directly) ─────────────
+// ─── Update status from webhook (no auth - uses chef ID directly) ─────────────
 
 /**
  * Updates stripe_onboarding_complete for a given Stripe account ID.

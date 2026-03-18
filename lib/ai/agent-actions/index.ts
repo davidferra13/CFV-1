@@ -1,4 +1,4 @@
-// Remy Agent — Action Registration
+// Remy Agent - Action Registration
 // Barrel file that imports all domain actions and registers them.
 // Import this file once to populate the agent registry.
 
@@ -6,7 +6,7 @@ import { registerAgentActions } from '@/lib/ai/agent-registry'
 import { clientAgentActions } from './client-actions'
 import { eventAgentActions } from './event-actions'
 import { inquiryAgentActions } from './inquiry-actions'
-// recipe-actions: REMOVED — AI must never generate recipes. Recipe write actions
+// recipe-actions: REMOVED - AI must never generate recipes. Recipe write actions
 // are now permanently restricted in restricted-actions.ts. See CLAUDE.md § pattern #0.
 import { menuAgentActions } from './menu-actions'
 import { quoteAgentActions } from './quote-actions'
@@ -42,7 +42,7 @@ export function ensureAgentActionsRegistered(): void {
   registerAgentActions(clientAgentActions)
   registerAgentActions(eventAgentActions)
   registerAgentActions(inquiryAgentActions)
-  // recipeAgentActions removed — recipe write actions are in restrictedAgentActions
+  // recipeAgentActions removed - recipe write actions are in restrictedAgentActions
   registerAgentActions(menuAgentActions)
   registerAgentActions(quoteAgentActions)
   registerAgentActions(operationsAgentActions)

@@ -22,7 +22,7 @@ export async function getActiveRecalls(): Promise<RecallAlert[]> {
 
     const res = await fetch(url, {
       headers: { 'User-Agent': 'ChefFlow/1.0' },
-      // Cache for 1 hour — FDA data doesn't change minute-by-minute
+      // Cache for 1 hour - FDA data doesn't change minute-by-minute
       next: { revalidate: 3600 },
     })
 
@@ -49,7 +49,7 @@ export async function getActiveRecalls(): Promise<RecallAlert[]> {
 }
 
 /**
- * Pure function — no DB access. Filters recalls that fuzzy-match any of the
+ * Pure function - no DB access. Filters recalls that fuzzy-match any of the
  * provided ingredient names by checking if any word in the ingredient appears
  * in the recall's product_description (case-insensitive).
  */

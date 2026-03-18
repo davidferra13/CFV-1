@@ -93,10 +93,10 @@ export async function getQuoteConfidence(
     factors.push('Priced in your sweet spot')
   } else if (pricePosition === 'above_avg') {
     confidence -= 5
-    factors.push('Priced above average — may face pushback')
+    factors.push('Priced above average - may face pushback')
   } else {
     confidence -= 15
-    factors.push('Premium pricing — lower historical acceptance')
+    factors.push('Premium pricing - lower historical acceptance')
   }
 
   // Historical rate factor

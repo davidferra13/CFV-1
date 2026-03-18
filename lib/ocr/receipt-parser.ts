@@ -1,4 +1,4 @@
-// Receipt Text Parser — Deterministic (Formula > AI)
+// Receipt Text Parser - Deterministic (Formula > AI)
 // Extracts structured data from raw OCR text using regex patterns.
 // No LLM, no Ollama, no cloud AI. Pure deterministic parsing.
 //

@@ -245,7 +245,7 @@ export function SourcingDashboard() {
                     }}
                     title={`Organic: ${month.organicPercent}%`}
                   />
-                  <div className="mt-1 text-center text-[9px] text-zinc-400">
+                  <div className="mt-1 text-center text-2xs text-zinc-400">
                     {month.month.substring(5)}
                   </div>
                 </div>

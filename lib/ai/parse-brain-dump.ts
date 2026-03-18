@@ -1,5 +1,5 @@
 // Brain Dump Parser
-// The most flexible import — chef dumps information and the system
+// The most flexible import - chef dumps information and the system
 // figures out what it is and where it goes
 
 'use server'
@@ -40,13 +40,13 @@ const BrainDumpResponseSchema = z.object({
 
 export type BrainDumpResult = z.infer<typeof BrainDumpResponseSchema>['parsed']
 
-const BRAIN_DUMP_SYSTEM_PROMPT = `You are a data extraction assistant for a private chef's management system (ChefFlow). Your job is to parse a free-form "brain dump" — the chef is typing everything they know, and you need to categorize and structure it.
+const BRAIN_DUMP_SYSTEM_PROMPT = `You are a data extraction assistant for a private chef's management system (ChefFlow). Your job is to parse a free-form "brain dump" - the chef is typing everything they know, and you need to categorize and structure it.
 
 The dump may contain ANY mix of:
-1. CLIENT INFO — names, dietary preferences, allergies, addresses, payment history, household members, etc.
-2. RECIPES — recipe names, ingredients, methods, yields, etc.
-3. GENERAL NOTES — event ideas, site notes, scheduling preferences, business ideas, etc.
-4. UNSTRUCTURED — anything you can't confidently categorize
+1. CLIENT INFO - names, dietary preferences, allergies, addresses, payment history, household members, etc.
+2. RECIPES - recipe names, ingredients, methods, yields, etc.
+3. GENERAL NOTES - event ideas, site notes, scheduling preferences, business ideas, etc.
+4. UNSTRUCTURED - anything you can't confidently categorize
 
 RULES:
 - One dump might reference multiple types: "John lives nearby, always does Valentine's Day, and his pan sauce recipe is..." → extract client info for John AND a recipe for pan sauce.
@@ -67,8 +67,8 @@ RECIPE fields:
 
 EXAMPLE:
 
-Input: "Sarah Mitchell — nut allergy, husband Tom is vegan. They live in Newton, tip well, love Italian. Her chocolate lava cake: 4oz dark chocolate, 2 eggs, 1/4 cup sugar, 2 tbsp flour, pinch of salt. Bake 12 min at 425. Also need to follow up with the Hendersons about their July 4th party."
-Output: { "parsed": { "clients": [{ "full_name": "Sarah Mitchell", "allergies": ["nut allergy"], "dietary_restrictions": [], "partner_name": "Tom", "vibe_notes": "Tips well", "favorite_cuisines": ["Italian"], "addresses": [{ "label": "home", "city": "Newton" }], "household_members": [{ "name": "Tom", "relationship": "husband", "notes": "Vegan" }], "field_confidence": { "full_name": "confirmed", "allergies": "confirmed" } }], "recipes": [{ "name": "Chocolate Lava Cake", "category": "dessert", "description": "Individual chocolate lava cakes", "method": "Melt chocolate, combine with eggs, sugar, flour, salt. Bake 12 min at 425°F.", "ingredients": [{ "name": "dark chocolate", "quantity": 4, "unit": "oz", "category": "baking", "allergen_flags": [] }, { "name": "eggs", "quantity": 2, "unit": "each", "category": "dairy", "allergen_flags": ["eggs"] }, { "name": "sugar", "quantity": 0.25, "unit": "cup", "category": "baking", "allergen_flags": [] }, { "name": "flour", "quantity": 2, "unit": "tbsp", "category": "baking", "allergen_flags": ["gluten"] }, { "name": "salt", "quantity": 1, "unit": "pinch", "estimated": true, "category": "spice", "allergen_flags": [] }], "allergen_flags": ["eggs", "gluten"], "field_confidence": { "name": "confirmed", "ingredients": "confirmed" } }], "notes": [{ "type": "follow_up", "content": "Follow up with the Hendersons about their July 4th party", "suggestedAction": "Contact the Hendersons to confirm July 4th party details" }], "unstructured": [] }, "confidence": "high", "warnings": ["Sarah's chocolate lava cake attributed to her based on context — verify ownership"] }
+Input: "Sarah Mitchell - nut allergy, husband Tom is vegan. They live in Newton, tip well, love Italian. Her chocolate lava cake: 4oz dark chocolate, 2 eggs, 1/4 cup sugar, 2 tbsp flour, pinch of salt. Bake 12 min at 425. Also need to follow up with the Hendersons about their July 4th party."
+Output: { "parsed": { "clients": [{ "full_name": "Sarah Mitchell", "allergies": ["nut allergy"], "dietary_restrictions": [], "partner_name": "Tom", "vibe_notes": "Tips well", "favorite_cuisines": ["Italian"], "addresses": [{ "label": "home", "city": "Newton" }], "household_members": [{ "name": "Tom", "relationship": "husband", "notes": "Vegan" }], "field_confidence": { "full_name": "confirmed", "allergies": "confirmed" } }], "recipes": [{ "name": "Chocolate Lava Cake", "category": "dessert", "description": "Individual chocolate lava cakes", "method": "Melt chocolate, combine with eggs, sugar, flour, salt. Bake 12 min at 425°F.", "ingredients": [{ "name": "dark chocolate", "quantity": 4, "unit": "oz", "category": "baking", "allergen_flags": [] }, { "name": "eggs", "quantity": 2, "unit": "each", "category": "dairy", "allergen_flags": ["eggs"] }, { "name": "sugar", "quantity": 0.25, "unit": "cup", "category": "baking", "allergen_flags": [] }, { "name": "flour", "quantity": 2, "unit": "tbsp", "category": "baking", "allergen_flags": ["gluten"] }, { "name": "salt", "quantity": 1, "unit": "pinch", "estimated": true, "category": "spice", "allergen_flags": [] }], "allergen_flags": ["eggs", "gluten"], "field_confidence": { "name": "confirmed", "ingredients": "confirmed" } }], "notes": [{ "type": "follow_up", "content": "Follow up with the Hendersons about their July 4th party", "suggestedAction": "Contact the Hendersons to confirm July 4th party details" }], "unstructured": [] }, "confidence": "high", "warnings": ["Sarah's chocolate lava cake attributed to her based on context - verify ownership"] }
 
 RESPOND WITH ONLY valid JSON (no markdown, no explanation).`
 

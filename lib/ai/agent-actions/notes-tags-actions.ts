@@ -1,4 +1,4 @@
-// Remy Agent — Notes & Tags Actions
+// Remy Agent - Notes & Tags Actions
 // Add client notes, client tags, inquiry notes.
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -23,7 +23,7 @@ export const notesTagsAgentActions: AgentActionDefinition[] = [
     description:
       'Add a note to a client profile. Great for recording preferences, allergies, follow-up items.',
     inputSchema:
-      '{ "description": "string — e.g. Add a note to Sarah Johnson: prefers rosé wine and dislikes cilantro" }',
+      '{ "description": "string - e.g. Add a note to Sarah Johnson: prefers rosé wine and dislikes cilantro" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -95,7 +95,7 @@ export const notesTagsAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Add a tag to a client (e.g., VIP, repeat, holiday-regular, corporate).',
-    inputSchema: '{ "description": "string — e.g. Tag the Johnsons as VIP" }',
+    inputSchema: '{ "description": "string - e.g. Tag the Johnsons as VIP" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -153,7 +153,7 @@ export const notesTagsAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Remove a tag from a client.',
-    inputSchema: '{ "description": "string — e.g. Remove the VIP tag from the Johnsons" }',
+    inputSchema: '{ "description": "string - e.g. Remove the VIP tag from the Johnsons" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -208,7 +208,7 @@ export const notesTagsAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Add a note to an inquiry/lead.',
     inputSchema:
-      '{ "description": "string — e.g. Add a note to the Smith birthday inquiry: they want a jazz band recommendation" }',
+      '{ "description": "string - e.g. Add a note to the Smith birthday inquiry: they want a jazz band recommendation" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {

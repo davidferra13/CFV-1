@@ -55,17 +55,17 @@ export default async function ListingDetailPage({ params }: Props) {
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-stone-100 md:text-3xl">{listing.name}</h1>
               {listing.status === 'verified' && (
-                <span className="rounded-full bg-emerald-900/80 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-300">
+                <span className="rounded-full bg-emerald-900/80 px-2.5 py-0.5 text-xxs font-semibold text-emerald-300">
                   Verified
                 </span>
               )}
               {listing.status === 'claimed' && (
-                <span className="rounded-full bg-sky-900/80 px-2.5 py-0.5 text-[10px] font-semibold text-sky-300">
+                <span className="rounded-full bg-sky-900/80 px-2.5 py-0.5 text-xxs font-semibold text-sky-300">
                   Claimed
                 </span>
               )}
               {listing.status === 'discovered' && (
-                <span className="rounded-full bg-stone-800 px-2.5 py-0.5 text-[10px] font-semibold text-stone-400">
+                <span className="rounded-full bg-stone-800 px-2.5 py-0.5 text-xxs font-semibold text-stone-400">
                   Discovered
                 </span>
               )}

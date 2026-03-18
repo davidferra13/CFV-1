@@ -92,7 +92,7 @@ export async function updateAddon(
   const parsed = UpdateAddonSchema.parse(updates)
   const supabase: any = createServerClient()
 
-  // Build update payload — only include provided fields
+  // Build update payload - only include provided fields
   const payload: Record<string, unknown> = {}
   if (parsed.name !== undefined) payload.name = parsed.name
   if (parsed.description !== undefined) payload.description = parsed.description

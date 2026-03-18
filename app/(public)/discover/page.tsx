@@ -164,7 +164,7 @@ export default async function DiscoverPage({ searchParams }: PageProps) {
         <div className="mt-12 text-center">
           <div className="mx-auto max-w-lg rounded-2xl border border-stone-800 bg-stone-900/50 p-5">
             <p className="text-xs font-semibold text-stone-300">How this directory works</p>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-stone-500">
+            <p className="mt-1.5 text-xs-tight leading-relaxed text-stone-500">
               Discovered listings show the business name, city, and a link to their website.
               Businesses can claim their listing to add photos, menus, and verified details. Anyone
               can request removal of their listing at any time.

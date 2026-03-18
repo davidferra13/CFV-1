@@ -2,7 +2,7 @@
  * Build reference artifacts from the GOLDMINE Gmail Takeout MBOX export.
  *
  * Unlike the platform reference (TakeAChef/Yhangry), the GOLDMINE data is
- * mostly direct client ↔ chef conversation — free-form text, not templated.
+ * mostly direct client ↔ chef conversation - free-form text, not templated.
  * This script classifies, threads, and produces fixtures for regression testing
  * of the email classifier and future direct-inquiry parser.
  *
@@ -135,12 +135,12 @@ function classifySender(email: ParsedEmail): {
     return { category: 'partner_ember', partnerSource: PARTNER_DOMAINS[domain] }
   }
 
-  // Direct client email — classify further after threading
+  // Direct client email - classify further after threading
   return { category: null, partnerSource: null }
 }
 
 /**
- * Post-event feedback detection — identifies thank-you / review emails
+ * Post-event feedback detection - identifies thank-you / review emails
  * that should NOT be classified as inquiries.
  */
 function isPostEventFeedback(subject: string, body: string): boolean {
@@ -172,7 +172,7 @@ function isPostEventFeedback(subject: string, body: string): boolean {
 /**
  * Simplified version of the Layer 4.5 heuristic from classify.ts.
  * Used to measure how well the current heuristic handles GOLDMINE emails.
- * Returns score and signal list — does NOT make classification decisions.
+ * Returns score and signal list - does NOT make classification decisions.
  */
 function scoreInquirySignals(subject: string, body: string): { score: number; signals: string[] } {
   const subj = subject.toLowerCase()
@@ -625,7 +625,7 @@ async function main() {
       if (ollamaAvailable) {
         console.log('  Ollama is online')
       } else {
-        console.log('  Ollama is offline — falling back to deterministic-only extraction')
+        console.log('  Ollama is offline - falling back to deterministic-only extraction')
       }
     }
 
@@ -939,7 +939,7 @@ async function main() {
       .filter((r) => r.heuristicScore < 2)
       .map(
         (r) =>
-          `- **${r.email.from.name}** (${r.email.from.email}): "${r.email.subject}" — score ${r.heuristicScore} [${r.heuristicSignals.join(', ') || 'no signals'}]`
+          `- **${r.email.from.name}** (${r.email.from.email}): "${r.email.subject}" - score ${r.heuristicScore} [${r.heuristicSignals.join(', ') || 'no signals'}]`
       ),
     '',
     '## Top Inquiry Signals',
@@ -1004,7 +1004,7 @@ async function main() {
   writeFileSync(rulepackPath, JSON.stringify(rulepack, null, 2))
   writeFileSync(reportPath, lines.join('\n') + '\n')
 
-  console.log('\nBuild complete — Phase 1')
+  console.log('\nBuild complete - Phase 1')
   console.log(`  Summary:  ${summaryPath}`)
   console.log(`  Fixtures: ${fixturesPath}`)
   console.log(`  Threads:  ${threadMapPath}`)

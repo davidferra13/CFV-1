@@ -443,7 +443,7 @@ export default async function DocumentsIndexPage({
                         </span>
                         <span className="text-xs text-stone-500">{event.clientName}</span>
                         <span
-                          className={`text-[11px] px-2 py-0.5 rounded-full ${getEventStatusBadgeClass(event.status)}`}
+                          className={`text-xs-tight px-2 py-0.5 rounded-full ${getEventStatusBadgeClass(event.status)}`}
                         >
                           {normalizeStatusLabel(event.status)}
                         </span>
@@ -570,7 +570,7 @@ export default async function DocumentsIndexPage({
           )}
           <div className="flex flex-wrap items-end gap-2">
             <div>
-              <p className="text-[11px] text-stone-500 mb-1">Search</p>
+              <p className="text-xs-tight text-stone-500 mb-1">Search</p>
               <input
                 type="text"
                 name="s_q"
@@ -580,7 +580,7 @@ export default async function DocumentsIndexPage({
               />
             </div>
             <div>
-              <p className="text-[11px] text-stone-500 mb-1">From</p>
+              <p className="text-xs-tight text-stone-500 mb-1">From</p>
               <input
                 type="date"
                 name="s_from"
@@ -589,7 +589,7 @@ export default async function DocumentsIndexPage({
               />
             </div>
             <div>
-              <p className="text-[11px] text-stone-500 mb-1">To</p>
+              <p className="text-xs-tight text-stone-500 mb-1">To</p>
               <input
                 type="date"
                 name="s_to"

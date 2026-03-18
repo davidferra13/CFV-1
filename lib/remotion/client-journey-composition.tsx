@@ -1,12 +1,12 @@
 /**
- * ClientJourneyComposition — Remotion animation showing the client's perspective.
+ * ClientJourneyComposition - Remotion animation showing the client's perspective.
  *
  * What clients see at each step:
- *  1. "Pending Review" — proposal arrives
- *  2. "Payment Due" — client accepted, now pay
- *  3. "Confirmed" — payment received, event locked
- *  4. "Event Day" — service happening
- *  5. "Complete" — done, leave a review
+ *  1. "Pending Review" - proposal arrives
+ *  2. "Payment Due" - client accepted, now pay
+ *  3. "Confirmed" - payment received, event locked
+ *  4. "Event Day" - service happening
+ *  5. "Complete" - done, leave a review
  *
  * Bridges the gap between internal status names and what clients actually experience.
  */
@@ -42,7 +42,7 @@ const STEPS = [
     icon: '📩',
     clientSees: 'Pending Review',
     internalStatus: 'proposed',
-    whatToDo: 'Review the proposal — date, menu, and price',
+    whatToDo: 'Review the proposal - date, menu, and price',
     action: 'Accept Proposal →',
   },
   {
@@ -56,7 +56,7 @@ const STEPS = [
     icon: '✅',
     clientSees: 'Confirmed',
     internalStatus: 'confirmed',
-    whatToDo: 'Your event is locked in — the chef is prepping',
+    whatToDo: 'Your event is locked in - the chef is prepping',
     action: 'View event details',
   },
   {
@@ -70,7 +70,7 @@ const STEPS = [
     icon: '🎉',
     clientSees: 'Complete',
     internalStatus: 'completed',
-    whatToDo: 'Event finished — view your invoice and leave a review',
+    whatToDo: 'Event finished - view your invoice and leave a review',
     action: 'View invoice',
   },
 ]

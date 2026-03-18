@@ -1,4 +1,4 @@
-// Archetype-aware UI copy — maps chef archetype to contextual labels/actions.
+// Archetype-aware UI copy - maps chef archetype to contextual labels/actions.
 // Used by the dashboard to show a relevant primary action button.
 
 import type { ArchetypeId } from './presets'

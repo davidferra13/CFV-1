@@ -159,17 +159,38 @@ echo "  Beta server started hidden (PID: $BETA_PID)"
 # Wait for startup
 sleep 8
 
-# Health check (retry up to 3 times)
+# Health check (full post-deploy verification)
 HEALTH_OK=false
-for i in 1 2 3; do
-  STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 http://localhost:3200 2>/dev/null)
-  if [ "$STATUS" = "200" ] || [ "$STATUS" = "302" ] || [ "$STATUS" = "307" ]; then
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# If health-check.sh exists in source repo, use it; otherwise fall back to inline check
+HEALTH_SCRIPT=""
+if [ -f "$SCRIPT_DIR/health-check.sh" ]; then
+  HEALTH_SCRIPT="$SCRIPT_DIR/health-check.sh"
+elif [ -f "/c/Users/david/Documents/CFv1/scripts/health-check.sh" ]; then
+  HEALTH_SCRIPT="/c/Users/david/Documents/CFv1/scripts/health-check.sh"
+fi
+
+if [ -n "$HEALTH_SCRIPT" ]; then
+  echo "  Running full health check..."
+  if bash "$HEALTH_SCRIPT" http://localhost:3200; then
     HEALTH_OK=true
-    break
+    STATUS="200"
+  else
+    HEALTH_OK=false
+    STATUS="FAIL"
   fi
-  echo "  Health check attempt $i: HTTP $STATUS (retrying in 3s...)"
-  sleep 3
-done
+else
+  # Inline fallback (retry up to 3 times)
+  for i in 1 2 3; do
+    STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 http://localhost:3200 2>/dev/null)
+    if [ "$STATUS" = "200" ] || [ "$STATUS" = "302" ] || [ "$STATUS" = "307" ]; then
+      HEALTH_OK=true
+      break
+    fi
+    echo "  Health check attempt $i: HTTP $STATUS (retrying in 3s...)"
+    sleep 3
+  done
+fi
 
 DEPLOY_END=$(date +%s)
 DEPLOY_DURATION=$((DEPLOY_END - DEPLOY_START))

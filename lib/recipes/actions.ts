@@ -1379,7 +1379,7 @@ export async function addSubRecipe(parentRecipeId: string, input: AddSubRecipeIn
   if (error) {
     // Catch circular reference error from DB trigger
     if (error.message?.includes('Circular sub-recipe reference')) {
-      throw new Error('Cannot add this sub-recipe — it would create a circular reference.')
+      throw new Error('Cannot add this sub-recipe - it would create a circular reference.')
     }
     console.error('[addSubRecipe] Error:', error)
     throw new Error('Failed to add sub-recipe')

@@ -61,7 +61,7 @@ export async function deliverWebhook(
       deliveryStatus = response.ok ? 'delivered' : 'failed'
 
       if (!response.ok) {
-        // Non-2xx after retries exhausted — push to DLQ for manual review
+        // Non-2xx after retries exhausted - push to DLQ for manual review
         await pushToDLQ(supabase as any, {
           tenantId,
           jobType: 'webhook_delivery',

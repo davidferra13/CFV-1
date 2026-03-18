@@ -2,6 +2,7 @@
 'use client'
 
 import { useEffect, useState, useTransition, type FormEvent } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -138,14 +139,13 @@ export function ProfileForm({ profile }: ProfileFormProps) {
             <p className="text-sm font-medium text-stone-300 mb-2">Preview</p>
             <div className="flex items-center gap-3 p-3 bg-stone-800 rounded-lg">
               {imagePreviewUrl || profileImageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={imagePreviewUrl || profileImageUrl}
+                <Image
+                  src={(imagePreviewUrl || profileImageUrl)!}
                   alt="Preview"
+                  width={40}
+                  height={40}
                   className="h-10 w-10 rounded-full object-cover"
-                  onError={(e) => {
-                    ;(e.target as HTMLImageElement).style.display = 'none'
-                  }}
+                  unoptimized={imagePreviewUrl?.startsWith('blob:') ?? false}
                 />
               ) : (
                 <div className="h-10 w-10 rounded-full bg-brand-900 flex items-center justify-center">

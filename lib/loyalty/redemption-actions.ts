@@ -33,7 +33,7 @@ type RedemptionResult = {
 
 /**
  * Validate a voucher or gift card code against a specific event.
- * READ-ONLY — does not write anything.
+ * READ-ONLY - does not write anything.
  * Returns a preview of the discount that would be applied.
  * Used to show the client a discount preview before they confirm payment.
  */
@@ -45,7 +45,7 @@ export async function validateIncentiveCode(
   const supabase: any = createServerClient()
   // Admin client used specifically for the incentive code lookup.
   // The regular client RLS policy only lets clients see codes they created or were
-  // targeted at them — but a gift card purchased by a guest (no auth account) or
+  // targeted at them - but a gift card purchased by a guest (no auth account) or
   // issued by a chef to "anyone" won't pass that filter. The code string itself is
   // the authorization token; authentication via requireClient() is the access guard.
   const adminSupabase = createServerClient({ admin: true })
@@ -130,7 +130,7 @@ export async function validateIncentiveCode(
     }
   }
 
-  // 6. Voucher — fixed amount or percent discount
+  // 6. Voucher - fixed amount or percent discount
   if (incentive.type === 'voucher') {
     let appliedAmountCents: number
 
@@ -257,7 +257,7 @@ export async function redeemIncentiveCode(
       if (chefUserId) {
         const appliedFormatted = (appliedAmountCents / 100).toFixed(2)
         const body = eventNowFullyCovered
-          ? `$${appliedFormatted} applied — event is now fully covered. Please confirm payment.`
+          ? `$${appliedFormatted} applied - event is now fully covered. Please confirm payment.`
           : `$${appliedFormatted} applied to an event`
         await createNotification({
           tenantId: eventData.tenant_id,

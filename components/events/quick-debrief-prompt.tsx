@@ -90,7 +90,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
                 <span className="text-lg peer-checked:scale-125 transition-transform">
                   {['😓', '😐', '🙂', '😊', '🤩'][n - 1]}
                 </span>
-                <span className="text-[10px] text-amber-700">{n}</span>
+                <span className="text-xxs text-amber-700">{n}</span>
               </label>
             ))}
           </div>

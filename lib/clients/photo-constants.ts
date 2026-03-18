@@ -1,5 +1,5 @@
 // Client Photo Constants & Types
-// Extracted from photo-actions.ts — 'use server' files can only export async functions.
+// Extracted from photo-actions.ts - 'use server' files can only export async functions.
 
 export const PHOTO_CATEGORIES = [
   { value: 'portrait', label: 'Client Portrait' },

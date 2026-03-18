@@ -1,4 +1,4 @@
-// Google OAuth — Connect, Token Refresh, Disconnect
+// Google OAuth - Connect, Token Refresh, Disconnect
 // Handles the workspace OAuth flow for Gmail/Calendar API access.
 // This is SEPARATE from the Supabase Google sign-in flow.
 
@@ -131,7 +131,7 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
   })
 
   if (!response.ok) {
-    // Token was revoked — mark as disconnected
+    // Token was revoked - mark as disconnected
     await supabase
       .from('google_connections')
       .update({
@@ -211,13 +211,13 @@ export async function disconnectGoogle(service: 'gmail' | 'calendar') {
   const otherServiceConnected = service === 'gmail' ? conn.calendar_connected : conn.gmail_connected
 
   if (!otherServiceConnected && conn.refresh_token) {
-    // Both services being disconnected — revoke the token with Google
+    // Both services being disconnected - revoke the token with Google
     try {
       await fetch(`${GOOGLE_REVOKE_URL}?token=${conn.refresh_token}`, {
         method: 'POST',
       })
     } catch {
-      // Best effort — continue with local disconnect even if revoke fails
+      // Best effort - continue with local disconnect even if revoke fails
     }
   }
 

@@ -78,7 +78,7 @@ export function BusinessIntelPanel({ clientId, ...initial }: Props) {
         <div className="px-4 py-3 bg-stone-800 border-b border-stone-700 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-stone-200">Chef&apos;s Internal Assessment</h3>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-stone-700 text-stone-500 font-medium">
+            <span className="text-xxs px-1.5 py-0.5 rounded-full bg-stone-700 text-stone-500 font-medium">
               Chef Only
             </span>
           </div>

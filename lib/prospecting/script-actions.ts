@@ -1,6 +1,6 @@
 'use server'
 
-// Prospecting Hub — Call Script CRUD
+// Prospecting Hub - Call Script CRUD
 // Admin-only. Manages reusable cold-calling scripts.
 
 import { requireAdmin } from '@/lib/auth/admin'

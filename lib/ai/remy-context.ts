@@ -1,8 +1,8 @@
 'use server'
 
-// Remy — Context Loader
+// Remy - Context Loader
 // PRIVACY: Loads chef business context for Remy's system prompt.
-// Contains client names, event details, and financial data — must stay local.
+// Contains client names, event details, and financial data - must stay local.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -549,7 +549,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .order('created_at', { ascending: false })
       .limit(5),
 
-    // Unread inbound messages (inquiry_messages table doesn't exist — use messages table)
+    // Unread inbound messages (inquiry_messages table doesn't exist - use messages table)
     supabase
       .from('messages')
       .select('id, inquiry_id, direction, created_at, clients(full_name)')
@@ -561,7 +561,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
 
     // ─── Proactive nudges (2026-03-06) ────────────────────────────────────
 
-    // Stale inquiries (no response in >3 days) — includes lead score for urgency escalation
+    // Stale inquiries (no response in >3 days) - includes lead score for urgency escalation
     supabase
       .from('inquiries')
       .select('id, lead_name, updated_at, chef_likelihood, unknown_fields')
@@ -582,7 +582,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .order('payment_due_date', { ascending: true })
       .limit(5),
 
-    // Client booking frequency — all completed/confirmed events with client + date
+    // Client booking frequency - all completed/confirmed events with client + date
     // Used to detect clients overdue for re-engagement based on their historical cadence
     supabase
       .from('events')
@@ -593,7 +593,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .order('event_date', { ascending: true })
       .limit(500),
 
-    // Monthly revenue distribution — ledger payments from past 12 months
+    // Monthly revenue distribution - ledger payments from past 12 months
     // Used to identify busy/slow months for revenue pattern awareness
     supabase
       .from('ledger_entries')
@@ -631,7 +631,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .order('valid_until', { ascending: true })
       .limit(5),
 
-    // Event profitability — completed events this year with profit data
+    // Event profitability - completed events this year with profit data
     supabase
       .from('event_financial_summary' as any)
       .select(
@@ -641,7 +641,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .gt('net_revenue_cents', 0)
       .limit(50),
 
-    // Inquiry velocity — this week vs last week
+    // Inquiry velocity - this week vs last week
     supabase
       .from('inquiries')
       .select('id, created_at')
@@ -650,7 +650,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .order('created_at', { ascending: false })
       .limit(100),
 
-    // Staff assignments — upcoming events (for utilization awareness)
+    // Staff assignments - upcoming events (for utilization awareness)
     supabase
       .from('event_staff_assignments')
       .select('staff_member_id, event:events!inner(event_date, status)')
@@ -658,7 +658,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .eq('status', 'confirmed')
       .limit(100),
 
-    // Conversion rate — all inquiries with their resolution status
+    // Conversion rate - all inquiries with their resolution status
     supabase
       .from('inquiries')
       .select('id, status, created_at, channel')
@@ -666,7 +666,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .gte('created_at', yearStart)
       .limit(500),
 
-    // Expense breakdown — categories for this year
+    // Expense breakdown - categories for this year
     supabase
       .from('expenses')
       .select('category, amount_cents')
@@ -798,7 +798,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     }
   }
 
-  // Staff utilization — count upcoming assignments per staff member
+  // Staff utilization - count upcoming assignments per staff member
   const staffAssignmentCounts = new Map<string, number>()
   for (const a of (staffAssignmentsResult.data ?? []) as Array<Record<string, unknown>>) {
     const memberId = a.staff_member_id as string
@@ -817,7 +817,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     }
   }
 
-  // Event profitability aggregates — avg margin, best/worst margin
+  // Event profitability aggregates - avg margin, best/worst margin
   const profitData = (eventProfitabilityResult.data ?? []) as Array<Record<string, unknown>>
   const marginsWithData = profitData
     .filter((p) => typeof p.profit_margin === 'number' && (p.net_revenue_cents as number) > 0)
@@ -826,7 +826,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       profitCents: (p.profit_cents as number) ?? 0,
     }))
 
-  // Inquiry velocity — this week vs last week
+  // Inquiry velocity - this week vs last week
   const recentInquiries = (inquiryVelocityResult.data ?? []) as Array<Record<string, unknown>>
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
@@ -838,7 +838,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     return t >= twoWeeksAgo.getTime() && t < oneWeekAgo.getTime()
   }).length
 
-  // Quote distribution — for comparison intelligence
+  // Quote distribution - for comparison intelligence
   const quotedPrices = yearEvents
     .map((e) => (e.quoted_price_cents as number) ?? 0)
     .filter((p) => p > 0)
@@ -846,7 +846,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
 
   // ─── Wave 9-12 Intelligence Computations (Formula > AI) ─────────────────
 
-  // Conversion rate — inquiry to event
+  // Conversion rate - inquiry to event
   const allInquiries = (conversionRateResult.data ?? []) as Array<Record<string, unknown>>
   const totalInquiries = allInquiries.length
   const convertedInquiries = allInquiries.filter((i) => (i.status as string) === 'converted').length
@@ -971,7 +971,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     guestCountTrend = { recentAvg, previousAvg, direction }
   }
 
-  // Booking lead time — how far in advance clients book
+  // Booking lead time - how far in advance clients book
   const leadTimes: number[] = []
   for (const e of eventsWithDates) {
     const created = e.created_at ? new Date(e.created_at as string).getTime() : null
@@ -1063,7 +1063,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
           .slice(0, 5)
       : undefined
 
-  // Cash flow projection — expected payments from upcoming events
+  // Cash flow projection - expected payments from upcoming events
   const cashFlowProjection = (() => {
     const upcoming = (eventsResult.data ?? []) as Array<Record<string, unknown>>
     let expectedCents = 0
@@ -1148,7 +1148,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
         eventCount: data.count,
       })),
     },
-    // Quote distribution — historical range for comparison intelligence
+    // Quote distribution - historical range for comparison intelligence
     quoteDistribution:
       quotedPrices.length >= 3
         ? {
@@ -1160,12 +1160,12 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
             p75Cents: quotedPrices[Math.floor(quotedPrices.length * 0.75)],
           }
         : undefined,
-    // Inquiry velocity — week-over-week comparison
+    // Inquiry velocity - week-over-week comparison
     inquiryVelocity:
       thisWeekInquiries > 0 || lastWeekInquiries > 0
         ? { thisWeek: thisWeekInquiries, lastWeek: lastWeekInquiries }
         : undefined,
-    // Profitability stats — aggregate margins across events
+    // Profitability stats - aggregate margins across events
     profitabilityStats:
       marginsWithData.length >= 2
         ? {
@@ -1276,13 +1276,13 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       ),
     })),
 
-    // Client re-engagement signals — detect clients overdue for a booking
+    // Client re-engagement signals - detect clients overdue for a booking
     clientReengagement: computeClientReengagement(
       (clientBookingHistoryResult.data ?? []) as Array<Record<string, unknown>>,
       now
     ),
 
-    // Revenue pattern — monthly distribution for busy/slow awareness
+    // Revenue pattern - monthly distribution for busy/slow awareness
     revenuePattern: computeRevenuePattern(
       (monthlyRevenueResult.data ?? []) as Array<Record<string, unknown>>
     ),
@@ -1712,7 +1712,7 @@ async function loadEventEntity(
       const method = entry.payment_method
         ? ` via ${(entry.payment_method as string).replace(/_/g, ' ')}`
         : ''
-      const desc = entry.description ? ` — ${entry.description}` : ''
+      const desc = entry.description ? ` - ${entry.description}` : ''
       const refund = entry.is_refund ? ' (REFUND)' : ''
       lines.push(`- ${type}: ${amt}${method}${refund}${desc}`)
     }
@@ -1732,12 +1732,12 @@ async function loadEventEntity(
       const cat = (exp.category as string).replace(/_/g, ' ')
       const amt = `$${((exp.amount_cents as number) / 100).toFixed(2)}`
       const vendor = exp.vendor_name ? ` at ${exp.vendor_name}` : ''
-      const desc = exp.description ? ` — ${exp.description}` : ''
+      const desc = exp.description ? ` - ${exp.description}` : ''
       lines.push(`- ${cat}: ${amt}${vendor}${desc}`)
     }
   }
 
-  // Event profitability summary (deterministic — revenue vs expenses)
+  // Event profitability summary (deterministic - revenue vs expenses)
   if (ledger.length > 0 || expenses.length > 0) {
     const totalPaidForProfit = ledger.reduce(
       (s: any, e: any) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
@@ -1770,7 +1770,7 @@ async function loadEventEntity(
       const hours = s.scheduled_hours ? ` ${s.scheduled_hours}h scheduled` : ''
       const actual = s.actual_hours ? `, ${s.actual_hours}h worked` : ''
       const pay = s.pay_amount_cents
-        ? ` — $${((s.pay_amount_cents as number) / 100).toFixed(2)}`
+        ? ` - $${((s.pay_amount_cents as number) / 100).toFixed(2)}`
         : ''
       const status = s.status ? ` [${s.status as string}]` : ''
       lines.push(`- ${name}${role}${hours}${actual}${pay}${status}`)
@@ -1802,7 +1802,7 @@ async function loadEventEntity(
       const deposit = q.deposit_amount_cents
         ? ` (deposit: $${((q.deposit_amount_cents as number) / 100).toFixed(2)})`
         : ''
-      const notes = q.pricing_notes ? ` — ${q.pricing_notes}` : ''
+      const notes = q.pricing_notes ? ` - ${q.pricing_notes}` : ''
       lines.push(`- ${name}: ${total} [${status}]${deposit}${notes}`)
     }
   }
@@ -1815,7 +1815,7 @@ async function loadEventEntity(
       const from = (t.from_status as string) ?? 'new'
       const to = t.to_status as string
       const when = new Date(t.transitioned_at as string).toLocaleDateString()
-      const reason = t.reason ? ` — ${t.reason}` : ''
+      const reason = t.reason ? ` - ${t.reason}` : ''
       lines.push(`- ${from} → ${to} (${when})${reason}`)
     }
   }
@@ -1864,7 +1864,7 @@ async function loadEventEntity(
     }
   }
 
-  // Smart follow-up suggestions — deterministic "next best action" based on event state
+  // Smart follow-up suggestions - deterministic "next best action" based on event state
   const eventSuggestions: string[] = []
   const evtStatus = data.status as string
   const evtDate = data.event_date ? new Date(data.event_date as string) : null
@@ -1875,7 +1875,7 @@ async function loadEventEntity(
   } else if (evtStatus === 'proposed') {
     eventSuggestions.push('Follow up with client on the quote')
   } else if (evtStatus === 'accepted' && data.payment_status === 'unpaid') {
-    eventSuggestions.push('Send a payment request — event is accepted but unpaid')
+    eventSuggestions.push('Send a payment request - event is accepted but unpaid')
   } else if (
     (evtStatus === 'paid' || evtStatus === 'confirmed') &&
     hoursUntilEvent !== null &&
@@ -1888,10 +1888,10 @@ async function loadEventEntity(
     if (!data.timeline_ready) missing.push('timeline')
     if (missing.length > 0) {
       eventSuggestions.push(
-        `Event is in ${Math.round(hoursUntilEvent)}h — finalize: ${missing.join(', ')}`
+        `Event is in ${Math.round(hoursUntilEvent)}h - finalize: ${missing.join(', ')}`
       )
     } else {
-      eventSuggestions.push('All prep done — send a confirmation message to the client')
+      eventSuggestions.push('All prep done - send a confirmation message to the client')
     }
   } else if (evtStatus === 'completed') {
     const hasAAR = aars.length > 0
@@ -2003,7 +2003,7 @@ async function loadClientEntity(
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false })
         .limit(5),
-      // Last communication — most recent message with this client
+      // Last communication - most recent message with this client
       supabase
         .from('messages')
         .select('direction, body, created_at')
@@ -2083,11 +2083,11 @@ async function loadClientEntity(
         ? `[${(ev.payment_status as string).replace(/_/g, ' ')}]`
         : ''
       const details = [guests, price, payment].filter(Boolean).join(', ')
-      lines.push(`- ${occasion} (${date}) — ${status}${details ? ` | ${details}` : ''}`)
+      lines.push(`- ${occasion} (${date}) - ${status}${details ? ` | ${details}` : ''}`)
     }
   }
 
-  // Payment reliability score — deterministic from event payment history
+  // Payment reliability score - deterministic from event payment history
   if (events.length >= 2) {
     const typedEvts = events as Array<Record<string, unknown>>
     const withPayment = typedEvts.filter(
@@ -2103,11 +2103,11 @@ async function loadClientEntity(
       const reliability = Math.round((paid / withPayment.length) * 100)
       if (reliability < 70) {
         lines.push(
-          `\n[ALERT] PAYMENT RELIABILITY: ${reliability}% (${paid}/${withPayment.length} events paid on time, ${unpaid} unpaid) — consider requiring deposits or upfront payment for this client.`
+          `\n[ALERT] PAYMENT RELIABILITY: ${reliability}% (${paid}/${withPayment.length} events paid on time, ${unpaid} unpaid) - consider requiring deposits or upfront payment for this client.`
         )
       } else if (reliability >= 90) {
         lines.push(
-          `\nPAYMENT RELIABILITY: ${reliability}% — excellent payer. Low risk for flexible payment terms.`
+          `\nPAYMENT RELIABILITY: ${reliability}% - excellent payer. Low risk for flexible payment terms.`
         )
       }
     }
@@ -2151,7 +2151,7 @@ async function loadClientEntity(
     )
   }
 
-  // Client lifetime value tier (deterministic — based on LTV and event count)
+  // Client lifetime value tier (deterministic - based on LTV and event count)
   const ltvCents = (data.lifetime_value_cents as number) ?? 0
   const totalEvents = (data.total_events_count as number) ?? 0
   if (ltvCents > 0) {
@@ -2160,16 +2160,16 @@ async function loadClientEntity(
     else if (ltvCents >= 1000000) ltvTier = 'High-value ($10K+ lifetime value)'
     else if (ltvCents >= 500000) ltvTier = 'Growing ($5K+ lifetime value)'
     lines.push(
-      `\nCLIENT VALUE: ${ltvTier} — $${(ltvCents / 100).toFixed(0)} lifetime, ${totalEvents} events`
+      `\nCLIENT VALUE: ${ltvTier} - $${(ltvCents / 100).toFixed(0)} lifetime, ${totalEvents} events`
     )
     if (ltvCents >= 1000000) {
       lines.push(
-        `[IMPORTANT] This is a high-value client — prioritize their requests and nurture the relationship.`
+        `[IMPORTANT] This is a high-value client - prioritize their requests and nurture the relationship.`
       )
     }
   }
 
-  // Smart follow-up suggestions — deterministic "next best action" based on client state
+  // Smart follow-up suggestions - deterministic "next best action" based on client state
   const suggestions: string[] = []
   const now = Date.now()
 
@@ -2184,13 +2184,13 @@ async function loadClientEntity(
 
     // Recently completed event → suggest thank-you or follow-up
     if (lastStatus === 'completed' && daysSinceLastEvent !== null && daysSinceLastEvent <= 7) {
-      suggestions.push('Send a thank-you message — event completed this week')
+      suggestions.push('Send a thank-you message - event completed this week')
     } else if (
       lastStatus === 'completed' &&
       daysSinceLastEvent !== null &&
       daysSinceLastEvent <= 14
     ) {
-      suggestions.push('Follow up for feedback — event was 1-2 weeks ago')
+      suggestions.push('Follow up for feedback - event was 1-2 weeks ago')
     }
 
     // Upcoming event with pending payment
@@ -2204,18 +2204,18 @@ async function loadClientEntity(
     )
     if (unpaidUpcoming) {
       suggestions.push(
-        `Send payment reminder — ${(unpaidUpcoming.occasion as string) ?? 'upcoming event'} is unpaid`
+        `Send payment reminder - ${(unpaidUpcoming.occasion as string) ?? 'upcoming event'} is unpaid`
       )
     }
 
     // Long gap since last event → re-engagement
     if (daysSinceLastEvent !== null && daysSinceLastEvent > 60 && lastStatus === 'completed') {
       suggestions.push(
-        `Re-engage — last event was ${daysSinceLastEvent} days ago. Consider a seasonal menu offer`
+        `Re-engage - last event was ${daysSinceLastEvent} days ago. Consider a seasonal menu offer`
       )
     }
   } else {
-    suggestions.push('New client — schedule an intro call or send a welcome message')
+    suggestions.push('New client - schedule an intro call or send a welcome message')
   }
 
   // No communication in a while
@@ -2331,7 +2331,7 @@ async function loadRecipeEntity(
     }
   }
 
-  // Recipe intelligence — allergen awareness and usage frequency
+  // Recipe intelligence - allergen awareness and usage frequency
   const allergens = new Set<string>()
   for (const ing of ingredients) {
     const ingData = ing.ingredient as Record<string, unknown> | null
@@ -2353,7 +2353,7 @@ async function loadRecipeEntity(
     )
     if (daysSinceLast > 90 && data.times_cooked >= 3) {
       lines.push(
-        `\nThis recipe hasn't been cooked in ${daysSinceLast} days despite being a ${data.times_cooked}-time favorite — consider featuring it in an upcoming event.`
+        `\nThis recipe hasn't been cooked in ${daysSinceLast} days despite being a ${data.times_cooked}-time favorite - consider featuring it in an upcoming event.`
       )
     }
   }
@@ -2438,15 +2438,15 @@ async function loadInquiryEntity(
     // Response coaching based on tier
     if (tier === 'HOT') {
       lines.push(
-        `Response Coaching: This is a HOT lead — prioritize. Respond within 4-24 hours for best conversion.`
+        `Response Coaching: This is a HOT lead - prioritize. Respond within 4-24 hours for best conversion.`
       )
     } else if (tier === 'WARM') {
       lines.push(
-        `Response Coaching: WARM lead — respond within 24 hours. Good potential, needs timely follow-up.`
+        `Response Coaching: WARM lead - respond within 24 hours. Good potential, needs timely follow-up.`
       )
     } else if (tier === 'COLD') {
       lines.push(
-        `Response Coaching: COLD lead — respond within 72 hours. Lower priority, but still worth a reply.`
+        `Response Coaching: COLD lead - respond within 72 hours. Lower priority, but still worth a reply.`
       )
     }
   }
@@ -2461,7 +2461,7 @@ async function loadInquiryEntity(
       (m: any) => (m as Record<string, unknown>).direction === 'outbound'
     ).length
     lines.push(
-      `\nMESSAGE THREAD (${messages.length} messages — ${inbound} from client, ${outbound} from chef):`
+      `\nMESSAGE THREAD (${messages.length} messages - ${inbound} from client, ${outbound} from chef):`
     )
     for (const msg of messages as Array<Record<string, unknown>>) {
       const dir = msg.direction === 'inbound' ? '← Client' : '→ Chef'
@@ -2530,12 +2530,12 @@ async function loadInquiryEntity(
   const inqNow = Date.now()
 
   if (inqStatus === 'new') {
-    inquirySuggestions.push('Send first response — this inquiry has not been replied to yet')
+    inquirySuggestions.push('Send first response - this inquiry has not been replied to yet')
   } else if (inqStatus === 'awaiting_chef') {
-    inquirySuggestions.push('The ball is in your court — the client is waiting for your response')
+    inquirySuggestions.push('The ball is in your court - the client is waiting for your response')
   } else if (inqStatus === 'awaiting_client') {
     if (followUpDue && followUpDue.getTime() < inqNow) {
-      inquirySuggestions.push('Follow-up is overdue — send a gentle nudge')
+      inquirySuggestions.push('Follow-up is overdue - send a gentle nudge')
     } else if (followUpDue && followUpDue.getTime() - inqNow < 24 * 60 * 60 * 1000) {
       inquirySuggestions.push('Follow-up due within 24 hours')
     }
@@ -2547,7 +2547,7 @@ async function loadInquiryEntity(
       (data.confirmed_budget_cents as number) / (data.confirmed_guest_count as number)
     )
     inquirySuggestions.push(
-      `Budget: $${budgetPerGuest}/guest — ${budgetPerGuest >= 150 ? 'premium range' : budgetPerGuest >= 75 ? 'standard range' : 'budget-conscious — consider a simpler menu'}`
+      `Budget: $${budgetPerGuest}/guest - ${budgetPerGuest >= 150 ? 'premium range' : budgetPerGuest >= 75 ? 'standard range' : 'budget-conscious - consider a simpler menu'}`
     )
   }
 
@@ -2558,7 +2558,7 @@ async function loadInquiryEntity(
   if (!data.confirmed_location) missingFields.push('location')
   if (!data.confirmed_budget_cents) missingFields.push('budget')
   if (missingFields.length > 0 && inqStatus !== 'converted' && inqStatus !== 'closed') {
-    inquirySuggestions.push(`Missing info: ${missingFields.join(', ')} — ask in your next response`)
+    inquirySuggestions.push(`Missing info: ${missingFields.join(', ')} - ask in your next response`)
   }
 
   if (inquirySuggestions.length > 0) {
@@ -2612,7 +2612,7 @@ async function loadMenuEntity(
   if (data.cuisine_type) lines.push(`Cuisine: ${data.cuisine_type}`)
   if (data.service_style) lines.push(`Style: ${data.service_style.replace(/_/g, ' ')}`)
   if (data.target_guest_count) lines.push(`Target guests: ${data.target_guest_count}`)
-  if (data.is_template) lines.push(`(Template — reusable)`)
+  if (data.is_template) lines.push(`(Template - reusable)`)
   if (data.description) lines.push(`Description: ${data.description}`)
   if (data.notes) lines.push(`Notes: ${data.notes}`)
 
@@ -2636,7 +2636,7 @@ async function loadMenuEntity(
     }
   }
 
-  // Menu intelligence — allergen consolidation and dietary coverage
+  // Menu intelligence - allergen consolidation and dietary coverage
   if (dishes.length > 0) {
     const menuAllergens = new Set<string>()
     const menuDietaryTags = new Set<string>()
@@ -2664,7 +2664,7 @@ async function loadMenuEntity(
 // ─── Tier 4: Message-Aware Entity Resolution ────────────────────────────────
 // Scans the user's message for client names, event occasions, and recipe names.
 // If a match is found in the DB, loads the full entity so Remy can answer
-// questions about any entity mentioned by name — regardless of what page
+// questions about any entity mentioned by name - regardless of what page
 // the chef is on.
 
 export async function resolveMessageEntities(message: string): Promise<PageEntityContext[]> {
@@ -2677,7 +2677,7 @@ export async function resolveMessageEntities(message: string): Promise<PageEntit
   // Normalize message for matching
   const msgLower = message.toLowerCase()
 
-  // Run all searches in parallel — each is cheap (indexed ilike, limit 3)
+  // Run all searches in parallel - each is cheap (indexed ilike, limit 3)
   const [clientHits, eventHits, recipeHits, inquiryHits] = await Promise.all([
     findMentionedClients(supabase, tenantId, msgLower),
     findMentionedEvents(supabase, tenantId, msgLower),
@@ -2751,7 +2751,7 @@ async function findMentionedClients(
       // First name match (only if 4+ chars to avoid false positives)
       if (firstName.length >= 4 && msgLower.includes(firstName)) return true
     } else if (parts.length === 1 && parts[0].length >= 4) {
-      // Single-name clients — match if 4+ chars
+      // Single-name clients - match if 4+ chars
       if (msgLower.includes(parts[0])) return true
     }
     return false

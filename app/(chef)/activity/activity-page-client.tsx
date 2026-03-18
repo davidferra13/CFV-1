@@ -311,7 +311,7 @@ export function ActivityPageClient({
             Retrace My Steps
           </button>
         </div>
-        <p className="text-[10px] text-stone-400">
+        <p className="text-xxs text-stone-400">
           {viewMode === 'summary'
             ? 'Key actions and decisions'
             : 'Every page and click, step by step'}
@@ -349,7 +349,7 @@ export function ActivityPageClient({
                       {HOUR_LABELS.map((h) => (
                         <th
                           key={h}
-                          className="text-[9px] text-stone-400 font-normal px-0 py-0.5 text-center"
+                          className="text-2xs text-stone-400 font-normal px-0 py-0.5 text-center"
                         >
                           {h}
                         </th>
@@ -359,7 +359,7 @@ export function ActivityPageClient({
                   <tbody>
                     {DAY_LABELS.map((day, dayIdx) => (
                       <tr key={day}>
-                        <td className="text-[10px] text-stone-500 font-medium pr-2 text-right">
+                        <td className="text-xxs text-stone-500 font-medium pr-2 text-right">
                           {day}
                         </td>
                         {heatMapData[dayIdx].map((count, hourIdx) => (
@@ -382,7 +382,7 @@ export function ActivityPageClient({
                 </table>
               </div>
               <div className="flex items-center justify-end gap-1 mt-2">
-                <span className="text-[9px] text-stone-400">Less</span>
+                <span className="text-2xs text-stone-400">Less</span>
                 {[0, 0.2, 0.4, 0.6, 0.8, 1].map((level) => (
                   <div
                     key={level}
@@ -393,7 +393,7 @@ export function ActivityPageClient({
                     }}
                   />
                 ))}
-                <span className="text-[9px] text-stone-400">More</span>
+                <span className="text-2xs text-stone-400">More</span>
               </div>
             </div>
           )}
@@ -562,7 +562,7 @@ function AllTimelineRow({
     const content = (
       <div className="flex items-start gap-2.5 py-2 px-2 rounded-md hover:bg-stone-800 transition-colors">
         <span
-          className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${config.bgColor} ${config.color}`}
+          className={`text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${config.bgColor} ${config.color}`}
         >
           {config.label}
         </span>
@@ -589,7 +589,7 @@ function AllTimelineRow({
     if (event.event_type === 'session_heartbeat') return null
     return (
       <div className="flex items-start gap-2.5 py-2 px-2 rounded-md hover:bg-stone-800 transition-colors">
-        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 bg-blue-900 text-blue-700">
+        <span className="text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 bg-blue-900 text-blue-700">
           Client
         </span>
         <div className="min-w-0 flex-1">

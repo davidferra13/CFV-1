@@ -84,7 +84,7 @@ export function isThumbtackEmail(fromAddress: string): boolean {
 // ─── Email Type Detection ───────────────────────────────────────────────
 
 const TYPE_PATTERNS: Array<{ pattern: RegExp; type: ThumbtackEmailType }> = [
-  // New lead / request — aggressive matching
+  // New lead / request - aggressive matching
   { pattern: /new (lead|request|opportunity|customer)/i, type: 'tt_new_lead' },
   { pattern: /interested in your services/i, type: 'tt_new_lead' },
   { pattern: /wants to hire/i, type: 'tt_new_lead' },
@@ -144,7 +144,7 @@ export function detectThumbtackEmailType(subject: string, body?: string): Thumbt
   return 'tt_administrative'
 }
 
-// ─── Field Extraction — New Lead ────────────────────────────────────────
+// ─── Field Extraction - New Lead ────────────────────────────────────────
 
 function parseLeadEmail(
   subject: string,
@@ -161,7 +161,7 @@ function parseLeadEmail(
   if (nameFromSubject) {
     clientName = nameFromSubject[1].trim()
   } else {
-    // Try body — Thumbtack often has the name near the top
+    // Try body - Thumbtack often has the name near the top
     const nameFromBody =
       body.match(/(?:Customer|Client|Name)[:\s]+([A-Z][a-z]+ [A-Z][a-z]+)/m) ||
       body.match(/from\s+([A-Z][a-z]+ [A-Z][a-z]+)/m)
@@ -172,7 +172,7 @@ function parseLeadEmail(
     }
   }
 
-  // Project description — what they need
+  // Project description - what they need
   const descMatch =
     body.match(/(?:Project|Service|Request|Looking for|Needs)[:\s]+(.+)/i) ||
     body.match(/(?:Type of (?:service|event|chef))[:\s]+(.+)/i) ||
@@ -181,21 +181,21 @@ function parseLeadEmail(
     )
   const projectDescription = descMatch?.[1]?.trim() || null
 
-  // Location — city, state, zip
+  // Location - city, state, zip
   const locationMatch =
     body.match(/(?:Location|Where|City|Area|Zip(?:\s*code)?)[:\s]+(.+)/i) ||
     body.match(/(?:in|near)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*,\s*[A-Z]{2}(?:\s+\d{5})?)/m) ||
     body.match(/(\d{5}(?:-\d{4})?)/m) // bare zip code
   const location = locationMatch?.[1]?.trim() || null
 
-  // Event date — when they need it
+  // Event date - when they need it
   const dateMatch =
     body.match(/(?:Date|When|Event date|Service date|Day)[:\s]+(.+)/i) ||
     body.match(/(?:on|for)\s+(\w+ \d{1,2}(?:,?\s*\d{4})?)/i) ||
     body.match(/(\d{1,2}\/\d{1,2}\/\d{2,4}|\d{1,2}-\d{1,2}-\d{2,4}|\w+ \d{1,2},?\s*\d{4})/m)
   const eventDate = dateMatch?.[1]?.trim() || null
 
-  // Guest count — number of guests/people
+  // Guest count - number of guests/people
   const guestMatch =
     body.match(
       /(?:Guests?|Number of (?:guests?|people|attendees)|Party size|Head count|How many)[:\s]+(.+)/i
@@ -215,7 +215,7 @@ function parseLeadEmail(
     }
   }
 
-  // Budget — budget range or amount
+  // Budget - budget range or amount
   const budgetMatch =
     body.match(/(?:Budget|Price range|Estimated budget|Willing to pay|Budget range)[:\s]+(.+)/i) ||
     body.match(/\$[\d,]+(?:\s*[-–—to]+\s*\$[\d,]+)?/i)
@@ -233,7 +233,7 @@ function parseLeadEmail(
     }
   }
 
-  // Contact link — Thumbtack URL to respond
+  // Contact link - Thumbtack URL to respond
   const linkMatch =
     body.match(/href="(https?:\/\/(?:www\.)?thumbtack\.com\/[^"]+)"/i) ||
     body.match(/(https?:\/\/(?:www\.)?thumbtack\.com\/\S+)/i)
@@ -256,7 +256,7 @@ function parseLeadEmail(
   }
 }
 
-// ─── Field Extraction — Booking Confirmed ───────────────────────────────
+// ─── Field Extraction - Booking Confirmed ───────────────────────────────
 
 function parseBookingEmail(
   subject: string,
@@ -324,7 +324,7 @@ function parseBookingEmail(
   }
 }
 
-// ─── Field Extraction — Client Message ──────────────────────────────────
+// ─── Field Extraction - Client Message ──────────────────────────────────
 
 function parseMessageEmail(
   subject: string,
@@ -345,7 +345,7 @@ function parseMessageEmail(
   }
   if (!clientName) warnings.push('Could not extract client name from message notification')
 
-  // Message preview — first substantial line of the message body
+  // Message preview - first substantial line of the message body
   const previewMatch =
     body.match(/(?:Message|Says?|Wrote)[:\s]+"?(.+?)"?(?:\n|$)/i) ||
     body.match(/(?:Message preview)[:\s]+(.+)/i)
@@ -367,7 +367,7 @@ function parseMessageEmail(
   }
 }
 
-// ─── Field Extraction — Payment ─────────────────────────────────────────
+// ─── Field Extraction - Payment ─────────────────────────────────────────
 
 function parsePaymentEmail(
   subject: string,
@@ -393,7 +393,7 @@ function parsePaymentEmail(
     body.match(/(\w+ \d{1,2},?\s*\d{4})/m)
   const payoutDate = dateMatch?.[1]?.trim() || null
 
-  // Client name — may or may not be present on payment emails
+  // Client name - may or may not be present on payment emails
   const clientMatch =
     body.match(/(?:Customer|Client|From|For)[:\s]+(.+)/i) ||
     body.match(/(?:for|from)\s+([A-Z][a-z]+ [A-Z][a-z]+)/m)
@@ -458,7 +458,7 @@ export function parseThumbtackEmail(email: ParsedEmail): ThumbtackParseResult {
       break
     }
     case 'tt_administrative':
-      // No structured extraction needed — just log the type
+      // No structured extraction needed - just log the type
       break
   }
 

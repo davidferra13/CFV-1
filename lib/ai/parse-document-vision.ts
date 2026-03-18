@@ -96,7 +96,7 @@ Contracts, policies, templates, or general documents. Extract:
 
 RULES:
 - Choose the SINGLE best matching type
-- Do NOT invent data — only extract what is clearly present
+- Do NOT invent data - only extract what is clearly present
 - For receipts, convert all money values to cents (multiply dollars by 100)
 - For recipes, expand abbreviations
 - For allergies, over-flag rather than miss

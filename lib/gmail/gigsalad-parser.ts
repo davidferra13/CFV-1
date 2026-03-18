@@ -96,7 +96,7 @@ export function isGigSaladEmail(fromAddress: string): boolean {
 // ─── Email Type Detection ───────────────────────────────────────────────
 
 const TYPE_PATTERNS: Array<{ pattern: RegExp; type: GigSaladEmailType }> = [
-  // New lead / gig opportunity — AGGRESSIVE matching
+  // New lead / gig opportunity - AGGRESSIVE matching
   { pattern: /new\s+(lead|gig|opportunity|request)/i, type: 'gs_new_lead' },
   { pattern: /looking\s+for.*(chef|caterer|cook|catering)/i, type: 'gs_new_lead' },
   { pattern: /someone.*needs/i, type: 'gs_new_lead' },
@@ -133,7 +133,7 @@ const TYPE_PATTERNS: Array<{ pattern: RegExp; type: GigSaladEmailType }> = [
   { pattern: /requesting\s+(?:a\s+)?quote/i, type: 'gs_quote_requested' },
   { pattern: /needs?\s+(?:a\s+)?quote/i, type: 'gs_quote_requested' },
 
-  // Administrative — catch-all patterns for non-actionable emails
+  // Administrative - catch-all patterns for non-actionable emails
   { pattern: /review/i, type: 'gs_administrative' },
   { pattern: /newsletter/i, type: 'gs_administrative' },
   { pattern: /\btip(?:s)?\b/i, type: 'gs_administrative' },
@@ -171,7 +171,7 @@ export function detectGigSaladEmailType(subject: string, body?: string): GigSala
   return 'gs_administrative'
 }
 
-// ─── Field Extraction — New Lead ────────────────────────────────────────
+// ─── Field Extraction - New Lead ────────────────────────────────────────
 
 function parseLeadEmail(
   subject: string,
@@ -179,7 +179,7 @@ function parseLeadEmail(
 ): { data: GigSaladParsedLead; warnings: string[] } {
   const warnings: string[] = []
 
-  // Client name — try multiple patterns
+  // Client name - try multiple patterns
   // "New lead from John Smith" or "John Smith is looking for" or "Client: John Smith"
   const nameFromSubject = subject.match(
     /(?:lead|request|opportunity)\s+(?:from|by)\s+(.+?)(?:\s*[-–—!|]|$)/i
@@ -191,25 +191,25 @@ function parseLeadEmail(
   if (!nameFromSubject && !nameFromBody)
     warnings.push('Could not extract client name from lead email')
 
-  // Event type — "Event type: Wedding" or "Category: Birthday Party"
+  // Event type - "Event type: Wedding" or "Category: Birthday Party"
   const eventTypeMatch =
     body.match(/(?:Event\s+type|Category|Service\s+type|Type\s+of\s+event)[\s:]+(.+?)(?:\n|$)/i) ||
     body.match(/(?:looking\s+for\s+(?:a\s+)?)([\w\s]+?)(?:\s+(?:chef|caterer|cook|for))/i)
   const eventType = eventTypeMatch?.[1]?.trim() || null
 
-  // Location — "Location: Boston, MA" or "City: Boston" or "Event location: Boston"
+  // Location - "Location: Boston, MA" or "City: Boston" or "Event location: Boston"
   const locationMatch =
     body.match(/(?:Location|City|Venue|Event\s+location|Where)[\s:]+(.+?)(?:\n|$)/i) ||
     body.match(/(?:in|at)\s+([A-Z][a-z]+(?:[\s,]+[A-Z]{2})?)\s+(?:on|for)/i)
   const location = locationMatch?.[1]?.trim() || null
 
-  // Event date — "Event date: March 15, 2026" or "Date: 3/15/2026" or "When: Saturday, March 15"
+  // Event date - "Event date: March 15, 2026" or "Date: 3/15/2026" or "When: Saturday, March 15"
   const dateMatch =
     body.match(/(?:Event\s+date|Date|When|Date\s+of\s+event)[\s:]+(.+?)(?:\n|$)/i) ||
     body.match(/(\w+\s+\d{1,2},?\s+\d{4})/i)
   const eventDate = dateMatch?.[1]?.trim() || null
 
-  // Guest count — "Guest count: 50" or "Number of guests: 50" or "Guests: 40-60"
+  // Guest count - "Guest count: 50" or "Number of guests: 50" or "Guests: 40-60"
   const guestMatch = body.match(
     /(?:Guest\s*count|Number\s+of\s+guests?|Guests?|Attendees?|Head\s*count|Party\s+size)[\s:]+(.+?)(?:\n|$)/i
   )
@@ -221,7 +221,7 @@ function parseLeadEmail(
     if (singleNum) {
       guestCount = parseInt(singleNum[1], 10)
     } else {
-      // Try range "40-60" or "40 to 60" — take midpoint
+      // Try range "40-60" or "40 to 60" - take midpoint
       const rangeMatch = guestCountText.match(/(\d+)\s*(?:to|-|–|—)\s*(\d+)/)
       if (rangeMatch) {
         guestCount = Math.ceil((parseInt(rangeMatch[1], 10) + parseInt(rangeMatch[2], 10)) / 2)
@@ -229,7 +229,7 @@ function parseLeadEmail(
     }
   }
 
-  // Budget — "Budget: $500-$1000" or "Budget range: $800" or "Willing to spend: $500-750"
+  // Budget - "Budget: $500-$1000" or "Budget range: $800" or "Willing to spend: $500-750"
   const budgetMatch = body.match(
     /(?:Budget|Budget\s+range|Willing\s+to\s+(?:spend|pay)|Price\s+range|Estimated\s+budget)[\s:]+(.+?)(?:\n|$)/i
   )
@@ -252,19 +252,19 @@ function parseLeadEmail(
     }
   }
 
-  // Dietary restrictions — "Dietary needs: Gluten free, nut allergy"
+  // Dietary restrictions - "Dietary needs: Gluten free, nut allergy"
   const dietaryMatch = body.match(
     /(?:Dietary\s+(?:needs?|restrictions?|requirements?|preferences?)|Allergies?|Food\s+(?:restrictions?|allergies))[\s:]+(.+?)(?:\n|$)/i
   )
   const dietaryRestrictions = dietaryMatch?.[1]?.trim() || null
 
-  // Additional details / notes — "Additional details:" or "Notes:" or "Message:"
+  // Additional details / notes - "Additional details:" or "Notes:" or "Message:"
   const detailsMatch = body.match(
     /(?:Additional\s+(?:details?|info(?:rmation)?|notes?)|Notes?|Message|Details|Comments?)[\s:]+(.+?)(?:\n\n|\n(?=[A-Z])|$)/is
   )
   const additionalDetails = detailsMatch?.[1]?.trim() || null
 
-  // CTA link — GigSalad URL to respond to the lead
+  // CTA link - GigSalad URL to respond to the lead
   const ctaMatch =
     body.match(
       /href="(https?:\/\/(?:www\.)?gigsalad\.com[^"]*)"[^>]*>(?:[^<]*?)(?:Respond|View|Reply|Send Quote|View Lead)/i
@@ -290,7 +290,7 @@ function parseLeadEmail(
   }
 }
 
-// ─── Field Extraction — Client Message ──────────────────────────────────
+// ─── Field Extraction - Client Message ──────────────────────────────────
 
 function parseMessageEmail(
   subject: string,
@@ -298,7 +298,7 @@ function parseMessageEmail(
 ): { data: GigSaladParsedMessage; warnings: string[] } {
   const warnings: string[] = []
 
-  // Client name — "Message from John Smith" or "John Smith sent a message"
+  // Client name - "Message from John Smith" or "John Smith sent a message"
   const nameFromSubject =
     subject.match(/message\s+from\s+(.+?)(?:\s*[-–—!|]|$)/i) ||
     subject.match(/(.+?)\s+sent\s+(?:you\s+)?(?:a\s+)?message/i)
@@ -306,13 +306,13 @@ function parseMessageEmail(
   const clientName = nameFromSubject?.[1]?.trim() || nameFromBody?.[1]?.trim() || null
   if (!clientName) warnings.push('Could not extract client name from message notification')
 
-  // Message preview — try to grab the actual message content
+  // Message preview - try to grab the actual message content
   const previewMatch =
     body.match(/(?:Message|Wrote|Says?)[\s:]+[""]?(.{10,200}?)[""]?(?:\n|$)/i) ||
     body.match(/[""](.{10,200}?)[""]/)
   const messagePreview = previewMatch?.[1]?.trim() || null
 
-  // CTA link — GigSalad URL to view/reply to message
+  // CTA link - GigSalad URL to view/reply to message
   const ctaMatch =
     body.match(
       /href="(https?:\/\/(?:www\.)?gigsalad\.com[^"]*)"[^>]*>(?:[^<]*?)(?:View|Reply|Respond|Read)/i
@@ -329,7 +329,7 @@ function parseMessageEmail(
   }
 }
 
-// ─── Field Extraction — Booking Confirmed ───────────────────────────────
+// ─── Field Extraction - Booking Confirmed ───────────────────────────────
 
 function parseBookingEmail(
   subject: string,
@@ -337,7 +337,7 @@ function parseBookingEmail(
 ): { data: GigSaladParsedBooking; warnings: string[] } {
   const warnings: string[] = []
 
-  // Client name — "Booking confirmed with John Smith" or body patterns
+  // Client name - "Booking confirmed with John Smith" or body patterns
   const nameFromSubject = subject.match(
     /(?:confirmed|booked)\s+(?:with|by|from)\s+(.+?)(?:\s*[-–—!|]|$)/i
   )
@@ -361,14 +361,14 @@ function parseBookingEmail(
   const locationMatch = body.match(/(?:Location|City|Venue|Where)[\s:]+(.+?)(?:\n|$)/i)
   const location = locationMatch?.[1]?.trim() || null
 
-  // Amount — "$500" or "Amount: $500.00" or "Total: $750"
+  // Amount - "$500" or "Amount: $500.00" or "Total: $750"
   const amountMatch = body.match(/(?:Amount|Total|Price|Payment|Fee)[\s:]+\$?([\d,.]+)/i)
   const amountText = amountMatch ? `$${amountMatch[1]}` : null
   const amountCents = amountMatch
     ? Math.round(parseFloat(amountMatch[1].replace(',', '')) * 100)
     : null
 
-  // CTA link — GigSalad URL to view booking details
+  // CTA link - GigSalad URL to view booking details
   const ctaMatch =
     body.match(
       /href="(https?:\/\/(?:www\.)?gigsalad\.com[^"]*)"[^>]*>(?:[^<]*?)(?:View|Manage|Details|Booking)/i
@@ -389,7 +389,7 @@ function parseBookingEmail(
   }
 }
 
-// ─── Field Extraction — Quote Requested ─────────────────────────────────
+// ─── Field Extraction - Quote Requested ─────────────────────────────────
 
 function parseQuoteEmail(
   subject: string,
@@ -495,7 +495,7 @@ export function parseGigSaladEmail(email: ParsedEmail): GigSaladParseResult {
       break
     }
     case 'gs_administrative':
-      // No structured extraction needed — just log the type
+      // No structured extraction needed - just log the type
       break
   }
 

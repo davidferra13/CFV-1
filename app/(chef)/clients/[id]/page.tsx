@@ -13,7 +13,11 @@ import { getClientLoyaltyProfile } from '@/lib/loyalty/actions'
 import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
 import { MessageThread } from '@/components/messages/message-thread'
 import { MessageLogForm } from '@/components/messages/message-log-form'
-import { AwardBonusForm, RedeemRewardButton } from '@/app/(chef)/loyalty/client-loyalty-actions'
+import {
+  AwardBonusForm,
+  RedeemRewardButton,
+  ManualLoyaltyAdjustment,
+} from '@/app/(chef)/loyalty/client-loyalty-actions'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -672,8 +676,17 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             </div>
           )}
 
-          {/* Award Bonus Points */}
-          <AwardBonusForm clientId={client.id} />
+          {/* Award Bonus Points + Manual Adjustment */}
+          <div className="flex gap-2 flex-wrap">
+            <AwardBonusForm clientId={client.id} />
+            <ManualLoyaltyAdjustment
+              clientId={client.id}
+              currentPoints={loyaltyProfile.pointsBalance}
+              currentTier={loyaltyProfile.currentTier}
+              currentEventsCompleted={loyaltyProfile.totalEventsCompleted}
+              currentGuestsServed={loyaltyProfile.totalGuestsServed}
+            />
+          </div>
 
           {/* Recent Transactions */}
           {loyaltyProfile.transactionHistory.length > 0 && (

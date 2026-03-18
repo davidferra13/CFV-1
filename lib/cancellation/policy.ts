@@ -60,7 +60,7 @@ export function computeCancellationRefund(
   const cancelledMs = cancelledAt.getTime()
   const daysUntilEvent = (eventMs - cancelledMs) / (1000 * 60 * 60 * 24)
 
-  // Tier 1: Full refund — 24-hour window (payment within 24 hrs AND event >3 days away)
+  // Tier 1: Full refund - 24-hour window (payment within 24 hrs AND event >3 days away)
   if (firstPaymentAt) {
     const paymentMs = new Date(firstPaymentAt).getTime()
     const hoursSincePayment = (cancelledMs - paymentMs) / (1000 * 60 * 60)
@@ -77,13 +77,13 @@ export function computeCancellationRefund(
         balanceRefundCents: balancePaidCents,
         policyTier: 'full_refund_24hr',
         description:
-          'Full refund — cancelled within 24 hours of payment and event is more than 3 days away.',
+          'Full refund - cancelled within 24 hours of payment and event is more than 3 days away.',
         depositNonRefundableWarning: !policy.depositRefundable && depositPaidCents > 0,
       }
     }
   }
 
-  // Tier 2: Full balance refund — cancelled ≥ cutoff days before event
+  // Tier 2: Full balance refund - cancelled ≥ cutoff days before event
   if (daysUntilEvent >= policy.cancellationCutoffDays) {
     const depositRefundCents = policy.depositRefundable ? depositPaidCents : 0
     const refundAmountCents = balancePaidCents + depositRefundCents
@@ -93,18 +93,18 @@ export function computeCancellationRefund(
       depositRefundCents,
       balanceRefundCents: balancePaidCents,
       policyTier: 'full_refund',
-      description: `Full balance refund — cancelled ${Math.floor(daysUntilEvent)} days before the event (${policy.cancellationCutoffDays}+ days required).`,
+      description: `Full balance refund - cancelled ${Math.floor(daysUntilEvent)} days before the event (${policy.cancellationCutoffDays}+ days required).`,
       depositNonRefundableWarning: !policy.depositRefundable && depositPaidCents > 0,
     }
   }
 
-  // Tier 3: No refund — within cutoff window
+  // Tier 3: No refund - within cutoff window
   return {
     refundAmountCents: 0,
     depositRefundCents: 0,
     balanceRefundCents: 0,
     policyTier: 'no_refund',
-    description: `No refund — cancelled less than ${policy.cancellationCutoffDays} days before the event.`,
+    description: `No refund - cancelled less than ${policy.cancellationCutoffDays} days before the event.`,
     depositNonRefundableWarning: depositPaidCents > 0,
   }
 }

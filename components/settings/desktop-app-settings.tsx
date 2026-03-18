@@ -62,7 +62,7 @@ export function DesktopAppSettings() {
       <div className="rounded-lg border border-stone-800 bg-stone-900/50 p-4 opacity-75">
         <div className="flex items-center gap-2">
           <p className="font-medium text-stone-400">ChefFlow Desktop App</p>
-          <span className="text-[10px] font-medium uppercase tracking-wider text-stone-500 bg-stone-800 px-2 py-0.5 rounded-full">
+          <span className="text-xxs font-medium uppercase tracking-wider text-stone-500 bg-stone-800 px-2 py-0.5 rounded-full">
             In Development
           </span>
         </div>

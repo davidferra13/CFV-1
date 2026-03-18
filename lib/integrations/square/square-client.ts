@@ -156,7 +156,7 @@ async function refreshSquareToken(tenantId: string): Promise<string> {
 
   if (!conn?.refresh_token) throw new Error('Square not connected')
 
-  // Check if token is still valid (1-day buffer — Square tokens last 30 days)
+  // Check if token is still valid (1-day buffer - Square tokens last 30 days)
   if (conn.token_expires_at) {
     const expiresAt = new Date(conn.token_expires_at).getTime()
     if (Date.now() < expiresAt - 24 * 60 * 60 * 1000) {
@@ -327,7 +327,7 @@ export async function disconnectSquare() {
         signal: AbortSignal.timeout(10_000),
       })
     } catch {
-      // Non-blocking — continue with disconnect even if revocation fails
+      // Non-blocking - continue with disconnect even if revocation fails
     }
   }
 

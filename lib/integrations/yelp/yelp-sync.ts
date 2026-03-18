@@ -1,4 +1,4 @@
-// Yelp Business API — Review sync following the Google Places pattern.
+// Yelp Business API - Review sync following the Google Places pattern.
 // Pulls reviews from a Yelp business profile and upserts into external_reviews.
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -31,7 +31,7 @@ export async function fetchYelpReviews(
 
   const apiKey = getYelpApiKey()
 
-  // Yelp Fusion API v3 — /businesses/{id}/reviews
+  // Yelp Fusion API v3 - /businesses/{id}/reviews
   const response = await fetch(
     `${YELP_API_BASE}/businesses/${encodeURIComponent(businessId)}/reviews?sort_by=newest`,
     {

@@ -1,7 +1,7 @@
 'use server'
 
-// Remy — Web Search & URL Reading Actions
-// PUBLIC DATA ONLY: web search results are public by nature — no privacy concern.
+// Remy - Web Search & URL Reading Actions
+// PUBLIC DATA ONLY: web search results are public by nature - no privacy concern.
 // These actions allow Remy to search the internet and read web pages.
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -26,7 +26,7 @@ export interface WebReadResult {
 
 /**
  * Search the web using DuckDuckGo's HTML search.
- * No API key required — free and privacy-respecting.
+ * No API key required - free and privacy-respecting.
  * Falls back to Tavily if TAVILY_API_KEY is configured.
  */
 export async function searchWeb(query: string, limit = 5): Promise<WebSearchResult[]> {

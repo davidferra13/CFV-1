@@ -1,8 +1,8 @@
-// Commerce Engine V1 — Sale Status FSM
-// Pure logic — no server actions, no database calls.
+// Commerce Engine V1 - Sale Status FSM
+// Pure logic - no server actions, no database calls.
 // Mirrors the DB-level guard_sale_status_transition() trigger.
 //
-// NOT a server action file — no 'use server'.
+// NOT a server action file - no 'use server'.
 
 import type { SaleStatus } from './constants'
 

@@ -6,9 +6,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { SignaturePad } from '@/components/contracts/signature-pad'
 import { ContractStatusBadge } from '@/components/contracts/contract-status-badge'
 import { Button } from '@/components/ui/button'
+import { Alert } from '@/components/ui/alert'
 import { signContract } from '@/lib/contracts/actions'
 
 type Props = {
@@ -101,11 +104,9 @@ export function ContractSigningClient({
 
   return (
     <div className="space-y-6">
-      {/* Contract body - rendered as plain markdown text, readable without a parser */}
-      <div className="rounded-xl border border-stone-700 bg-stone-900 p-6">
-        <pre className="whitespace-pre-wrap font-sans text-sm text-stone-200 leading-relaxed">
-          {bodyMarkdown}
-        </pre>
+      {/* Contract body */}
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-6 prose prose-invert prose-sm max-w-none prose-headings:text-stone-100 prose-p:text-stone-200 prose-li:text-stone-200 prose-strong:text-stone-100">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{bodyMarkdown}</ReactMarkdown>
       </div>
 
       {/* Signature section */}
@@ -127,7 +128,7 @@ export function ContractSigningClient({
           </label>
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <Alert variant="error">{error}</Alert>}
 
         <Button
           onClick={handleSign}

@@ -1,4 +1,4 @@
-// Comprehensive Remy test suite — tests EVERY capability against beta
+// Comprehensive Remy test suite - tests EVERY capability against beta
 // Validates: correct task routing, data presence, error handling, timing
 //
 // Usage:
@@ -29,7 +29,7 @@ const getEnv = (k) => {
 // ─── Test Definitions ────────────────────────────────────────────────────────
 // Each test: { cat, name, msg, expect, tier?, validate? }
 //   expect: string (task type) or 'question' or 'guardrail' or string[]
-//   tier: expected tier (1, 2, 3) — defaults to 1
+//   tier: expected tier (1, 2, 3) - defaults to 1
 //   validate: optional function(tasks, tokens) => string|null (null = pass, string = reason)
 
 const TESTS = [
@@ -51,7 +51,7 @@ const TESTS = [
   { cat: 'Client', name: 'client-nda', msg: 'NDA status for my clients', expect: 'client.nda_status' },
   { cat: 'Client', name: 'client-payment-plans', msg: 'Show payment plans', expect: 'client.payment_plans' },
 
-  // Client write actions (Tier 2 — should be held for approval)
+  // Client write actions (Tier 2 - should be held for approval)
   { cat: 'ClientWrite', name: 'create-client-1', msg: 'Create a client named Test Person with a birthday in July', expect: 'agent.create_client', tier: 2 },
   { cat: 'ClientWrite', name: 'create-client-2', msg: 'Please make me a client named Debbie, whose birthday is in August and hates black Pepper', expect: 'agent.create_client', tier: 2 },
   { cat: 'ClientWrite', name: 'create-client-3', msg: 'Add a new client called John Smith', expect: 'agent.create_client', tier: 2 },
@@ -332,7 +332,7 @@ const TESTS = [
   { cat: 'Travel', name: 'travel-upcoming', msg: 'Upcoming travel', expect: 'travel.upcoming' },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // CONVERSATIONAL (question path — no tasks, just text)
+  // CONVERSATIONAL (question path - no tasks, just text)
   // ═══════════════════════════════════════════════════════════════════════════
   { cat: 'Chat', name: 'greeting', msg: 'Hey Remy!', expect: 'question' },
   { cat: 'Chat', name: 'thanks', msg: 'Thanks for that!', expect: 'question' },
@@ -588,7 +588,7 @@ async function main() {
     cookieStr = await authenticate()
     console.log('Auth: OK\n')
   } catch (err) {
-    console.error(`Auth: FAILED — ${err.message}`)
+    console.error(`Auth: FAILED - ${err.message}`)
     process.exit(1)
   }
 
@@ -611,7 +611,7 @@ async function main() {
     }
     console.log(`Beta probe: OK (HTTP ${probe.status})\n`)
   } catch (err) {
-    console.error(`ABORT: Cannot reach ${BASE_URL} — ${err.message}`)
+    console.error(`ABORT: Cannot reach ${BASE_URL} - ${err.message}`)
     console.error('Is beta running? Start with: bash scripts/deploy-beta.sh')
     process.exit(1)
   }
@@ -649,7 +649,7 @@ async function main() {
     } else {
       catCounts[test.cat].fail++
       const latency = result.latencyMs ? ` (${(result.latencyMs / 1000).toFixed(1)}s)` : ''
-      console.log(`✗${latency} — ${result.reason}`)
+      console.log(`✗${latency} - ${result.reason}`)
     }
   }
 

@@ -11,7 +11,7 @@ export async function exportMyData(): Promise<Record<string, unknown>> {
   const supabase: any = createServerClient()
   const tenantId = user.entityId
 
-  // Helper to safely query a table — returns empty array if table doesn't exist
+  // Helper to safely query a table - returns empty array if table doesn't exist
   // Capped at 10 000 rows per table to prevent unbounded memory usage / DoS
   const MAX_EXPORT_ROWS = 10_000
 
@@ -104,7 +104,7 @@ export async function exportMyData(): Promise<Record<string, unknown>> {
       .then((r: any) => r.data || []),
   ])
 
-  // Second batch — less critical tables
+  // Second batch - less critical tables
   const [
     dishes,
     components,

@@ -1,4 +1,4 @@
-// Remy Agent — Menu Editing Actions
+// Remy Agent - Menu Editing Actions
 // Add dishes, update menus, duplicate, template, send for approval.
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -109,7 +109,7 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Update an existing menu name, description, service style, or cuisine.',
     inputSchema:
-      '{ "description": "string — what to change, e.g. Change the Spring Tasting Menu cuisine to French-Japanese fusion" }',
+      '{ "description": "string - what to change, e.g. Change the Spring Tasting Menu cuisine to French-Japanese fusion" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -174,7 +174,7 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Add a new dish/course to an existing menu.',
     inputSchema:
-      '{ "description": "string — e.g. Add a seared scallop appetizer to the Spring Tasting Menu" }',
+      '{ "description": "string - e.g. Add a seared scallop appetizer to the Spring Tasting Menu" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -240,7 +240,7 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Update a dish name, course, or description on a menu.',
     inputSchema:
-      '{ "description": "string — e.g. Rename the scallop appetizer to Seared Diver Scallops on the Spring menu" }',
+      '{ "description": "string - e.g. Rename the scallop appetizer to Seared Diver Scallops on the Spring menu" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -327,7 +327,7 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
     description:
       'Add a component (sub-recipe or preparation) to a dish, e.g. a sauce, garnish, or base.',
     inputSchema:
-      '{ "description": "string — e.g. Add a lemon butter sauce component to the Scallop dish on the Spring menu" }',
+      '{ "description": "string - e.g. Add a lemon butter sauce component to the Scallop dish on the Spring menu" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -401,7 +401,7 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Make a copy of an existing menu (with all dishes and components).',
-    inputSchema: '{ "menuName": "string — name of the menu to duplicate" }',
+    inputSchema: '{ "menuName": "string - name of the menu to duplicate" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -449,7 +449,7 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Save an existing menu as a reusable template for future events.',
-    inputSchema: '{ "menuName": "string — name of the menu to save as template" }',
+    inputSchema: '{ "menuName": "string - name of the menu to save as template" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -497,8 +497,8 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
     description:
       "Send the event's menu to the client for approval. The client will receive a notification.",
     inputSchema:
-      '{ "eventIdentifier": "string — event occasion or client name to find the event" }',
-    tierNote: 'ALWAYS tier 2 — sends notification to client.',
+      '{ "eventIdentifier": "string - event occasion or client name to find the event" }',
+    tierNote: 'ALWAYS tier 2 - sends notification to client.',
 
     async executor(inputs, ctx) {
       const identifier = String(inputs.eventIdentifier ?? inputs.description ?? '').toLowerCase()
@@ -563,7 +563,7 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
     safety: 'significant',
     description: 'Change a menu status (e.g., draft → approved or draft → rejected).',
     inputSchema:
-      '{ "menuName": "string — menu to transition", "toStatus": "string — target: approved, rejected, draft" }',
+      '{ "menuName": "string - menu to transition", "toStatus": "string - target: approved, rejected, draft" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {

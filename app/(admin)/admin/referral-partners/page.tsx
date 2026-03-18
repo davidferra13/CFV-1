@@ -120,7 +120,7 @@ export default async function AdminReferralPartnersPage() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-800 text-stone-300 rounded-lg text-xs font-medium"
                 >
                   {PARTNER_TYPE_LABELS[type] ?? type}
-                  <span className="bg-slate-300 text-stone-400 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
+                  <span className="bg-slate-300 text-stone-400 rounded-full px-1.5 py-0.5 text-xxs font-bold">
                     {count}
                   </span>
                 </span>

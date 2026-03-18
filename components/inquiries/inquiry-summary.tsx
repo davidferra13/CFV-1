@@ -124,7 +124,7 @@ function FactItem({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5 text-stone-300">
         <span className="shrink-0">{icon}</span>
-        <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
+        <span className="text-xxs font-semibold uppercase tracking-wider">{label}</span>
       </div>
       <p
         className={`text-sm font-medium leading-snug ${
@@ -200,7 +200,7 @@ export function InquirySummary({ data, variant }: Props) {
 
       {/* ── Key facts grid ───────────────────────────────────────── */}
       <Card className="p-6">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-5">
+        <p className="text-xxs font-semibold uppercase tracking-wider text-stone-300 mb-5">
           Event Details
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
@@ -250,7 +250,7 @@ export function InquirySummary({ data, variant }: Props) {
 
       {/* ── Progress / status timeline ───────────────────────────── */}
       <Card className="p-6">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-5">
+        <p className="text-xxs font-semibold uppercase tracking-wider text-stone-300 mb-5">
           {terminal ? 'Status History' : 'Progress'}
         </p>
 
@@ -322,7 +322,7 @@ export function InquirySummary({ data, variant }: Props) {
                     </div>
                     {/* Label */}
                     <p
-                      className={`mt-2 text-center text-[10px] leading-tight px-0.5 ${
+                      className={`mt-2 text-center text-xxs leading-tight px-0.5 ${
                         isCurrent
                           ? 'text-brand-400 font-semibold'
                           : reached
@@ -343,7 +343,7 @@ export function InquirySummary({ data, variant }: Props) {
       {/* ── Preferences ──────────────────────────────────────────── */}
       {hasPreferences && (
         <Card className="p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-4">
+          <p className="text-xxs font-semibold uppercase tracking-wider text-stone-300 mb-4">
             Preferences
           </p>
           <div className="space-y-4">
@@ -381,7 +381,7 @@ export function InquirySummary({ data, variant }: Props) {
       {/* ── Linked quotes ─────────────────────────────────────────── */}
       {data.quotes.length > 0 && (
         <Card className="p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-4">
+          <p className="text-xxs font-semibold uppercase tracking-wider text-stone-300 mb-4">
             Quotes
           </p>
           <div className="space-y-2">
@@ -414,7 +414,7 @@ export function InquirySummary({ data, variant }: Props) {
         <Card className="p-6">
           <div className="flex items-center gap-1.5 mb-3">
             <MessageSquare className="w-3.5 h-3.5 text-stone-300" />
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-300">
+            <p className="text-xxs font-semibold uppercase tracking-wider text-stone-300">
               Original Message
             </p>
           </div>

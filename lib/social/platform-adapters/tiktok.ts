@@ -1,4 +1,4 @@
-// TikTok OAuth adapter — TikTok for Developers Content Posting API.
+// TikTok OAuth adapter - TikTok for Developers Content Posting API.
 //
 // TikTok uses OAuth 2.0 with mandatory PKCE (S256).
 // Access tokens expire in 24h; refresh tokens are valid for 365 days.
@@ -31,7 +31,7 @@ function redirectUri() {
 // ── Auth URL ──────────────────────────────────────────────────────────────────
 
 async function buildAuthUrl(state: string, codeVerifier?: string): Promise<string> {
-  if (!codeVerifier) throw new Error('TikTok requires PKCE — codeVerifier is mandatory')
+  if (!codeVerifier) throw new Error('TikTok requires PKCE - codeVerifier is mandatory')
   const codeChallenge = await generateCodeChallenge(codeVerifier)
   const params = new URLSearchParams({
     client_key: clientKey(),

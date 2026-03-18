@@ -1,6 +1,6 @@
-// Remy Proactive Nudges — React hook that periodically evaluates nudge rules
+// Remy Proactive Nudges - React hook that periodically evaluates nudge rules
 // against the activity tracker and fires the NUDGE body state + speech bubble.
-// All nudge messages are pre-defined strings — no LLM calls.
+// All nudge messages are pre-defined strings - no LLM calls.
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getSessionActivity } from '@/lib/ai/remy-activity-tracker'
@@ -60,7 +60,7 @@ export function useRemyNudges(config: UseRemyNudgesConfig): UseRemyNudgesResult 
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // Safety guards — don't nudge in these situations
+      // Safety guards - don't nudge in these situations
       if (isMascotChatOpen || isDrawerOpen) return
       if (isMascotLoading || isLoading) return
       if (bodyState !== 'idle' && bodyState !== 'sleeping') return

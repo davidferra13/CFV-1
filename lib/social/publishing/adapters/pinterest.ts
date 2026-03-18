@@ -1,5 +1,5 @@
 // Pinterest publishing adapter.
-// Uses Pinterest API v5 — creates a Pin on the chef's default board.
+// Uses Pinterest API v5 - creates a Pin on the chef's default board.
 // Pinterest supports image_url directly (no binary upload needed).
 // Tokens expire in 30 days; refresh tokens are supported.
 
@@ -32,7 +32,7 @@ export async function publishPinterest(
     return {
       success: false,
       error:
-        'No Pinterest board found. Please reconnect your Pinterest account — a default board is required.',
+        'No Pinterest board found. Please reconnect your Pinterest account - a default board is required.',
       retriable: false,
     }
   }

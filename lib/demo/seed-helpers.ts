@@ -370,7 +370,7 @@ export async function ensureLedgerEntry(
   })
 
   if (error) {
-    // Ledger errors non-fatal — table may have trigger protection
+    // Ledger errors non-fatal - table may have trigger protection
     console.warn(
       `[demo-seed] Warning: Could not insert ledger entry (${entry.entry_type}): ${error.message}`
     )

@@ -181,7 +181,7 @@ export async function getSurveyByInviteToken(token: string): Promise<{
 
 /**
  * Submit a beta survey response for a logged-in user.
- * Idempotent — updates existing response if one exists.
+ * Idempotent - updates existing response if one exists.
  */
 export async function submitBetaSurveyAuthenticated(
   surveySlug: string,
@@ -213,7 +213,7 @@ export async function submitBetaSurveyAuthenticated(
 
   const respondentRole = roleRow?.role || 'tester'
 
-  // Upsert — if the user already started a response, update it
+  // Upsert - if the user already started a response, update it
   const { data: existing } = await supabase
     .from('beta_survey_responses')
     .select('id')
@@ -504,7 +504,7 @@ export async function createBetaSurveyInvites(
         const surveyUrl = `${APP_URL}/beta-survey/${data.token}`
         await sendEmail({
           to: invite.email,
-          subject: `${survey.title} — We'd love your feedback`,
+          subject: `${survey.title} - We'd love your feedback`,
           react: BetaSurveyInviteEmail({
             name: invite.name || 'there',
             surveyTitle: survey.title,

@@ -91,37 +91,37 @@ export function CateringBidCalculator({
   const laborCostCents = Math.round(laborHours * laborRateDollars * 100)
   const travelCostCents = Math.round(travelMiles * 72.5)
   const equipCostCents = includeEquipment ? equipmentCostDollars * 100 : 0
-  const directCosts =
-    estimatedFoodCents + laborCostCents + travelCostCents + equipCostCents
+  const directCosts = estimatedFoodCents + laborCostCents + travelCostCents + equipCostCents
   const overheadEst = Math.round(directCosts * (overheadPercent / 100))
   const subtotalEst = directCosts + overheadEst
   const profitEst = Math.round(subtotalEst * (profitMarginPercent / 100))
   const runningTotal = subtotalEst + profitEst
 
   // Search recipes
-  const handleSearch = useCallback(
-    async (query: string) => {
-      setSearchQuery(query)
-      if (query.length < 1) {
-        setSearchResults([])
-        return
-      }
-      setIsSearching(true)
-      try {
-        const results = await searchRecipesForBid(query)
-        setSearchResults(results)
-      } catch {
-        setSearchResults([])
-      } finally {
-        setIsSearching(false)
-      }
-    },
-    []
-  )
+  const handleSearch = useCallback(async (query: string) => {
+    setSearchQuery(query)
+    if (query.length < 1) {
+      setSearchResults([])
+      return
+    }
+    setIsSearching(true)
+    try {
+      const results = await searchRecipesForBid(query)
+      setSearchResults(results)
+    } catch {
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
+  }, [])
 
   // Load all recipes on mount for browsing
   useEffect(() => {
-    searchRecipesForBid('').then(setSearchResults).catch(() => {})
+    searchRecipesForBid('')
+      .then(setSearchResults)
+      .catch((err) => {
+        console.error('[catering-bid] Search failed:', err)
+      })
   }, [])
 
   const addRecipe = (result: SearchResult) => {
@@ -173,9 +173,7 @@ export function CateringBidCalculator({
         setBidResult(result)
         setStep(4)
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to generate bid'
-        )
+        setError(err instanceof Error ? err.message : 'Failed to generate bid')
       }
     })
   }
@@ -276,9 +274,7 @@ export function CateringBidCalculator({
         <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 border">
           <span className="text-sm text-gray-600">Running estimate</span>
           <div className="text-right">
-            <span className="text-lg font-semibold">
-              {formatCents(runningTotal)}
-            </span>
+            <span className="text-lg font-semibold">{formatCents(runningTotal)}</span>
             {guestCount > 0 && (
               <span className="ml-2 text-sm text-gray-500">
                 ({formatCents(Math.round(runningTotal / guestCount))}/person)
@@ -317,9 +313,7 @@ export function CateringBidCalculator({
                 type="number"
                 min={1}
                 value={guestCount}
-                onChange={(e) =>
-                  setGuestCount(Math.max(1, parseInt(e.target.value) || 1))
-                }
+                onChange={(e) => setGuestCount(Math.max(1, parseInt(e.target.value) || 1))}
               />
             </div>
             <div className="flex gap-2">
@@ -343,8 +337,7 @@ export function CateringBidCalculator({
         <Card>
           <CardHeader>
             <CardTitle>
-              Select Recipes{' '}
-              <Badge variant="info">{selectedRecipes.length} selected</Badge>
+              Select Recipes <Badge variant="info">{selectedRecipes.length} selected</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -360,16 +353,11 @@ export function CateringBidCalculator({
             </div>
 
             {/* Search results */}
-            {isSearching && (
-              <p className="text-sm text-gray-500">Searching...</p>
-            )}
+            {isSearching && <p className="text-sm text-gray-500">Searching...</p>}
             {searchResults.length > 0 && (
               <div className="max-h-48 overflow-y-auto space-y-1 border rounded-lg p-2">
                 {searchResults
-                  .filter(
-                    (r) =>
-                      !selectedRecipes.some((sr) => sr.recipeId === r.id)
-                  )
+                  .filter((r) => !selectedRecipes.some((sr) => sr.recipeId === r.id))
                   .map((result) => (
                     <button
                       key={result.id}
@@ -378,18 +366,14 @@ export function CateringBidCalculator({
                     >
                       <div>
                         <span className="font-medium">{result.name}</span>
-                        <span className="ml-2 text-gray-500">
-                          {result.category}
-                        </span>
+                        <span className="ml-2 text-gray-500">{result.category}</span>
                       </div>
                       {result.costPerPortionCents != null && (
                         <span className="text-gray-500">
                           {formatCents(result.costPerPortionCents)}/portion
                         </span>
                       )}
-                      {!result.hasAllPrices && (
-                        <Badge variant="warning">Incomplete pricing</Badge>
-                      )}
+                      {!result.hasAllPrices && <Badge variant="warning">Incomplete pricing</Badge>}
                     </button>
                   ))}
               </div>
@@ -398,9 +382,7 @@ export function CateringBidCalculator({
             {/* Selected recipes */}
             {selectedRecipes.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-gray-700">
-                  Selected courses
-                </h4>
+                <h4 className="text-sm font-medium text-gray-700">Selected courses</h4>
                 {selectedRecipes.map((recipe) => (
                   <div
                     key={recipe.recipeId}
@@ -415,10 +397,7 @@ export function CateringBidCalculator({
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Label
-                        htmlFor={`servings-${recipe.recipeId}`}
-                        className="text-xs"
-                      >
+                      <Label htmlFor={`servings-${recipe.recipeId}`} className="text-xs">
                         Servings
                       </Label>
                       <Input
@@ -449,8 +428,7 @@ export function CateringBidCalculator({
 
             {selectedRecipes.length === 0 && (
               <p className="text-sm text-gray-500">
-                Search and select recipes from your recipe book to include in
-                this bid.
+                Search and select recipes from your recipe book to include in this bid.
               </p>
             )}
           </CardContent>
@@ -473,9 +451,7 @@ export function CateringBidCalculator({
                   min={0}
                   step={0.5}
                   value={laborHours}
-                  onChange={(e) =>
-                    setLaborHours(Math.max(0, parseFloat(e.target.value) || 0))
-                  }
+                  onChange={(e) => setLaborHours(Math.max(0, parseFloat(e.target.value) || 0))}
                 />
               </div>
               <div>
@@ -486,16 +462,12 @@ export function CateringBidCalculator({
                   min={0}
                   value={laborRateDollars}
                   onChange={(e) =>
-                    setLaborRateDollars(
-                      Math.max(0, parseFloat(e.target.value) || 0)
-                    )
+                    setLaborRateDollars(Math.max(0, parseFloat(e.target.value) || 0))
                   }
                 />
               </div>
             </div>
-            <p className="text-sm text-gray-500">
-              Labor cost: {formatCents(laborCostCents)}
-            </p>
+            <p className="text-sm text-gray-500">Labor cost: {formatCents(laborCostCents)}</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="overhead-pct">Overhead %</Label>
@@ -506,17 +478,11 @@ export function CateringBidCalculator({
                   max={100}
                   value={overheadPercent}
                   onChange={(e) =>
-                    setOverheadPercent(
-                      Math.max(
-                        0,
-                        Math.min(100, parseFloat(e.target.value) || 0)
-                      )
-                    )
+                    setOverheadPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))
                   }
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  Applied to all direct costs (food + labor + travel +
-                  equipment)
+                  Applied to all direct costs (food + labor + travel + equipment)
                 </p>
               </div>
               <div>
@@ -529,16 +495,11 @@ export function CateringBidCalculator({
                   value={profitMarginPercent}
                   onChange={(e) =>
                     setProfitMarginPercent(
-                      Math.max(
-                        0,
-                        Math.min(100, parseFloat(e.target.value) || 0)
-                      )
+                      Math.max(0, Math.min(100, parseFloat(e.target.value) || 0))
                     )
                   }
                 />
-                <p className="text-xs text-gray-400 mt-1">
-                  Applied after overhead
-                </p>
+                <p className="text-xs text-gray-400 mt-1">Applied after overhead</p>
               </div>
             </div>
           </CardContent>
@@ -559,16 +520,12 @@ export function CateringBidCalculator({
                 type="number"
                 min={0}
                 value={travelMiles}
-                onChange={(e) =>
-                  setTravelMiles(Math.max(0, parseFloat(e.target.value) || 0))
-                }
+                onChange={(e) => setTravelMiles(Math.max(0, parseFloat(e.target.value) || 0))}
               />
               <p className="text-xs text-gray-400 mt-1">
                 Reimbursed at 72.5 cents/mile (2026 IRS rate)
                 {travelMiles > 0 && (
-                  <span className="ml-1 font-medium">
-                    = {formatCents(travelCostCents)}
-                  </span>
+                  <span className="ml-1 font-medium">= {formatCents(travelCostCents)}</span>
                 )}
               </p>
             </div>
@@ -591,9 +548,7 @@ export function CateringBidCalculator({
                     min={0}
                     value={equipmentCostDollars}
                     onChange={(e) =>
-                      setEquipmentCostDollars(
-                        Math.max(0, parseFloat(e.target.value) || 0)
-                      )
+                      setEquipmentCostDollars(Math.max(0, parseFloat(e.target.value) || 0))
                     }
                   />
                 </div>
@@ -632,11 +587,7 @@ export function CateringBidCalculator({
             </Button>
           )}
           {step < 3 && (
-            <Button
-              variant="primary"
-              onClick={() => setStep(step + 1)}
-              disabled={!canProceed()}
-            >
+            <Button variant="primary" onClick={() => setStep(step + 1)} disabled={!canProceed()}>
               Next
             </Button>
           )}

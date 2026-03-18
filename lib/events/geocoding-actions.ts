@@ -56,7 +56,7 @@ export async function geocodeEventAddress(eventId: string): Promise<{
       displayName = geocodioResult.formatted_address
     }
   } catch {
-    // Geocodio failed (missing API key, network error, etc.) — fall through to Nominatim
+    // Geocodio failed (missing API key, network error, etc.) - fall through to Nominatim
   }
 
   // Fallback: Nominatim (free, no API key, works worldwide)
@@ -75,7 +75,7 @@ export async function geocodeEventAddress(eventId: string): Promise<{
   }
 
   if (lat === undefined || lng === undefined) {
-    return { success: false, error: 'Address not found — try adding more detail' }
+    return { success: false, error: 'Address not found - try adding more detail' }
   }
 
   const { error: updateError } = await supabase

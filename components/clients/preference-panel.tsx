@@ -231,12 +231,12 @@ export function PreferencePanel({
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="text-sm font-medium text-stone-100">{pref.itemName}</span>
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded ${TYPE_COLORS[pref.itemType]}`}
+                      className={`text-xxs px-1.5 py-0.5 rounded ${TYPE_COLORS[pref.itemType]}`}
                     >
                       {pref.itemType}
                     </span>
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded ${RATING_COLORS[pref.rating]}`}
+                      className={`text-xxs px-1.5 py-0.5 rounded ${RATING_COLORS[pref.rating]}`}
                     >
                       {RATING_LABELS[pref.rating]}
                     </span>

@@ -1,4 +1,4 @@
-// IndexedDB Offline Queue — stores pending actions when offline.
+// IndexedDB Offline Queue - stores pending actions when offline.
 // Actions are replayed in order when connectivity returns.
 // Uses raw IndexedDB (no dependencies) for maximum reliability.
 

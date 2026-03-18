@@ -1,9 +1,9 @@
-// Nominatim (OpenStreetMap) geocoding — completely free, no API key required
+// Nominatim (OpenStreetMap) geocoding - completely free, no API key required
 // Rate limit: 1 request/second per IP; results are cached for 24h by Next.js
 
 import { cacheGet, cacheSet } from '@/lib/cache/upstash'
 
-const CACHE_TTL = 7 * 24 * 60 * 60 // 7 days — addresses don't move
+const CACHE_TTL = 7 * 24 * 60 * 60 // 7 days - addresses don't move
 
 export interface GeoPoint {
   lat: number
@@ -31,7 +31,7 @@ export async function geocodeAddress(
     const cached = await cacheGet<GeoPoint>(cacheKey)
     if (cached !== null) return cached
   } catch {
-    // Redis down — fall through to API
+    // Redis down - fall through to API
   }
 
   try {

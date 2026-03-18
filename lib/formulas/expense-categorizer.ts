@@ -1,6 +1,6 @@
-// Expense Auto-Categorizer — Deterministic Keyword Lookup
+// Expense Auto-Categorizer - Deterministic Keyword Lookup
 // Maps expense descriptions to categories using keyword matching.
-// No AI needed — this is the same logic every accounting app uses.
+// No AI needed - this is the same logic every accounting app uses.
 // Matches the CategorizationResult type from the AI version exactly.
 
 import type { ExpenseCategory } from '@/lib/ai/expense-categorizer-constants'
@@ -458,7 +458,7 @@ const KEYWORD_MAP: Array<{ category: ExpenseCategory; keywords: string[]; alt?: 
 
 /**
  * Categorizes an expense description using keyword matching.
- * Pure lookup — no AI, no network, instant, deterministic.
+ * Pure lookup - no AI, no network, instant, deterministic.
  * Returns the exact same type as the AI version for drop-in compatibility.
  */
 export function categorizeExpenseFormula(

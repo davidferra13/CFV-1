@@ -1,6 +1,6 @@
 'use server'
 
-// Admin Audit Log — append-only record of sensitive platform actions
+// Admin Audit Log - append-only record of sensitive platform actions
 // Writes to admin_audit_log table (protected by a no-delete rule)
 
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -58,7 +58,7 @@ export async function logAdminAction({
       ip_address: ipAddress ?? null,
     })
   } catch (err) {
-    // Audit log failures are non-fatal — log to console but don't throw
+    // Audit log failures are non-fatal - log to console but don't throw
     console.error('[AUDIT] Failed to write audit log entry:', err)
   }
 }

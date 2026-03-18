@@ -1,5 +1,5 @@
 /**
- * Remy Local Storage — IndexedDB wrapper for browser-local conversation storage.
+ * Remy Local Storage - IndexedDB wrapper for browser-local conversation storage.
  *
  * Privacy by architecture: conversations are stored ONLY in the browser.
  * ChefFlow's servers never see or store conversation content.
@@ -958,7 +958,7 @@ export async function exportConversationMarkdown(conversationId: string): Promis
     const speaker = msg.role === 'user' ? '**You**' : '**Remy**'
     const bookmark = msg.bookmarked ? ' ⭐' : ''
 
-    lines.push(`### ${speaker} — ${time}${bookmark}`)
+    lines.push(`### ${speaker} - ${time}${bookmark}`)
     lines.push('')
     lines.push(msg.content)
     lines.push('')

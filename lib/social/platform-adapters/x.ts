@@ -1,4 +1,4 @@
-// X (Twitter) OAuth 2.0 adapter — uses PKCE (S256).
+// X (Twitter) OAuth 2.0 adapter - uses PKCE (S256).
 //
 // Access tokens expire in ~2 hours; refresh tokens are long-lived (offline.access scope).
 // X requires PKCE and sends tokens back via Authorization Code with PKCE (PKCE + confidential client).
@@ -35,7 +35,7 @@ function basicAuth() {
 // ── Auth URL ──────────────────────────────────────────────────────────────────
 
 async function buildAuthUrl(state: string, codeVerifier?: string): Promise<string> {
-  if (!codeVerifier) throw new Error('X requires PKCE — codeVerifier is mandatory')
+  if (!codeVerifier) throw new Error('X requires PKCE - codeVerifier is mandatory')
   const codeChallenge = await generateCodeChallenge(codeVerifier)
   const params = new URLSearchParams({
     response_type: 'code',

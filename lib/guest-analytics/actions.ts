@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 /**
- * Get repeat guest analytics — guests who've attended multiple events.
+ * Get repeat guest analytics - guests who've attended multiple events.
  * Chef only.
  */
 export async function getRepeatGuests() {
@@ -115,7 +115,7 @@ export async function getGuestFrequencyStats() {
 }
 
 /**
- * Get "dinner groups" — sets of guests who attend together frequently.
+ * Get "dinner groups" - sets of guests who attend together frequently.
  * Chef only.
  */
 export async function getDinnerGroups() {

@@ -115,7 +115,7 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
 
       <div className="grid grid-cols-7 text-center">
         {DOW.map((d) => (
-          <div key={d} className="text-[11px] font-semibold text-stone-400 py-1">
+          <div key={d} className="text-xs-tight font-semibold text-stone-400 py-1">
             {d}
           </div>
         ))}

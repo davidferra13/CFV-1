@@ -194,7 +194,7 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
         {/* Recently Active */}
         {recentlyActive.length > 0 && onlineNow.length > 0 && (
           <div className="pt-1 mt-1 border-t border-stone-800">
-            <p className="text-[10px] text-stone-300 px-2 py-1">Recently Active</p>
+            <p className="text-xxs text-stone-300 px-2 py-1">Recently Active</p>
           </div>
         )}
         {recentlyActive.map((client) => (
@@ -220,7 +220,7 @@ function ClientRow({ client, isOnline }: { client: ActiveClient; isOnline: boole
         {/* Avatar with online indicator */}
         <div className="relative shrink-0">
           <span
-            className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+            className={`w-6 h-6 rounded-full flex items-center justify-center text-xxs font-bold ${
               isHighIntent ? 'bg-amber-900 text-amber-700' : 'bg-brand-900 text-brand-400'
             }`}
           >

@@ -2,7 +2,7 @@
 
 // Wellbeing Signal Fetcher
 // Gathers observable data from existing tables to compute burnout risk.
-// No private AI — all computation is local, pure arithmetic.
+// No private AI - all computation is local, pure arithmetic.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -21,7 +21,7 @@ export type WellbeingResult = {
 
 /**
  * Fetch observable work signals from the database and compute burnout level.
- * All data stays local — no external AI calls.
+ * All data stays local - no external AI calls.
  */
 export async function getWellbeingSignals(): Promise<WellbeingResult> {
   const chef = await requireChef()
@@ -112,7 +112,7 @@ export async function getWellbeingSignals(): Promise<WellbeingResult> {
       daysSinceJournalEntry = Math.floor(diffMs / (1000 * 60 * 60 * 24))
     }
   } catch {
-    // Table may not exist or be empty — use default of 60
+    // Table may not exist or be empty - use default of 60
     daysSinceJournalEntry = 60
   }
 

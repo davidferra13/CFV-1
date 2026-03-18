@@ -134,8 +134,11 @@ export function RemyTemplatesView({ onRunTemplate }: RemyTemplatesViewProps) {
             <span className="text-xs font-medium text-gray-300">
               {isEditing ? 'Edit Template' : 'New Template'}
             </span>
-            <button onClick={resetForm} className="p-0.5 hover:bg-white/10 rounded">
-              <X className="w-3.5 h-3.5 text-gray-400" />
+            <button
+              onClick={resetForm}
+              className="flex items-center justify-center w-11 h-11 hover:bg-white/10 rounded touch-manipulation"
+            >
+              <X className="w-4 h-4 text-gray-400" />
             </button>
           </div>
 

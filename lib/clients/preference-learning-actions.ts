@@ -1,6 +1,6 @@
 // Client Preference Learning Server Actions
 // Analyzes client event history to extract preference patterns.
-// Table: client_preference_patterns — chef_id FK, client_id FK (CASCADE),
+// Table: client_preference_patterns - chef_id FK, client_id FK (CASCADE),
 //   pattern_type TEXT, pattern_value TEXT, confidence NUMERIC(3,2),
 //   occurrences INT, last_seen_at TIMESTAMPTZ,
 //   UNIQUE(chef_id, client_id, pattern_type, pattern_value)

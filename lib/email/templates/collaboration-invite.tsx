@@ -1,4 +1,4 @@
-// Collaboration Invite — Chef-to-Chef Email
+// Collaboration Invite - Chef-to-Chef Email
 // Sent to a chef when another chef invites them to collaborate on an event.
 
 import { Text, Link } from '@react-email/components'

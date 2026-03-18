@@ -1,4 +1,4 @@
-// Intelligence Hub — Central index for all smart features
+// Intelligence Hub - Central index for all smart features
 // All modules are deterministic (Formula > AI). Zero Ollama dependency.
 
 export { getSeasonalDemandForecast } from './seasonal-demand'

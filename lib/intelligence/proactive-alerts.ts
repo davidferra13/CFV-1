@@ -26,7 +26,7 @@ export interface ProactiveAlertsResult {
 // ─── Main Action ─────────────────────────────────────────────────────────────
 
 /**
- * Lightweight alert scanner — runs fast deterministic checks on core tables.
+ * Lightweight alert scanner - runs fast deterministic checks on core tables.
  * Unlike BusinessHealthSummary (which runs 13 engines), this does direct
  * targeted queries for the most actionable items only.
  */
@@ -129,7 +129,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
       severity: hoursOld > 72 ? 'critical' : 'warning',
       icon: '📩',
       title: `Unanswered inquiry from ${inq.client_name || 'Unknown'}`,
-      detail: `${Math.floor(hoursOld / 24)} days waiting — ${inq.event_type || 'event'}`,
+      detail: `${Math.floor(hoursOld / 24)} days waiting - ${inq.event_type || 'event'}`,
       action: 'Respond now',
       link: `/inquiries/${inq.id}`,
       category: 'Pipeline',
@@ -149,7 +149,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
         id: `prep-${ev.id}`,
         severity: daysUntil <= 2 ? 'critical' : 'warning',
         icon: '📋',
-        title: `${ev.title || 'Event'} in ${daysUntil} day${daysUntil !== 1 ? 's' : ''} — missing ${missing.join(', ')}`,
+        title: `${ev.title || 'Event'} in ${daysUntil} day${daysUntil !== 1 ? 's' : ''} - missing ${missing.join(', ')}`,
         detail: `Event on ${ev.event_date}`,
         action: `Add ${missing[0]}`,
         link: `/events/${ev.id}`,
@@ -179,7 +179,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
       id: `unpaid-${ev.id}`,
       severity: 'warning',
       icon: '⚠️',
-      title: `$${Math.round(ev.quoted_price_cents / 100)} unpaid — ${ev.title || clientName}`,
+      title: `$${Math.round(ev.quoted_price_cents / 100)} unpaid - ${ev.title || clientName}`,
       detail: `Completed on ${ev.event_date}`,
       action: 'Send invoice',
       link: `/events/${ev.id}`,

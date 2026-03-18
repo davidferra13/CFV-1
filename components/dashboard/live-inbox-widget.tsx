@@ -152,7 +152,7 @@ export function LiveInboxWidget({ initialItems, tenantId }: Props) {
                       {item.preview || 'No preview available'}
                     </p>
                   </div>
-                  <span className="text-[10px] text-stone-500 shrink-0">
+                  <span className="text-xxs text-stone-500 shrink-0">
                     {formatDistanceToNow(new Date(item.activity_at), { addSuffix: false })}
                   </span>
                 </button>

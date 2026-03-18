@@ -1,5 +1,5 @@
-// Remy — Guardrails & Safety Layer
-// No 'use server' — exports constants and pure functions.
+// Remy - Guardrails & Safety Layer
+// No 'use server' - exports constants and pure functions.
 // Imported by remy-actions.ts, remy-abuse-actions.ts, remy-memory-actions.ts, and remy-drawer.tsx.
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ export function validateRemyInput(message: string): GuardrailResult {
   if (!trimmed) {
     return {
       allowed: false,
-      refusal: "Empty ticket, chef — nothing on it 📝 What's on your mind?",
+      refusal: "Empty ticket, chef - nothing on it 📝 What's on your mind?",
     }
   }
 
@@ -44,43 +44,43 @@ export function validateRemyInput(message: string): GuardrailResult {
   if (trimmed.length > REMY_MAX_MESSAGE_LENGTH) {
     return {
       allowed: false,
-      refusal: `That message is ${trimmed.length.toLocaleString()} characters — I max out at ${REMY_MAX_MESSAGE_LENGTH.toLocaleString()}. Try breaking it into smaller pieces, or give me the highlights.`,
+      refusal: `That message is ${trimmed.length.toLocaleString()} characters - I max out at ${REMY_MAX_MESSAGE_LENGTH.toLocaleString()}. Try breaking it into smaller pieces, or give me the highlights.`,
     }
   }
 
-  // 3. Dangerous content (CRITICAL — bombs, weapons, violence, drugs, self-harm)
+  // 3. Dangerous content (CRITICAL - bombs, weapons, violence, drugs, self-harm)
   const dangerousCheck = detectDangerousContent(trimmed)
   if (dangerousCheck) {
     return {
       allowed: false,
       refusal:
-        "Hard no on that one, chef. That's been flagged. Let's get back to the kitchen — what do you need on the business side? 🔪",
+        "Hard no on that one, chef. That's been flagged. Let's get back to the kitchen - what do you need on the business side? 🔪",
       severity: 'critical',
       category: 'dangerous_content',
       matchedPattern: dangerousCheck,
     }
   }
 
-  // 4. Abuse / harassment (CRITICAL — slurs, threats, sexual harassment)
+  // 4. Abuse / harassment (CRITICAL - slurs, threats, sexual harassment)
   const abuseCheck = detectAbusiveContent(trimmed)
   if (abuseCheck) {
     return {
       allowed: false,
       refusal:
-        "Not touching that — and it's been flagged. I'm here to help you run a killer business, not for that. What's cooking? 👨‍🍳",
+        "Not touching that - and it's been flagged. I'm here to help you run a killer business, not for that. What's cooking? 👨‍🍳",
       severity: 'critical',
       category: 'abuse',
       matchedPattern: abuseCheck,
     }
   }
 
-  // 5. Prompt injection (WARNING — jailbreaks, system prompt extraction)
+  // 5. Prompt injection (WARNING - jailbreaks, system prompt extraction)
   const injectionCheck = detectPromptInjection(trimmed)
   if (injectionCheck) {
     return {
       allowed: false,
       refusal:
-        "Ha — nice try, chef. I've had tougher tickets come in on a Friday night 😄 I'm Remy, your kitchen business partner. What can I actually help with?",
+        "Ha - nice try, chef. I've had tougher tickets come in on a Friday night 😄 I'm Remy, your kitchen business partner. What can I actually help with?",
       severity: 'warning',
       category: 'prompt_injection',
       matchedPattern: injectionCheck,
@@ -110,7 +110,7 @@ const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
     label: 'weapons_specific',
   },
 
-  // Violence — how to harm/kill
+  // Violence - how to harm/kill
   {
     pattern: /\b(how\s+to\s+)(kill|murder|assassinate|strangle|suffocate|drown|dismember)\b/i,
     label: 'violence_howto',
@@ -133,7 +133,7 @@ const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
     label: 'violence_evasion',
   },
 
-  // Drugs — synthesis / manufacturing
+  // Drugs - synthesis / manufacturing
   {
     pattern:
       /\b(how\s+to\s+)?(make|cook|synthesize|manufacture|produce)\b.{0,30}\b(meth|methamphetamine|cocaine|heroin|fentanyl|lsd|mdma|ecstasy|crack)\b/i,
@@ -195,7 +195,7 @@ function detectDangerousContent(message: string): string | null {
 
 // ─── Abuse / Harassment Detection ───────────────────────────────────────────
 
-// Only clearly abusive terms — not mild profanity a chef might use while frustrated.
+// Only clearly abusive terms - not mild profanity a chef might use while frustrated.
 // Chefs swear in kitchens; that's fine. Slurs and threats are not.
 const ABUSE_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
   // Racial/ethnic slurs
@@ -303,7 +303,7 @@ export function validateMemoryContent(content: string): GuardrailResult {
   if (trimmed.length > REMY_MAX_MEMORY_LENGTH) {
     return {
       allowed: false,
-      refusal: `That's a bit long for a memory (${trimmed.length} chars). Keep it under ${REMY_MAX_MEMORY_LENGTH} — short and factual, like "Mrs. Chen has a severe nut allergy."`,
+      refusal: `That's a bit long for a memory (${trimmed.length} chars). Keep it under ${REMY_MAX_MEMORY_LENGTH} - short and factual, like "Mrs. Chen has a severe nut allergy."`,
     }
   }
 
@@ -312,7 +312,7 @@ export function validateMemoryContent(content: string): GuardrailResult {
     return {
       allowed: false,
       refusal:
-        "I don't store URLs in memory — too easy to get phished. Tell me the fact itself instead.",
+        "I don't store URLs in memory - too easy to get phished. Tell me the fact itself instead.",
     }
   }
 
@@ -325,11 +325,11 @@ export function validateMemoryContent(content: string): GuardrailResult {
     return {
       allowed: false,
       refusal:
-        'That looks like code, not a business fact. I store things like preferences, client details, and pricing rules — not scripts.',
+        'That looks like code, not a business fact. I store things like preferences, client details, and pricing rules - not scripts.',
     }
   }
 
-  // 4. Business relevance check (keyword heuristic — no LLM call)
+  // 4. Business relevance check (keyword heuristic - no LLM call)
   if (!looksBusinessRelevant(trimmed)) {
     return {
       allowed: false,
@@ -376,7 +376,7 @@ const rateBuckets = new Map<string, RateBucket>()
 
 /**
  * Check if a tenant has exceeded the message rate limit.
- * Call with tenantId from authenticated session — never from user input.
+ * Call with tenantId from authenticated session - never from user input.
  */
 export function checkRemyRateLimit(tenantId: string): GuardrailResult {
   const now = Date.now()
@@ -396,7 +396,7 @@ export function checkRemyRateLimit(tenantId: string): GuardrailResult {
     const waitSeconds = Math.ceil((oldestInWindow + REMY_RATE_LIMIT_WINDOW_MS - now) / 1000)
     return {
       allowed: false,
-      refusal: `Whoa, slow down chef — I can only handle ${REMY_RATE_LIMIT_MAX} messages a minute. Give me about ${waitSeconds} seconds and try again.`,
+      refusal: `Whoa, slow down chef - I can only handle ${REMY_RATE_LIMIT_MAX} messages a minute. Give me about ${waitSeconds} seconds and try again.`,
     }
   }
 

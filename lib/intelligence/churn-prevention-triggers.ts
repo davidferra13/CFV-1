@@ -134,7 +134,7 @@ export async function getChurnPreventionTriggers(): Promise<ChurnPreventionResul
           riskScore += 15
           triggers.push({
             type: 'overdue',
-            description: `${daysSinceLast} days since last event — approaching overdue`,
+            description: `${daysSinceLast} days since last event - approaching overdue`,
             severity: 'warning',
           })
         }
@@ -242,7 +242,7 @@ export async function getChurnPreventionTriggers(): Promise<ChurnPreventionResul
     if (riskLevel === 'critical') {
       suggestedAction = triggers.some((t) => t.type === 'rejected_quote')
         ? 'Send a personalized offer or discount to re-engage'
-        : 'Reach out personally — ask about upcoming events'
+        : 'Reach out personally - ask about upcoming events'
     } else if (riskLevel === 'high') {
       suggestedAction = 'Send a check-in message or seasonal menu update'
     } else if (riskLevel === 'moderate') {
@@ -296,11 +296,11 @@ export async function getChurnPreventionTriggers(): Promise<ChurnPreventionResul
       : null
 
   const actionMap: Record<string, string> = {
-    overdue: 'Proactive outreach to overdue clients — schedule check-ins',
+    overdue: 'Proactive outreach to overdue clients - schedule check-ins',
     long_silence: 'Re-engagement campaign for silent clients',
     declining_spend: 'Value-add offers for clients with declining spend',
     rejected_quote: 'Follow up on rejected quotes with adjusted pricing',
-    no_response: 'Clear stale inquiries — close or follow up',
+    no_response: 'Clear stale inquiries - close or follow up',
     declining_frequency: 'Loyalty incentives for clients booking less often',
   }
 

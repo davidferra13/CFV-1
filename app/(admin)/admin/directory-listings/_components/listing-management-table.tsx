@@ -21,7 +21,7 @@ const STATUS_COLORS: Record<string, string> = {
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_COLORS[status] || 'bg-stone-800 text-stone-400'}`}
+      className={`inline-flex rounded-full px-2 py-0.5 text-xxs font-semibold ${STATUS_COLORS[status] || 'bg-stone-800 text-stone-400'}`}
     >
       {status.replace('_', ' ')}
     </span>
@@ -55,6 +55,7 @@ function ListingRow({ listing }: { listing: DirectoryListing }) {
           <a
             href={`/discover/${listing.slug}`}
             target="_blank"
+            rel="noopener noreferrer"
             className="text-sm font-medium text-stone-200 hover:text-brand-400"
           >
             {listing.name}
@@ -64,13 +65,13 @@ function ListingRow({ listing }: { listing: DirectoryListing }) {
               href={listing.website_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-2 text-[10px] text-stone-500 hover:text-stone-300"
+              className="ml-2 text-xxs text-stone-500 hover:text-stone-300"
             >
               website
             </a>
           )}
         </div>
-        {location && <p className="text-[11px] text-stone-500">{location}</p>}
+        {location && <p className="text-xs-tight text-stone-500">{location}</p>}
       </td>
       <td className="px-3 py-3">
         <span className="text-xs text-stone-400">
@@ -80,7 +81,7 @@ function ListingRow({ listing }: { listing: DirectoryListing }) {
       <td className="px-3 py-3">
         <StatusBadge status={listing.status} />
         {hasRemovalRequest && (
-          <span className="ml-1.5 text-[10px] text-red-400">removal requested</span>
+          <span className="ml-1.5 text-xxs text-red-400">removal requested</span>
         )}
       </td>
       <td className="px-3 py-3 text-xs text-stone-500">{listing.source}</td>
@@ -93,7 +94,7 @@ function ListingRow({ listing }: { listing: DirectoryListing }) {
             <button
               onClick={() => handleStatusChange('verified')}
               disabled={isPending}
-              className="rounded bg-emerald-900/50 px-2 py-1 text-[10px] font-medium text-emerald-300 hover:bg-emerald-900/80 disabled:opacity-50"
+              className="rounded bg-emerald-900/50 px-2 py-1 text-xxs font-medium text-emerald-300 hover:bg-emerald-900/80 disabled:opacity-50"
             >
               Verify
             </button>
@@ -102,7 +103,7 @@ function ListingRow({ listing }: { listing: DirectoryListing }) {
             <button
               onClick={() => handleStatusChange('removed')}
               disabled={isPending}
-              className="rounded bg-red-900/30 px-2 py-1 text-[10px] font-medium text-red-300 hover:bg-red-900/60 disabled:opacity-50"
+              className="rounded bg-red-900/30 px-2 py-1 text-xxs font-medium text-red-300 hover:bg-red-900/60 disabled:opacity-50"
             >
               Remove
             </button>
@@ -111,7 +112,7 @@ function ListingRow({ listing }: { listing: DirectoryListing }) {
             <button
               onClick={() => handleStatusChange('discovered')}
               disabled={isPending}
-              className="rounded bg-stone-800 px-2 py-1 text-[10px] font-medium text-stone-300 hover:bg-stone-700 disabled:opacity-50"
+              className="rounded bg-stone-800 px-2 py-1 text-xxs font-medium text-stone-300 hover:bg-stone-700 disabled:opacity-50"
             >
               Restore
             </button>
@@ -159,7 +160,7 @@ export function ListingManagementTable({ listings }: Props) {
             {removalRequests.length} pending removal request
             {removalRequests.length !== 1 ? 's' : ''}
           </p>
-          <p className="mt-0.5 text-[11px] text-red-200/60">
+          <p className="mt-0.5 text-xs-tight text-red-200/60">
             These businesses have asked to be removed. Process within 48 hours.
           </p>
         </div>
@@ -187,7 +188,7 @@ export function ListingManagementTable({ listings }: Props) {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`rounded-md px-2.5 py-1 text-[10px] font-medium transition-colors ${
+              className={`rounded-md px-2.5 py-1 text-xxs font-medium transition-colors ${
                 filter === f ? 'bg-brand-600 text-white' : 'text-stone-400 hover:text-stone-200'
               }`}
             >
@@ -202,20 +203,22 @@ export function ListingManagementTable({ listings }: Props) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-stone-700 bg-stone-800/60">
-              <th className="px-3 py-2 text-left text-[11px] font-semibold text-stone-300">
+              <th className="px-3 py-2 text-left text-xs-tight font-semibold text-stone-300">
                 Business
               </th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold text-stone-300">Type</th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold text-stone-300">
+              <th className="px-3 py-2 text-left text-xs-tight font-semibold text-stone-300">
+                Type
+              </th>
+              <th className="px-3 py-2 text-left text-xs-tight font-semibold text-stone-300">
                 Status
               </th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold text-stone-300">
+              <th className="px-3 py-2 text-left text-xs-tight font-semibold text-stone-300">
                 Source
               </th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold text-stone-300">
+              <th className="px-3 py-2 text-left text-xs-tight font-semibold text-stone-300">
                 Claimed by
               </th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold text-stone-300">
+              <th className="px-3 py-2 text-left text-xs-tight font-semibold text-stone-300">
                 Actions
               </th>
             </tr>
@@ -236,7 +239,7 @@ export function ListingManagementTable({ listings }: Props) {
         </table>
       </div>
 
-      <p className="text-[11px] text-stone-600">
+      <p className="text-xs-tight text-stone-600">
         {filtered.length} of {listings.length} total listings
       </p>
     </div>

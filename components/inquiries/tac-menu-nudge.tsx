@@ -75,7 +75,7 @@ export function TacMenuNudge({ inquiryId, eventId, clientName, hasMenu }: TacMen
             I'll do it later
           </Button>
         </div>
-        <p className="text-[11px] text-stone-400">
+        <p className="text-xs-tight text-stone-400">
           Opens the event page where you can build the final menu from scratch or use a template.
         </p>
       </div>

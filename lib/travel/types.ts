@@ -1,4 +1,4 @@
-// Travel Route Planning — Type Definitions
+// Travel Route Planning - Type Definitions
 // Models the complete arc of chef travel for an event:
 // specialty sourcing → grocery run → service travel → return home
 
@@ -211,7 +211,7 @@ export function computeLegTotals(
 
 /** Format "HH:MM" → "h:mm am/pm" */
 export function formatLegTime(time: string | null): string {
-  if (!time) return '—'
+  if (!time) return '-'
   const [h, m] = time.split(':').map(Number)
   const period = h < 12 ? 'am' : 'pm'
   const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h
@@ -220,7 +220,7 @@ export function formatLegTime(time: string | null): string {
 
 /** Format minutes → "Xh Ym" */
 export function formatMinutes(minutes: number | null): string {
-  if (minutes === null || minutes <= 0) return '—'
+  if (minutes === null || minutes <= 0) return '-'
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
   if (h === 0) return `${m}m`

@@ -1,4 +1,4 @@
-// Open Food Facts API — completely free, no API key required
+// Open Food Facts API - completely free, no API key required
 // https://world.openfoodfacts.org/
 
 export interface NutritionResult {

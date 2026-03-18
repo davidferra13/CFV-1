@@ -1,11 +1,11 @@
 /**
- * MessagingGuideComposition — Remotion animation explaining the 4 messaging channels.
+ * MessagingGuideComposition - Remotion animation explaining the 4 messaging channels.
  *
  * Shows when to use each:
- *  1. Chat — real-time conversations with clients
- *  2. Inbox — emails, form submissions, bookings
- *  3. Event Messages — thread tied to a specific event
- *  4. Inquiry Messages — thread tied to an incoming inquiry
+ *  1. Chat - real-time conversations with clients
+ *  2. Inbox - emails, form submissions, bookings
+ *  3. Event Messages - thread tied to a specific event
+ *  4. Inquiry Messages - thread tied to an incoming inquiry
  */
 
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion'
@@ -48,7 +48,7 @@ const CHANNELS = [
     icon: '📥',
     name: 'Inbox',
     when: 'Emails, form submissions, bookings',
-    example: 'Syncs with Gmail — all notifications land here',
+    example: 'Syncs with Gmail - all notifications land here',
     color: '#d1fae5',
     borderColor: '#6ee7b7',
     textColor: '#065f46',
@@ -283,7 +283,7 @@ export function MessagingGuideComposition() {
             Messaging
           </div>
           <div style={{ fontSize: 20, fontWeight: 700, color: STONE[900] }}>
-            Four channels — here&apos;s when to use each
+            Four channels - here&apos;s when to use each
           </div>
         </div>
 

@@ -45,7 +45,7 @@ export async function confirmPreEventChecklist(eventId: string) {
 
 /**
  * Client saves a personal journey note on their event.
- * Visible to client only — not shown in chef dashboard.
+ * Visible to client only - not shown in chef dashboard.
  */
 export async function updateClientJourneyNote(eventId: string, note: string) {
   const user = await requireClient()

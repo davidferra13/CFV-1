@@ -166,11 +166,11 @@ export async function generateSocialText(): Promise<string> {
   const chefs = await getFavoriteChefs()
 
   if (chefs.length === 0) {
-    return "I haven't added my culinary heroes yet — stay tuned!"
+    return "I haven't added my culinary heroes yet - stay tuned!"
   }
 
   const lines = chefs.map((c, i) => {
-    const reason = c.reason ? ` — ${c.reason}` : ''
+    const reason = c.reason ? ` - ${c.reason}` : ''
     return `${i + 1}. ${c.chefName}${reason}`
   })
 

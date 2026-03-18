@@ -1,6 +1,6 @@
 // Inquiry Received Email
 // Sent to client when they submit the public inquiry form
-// No portal account exists yet — no CTA button, just acknowledgment
+// No portal account exists yet - no CTA button, just acknowledgment
 
 import { Text } from '@react-email/components'
 import * as React from 'react'

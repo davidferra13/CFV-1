@@ -271,7 +271,7 @@ export function ContextLoader({
             style={{ width: `${Math.min(100, progress)}%` }}
           />
         </div>
-        <p className="text-[10px] text-stone-500 mt-1 tabular-nums">
+        <p className="text-xxs text-stone-500 mt-1 tabular-nums">
           {displayPercent >= 100 ? 'Complete' : `${displayPercent}%`}
         </p>
       </div>

@@ -2,7 +2,7 @@
 
 // Public Cannabis Invitation Actions
 // Used by app/(public)/cannabis-invite/[token]/page.tsx
-// These run in the public route context — no auth required to VIEW the page,
+// These run in the public route context - no auth required to VIEW the page,
 // but the user must sign in/have an account before claiming the invite.
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -44,7 +44,7 @@ export async function getCannabisInviteByToken(token: string) {
 
 /**
  * The authenticated user claims the cannabis invite.
- * Must be called by someone who is signed in — their auth.uid() is used.
+ * Must be called by someone who is signed in - their auth.uid() is used.
  * Validates the token is still valid, then:
  * 1. Marks the invitation as claimed
  * 2. Inserts a cannabis_tier_users row for the claiming user
@@ -128,7 +128,7 @@ export async function claimCannabisInvite(token: string) {
       tenant_id: tenantId ?? null,
       granted_by_admin_email: 'invite-claim',
       status: 'active',
-      notes: `Claimed via invitation token — invite ID: ${invite.id}`,
+      notes: `Claimed via invitation token - invite ID: ${invite.id}`,
     },
     { onConflict: 'auth_user_id' }
   )

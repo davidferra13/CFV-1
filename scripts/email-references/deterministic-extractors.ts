@@ -1,7 +1,7 @@
 /**
  * Deterministic field extraction from email text.
  *
- * Pure regex/formula functions — no AI, no Ollama, no network calls.
+ * Pure regex/formula functions - no AI, no Ollama, no network calls.
  * Runs instantly on any email, produces structured data for every field
  * that can be reliably extracted without LLM interpretation.
  *
@@ -124,7 +124,7 @@ function tryParseDate(raw: string): string | null {
     const month = MONTH_NAMES[monthDay[1].toLowerCase().slice(0, 3)]
     const day = parseInt(monthDay[2])
     if (month && day >= 1 && day <= 31) {
-      // Infer year from context — emails in dataset are 2023-2025
+      // Infer year from context - emails in dataset are 2023-2025
       return `YYYY-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     }
   }
@@ -430,7 +430,7 @@ export function extractOccasionKeywords(text: string): string[] {
 
 // ─── Location Mentions ──────────────────────────────────────────────────
 
-// General location patterns (not just Maine/NH — universal for any chef)
+// General location patterns (not just Maine/NH - universal for any chef)
 const LOCATION_PATTERNS: [RegExp, string][] = [
   // Maine
   [/\bmaine\b/i, 'Maine'],

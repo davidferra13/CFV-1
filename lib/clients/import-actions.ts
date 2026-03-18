@@ -1,8 +1,8 @@
 'use server'
 
-// Client Import Actions — Onboarding path
+// Client Import Actions - Onboarding path
 // Bypasses the invitation flow so chefs can directly migrate existing client records.
-// auth_user_id is left null — the client has no account yet.
+// auth_user_id is left null - the client has no account yet.
 // An invitation can be sent later from the normal clients page.
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -18,7 +18,7 @@ const ImportClientSchema = z.object({
   referral_source: z.string().optional(),
   dietary_restrictions: z.array(z.string()).optional(),
   allergies: z.array(z.string()).optional(),
-  // Historical financial data — used to compute loyalty tier
+  // Historical financial data - used to compute loyalty tier
   lifetime_events_count: z.number().int().min(0).optional(),
   lifetime_value_cents: z.number().int().min(0).optional(),
 })
@@ -62,7 +62,7 @@ export async function importClientDirect(input: ImportClientInput) {
       total_events_count: validated.lifetime_events_count ?? 0,
       lifetime_value_cents: validated.lifetime_value_cents ?? 0,
       status: 'active',
-      // auth_user_id intentionally omitted — client has no account yet
+      // auth_user_id intentionally omitted - client has no account yet
     })
     .select('id, full_name, total_events_count')
     .single()

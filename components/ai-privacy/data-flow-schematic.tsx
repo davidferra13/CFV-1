@@ -56,7 +56,7 @@ export function DataFlowSchematic() {
               x="200"
               y="30"
               textAnchor="middle"
-              className="fill-emerald-800 text-[11px] font-semibold"
+              className="fill-emerald-800 text-xs-tight font-semibold"
             >
               ChefFlow (everything stays here)
             </text>
@@ -76,11 +76,11 @@ export function DataFlowSchematic() {
               x="85"
               y="67"
               textAnchor="middle"
-              className="fill-emerald-800 text-[11px] font-semibold"
+              className="fill-emerald-800 text-xs-tight font-semibold"
             >
               You
             </text>
-            <text x="85" y="81" textAnchor="middle" className="fill-emerald-600 text-[8px]">
+            <text x="85" y="81" textAnchor="middle" className="fill-emerald-600 text-3xs">
               Browser (your device)
             </text>
 
@@ -98,7 +98,7 @@ export function DataFlowSchematic() {
               x="157"
               y="60"
               textAnchor="middle"
-              className="fill-emerald-700 text-[7px] font-medium"
+              className="fill-emerald-700 text-4xs font-medium"
             >
               request
             </text>
@@ -117,7 +117,7 @@ export function DataFlowSchematic() {
               x="157"
               y="88"
               textAnchor="middle"
-              className="fill-emerald-700 text-[7px] font-medium"
+              className="fill-emerald-700 text-4xs font-medium"
             >
               response
             </text>
@@ -137,11 +137,11 @@ export function DataFlowSchematic() {
               x="235"
               y="67"
               textAnchor="middle"
-              className="fill-emerald-800 text-[11px] font-semibold"
+              className="fill-emerald-800 text-xs-tight font-semibold"
             >
               Remy (Ollama)
             </text>
-            <text x="235" y="81" textAnchor="middle" className="fill-emerald-600 text-[8px]">
+            <text x="235" y="81" textAnchor="middle" className="fill-emerald-600 text-3xs">
               ChefFlow&apos;s private servers
             </text>
 
@@ -160,7 +160,7 @@ export function DataFlowSchematic() {
               x="85"
               y="115"
               textAnchor="middle"
-              className="fill-emerald-800 text-[8px] font-bold"
+              className="fill-emerald-800 text-3xs font-bold"
             >
               History stays in browser
             </text>
@@ -180,7 +180,7 @@ export function DataFlowSchematic() {
               x="235"
               y="115"
               textAnchor="middle"
-              className="fill-emerald-800 text-[8px] font-bold"
+              className="fill-emerald-800 text-3xs font-bold"
             >
               No server-side storage
             </text>
@@ -198,7 +198,7 @@ export function DataFlowSchematic() {
                 stroke="#fca5a5"
                 strokeWidth="1"
               />
-              <text x="350" y="55" textAnchor="middle" className="fill-red-400 text-[8px]">
+              <text x="350" y="55" textAnchor="middle" className="fill-red-400 text-3xs">
                 OpenAI
               </text>
               <line
@@ -211,12 +211,7 @@ export function DataFlowSchematic() {
                 strokeDasharray="3,3"
               />
               <circle cx="307" cy="55" r="7" fill="#fecaca" />
-              <text
-                x="307"
-                y="58"
-                textAnchor="middle"
-                className="fill-red-600 text-[8px] font-bold"
-              >
+              <text x="307" y="58" textAnchor="middle" className="fill-red-600 text-3xs font-bold">
                 &#x2717;
               </text>
 
@@ -231,7 +226,7 @@ export function DataFlowSchematic() {
                 stroke="#fca5a5"
                 strokeWidth="1"
               />
-              <text x="350" y="91" textAnchor="middle" className="fill-red-400 text-[8px]">
+              <text x="350" y="91" textAnchor="middle" className="fill-red-400 text-3xs">
                 Google
               </text>
               <line
@@ -244,12 +239,7 @@ export function DataFlowSchematic() {
                 strokeDasharray="3,3"
               />
               <circle cx="307" cy="83" r="7" fill="#fecaca" />
-              <text
-                x="307"
-                y="86"
-                textAnchor="middle"
-                className="fill-red-600 text-[8px] font-bold"
-              >
+              <text x="307" y="86" textAnchor="middle" className="fill-red-600 text-3xs font-bold">
                 &#x2717;
               </text>
             </g>
@@ -261,11 +251,11 @@ export function DataFlowSchematic() {
                 x="8"
                 y="12"
                 textAnchor="middle"
-                className="fill-emerald-900 text-[9px] font-bold"
+                className="fill-emerald-900 text-2xs font-bold"
               >
                 &#x2713;
               </text>
-              <text x="22" y="12" className="fill-emerald-800 text-[9px]">
+              <text x="22" y="12" className="fill-emerald-800 text-2xs">
                 AI runs on ChefFlow&apos;s own servers
               </text>
             </g>
@@ -275,11 +265,11 @@ export function DataFlowSchematic() {
                 x="8"
                 y="12"
                 textAnchor="middle"
-                className="fill-emerald-900 text-[9px] font-bold"
+                className="fill-emerald-900 text-2xs font-bold"
               >
                 &#x2713;
               </text>
-              <text x="22" y="12" className="fill-emerald-800 text-[9px]">
+              <text x="22" y="12" className="fill-emerald-800 text-2xs">
                 Conversations stored in your browser only
               </text>
             </g>
@@ -289,11 +279,11 @@ export function DataFlowSchematic() {
                 x="8"
                 y="12"
                 textAnchor="middle"
-                className="fill-emerald-900 text-[9px] font-bold"
+                className="fill-emerald-900 text-2xs font-bold"
               >
                 &#x2713;
               </text>
-              <text x="22" y="12" className="fill-emerald-800 text-[9px]">
+              <text x="22" y="12" className="fill-emerald-800 text-2xs">
                 Zero data sent to any third-party AI
               </text>
             </g>
@@ -303,11 +293,11 @@ export function DataFlowSchematic() {
                 x="8"
                 y="12"
                 textAnchor="middle"
-                className="fill-emerald-900 text-[9px] font-bold"
+                className="fill-emerald-900 text-2xs font-bold"
               >
                 &#x2713;
               </text>
-              <text x="22" y="12" className="fill-emerald-800 text-[9px]">
+              <text x="22" y="12" className="fill-emerald-800 text-2xs">
                 Delete anytime - it&apos;s truly gone
               </text>
             </g>

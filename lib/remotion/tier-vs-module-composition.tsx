@@ -1,5 +1,5 @@
 /**
- * TierVsModuleComposition — Remotion animation explaining the difference between Tiers and Modules.
+ * TierVsModuleComposition - Remotion animation explaining the difference between Tiers and Modules.
  *
  * Two concepts that look like one:
  *  - Tier (Free vs Pro) = what you CAN access (monetization)
@@ -222,7 +222,7 @@ export function TierVsModuleComposition() {
             Tiers vs Modules
           </div>
           <div style={{ fontSize: 18, fontWeight: 700, color: STONE[900] }}>
-            Two systems — one controls access, one controls visibility
+            Two systems - one controls access, one controls visibility
           </div>
         </div>
 
@@ -290,7 +290,7 @@ export function TierVsModuleComposition() {
                   ...useSlideUp(PHASE_TIER_START + 50),
                 }}
               >
-                Upgrade unlocks features — downgrade hides them
+                Upgrade unlocks features - downgrade hides them
               </div>
             </div>
           )}

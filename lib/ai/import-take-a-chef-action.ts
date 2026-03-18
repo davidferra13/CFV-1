@@ -17,7 +17,7 @@ import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-
 // ─── Input Schema ──────────────────────────────────────────────────────────
 
 const TakeAChefImportSchema = z.object({
-  rawText: z.string().min(10, 'Paste the booking notification text — at least a few lines'),
+  rawText: z.string().min(10, 'Paste the booking notification text - at least a few lines'),
   commissionPercent: z.number().min(0).max(50).default(getDefaultTakeAChefCommissionPercent()),
   logCommission: z.boolean().default(true),
 })
@@ -144,7 +144,7 @@ export async function importTakeAChefBooking(
       .single()
 
     if (eventError || !event) {
-      // Inquiry was saved — don't fail, just log
+      // Inquiry was saved - don't fail, just log
       console.error(
         '[importTakeAChefBooking] Event creation failed (non-fatal):',
         eventError?.message

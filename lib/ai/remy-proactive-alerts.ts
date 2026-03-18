@@ -1,8 +1,8 @@
 'use server'
 
-// Remy — Proactive Alert Engine (Phase 2A)
+// Remy - Proactive Alert Engine (Phase 2A)
 // Deterministic rule engine that checks business conditions and generates alerts.
-// NO LLM — pure database queries and conditional logic.
+// NO LLM - pure database queries and conditional logic.
 // Runs on a scheduled cron (every hour) or on-demand.
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -46,7 +46,7 @@ async function checkMissingPrepList(supabase: any, tenantId: string): Promise<Al
       entityType: 'event',
       entityId: e.id,
       title: `${e.occasion ?? 'Event'} needs a prep list`,
-      body: `${e.occasion ?? 'Event'} for ${clientName} is in ${daysUntil} day${daysUntil !== 1 ? 's' : ''} — no prep list yet.`,
+      body: `${e.occasion ?? 'Event'} for ${clientName} is in ${daysUntil} day${daysUntil !== 1 ? 's' : ''} - no prep list yet.`,
       priority: daysUntil <= 1 ? 'urgent' : 'high',
     })
   }
@@ -77,7 +77,7 @@ async function checkMissingGroceryList(supabase: any, tenantId: string): Promise
       entityType: 'event',
       entityId: e.id,
       title: `${e.occasion ?? 'Event'} needs a grocery list`,
-      body: `${e.occasion ?? 'Event'} for ${clientName} is tomorrow — grocery list not done.`,
+      body: `${e.occasion ?? 'Event'} for ${clientName} is tomorrow - grocery list not done.`,
       priority: 'urgent',
     })
   }
@@ -141,8 +141,8 @@ async function checkStaleInquiries(supabase: any, tenantId: string): Promise<Ale
       alertType: 'stale_inquiry',
       entityType: 'inquiry',
       entityId: inq.id,
-      title: `Inquiry from ${inq.lead_name ?? 'Unknown'} — ${daysOld}d old`,
-      body: `New inquiry${inq.event_type ? ` for ${inq.event_type}` : ''} from ${inq.lead_name ?? 'Unknown'} — ${daysOld} days without a response.`,
+      title: `Inquiry from ${inq.lead_name ?? 'Unknown'} - ${daysOld}d old`,
+      body: `New inquiry${inq.event_type ? ` for ${inq.event_type}` : ''} from ${inq.lead_name ?? 'Unknown'} - ${daysOld} days without a response.`,
       priority: daysOld >= 5 ? 'high' : 'normal',
     })
   }
@@ -240,7 +240,7 @@ async function checkWeatherForEvents(tenantId: string): Promise<AlertCandidate[]
         entityType: 'event',
         entityId: w.eventId,
         title: `Weather alert: ${eventLabel} on ${dateLabel}`,
-        body: `${eventLabel}${clientLabel} @ ${w.location} — ${w.alertMessage} (${w.forecast.weatherDescription}, ${w.forecast.tempLowF}–${w.forecast.tempHighF}°F)`,
+        body: `${eventLabel}${clientLabel} @ ${w.location} - ${w.alertMessage} (${w.forecast.weatherDescription}, ${w.forecast.tempLowF}–${w.forecast.tempHighF}°F)`,
         priority:
           w.alertLevel === 'severe'
             ? ('urgent' as const)

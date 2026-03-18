@@ -1,9 +1,9 @@
-// Remy Body State Machine — useReducer-based animation state controller.
+// Remy Body State Machine - useReducer-based animation state controller.
 // Drives Layer 1 (body pose/movement) of the 3-layer animation system.
 //
 // Architecture:
 //   11 body states, priority-ordered, with typed event transitions.
-//   Pure reducer — no side effects. Timer logic lives in the useBodyState hook.
+//   Pure reducer - no side effects. Timer logic lives in the useBodyState hook.
 //   When a sprite sheet is available for a state, the sprite animator plays it.
 //   When no sheet exists, the system falls back to CSS transforms (breathing, wiggle).
 

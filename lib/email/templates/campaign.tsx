@@ -1,6 +1,6 @@
 // Campaign Email Template
 // Used for bulk campaign sends and 1:1 direct outreach emails.
-// Body is plain text with newlines — converted to paragraphs for display.
+// Body is plain text with newlines - converted to paragraphs for display.
 // Includes a compliant unsubscribe footer on every marketing email.
 
 import {

@@ -1,6 +1,6 @@
 'use server'
 
-// Vendor Price Comparison — Deterministic Ranking
+// Vendor Price Comparison - Deterministic Ranking
 // Sorts vendors by price-per-unit, applies quality tier adjustment, returns ranked list.
 // No AI needed: price comparison is arithmetic. The chef decides which vendor to use.
 //
@@ -41,9 +41,9 @@ export interface VendorComparisonResult {
 // Quality tier multiplier: premium costs more but may be worth it.
 // A premium item at 1.3x the price of a standard item is "equal value."
 const QUALITY_MULTIPLIER: Record<string, number> = {
-  premium: 0.77, // 1/1.3 — premium gets a 23% "discount" in value scoring
+  premium: 0.77, // 1/1.3 - premium gets a 23% "discount" in value scoring
   standard: 1.0,
-  budget: 1.15, // budget gets a 15% "penalty" — cheap doesn't always mean value
+  budget: 1.15, // budget gets a 15% "penalty" - cheap doesn't always mean value
   unknown: 1.0,
 }
 

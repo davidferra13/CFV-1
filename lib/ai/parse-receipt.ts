@@ -85,7 +85,7 @@ CATEGORIZATION GUIDE:
 CONFIDENCE LEVELS:
 - high: receipt is clear, all items readable, totals match
 - medium: some items unclear or abbreviated but mostly readable
-- low: receipt is blurry, faded, or partially cut off — significant guessing required
+- low: receipt is blurry, faded, or partially cut off - significant guessing required
 
 FLAG WARNINGS for:
 - Items where the price seems unusually high or low
@@ -152,7 +152,7 @@ export async function parseReceiptImage(
     throw new Error('No text response from parser')
   }
 
-  // Parse JSON — handle potential markdown wrapping
+  // Parse JSON - handle potential markdown wrapping
   let jsonStr = rawText.trim()
   const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (jsonMatch) {

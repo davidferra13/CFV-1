@@ -74,7 +74,7 @@ export function isBarkEmail(fromAddress: string): boolean {
 // ─── Email Type Detection ───────────────────────────────────────────────
 
 const TYPE_PATTERNS: Array<{ pattern: RegExp; type: BarkEmailType }> = [
-  // New lead patterns — AGGRESSIVE matching
+  // New lead patterns - AGGRESSIVE matching
   { pattern: /new (lead|request|opportunity)/i, type: 'bark_new_lead' },
   { pattern: /needs a.*(chef|caterer|cook)/i, type: 'bark_new_lead' },
   { pattern: /looking for.*(chef|caterer|cook)/i, type: 'bark_new_lead' },
@@ -97,7 +97,7 @@ const TYPE_PATTERNS: Array<{ pattern: RegExp; type: BarkEmailType }> = [
   { pattern: /more details/i, type: 'bark_lead_update' },
   { pattern: /updated.*request/i, type: 'bark_lead_update' },
 
-  // Administrative patterns (checked last — catch-all before fallback)
+  // Administrative patterns (checked last - catch-all before fallback)
   { pattern: /credit/i, type: 'bark_administrative' },
   { pattern: /review/i, type: 'bark_administrative' },
   { pattern: /account/i, type: 'bark_administrative' },
@@ -128,7 +128,7 @@ export function detectBarkEmailType(subject: string, body?: string): BarkEmailTy
   return 'bark_administrative'
 }
 
-// ─── Field Extraction — New Lead ────────────────────────────────────────
+// ─── Field Extraction - New Lead ────────────────────────────────────────
 
 function parseLeadEmail(
   subject: string,
@@ -136,7 +136,7 @@ function parseLeadEmail(
 ): { data: BarkParsedLead; warnings: string[] } {
   const warnings: string[] = []
 
-  // Client name — try multiple patterns
+  // Client name - try multiple patterns
   // Subject: "[Name] needs a Private Chef" or "New lead: [Name]"
   let clientName = 'Unknown'
   const nameFromSubject =
@@ -157,13 +157,13 @@ function parseLeadEmail(
     }
   }
 
-  // Project description — what they need
+  // Project description - what they need
   const descMatch =
     body.match(/(?:Service|Request|Looking for|They need|Project|Description)[\s:]+(.+)/i) ||
     body.match(/(?:needs?\s+a\s+)(.+?)(?:\s+in\s+|\s+for\s+|\s*\.)/i)
   const projectDescription = descMatch?.[1]?.trim() || null
 
-  // Location — city/area
+  // Location - city/area
   const locationMatch =
     body.match(/(?:Location|Area|City|Where|Postcode area)[\s:]+(.+)/i) ||
     body.match(/(?:in|near|around)\s+([A-Z][a-z]+(?:[\s,]+[A-Z][a-z]+)*(?:,\s*[A-Z]{2})?)/m)
@@ -187,7 +187,7 @@ function parseLeadEmail(
     if (singleNum) {
       guestCountNumber = parseInt(singleNum[1], 10)
     }
-    // Try range like "10-20" or "10 to 20" — take the midpoint
+    // Try range like "10-20" or "10 to 20" - take the midpoint
     const rangeMatch = guestCount.match(/(\d+)\s*(?:to|-)\s*(\d+)/)
     if (rangeMatch) {
       guestCountNumber = Math.ceil((parseInt(rangeMatch[1], 10) + parseInt(rangeMatch[2], 10)) / 2)
@@ -200,7 +200,7 @@ function parseLeadEmail(
     body.match(/[£$€]\s*[\d,.]+(?:\s*[-–—to]+\s*[£$€]?\s*[\d,.]+)?/i)
   const budgetText = budgetMatch?.[1]?.trim() || budgetMatch?.[0]?.trim() || null
 
-  // CTA link — Bark URL to respond
+  // CTA link - Bark URL to respond
   const ctaMatch =
     body.match(
       /href="(https?:\/\/(?:www\.)?bark\.com[^"]*)"[^>]*>(?:[^<]*?)(?:Respond|View|Send|Reply|Contact)/i
@@ -222,7 +222,7 @@ function parseLeadEmail(
   }
 }
 
-// ─── Field Extraction — Client Message ──────────────────────────────────
+// ─── Field Extraction - Client Message ──────────────────────────────────
 
 function parseMessageEmail(
   subject: string,
@@ -237,7 +237,7 @@ function parseMessageEmail(
   const clientName = nameMatch?.[1]?.trim() || null
   if (!clientName) warnings.push('Could not extract client name from message notification')
 
-  // Message preview — look for quoted or preview text in body
+  // Message preview - look for quoted or preview text in body
   const previewMatch =
     body.match(/(?:Message|They said|Their message)[\s:]+(.+)/i) || body.match(/"([^"]{5,})"/m)
   const messagePreview = previewMatch?.[1]?.trim() || null
@@ -259,7 +259,7 @@ function parseMessageEmail(
   }
 }
 
-// ─── Field Extraction — Lead Update ─────────────────────────────────────
+// ─── Field Extraction - Lead Update ─────────────────────────────────────
 
 function parseUpdateEmail(
   subject: string,
@@ -274,7 +274,7 @@ function parseUpdateEmail(
   const clientName = nameMatch?.[1]?.trim() || null
   if (!clientName) warnings.push('Could not extract client name from lead update')
 
-  // Update details — look for "Updated:" or "Changed:" or "Additional details:" blocks
+  // Update details - look for "Updated:" or "Changed:" or "Additional details:" blocks
   const detailsMatch =
     body.match(/(?:Updated|Changed|Additional details?|New details?)[\s:]+(.+)/i) ||
     body.match(/(?:has updated|has changed|added more details)[\s\S]*?:\s*(.+)/i)
@@ -332,7 +332,7 @@ export function parseBarkEmail(email: ParsedEmail): BarkParseResult {
       break
     }
     case 'bark_administrative':
-      // No structured extraction needed — just log the type
+      // No structured extraction needed - just log the type
       break
   }
 

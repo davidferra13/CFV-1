@@ -2,6 +2,7 @@
 // Public, no auth required. Guests scan a QR code at a dinner event,
 // land here, and can express interest in booking their own event.
 
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getChefByGuestCode } from '@/lib/guest-leads/actions'
@@ -37,10 +38,11 @@ export default async function GuestLandingPage({ params }: Props) {
       <section className="pt-12 pb-8 px-6 bg-stone-900/70">
         <div className="max-w-lg mx-auto text-center">
           {data.chefPhoto ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={data.chefPhoto}
               alt={data.chefName}
+              width={96}
+              height={96}
               className="w-24 h-24 rounded-full object-cover mx-auto mb-5 ring-4 ring-white shadow-lg"
             />
           ) : (

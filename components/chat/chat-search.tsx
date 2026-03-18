@@ -81,14 +81,14 @@ export function ChatSearch({ conversationId, onResultClick, onClose }: ChatSearc
                   <p className="text-sm text-stone-200 line-clamp-2">
                     {highlightMatch(msg.body || '', query)}
                   </p>
-                  <p className="text-[10px] text-stone-400 mt-0.5">
+                  <p className="text-xxs text-stone-400 mt-0.5">
                     {format(new Date(msg.created_at), 'MMM d, yyyy h:mm a')}
                   </p>
                 </button>
               ))}
             </div>
           )}
-          <p className="px-4 py-1.5 text-[10px] text-stone-400 border-t border-stone-800">
+          <p className="px-4 py-1.5 text-xxs text-stone-400 border-t border-stone-800">
             {results.length} result{results.length !== 1 ? 's' : ''}
           </p>
         </div>

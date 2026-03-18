@@ -1,4 +1,4 @@
-// Dish Index constants — exported separately from server actions so they can be
+// Dish Index constants - exported separately from server actions so they can be
 // used in client components without triggering the 'use server' object export restriction.
 
 export const DISH_COURSES = [

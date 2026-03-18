@@ -1,4 +1,4 @@
-// Remy Agent — Financial & Call Actions
+// Remy Agent - Financial & Call Actions
 // Update/delete expenses, log call outcomes, cancel calls.
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -21,8 +21,8 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Update an existing expense (fix amount, vendor, category, etc.).',
-    inputSchema: '{ "description": "string — e.g. Change the Whole Foods expense to $92.50" }',
-    tierNote: 'ALWAYS tier 2 — financial data requires chef confirmation.',
+    inputSchema: '{ "description": "string - e.g. Change the Whole Foods expense to $92.50" }',
+    tierNote: 'ALWAYS tier 2 - financial data requires chef confirmation.',
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
@@ -67,7 +67,7 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
       const fields: AgentActionPreview['fields'] = [
         {
           label: 'Expense',
-          value: `${match.description} — $${((match.amount_cents as number) / 100).toFixed(2)}`,
+          value: `${match.description} - $${((match.amount_cents as number) / 100).toFixed(2)}`,
         },
       ]
       for (const [key, val] of Object.entries(parsed.updates)) {
@@ -110,9 +110,9 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
     name: 'Log Call Outcome',
     tier: 2,
     safety: 'reversible',
-    description: 'Record the outcome of a completed call — notes, next steps, client sentiment.',
+    description: 'Record the outcome of a completed call - notes, next steps, client sentiment.',
     inputSchema:
-      '{ "description": "string — e.g. Call with Sarah went well, she wants a tasting next Thursday, very interested" }',
+      '{ "description": "string - e.g. Call with Sarah went well, she wants a tasting next Thursday, very interested" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -196,7 +196,7 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Cancel a scheduled call.',
-    inputSchema: '{ "callIdentifier": "string — client name or call title to find" }',
+    inputSchema: '{ "callIdentifier": "string - client name or call title to find" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -248,8 +248,8 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
     description:
       'Decline/pass on an inquiry. Optionally provide a reason (out of area, schedule conflict, etc.).',
     inputSchema:
-      '{ "description": "string — e.g. Decline the Smith birthday inquiry — we\'re fully booked that weekend" }',
-    tierNote: 'ALWAYS tier 2 — declining affects client relationship.',
+      '{ "description": "string - e.g. Decline the Smith birthday inquiry - we\'re fully booked that weekend" }',
+    tierNote: 'ALWAYS tier 2 - declining affects client relationship.',
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
@@ -319,7 +319,7 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Update details on an existing inquiry (guest count, date, budget, notes).',
     inputSchema:
-      '{ "description": "string — e.g. Update the Smith birthday inquiry to 20 guests and move date to April 10" }',
+      '{ "description": "string - e.g. Update the Smith birthday inquiry to 20 guests and move date to April 10" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {

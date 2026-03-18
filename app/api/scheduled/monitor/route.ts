@@ -49,6 +49,7 @@ const CRON_EXPECTED_INTERVALS: Record<string, number> = {
   'cooling-alert': 2880,
   'quarterly-checkin': 2880,
   'brand-monitor': 2880,
+  'developer-digest': 2880,
 }
 
 type CronStatus = {

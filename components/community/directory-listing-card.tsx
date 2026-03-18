@@ -1,5 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
+
+import Image from 'next/image'
 
 interface DirectoryListing {
   id: string
@@ -77,9 +78,11 @@ export function DirectoryListingCard({ listing }: { listing: DirectoryListing })
         {/* Avatar / photo */}
         <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-full bg-muted">
           {listing.profile_photo_url ? (
-            <img
+            <Image
               src={listing.profile_photo_url}
               alt={listing.business_name}
+              width={64}
+              height={64}
               className="h-full w-full object-cover"
             />
           ) : (

@@ -1,4 +1,4 @@
-// Task Templates — Server Actions
+// Task Templates - Server Actions
 // Chef-only. Create reusable task templates and generate tasks from them.
 
 'use server'
@@ -48,7 +48,7 @@ export type TaskTemplate = {
 }
 
 // Category labels live in template-constants.ts (non-'use server' file)
-// Re-export not needed here — importers should use template-constants.ts directly
+// Re-export not needed here - importers should use template-constants.ts directly
 
 // ============================================
 // CREATE TEMPLATE

@@ -1,4 +1,4 @@
-// Burnout Risk Computation — Pure Functions
+// Burnout Risk Computation - Pure Functions
 // No server context, no Supabase calls.
 // Import this file anywhere (server or client) without restrictions.
 

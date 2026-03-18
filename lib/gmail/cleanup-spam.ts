@@ -7,7 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 
-/** Known marketing/notification domains — same list as classify.ts heuristic */
+/** Known marketing/notification domains - same list as classify.ts heuristic */
 const KNOWN_MARKETING_DOMAINS = [
   'turbotax.intuit.com',
   'rocketmoney.com',

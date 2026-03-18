@@ -1,4 +1,4 @@
-// LibreTranslate — free, open-source translation API
+// LibreTranslate - free, open-source translation API
 // https://libretranslate.com/
 // No API key required for the public instance
 // Self-hostable for unlimited usage

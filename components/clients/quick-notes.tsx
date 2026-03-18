@@ -153,7 +153,7 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
               <div className="flex items-start gap-3">
                 {/* Category badge */}
                 <span
-                  className={`flex-shrink-0 mt-0.5 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${CATEGORY_STYLES[note.category].bg} ${CATEGORY_STYLES[note.category].text}`}
+                  className={`flex-shrink-0 mt-0.5 inline-flex items-center px-2 py-0.5 rounded text-xxs font-medium ${CATEGORY_STYLES[note.category].bg} ${CATEGORY_STYLES[note.category].text}`}
                 >
                   {CATEGORY_STYLES[note.category].label}
                 </span>
@@ -161,7 +161,7 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
                 {/* Note content */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-stone-200 whitespace-pre-wrap">{note.note_text}</p>
-                  <p className="text-[10px] text-stone-400 mt-1">
+                  <p className="text-xxs text-stone-400 mt-1">
                     {new Date(note.created_at).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',

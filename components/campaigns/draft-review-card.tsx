@@ -123,7 +123,7 @@ export function DraftReviewCard({ recipient, onApproved, onSkipped }: Props) {
           {editing ? (
             <>
               <div>
-                <label className="text-[11px] text-stone-400 font-medium uppercase tracking-wide">
+                <label className="text-xs-tight text-stone-400 font-medium uppercase tracking-wide">
                   Subject
                 </label>
                 <input
@@ -134,7 +134,7 @@ export function DraftReviewCard({ recipient, onApproved, onSkipped }: Props) {
                 />
               </div>
               <div>
-                <label className="text-[11px] text-stone-400 font-medium uppercase tracking-wide">
+                <label className="text-xs-tight text-stone-400 font-medium uppercase tracking-wide">
                   Message
                 </label>
                 <textarea
@@ -148,13 +148,13 @@ export function DraftReviewCard({ recipient, onApproved, onSkipped }: Props) {
           ) : (
             <>
               <div className="bg-stone-800 rounded p-2.5">
-                <div className="text-[11px] text-stone-400 font-medium uppercase tracking-wide mb-1">
+                <div className="text-xs-tight text-stone-400 font-medium uppercase tracking-wide mb-1">
                   Subject
                 </div>
                 <div className="text-sm text-stone-300">{recipient.draft_subject}</div>
               </div>
               <div className="bg-stone-800 rounded p-2.5">
-                <div className="text-[11px] text-stone-400 font-medium uppercase tracking-wide mb-1">
+                <div className="text-xs-tight text-stone-400 font-medium uppercase tracking-wide mb-1">
                   Message
                 </div>
                 <div className="text-sm text-stone-300 whitespace-pre-wrap">

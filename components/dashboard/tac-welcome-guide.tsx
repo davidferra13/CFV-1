@@ -42,7 +42,7 @@ export function TacWelcomeGuide() {
           &times;
         </button>
       </div>
-      <ol className="text-[11px] text-blue-700 space-y-0.5 list-decimal list-inside">
+      <ol className="text-xs-tight text-blue-700 space-y-0.5 list-decimal list-inside">
         <li>New leads from TakeAChef appear here automatically from your Gmail</li>
         <li>Address each lead - send a menu to start the conversation, or decline</li>
         <li>
@@ -54,7 +54,7 @@ export function TacWelcomeGuide() {
       <button
         type="button"
         onClick={handleDismiss}
-        className="text-[11px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
+        className="text-xs-tight text-blue-500 hover:text-blue-700 underline underline-offset-2"
       >
         Got it, don't show again
       </button>

@@ -103,7 +103,7 @@ export function BusinessInsightsPanel() {
                   className={`w-3 h-3 ${card.priority === 'high' ? 'text-red-500' : card.priority === 'medium' ? 'text-amber-500' : 'text-stone-400'}`}
                 />
                 <span className="text-xs font-medium text-stone-300">{card.title}</span>
-                <span className="text-[10px] text-stone-400 bg-stone-800 rounded px-1">
+                <span className="text-xxs text-stone-400 bg-stone-800 rounded px-1">
                   {card.category}
                 </span>
               </div>
@@ -114,7 +114,7 @@ export function BusinessInsightsPanel() {
         })}
       </div>
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Suggested · Confidence: {result.confidence} · Not financial advice
       </p>
     </div>

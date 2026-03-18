@@ -173,7 +173,7 @@ export async function getPriceAnomalies(): Promise<PriceAnomalyResult | null> {
       })
     }
 
-    // Quote significantly above average (might be overpricing — just info)
+    // Quote significantly above average (might be overpricing - just info)
     if (deviation > stdDev * 2 && deviationPercent > 40) {
       anomalies.push({
         type: 'overpricing',

@@ -1,7 +1,7 @@
 // Stripe Transfer Routing Utilities
 // Handles destination charge configuration, platform fee computation,
 // and transfer/fee recording for the stripe_transfers and platform_fee_ledger tables.
-// Note: Not a 'use server' boundary — imported as a library by server action files.
+// Note: Not a 'use server' boundary - imported as a library by server action files.
 
 import { createServerClient } from '@/lib/supabase/server'
 
@@ -15,7 +15,7 @@ export type ChefStripeConfig = {
 
 /**
  * Fetch a chef's Stripe Connect configuration for transfer routing.
- * Uses admin client — caller is responsible for authorization context.
+ * Uses admin client - caller is responsible for authorization context.
  */
 export async function getChefStripeConfig(tenantId: string): Promise<ChefStripeConfig> {
   const supabase = createServerClient({ admin: true })

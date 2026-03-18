@@ -1,7 +1,7 @@
 'use server'
 
-// Remy Memory System — extract, store, load, and manage persistent memories
-// PRIVACY: Memories contain distilled client insights — must stay local via Ollama.
+// Remy Memory System - extract, store, load, and manage persistent memories
+// PRIVACY: Memories contain distilled client insights - must stay local via Ollama.
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
@@ -79,10 +79,10 @@ export async function extractAndSaveMemories(
   const user = await requireChef()
   const tenantId = user.tenantId!
 
-  // SAFETY: Only extract from the chef's message — never from Remy's response.
+  // SAFETY: Only extract from the chef's message - never from Remy's response.
   // If Remy hallucinates, we must not save that hallucination as a "real" memory.
   // The extraction prompt says "only extract what the CHEF said" but LLMs aren't
-  // perfect — the safest approach is to never show them Remy's text at all.
+  // perfect - the safest approach is to never show them Remy's text at all.
 
   try {
     const result = await parseWithOllama(
@@ -140,7 +140,7 @@ export async function extractAndSaveMemories(
         relatedClientId = (clients?.[0]?.id as string) ?? null
 
         // GUARD: If this is a client_insight but the client doesn't exist in DB,
-        // skip saving — it's likely a hallucinated or misheard name.
+        // skip saving - it's likely a hallucinated or misheard name.
         if (mem.category === 'client_insight' && !relatedClientId) {
           console.warn(
             `[remy-memory] Skipping client_insight for unknown client "${mem.relatedClientName}"`
@@ -162,9 +162,9 @@ export async function extractAndSaveMemories(
       })
     }
   } catch (err) {
-    // Non-blocking — never throw. Memory extraction failure must not affect the user.
+    // Non-blocking - never throw. Memory extraction failure must not affect the user.
     if (err instanceof OllamaOfflineError) {
-      console.warn('[remy-memory] Ollama offline — skipping memory extraction')
+      console.warn('[remy-memory] Ollama offline - skipping memory extraction')
       return
     }
     console.error('[remy-memory] Memory extraction failed:', err)
@@ -310,7 +310,7 @@ If you can't determine a clear correction, return: { "oldFact": "", "newFact": "
     }
   } catch (err) {
     if (err instanceof OllamaOfflineError) {
-      console.warn('[remy-memory] Ollama offline — skipping correction detection')
+      console.warn('[remy-memory] Ollama offline - skipping correction detection')
       return { corrected: false }
     }
     console.error('[remy-memory] Correction detection failed:', err)

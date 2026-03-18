@@ -1,7 +1,7 @@
 // Event Journey Steps
 // Pure function: takes event/inquiry/quote/contract data and returns JourneyStep[]
 // representing the full 12-stage client journey from inquiry to review.
-// No DB access — data is passed in from the page that fetches it.
+// No DB access - data is passed in from the page that fetches it.
 
 export type JourneyStep = {
   key: string
@@ -126,11 +126,11 @@ export function buildJourneySteps(params: {
       isMilestone: false,
     },
 
-    // 4. Contract signing (optional — skipped if no contract)
+    // 4. Contract signing (optional - skipped if no contract)
     {
       key: 'contract_signing',
       label: 'Contract Signed',
-      description: 'You signed the service agreement — everything is official.',
+      description: 'You signed the service agreement - everything is official.',
       completedAt: contractSignedAt ?? null,
       isSkipped: !hasContract,
       actionHref:
@@ -164,7 +164,7 @@ export function buildJourneySteps(params: {
     {
       key: 'event_confirmed',
       label: 'Event Confirmed',
-      description: 'The chef has confirmed all details — your event is locked in.',
+      description: 'The chef has confirmed all details - your event is locked in.',
       completedAt: transitionMap['confirmed'] ?? null,
       isSkipped: false,
       isMilestone: true,
@@ -175,7 +175,7 @@ export function buildJourneySteps(params: {
     {
       key: 'menu_review',
       label: 'Menu Approved',
-      description: 'You reviewed and approved the menu — the chef is ready to cook.',
+      description: 'You reviewed and approved the menu - the chef is ready to cook.',
       completedAt:
         menuApprovalStatus === 'approved'
           ? (menuApprovalUpdatedAt ?? transitionMap['confirmed'] ?? null)
@@ -212,29 +212,29 @@ export function buildJourneySteps(params: {
     {
       key: 'event_day',
       label: 'Event Day',
-      description: 'The chef is at your location — your private dining experience has begun.',
+      description: 'The chef is at your location - your private dining experience has begun.',
       completedAt: transitionMap['in_progress'] ?? null,
       isSkipped: false,
       isMilestone: true,
-      shareText: `Tonight is the night! My private chef is cooking — ${occasionLabel} is happening! 🥂`,
+      shareText: `Tonight is the night! My private chef is cooking - ${occasionLabel} is happening! 🥂`,
     },
 
     // 10. Dinner complete
     {
       key: 'dinner_complete',
       label: 'Dinner Complete',
-      description: 'A beautiful evening — your event has wrapped up successfully.',
+      description: 'A beautiful evening - your event has wrapped up successfully.',
       completedAt: transitionMap['completed'] ?? null,
       isSkipped: false,
       isMilestone: true,
-      shareText: `That was an incredible private chef dinner — ${occasionLabel} was unforgettable! 🌟`,
+      shareText: `That was an incredible private chef dinner - ${occasionLabel} was unforgettable! 🌟`,
     },
 
     // 11. Post-event summary available
     {
       key: 'event_summary',
       label: 'Summary Ready',
-      description: 'Your post-event summary is ready — view the menu recap and expense details.',
+      description: 'Your post-event summary is ready - view the menu recap and expense details.',
       completedAt: transitionMap['completed'] ?? null,
       isSkipped: false,
       actionHref: eventStatus === 'completed' ? `/my-events/${eventId}/event-summary` : undefined,
@@ -247,7 +247,7 @@ export function buildJourneySteps(params: {
       key: 'share_review',
       label: hasReview ? 'Review Shared' : 'Leave a Review',
       description: hasReview
-        ? 'Thank you — your feedback helps the chef continue to grow.'
+        ? 'Thank you - your feedback helps the chef continue to grow.'
         : 'Share your experience and help the chef build their reputation.',
       completedAt: hasReview
         ? (transitionMap['completed'] ?? null)
@@ -259,7 +259,7 @@ export function buildJourneySteps(params: {
         eventStatus === 'completed' && !hasReview ? `/my-events/${eventId}#review` : undefined,
       actionLabel: eventStatus === 'completed' && !hasReview ? 'Leave a Review' : undefined,
       isMilestone: true,
-      shareText: `I just left a review for my private chef — highly recommend! 🌟`,
+      shareText: `I just left a review for my private chef - highly recommend! 🌟`,
     },
   ]
 
@@ -276,7 +276,7 @@ export function buildJourneySteps(params: {
 
   return visibleSteps.map((step, i) => ({
     ...step,
-    // isCurrent: the first step with no completedAt — this is the "next action" step
+    // isCurrent: the first step with no completedAt - this is the "next action" step
     isCurrent: !cancelled && step.completedAt === null && i === lastCompletedIndex + 1,
     // isFuture: steps beyond the current one with no completedAt
     isFuture: step.completedAt === null && i > lastCompletedIndex + 1,

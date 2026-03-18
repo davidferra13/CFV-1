@@ -3,10 +3,21 @@
 // Protected: chef-only via layout.
 
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEditorContext } from '@/lib/menus/editor-actions'
 import { notFound } from 'next/navigation'
-import { MenuDocEditor } from '@/components/menus/menu-doc-editor'
+
+const MenuDocEditor = dynamic(
+  () => import('@/components/menus/menu-doc-editor').then((m) => m.MenuDocEditor),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-600 border-t-brand-500" />
+      </div>
+    ),
+  }
+)
 
 type Props = {
   params: Promise<{ id: string }>

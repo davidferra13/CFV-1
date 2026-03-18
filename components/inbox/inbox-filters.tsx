@@ -39,7 +39,7 @@ export function InboxFilters({ activeSources, onToggle, stats }: InboxFiltersPro
             {count > 0 && (
               <span
                 className={`
-                inline-block min-w-[18px] text-center px-1 py-0.5 rounded-full text-[10px]
+                inline-block min-w-[18px] text-center px-1 py-0.5 rounded-full text-xxs
                 ${isActive ? 'bg-stone-900/50' : 'bg-stone-700/50'}
               `}
               >

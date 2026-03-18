@@ -122,7 +122,7 @@ export function StaffBriefingAIPanel({ eventId }: { eventId: string }) {
               className={`rounded p-2 ${s.label === 'ALLERGENS' ? 'bg-red-950 border border-red-200' : 'bg-stone-800'}`}
             >
               <div
-                className={`text-[11px] font-medium mb-0.5 ${s.label === 'ALLERGENS' ? 'text-red-700' : 'text-stone-500'}`}
+                className={`text-xs-tight font-medium mb-0.5 ${s.label === 'ALLERGENS' ? 'text-red-700' : 'text-stone-500'}`}
               >
                 {s.label}
               </div>
@@ -132,7 +132,7 @@ export function StaffBriefingAIPanel({ eventId }: { eventId: string }) {
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Draft · Review before sharing with staff - edit allergen section with extra care
       </p>
     </div>

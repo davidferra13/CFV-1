@@ -477,7 +477,7 @@ export async function exportW2ToCSV(taxYear: number): Promise<string> {
   const summaries = await getW2Summaries(taxYear)
 
   const lines = [
-    '# W-2 Reference Data — NOT for filing. Use IRS-approved payroll software to file W-2s with the SSA.',
+    '# W-2 Reference Data - NOT for filing. Use IRS-approved payroll software to file W-2s with the SSA.',
     `# Tax Year: ${taxYear}`,
     `# Generated: ${new Date().toISOString()}`,
     '',

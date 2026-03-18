@@ -5,7 +5,7 @@
 // payments, and reviews for a single client.
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import type { UnifiedTimelineItem } from '@/lib/clients/unified-timeline'
 import { SOURCE_CONFIG } from '@/lib/clients/unified-timeline-utils'
 
@@ -48,7 +48,14 @@ export function UnifiedClientTimeline({ items }: UnifiedClientTimelineProps) {
   )
 }
 
-function TimelineRow({ item, isLast }: { item: UnifiedTimelineItem; isLast: boolean }) {
+// Memoized: rendered in .map() for each unified timeline entry. Receives stable data objects.
+const TimelineRow = memo(function TimelineRow({
+  item,
+  isLast,
+}: {
+  item: UnifiedTimelineItem
+  isLast: boolean
+}) {
   const cfg = SOURCE_CONFIG[item.source]
   const timeLabel = formatTimeLabel(item.timestamp)
 
@@ -64,14 +71,12 @@ function TimelineRow({ item, isLast }: { item: UnifiedTimelineItem; isLast: bool
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${cfg.className}`}
-          >
+          <span className={`text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 ${cfg.className}`}>
             {cfg.label}
           </span>
           {item.actor && item.actor !== 'system' && (
             <span
-              className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${
+              className={`text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 ${
                 item.actor === 'client'
                   ? 'bg-blue-900 text-blue-700'
                   : 'bg-emerald-900 text-emerald-700'
@@ -85,7 +90,7 @@ function TimelineRow({ item, isLast }: { item: UnifiedTimelineItem; isLast: bool
         {item.detail && <p className="text-xs text-stone-400 mt-0.5 truncate">{item.detail}</p>}
       </div>
 
-      <span className="text-[11px] text-stone-400 shrink-0 mt-0.5">{timeLabel}</span>
+      <span className="text-xs-tight text-stone-400 shrink-0 mt-0.5">{timeLabel}</span>
     </div>
   )
 
@@ -97,7 +102,7 @@ function TimelineRow({ item, isLast }: { item: UnifiedTimelineItem; isLast: bool
     )
   }
   return <div className="relative">{inner}</div>
-}
+})
 
 function formatTimeLabel(dateStr: string): string {
   const date = new Date(dateStr)

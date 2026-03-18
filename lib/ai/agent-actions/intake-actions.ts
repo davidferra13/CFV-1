@@ -1,6 +1,6 @@
-// Remy Agent — Intake Actions
+// Remy Agent - Intake Actions
 // Parse transcripts, bulk client lists, and brain dumps through Remy's chat.
-// All actions are Tier 2 — chef must approve before any data is written.
+// All actions are Tier 2 - chef must approve before any data is written.
 
 import type { AgentActionDefinition, AgentActionContext } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
@@ -54,7 +54,7 @@ async function checkDuplicateClients(
         })
       }
     } catch {
-      // Search failure is non-blocking — proceed without duplicate info
+      // Search failure is non-blocking - proceed without duplicate info
     }
   }
   return duplicates
@@ -113,8 +113,8 @@ export const intakeAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description:
       'Parse a conversation transcript (call notes, texts, emails) and extract clients, events, inquiries, and action items. Creates all records after approval.',
-    inputSchema: '{ "text": "string — the transcript or conversation text to parse" }',
-    tierNote: 'ALWAYS tier 2 — chef must review all extracted data before saving.',
+    inputSchema: '{ "text": "string - the transcript or conversation text to parse" }',
+    tierNote: 'ALWAYS tier 2 - chef must review all extracted data before saving.',
 
     async executor(inputs) {
       const text = String(inputs.text ?? inputs.description ?? '')
@@ -165,7 +165,7 @@ export const intakeAgentActions: AgentActionDefinition[] = [
         )
         if (dup) {
           warnings.push(
-            `"${c.full_name}" may already exist as "${dup.name}" — will create new record unless dismissed.`
+            `"${c.full_name}" may already exist as "${dup.name}" - will create new record unless dismissed.`
           )
         }
       }
@@ -287,11 +287,11 @@ export const intakeAgentActions: AgentActionDefinition[] = [
       }
 
       // Events from transcripts are typically at the inquiry stage, not ready for full event creation
-      // (createEvent requires client_id, date, time, address, city, zip — transcripts rarely have all of these)
+      // (createEvent requires client_id, date, time, address, city, zip - transcripts rarely have all of these)
       const events = (payload.events ?? []) as Record<string, unknown>[]
       if (events.length > 0) {
         messages.push(
-          `${events.length} event${events.length > 1 ? 's' : ''} noted — create them from the inquiry once details are confirmed`
+          `${events.length} event${events.length > 1 ? 's' : ''} noted - create them from the inquiry once details are confirmed`
         )
       }
 
@@ -313,8 +313,8 @@ export const intakeAgentActions: AgentActionDefinition[] = [
     description:
       'Import multiple clients from a pasted list, CSV, or freeform text. Each client is parsed and created after approval.',
     inputSchema:
-      '{ "text": "string — the client list to import (one client per line, CSV, or freeform)" }',
-    tierNote: 'ALWAYS tier 2 — chef must review all clients before saving.',
+      '{ "text": "string - the client list to import (one client per line, CSV, or freeform)" }',
+    tierNote: 'ALWAYS tier 2 - chef must review all clients before saving.',
 
     async executor(inputs) {
       const text = String(inputs.text ?? inputs.description ?? '')
@@ -409,8 +409,8 @@ export const intakeAgentActions: AgentActionDefinition[] = [
     description:
       'Parse a freeform brain dump containing any mix of clients, recipes, notes, and event ideas. Sorts everything into the right place after approval.',
     inputSchema:
-      '{ "text": "string — the brain dump text to parse (can contain clients, recipes, notes, anything)" }',
-    tierNote: 'ALWAYS tier 2 — chef must review all extracted data before saving.',
+      '{ "text": "string - the brain dump text to parse (can contain clients, recipes, notes, anything)" }',
+    tierNote: 'ALWAYS tier 2 - chef must review all extracted data before saving.',
 
     async executor(inputs) {
       const text = String(inputs.text ?? inputs.description ?? '')
@@ -514,15 +514,15 @@ export const intakeAgentActions: AgentActionDefinition[] = [
           messages.push(`${result.failed} client${result.failed > 1 ? 's' : ''} failed`)
       }
 
-      // Recipes — note for chef to create via the recipe import page
+      // Recipes - note for chef to create via the recipe import page
       const recipes = (payload.recipes ?? []) as Record<string, unknown>[]
       if (recipes.length > 0) {
         messages.push(
-          `${recipes.length} recipe${recipes.length > 1 ? 's' : ''} extracted — review and save them from the recipe import page`
+          `${recipes.length} recipe${recipes.length > 1 ? 's' : ''} extracted - review and save them from the recipe import page`
         )
       }
 
-      // Notes are informational — they appear in the preview for the chef to act on
+      // Notes are informational - they appear in the preview for the chef to act on
       const notes = (payload.notes ?? []) as Record<string, unknown>[]
       if (notes.length > 0) {
         messages.push(`${notes.length} note${notes.length > 1 ? 's' : ''} captured in chat`)
@@ -533,7 +533,7 @@ export const intakeAgentActions: AgentActionDefinition[] = [
         message:
           messages.length > 0
             ? messages.join('. ') + '.'
-            : 'Brain dump processed — nothing to save.',
+            : 'Brain dump processed - nothing to save.',
         redirectUrl: clients.length > 0 ? '/clients' : undefined,
       }
     },

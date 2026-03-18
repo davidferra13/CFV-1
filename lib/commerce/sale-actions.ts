@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Sale Actions
+// Commerce Engine V1 - Sale Actions
 // CRUD for sales and sale items. Handles sale creation, item management, voiding.
 
 'use server'

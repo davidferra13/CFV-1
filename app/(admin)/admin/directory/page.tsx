@@ -18,7 +18,12 @@ export default async function AdminDirectoryPage() {
         <h1 className="text-2xl font-bold text-stone-100">Public Directory</h1>
         <p className="mt-1 text-sm text-stone-500">
           Control which chefs appear on the public{' '}
-          <a href="/chefs" target="_blank" className="font-medium text-brand-600 underline">
+          <a
+            href="/chefs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-brand-600 underline"
+          >
             Find a Chef
           </a>{' '}
           page. Only approved chefs are visible to the public.

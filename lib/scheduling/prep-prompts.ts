@@ -1,6 +1,6 @@
 // Progressive Preparation Prompts
 // Time-aware nudges that surface BEFORE the chef is under pressure.
-// Pure computation — no DB calls.
+// Pure computation - no DB calls.
 
 import type { PrepPrompt, SchedulingEvent, ChefPreferences } from './types'
 
@@ -21,7 +21,7 @@ function daysUntil(dateStr: string): number {
 
 /**
  * Scan events and return time-aware prep prompts.
- * These are visibility — not guilt trips. Factual tone.
+ * These are visibility - not guilt trips. Factual tone.
  */
 export function getActivePrompts(
   events: SchedulingEvent[],

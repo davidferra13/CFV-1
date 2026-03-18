@@ -4,7 +4,7 @@ export const CHEF_PORTAL_PARTNERS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/partners': {
     title: 'Referral Partners',
     description:
-      'Manage referral partners — venues, planners, and other businesses that send you clients.',
+      'Manage referral partners - venues, planners, and other businesses that send you clients.',
     features: [
       'Partner list with type, contact, and location count',
       'Inquiry and event counts per partner',
@@ -21,19 +21,19 @@ export const CHEF_PORTAL_PARTNERS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/partners/[id]': {
     title: 'Partner Detail',
-    description: 'Full partner profile — locations, events generated, and performance metrics.',
+    description: 'Full partner profile - locations, events generated, and performance metrics.',
     features: ['Partner info', 'Location list', 'Event attribution', 'Revenue tracking'],
   },
 
   '/partners/[id]/edit': {
     title: 'Edit Partner',
-    description: 'Update partner details — contact info, locations, and relationship notes.',
+    description: 'Update partner details - contact info, locations, and relationship notes.',
     features: ['Edit partner form', 'Location management', 'Notes'],
   },
 
   '/partners/[id]/report': {
     title: 'Partner Report',
-    description: 'Performance report for this partner — events, revenue, and ROI.',
+    description: 'Performance report for this partner - events, revenue, and ROI.',
     features: ['Event count', 'Revenue generated', 'Conversion rate', 'ROI metrics'],
   },
 
@@ -57,7 +57,7 @@ export const CHEF_PORTAL_PARTNERS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/partners/referral-performance': {
     title: 'Referral Performance',
-    description: 'Partner ROI analytics — which partners generate the most value.',
+    description: 'Partner ROI analytics - which partners generate the most value.',
     features: ['Partner ranking', 'Revenue per partner', 'Conversion rates'],
   },
 }

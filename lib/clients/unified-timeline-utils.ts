@@ -1,4 +1,4 @@
-// Unified timeline display constants — no 'use server', safe for client imports.
+// Unified timeline display constants - no 'use server', safe for client imports.
 
 export type TimelineItemSource = 'event' | 'inquiry' | 'message' | 'ledger' | 'review'
 

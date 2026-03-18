@@ -3,7 +3,7 @@
 // Partner Invite Flow
 // Chefs send partners a one-time link to claim their account.
 // Partners open the link, sign up with email + password, and get access
-// to their showcase portal — no financial data, just pride and stats.
+// to their showcase portal - no financial data, just pride and stats.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -131,7 +131,7 @@ export async function claimPartnerInvite(
       .from('referral_partners')
       .update({
         auth_user_id: userId,
-        invite_token: null, // one-time use — clear after claim
+        invite_token: null, // one-time use - clear after claim
         claimed_at: new Date().toISOString(),
       } as any)
       .eq('id', partner.id)

@@ -1,4 +1,4 @@
-// Menu Revision Requested — Chef Notification Email
+// Menu Revision Requested - Chef Notification Email
 // Sent to the chef when a client requests changes to the proposed menu.
 
 import { Text, Link } from '@react-email/components'

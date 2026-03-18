@@ -72,7 +72,7 @@ export function PotentialDuplicatesCard({
               {match.phone && <p className="text-xs text-stone-500">{match.phone}</p>}
               <div className="flex flex-wrap gap-1 mt-1.5">
                 {match.matchReasons.map((reason) => (
-                  <Badge key={reason} variant="info" className="text-[10px] px-1.5 py-0">
+                  <Badge key={reason} variant="info" className="text-xxs px-1.5 py-0">
                     {reason}
                   </Badge>
                 ))}

@@ -1,6 +1,6 @@
 // =============================================================================
-// Social Event Hub — Realtime Subscriptions
-// Client-side only — used in 'use client' components
+// Social Event Hub - Realtime Subscriptions
+// Client-side only - used in 'use client' components
 // Mirrors the pattern from lib/chat/realtime.ts
 // =============================================================================
 

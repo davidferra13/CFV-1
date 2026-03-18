@@ -303,7 +303,7 @@ export default function SystemNerveCenter() {
           {sweep.uncheckedCount > 0 && (
             <span className="text-xs text-stone-600">{sweep.uncheckedCount} skipped</span>
           )}
-          <span className="ml-auto text-[10px] text-stone-600">{ago}</span>
+          <span className="ml-auto text-xxs text-stone-600">{ago}</span>
         </div>
       )}
 
@@ -313,7 +313,7 @@ export default function SystemNerveCenter() {
           <div key={group.label}>
             {/* Group header */}
             <div className="px-4 py-1.5 bg-stone-950/40">
-              <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">
+              <span className="text-xxs font-semibold text-stone-500 uppercase tracking-wider">
                 {group.label}
               </span>
             </div>
@@ -354,7 +354,7 @@ export default function SystemNerveCenter() {
 
                     {/* Latency */}
                     {svc.latencyMs != null && (
-                      <span className="text-[10px] text-stone-600 shrink-0 tabular-nums">
+                      <span className="text-xxs text-stone-600 shrink-0 tabular-nums">
                         {svc.latencyMs}ms
                       </span>
                     )}
@@ -376,12 +376,12 @@ export default function SystemNerveCenter() {
                     <div className="px-4 pb-3 pt-0 pl-9 space-y-2">
                       {/* Error message */}
                       {svc.error && (
-                        <p className="text-[11px] text-red-400/80 leading-relaxed">{svc.error}</p>
+                        <p className="text-xs-tight text-red-400/80 leading-relaxed">{svc.error}</p>
                       )}
 
                       {/* Circuit breaker info */}
                       {svc.circuitBreakerState && (
-                        <p className="text-[11px] text-stone-500">
+                        <p className="text-xs-tight text-stone-500">
                           Circuit breaker: {svc.circuitBreakerState}
                           {svc.circuitBreakerFailures
                             ? ` (${svc.circuitBreakerFailures} failures)`
@@ -402,7 +402,7 @@ export default function SystemNerveCenter() {
                               }}
                               disabled={!!actionLoading[action.id]}
                               title={action.description}
-                              className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors disabled:opacity-50 ${
+                              className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs-tight font-medium transition-colors disabled:opacity-50 ${
                                 action.dangerous
                                   ? 'bg-red-950 text-red-300 hover:bg-red-900 border border-red-800'
                                   : 'bg-stone-800 text-stone-300 hover:bg-stone-700 border border-stone-700'
@@ -421,7 +421,7 @@ export default function SystemNerveCenter() {
                       {svc.fixActions.length === 0 && svc.status !== 'healthy' && (
                         <a
                           href="/settings"
-                          className="inline-flex items-center gap-1 text-[11px] text-brand-400 hover:text-brand-300 transition-colors"
+                          className="inline-flex items-center gap-1 text-xs-tight text-brand-400 hover:text-brand-300 transition-colors"
                         >
                           Go to Settings
                           <ExternalLink className="h-3 w-3" />
@@ -453,7 +453,7 @@ export default function SystemNerveCenter() {
       {/* Footer */}
       {sweep && (
         <div className="px-4 py-2 border-t border-stone-800 bg-stone-950/30">
-          <div className="flex items-center gap-1.5 text-[10px] text-stone-600">
+          <div className="flex items-center gap-1.5 text-xxs text-stone-600">
             <Activity className="h-3 w-3" aria-hidden="true" />
             Checked {services.length} services in {(sweep.sweepDurationMs / 1000).toFixed(1)}s
           </div>

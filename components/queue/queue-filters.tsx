@@ -138,7 +138,7 @@ function FilterPill({
   return (
     <button className={`${baseClass} ${activeClass}`} onClick={onClick}>
       {label}
-      <span className={`text-[10px] ${active ? 'opacity-80' : 'text-stone-400'}`}>{count}</span>
+      <span className={`text-xxs ${active ? 'opacity-80' : 'text-stone-400'}`}>{count}</span>
     </button>
   )
 }

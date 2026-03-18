@@ -1,4 +1,4 @@
-// Engagement scoring — computes a client's engagement level from their activity history.
+// Engagement scoring - computes a client's engagement level from their activity history.
 // Pure function: no DB writes, no server imports. Call it after fetching activity events.
 
 import type { ActivityEvent, ActivityEventType } from './types'

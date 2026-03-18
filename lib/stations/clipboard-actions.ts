@@ -1,4 +1,4 @@
-// Station Clipboard System — Daily Clipboard Operations
+// Station Clipboard System - Daily Clipboard Operations
 // Chef-only. Manages daily clipboard entries, shift check-in/out, and snapshots.
 
 'use server'
@@ -26,7 +26,7 @@ const UpdateClipboardEntrySchema = z.object({
     .optional(),
   location: z.enum(['line', 'backup']).optional(),
   notes: z.string().optional(),
-  updated_by: z.string().uuid().optional(), // staff_member_id — who initialed this update
+  updated_by: z.string().uuid().optional(), // staff_member_id - who initialed this update
 })
 
 const ShiftCheckInSchema = z.object({
@@ -213,7 +213,7 @@ export async function updateClipboardEntry(entryId: string, updates: UpdateClipb
     throw new Error('Failed to update clipboard entry')
   }
 
-  // Non-blocking notification — check for low stock when on_hand was explicitly updated
+  // Non-blocking notification - check for low stock when on_hand was explicitly updated
   if (validated.on_hand !== undefined && data) {
     try {
       // Look up the component's par_level, name, and station name
@@ -249,7 +249,7 @@ export async function updateClipboardEntry(entryId: string, updates: UpdateClipb
  */
 export async function batchUpdateClipboard(
   entries: Array<{ id: string; updates: UpdateClipboardEntryInput }>,
-  updatedBy?: string // staff_member_id — who is saving this batch (initials/accountability)
+  updatedBy?: string // staff_member_id - who is saving this batch (initials/accountability)
 ) {
   const user = await requireChef()
   const supabase: any = createServerClient()
@@ -383,7 +383,7 @@ export async function shiftCheckIn(input: ShiftCheckInInput) {
 }
 
 /**
- * Close out a shift — snapshot the current clipboard state and save handoff notes.
+ * Close out a shift - snapshot the current clipboard state and save handoff notes.
  */
 export async function shiftCheckOut(input: ShiftCheckOutInput) {
   const user = await requireChef()
@@ -467,7 +467,7 @@ export async function getLastShiftHandoff(stationId: string) {
     .single()
 
   if (error && error.code !== 'PGRST116') {
-    // PGRST116 = no rows found — that's fine
+    // PGRST116 = no rows found - that's fine
     console.error('[getLastShiftHandoff] Error:', error)
   }
 

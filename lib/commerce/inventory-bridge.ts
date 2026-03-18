@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Inventory Bridge
+// Commerce Engine V1 - Inventory Bridge
 // Deducts ingredients from inventory when a sale is completed.
 // Adapts the walkEventRecipeChain pattern for commerce sales.
 
@@ -318,7 +318,7 @@ export async function reverseSaleDeduction(saleId: string): Promise<{ transactio
     unit: d.unit,
     cost_cents: d.cost_cents,
     sale_id: saleId,
-    notes: `Reversal — sale voided/refunded`,
+    notes: `Reversal - sale voided/refunded`,
     created_by: user.id,
   }))
 

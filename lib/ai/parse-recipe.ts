@@ -13,7 +13,7 @@ export type { ParsedRecipe, ParsedIngredient } from './parse-recipe-schema'
 
 const RECIPE_SYSTEM_PROMPT = `You are a data extraction assistant for a private chef's recipe management system. Your job is to parse natural language recipe descriptions into structured JSON.
 
-This is for a PROFESSIONAL CHEF — the method should be concise (outcomes, not basic instructions). The chef knows HOW to cook; they need to remember WHAT to do.
+This is for a PROFESSIONAL CHEF - the method should be concise (outcomes, not basic instructions). The chef knows HOW to cook; they need to remember WHAT to do.
 
 RULES:
 - Extract the recipe name, category, ingredients, and method.
@@ -21,10 +21,10 @@ RULES:
 - Auto-detect allergens from ingredients: dairy products → "dairy", nuts → "nuts", wheat flour → "gluten", shellfish → "shellfish", etc.
 - Category must be one of: sauce, protein, starch, vegetable, fruit, dessert, bread, pasta, soup, salad, appetizer, condiment, beverage, other
 - Ingredient category must be one of: protein, produce, dairy, pantry, spice, oil, alcohol, baking, frozen, canned, fresh_herb, dry_herb, condiment, beverage, specialty, other
-- Method should be concise — steps as brief outcome-oriented sentences.
+- Method should be concise - steps as brief outcome-oriented sentences.
 - method_detailed can include more detail if the input is verbose.
 - If yield is mentioned ("serves 4", "makes 2 cups"), capture it.
-- Times are often not stated — mark as null if not mentioned.
+- Times are often not stated - mark as null if not mentioned.
 - Track field_confidence for key fields.
 
 EXAMPLE:

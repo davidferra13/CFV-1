@@ -1,4 +1,4 @@
-// Dish Index Bridge — connects the Menu Builder to the Dish Index
+// Dish Index Bridge - connects the Menu Builder to the Dish Index
 // When a menu is locked, its dishes are auto-indexed for historical tracking.
 
 'use server'
@@ -86,7 +86,7 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
     let dishIndexId: string
 
     if (existing) {
-      // Update existing dish — increment count and update dates
+      // Update existing dish - increment count and update dates
       const updates: Record<string, unknown> = {
         times_served: existing.times_served + 1,
       }

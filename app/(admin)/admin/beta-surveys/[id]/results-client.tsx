@@ -176,11 +176,11 @@ export function SurveyResultsClient({
                 <span className="text-slate-300 truncate flex-1">
                   {inv.name || inv.email || 'Anonymous'}
                 </span>
-                <code className="text-slate-500 text-[10px] truncate max-w-[200px]">
+                <code className="text-slate-500 text-xxs truncate max-w-[200px]">
                   {appUrl}/beta-survey/{inv.token}
                 </code>
                 <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-xxs font-medium ${
                     inv.response_id
                       ? 'bg-green-900 text-green-300'
                       : inv.claimed_at
@@ -194,7 +194,7 @@ export function SurveyResultsClient({
                   onClick={() => {
                     navigator.clipboard.writeText(`${appUrl}/beta-survey/${inv.token}`)
                   }}
-                  className="text-slate-500 hover:text-slate-300 text-[10px] shrink-0"
+                  className="text-slate-500 hover:text-slate-300 text-xxs shrink-0"
                 >
                   Copy
                 </button>

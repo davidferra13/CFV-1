@@ -1,5 +1,5 @@
-// ProFeatureRequiredError — shared error type for tier-gated operations
-// No 'use server' — safe to import from any context (server actions, components, tests)
+// ProFeatureRequiredError - shared error type for tier-gated operations
+// No 'use server' - safe to import from any context (server actions, components, tests)
 // This lives in its own file because 'use server' modules can only export async functions.
 // Follows the same pattern as lib/ai/ollama-errors.ts.
 

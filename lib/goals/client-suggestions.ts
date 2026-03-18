@@ -165,10 +165,10 @@ function buildReason(
       : 'prior client'
 
   if (clientStatus === 'repeat_ready') {
-    return `Ready to rebook — ${dollarAvg}`
+    return `Ready to rebook - ${dollarAvg}`
   }
   if (daysDormant !== null && daysDormant > 0) {
-    return `Dormant ${daysDormant} day${daysDormant === 1 ? '' : 's'} — ${dollarAvg}`
+    return `Dormant ${daysDormant} day${daysDormant === 1 ? '' : 's'} - ${dollarAvg}`
   }
-  return `Inactive client — ${dollarAvg}`
+  return `Inactive client - ${dollarAvg}`
 }

@@ -44,7 +44,7 @@ export async function clientRedeemReward(rewardId: string) {
       loyalty_points: currentPoints - reward.points_required,
     })
     .eq('id', client.id)
-    .gte('loyalty_points', reward.points_required) // atomic check — prevents double-spend
+    .gte('loyalty_points', reward.points_required) // atomic check - prevents double-spend
     .select('loyalty_points')
     .single()
 
@@ -55,7 +55,7 @@ export async function clientRedeemReward(rewardId: string) {
       updateError
     )
     throw new Error(
-      'Failed to redeem — points may have been used by another redemption. Please try again.'
+      'Failed to redeem - points may have been used by another redemption. Please try again.'
     )
   }
 
@@ -78,12 +78,12 @@ export async function clientRedeemReward(rewardId: string) {
 
   if (txError) {
     console.error('[clientRedeemReward] Transaction log error:', txError)
-    // Balance was already deducted atomically — log failure is non-blocking
+    // Balance was already deducted atomically - log failure is non-blocking
     // The points are correctly deducted even if the audit row fails
   }
 
   // Create a pending delivery record so the chef knows what to honour.
-  // Non-blocking — delivery tracking failure must not roll back the redemption.
+  // Non-blocking - delivery tracking failure must not roll back the redemption.
   if (txData?.id) {
     try {
       const { createPendingDelivery } = await import('@/lib/loyalty/auto-award')
@@ -118,7 +118,7 @@ export async function clientRedeemReward(rewardId: string) {
         category: 'loyalty',
         action: 'reward_redeemed_by_client',
         title: 'Reward redeemed',
-        body: `A client redeemed "${reward.name}" — mark it as delivered at their next event.`,
+        body: `A client redeemed "${reward.name}" - mark it as delivered at their next event.`,
         actionUrl: '/loyalty',
         clientId: client.id,
       })

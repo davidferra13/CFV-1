@@ -31,13 +31,13 @@ export async function generateTriviaQuestions(
   try {
     const avoidClause =
       previousIds.length > 0
-        ? `\nIMPORTANT: The player has already seen questions with these IDs — do NOT reuse them or ask similar questions: ${previousIds.slice(-30).join(', ')}`
+        ? `\nIMPORTANT: The player has already seen questions with these IDs - do NOT reuse them or ask similar questions: ${previousIds.slice(-30).join(', ')}`
         : ''
 
     const result = await parseWithOllama(
       `You are Remy, ChefFlow's culinary AI. You LOVE teaching chefs new things through fun trivia.
 Generate exactly 5 multiple-choice culinary trivia questions. Each must have exactly 4 choices with one correct answer.
-Make questions genuinely educational — the chef should learn something new from each one.
+Make questions genuinely educational - the chef should learn something new from each one.
 Vary question types: history, technique, science, ingredients, culture, famous chefs, food safety.
 
 Rules:
@@ -48,7 +48,7 @@ Rules:
 
 SOURCE & CITATION RULES (CRITICAL):
 - Every question MUST include "source" and "sourceUrl" fields.
-- "source" is a readable label — the name of the reference (e.g., "On Food and Cooking — Harold McGee", "The Professional Chef — CIA", "Wikipedia: Mother sauce")
+- "source" is a readable label - the name of the reference (e.g., "On Food and Cooking - Harold McGee", "The Professional Chef - CIA", "Wikipedia: Mother sauce")
 - "sourceUrl" is a real URL on a well-known, trustworthy website where the chef can verify the answer. Use:
   * Wikipedia (en.wikipedia.org/wiki/...) for history, famous chefs, cuisine origins, food science
   * Serious Eats (seriouseats.com/...) for techniques, recipes, food science articles
@@ -257,8 +257,8 @@ Rules:
 - Medium = connecting details (which client has which restriction, what event is when)
 - Hard = tricky details (specific allergies for specific events, cross-referencing data)
 
-SOURCE RULES (CRITICAL — EVERY ANSWER MUST HAVE A SOURCE):
-- "source" must name the specific ChefFlow record: e.g., "ChefFlow — Client: Jane Smith", "ChefFlow — Event: Smith Dinner (Jan 15)", "ChefFlow — Menu: Winter Tasting"
+SOURCE RULES (CRITICAL - EVERY ANSWER MUST HAVE A SOURCE):
+- "source" must name the specific ChefFlow record: e.g., "ChefFlow - Client: Jane Smith", "ChefFlow - Event: Smith Dinner (Jan 15)", "ChefFlow - Menu: Winter Tasting"
 - "sourceUrl" must be a ChefFlow app link where the chef can verify the answer:
   * For client questions: "/clients/[client-id]" (use the actual client ID from the data)
   * For event questions: "/events/[event-id]" (use the actual event ID from the data)
@@ -273,7 +273,7 @@ CONFIDENCE RULES:
 - ALWAYS return valid JSON matching the schema exactly${avoidClause}`,
       `Generate 5 ${difficulty} quiz questions from the chef's business data above.
 
-Return JSON: { "questions": [{ "id": "unique_id", "question": "...", "choices": ["A", "B", "C", "D"], "correctIndex": 0, "funFact": "...", "source": "ChefFlow — ...", "sourceUrl": "/clients/...", "confidence": 5 }, ...] }`,
+Return JSON: { "questions": [{ "id": "unique_id", "question": "...", "choices": ["A", "B", "C", "D"], "correctIndex": 0, "funFact": "...", "source": "ChefFlow - ...", "sourceUrl": "/clients/...", "confidence": 5 }, ...] }`,
       TriviaSchema,
       { modelTier: 'standard', maxTokens: 2048, timeoutMs: 120000 }
     )

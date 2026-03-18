@@ -5,7 +5,7 @@
  * OVERLAY_CONFIGS keys match HOLIDAYS[n].key from lib/holidays/constants.ts.
  * EXTRA_HOLIDAYS covers dates not in constants.ts (MLK Day, Groundhog Day, etc.)
  *
- * No 'use server' — this is pure client-side config.
+ * No 'use server' - this is pure client-side config.
  */
 
 export type AnimationType = 'falling' | 'rising' | 'burst' | 'walk' | 'pulse' | 'sticker'
@@ -195,7 +195,7 @@ export const OVERLAY_CONFIGS: Record<string, HolidayOverlayConfig> = {
 }
 
 // ---------------------------------------------------------------------------
-// Extra holidays — not in lib/holidays/constants.ts
+// Extra holidays - not in lib/holidays/constants.ts
 // Date computation is self-contained here.
 // ---------------------------------------------------------------------------
 

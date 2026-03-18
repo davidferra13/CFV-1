@@ -1,5 +1,5 @@
-// Feature Tier Resolution — single source of truth for Free vs Pro access
-// NOT a server action file — utility imported by actions and server components.
+// Feature Tier Resolution - single source of truth for Free vs Pro access
+// NOT a server action file - utility imported by actions and server components.
 //
 // Access hierarchy:
 //   grandfathered → Pro (always, forever)
@@ -14,7 +14,7 @@ import { cache } from 'react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PRO_PRICE_MONTHLY } from '@/lib/billing/constants'
 
-/** Monthly price in dollars — single source of truth for display. */
+/** Monthly price in dollars - single source of truth for display. */
 export { PRO_PRICE_MONTHLY }
 
 export type Tier = 'free' | 'pro'

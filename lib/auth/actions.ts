@@ -133,7 +133,7 @@ export async function signUpChef(input: ChefSignupInput) {
 
   if (authError || !authData.user) {
     log.auth.error('Chef signup auth error', { error: authError, context: { email } })
-    // Generic message — never reveal whether the email already exists (prevents enumeration)
+    // Generic message - never reveal whether the email already exists (prevents enumeration)
     throw new Error(
       'Account creation failed. If you already have an account, try signing in instead.'
     )
@@ -201,7 +201,7 @@ export async function signUpChef(input: ChefSignupInput) {
     const isBetaSignup = await syncBetaOnboarding(email, businessName, validated.signup_ref)
     const trialDays = resolveTrialDays(isBetaSignup)
 
-    // Start 14-day trial and create Stripe customer — non-blocking
+    // Start 14-day trial and create Stripe customer - non-blocking
     try {
       const { createStripeCustomer, startTrial } = await import('@/lib/stripe/subscription')
       await createStripeCustomer(chef.id, email, businessName)
@@ -267,7 +267,7 @@ export async function signUpClient(input: ClientSignupInput) {
       error: authError,
       context: { email },
     })
-    // Generic message — never reveal whether the email already exists (prevents enumeration)
+    // Generic message - never reveal whether the email already exists (prevents enumeration)
     throw new Error(
       'Account creation failed. If you already have an account, try signing in instead.'
     )
@@ -345,7 +345,7 @@ export async function signUpClient(input: ClientSignupInput) {
 
     // Auto-award welcome points for invitation-based signups.
     // Tenant is known at signup time only when an invitation token was used.
-    // Non-blocking — welcome point failure must never break account creation.
+    // Non-blocking - welcome point failure must never break account creation.
     if (tenantId) {
       try {
         const { autoAwardWelcomePoints } = await import('@/lib/loyalty/auto-award')
@@ -456,7 +456,7 @@ export async function signIn(input: SignInInput) {
   cookieStore.delete('chefflow-role-cache')
 
   if (!validated.rememberMe) {
-    // Session-only cookie (no maxAge) — cleared when browser closes.
+    // Session-only cookie (no maxAge) - cleared when browser closes.
     // Middleware uses this to strip maxAge from Supabase auth cookies too.
     cookieStore.set('chefflow-session-only', '1', {
       path: '/',
@@ -493,7 +493,7 @@ export async function requestPasswordReset(email: string) {
 
   if (error) {
     log.auth.warn('Password reset email failed', { error })
-    // Don't reveal whether the email exists — always return success
+    // Don't reveal whether the email exists - always return success
   }
 
   return { success: true }

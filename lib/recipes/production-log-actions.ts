@@ -1,4 +1,4 @@
-// Recipe Production Log — Server Actions
+// Recipe Production Log - Server Actions
 // Tracks every time a recipe is produced: who, when, how much, shelf life.
 
 'use server'

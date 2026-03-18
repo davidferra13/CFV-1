@@ -58,7 +58,7 @@ export function QuoteExpiringEmail({
       </Button>
 
       <Text style={muted}>
-        Not interested? No action needed — the quote will expire automatically.
+        Not interested? No action needed - the quote will expire automatically.
       </Text>
     </BaseLayout>
   )

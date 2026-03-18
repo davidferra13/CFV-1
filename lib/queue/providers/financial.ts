@@ -1,4 +1,4 @@
-// Priority Queue — Financial Provider
+// Priority Queue - Financial Provider
 // Surfaces: outstanding balances, expenses missing receipts, events not financially closed
 
 import type { SupabaseClient } from '@supabase/supabase-js'

@@ -1,6 +1,6 @@
 'use server'
 
-// Prospecting Hub — CRUD Server Actions
+// Prospecting Hub - CRUD Server Actions
 // Admin-only. All actions gate with requireAdmin() + requireChef() for tenant scoping.
 
 import { requireAdmin } from '@/lib/auth/admin'

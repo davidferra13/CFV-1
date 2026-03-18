@@ -1,5 +1,5 @@
-// Sim-to-Real Loop — Shared Types
-// No 'use server' — safe to import from any context
+// Sim-to-Real Loop - Shared Types
+// No 'use server' - safe to import from any context
 
 export type SimModule =
   | 'inquiry_parse'
@@ -31,7 +31,7 @@ export const SIM_MODULE_LABELS: Record<SimModule, string> = {
 export interface SimScenario {
   id: string
   module: SimModule
-  /** Natural language input — what gets sent to the AI */
+  /** Natural language input - what gets sent to the AI */
   inputText: string
   /** Ground truth fields used during evaluation */
   groundTruth: Record<string, unknown>

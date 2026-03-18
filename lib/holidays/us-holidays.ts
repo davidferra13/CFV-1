@@ -1,5 +1,5 @@
 // US Holiday Utility
-// Pure client-side date math — no server, no DB, no external imports.
+// Pure client-side date math - no server, no DB, no external imports.
 // Returns FullCalendar-compatible event objects for all major US holidays.
 
 export interface HolidayEvent {
@@ -53,7 +53,7 @@ function lastWeekday(year: number, month: number, weekday: number): Date {
 }
 
 /**
- * Easter Sunday (Gregorian algorithm — Anonymous / Meeus / Jones / Butcher)
+ * Easter Sunday (Gregorian algorithm - Anonymous / Meeus / Jones / Butcher)
  */
 function easterDate(year: number): Date {
   const a = year % 19

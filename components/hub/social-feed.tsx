@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, memo } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import type { SocialFeedItem } from '@/lib/hub/social-feed-actions'
@@ -89,7 +89,8 @@ export function SocialFeed({ initialItems, initialCursor }: SocialFeedProps) {
   )
 }
 
-function FeedCard({ item }: { item: SocialFeedItem }) {
+// Memoized: rendered in .map() for each feed item. Receives stable data objects.
+const FeedCard = memo(function FeedCard({ item }: { item: SocialFeedItem }) {
   const time = new Date(item.created_at).toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
@@ -99,6 +100,7 @@ function FeedCard({ item }: { item: SocialFeedItem }) {
     <Link
       href={`/hub/g/${item.group_token}`}
       target="_blank"
+      rel="noopener noreferrer"
       className="block rounded-xl border border-stone-700/50 bg-stone-800/30 p-4 transition-colors hover:bg-stone-800/60"
     >
       <div className="mb-2 flex items-center justify-between">
@@ -111,7 +113,13 @@ function FeedCard({ item }: { item: SocialFeedItem }) {
 
       <div className="flex items-start gap-3">
         {item.author_avatar_url ? (
-          <img src={item.author_avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+          <Image
+            src={item.author_avatar_url}
+            alt=""
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-full object-cover"
+          />
         ) : (
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-700 text-xs font-bold text-stone-300">
             {item.author_name.charAt(0).toUpperCase()}
@@ -130,8 +138,17 @@ function FeedCard({ item }: { item: SocialFeedItem }) {
               <p className="text-sm text-stone-300">{item.body}</p>
               <div className="mt-1 flex gap-1">
                 {item.media_urls.slice(0, 3).map((url, i) => (
-                  <div key={i} className="h-16 w-16 overflow-hidden rounded-lg bg-stone-700">
-                    <img src={url} alt="" className="h-full w-full object-cover" />
+                  <div
+                    key={i}
+                    className="relative h-16 w-16 overflow-hidden rounded-lg bg-stone-700"
+                  >
+                    <Image
+                      src={url}
+                      alt=""
+                      fill
+                      sizes="64px"
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                 ))}
               </div>
@@ -149,4 +166,4 @@ function FeedCard({ item }: { item: SocialFeedItem }) {
       </div>
     </Link>
   )
-}
+})

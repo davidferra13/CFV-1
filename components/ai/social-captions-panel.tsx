@@ -117,7 +117,7 @@ export function SocialCaptionsPanel({ eventId }: { eventId: string }) {
             )}
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-stone-400">
+            <span className="text-xs-tight text-stone-400">
               {currentCaption.characterCount} chars
             </span>
             <Button
@@ -133,7 +133,7 @@ export function SocialCaptionsPanel({ eventId }: { eventId: string }) {
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Auto draft · Client details omitted · Review before posting
       </p>
     </div>

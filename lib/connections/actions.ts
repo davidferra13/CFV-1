@@ -1,5 +1,5 @@
 // Client Connections Server Actions
-// Lightweight peer-to-peer connections between clients — chef-only
+// Lightweight peer-to-peer connections between clients - chef-only
 // Replaces the heavyweight Households feature
 
 'use server'

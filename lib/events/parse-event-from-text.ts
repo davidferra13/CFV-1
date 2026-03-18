@@ -1,7 +1,7 @@
 // Natural Language Event Parser
 // Uses local Ollama to extract structured event data from free-form text.
-// PRIVACY: Contains client_name and financial data — must stay local.
-// AI policy compliant: output is a draft — never auto-saved. Chef must confirm.
+// PRIVACY: Contains client_name and financial data - must stay local.
+// AI policy compliant: output is a draft - never auto-saved. Chef must confirm.
 
 'use server'
 
@@ -19,13 +19,13 @@ const ParsedEventDraftSchema = z.object({
   guest_count: z.number().int().positive().nullable(),
   occasion: z.string().nullable().describe('e.g. "Birthday Dinner", "Corporate Event"'),
 
-  // Location — free-form description, chef fills details later
+  // Location - free-form description, chef fills details later
   location_description: z
     .string()
     .nullable()
     .describe('Address or venue description from the text'),
 
-  // Financials — parse dollar amounts to cents (integer)
+  // Financials - parse dollar amounts to cents (integer)
   quoted_price_cents: z
     .number()
     .int()
@@ -60,13 +60,13 @@ const SYSTEM_PROMPT = `You are an assistant helping a private chef quickly captu
 
 Today's date is ${today}. Use this to resolve relative dates like "Saturday the 28th", "next Friday", "in two weeks".
 
-Extract structured data from the chef's input. Be liberal in interpretation — the goal is to pre-fill a form, not to be a gatekeeper.
+Extract structured data from the chef's input. Be liberal in interpretation - the goal is to pre-fill a form, not to be a gatekeeper.
 
 Rules:
 - All monetary amounts convert to integer cents (e.g. "$2,800" → 280000, "$500 deposit" → 50000)
 - Dates must be YYYY-MM-DD format
 - Times must be 24h HH:MM (e.g. "7pm" → "19:00", "6:30" → "18:30")
-- If a field is genuinely not mentioned, return null — don't invent values
+- If a field is genuinely not mentioned, return null - don't invent values
 - If a field is mentioned but ambiguous, include it with your best guess and list it in uncertain_fields
 - Return ONLY valid JSON matching the schema
 

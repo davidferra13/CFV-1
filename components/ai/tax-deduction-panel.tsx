@@ -96,7 +96,7 @@ export function TaxDeductionPanel() {
                 />
                 <span className="text-xs font-medium text-stone-300">{flag.category}</span>
                 {flag.estimatedAnnualValueCents && (
-                  <span className="text-[11px] text-stone-500 ml-auto">
+                  <span className="text-xs-tight text-stone-500 ml-auto">
                     {formatDollars(flag.estimatedAnnualValueCents)}/yr
                   </span>
                 )}
@@ -108,7 +108,7 @@ export function TaxDeductionPanel() {
         </div>
       )}
 
-      <div className="text-[11px] text-stone-400 border-t border-stone-800 pt-2">
+      <div className="text-xs-tight text-stone-400 border-t border-stone-800 pt-2">
         {result.disclaimer}
       </div>
     </div>

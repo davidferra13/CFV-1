@@ -77,14 +77,14 @@ export function PriceAlertsWidget({ className = '' }: PriceAlertsWidgetProps) {
             <div className="flex-1 min-w-0">
               <p className="text-sm text-stone-200 truncate">{alert.ingredientName}</p>
               {alert.affectedMenus.length > 0 && (
-                <p className="text-[10px] text-stone-500 truncate">
+                <p className="text-xxs text-stone-500 truncate">
                   Affects: {alert.affectedMenus.join(', ')}
                 </p>
               )}
             </div>
             <div className="text-right flex-shrink-0">
               <p className="text-xs text-amber-400 font-medium">+{alert.spikePercent}%</p>
-              <p className="text-[10px] text-stone-500">
+              <p className="text-xxs text-stone-500">
                 ${(alert.currentPriceCents / 100).toFixed(2)} vs $
                 {(alert.averagePriceCents / 100).toFixed(2)} avg
               </p>
@@ -94,7 +94,7 @@ export function PriceAlertsWidget({ className = '' }: PriceAlertsWidgetProps) {
       </div>
       {alerts.length > 5 && (
         <div className="px-4 py-2 border-t border-stone-800">
-          <p className="text-[10px] text-stone-500">
+          <p className="text-xxs text-stone-500">
             +{alerts.length - 5} more alert{alerts.length - 5 !== 1 ? 's' : ''}
           </p>
         </div>

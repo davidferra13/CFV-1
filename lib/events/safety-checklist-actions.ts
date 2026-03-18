@@ -12,7 +12,7 @@ const DEFAULT_SAFETY_ITEMS = [
     label: 'Color-coded cutting boards designated by protein type',
   },
   { key: 'ALLERGEN_LIST_POSTED', label: 'Allergen list reviewed and posted at workstation' },
-  { key: 'TEMPS_VERIFIED', label: 'All proteins checked — confirmed at or below 41°F' },
+  { key: 'TEMPS_VERIFIED', label: 'All proteins checked - confirmed at or below 41°F' },
   { key: 'HOT_HOLDING_READY', label: 'Hot holding equipment at 135°F+' },
   { key: 'GLOVES_AVAILABLE', label: 'Gloves available for ready-to-eat food handling' },
   { key: 'FIRE_EXTINGUISHER_LOCATED', label: 'Fire extinguisher location confirmed' },

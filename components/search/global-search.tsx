@@ -190,7 +190,7 @@ export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: s
       <div className="relative z-50 flex items-center">
         <button
           onClick={openAndFocus}
-          className="flex items-center justify-center w-8 h-8 hover:bg-stone-700 rounded-lg transition-colors"
+          className="flex items-center justify-center w-11 h-11 hover:bg-stone-700 rounded-lg transition-colors touch-manipulation"
           aria-label="Open search"
         >
           <svg

@@ -1,4 +1,4 @@
-// OneSignal — push notifications
+// OneSignal - push notifications
 // https://onesignal.com/
 // Unlimited web push free, no credit card
 // Event reminders, inquiry alerts, payment notifications
@@ -10,8 +10,8 @@
  *   npm install @onesignal/onesignal-react
  *
  * Env vars:
- *   NEXT_PUBLIC_ONESIGNAL_APP_ID — your OneSignal app ID
- *   ONESIGNAL_REST_API_KEY — for server-side push (keep secret)
+ *   NEXT_PUBLIC_ONESIGNAL_APP_ID - your OneSignal app ID
+ *   ONESIGNAL_REST_API_KEY - for server-side push (keep secret)
  *
  * This file handles server-side push sending via REST API.
  * Client-side subscription is handled by the OneSignal SDK in the browser.
@@ -63,14 +63,15 @@ export async function sendPushToUser(
       }),
     })
     return res.ok
-  } catch {
+  } catch (err) {
+    console.error('[onesignal] sendPushToUser failed:', err)
     return false
   }
 }
 
 /**
  * Send a push notification to all subscribed users.
- * Use sparingly — for system-wide announcements only.
+ * Use sparingly - for system-wide announcements only.
  */
 export async function sendPushToAll(notification: PushNotification): Promise<boolean> {
   try {
@@ -90,7 +91,8 @@ export async function sendPushToAll(notification: PushNotification): Promise<boo
       }),
     })
     return res.ok
-  } catch {
+  } catch (err) {
+    console.error('[onesignal] sendPushToAll failed:', err)
     return false
   }
 }
@@ -153,7 +155,7 @@ export async function notifyQuoteReady(
 ): Promise<boolean> {
   return sendPushToUser(clientUserId, {
     title: 'Quote Ready',
-    message: `${chefName} sent you a quote — tap to review`,
+    message: `${chefName} sent you a quote - tap to review`,
     url: `/events/${eventId}`,
   })
 }

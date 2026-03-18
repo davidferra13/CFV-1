@@ -1,6 +1,6 @@
 'use client'
 
-// useOfflineForm — Saves form data to localStorage as the user types.
+// useOfflineForm - Saves form data to localStorage as the user types.
 // If the page reloads or the user goes offline mid-edit, the draft is restored.
 // Drafts are automatically cleared after a successful form submission.
 
@@ -35,7 +35,7 @@ export function useOfflineForm<T extends Record<string, unknown>>(
         if (hoursSinceSave < 24) {
           return { ...defaultValues, ...parsed.data }
         }
-        // Expired draft — clean it up
+        // Expired draft - clean it up
         localStorage.removeItem(storageKey)
       }
     } catch {
@@ -70,7 +70,7 @@ export function useOfflineForm<T extends Record<string, unknown>>(
           )
           setHasDraft(true)
         } catch {
-          // Storage full or unavailable — not critical
+          // Storage full or unavailable - not critical
         }
       }, debounceMs)
     },

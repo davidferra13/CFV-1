@@ -51,7 +51,7 @@ export async function runPreDeletionChecks(chefId: string): Promise<DeletionBloc
       }
     }
   } catch {
-    // View may not exist — skip this check
+    // View may not exist - skip this check
   }
 
   // 3. Check for active retainers
@@ -70,7 +70,7 @@ export async function runPreDeletionChecks(chefId: string): Promise<DeletionBloc
       })
     }
   } catch {
-    // Table may not exist — skip
+    // Table may not exist - skip
   }
 
   // 4. Check for active SaaS subscription

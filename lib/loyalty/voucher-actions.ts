@@ -337,7 +337,7 @@ export type { IncentiveRedemptionRecord, IncentiveStats }
 
 /**
  * Deactivate a voucher or gift card (chef-only, soft disable).
- * Does not delete — preserves history and redemption records.
+ * Does not delete - preserves history and redemption records.
  */
 export async function deactivateIncentive(incentiveId: string) {
   const user = await requireChef()

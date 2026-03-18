@@ -1,12 +1,12 @@
 // lib/pricing/evaluate.ts
 //
-// Master pricing evaluation — the single entry point that completely understands
+// Master pricing evaluation - the single entry point that completely understands
 // all of the chef's pricing and knows exactly how to apply it.
 //
 // Primary export: evaluateChefPricing()
 // Secondary export: formatPricingForChef() (usable as standalone)
 //
-// Pure computation — no database, no network, no side effects.
+// Pure computation - no database, no network, no side effects.
 // All amounts in cents (minor units).
 //
 // Rate source of truth:  lib/pricing/constants.ts
@@ -41,7 +41,7 @@ import {
 
 export interface PricingEligibilityContext {
   /**
-   * Client explicitly asked for pricing — e.g. "how much does this cost?",
+   * Client explicitly asked for pricing - e.g. "how much does this cost?",
    * "what are your rates?", "can I get a quote?", "what's the budget?".
    */
   clientAskedForPricing: boolean
@@ -53,17 +53,17 @@ export interface PricingEligibilityContext {
    */
   clientReferencedPriorPricing?: boolean
 
-  /** Guest count has been stated — even as a range ("4–6 guests" counts) */
+  /** Guest count has been stated - even as a range ("4–6 guests" counts) */
   guestCountKnown: boolean
 
-  /** A date or date range is known — even approximate ("sometime in July" counts) */
+  /** A date or date range is known - even approximate ("sometime in July" counts) */
   dateKnown: boolean
 
-  /** City or town is known — needed for travel scoping */
+  /** City or town is known - needed for travel scoping */
   locationKnown: boolean
 
   /**
-   * Is this a legitimate private chef inquiry — not spam, not unrelated,
+   * Is this a legitimate private chef inquiry - not spam, not unrelated,
    * not a question about general cooking techniques.
    * @default true
    */
@@ -102,7 +102,7 @@ export interface PricingAdjustment {
    */
   totalCents?: number
 
-  /** Human-readable reason — shown in chef summary; may appear in pricing notes */
+  /** Human-readable reason - shown in chef summary; may appear in pricing notes */
   reason: string
 }
 
@@ -174,7 +174,7 @@ export interface PricingEvaluationResult {
 
   /**
    * Full deterministic pricing breakdown from the core engine.
-   * Always computed regardless of pricingAllowed — chef can review numbers
+   * Always computed regardless of pricingAllowed - chef can review numbers
    * even before presenting them to the client.
    */
   breakdown: PricingBreakdown
@@ -189,7 +189,7 @@ export interface PricingEvaluationResult {
 
   /**
    * High end of pricing range (max day rate × numberOfDays + premiums).
-   * This matches breakdown.totalServiceCents — it is the quoted default.
+   * This matches breakdown.totalServiceCents - it is the quoted default.
    */
   rangeHigh?: PricingRangeSide
 
@@ -216,10 +216,10 @@ export interface PricingEvaluationResult {
   // ── Text outputs ───────────────────────────────────────────────────────────
 
   /**
-   * Client-facing paragraph — ready to paste into an email.
+   * Client-facing paragraph - ready to paste into an email.
    * Written in conversational tone; no tabular math; no internal notes.
    *
-   * null when requiresCustomPricing = true (no computable number exists — caller
+   * null when requiresCustomPricing = true (no computable number exists - caller
    * should prompt chef to set a manual price before presenting anything to the client).
    *
    * For weekly services with a day-rate range (weekly_standard / weekly_commitment),
@@ -277,7 +277,7 @@ interface ResolvedAdjustment {
 // ─── Main Function ────────────────────────────────────────────────────────────
 
 /**
- * evaluateChefPricing — the master pricing evaluation function.
+ * evaluateChefPricing - the master pricing evaluation function.
  *
  * This is the single entry point that completely understands all of the chef's
  * pricing and knows exactly how to apply it. Use this function whenever code needs to:
@@ -289,10 +289,10 @@ interface ResolvedAdjustment {
  *   - Know what still needs the chef's confirmation before a quote goes live
  *   - Get range pricing for weekly services (min/max day rates)
  *
- * The pricing is entirely deterministic — no AI, no estimation, no guessing.
+ * The pricing is entirely deterministic - no AI, no estimation, no guessing.
  * Every computation step is traceable through the returned breakdown and chefSummaryText.
  *
- * @example — Basic private dinner quote
+ * @example - Basic private dinner quote
  * ```ts
  * const result = await evaluateChefPricing({
  *   serviceType: 'private_dinner',
@@ -307,7 +307,7 @@ interface ResolvedAdjustment {
  * // result.chefSummaryText  → full internal breakdown with all steps
  * ```
  *
- * @example — With AI eligibility gate
+ * @example - With AI eligibility gate
  * ```ts
  * const result = await evaluateChefPricing({
  *   serviceType: 'private_dinner',
@@ -325,7 +325,7 @@ interface ResolvedAdjustment {
  * return sendEmail(result.clientFacingText)
  * ```
  *
- * @example — Weekly service with range
+ * @example - Weekly service with range
  * ```ts
  * const result = await evaluateChefPricing({
  *   serviceType: 'weekly_standard',
@@ -337,7 +337,7 @@ interface ResolvedAdjustment {
  * // result.rangeHigh.totalServiceCents → 5 days × $500/day = $2,500
  * ```
  *
- * @example — With loyalty discount
+ * @example - With loyalty discount
  * ```ts
  * const result = await evaluateChefPricing({
  *   serviceType: 'private_dinner',
@@ -346,12 +346,12 @@ interface ResolvedAdjustment {
  *   adjustment: {
  *     type: 'loyalty_discount',
  *     amountCents: 10000,   // $100 off for returning client
- *     reason: 'Returning client — 3rd booking',
+ *     reason: 'Returning client - 3rd booking',
  *   },
  * })
  * // result.finalTotalCents     → computed total minus $100
  * // result.adjustmentApplied   → true
- * // result.adjustmentDescription → "Loyalty discount: −$100 (Returning client — 3rd booking)"
+ * // result.adjustmentDescription → "Loyalty discount: −$100 (Returning client - 3rd booking)"
  * ```
  */
 export async function evaluateChefPricing(
@@ -362,7 +362,7 @@ export async function evaluateChefPricing(
   // ── weekendPremiumEnabled default ─────────────────────────────────────────
   // Chef-tool mode (eligibility omitted): default to true so Fri/Sat events are
   // correctly priced without the chef having to remember to pass the flag.
-  // AI path (eligibility context present): keep false — the AI should never
+  // AI path (eligibility context present): keep false - the AI should never
   // silently apply a premium the client hasn't been told about.
   const weekendPremiumEnabled =
     inputWeekendPremium !== undefined ? inputWeekendPremium : eligibility === undefined // true = chef tool, false = AI path
@@ -402,7 +402,7 @@ export async function evaluateChefPricing(
   const chefSummaryText = formatPricingForChef(breakdown, {
     serviceType: input.serviceType,
     eventDate: input.eventDate,
-    weekendPremiumEnabled, // resolved value — what the engine actually used, not raw input
+    weekendPremiumEnabled, // resolved value - what the engine actually used, not raw input
     rangeLow: rangeResult.low,
     rangeHigh: rangeResult.high,
     adjustmentApplied: adjustmentResult.applied,
@@ -454,23 +454,23 @@ function assessEligibility(ctx?: PricingEligibilityContext): {
   // ── Trigger: at least one of the three trigger conditions must be true ────
   // 1. Client explicitly asked for pricing / quote / cost / budget
   // 2. Client referenced prior pricing in their message
-  // (3rd trigger — "question cannot be answered without pricing" — is handled
+  // (3rd trigger - "question cannot be answered without pricing" - is handled
   //  by the AI agent and passed as clientAskedForPricing = true when applicable)
   const hasTrigger = ctx.clientAskedForPricing || ctx.clientReferencedPriorPricing === true
 
   if (!hasTrigger) {
-    failReasons.push('Client has not asked for pricing — do not volunteer pricing unprompted')
+    failReasons.push('Client has not asked for pricing - do not volunteer pricing unprompted')
   }
 
   // ── Gate: all four context requirements must be met ───────────────────────
   if (!ctx.guestCountKnown) {
-    failReasons.push('Guest count unknown — ask before quoting')
+    failReasons.push('Guest count unknown - ask before quoting')
   }
   if (!ctx.dateKnown) {
-    failReasons.push('Event date unknown — ask before quoting')
+    failReasons.push('Event date unknown - ask before quoting')
   }
   if (!ctx.locationKnown) {
-    failReasons.push('Event location unknown — ask before quoting')
+    failReasons.push('Event location unknown - ask before quoting')
   }
 
   // ── Optional gates (fail only when explicitly set to false) ──────────────
@@ -641,7 +641,7 @@ function collectPendingConfirmations(
           ? `${formatCentsAsDollars(line.unitCents)}/person`
           : `${formatCentsAsDollars(line.unitCents)} flat`
       confirmations.push(
-        `Add-on "${line.label}" priced at ${unitDesc} — verify this is still current before quoting`
+        `Add-on "${line.label}" priced at ${unitDesc} - verify this is still current before quoting`
       )
     }
   }
@@ -651,15 +651,15 @@ function collectPendingConfirmations(
     const price = MULTI_NIGHT_PACKAGES[input.multiNightPackage]
     if (price === 0) {
       confirmations.push(
-        `Multi-night package "${input.multiNightPackage}" has no confirmed price — set value in lib/pricing/constants.ts before quoting`
+        `Multi-night package "${input.multiNightPackage}" has no confirmed price - set value in lib/pricing/constants.ts before quoting`
       )
     }
   }
 
-  // Minimum booking floor was applied — remind chef to verify the floor amount is current
+  // Minimum booking floor was applied - remind chef to verify the floor amount is current
   if (breakdown.minimumApplied) {
     confirmations.push(
-      `Minimum booking floor of ${formatCentsAsDollars(MINIMUM_BOOKING_CENTS)} was applied — confirm this minimum is still current`
+      `Minimum booking floor of ${formatCentsAsDollars(MINIMUM_BOOKING_CENTS)} was applied - confirm this minimum is still current`
     )
   }
 
@@ -676,24 +676,24 @@ function collectWarnings(
 ): string[] {
   const warnings: string[] = []
 
-  // Large group — verify feasibility before committing
+  // Large group - verify feasibility before committing
   if (breakdown.isLargeGroup && input.serviceType === 'private_dinner') {
     warnings.push(
-      `Large group (${input.guestCount} guests) — verify kitchen space and logistics can support this before committing`
+      `Large group (${input.guestCount} guests) - verify kitchen space and logistics can support this before committing`
     )
   }
 
-  // Holiday detected but pricing is custom — chef must manually factor it in
+  // Holiday detected but pricing is custom - chef must manually factor it in
   if (breakdown.requiresCustomPricing && breakdown.holidayName) {
     warnings.push(
-      `${breakdown.holidayName} (Tier ${breakdown.holidayTier}) detected — factor the holiday premium into your custom quote`
+      `${breakdown.holidayName} (Tier ${breakdown.holidayTier}) detected - factor the holiday premium into your custom quote`
     )
   }
 
   // Near-holiday proximity for custom pricing
   if (breakdown.requiresCustomPricing && breakdown.isNearHoliday) {
     warnings.push(
-      `Event is within proximity window of ${breakdown.nearHolidayName} — consider adding a proximity premium to your custom quote`
+      `Event is within proximity window of ${breakdown.nearHolidayName} - consider adding a proximity premium to your custom quote`
     )
   }
 
@@ -703,21 +703,21 @@ function collectWarnings(
     (input.numberOfDays ?? 1) < WEEKLY_COMMITMENT_MIN_DAYS
   ) {
     warnings.push(
-      `Commitment rate requires ${WEEKLY_COMMITMENT_MIN_DAYS}+ consecutive days — only ${input.numberOfDays ?? 1} provided. Consider using weekly_standard instead.`
+      `Commitment rate requires ${WEEKLY_COMMITMENT_MIN_DAYS}+ consecutive days - only ${input.numberOfDays ?? 1} provided. Consider using weekly_standard instead.`
     )
   }
 
-  // No event date — holiday and weekend premiums not computed
+  // No event date - holiday and weekend premiums not computed
   if (!input.eventDate) {
     warnings.push(
-      'No event date provided — holiday detection and weekend premium not applied. Final price may be higher.'
+      'No event date provided - holiday detection and weekend premium not applied. Final price may be higher.'
     )
   }
 
-  // No travel distance — travel fee is $0 (may be wrong)
+  // No travel distance - travel fee is $0 (may be wrong)
   if (!input.distanceMiles || input.distanceMiles === 0) {
     warnings.push(
-      'Travel distance not provided — travel fee set to $0. Confirm whether travel reimbursement applies.'
+      'Travel distance not provided - travel fee set to $0. Confirm whether travel reimbursement applies.'
     )
   }
 
@@ -726,7 +726,7 @@ function collectWarnings(
     const adjustedTotal = Math.max(0, breakdown.totalServiceCents - adjustment.amountCents)
     if (adjustedTotal < MINIMUM_BOOKING_CENTS) {
       warnings.push(
-        `Loyalty discount brings total to ${formatCentsAsDollars(adjustedTotal)}, below the ${formatCentsAsDollars(MINIMUM_BOOKING_CENTS)} minimum booking floor — confirm this is intentional`
+        `Loyalty discount brings total to ${formatCentsAsDollars(adjustedTotal)}, below the ${formatCentsAsDollars(MINIMUM_BOOKING_CENTS)} minimum booking floor - confirm this is intentional`
       )
     }
   }
@@ -746,16 +746,16 @@ function buildChefChecklist(
 
   if (!breakdown.requiresCustomPricing) {
     checklist.push(
-      `Review the total (${formatCentsAsDollars(adjustment.finalTotalCents)}) — does this feel right for this event?`
+      `Review the total (${formatCentsAsDollars(adjustment.finalTotalCents)}) - does this feel right for this event?`
     )
     checklist.push(
-      `Deposit: ${formatCentsAsDollars(adjustment.finalDepositCents)} (50% non-refundable) — client must pay this to lock the date`
+      `Deposit: ${formatCentsAsDollars(adjustment.finalDepositCents)} (50% non-refundable) - client must pay this to lock the date`
     )
     checklist.push(
       `Balance: ${formatCentsAsDollars(adjustment.finalBalanceCents)} due 24 hours before service`
     )
   } else {
-    checklist.push('Custom pricing required — set your price before creating a quote in the system')
+    checklist.push('Custom pricing required - set your price before creating a quote in the system')
   }
 
   if (input.eventDate) {
@@ -766,7 +766,7 @@ function buildChefChecklist(
 
   if (input.distanceMiles && input.distanceMiles > 0) {
     checklist.push(
-      `Travel fee: ${formatCentsAsDollars(breakdown.travelFeeCents)} (${input.distanceMiles} miles at $${(IRS_MILEAGE_RATE_CENTS / 100).toFixed(2)}/mile) — verify the distance is accurate`
+      `Travel fee: ${formatCentsAsDollars(breakdown.travelFeeCents)} (${input.distanceMiles} miles at $${(IRS_MILEAGE_RATE_CENTS / 100).toFixed(2)}/mile) - verify the distance is accurate`
     )
   } else {
     checklist.push('Confirm whether travel reimbursement applies and get the client address')
@@ -776,22 +776,22 @@ function buildChefChecklist(
     const premiumTotal = breakdown.holidayPremiumCents + breakdown.nearHolidayPremiumCents
     const holidayLabel = breakdown.holidayName ?? breakdown.nearHolidayName ?? 'holiday'
     checklist.push(
-      `Holiday premium of ${formatCentsAsDollars(premiumTotal)} applied for ${holidayLabel} — make sure the client understands`
+      `Holiday premium of ${formatCentsAsDollars(premiumTotal)} applied for ${holidayLabel} - make sure the client understands`
     )
   }
 
   if (breakdown.addOnLines.length > 0) {
     const labels = breakdown.addOnLines.map((l) => l.label).join(', ')
     checklist.push(
-      `Add-ons included: ${labels} — confirm the client requested these and the prices are current`
+      `Add-ons included: ${labels} - confirm the client requested these and the prices are current`
     )
   }
 
   checklist.push(
-    'Groceries billed separately at actual receipt cost — remind the client if not already covered'
+    'Groceries billed separately at actual receipt cost - remind the client if not already covered'
   )
   checklist.push(
-    'Read the client-facing text before sending — tone should be warm and conversational, not transactional'
+    'Read the client-facing text before sending - tone should be warm and conversational, not transactional'
   )
 
   if (!adjustment.applied && breakdown.totalServiceCents > 0) {
@@ -819,10 +819,10 @@ function formatWeeklyRangeForEmail(
 
   // Opening: range total (includes all premiums, travel, add-ons already baked in)
   lines.push(
-    `My weekly rate for ${dayLabel} runs ${formatCentsAsDollars(low.totalServiceCents)}–${formatCentsAsDollars(high.totalServiceCents)}, depending on the schedule — I work within a range rather than a single fixed daily rate.`
+    `My weekly rate for ${dayLabel} runs ${formatCentsAsDollars(low.totalServiceCents)}–${formatCentsAsDollars(high.totalServiceCents)}, depending on the schedule - I work within a range rather than a single fixed daily rate.`
   )
 
-  // Holiday note (premium is already included in both range totals — just explain the bump)
+  // Holiday note (premium is already included in both range totals - just explain the bump)
   if (breakdown.holidayPremiumCents > 0 && breakdown.holidayName) {
     lines.push(
       `Since this falls on ${breakdown.holidayName}, a holiday premium is already included in those figures.`
@@ -853,7 +853,7 @@ function formatWeeklyRangeForEmail(
     )
   }
 
-  // Groceries — always shown, always billed separately
+  // Groceries - always shown, always billed separately
   lines.push(
     `Groceries are billed separately at actual cost based on real receipts, usually in the ${formatCentsAsDollars(breakdown.estimatedGroceryCents.low)}–${formatCentsAsDollars(breakdown.estimatedGroceryCents.high)} range for a booking of ${dayLabel}.`
   )
@@ -873,7 +873,7 @@ function formatWeeklyRangeForEmail(
  * Shows every computation step, internal notes, grocery estimates,
  * pending confirmations, and warnings.
  *
- * ⚠️ NEVER send this output to a client — it contains internal numbers and notes.
+ * ⚠️ NEVER send this output to a client - it contains internal numbers and notes.
  *
  * Can be called standalone with just a PricingBreakdown, or with the full
  * options object when called from evaluateChefPricing().
@@ -898,7 +898,7 @@ export function formatPricingForChef(
   const opts = options ?? {}
 
   // ── Header ──────────────────────────────────────────────────────────────────
-  lines.push('╔══ PRICING BREAKDOWN — INTERNAL (NOT FOR CLIENT) ══╗')
+  lines.push('╔══ PRICING BREAKDOWN - INTERNAL (NOT FOR CLIENT) ══╗')
   lines.push('')
 
   // ── Service summary ─────────────────────────────────────────────────────────
@@ -908,7 +908,7 @@ export function formatPricingForChef(
   lines.push(
     `Guests:    ${breakdown.guestCount} guest${breakdown.guestCount === 1 ? '' : 's'}` +
       (breakdown.isCouple ? '  (couples rate)' : '') +
-      (breakdown.isLargeGroup ? '  (large group — confirm feasibility)' : '')
+      (breakdown.isLargeGroup ? '  (large group - confirm feasibility)' : '')
   )
   if (breakdown.courseCount !== undefined) {
     lines.push(`Courses:   ${breakdown.courseCount}`)
@@ -924,7 +924,7 @@ export function formatPricingForChef(
 
   // ── Custom pricing flag ──────────────────────────────────────────────────────
   if (breakdown.requiresCustomPricing) {
-    lines.push('⚠️  REQUIRES CUSTOM PRICING — no computed total')
+    lines.push('⚠️  REQUIRES CUSTOM PRICING - no computed total')
     for (const err of breakdown.validationErrors) {
       lines.push(`   • ${err}`)
     }
@@ -937,7 +937,7 @@ export function formatPricingForChef(
     lines.push('COMPUTATION STEPS:')
     let step = 1
 
-    // Base service fee — annotate which rate table and course count were used
+    // Base service fee - annotate which rate table and course count were used
     if (breakdown.pricingModel === 'per_person' && breakdown.perPersonCents > 0) {
       const rateTable = breakdown.isCouple ? 'Couples rate' : 'Group rate'
       const courseNote =
@@ -952,31 +952,31 @@ export function formatPricingForChef(
       )
     }
 
-    // Weekend premium — show for ALL weekend events, whether applied or not
+    // Weekend premium - show for ALL weekend events, whether applied or not
     if (breakdown.weekendPremiumCents > 0) {
       lines.push(
         `  ${step++}. Weekend (+${Math.round(breakdown.weekendPremiumPercent * 100)}%):  +${formatCentsAsDollars(breakdown.weekendPremiumCents)}`
       )
     } else if (breakdown.isWeekend) {
-      // Event is on Fri/Sat but premium was not applied — show the opportunity cost
+      // Event is on Fri/Sat but premium was not applied - show the opportunity cost
       const potential = Math.round(breakdown.serviceFeeCents * WEEKEND_PREMIUM_PERCENT)
       const reason =
         opts.weekendPremiumEnabled === false
           ? 'opt-in disabled'
-          : 'weekendPremiumEnabled not passed — consider enabling'
+          : 'weekendPremiumEnabled not passed - consider enabling'
       lines.push(
-        `  ${step++}. Weekend premium: not applied (${reason}) — would add +${formatCentsAsDollars(potential)}`
+        `  ${step++}. Weekend premium: not applied (${reason}) - would add +${formatCentsAsDollars(potential)}`
       )
     }
 
     // Exact holiday premium
     if (breakdown.holidayPremiumCents > 0) {
       lines.push(
-        `  ${step++}. ${breakdown.holidayName} — Tier ${breakdown.holidayTier} (+${Math.round(breakdown.holidayPremiumPercent * 100)}%):  +${formatCentsAsDollars(breakdown.holidayPremiumCents)}`
+        `  ${step++}. ${breakdown.holidayName} - Tier ${breakdown.holidayTier} (+${Math.round(breakdown.holidayPremiumPercent * 100)}%):  +${formatCentsAsDollars(breakdown.holidayPremiumCents)}`
       )
     } else if (breakdown.holidayName && breakdown.requiresCustomPricing) {
       lines.push(
-        `  ${step++}. ${breakdown.holidayName} detected — factor Tier ${breakdown.holidayTier} premium into custom quote`
+        `  ${step++}. ${breakdown.holidayName} detected - factor Tier ${breakdown.holidayTier} premium into custom quote`
       )
     }
 
@@ -987,7 +987,7 @@ export function formatPricingForChef(
       )
     } else if (breakdown.isNearHoliday) {
       lines.push(
-        `  ${step++}. Near ${breakdown.nearHolidayName} — factor proximity premium into custom quote`
+        `  ${step++}. Near ${breakdown.nearHolidayName} - factor proximity premium into custom quote`
       )
     }
 
@@ -1052,7 +1052,7 @@ export function formatPricingForChef(
   // ── Rate range (weekly services only) ────────────────────────────────────────
   if (opts.rangeLow && opts.rangeHigh) {
     lines.push(divider)
-    lines.push('RATE RANGE (weekly service — chef may offer low or high end):')
+    lines.push('RATE RANGE (weekly service - chef may offer low or high end):')
     lines.push(
       `  Low  (${formatCentsAsDollars(opts.rangeLow.dayRateCents)}/day):  ${opts.rangeLow.rateDescription}`
     )
@@ -1076,7 +1076,7 @@ export function formatPricingForChef(
   lines.push(
     `  ${formatCentsAsDollars(breakdown.estimatedGroceryCents.low)} – ${formatCentsAsDollars(breakdown.estimatedGroceryCents.high)}${groceryNote}`
   )
-  lines.push(`  Actual cost billed at receipt cost — no markup.`)
+  lines.push(`  Actual cost billed at receipt cost - no markup.`)
   lines.push('')
 
   // ── Engine notes ─────────────────────────────────────────────────────────────
@@ -1115,7 +1115,7 @@ export function formatPricingForChef(
  *   - The final total is zero or negative
  *   - There are hard validation errors on the input
  *
- * Note: pendingConfirmations and warnings do NOT block quoting — they are
+ * Note: pendingConfirmations and warnings do NOT block quoting - they are
  * advisory. The chef decides whether to proceed with unconfirmed catalog prices.
  *
  * Note: pricingAllowed (the AI eligibility gate) is intentionally NOT part of
@@ -1135,10 +1135,10 @@ export function isQuotable(result: PricingEvaluationResult): boolean {
  * Suitable for activity feeds, quote lists, inquiry summaries, and notifications.
  *
  * @example
- * "4-course dinner for 4 on Valentine's Day — $1,366 total"
- * "5-course dinner for 2 (near Mother's Day) — $720 total (adjusted)"
- * "Weekly Standard — 5 days for 3 — $2,500 total"
- * "Custom pricing required — 16-guest buyout"
+ * "4-course dinner for 4 on Valentine's Day - $1,366 total"
+ * "5-course dinner for 2 (near Mother's Day) - $720 total (adjusted)"
+ * "Weekly Standard - 5 days for 3 - $2,500 total"
+ * "Custom pricing required - 16-guest buyout"
  */
 export function generateQuoteSummary(
   result: PricingEvaluationResult,
@@ -1148,7 +1148,7 @@ export function generateQuoteSummary(
 
   if (result.requiresCustomPricing) {
     const reason = breakdown.validationErrors[0] ?? breakdown.notes[0] ?? 'manual pricing required'
-    return `Custom pricing required — ${reason}`
+    return `Custom pricing required - ${reason}`
   }
 
   const parts: string[] = []
@@ -1174,8 +1174,8 @@ export function generateQuoteSummary(
     parts.push(`(near ${breakdown.nearHolidayName})`)
   }
 
-  // Total — use finalTotalCents to reflect any adjustments
-  parts.push(`— ${formatCentsAsDollars(result.finalTotalCents)} total`)
+  // Total - use finalTotalCents to reflect any adjustments
+  parts.push(`- ${formatCentsAsDollars(result.finalTotalCents)} total`)
 
   if (result.adjustmentApplied) {
     parts.push('(adjusted)')

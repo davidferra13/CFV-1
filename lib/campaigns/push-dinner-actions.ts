@@ -107,8 +107,8 @@ export async function createPushDinner(input: PushDinnerInput): Promise<string> 
       name: input.name,
       campaign_type: 'push_dinner',
       status: 'draft',
-      subject: '', // not used for push dinners — per-recipient draft_subject is used
-      body_html: '', // not used — per-recipient draft_body is used
+      subject: '', // not used for push dinners - per-recipient draft_subject is used
+      body_html: '', // not used - per-recipient draft_body is used
       target_segment: {},
       occasion: input.occasion,
       proposed_date: input.proposed_date,
@@ -388,7 +388,7 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
 
     if (!resend) {
       console.log(
-        '[push-dinner] RESEND_API_KEY not set — skipping email to recipient',
+        '[push-dinner] RESEND_API_KEY not set - skipping email to recipient',
         recipient.id
       )
       await supabase
@@ -401,7 +401,7 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
 
     try {
       const { first } = splitName(
-        // We try to resolve the client name if possible — graceful fallback to email
+        // We try to resolve the client name if possible - graceful fallback to email
         recipient.email.split('@')[0] ?? 'there'
       )
 

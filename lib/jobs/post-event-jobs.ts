@@ -1,4 +1,4 @@
-// Post-Event Follow-Up Jobs — Inngest Background Functions
+// Post-Event Follow-Up Jobs - Inngest Background Functions
 //
 // These jobs run on a delayed schedule after an event is marked as completed:
 //   - Thank-you email:   3 days after completion
@@ -11,7 +11,7 @@
 //   3. Sends the email via the existing Resend-based email system
 //   4. Logs success/failure
 //
-// All jobs are non-blocking side effects — failures are logged, never thrown.
+// All jobs are non-blocking side effects - failures are logged, never thrown.
 
 import { inngest } from './inngest-client'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -29,7 +29,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 async function getPostEventContext(eventId: string, tenantId: string, clientId: string) {
   const supabase: any = createAdminClient()
 
-  // Fetch event — verify it's still completed (not somehow cancelled after trigger)
+  // Fetch event - verify it's still completed (not somehow cancelled after trigger)
   const { data: event, error: eventErr } = await supabase
     .from('events')
     .select('id, status, occasion, event_date, tenant_id, client_id')
@@ -42,7 +42,7 @@ async function getPostEventContext(eventId: string, tenantId: string, clientId: 
   }
 
   if (event.status === 'cancelled') {
-    log.info('Post-event job: skipping — event was cancelled', { context: { eventId } })
+    log.info('Post-event job: skipping - event was cancelled', { context: { eventId } })
     return null
   }
 
@@ -59,12 +59,12 @@ async function getPostEventContext(eventId: string, tenantId: string, clientId: 
   }
 
   if (!client.email) {
-    log.info('Post-event job: skipping — client has no email', { context: { clientId } })
+    log.info('Post-event job: skipping - client has no email', { context: { clientId } })
     return null
   }
 
   if (client.marketing_unsubscribed) {
-    log.info('Post-event job: skipping — client opted out of marketing', {
+    log.info('Post-event job: skipping - client opted out of marketing', {
       context: { clientId },
     })
     return null

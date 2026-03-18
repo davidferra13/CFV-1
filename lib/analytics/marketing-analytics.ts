@@ -189,7 +189,7 @@ export async function getCostPerLeadByChannel(
   const channelMapping: Record<string, InquiryChannel[]> = {
     instagram_ads: ['instagram'],
     google_ads: ['website'],
-    facebook_ads: ['other'], // facebook not a valid inquiry channel — map to 'other'
+    facebook_ads: ['other'], // facebook not a valid inquiry channel - map to 'other'
   }
 
   const results: CostPerLeadByChannel[] = []

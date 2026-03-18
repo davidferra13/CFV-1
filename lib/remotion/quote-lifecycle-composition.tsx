@@ -1,5 +1,5 @@
 /**
- * QuoteLifecycleComposition — Remotion animation showing the quote lifecycle.
+ * QuoteLifecycleComposition - Remotion animation showing the quote lifecycle.
  *
  * States: draft → sent → [accepted, rejected, expired]
  * Also explains deposits (percentage vs flat amount) and expiration.
@@ -243,7 +243,7 @@ export function QuoteLifecycleComposition() {
                   ...useSlideUp(PHASE.DRAFT + 15),
                 }}
               >
-                Build your quote — set the price, add line items,{'\n'}and choose deposit
+                Build your quote - set the price, add line items,{'\n'}and choose deposit
                 requirements
               </div>
               <div

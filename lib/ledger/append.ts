@@ -49,7 +49,7 @@ export async function appendLedgerEntryForChef(
 }
 
 /**
- * Internal ledger append — NOT exported as a server action.
+ * Internal ledger append - NOT exported as a server action.
  * Only callable from other server-side functions in this module or via
  * the explicit re-export in lib/ledger/internal.ts for webhook use.
  * CRITICAL: This is append-only. Entries are immutable (enforced by triggers)
@@ -103,10 +103,10 @@ async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
 }
 
 /**
- * Webhook-safe ledger append — for use by the Stripe webhook handler only.
+ * Webhook-safe ledger append - for use by the Stripe webhook handler only.
  * This is a named export but NOT directly callable by clients because
  * callers must provide valid tenant_id/client_id/event_id from verified webhook data.
- * The function itself validates nothing about the caller — the webhook handler
+ * The function itself validates nothing about the caller - the webhook handler
  * is responsible for signature verification before calling this.
  */
 export async function appendLedgerEntryFromWebhook(
@@ -149,7 +149,7 @@ export async function createAdjustment({
     throw new Error('Event not found or does not belong to your tenant')
   }
 
-  // Generate a transaction_reference for idempotency — prevents double-click double-entry.
+  // Generate a transaction_reference for idempotency - prevents double-click double-entry.
   // If the caller provides an idempotency_key, use it; otherwise generate one from inputs.
   const transaction_reference = idempotency_key
     ? `adj_${idempotency_key}`
@@ -190,7 +190,7 @@ export async function createAdjustment({
           domain: 'financial',
           entityType: 'ledger_entry',
           entityId: result.entry?.id,
-          summary: `Recorded adjustment: $${(amount_cents / 100).toFixed(2)} — ${description}`,
+          summary: `Recorded adjustment: $${(amount_cents / 100).toFixed(2)} - ${description}`,
           context: {
             amount_cents,
             entry_type: 'adjustment',

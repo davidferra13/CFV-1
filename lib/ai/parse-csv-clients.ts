@@ -1,5 +1,5 @@
 // CSV Client Parser
-// Deterministic column-detection parser — no AI required.
+// Deterministic column-detection parser - no AI required.
 // Handles Google Contacts CSV, generic CSVs, iPhone/Android exports.
 
 import type { ParsedClient } from './parse-client'
@@ -113,7 +113,7 @@ function detectColumnType(header: string, format: string): CsvColumnType {
     return 'skip'
   }
 
-  // Generic detection — order matters (more specific first)
+  // Generic detection - order matters (more specific first)
   const nameExact = [
     'name',
     'full_name',
@@ -179,7 +179,7 @@ function rowToClient(row: string[], mappings: CsvColumnMapping[]): ParsedClient 
     return row[m.index]?.trim() || null
   }
 
-  // Support multiple email/phone columns — use first non-empty
+  // Support multiple email/phone columns - use first non-empty
   const emailMappings = mappings.filter((m) => m.detected === 'email')
   const emailVal =
     emailMappings.map((m) => row[m.index]?.trim()).find((v) => v && v.length > 0) || null
@@ -314,7 +314,7 @@ export function parseClientsCsv(csvText: string): CsvParseResult {
   }
   if (!hasEmail) {
     warnings.push(
-      'No email column detected. Clients will be imported without email addresses — you can add them later.'
+      'No email column detected. Clients will be imported without email addresses - you can add them later.'
     )
   }
   if (format === 'google_contacts') {

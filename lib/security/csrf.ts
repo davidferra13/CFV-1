@@ -40,7 +40,7 @@ export function verifyCsrfOrigin(request: NextRequest): NextResponse | null {
       const originHost = new URL(origin).hostname
       if (allowedHosts.includes(originHost)) return null
     } catch {
-      // Invalid origin URL — block
+      // Invalid origin URL - block
     }
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
@@ -51,7 +51,7 @@ export function verifyCsrfOrigin(request: NextRequest): NextResponse | null {
       const refererHost = new URL(referer).hostname
       if (allowedHosts.includes(refererHost)) return null
     } catch {
-      // Invalid referer URL — block
+      // Invalid referer URL - block
     }
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }

@@ -1,7 +1,7 @@
-// Pinterest OAuth 2.0 adapter — Pinterest API v5.
+// Pinterest OAuth 2.0 adapter - Pinterest API v5.
 //
 // Pinterest uses standard OAuth 2.0 (no PKCE required).
-// Access tokens are long-lived (no documented expiry — treat as non-expiring).
+// Access tokens are long-lived (no documented expiry - treat as non-expiring).
 // Refresh tokens are returned but expiry varies.
 //
 // Required env vars:

@@ -182,7 +182,7 @@ export function UploadReviewPanel({
                         {dish.dietary_tags.map((tag) => (
                           <span
                             key={tag}
-                            className="text-[10px] bg-green-900/40 text-green-400 px-1.5 py-0.5 rounded"
+                            className="text-xxs bg-green-900/40 text-green-400 px-1.5 py-0.5 rounded"
                           >
                             {tag}
                           </span>

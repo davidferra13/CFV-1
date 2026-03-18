@@ -14,7 +14,7 @@ type BetaWelcomeProps = {
 
 export function BetaWelcomeEmail({ name }: BetaWelcomeProps) {
   return (
-    <BaseLayout preview="You're on the list — welcome to the ChefFlow beta.">
+    <BaseLayout preview="You're on the list - welcome to the ChefFlow beta.">
       <Text style={heading}>You&apos;re on the list.</Text>
       <Text style={paragraph}>Hi {name},</Text>
       <Text style={paragraph}>
@@ -27,21 +27,21 @@ export function BetaWelcomeEmail({ name }: BetaWelcomeProps) {
           <tr>
             <td style={stepNumber}>1</td>
             <td style={stepText}>
-              <strong>We review your signup</strong> — we&apos;re onboarding chefs in small batches
+              <strong>We review your signup</strong> - we&apos;re onboarding chefs in small batches
               to keep things personal.
             </td>
           </tr>
           <tr>
             <td style={stepNumber}>2</td>
             <td style={stepText}>
-              <strong>You get an invitation email</strong> — with a personal link to create your
+              <strong>You get an invitation email</strong> - with a personal link to create your
               account and start using the full platform.
             </td>
           </tr>
           <tr>
             <td style={stepNumber}>3</td>
             <td style={stepText}>
-              <strong>You help shape ChefFlow</strong> — beta testers get priority support and a
+              <strong>You help shape ChefFlow</strong> - beta testers get priority support and a
               direct line to the team building this.
             </td>
           </tr>
@@ -58,7 +58,7 @@ export function BetaWelcomeEmail({ name }: BetaWelcomeProps) {
         </Link>
         .
       </Text>
-      <Text style={signoff}>— The ChefFlow Team</Text>
+      <Text style={signoff}>- The ChefFlow Team</Text>
     </BaseLayout>
   )
 }

@@ -1,4 +1,4 @@
-// Follow-Up Due — Chef Notification Email
+// Follow-Up Due - Chef Notification Email
 // Sent to the chef when a scheduled follow-up on an inquiry becomes overdue.
 
 import { Text, Link } from '@react-email/components'

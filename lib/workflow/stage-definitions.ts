@@ -301,7 +301,7 @@ function stage6_groceryList(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
   const items: WorkItem[] = []
   if (!f.hasMenuAttached) return items
 
-  // Phase A — Structural (menu gravity stable)
+  // Phase A - Structural (menu gravity stable)
   if (f.menuGravityStable && !f.guestCountStable) {
     items.push(
       item(
@@ -316,7 +316,7 @@ function stage6_groceryList(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
     )
   }
 
-  // Phase B — Quantified (guest count stabilized)
+  // Phase B - Quantified (guest count stabilized)
   if (f.guestCountStable && f.hasMenuWithDishes && !f.eventConfirmed) {
     items.push(
       item(
@@ -331,7 +331,7 @@ function stage6_groceryList(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
     )
   }
 
-  // Phase C — Finalized (confirmed, within shopping window)
+  // Phase C - Finalized (confirmed, within shopping window)
   if (f.eventConfirmed && f.dateWithin7Days) {
     const urgency: WorkUrgency = f.dateWithin3Days ? 'fragile' : 'normal'
     items.push(
@@ -405,7 +405,7 @@ function stage7_prepList(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
 function stage8_equipmentPlanning(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
   const items: WorkItem[] = []
 
-  // Level 1 — Menu-dependent tools (once menu exists)
+  // Level 1 - Menu-dependent tools (once menu exists)
   if (f.hasMenuAttached && !f.isLegallyActionable) {
     items.push(
       item(
@@ -420,7 +420,7 @@ function stage8_equipmentPlanning(ctx: EventContext, f: ConfirmedFacts): WorkIte
     )
   }
 
-  // Level 2 — Service-dependent tools (once guest count and location confirmed)
+  // Level 2 - Service-dependent tools (once guest count and location confirmed)
   if (f.guestCountStable && f.hasLocation) {
     items.push(
       item(
@@ -435,7 +435,7 @@ function stage8_equipmentPlanning(ctx: EventContext, f: ConfirmedFacts): WorkIte
     )
   }
 
-  // Level 3 — Site confirmations (close to event)
+  // Level 3 - Site confirmations (close to event)
   if (f.eventConfirmed && f.dateWithin7Days) {
     const urgency: WorkUrgency = f.dateWithin3Days ? 'fragile' : 'normal'
     items.push(

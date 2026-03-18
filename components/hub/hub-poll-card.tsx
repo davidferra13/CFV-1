@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, memo } from 'react'
+import { toast } from 'sonner'
 import type { HubPoll, HubPollOption } from '@/lib/hub/types'
 import { voteOnPoll, removeVote, closePoll } from '@/lib/hub/poll-actions'
 
@@ -11,7 +12,14 @@ interface HubPollCardProps {
   onVoted?: () => void
 }
 
-export function HubPollCard({ poll, profileToken, isOwnerOrAdmin, onVoted }: HubPollCardProps) {
+// Memoized: rendered inside message feed for poll messages. Receives stable poll data.
+// Note: parent should wrap onVoted with useCallback.
+export const HubPollCard = memo(function HubPollCard({
+  poll,
+  profileToken,
+  isOwnerOrAdmin,
+  onVoted,
+}: HubPollCardProps) {
   const [isPending, startTransition] = useTransition()
   const [localPoll, setLocalPoll] = useState(poll)
 
@@ -56,7 +64,7 @@ export function HubPollCard({ poll, profileToken, isOwnerOrAdmin, onVoted }: Hub
         })
         onVoted?.()
       } catch {
-        // Revert not needed - will refresh
+        toast.error('Vote failed. Please try again.')
       }
     })
   }
@@ -68,7 +76,7 @@ export function HubPollCard({ poll, profileToken, isOwnerOrAdmin, onVoted }: Hub
         await closePoll({ pollId: localPoll.id, profileToken })
         setLocalPoll((prev) => ({ ...prev, is_closed: true }))
       } catch {
-        // Ignore
+        toast.error('Failed to close poll.')
       }
     })
   }
@@ -144,4 +152,4 @@ export function HubPollCard({ poll, profileToken, isOwnerOrAdmin, onVoted }: Hub
       </div>
     </div>
   )
-}
+})

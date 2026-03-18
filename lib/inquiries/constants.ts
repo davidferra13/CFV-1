@@ -1,4 +1,4 @@
-// Inquiry constants — no 'use server' directive.
+// Inquiry constants - no 'use server' directive.
 // Exported separately so they can be used in client components
 // without violating the 'use server' file restriction
 // (which only allows async function exports).

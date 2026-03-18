@@ -1,6 +1,6 @@
 'use server'
 
-// Menu Doc Editor — Server Actions
+// Menu Doc Editor - Server Actions
 // Handles auto-save mutations and context loading for the Google Doc-style menu editor.
 // All mutations enforce tenant scoping and chef-only access.
 

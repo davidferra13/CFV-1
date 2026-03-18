@@ -1,4 +1,4 @@
-// Quote Pipeline Server Actions — Chef-side
+// Quote Pipeline Server Actions - Chef-side
 // Create, manage, and track quotes through the pricing pipeline
 // Quotes bridge inquiries to confirmed pricing before events are created
 
@@ -157,7 +157,7 @@ export async function createQuote(input: CreateQuoteInput) {
       domain: 'quote',
       entityType: 'quote',
       entityId: quote.id,
-      summary: `Created quote${validated.quote_name ? `: ${validated.quote_name}` : ''} — ${amount}`,
+      summary: `Created quote${validated.quote_name ? `: ${validated.quote_name}` : ''} - ${amount}`,
       context: {
         quote_name: validated.quote_name,
         total_cents: validated.total_quoted_cents,
@@ -852,7 +852,7 @@ export async function createQuoteFromPricingInput(
     internalNotes?: string
   }
 ) {
-  // Import at call site (compute.ts is 'use server' — safe for dynamic import)
+  // Import at call site (compute.ts is 'use server' - safe for dynamic import)
   const { generateQuoteFromPricing } = await import('@/lib/pricing/compute')
 
   const result = await generateQuoteFromPricing(pricingInput)

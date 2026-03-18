@@ -3,7 +3,7 @@
 // Client Preference Profile Builder
 // Privacy-first: synthesizes ALL event + message history with a single client into
 // a structured profile. Routed to local Ollama (client PII + history).
-// Output is DRAFT ONLY — displayed to chef as insight surface, never writes canon data.
+// Output is DRAFT ONLY - displayed to chef as insight surface, never writes canon data.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'

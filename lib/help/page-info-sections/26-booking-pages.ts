@@ -9,7 +9,7 @@ export const BOOKING_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/book/[chefSlug]/thank-you': {
     title: 'Booking Confirmed',
-    description: 'Your booking request has been submitted — the chef will be in touch.',
+    description: 'Your booking request has been submitted - the chef will be in touch.',
     features: ['Confirmation message', 'Next steps', 'Contact info'],
   },
 

@@ -28,10 +28,10 @@ const TIER_LABELS: Record<string, string> = {
 }
 
 const TIER_BADGE: Record<string, string> = {
-  bronze: 'bg-amber-900 text-amber-800',
+  bronze: 'bg-amber-900 text-amber-200',
   silver: 'bg-stone-700 text-stone-200',
-  gold: 'bg-yellow-900 text-yellow-800',
-  platinum: 'bg-indigo-900 text-indigo-800',
+  gold: 'bg-yellow-900 text-yellow-200',
+  platinum: 'bg-indigo-900 text-indigo-200',
 }
 
 type TierKey = (typeof TIER_ORDER)[number]
@@ -102,8 +102,8 @@ export default async function MyRewardsPage() {
     .eq('id', user.entityId)
     .single()
 
-  const [incentives, rewardsResult, configResult, pendingRedemptions, raffleData] =
-    await Promise.all([
+  const [incentivesSettled, rewardsSettled, configSettled, pendingSettled, raffleSettled] =
+    await Promise.allSettled([
       getVoucherAndGiftCards(),
       supabase
         .from('loyalty_rewards')
@@ -119,10 +119,50 @@ export default async function MyRewardsPage() {
         .eq('tenant_id', client?.tenant_id || '')
         .maybeSingle(),
       getMyPendingRedemptions(),
-      getActiveRaffle().catch(() => null),
+      getActiveRaffle().catch((err) => {
+        console.error('[my-rewards] Failed to load active raffle:', err)
+        return null
+      }),
     ])
+  const incentives =
+    incentivesSettled.status === 'fulfilled'
+      ? incentivesSettled.value
+      : (() => {
+          console.error('[my-rewards] Incentives failed:', incentivesSettled.reason)
+          return { vouchers: [], giftCards: [] } as Awaited<
+            ReturnType<typeof getVoucherAndGiftCards>
+          >
+        })()
+  const rewardsResult =
+    rewardsSettled.status === 'fulfilled'
+      ? rewardsSettled.value
+      : (() => {
+          console.error('[my-rewards] Rewards query failed:', rewardsSettled.reason)
+          return { data: null }
+        })()
+  const configResult =
+    configSettled.status === 'fulfilled'
+      ? configSettled.value
+      : (() => {
+          console.error('[my-rewards] Config query failed:', configSettled.reason)
+          return { data: null }
+        })()
+  const pendingRedemptions =
+    pendingSettled.status === 'fulfilled'
+      ? pendingSettled.value
+      : (() => {
+          console.error('[my-rewards] Pending redemptions failed:', pendingSettled.reason)
+          return []
+        })()
+  const raffleData =
+    raffleSettled.status === 'fulfilled'
+      ? raffleSettled.value
+      : (() => {
+          console.error('[my-rewards] Raffle failed:', raffleSettled.reason)
+          return null
+        })()
 
-  const allRewards = (rewardsResult.data || []) as LoyaltyReward[]
+  const allRewards = ((rewardsResult as any)?.data || []) as LoyaltyReward[]
   const configData = (configResult as any)?.data ?? null
   const progress = getTierProgress(status.tier as TierKey, status.pointsBalance, configData)
 

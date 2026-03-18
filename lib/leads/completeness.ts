@@ -1,4 +1,4 @@
-// Inquiry Completeness Score — how many key fields are filled
+// Inquiry Completeness Score - how many key fields are filled
 // Higher completeness = easier to convert (chef has what they need to quote)
 
 export interface CompletenessScore {

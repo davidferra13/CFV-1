@@ -1,4 +1,4 @@
-// Meta publishing adapter — handles Instagram Business and Facebook Pages.
+// Meta publishing adapter - handles Instagram Business and Facebook Pages.
 // Instagram: Container-based publishing via the Instagram Content Publishing API.
 // Facebook: Direct photo/video/text posts via the Pages API.
 // Both platforms use a User Access Token (stored encrypted in social_platform_credentials).
@@ -63,7 +63,7 @@ export async function publishInstagram(
     let containerId: string
 
     if (post.media_type === 'video') {
-      // Video container — requires publicly accessible video URL
+      // Video container - requires publicly accessible video URL
       if (!post.media_url) {
         return { success: false, error: 'No video URL for Instagram video post', retriable: false }
       }
@@ -93,7 +93,7 @@ export async function publishInstagram(
       if (!ready) {
         return {
           success: false,
-          error: 'Instagram video processing timed out — will retry',
+          error: 'Instagram video processing timed out - will retry',
           retriable: true,
         }
       }
@@ -165,7 +165,7 @@ export async function publishFacebook(
   }
 }
 
-// ── Token refresh (Meta long-lived tokens — exchange when near expiry) ────────
+// ── Token refresh (Meta long-lived tokens - exchange when near expiry) ────────
 
 export async function refreshMetaToken(credential: PlatformCredential): Promise<{
   accessToken: string

@@ -1,6 +1,6 @@
 'use server'
 
-// Daily Ops — Server Actions
+// Daily Ops - Server Actions
 // Orchestrates all data fetches, runs the plan engine, and handles item completion/dismissal.
 // Every action is tenant-scoped via requireChef().
 
@@ -200,7 +200,7 @@ export async function completeDailyPlanItem(
         break
       }
       // Queue items, NBA items, follow-ups, etc. don't have a "complete" action
-      // — they resolve by the chef taking the action (following the deep link).
+      // - they resolve by the chef taking the action (following the deep link).
       // We dismiss them instead.
       default: {
         await dismissDailyPlanItem(itemId)

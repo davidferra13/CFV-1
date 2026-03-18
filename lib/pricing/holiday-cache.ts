@@ -1,11 +1,11 @@
-// Holiday Cache — Nager.Date API integration for accurate floating holiday detection
+// Holiday Cache - Nager.Date API integration for accurate floating holiday detection
 //
 // The pricing engine uses hardcoded holiday arrays as the PRIMARY source (works offline,
 // instant, deterministic). This cache SUPPLEMENTS those arrays by fetching real holiday
 // dates from the Nager.Date API, which is especially useful for floating holidays
 // (Easter, Thanksgiving, Mother's Day, etc.) that change dates every year.
 //
-// Pattern: Formula > AI — hardcoded logic is primary, API is supplemental.
+// Pattern: Formula > AI - hardcoded logic is primary, API is supplemental.
 // If the API is down or returns nothing, the hardcoded logic handles everything.
 
 import { getPublicHolidays, type PublicHoliday } from '@/lib/holidays/nager-date'
@@ -25,7 +25,7 @@ interface YearCache {
 
 // ─── In-Memory Cache ─────────────────────────────────────────────────────────
 
-// Cache per year — most pricing lookups are for the current year or next year
+// Cache per year - most pricing lookups are for the current year or next year
 const cache = new Map<number, YearCache>()
 
 // Cache TTL: 24 hours (holidays don't change mid-year)
@@ -51,7 +51,7 @@ const NAGER_TO_INTERNAL_NAME: Record<string, string> = {
 
 /**
  * Warm the cache for a given year by fetching holidays from Nager.Date.
- * Safe to call multiple times — returns immediately if cache is fresh.
+ * Safe to call multiple times - returns immediately if cache is fresh.
  * Non-blocking: if the API fails, the cache stays empty and hardcoded logic takes over.
  */
 export async function warmHolidayCache(year: number, countryCode = 'US'): Promise<void> {
@@ -62,7 +62,7 @@ export async function warmHolidayCache(year: number, countryCode = 'US'): Promis
 
   try {
     const holidays = await getPublicHolidays(year, countryCode)
-    if (holidays.length === 0) return // API returned nothing — don't overwrite valid cache
+    if (holidays.length === 0) return // API returned nothing - don't overwrite valid cache
 
     const holidayMap = new Map<string, CachedHoliday>()
     for (const h of holidays) {
@@ -78,7 +78,7 @@ export async function warmHolidayCache(year: number, countryCode = 'US'): Promis
       fetchedAt: Date.now(),
     })
   } catch {
-    // API failure — hardcoded logic takes over. No-op.
+    // API failure - hardcoded logic takes over. No-op.
   }
 }
 
@@ -86,7 +86,7 @@ export async function warmHolidayCache(year: number, countryCode = 'US'): Promis
  * Look up a date in the Nager.Date cache.
  * Returns the cached holiday info if found, or null if not cached / not a holiday.
  *
- * This is a SYNCHRONOUS lookup — the cache must be warmed first via warmHolidayCache().
+ * This is a SYNCHRONOUS lookup - the cache must be warmed first via warmHolidayCache().
  * If the cache hasn't been warmed, this returns null and the hardcoded logic handles it.
  */
 export function getCachedHoliday(dateStr: string): CachedHoliday | null {
@@ -103,7 +103,7 @@ export function getCachedHoliday(dateStr: string): CachedHoliday | null {
 /**
  * Check if a date is a holiday according to the Nager.Date cache.
  * Returns true only if the cache has been warmed AND the date is a known holiday.
- * Returns false if cache is empty (API down, not warmed yet) — NOT "not a holiday."
+ * Returns false if cache is empty (API down, not warmed yet) - NOT "not a holiday."
  *
  * Callers should treat `null` as "unknown" (fall through to hardcoded logic)
  * and `CachedHoliday` as a confirmed match.

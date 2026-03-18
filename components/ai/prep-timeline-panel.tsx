@@ -92,14 +92,16 @@ export function PrepTimelinePanel({ eventId }: { eventId: string }) {
             className="flex items-start gap-3 py-1.5 border-b border-stone-50 last:border-0"
           >
             <div className="w-16 flex-shrink-0 text-xs font-mono text-stone-400">{task.time}</div>
-            <div className="w-14 flex-shrink-0 text-[11px] text-stone-400">{task.duration}</div>
+            <div className="w-14 flex-shrink-0 text-xs-tight text-stone-400">{task.duration}</div>
             <div className="flex-1">
               <div className="text-sm text-stone-300">{task.task}</div>
-              {task.recipe && <div className="text-[11px] text-stone-400">for: {task.recipe}</div>}
-              {task.notes && <div className="text-[11px] text-amber-600">{task.notes}</div>}
+              {task.recipe && (
+                <div className="text-xs-tight text-stone-400">for: {task.recipe}</div>
+              )}
+              {task.notes && <div className="text-xs-tight text-amber-600">{task.notes}</div>}
             </div>
             {task.canParallelize && (
-              <div className="flex-shrink-0 text-[10px] text-blue-500 bg-blue-950 px-1 rounded">
+              <div className="flex-shrink-0 text-xxs text-blue-500 bg-blue-950 px-1 rounded">
                 parallel
               </div>
             )}
@@ -107,7 +109,7 @@ export function PrepTimelinePanel({ eventId }: { eventId: string }) {
         ))}
       </div>
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Draft · Adjust timing based on your kitchen and setup
       </p>
     </div>

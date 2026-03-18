@@ -1,6 +1,6 @@
 // Charity keyword matching utility
 // Single source of truth for all charity-related keyword matching.
-// Add new terms to CHARITY_KEYWORDS — they propagate to all queries automatically.
+// Add new terms to CHARITY_KEYWORDS - they propagate to all queries automatically.
 
 /**
  * Configurable keyword array for charity detection.
@@ -30,7 +30,7 @@ export const CHARITY_KEYWORDS: string[] = [
 
 /**
  * Check if a text string contains any charity keyword (case-insensitive).
- * Works on single strings — for arrays, call on each element.
+ * Works on single strings - for arrays, call on each element.
  */
 export function isCharityRelated(text: string | null | undefined): boolean {
   if (!text) return false

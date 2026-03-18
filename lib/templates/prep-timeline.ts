@@ -1,4 +1,4 @@
-// Prep Timeline — Deterministic Schedule Builder
+// Prep Timeline - Deterministic Schedule Builder
 // Works backward from event time using recipe prep times + standard buffers.
 // This is how every chef has planned prep since before computers existed:
 // start from service time, subtract, add buffers, create the schedule.
@@ -90,7 +90,7 @@ function formatDuration(hours: number): string {
 /**
  * Guest count affects prep time. Standard baseline = 8 guests.
  * Scale factor increases prep proportionally but not linearly
- * (economies of scale — doubling guests doesn't double prep).
+ * (economies of scale - doubling guests doesn't double prep).
  */
 function guestScaleFactor(guestCount: number): number {
   if (guestCount <= 4) return 0.8
@@ -106,7 +106,7 @@ function guestScaleFactor(guestCount: number): number {
 
 /**
  * Builds a prep timeline working backward from service time.
- * Pure math + standard catering buffers — no AI, no network.
+ * Pure math + standard catering buffers - no AI, no network.
  * Returns the exact same type as the AI version for drop-in compatibility.
  */
 export function buildPrepTimelineFormula(v: TimelineVars): PrepTimeline {
@@ -124,8 +124,8 @@ export function buildPrepTimelineFormula(v: TimelineVars): PrepTimeline {
   // SERVICE: First course goes out
   steps.push({
     time: formatTime(currentTime),
-    task: 'First course goes out — service begins',
-    duration: '—',
+    task: 'First course goes out - service begins',
+    duration: '-',
     category: 'service',
   })
 
@@ -144,7 +144,7 @@ export function buildPrepTimelineFormula(v: TimelineVars): PrepTimeline {
   currentTime -= 0.25
   steps.push({
     time: formatTime(currentTime),
-    task: 'Quality check — taste everything, adjust seasoning',
+    task: 'Quality check - taste everything, adjust seasoning',
     duration: '15 min',
     category: 'cooking',
   })
@@ -154,7 +154,7 @@ export function buildPrepTimelineFormula(v: TimelineVars): PrepTimeline {
   currentTime -= cookingTime
   steps.push({
     time: formatTime(currentTime),
-    task: `Main cooking phase — proteins, sides, sauces (${v.menuItems.length || 'multiple'} dishes)`,
+    task: `Main cooking phase - proteins, sides, sauces (${v.menuItems.length || 'multiple'} dishes)`,
     duration: formatDuration(cookingTime),
     category: 'cooking',
     notes: `Scaled for ${guestCount} guests.`,
@@ -165,7 +165,7 @@ export function buildPrepTimelineFormula(v: TimelineVars): PrepTimeline {
   currentTime -= prepTime
   steps.push({
     time: formatTime(currentTime),
-    task: 'Mise en place — all chopping, portioning, measuring, marinating',
+    task: 'Mise en place - all chopping, portioning, measuring, marinating',
     duration: formatDuration(prepTime),
     category: 'prep',
     notes: 'Everything prepped before any cooking starts.',
@@ -176,7 +176,7 @@ export function buildPrepTimelineFormula(v: TimelineVars): PrepTimeline {
   currentTime -= setupTime
   steps.push({
     time: formatTime(currentTime),
-    task: `Kitchen setup — unpack, organize station, equipment check${v.isOffsite ? ', familiarize with venue kitchen' : ''}`,
+    task: `Kitchen setup - unpack, organize station, equipment check${v.isOffsite ? ', familiarize with venue kitchen' : ''}`,
     duration: formatDuration(setupTime),
     category: 'prep',
   })
@@ -186,7 +186,7 @@ export function buildPrepTimelineFormula(v: TimelineVars): PrepTimeline {
     currentTime -= 0.5
     steps.push({
       time: formatTime(currentTime),
-      task: 'Depart for venue — all equipment and ingredients packed',
+      task: 'Depart for venue - all equipment and ingredients packed',
       duration: '30 min buffer',
       category: 'transport',
       notes: 'Adjust based on actual drive time. Always add 15 min buffer.',
@@ -199,7 +199,7 @@ export function buildPrepTimelineFormula(v: TimelineVars): PrepTimeline {
   const shoppingTime = Math.round(1.0 * scale * 100) / 100
   steps.push({
     time: 'Day before or AM',
-    task: 'Grocery shopping — all fresh ingredients',
+    task: 'Grocery shopping - all fresh ingredients',
     duration: formatDuration(shoppingTime),
     category: 'shopping',
     notes: 'Check inventory first. Buy proteins and seafood last (cold chain).',
@@ -209,7 +209,7 @@ export function buildPrepTimelineFormula(v: TimelineVars): PrepTimeline {
   if (courseCount >= 3) {
     steps.push({
       time: 'Day before (optional)',
-      task: 'Advance prep — stocks, sauces, marinades, doughs that benefit from overnight rest',
+      task: 'Advance prep - stocks, sauces, marinades, doughs that benefit from overnight rest',
       duration: '1–2h',
       category: 'prep',
       notes: 'Anything that improves with time. Label and date everything.',
@@ -247,7 +247,7 @@ export function buildPrepTimelineFormula(v: TimelineVars): PrepTimeline {
   const totalPrepHours =
     Math.round((prepTime + cookingTime + platingTime + setupTime + 0.25) * 100) / 100
 
-  const summary = `${courseCount} course${courseCount > 1 ? 's' : ''} for ${guestCount} guests. Estimated ${formatDuration(totalPrepHours)} active prep/cooking time${v.isOffsite ? ' (offsite event — transport included)' : ''}.`
+  const summary = `${courseCount} course${courseCount > 1 ? 's' : ''} for ${guestCount} guests. Estimated ${formatDuration(totalPrepHours)} active prep/cooking time${v.isOffsite ? ' (offsite event - transport included)' : ''}.`
 
   return {
     eventName: v.eventName,

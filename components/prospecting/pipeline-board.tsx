@@ -158,7 +158,7 @@ export function PipelineBoard({ initialStages, revenueByStage }: PipelineBoardPr
                   <span className="text-xs text-stone-500">{stages[stage].length}</span>
                 </div>
                 {stageRevenue > 0 && (
-                  <div className="mt-1.5 flex items-center gap-1 text-[10px] text-green-500">
+                  <div className="mt-1.5 flex items-center gap-1 text-xxs text-green-500">
                     <DollarSign className="h-2.5 w-2.5" />
                     {formatCurrency(stageRevenue)}
                   </div>
@@ -218,7 +218,7 @@ function PipelineCard({ prospect, onDragStart }: { prospect: Prospect; onDragSta
           <div className="flex items-center gap-2 mt-2">
             {/* Lead score with trend arrow */}
             <span
-              className={`inline-flex items-center gap-0.5 min-w-[1.5rem] text-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+              className={`inline-flex items-center gap-0.5 min-w-[1.5rem] text-center rounded-full px-1.5 py-0.5 text-xxs font-semibold ${
                 prospect.lead_score >= 70
                   ? 'bg-green-950 text-green-400'
                   : prospect.lead_score >= 40
@@ -237,7 +237,7 @@ function PipelineCard({ prospect, onDragStart }: { prospect: Prospect; onDragSta
 
             {/* Location */}
             {(prospect.city || prospect.region) && (
-              <span className="text-[10px] text-stone-500 truncate">
+              <span className="text-xxs text-stone-500 truncate">
                 {prospect.city || prospect.region}
               </span>
             )}

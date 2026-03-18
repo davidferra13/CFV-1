@@ -137,7 +137,7 @@ export async function createAAR(input: CreateAARInput) {
           domain: 'operational',
           entityType: 'after_action_review',
           entityId: aar.id,
-          summary: `Filed after-action review — calm: ${validated.calm_rating}/5, prep: ${validated.preparation_rating}/5`,
+          summary: `Filed after-action review - calm: ${validated.calm_rating}/5, prep: ${validated.preparation_rating}/5`,
           context: {
             event_id: validated.event_id,
             calm_rating: validated.calm_rating,

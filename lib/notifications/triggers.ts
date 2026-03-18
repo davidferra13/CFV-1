@@ -1,6 +1,6 @@
-// Restaurant Ops Notification Triggers — Phase 7
+// Restaurant Ops Notification Triggers - Phase 7
 // Functions that fire notifications for restaurant operations events.
-// All trigger functions are NON-BLOCKING — they use try/catch internally
+// All trigger functions are NON-BLOCKING - they use try/catch internally
 // and never throw. Safe to call as side effects after any operation.
 //
 // These notifications go to the chef (tenant owner) since staff members
@@ -65,7 +65,7 @@ export async function notifyTaskAssigned(
     const recipientId = await getChefAuthUserId(tenantId)
     if (!recipientId) return
 
-    const dueDateText = dueDate ? ` — due ${dueDate}` : ''
+    const dueDateText = dueDate ? ` - due ${dueDate}` : ''
 
     await sendNotification({
       tenantId,
@@ -182,7 +182,7 @@ export async function notifyDeliveryReceived(
 
 /**
  * Called when a component's on_hand drops below the par level threshold.
- * This is a critical operational alert — the chef needs to order more.
+ * This is a critical operational alert - the chef needs to order more.
  */
 export async function notifyLowStock(
   tenantId: string,
@@ -202,7 +202,7 @@ export async function notifyLowStock(
       recipientId,
       type: 'low_stock',
       title: `Low stock: ${componentName}`,
-      message: `${stationName} — on hand: ${onHand}, par: ${parLevel} (${percentage}% of par)`,
+      message: `${stationName} - on hand: ${onHand}, par: ${parLevel} (${percentage}% of par)`,
       link: '/ops/clipboard',
       metadata: {
         station_name: stationName,

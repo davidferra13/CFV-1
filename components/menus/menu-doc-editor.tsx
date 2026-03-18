@@ -448,7 +448,7 @@ function CourseBlock({
             </button>
             {showTagPicker && (
               <div className="absolute left-0 top-full mt-1 z-10 bg-stone-900 border border-stone-700 rounded-lg shadow-lg p-2 flex flex-wrap gap-1 min-w-[210px]">
-                <p className="w-full text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1 px-0.5">
+                <p className="w-full text-xxs font-semibold uppercase tracking-widest text-stone-400 mb-1 px-0.5">
                   Accommodates
                 </p>
                 {DIETARY_TAG_OPTIONS.map(({ label, title }) => (
@@ -507,7 +507,7 @@ function CourseBlock({
               </button>
               {showAllergenPicker && (
                 <div className="absolute left-0 top-full mt-1 z-10 bg-stone-900 border border-stone-700 rounded-lg shadow-lg p-2 flex flex-wrap gap-1 min-w-[220px]">
-                  <p className="w-full text-[10px] font-semibold uppercase tracking-widest text-orange-400 mb-1 px-0.5">
+                  <p className="w-full text-xxs font-semibold uppercase tracking-widest text-orange-400 mb-1 px-0.5">
                     Contains
                   </p>
                   {ALLERGEN_OPTIONS.map(({ label, short }) => (
@@ -535,7 +535,7 @@ function CourseBlock({
       {/* Beverage Pairing */}
       {!locked ? (
         <div className="mt-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-purple-400 mb-1 px-3 flex items-center gap-1">
+          <p className="text-xxs font-semibold uppercase tracking-widest text-purple-400 mb-1 px-3 flex items-center gap-1">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-3 w-3"
@@ -575,7 +575,7 @@ function CourseBlock({
       ) : (
         (beveragePairing || beveragePairingNotes) && (
           <div className="mt-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-purple-400 mb-1 flex items-center gap-1">
+            <p className="text-xxs font-semibold uppercase tracking-widest text-purple-400 mb-1 flex items-center gap-1">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-3 w-3"
@@ -609,7 +609,7 @@ function CourseBlock({
       {/* Chef-only notes */}
       {!locked ? (
         <div className="mt-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-500 mb-1 px-3">
+          <p className="text-xxs font-semibold uppercase tracking-widest text-amber-500 mb-1 px-3">
             Internal notes
           </p>
           <AutoTextarea
@@ -626,7 +626,7 @@ function CourseBlock({
       ) : (
         chefNotes && (
           <div className="mt-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-500 mb-1">
+            <p className="text-xxs font-semibold uppercase tracking-widest text-amber-500 mb-1">
               Internal notes
             </p>
             <p className="text-xs text-amber-700 bg-amber-950 rounded-lg px-3 py-2 leading-relaxed">
@@ -639,7 +639,7 @@ function CourseBlock({
       {/* Plating Instructions */}
       {!locked ? (
         <div className="mt-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-sky-400 mb-1 px-3">
+          <p className="text-xxs font-semibold uppercase tracking-widest text-sky-400 mb-1 px-3">
             Plating
           </p>
           <AutoTextarea
@@ -656,7 +656,7 @@ function CourseBlock({
       ) : (
         platingInstructions && (
           <div className="mt-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-sky-400 mb-1">
+            <p className="text-xxs font-semibold uppercase tracking-widest text-sky-400 mb-1">
               Plating
             </p>
             <p className="text-xs text-sky-300 bg-sky-950/40 rounded-lg px-3 py-2 leading-relaxed">
@@ -669,7 +669,7 @@ function CourseBlock({
       {/* Linked Recipes */}
       {dish.linkedRecipes.length > 0 && (
         <div className="mt-4 space-y-1">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-400 mb-1.5">
+          <p className="text-xxs font-semibold uppercase tracking-widest text-brand-400 mb-1.5">
             Linked Recipes
           </p>
           {dish.linkedRecipes.map((lr) => (

@@ -1,6 +1,6 @@
 'use server'
 
-// Remy Survey — Server actions for managing the "Get to Know You" conversational survey.
+// Remy Survey - Server actions for managing the "Get to Know You" conversational survey.
 // Reads/writes the survey_state JSONB column on ai_preferences.
 
 import { requireChef } from '@/lib/auth/get-user'

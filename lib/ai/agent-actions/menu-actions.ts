@@ -1,4 +1,4 @@
-// Remy Agent — Menu Actions
+// Remy Agent - Menu Actions
 // Create menus, link to events on the chef's behalf.
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -37,7 +37,7 @@ export const menuAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Create a new menu, optionally linked to an event.',
     inputSchema:
-      '{ "description": "string — menu details, e.g. Spring Tasting Menu for the Johnson dinner, 5 courses, plated, Mediterranean cuisine" }',
+      '{ "description": "string - menu details, e.g. Spring Tasting Menu for the Johnson dinner, 5 courses, plated, Mediterranean cuisine" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs, ctx) {
@@ -113,7 +113,7 @@ export const menuAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Link an existing menu to an event.',
     inputSchema:
-      '{ "menuName": "string — menu to link", "eventIdentifier": "string — event occasion or client name" }',
+      '{ "menuName": "string - menu to link", "eventIdentifier": "string - event occasion or client name" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs, ctx) {

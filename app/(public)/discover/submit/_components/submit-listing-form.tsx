@@ -203,7 +203,7 @@ export function SubmitListingForm() {
             placeholder="you@business.com"
             className="h-11 w-full rounded-lg border border-stone-700 bg-stone-900/80 px-4 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
           />
-          <p className="mt-1 text-[11px] text-stone-500">
+          <p className="mt-1 text-xs-tight text-stone-500">
             Used for verification only. Not displayed publicly.
           </p>
         </div>
@@ -246,7 +246,7 @@ export function SubmitListingForm() {
           placeholder="Tell potential customers what makes your business special..."
           className="w-full rounded-lg border border-stone-700 bg-stone-900/80 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 resize-none"
         />
-        <p className="mt-1 text-[11px] text-stone-500">{description.length}/500</p>
+        <p className="mt-1 text-xs-tight text-stone-500">{description.length}/500</p>
       </div>
 
       {/* Submit */}
@@ -258,7 +258,7 @@ export function SubmitListingForm() {
         >
           {isPending ? 'Submitting...' : 'Submit your business'}
         </button>
-        <p className="text-[11px] text-stone-500">
+        <p className="text-xs-tight text-stone-500">
           Submissions are reviewed before appearing in the directory.
         </p>
       </div>

@@ -1,6 +1,6 @@
 'use server'
 
-// Remy Survey Answer Extraction — Uses Ollama fast tier (qwen3:4b) to distill
+// Remy Survey Answer Extraction - Uses Ollama fast tier (qwen3:4b) to distill
 // conversational survey answers into structured factual statements.
 // Called non-blocking after each mascot chat response during survey mode.
 
@@ -26,7 +26,7 @@ type SurveyExtraction = z.infer<typeof SurveyExtractionSchema>
 
 /**
  * Extract the factual answer from a chef's conversational survey response.
- * Uses Ollama fast tier for speed. Non-blocking — never delays the next message.
+ * Uses Ollama fast tier for speed. Non-blocking - never delays the next message.
  *
  * @param questionKey - e.g. 'kitchen_0'
  * @param questionPrompt - The conversational question text
@@ -47,7 +47,7 @@ export async function extractSurveyAnswer(
     const result: SurveyExtraction = await parseWithOllama(
       `You extract factual answers from conversational survey responses.
 Given a survey question and the chef's conversational reply, extract the factual content.
-Strip filler words, tangents, and pleasantries — keep only the meaningful information.
+Strip filler words, tangents, and pleasantries - keep only the meaningful information.
 If the response doesn't actually answer the question, return an empty answers array.
 Keep each extracted answer under 200 characters.`,
       `QUESTION: "${questionPrompt}"

@@ -112,7 +112,7 @@ async function handleCreateFollowUpTask(
 
 // ─── Send Template Message (as DRAFT) ────────────────────────────────────
 // Creates a draft message using a response template.
-// DOES NOT auto-send — respects the existing approval workflow.
+// DOES NOT auto-send - respects the existing approval workflow.
 
 async function handleSendTemplateMessage(
   rule: AutomationRule,
@@ -141,7 +141,7 @@ async function handleSendTemplateMessage(
     return { success: false, error: 'Template not found' }
   }
 
-  // Create a draft message (NOT sent — chef must approve)
+  // Create a draft message (NOT sent - chef must approve)
   const { error: msgError } = await supabase.from('messages').insert({
     tenant_id: context.tenantId,
     inquiry_id: context.entityType === 'inquiry' ? context.entityId : null,

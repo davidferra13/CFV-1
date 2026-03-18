@@ -28,7 +28,7 @@ export function PrepSheetReadyEmail({
       </Text>
       <Text style={muted}>
         When all AT HOME tasks are done, you&apos;ll arrive at {clientName}&apos;s with only
-        execution work remaining — 80% calm before you walk in the door.
+        execution work remaining - 80% calm before you walk in the door.
       </Text>
     </BaseLayout>
   )

@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import type { HubMessage, HubGuestProfile, HubPoll } from '@/lib/hub/types'
 import { addReaction, removeReaction, getMessageReaders } from '@/lib/hub/message-actions'
 import { getPoll } from '@/lib/hub/poll-actions'
@@ -21,7 +21,9 @@ interface HubMessageBubbleProps {
   isOwnerOrAdmin?: boolean
 }
 
-export function HubMessageBubble({
+// Memoized: rendered in .map() inside hub feed. Receives stable message objects.
+// Note: parent should wrap onPin, onReply, onEdit, onDelete with useCallback.
+export const HubMessageBubble = memo(function HubMessageBubble({
   message,
   currentProfileId,
   profileToken,
@@ -168,7 +170,7 @@ export function HubMessageBubble({
 
           {/* Source badge (email, remy) */}
           {message.source === 'email' && (
-            <div className="mt-1 flex items-center gap-1 text-[10px] opacity-50">
+            <div className="mt-1 flex items-center gap-1 text-xxs opacity-50">
               <svg
                 className="h-2.5 w-2.5"
                 viewBox="0 0 24 24"
@@ -274,7 +276,7 @@ export function HubMessageBubble({
       </div>
     </div>
   )
-}
+})
 
 // "Seen by" indicator for own messages - lazy-loads readers on hover/click
 function SeenByIndicator({ messageId }: { messageId: string }) {
@@ -308,7 +310,7 @@ function SeenByIndicator({ messageId }: { messageId: string }) {
           setExpanded(!expanded)
         }}
         onMouseEnter={() => void loadReaders()}
-        className="flex items-center gap-1 text-[10px] text-stone-500 hover:text-stone-400"
+        className="flex items-center gap-1 text-xxs text-stone-500 hover:text-stone-400"
       >
         {loading ? (
           <span>...</span>
@@ -339,7 +341,7 @@ function SeenByIndicator({ messageId }: { messageId: string }) {
 
       {expanded && readers && readers.length > 1 && (
         <div className="absolute right-0 top-full z-20 mt-1 rounded-lg bg-stone-800 px-3 py-2 shadow-lg">
-          <div className="text-[10px] font-medium text-stone-400">Seen by</div>
+          <div className="text-xxs font-medium text-stone-400">Seen by</div>
           {readers.map((r) => (
             <div
               key={r.profile_id}
@@ -348,7 +350,7 @@ function SeenByIndicator({ messageId }: { messageId: string }) {
               {r.avatar_url ? (
                 <img src={r.avatar_url} alt="" className="h-4 w-4 rounded-full object-cover" />
               ) : (
-                <div className="flex h-4 w-4 items-center justify-center rounded-full bg-stone-700 text-[8px]">
+                <div className="flex h-4 w-4 items-center justify-center rounded-full bg-stone-700 text-3xs">
                   {r.display_name[0]?.toUpperCase()}
                 </div>
               )}

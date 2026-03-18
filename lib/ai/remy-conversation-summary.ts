@@ -1,7 +1,7 @@
-// Remy — Conversation Summary Generator (Phase 3C)
+// Remy - Conversation Summary Generator (Phase 3C)
 // Auto-generates 2-3 sentence summaries when a conversation ends or reaches 10+ messages.
 // Deterministic where possible (entity extraction, topic detection).
-// Summaries stored in IndexedDB alongside conversations (local only — privacy).
+// Summaries stored in IndexedDB alongside conversations (local only - privacy).
 
 import type { RemyMessage } from '@/lib/ai/remy-types'
 

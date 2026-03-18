@@ -1,5 +1,5 @@
 // Scheduled Job Definitions & Types
-// Extracted from scheduler.ts — 'use server' files can only export async functions.
+// Extracted from scheduler.ts - 'use server' files can only export async functions.
 
 import { AI_PRIORITY } from '@/lib/ai/queue/types'
 
@@ -8,7 +8,7 @@ export interface ScheduledJob {
   name: string
   intervalMs: number
   priority: number
-  /** Only seed for tenants that exist — uses admin client */
+  /** Only seed for tenants that exist - uses admin client */
   seedOnStartup: boolean
   /** All jobs run on PC (Pi is permanently retired) */
   enabled: boolean

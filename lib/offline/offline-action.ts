@@ -1,4 +1,4 @@
-// offline-action — Wraps server actions to queue them when offline.
+// offline-action - Wraps server actions to queue them when offline.
 // When online: executes normally.
 // When offline: saves to IndexedDB queue and returns an optimistic result.
 // When back online: sync engine replays queued actions in order.
@@ -50,29 +50,29 @@ export function createOfflineAction<T>(options: OfflineActionOptions<T>) {
           (err instanceof Error && err.message.includes('Load failed'))
 
         if (isNetworkError) {
-          // Network error — queue the action for later
+          // Network error - queue the action for later
           await enqueueAction(name, args)
-          console.info(`[offline] Queued "${name}" — network error while online`)
+          console.info(`[offline] Queued "${name}" - network error while online`)
           if (optimisticResult !== undefined) {
             return { ...optimisticResult, _offlineQueued: true } as T & { _offlineQueued?: boolean }
           }
           return { _offlineQueued: true } as T & { _offlineQueued?: boolean }
         }
 
-        // Non-network error — rethrow normally
+        // Non-network error - rethrow normally
         throw err
       }
     }
 
-    // We're offline — queue the action
+    // We're offline - queue the action
     await enqueueAction(name, args)
-    console.info(`[offline] Queued "${name}" — device is offline`)
+    console.info(`[offline] Queued "${name}" - device is offline`)
 
     if (optimisticResult !== undefined) {
       return { ...optimisticResult, _offlineQueued: true } as T & { _offlineQueued?: boolean }
     }
 
-    // No optimistic result provided — still return queued metadata so callers
+    // No optimistic result provided - still return queued metadata so callers
     // can display OFFLINE_QUEUED instead of a false save failure.
     return { _offlineQueued: true } as T & { _offlineQueued?: boolean }
   }

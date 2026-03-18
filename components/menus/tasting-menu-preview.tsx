@@ -134,12 +134,12 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <span
-                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${COURSE_TYPE_COLORS[course.course_type]}`}
+                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xxs font-semibold uppercase tracking-wide ${COURSE_TYPE_COLORS[course.course_type]}`}
                     >
                       {COURSE_TYPE_LABELS[course.course_type]}
                     </span>
                     {course.portion_size && (
-                      <span className="ml-2 text-[10px] text-gray-400">
+                      <span className="ml-2 text-xxs text-gray-400">
                         {PORTION_LABELS[course.portion_size] ?? course.portion_size}
                       </span>
                     )}
@@ -159,7 +159,7 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
                     <div>
                       <p className="text-xs font-medium text-purple-800">{course.wine_pairing}</p>
                       {course.pairing_notes && (
-                        <p className="mt-0.5 text-[11px] text-purple-600 italic">
+                        <p className="mt-0.5 text-xs-tight text-purple-600 italic">
                           {course.pairing_notes}
                         </p>
                       )}

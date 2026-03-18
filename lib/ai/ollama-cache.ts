@@ -1,6 +1,6 @@
 // Ollama Response Cache
 // In-memory LRU cache for deterministic Ollama calls.
-// No 'use server' — imported by parse-ollama.ts which has 'use server'.
+// No 'use server' - imported by parse-ollama.ts which has 'use server'.
 //
 // Keyed by hash of (systemPrompt + userContent + model).
 // Short TTL (5 minutes) to prevent stale results.

@@ -1,4 +1,4 @@
-// CallReminderEmail — used for:
+// CallReminderEmail - used for:
 //   1. Chef reminder (isChefReminder=true): "You have a call in X hours"
 //   2. Client notification (isChefReminder=false): "Your chef has scheduled a call"
 

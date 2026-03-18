@@ -1,6 +1,6 @@
-// Staff Briefing Template — Structured Document
+// Staff Briefing Template - Structured Document
 // Standard pre-event briefing document for kitchen/service staff.
-// Every catering operation uses a briefing document — it's just data in sections.
+// Every catering operation uses a briefing document - it's just data in sections.
 
 // ── Types (match the AI version exactly) ───────────────────────────────────
 
@@ -64,12 +64,12 @@ function formatDate(dateStr: string): string {
 
 /**
  * Generates a structured staff briefing document.
- * Pure template — no AI, no network, deterministic.
+ * Pure template - no AI, no network, deterministic.
  */
 export function generateStaffBriefingTemplate(v: BriefingVars): StaffBriefingDocument {
-  const subject = `Staff Briefing: ${v.occasion} — ${formatDate(v.eventDate)}`
+  const subject = `Staff Briefing: ${v.occasion} - ${formatDate(v.eventDate)}`
 
-  const openingParagraph = `Team — here's your briefing for ${v.occasion} on ${formatDate(v.eventDate)}. We're serving ${v.guestCount} guests${v.locationAddress ? ' at ' + v.locationAddress : ''}. Service style: ${v.serviceStyle ?? 'plated'}. Read this fully before service begins.`
+  const openingParagraph = `Team - here's your briefing for ${v.occasion} on ${formatDate(v.eventDate)}. We're serving ${v.guestCount} guests${v.locationAddress ? ' at ' + v.locationAddress : ''}. Service style: ${v.serviceStyle ?? 'plated'}. Read this fully before service begins.`
 
   // Service protocol
   const serviceProtocol = [
@@ -83,7 +83,7 @@ export function generateStaffBriefingTemplate(v: BriefingVars): StaffBriefingDoc
     '2. Confirm all ingredients and equipment',
     '3. Begin prep according to timeline',
     '4. Final quality check before plating',
-    '5. Service — plate and deliver each course',
+    '5. Service - plate and deliver each course',
     '6. Clear between courses',
     '7. Dessert and final service',
     '8. Kitchen cleanup and pack-out',
@@ -104,16 +104,16 @@ export function generateStaffBriefingTemplate(v: BriefingVars): StaffBriefingDoc
       ? Array.from(courseGroups.entries())
           .map(
             ([course, items]) =>
-              `**${course}:**\n${items.map((i) => `- ${i.name}${i.description ? ' — ' + i.description : ''}`).join('\n')}`
+              `**${course}:**\n${items.map((i) => `- ${i.name}${i.description ? ' - ' + i.description : ''}`).join('\n')}`
           )
           .join('\n\n')
-      : 'Menu not yet finalized — check with Chef before service.'
+      : 'Menu not yet finalized - check with Chef before service.'
 
   // Client vibe notes
   const clientVibeNotes =
     v.specialRequests || v.notes
       ? `**Special Requests:** ${v.specialRequests ?? 'None'}\n**Notes:** ${v.notes ?? 'None'}`
-      : 'No special notes from the client. Standard service — be warm, professional, and attentive.'
+      : 'No special notes from the client. Standard service - be warm, professional, and attentive.'
 
   // Allergen alerts
   const allAllergens = new Set<string>()
@@ -130,7 +130,7 @@ export function generateStaffBriefingTemplate(v: BriefingVars): StaffBriefingDoc
 
   let allergenAlerts: string
   if (allAllergens.size > 0 || allRestrictions.size > 0) {
-    const parts: string[] = ['⚠️ **ALLERGEN ALERT — READ CAREFULLY** ⚠️', '']
+    const parts: string[] = ['⚠️ **ALLERGEN ALERT - READ CAREFULLY** ⚠️', '']
     if (allAllergens.size > 0) {
       parts.push(`**Allergies:** ${Array.from(allAllergens).join(', ')}`)
     }
@@ -161,16 +161,16 @@ export function generateStaffBriefingTemplate(v: BriefingVars): StaffBriefingDoc
   // Key timings
   const keyTimings = [
     v.arrivalTime
-      ? `- **${v.arrivalTime}** — Team arrival, setup begins`
-      : '- **T-2h** — Team arrival, setup begins',
-    '- **T-1h** — All prep complete, begin final cook',
-    '- **T-30m** — Quality check, taste everything',
-    '- **T-15m** — Plates ready, final plating prep',
+      ? `- **${v.arrivalTime}** - Team arrival, setup begins`
+      : '- **T-2h** - Team arrival, setup begins',
+    '- **T-1h** - All prep complete, begin final cook',
+    '- **T-30m** - Quality check, taste everything',
+    '- **T-15m** - Plates ready, final plating prep',
     v.serveTime
-      ? `- **${v.serveTime}** — Service begins`
-      : '- **Service time** — First course goes out',
-    '- **+30m per course** — Course intervals (adjust as needed)',
-    '- **Post-service** — Kitchen cleanup, pack-out, debrief',
+      ? `- **${v.serveTime}** - Service begins`
+      : '- **Service time** - First course goes out',
+    '- **+30m per course** - Course intervals (adjust as needed)',
+    '- **Post-service** - Kitchen cleanup, pack-out, debrief',
   ].join('\n')
 
   // Dress code
@@ -189,9 +189,9 @@ export function generateStaffBriefingTemplate(v: BriefingVars): StaffBriefingDoc
 8. Check-out with venue contact (if applicable)`
 
   // Closing note
-  const closingNote = `Thank you for being part of this team. Let's make ${v.occasion} an incredible experience for our guests. If you have questions, ask before service starts — not during.
+  const closingNote = `Thank you for being part of this team. Let's make ${v.occasion} an incredible experience for our guests. If you have questions, ask before service starts - not during.
 
-— Chef ${v.chefName}`
+- Chef ${v.chefName}`
 
   // Assemble full document
   const fullDocument = [

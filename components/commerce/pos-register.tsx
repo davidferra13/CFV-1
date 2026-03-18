@@ -2112,7 +2112,7 @@ export function PosRegister({
                         <p className="text-stone-200 text-sm truncate">
                           {item.product.name}
                           {!item.productProjectionId && (
-                            <span className="ml-2 rounded bg-stone-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-stone-400">
+                            <span className="ml-2 rounded bg-stone-800 px-1.5 py-0.5 text-xxs uppercase tracking-wide text-stone-400">
                               Quick
                             </span>
                           )}

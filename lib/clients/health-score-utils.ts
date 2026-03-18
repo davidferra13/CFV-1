@@ -1,4 +1,4 @@
-// Health score display constants — pure, no 'use server', no DB access.
+// Health score display constants - pure, no 'use server', no DB access.
 // Extracted here so they can be imported by both server and client components.
 
 import type { ClientHealthTier } from './health-score'

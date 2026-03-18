@@ -70,7 +70,7 @@ export async function getDocumentAttribution(): Promise<string | null> {
 }
 
 /**
- * Fetch all document rendering context in a single call — attribution, print mode, custom footer.
+ * Fetch all document rendering context in a single call - attribution, print mode, custom footer.
  * Used by browser print pages and the PDF API route to avoid multiple DB round-trips.
  */
 export async function getDocumentContext(): Promise<{

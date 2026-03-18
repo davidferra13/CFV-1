@@ -81,15 +81,15 @@ export function getStartersForPage(pathname: string): StarterPrompt[] {
 
 export function getThinkingMessage(elapsed: number, intent?: string): string {
   if (intent === 'command') {
-    if (elapsed > 10) return "Running your tasks — this one's taking a bit..."
+    if (elapsed > 10) return "Running your tasks - this one's taking a bit..."
     return 'Running your tasks...'
   }
   if (intent === 'mixed') {
-    if (elapsed > 15) return 'Working on both parts — hang tight, almost there...'
+    if (elapsed > 15) return 'Working on both parts - hang tight, almost there...'
     return 'Working on your question and tasks...'
   }
   // Default question intent
-  if (elapsed > 20) return 'Still thinking — complex question, give me another moment...'
+  if (elapsed > 20) return 'Still thinking - complex question, give me another moment...'
   if (elapsed > 10) return 'Thinking hard on this one...'
   if (elapsed > 5) return 'Remy is thinking...'
   return 'Remy is thinking...'

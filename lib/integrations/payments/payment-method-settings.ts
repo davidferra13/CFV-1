@@ -5,7 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 
 // Apple Pay / Google Pay toggle per chef.
-// Stripe Checkout already supports these automatically — this toggle
+// Stripe Checkout already supports these automatically - this toggle
 // allows chefs to selectively disable payment methods they don't want.
 
 export async function getPaymentMethodSettings() {

@@ -1,8 +1,8 @@
 'use server'
 
-// Remy — Intent Classifier
+// Remy - Intent Classifier
 // Uses the fast Ollama model to classify messages as question vs command.
-// PRIVACY: Chef messages may contain client names — must stay local.
+// PRIVACY: Chef messages may contain client names - must stay local.
 
 import { z } from 'zod'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
@@ -26,7 +26,7 @@ Examples:
 - "Tell me about my upcoming events"
 - "What's on my plate this week?"
 
-COMMAND: Requesting a specific action to be performed — finding someone, checking availability, drafting something, creating something, searching the web, reading a URL, checking dietary restrictions, or viewing profile info.
+COMMAND: Requesting a specific action to be performed - finding someone, checking availability, drafting something, creating something, searching the web, reading a URL, checking dietary restrictions, or viewing profile info.
 Examples:
 - "Find my client"
 - "Check if March 15th is free"
@@ -75,7 +75,7 @@ Examples:
 MIXED: Contains BOTH a question and an actionable request in the same message.
 Example: "What's my revenue this month, and draft a follow-up for my last client"
 
-If unsure, classify as QUESTION — it's the safest option (no side effects).
+If unsure, classify as QUESTION - it's the safest option (no side effects).
 
 Return JSON: { "intent": "question"|"command"|"mixed", "confidence": 0.0-1.0 }
 If mixed, also include "commandPart" and "questionPart" splitting the message.`
@@ -256,7 +256,7 @@ function tryDeterministicClassify(message: string): ClassificationResult | null 
     }
   }
 
-  // Mixed detection — message contains both question and command signals
+  // Mixed detection - message contains both question and command signals
   const hasQuestion = /\?/.test(trimmed)
   const hasCommandVerb =
     /\b(draft|write|create|send|find|check|search|make|generate|book|schedule|import)\b/i.test(
@@ -266,7 +266,7 @@ function tryDeterministicClassify(message: string): ClassificationResult | null 
     return { intent: 'mixed', confidence: 0.85 }
   }
 
-  // Short messages (< 4 words) without clear patterns — likely conversational (question)
+  // Short messages (< 4 words) without clear patterns - likely conversational (question)
   if (trimmed.split(/\s+/).length <= 3 && !hasCommandVerb) {
     return { intent: 'question', confidence: 0.8 }
   }

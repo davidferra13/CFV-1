@@ -78,9 +78,7 @@ export function MenuNutritionSummary({ menuId, menuName }: MenuNutritionSummaryP
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Menu Nutrition: {data.menuName}
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900">Menu Nutrition: {data.menuName}</h3>
         <button
           onClick={handleLoad}
           disabled={isPending}
@@ -149,9 +147,7 @@ export function MenuNutritionSummary({ menuId, menuName }: MenuNutritionSummaryP
             >
               {/* Course header */}
               <div className="bg-gray-50 px-3 py-2 flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-800">
-                  {course.courseName}
-                </span>
+                <span className="text-sm font-medium text-gray-800">{course.courseName}</span>
                 <span className="text-xs text-gray-500">
                   {Math.round(course.courseTotal.calories)} cal
                 </span>
@@ -199,13 +195,17 @@ function MacroCard({ label, value, unit }: { label: string; value: string; unit:
   return (
     <div className="rounded-lg border border-gray-200 p-3 text-center">
       <div className="text-xl font-bold text-gray-900">{value}</div>
-      <div className="text-[10px] text-gray-400 uppercase">{unit}</div>
+      <div className="text-xxs text-gray-400 uppercase">{unit}</div>
       <div className="text-xs text-gray-500 mt-0.5">{label}</div>
     </div>
   )
 }
 
-function MacroRatioBar({ nutrients }: { nutrients: { protein_g: number; carbs_g: number; fat_g: number } }) {
+function MacroRatioBar({
+  nutrients,
+}: {
+  nutrients: { protein_g: number; carbs_g: number; fat_g: number }
+}) {
   // Calculate caloric contribution: protein 4cal/g, carbs 4cal/g, fat 9cal/g
   const proteinCals = nutrients.protein_g * 4
   const carbsCals = nutrients.carbs_g * 4
@@ -237,7 +237,7 @@ function MacroRatioBar({ nutrients }: { nutrients: { protein_g: number; carbs_g:
           title={`Fat: ${fatPct}%`}
         />
       </div>
-      <div className="flex justify-between mt-1 text-[10px] text-gray-500">
+      <div className="flex justify-between mt-1 text-xxs text-gray-500">
         <span className="flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
           Protein {proteinPct}%

@@ -1,4 +1,5 @@
-// ConfirmModal - reusable confirmation dialog to replace browser confirm().
+// ConfirmModal - reusable confirmation dialog with full accessibility.
+// Built on AccessibleDialog (focus trap, escape key, scroll lock, focus restoration).
 // Usage:
 //   const [showConfirm, setShowConfirm] = useState(false)
 //   <ConfirmModal
@@ -14,102 +15,67 @@
 
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { type ReactNode } from 'react'
+import { AccessibleDialog } from '@/components/ui/accessible-dialog'
 import { Button } from '@/components/ui/button'
 
 type ConfirmModalProps = {
   open: boolean
   title: string
   description?: string
+  /** Custom body content rendered between description and buttons */
+  children?: ReactNode
   confirmLabel?: string
   cancelLabel?: string
   variant?: 'primary' | 'danger'
   loading?: boolean
+  /** Disable confirm button (e.g. when a required field is empty) */
+  confirmDisabled?: boolean
   onConfirm: () => void
   onCancel: () => void
+  maxWidth?: string
 }
 
 export function ConfirmModal({
   open,
   title,
   description,
+  children,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   variant = 'primary',
   loading = false,
+  confirmDisabled = false,
   onConfirm,
   onCancel,
+  maxWidth = 'max-w-md',
 }: ConfirmModalProps) {
-  const confirmRef = useRef<HTMLButtonElement>(null)
-
-  // Focus the confirm button when modal opens
-  useEffect(() => {
-    if (open) {
-      // Small delay to ensure DOM is ready
-      const timer = setTimeout(() => confirmRef.current?.focus(), 50)
-      return () => clearTimeout(timer)
-    }
-  }, [open])
-
-  // Close on Escape key
-  useEffect(() => {
-    if (!open) return
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape' && !loading) {
-        onCancel()
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [open, loading, onCancel])
-
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/50 transition-opacity"
-        onClick={loading ? undefined : onCancel}
-        aria-hidden="true"
-      />
-
-      {/* Modal */}
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="confirm-modal-title"
-        aria-describedby={description ? 'confirm-modal-desc' : undefined}
-        className="relative bg-stone-900 border border-stone-700 rounded-lg shadow-xl w-full max-w-sm mx-4 p-6"
-      >
-        <h3 id="confirm-modal-title" className="text-lg font-semibold text-stone-100 mb-1">
-          {title}
-        </h3>
-
-        {description && (
-          <p id="confirm-modal-desc" className="text-sm text-stone-400 mb-6">
-            {description}
-          </p>
-        )}
-
-        {!description && <div className="mb-6" />}
-
-        <div className="flex justify-end gap-3">
+    <AccessibleDialog
+      open={open}
+      title={title}
+      description={description}
+      onClose={loading ? () => {} : onCancel}
+      escapeCloses={!loading}
+      widthClassName={maxWidth}
+      footer={
+        <>
           <Button variant="ghost" size="sm" onClick={onCancel} disabled={loading}>
             {cancelLabel}
           </Button>
           <Button
-            ref={confirmRef}
             variant={variant === 'danger' ? 'danger' : 'primary'}
             size="sm"
             onClick={onConfirm}
             loading={loading}
-            disabled={loading}
+            disabled={loading || confirmDisabled}
           >
             {confirmLabel}
           </Button>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      {children}
+    </AccessibleDialog>
   )
 }

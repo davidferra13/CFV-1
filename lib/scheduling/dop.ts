@@ -1,6 +1,6 @@
 // Default Operating Procedures Engine
 // Defines WHEN standard actions should happen relative to an event.
-// Pure computation — no DB calls.
+// Pure computation - no DB calls.
 
 import type {
   ChefPreferences,
@@ -151,7 +151,7 @@ export function getDOPSchedule(event: SchedulingEvent, prefs: ChefPreferences | 
       'Complete early prep items',
       'Doughs, marinades, purees, sauces - anything that holds overnight.',
       'prep',
-      false, // No direct flag for this — chef tracks mentally
+      false, // No direct flag for this - chef tracks mentally
       null,
       dayBeforeDate + 'T22:00:00'
     )

@@ -3,14 +3,14 @@
 // Testimonial Highlight Selection
 // AI scans all client feedback/reviews and surfaces the top quotes for portfolio use.
 // Routed to Gemini (curating public-intended content, quality judgment needed).
-// Output is SUGGESTION ONLY — chef decides which to publish.
+// Output is SUGGESTION ONLY - chef decides which to publish.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
 export interface TestimonialHighlight {
-  clientNameInitial: string // e.g. "S.M." — anonymized for portfolio
+  clientNameInitial: string // e.g. "S.M." - anonymized for portfolio
   eventType: string
   quote: string // the specific excerpt to feature
   fullContext: string // original full message for chef reference
@@ -21,8 +21,8 @@ export interface TestimonialHighlight {
 
 export interface TestimonialSelectionResult {
   topTestimonials: TestimonialHighlight[]
-  portfolioReady: TestimonialHighlight[] // score >= 80 — ready to use as-is
-  needsEditing: TestimonialHighlight[] // score 60–79 — good with minor edits
+  portfolioReady: TestimonialHighlight[] // score >= 80 - ready to use as-is
+  needsEditing: TestimonialHighlight[] // score 60–79 - good with minor edits
   summary: string
   generatedAt: string
 }
@@ -155,7 +155,7 @@ Score each on:
   - Marketability (would a prospective client read this and want to book?) +20
 
 Anonymize client names to initials (e.g. "Sarah M." → "S.M.").
-Extract the BEST QUOTE from each piece of feedback — sometimes the full text is too long.
+Extract the BEST QUOTE from each piece of feedback - sometimes the full text is too long.
 Only include quotes that are genuinely compelling.
 
 Feedback items:

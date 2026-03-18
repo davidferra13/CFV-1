@@ -1,6 +1,6 @@
 // Stripe Checkout Session Helpers
 // Creates shareable payment links for email correspondence.
-// Not a server action module — called internally by server actions.
+// Not a server action module - called internally by server actions.
 
 import { createServerClient } from '@/lib/supabase/server'
 import { breakers } from '@/lib/resilience/circuit-breaker'
@@ -20,7 +20,7 @@ function getStripe(): Stripe {
  * Returns the hosted checkout URL for embedding in emails.
  *
  * Called from approveAndSendMessage() when [PAYMENT_LINK] is detected.
- * Uses admin client — caller is responsible for auth.
+ * Uses admin client - caller is responsible for auth.
  *
  * Returns null if event is not in a payable state.
  */
@@ -134,7 +134,7 @@ export async function createPaymentCheckoutUrl(
           currency: 'usd',
           unit_amount: amountCents,
           product_data: {
-            name: `${event.occasion || 'Private Chef Event'} — ${paymentType === 'deposit' ? 'Deposit' : 'Payment'}`,
+            name: `${event.occasion || 'Private Chef Event'} - ${paymentType === 'deposit' ? 'Deposit' : 'Payment'}`,
           },
         },
         quantity: 1,

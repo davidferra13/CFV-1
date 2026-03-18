@@ -1,6 +1,7 @@
 // Chef Card - Reusable profile card for network discovery and friends list
 'use client'
 
+import Image from 'next/image'
 import { MapPin } from '@/components/ui/icons'
 import type { ReactNode } from 'react'
 
@@ -40,8 +41,13 @@ export function ChefCard({
       {/* Avatar */}
       <div className="flex-shrink-0">
         {profileImageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={profileImageUrl} alt={name} className="h-12 w-12 rounded-full object-cover" />
+          <Image
+            src={profileImageUrl}
+            alt={name}
+            width={48}
+            height={48}
+            className="h-12 w-12 rounded-full object-cover"
+          />
         ) : (
           <div className="h-12 w-12 rounded-full bg-brand-900 flex items-center justify-center">
             <span className="text-sm font-semibold text-brand-700">{getInitials(name)}</span>

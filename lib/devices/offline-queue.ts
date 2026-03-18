@@ -1,4 +1,4 @@
-// Offline Inquiry Queue — stores failed submissions in localStorage and replays when online
+// Offline Inquiry Queue - stores failed submissions in localStorage and replays when online
 // Used by the kiosk inquiry form to handle spotty WiFi at events/pop-ups
 
 const QUEUE_KEY = 'chefflow_kiosk_offline_queue'
@@ -57,7 +57,7 @@ export async function replayQueue(): Promise<number> {
 
   for (const item of queue) {
     if (item.attempts >= 5) {
-      // Too many failures — discard to prevent stale data buildup
+      // Too many failures - discard to prevent stale data buildup
       removeFromQueue(item.id)
       continue
     }

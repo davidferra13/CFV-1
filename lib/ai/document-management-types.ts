@@ -1,4 +1,4 @@
-// Document Management — Shared Types
+// Document Management - Shared Types
 // Extracted from server action file to avoid 'use server' export restrictions.
 
 export interface ChefFolder {

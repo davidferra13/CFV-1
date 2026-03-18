@@ -1,6 +1,6 @@
-// Gratuity Calculation — Deterministic Rules
+// Gratuity Calculation - Deterministic Rules
 // Industry-standard gratuity guidance for private chef events.
-// No AI needed — these are well-established conventions.
+// No AI needed - these are well-established conventions.
 //
 // Industry norms (from private chef associations, catering industry guides):
 //   - Standard gratuity range: 15–22% of service fee
@@ -37,7 +37,7 @@ export type GratuityContext = {
 
 /**
  * Determines gratuity approach and suggested range using industry conventions.
- * Pure rules — no AI, no network, deterministic.
+ * Pure rules - no AI, no network, deterministic.
  * Returns the exact same type as the AI version for drop-in compatibility.
  */
 export function calculateGratuityFormula(ctx: GratuityContext): GratuityFramingDraft {
@@ -92,29 +92,29 @@ export function calculateGratuityFormula(ctx: GratuityContext): GratuityFramingD
   let timing: string
 
   if (isReturningClient && eventCount >= 3) {
-    // Long-term relationship — they know the deal
+    // Long-term relationship - they know the deal
     approach = 'no_ask_needed'
-    rationale = `${clientFirstName} is a returning client with ${eventCount} completed events. The relationship is established — a direct ask isn't needed.`
-    timing = 'N/A — no ask needed for established relationship.'
+    rationale = `${clientFirstName} is a returning client with ${eventCount} completed events. The relationship is established - a direct ask isn't needed.`
+    timing = 'N/A - no ask needed for established relationship.'
   } else if (isCorporate) {
-    // Corporate events are professional — invoice line is standard
+    // Corporate events are professional - invoice line is standard
     approach = 'mention_in_invoice'
     rationale =
       'Corporate events are best handled professionally with a gratuity line on the invoice.'
     timing = 'Include in the final invoice before the event.'
   } else if (isReturningClient) {
-    // Returning but not established — light touch
+    // Returning but not established - light touch
     approach = 'note_in_message'
     rationale = `${clientFirstName} is a returning client. A brief mention in the follow-up keeps it warm without being direct.`
     timing = 'Include in the thank-you message after service.'
   } else if (isIntimate) {
-    // First-time intimate dinner — verbal is more natural
+    // First-time intimate dinner - verbal is more natural
     approach = 'verbal_mention'
     rationale =
       'For an intimate first-time dinner, a verbal mention at end of service feels natural and non-transactional.'
     timing = 'Mention casually at the end of service, after dessert.'
   } else {
-    // First-time, standard event — invoice line is safest
+    // First-time, standard event - invoice line is safest
     approach = 'mention_in_invoice'
     rationale = `First event with ${clientFirstName}. An invoice line is the standard, professional approach.`
     timing = 'Include in the final invoice before the event.'
@@ -123,13 +123,13 @@ export function calculateGratuityFormula(ctx: GratuityContext): GratuityFramingD
   // Build message draft (if note_in_message approach)
   let messageDraft: string | null = null
   if (approach === 'note_in_message') {
-    messageDraft = `P.S. — Gratuity is always appreciated but never expected. If you'd like to add a gratuity, you can do so through the invoice link.`
+    messageDraft = `P.S. - Gratuity is always appreciated but never expected. If you'd like to add a gratuity, you can do so through the invoice link.`
   }
 
   // Build verbal script (if verbal_mention approach)
   let verbalScript: string | null = null
   if (approach === 'verbal_mention') {
-    verbalScript = `"${clientFirstName}, I really enjoyed cooking for you tonight. Just so you know, gratuity is always appreciated but never expected — whatever feels right to you."`
+    verbalScript = `"${clientFirstName}, I really enjoyed cooking for you tonight. Just so you know, gratuity is always appreciated but never expected - whatever feels right to you."`
   }
 
   return {

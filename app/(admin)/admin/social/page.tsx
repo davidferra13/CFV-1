@@ -117,7 +117,7 @@ export default async function AdminSocialPage({
                   {post.postType} - visibility: {post.visibility} - {formatDate(post.createdAt)}
                 </p>
               </div>
-              <span className="text-[11px] text-stone-500">{post.id}</span>
+              <span className="text-xs-tight text-stone-500">{post.id}</span>
             </div>
             <p className="mt-2 text-sm text-stone-200 whitespace-pre-wrap">{post.content}</p>
             <p className="mt-2 text-xs text-stone-500">

@@ -1,6 +1,6 @@
 'use server'
 
-// Remy — Abuse Logging & Auto-Block System
+// Remy - Abuse Logging & Auto-Block System
 // Logs guardrail violations, auto-blocks repeat offenders, provides admin review.
 // ADMIN BYPASS: Admins are never blocked and their messages are never logged as abuse.
 //
@@ -25,7 +25,7 @@ interface LogAbuseParams {
  * Log a guardrail violation to the remy_abuse_log table.
  * If the user has 2+ prior critical incidents, auto-block them for 24 hours.
  *
- * This is a NON-BLOCKING side effect — call with .catch() from the main flow.
+ * This is a NON-BLOCKING side effect - call with .catch() from the main flow.
  */
 export async function logRemyAbuse(params: LogAbuseParams): Promise<void> {
   const user = await requireChef()
@@ -81,10 +81,10 @@ interface BlockStatus {
 
 /**
  * Check if the current user is blocked from using Remy.
- * Admins are NEVER blocked — they bypass all guardrails.
+ * Admins are NEVER blocked - they bypass all guardrails.
  */
 export async function isRemyBlocked(): Promise<BlockStatus> {
-  // Admin bypass — admins can do whatever they want
+  // Admin bypass - admins can do whatever they want
   const admin = await isAdmin()
   if (admin) return { blocked: false }
 
@@ -133,7 +133,7 @@ export interface AbuseLogEntry {
 
 /**
  * Get recent abuse log entries for the current tenant.
- * For future admin UI — data is available even before the UI is built.
+ * For future admin UI - data is available even before the UI is built.
  */
 export async function getRemyAbuseLog(options?: {
   unreviewedOnly?: boolean

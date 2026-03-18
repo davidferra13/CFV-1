@@ -41,7 +41,7 @@ export function RemyActionLog({ onSelectConversation }: RemyActionLogProps) {
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
         <Activity className="w-4 h-4 text-gray-400" />
         <span className="text-sm font-medium text-gray-200">Action Log</span>
-        <span className="text-[10px] text-gray-500 ml-auto">{entries.length} actions</span>
+        <span className="text-xxs text-gray-500 ml-auto">{entries.length} actions</span>
       </div>
 
       {/* Scrollable List */}
@@ -54,7 +54,7 @@ export function RemyActionLog({ onSelectConversation }: RemyActionLogProps) {
 
         {grouped.map(({ label, entries: dayEntries }) => (
           <div key={label} className="mb-3">
-            <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 sticky top-0 bg-[var(--bg-secondary,#1a1a2e)]">
+            <div className="px-2 py-1 text-xxs font-semibold uppercase tracking-wider text-gray-500 sticky top-0 bg-[var(--bg-secondary,#1a1a2e)]">
               {label}
             </div>
             {dayEntries.map((entry) => (
@@ -71,14 +71,14 @@ export function RemyActionLog({ onSelectConversation }: RemyActionLogProps) {
                 <span className="font-mono text-xs text-gray-300 truncate flex-1">
                   {entry.action}
                 </span>
-                <span className="text-[10px] text-gray-500 shrink-0">
+                <span className="text-xxs text-gray-500 shrink-0">
                   {new Date(entry.createdAt).toLocaleTimeString([], {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
                 </span>
                 {entry.duration > 0 && (
-                  <span className="text-[10px] text-gray-600 shrink-0">{entry.duration}ms</span>
+                  <span className="text-xxs text-gray-600 shrink-0">{entry.duration}ms</span>
                 )}
               </button>
             ))}

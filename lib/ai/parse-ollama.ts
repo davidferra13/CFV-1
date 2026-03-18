@@ -1,4 +1,4 @@
-// Ollama-backed AI Parser — PRIVATE DATA ONLY
+// Ollama-backed AI Parser - PRIVATE DATA ONLY
 // Hard rule: private data (client PII, financials, allergies, messages) stays local.
 // No Gemini fallback. If Ollama is offline, OllamaOfflineError is thrown.
 // The UI layer catches OllamaOfflineError and shows a clear "start Ollama" message.
@@ -39,11 +39,11 @@ export interface ParseOllamaOptions {
   model?: string
 }
 
-/** Default max tokens for structured JSON responses — keeps Ollama from running away */
+/** Default max tokens for structured JSON responses - keeps Ollama from running away */
 const DEFAULT_MAX_TOKENS = 512
 
-/** Default hard timeout for any Ollama call — prevents infinite hangs.
- *  60s is generous for a 30b model on a laptop — normal calls finish in 10-30s.
+/** Default hard timeout for any Ollama call - prevents infinite hangs.
+ *  60s is generous for a 30b model on a laptop - normal calls finish in 10-30s.
  *  This only fires if Ollama is truly stuck, not just thinking. */
 const DEFAULT_OLLAMA_TIMEOUT_MS = 60_000
 
@@ -76,7 +76,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): 
 
 /**
  * Privacy-first parsing using local Ollama model.
- * Mirrors parseWithAI signature — drop-in for sensitive operations.
+ * Mirrors parseWithAI signature - drop-in for sensitive operations.
  *
  * Routing:
  *   OLLAMA_BASE_URL set + reachable → Ollama (data stays local)
@@ -221,7 +221,7 @@ export async function parseWithOllama<T>(
     })
     incrementAiMetric('ai.call.repair_attempted')
 
-    // Single repair pass via Ollama (still local — no privacy risk)
+    // Single repair pass via Ollama (still local - no privacy risk)
     try {
       const repairResponse = await withTimeout(
         ollama.chat({

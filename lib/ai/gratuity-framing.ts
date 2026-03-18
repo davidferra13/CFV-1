@@ -1,8 +1,8 @@
 'use server'
 
 // Gratuity Framing Message Generator
-// PRIVACY: Sends client name, event financials — must stay local.
-// Output is DRAFT ONLY — chef approves before sending.
+// PRIVACY: Sends client name, event financials - must stay local.
+// Output is DRAFT ONLY - chef approves before sending.
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
@@ -95,14 +95,14 @@ Guidelines:
 Return JSON: {
   "approach": "mention_in_invoice|verbal_mention|note_in_message|no_ask_needed",
   "approachRationale": "one sentence why",
-  "messageDraft": "if note_in_message — the draft line to include, else null",
-  "verbalScript": "if verbal_mention — the exact words to say, else null",
+  "messageDraft": "if note_in_message - the draft line to include, else null",
+  "verbalScript": "if verbal_mention - the exact words to say, else null",
   "suggestedGratuityRangePercent": { "min": number, "max": number } or null,
   "timing": "when to present"
 }`
 
   const { result, source } = await withAiFallback(
-    // Formula: industry-standard rules — deterministic
+    // Formula: industry-standard rules - deterministic
     () =>
       calculateGratuityFormula({
         clientFirstName: firstName,

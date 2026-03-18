@@ -31,7 +31,7 @@ export function ChefActivityFeed({ entries, compact = false }: ChefActivityFeedP
             </div>
           )}
           <div className="space-y-1">
-            {dayEntries.map(entry => (
+            {dayEntries.map((entry) => (
               <ActivityRow key={entry.id} entry={entry} compact={compact} />
             ))}
           </div>
@@ -47,14 +47,16 @@ function ActivityRow({ entry, compact }: { entry: ChefActivityEntry; compact: bo
   const href = getEntityHref(entry)
 
   const content = (
-    <div className={`flex items-start gap-2.5 py-2 px-2 rounded-md hover:bg-stone-50 transition-colors ${compact ? 'py-1.5' : ''}`}>
-      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${config.bgColor} ${config.color}`}>
+    <div
+      className={`flex items-start gap-2.5 py-2 px-2 rounded-md hover:bg-stone-50 transition-colors ${compact ? 'py-1.5' : ''}`}
+    >
+      <span
+        className={`text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${config.bgColor} ${config.color}`}
+      >
         {config.label}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm text-stone-700 leading-snug">
-          {entry.summary}
-        </p>
+        <p className="text-sm text-stone-700 leading-snug">{entry.summary}</p>
         {!compact && entry.context && Object.keys(entry.context).length > 0 && (
           <ContextLine context={entry.context} />
         )}
@@ -64,7 +66,11 @@ function ActivityRow({ entry, compact }: { entry: ChefActivityEntry; compact: bo
   )
 
   if (href) {
-    return <Link href={href} className="block">{content}</Link>
+    return (
+      <Link href={href} className="block">
+        {content}
+      </Link>
+    )
   }
   return content
 }
@@ -83,11 +89,7 @@ function ContextLine({ context }: { context: Record<string, unknown> }) {
 
   if (parts.length === 0) return null
 
-  return (
-    <p className="text-xs text-stone-400 mt-0.5 truncate">
-      {parts.join(' | ')}
-    </p>
-  )
+  return <p className="text-xs text-stone-400 mt-0.5 truncate">{parts.join(' | ')}</p>
 }
 
 function getEntityHref(entry: ChefActivityEntry): string | null {
@@ -95,17 +97,26 @@ function getEntityHref(entry: ChefActivityEntry): string | null {
   if (!id) return null
 
   switch (entry.entity_type) {
-    case 'event': return `/pipeline/events/${id}`
-    case 'inquiry': return `/pipeline/inquiries/${id}`
-    case 'quote': return `/pipeline/quotes/${id}`
-    case 'menu': return `/culinary/menus/${id}`
-    case 'recipe': return `/culinary/recipes/${id}`
-    case 'client': return `/clients/${id}`
-    default: return null
+    case 'event':
+      return `/pipeline/events/${id}`
+    case 'inquiry':
+      return `/pipeline/inquiries/${id}`
+    case 'quote':
+      return `/pipeline/quotes/${id}`
+    case 'menu':
+      return `/culinary/menus/${id}`
+    case 'recipe':
+      return `/culinary/recipes/${id}`
+    case 'client':
+      return `/clients/${id}`
+    default:
+      return null
   }
 }
 
-function groupByDay(entries: ChefActivityEntry[]): { label: string; entries: ChefActivityEntry[] }[] {
+function groupByDay(
+  entries: ChefActivityEntry[]
+): { label: string; entries: ChefActivityEntry[] }[] {
   const groups = new Map<string, ChefActivityEntry[]>()
 
   for (const entry of entries) {

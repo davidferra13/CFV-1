@@ -1,4 +1,4 @@
-// @ts-nocheck — standalone script, Supabase client type mismatch with generated types
+// @ts-nocheck - standalone script, Supabase client type mismatch with generated types
 // Developer Account Reset
 // Wipes ALL business data + chef profile for the developer's real account.
 // Preserves the auth.users record so login still works.
@@ -52,7 +52,7 @@ async function main() {
   const authUser = listed.users.find((u) => u.email?.toLowerCase() === devCreds.email.toLowerCase())
 
   if (!authUser) {
-    console.log('[dev-reset] No auth user found — account is already clean.')
+    console.log('[dev-reset] No auth user found - account is already clean.')
     console.log('[dev-reset] Creating fresh chef record...')
     await createFreshChef(admin, devCreds)
     return
@@ -69,7 +69,7 @@ async function main() {
     .maybeSingle()
 
   if (!chef?.id) {
-    console.log('[dev-reset] No chef record found — creating fresh one...')
+    console.log('[dev-reset] No chef record found - creating fresh one...')
     await createFreshChef(admin, devCreds, authUserId)
     return
   }
@@ -84,7 +84,7 @@ async function main() {
 
   console.log('[dev-reset] Phase 1: Clearing RESTRICT-FK tables...')
 
-  // Ledger entries have immutability triggers — service role bypasses RLS but
+  // Ledger entries have immutability triggers - service role bypasses RLS but
   // we need to handle the trigger. Delete via raw SQL using rpc or direct delete.
   // The service role client can delete even with triggers in Supabase.
   const restrictTables = [
@@ -113,7 +113,7 @@ async function main() {
   for (const { table, col } of restrictTables) {
     const { data, error } = await admin.from(table).delete().eq(col, chefId).select('id')
     if (error) {
-      // Some tables may not exist or have different column names — try chef_id
+      // Some tables may not exist or have different column names - try chef_id
       const { data: d2, error: e2 } = await admin
         .from(table)
         .delete()
@@ -134,7 +134,7 @@ async function main() {
   console.log('')
   console.log('[dev-reset] Phase 2: Deleting chef record (cascades remaining tables)...')
 
-  // Delete the chef record — ON DELETE CASCADE handles most other tables
+  // Delete the chef record - ON DELETE CASCADE handles most other tables
   const { error: deleteChefError } = await admin.from('chefs').delete().eq('id', chefId)
 
   if (deleteChefError) {

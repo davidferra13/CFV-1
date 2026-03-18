@@ -102,7 +102,7 @@ export function ContractGeneratorPanel({ eventId }: { eventId: string }) {
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Draft · {new Date(result.generatedAt).toLocaleDateString()} · Review every clause before
         sending to client
       </p>

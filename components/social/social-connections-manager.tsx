@@ -287,7 +287,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
 function ConnectionBadge({ conn }: { conn: SocialConnectionStatus | null }) {
   if (!conn?.isConnected) {
     return (
-      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-stone-800 text-stone-500">
+      <span className="text-xxs px-2 py-0.5 rounded-full font-medium bg-stone-800 text-stone-500">
         Not connected
       </span>
     )
@@ -298,14 +298,14 @@ function ConnectionBadge({ conn }: { conn: SocialConnectionStatus | null }) {
 
   if (hasErrors || expiringSoon) {
     return (
-      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800">
+      <span className="text-xxs px-2 py-0.5 rounded-full font-medium bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800">
         Needs attention
       </span>
     )
   }
 
   return (
-    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-emerald-950 text-emerald-700 ring-1 ring-inset ring-emerald-800">
+    <span className="text-xxs px-2 py-0.5 rounded-full font-medium bg-emerald-950 text-emerald-700 ring-1 ring-inset ring-emerald-800">
       Connected
     </span>
   )

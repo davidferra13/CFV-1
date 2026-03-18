@@ -1,10 +1,10 @@
-// Chef Collaboration System — Server Actions
+// Chef Collaboration System - Server Actions
 // Handles cross-chef event collaboration and recipe sharing.
 //
 // Connection gate: both chefs must have an accepted chef_connections row
 // before any collaboration invitation can be sent.
 //
-// Event ownership: tenant_id on events is NEVER changed — events stay in the
+// Event ownership: tenant_id on events is NEVER changed - events stay in the
 // original chef's namespace. Collaborators gain access via event_collaborators
 // RLS expansion. Handoff changes the 'primary' role, not the tenant.
 
@@ -336,7 +336,7 @@ export async function removeCollaborator(collaboratorId: string) {
 /**
  * Hand off an event to another chef (who must already be an accepted collaborator).
  * Original chef becomes an observer; new chef gets the primary role.
- * Event tenant_id is NOT changed — ownership in the platform sense stays with original chef,
+ * Event tenant_id is NOT changed - ownership in the platform sense stays with original chef,
  * but operational primary shifts.
  */
 export async function handoffEvent(input: { eventId: string; newPrimaryChefId: string }) {
@@ -397,7 +397,7 @@ export async function handoffEvent(input: { eventId: string; newPrimaryChefId: s
       role: 'observer',
       status: 'accepted',
       permissions: ROLE_DEFAULTS.observer,
-      note: 'Original event owner — retained read access after handoff',
+      note: 'Original event owner - retained read access after handoff',
       responded_at: new Date().toISOString(),
     })
   }
@@ -474,7 +474,7 @@ export async function getCollaboratingOnEvents(): Promise<
 
   return (
     (data || [])
-      // Exclude events this chef owns — post-handoff the original owner gets an observer row,
+      // Exclude events this chef owns - post-handoff the original owner gets an observer row,
       // but the event already appears in their main events list via tenant_id ownership.
       .filter((row: any) => row.event?.tenant_id !== user.entityId)
       .map((row: any) => ({

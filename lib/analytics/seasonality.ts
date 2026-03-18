@@ -12,7 +12,7 @@ import { createServerClient } from '@/lib/supabase/server'
 export type MonthSeasonality = {
   month: number // 1-12
   monthName: string // 'Jan', 'Feb', etc.
-  shortName: string // 'J', 'F', etc. — for compact sparkline labels
+  shortName: string // 'J', 'F', etc. - for compact sparkline labels
   eventCount: number
   avgRevenueCents: number | null // average paid amount across events in this month
 }

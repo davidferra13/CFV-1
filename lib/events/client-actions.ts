@@ -89,58 +89,50 @@ export async function getClientEventById(eventId: string) {
     return null
   }
 
-  // Fetch menus attached to this event with dish details
-  const { data: menus } = await supabase
-    .from('menus')
-    .select(
-      `
-      id, name, description, service_style, cuisine_type, status,
-      dishes (id, course_name, course_number, description, dietary_tags, allergen_flags, sort_order)
-    `
-    )
-    .eq('event_id', eventId)
-
-  // Fetch ledger entries (payment history)
-  const { data: ledgerEntries } = await supabase
-    .from('ledger_entries')
-    .select('*')
-    .eq('event_id', eventId)
-    .order('created_at', { ascending: false })
-
-  // Fetch financial summary from view
-  const { data: financial } = await supabase
-    .from('event_financial_summary')
-    .select('*')
-    .eq('event_id', eventId)
-    .single()
-
-  // Fetch event state transitions for the journey stepper
-  const { data: transitions } = await supabase
-    .from('event_state_transitions')
-    .select('to_status, transitioned_at')
-    .eq('event_id', eventId)
-    .order('transitioned_at', { ascending: true })
-
-  // Check if any photos exist (for journey stepper)
-  const { count: photoCount } = await supabase
-    .from('event_photos')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_id', eventId)
-    .is('deleted_at', null)
-
-  // Check if a signed contract exists for this event
-  const { data: contract } = await supabase
-    .from('event_contracts')
-    .select('id, status, signed_at')
-    .eq('event_id', eventId)
-    .not('status', 'eq', 'voided')
-    .maybeSingle()
-
-  // Check if a review was submitted for this event
-  const { count: reviewCount } = await supabase
-    .from('client_reviews')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_id', eventId)
+  // Fetch all supplementary data in parallel (was sequential, 7 round-trips)
+  const [
+    { data: menus },
+    { data: ledgerEntries },
+    { data: financial },
+    { data: transitions },
+    { count: photoCount },
+    { data: contract },
+    { count: reviewCount },
+  ] = await Promise.all([
+    supabase
+      .from('menus')
+      .select(
+        `id, name, description, service_style, cuisine_type, status,
+        dishes (id, course_name, course_number, description, dietary_tags, allergen_flags, sort_order)`
+      )
+      .eq('event_id', eventId),
+    supabase
+      .from('ledger_entries')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false }),
+    supabase.from('event_financial_summary').select('*').eq('event_id', eventId).single(),
+    supabase
+      .from('event_state_transitions')
+      .select('to_status, transitioned_at')
+      .eq('event_id', eventId)
+      .order('transitioned_at', { ascending: true }),
+    supabase
+      .from('event_photos')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', eventId)
+      .is('deleted_at', null),
+    supabase
+      .from('event_contracts')
+      .select('id, status, signed_at')
+      .eq('event_id', eventId)
+      .not('status', 'eq', 'voided')
+      .maybeSingle(),
+    supabase
+      .from('client_reviews')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', eventId),
+  ])
 
   return {
     ...event,

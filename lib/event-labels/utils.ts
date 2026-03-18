@@ -1,4 +1,4 @@
-// Pure utility helpers for event labels — no 'use server', no async.
+// Pure utility helpers for event labels - no 'use server', no async.
 
 import type { ChefEventTypeLabel, EventLabelType } from './actions'
 

@@ -32,7 +32,7 @@ export function OfflineNavIndicator() {
       >
         <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
         <span className="text-xs font-medium text-stone-300">Offline</span>
-        <span className="inline-flex items-center gap-0.5 bg-stone-700 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-stone-400">
+        <span className="inline-flex items-center gap-0.5 bg-stone-700 rounded-full px-1.5 py-0.5 text-xxs font-medium text-stone-400">
           <CloudUpload className="h-2.5 w-2.5" />
           {pendingCount}
         </span>

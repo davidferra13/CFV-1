@@ -1,4 +1,4 @@
-// Generalization validation — same patterns, different phrasings
+// Generalization validation - same patterns, different phrasings
 // Tests whether guardrail regex patterns catch variations, not just hardcoded test cases
 import fs from 'fs'
 import { createClient } from '@supabase/supabase-js'
@@ -217,11 +217,11 @@ async function main() {
   // Summary judgment
   console.log('\n' + '='.repeat(70))
   if (passRate >= 95) {
-    console.log('✅ GENERALIZATION VALIDATED — Patterns catch variations reliably')
+    console.log('✅ GENERALIZATION VALIDATED - Patterns catch variations reliably')
   } else if (passRate >= 85) {
-    console.log('⚠️  PARTIAL GENERALIZATION — Most patterns work, some gaps detected')
+    console.log('⚠️  PARTIAL GENERALIZATION - Most patterns work, some gaps detected')
   } else {
-    console.log('❌ GENERALIZATION FAILED — Patterns too specific or overfitted')
+    console.log('❌ GENERALIZATION FAILED - Patterns too specific or overfitted')
   }
   console.log('='.repeat(70))
 }

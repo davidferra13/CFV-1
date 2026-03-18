@@ -1,9 +1,9 @@
 'use server'
 
-// Remy Intelligence Actions — Batch 2
+// Remy Intelligence Actions - Batch 2
 // Comprehensive capability coverage: every domain the app supports, Remy can now surface.
 // PRIVACY: All queries are tenant-scoped via requireChef(). Financial data stays local.
-// FORMULA > AI: Everything here is deterministic — no LLM calls.
+// FORMULA > AI: Everything here is deterministic - no LLM calls.
 
 import { requireChef } from '@/lib/auth/get-user'
 
@@ -107,7 +107,7 @@ export async function executeEventCountdown(inputs: Record<string, unknown>) {
     const { getEventCountdown } = await import('@/lib/events/countdown-actions')
     return await getEventCountdown(resolved)
   }
-  // No specific event — show all upcoming countdowns
+  // No specific event - show all upcoming countdowns
   const { getUpcomingCountdowns } = await import('@/lib/events/countdown-actions')
   return await getUpcomingCountdowns()
 }

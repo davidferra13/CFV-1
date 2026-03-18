@@ -2,7 +2,7 @@
 // The last document. Checked the night of service or by noon the next day.
 // Covers everything needed to return chef's home, equipment, vehicle, and records
 // to a clean baseline state. An event cannot reach terminal state without this.
-// MUST fit on ONE page — no exceptions.
+// MUST fit on ONE page - no exceptions.
 //
 // Context: Two consecutive dinners (Feb 14–15, 2026) never reached terminal state.
 // A cooler sat full on the deck for 48+ hours. Equipment bags stayed packed.
@@ -34,7 +34,7 @@ export type ResetChecklistData = {
 
 // ─── Equipment Triggers ───────────────────────────────────────────────────────
 
-// Same logic as the packing list — only specialty items are surfaced dynamically
+// Same logic as the packing list - only specialty items are surfaced dynamically
 const SPECIALTY_EQUIPMENT_TRIGGERS: Record<string, string[]> = {
   sous_vide: ['Sous vide circulator'],
   ice_cream: ['Ice cream machine'],
@@ -64,7 +64,7 @@ export async function fetchResetChecklistData(eventId: string): Promise<ResetChe
 
   if (!event) return null
 
-  // Cast the joined client relation — same pattern as other generators
+  // Cast the joined client relation - same pattern as other generators
   const clientData = event.client as unknown as { full_name: string } | null
 
   // Derive specialty items from service_style + special_requests keywords
@@ -169,7 +169,7 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
     pdf.doc.setLineWidth(0.3)
     pdf.doc.rect(MARGIN_X + 2, pdf.y - boxSize + 0.5, boxSize, boxSize)
 
-    // Pre-check mark (for payment received) — positioned at box center Y
+    // Pre-check mark (for payment received) - positioned at box center Y
     if (preChecked) {
       pdf.doc.setFont('helvetica', 'bold')
       pdf.doc.setTextColor(0, 130, 0)
@@ -188,28 +188,28 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   }
 
   // ─── SECTION A: Bring Everything Inside ─────────────────────────────────────
-  sectionBar('A — BRING EVERYTHING INSIDE')
+  sectionBar('A - BRING EVERYTHING INSIDE')
   item('All equipment bags brought inside from car')
   item('Cooler brought inside from car')
   for (const eq of specialtyEquipment) {
     item(`${eq} brought inside`)
   }
   item('Any extra bags / dry goods brought inside')
-  item('Car completely cleared — nothing left in vehicle')
+  item('Car completely cleared - nothing left in vehicle')
   pdf.space(1)
 
   // ─── SECTION B: Cooler + Cold Storage ───────────────────────────────────────
-  sectionBar('B — COOLER + COLD STORAGE')
+  sectionBar('B - COOLER + COLD STORAGE')
   item('Cooler emptied completely')
   item('Cooler wiped down and dried')
   item('Cooler lid left open to air out')
   item('Leftover food sorted: keep vs toss')
   item('Kept leftovers stored in fridge with labels (item + date)')
-  item('Fridge has space — cleared out old items if needed')
+  item('Fridge has space - cleared out old items if needed')
   pdf.space(1)
 
   // ─── SECTION C: Equipment + Tools ───────────────────────────────────────────
-  sectionBar('C — EQUIPMENT + TOOLS')
+  sectionBar('C - EQUIPMENT + TOOLS')
   item('Equipment bags emptied')
   item('Dirty tools separated for washing')
   item('Clean tools put back in storage')
@@ -222,7 +222,7 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   pdf.space(1)
 
   // ─── SECTION D: Dishes + Laundry ────────────────────────────────────────────
-  sectionBar('D — DISHES + LAUNDRY')
+  sectionBar('D - DISHES + LAUNDRY')
   item('All dishes in dishwasher or hand washed')
   item('Deli containers washed and dried')
   item('Towels in washing machine')
@@ -232,9 +232,9 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   pdf.space(1)
 
   // ─── SECTION E: Financial + Records ─────────────────────────────────────────
-  sectionBar('E — FINANCIAL + RECORDS')
+  sectionBar('E - FINANCIAL + RECORDS')
   if (paymentReceived) {
-    item(`Payment received — ${formatCurrency(paymentAmountCents)}`, true)
+    item(`Payment received - ${formatCurrency(paymentAmountCents)}`, true)
   } else {
     item('Payment collected or Venmo / payment request sent')
   }
@@ -249,12 +249,12 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   pdf.doc.rect(MARGIN_X, pdf.y, CONTENT_WIDTH, nextDayBarH, 'F')
   pdf.doc.setFontSize(8.5)
   pdf.doc.setFont('helvetica', 'bold')
-  pdf.doc.text('F — NEXT DAY', MARGIN_X + 2, pdf.y + 3.5)
+  pdf.doc.text('F - NEXT DAY', MARGIN_X + 2, pdf.y + 3.5)
   pdf.doc.setFont('helvetica', 'italic')
   pdf.doc.setFontSize(7.5)
   pdf.doc.text(
     '(complete by noon tomorrow)',
-    MARGIN_X + 2 + pdf.doc.getTextWidth('F — NEXT DAY') + 3,
+    MARGIN_X + 2 + pdf.doc.getTextWidth('F - NEXT DAY') + 3,
     pdf.y + 3.5
   )
   pdf.y += nextDayBarH + 1
@@ -301,7 +301,7 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   pdf.y += 3
 
   // ─── Footer ──────────────────────────────────────────────────────────────────
-  pdf.footer(`ChefFlow Post-Service Reset — ${clientName} — ${dateStr}`)
+  pdf.footer(`ChefFlow Post-Service Reset - ${clientName} - ${dateStr}`)
 }
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────

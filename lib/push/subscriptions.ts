@@ -23,7 +23,7 @@ export async function savePushSubscription(input: PushSubscriptionInput): Promis
   const supabase = createServerClient({ admin: true })
 
   if (!user.tenantId) {
-    console.error('[savePushSubscription] No tenantId on user — skipping')
+    console.error('[savePushSubscription] No tenantId on user - skipping')
     return
   }
 
@@ -114,7 +114,7 @@ export async function getActiveSubscriptions(authUserId: string) {
 
 /**
  * Mark a subscription as deactivated (called when push service returns 410 Gone).
- * Service role only — called from channel-router.ts.
+ * Service role only - called from channel-router.ts.
  */
 export async function deactivateSubscription(endpoint: string): Promise<void> {
   const supabase = createServerClient({ admin: true })

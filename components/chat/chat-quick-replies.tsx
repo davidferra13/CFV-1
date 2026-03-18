@@ -17,7 +17,7 @@ export function ChatQuickReplies({ onSelect, visible }: ChatQuickRepliesProps) {
 
   return (
     <div className="px-4 py-2 border-t border-stone-800 bg-stone-800">
-      <p className="text-[10px] text-stone-400 mb-1.5">Quick replies</p>
+      <p className="text-xxs text-stone-400 mb-1.5">Quick replies</p>
       <div className="flex flex-wrap gap-1.5">
         {QUICK_REPLIES.map((reply) => (
           <button

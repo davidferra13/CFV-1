@@ -487,16 +487,16 @@ export function RemyConciergeWidget() {
           </div>
           <div className="mt-1.5 flex flex-col gap-0.5 px-1">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] text-stone-400">
+              <p className="text-xxs text-stone-400">
                 Remy can make mistakes. Verify important details.
               </p>
               <span
-                className={`text-[10px] tabular-nums ${input.length >= 450 ? (input.length >= 500 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
+                className={`text-xxs tabular-nums ${input.length >= 450 ? (input.length >= 500 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
               >
                 {input.length}/500
               </span>
             </div>
-            <p className="text-[10px] text-stone-500 italic">Replies may take a moment.</p>
+            <p className="text-xxs text-stone-500 italic">Replies may take a moment.</p>
           </div>
         </div>
       </div>

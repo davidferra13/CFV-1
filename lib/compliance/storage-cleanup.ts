@@ -21,7 +21,7 @@ const STORAGE_BUCKETS = [
 
 /**
  * Remove all files belonging to a chef from all Supabase Storage buckets.
- * Non-blocking — logs failures but does not throw.
+ * Non-blocking - logs failures but does not throw.
  * Files are organized under `{chefId}/` prefixes.
  */
 export async function cleanupStorageBuckets(chefId: string): Promise<{

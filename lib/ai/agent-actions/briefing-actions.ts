@@ -1,4 +1,4 @@
-// Remy Agent — Daily Briefing & Date Hold Actions
+// Remy Agent - Daily Briefing & Date Hold Actions
 // Morning briefing summarizes today's events, prep needs, overdue items, and new inquiries.
 // Date hold tentatively blocks a calendar date (reversible).
 
@@ -18,8 +18,8 @@ export const briefingAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description:
       "Generate the chef's morning briefing: today's events, prep needed, overdue todos, new inquiries, and pending payments.",
-    inputSchema: '{ "context": "optional string — any specific area to focus on" }',
-    tierNote: 'Tier 2 — presents structured briefing for chef review.',
+    inputSchema: '{ "context": "optional string - any specific area to focus on" }',
+    tierNote: 'Tier 2 - presents structured briefing for chef review.',
 
     async executor(_inputs, ctx) {
       const supabase: any = createServerClient()
@@ -82,7 +82,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
 
       const formatEvent = (e: Record<string, unknown>) => {
         const client = e.client as Record<string, unknown> | null
-        return `${(e.occasion as string) ?? 'Event'} — ${(client?.full_name as string) ?? 'Unknown'} (${(e.guest_count as number) ?? '?'} guests, ${e.serve_time ?? 'TBD'})`
+        return `${(e.occasion as string) ?? 'Event'} - ${(client?.full_name as string) ?? 'Unknown'} (${(e.guest_count as number) ?? '?'} guests, ${e.serve_time ?? 'TBD'})`
       }
 
       const lines: string[] = []
@@ -91,7 +91,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
         for (const e of todayEvents ?? [])
           lines.push(`• ${formatEvent(e as Record<string, unknown>)}`)
       } else {
-        lines.push('TODAY: No events — clear day for prep, admin, or creative work')
+        lines.push('TODAY: No events - clear day for prep, admin, or creative work')
       }
 
       if ((tomorrowEvents ?? []).length > 0) {
@@ -112,7 +112,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
         lines.push(`\n📬 NEW INQUIRIES (${(newInquiries ?? []).length}):`)
         for (const i of newInquiries ?? []) {
           const inq = i as Record<string, unknown>
-          lines.push(`• ${inq.lead_name ?? 'Unknown'} — ${inq.occasion ?? 'TBD'}`)
+          lines.push(`• ${inq.lead_name ?? 'Unknown'} - ${inq.occasion ?? 'TBD'}`)
         }
       }
 
@@ -138,7 +138,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
     },
 
     async commitAction(payload) {
-      // Briefing is read-only — nothing to persist
+      // Briefing is read-only - nothing to persist
       return {
         success: true,
         message: (payload.briefing as string) ?? 'Briefing complete.',
@@ -155,8 +155,8 @@ export const briefingAgentActions: AgentActionDefinition[] = [
     description:
       'Tentatively block a date on the calendar. Creates a "blocked" calendar entry that can be removed later.',
     inputSchema:
-      '{ "date": "string — YYYY-MM-DD date to hold", "reason": "string — optional reason for the hold" }',
-    tierNote: 'Tier 2 — chef confirms before blocking the date.',
+      '{ "date": "string - YYYY-MM-DD date to hold", "reason": "string - optional reason for the hold" }',
+    tierNote: 'Tier 2 - chef confirms before blocking the date.',
 
     async executor(inputs) {
       const date = String(inputs.date ?? '')
@@ -175,7 +175,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
       return {
         preview: {
           actionType: 'agent.hold_date',
-          summary: `Block ${date} — ${reason}`,
+          summary: `Block ${date} - ${reason}`,
           fields,
           safety: 'reversible' as const,
         },
@@ -202,7 +202,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
 
         return {
           success: true,
-          message: `Date ${date} is now held — "${reason}". Remove it from Calendar if plans change.`,
+          message: `Date ${date} is now held - "${reason}". Remove it from Calendar if plans change.`,
           redirectUrl: '/calendar',
         }
       } catch (err) {

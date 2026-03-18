@@ -16,7 +16,7 @@ if (files.length === 0) {
 }
 
 console.log('╔══════════════════════════════════════════════════════════╗')
-console.log('║           Remy Eval — Overnight Summary                 ║')
+console.log('║           Remy Eval - Overnight Summary                 ║')
 console.log('╠══════════════════════════════════════════════════════════╣')
 console.log(`║  Reports found: ${files.length.toString().padEnd(40)}║`)
 console.log('╚══════════════════════════════════════════════════════════╝\n')

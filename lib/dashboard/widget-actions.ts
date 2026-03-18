@@ -32,6 +32,7 @@ export async function getUpcomingPaymentsDue(limit = 5): Promise<PaymentDueItem[
     .select('event_id, outstanding_balance_cents')
     .eq('tenant_id', user.tenantId!)
     .gt('outstanding_balance_cents', 0)
+    .limit(50)
 
   if (!summaries || summaries.length === 0) return []
 

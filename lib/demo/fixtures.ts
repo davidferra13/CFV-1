@@ -130,7 +130,7 @@ export const DEMO_CLIENTS = [
 // clientIndex references DEMO_CLIENTS by position
 
 export const DEMO_EVENTS = [
-  // COMPLETED (past) — 4 events
+  // COMPLETED (past) - 4 events
   {
     clientIndex: 0,
     occasion: 'Winter Dinner Party',
@@ -175,7 +175,7 @@ export const DEMO_EVENTS = [
     location_state: 'MA',
     service_style: 'buffet',
   },
-  // CANCELLED — 2 events
+  // CANCELLED - 2 events
   {
     clientIndex: 8,
     occasion: 'Spring Garden Party',
@@ -198,7 +198,7 @@ export const DEMO_EVENTS = [
     location_state: 'MA',
     service_style: 'buffet',
   },
-  // IN_PROGRESS — 1 event (happening today/tomorrow)
+  // IN_PROGRESS - 1 event (happening today/tomorrow)
   {
     clientIndex: 3,
     occasion: 'Birthday Tasting Menu',
@@ -210,7 +210,7 @@ export const DEMO_EVENTS = [
     location_state: 'MA',
     service_style: 'plated',
   },
-  // CONFIRMED — 2 events (upcoming, all paid + confirmed)
+  // CONFIRMED - 2 events (upcoming, all paid + confirmed)
   {
     clientIndex: 0,
     occasion: 'Spring Dinner Party',
@@ -233,7 +233,7 @@ export const DEMO_EVENTS = [
     location_state: 'MA',
     service_style: 'plated',
   },
-  // PAID — 2 events (deposit paid, not yet confirmed)
+  // PAID - 2 events (deposit paid, not yet confirmed)
   {
     clientIndex: 4,
     occasion: 'Book Club Birthday Dinner',
@@ -256,7 +256,7 @@ export const DEMO_EVENTS = [
     location_state: 'MA',
     service_style: 'buffet',
   },
-  // ACCEPTED — 2 events (quote accepted, awaiting payment)
+  // ACCEPTED - 2 events (quote accepted, awaiting payment)
   {
     clientIndex: 5,
     occasion: 'Summer BBQ Bash',
@@ -279,7 +279,7 @@ export const DEMO_EVENTS = [
     location_state: 'MA',
     service_style: 'plated',
   },
-  // PROPOSED — 2 events (quote sent, awaiting client response)
+  // PROPOSED - 2 events (quote sent, awaiting client response)
   {
     clientIndex: 1,
     occasion: 'Easter Brunch',
@@ -302,7 +302,7 @@ export const DEMO_EVENTS = [
     location_state: 'MA',
     service_style: 'plated',
   },
-  // DRAFT — 3 events (work in progress)
+  // DRAFT - 3 events (work in progress)
   {
     clientIndex: 3,
     occasion: 'Summer Solstice Dinner',
@@ -358,7 +358,7 @@ export const DEMO_INQUIRIES = [
     channel: 'email',
     status: 'awaiting_client',
     source_message:
-      'We do a big summer BBQ every year — 30-40 people. Wondering about pricing and availability for a Saturday in July.',
+      'We do a big summer BBQ every year - 30-40 people. Wondering about pricing and availability for a Saturday in July.',
     confirmed_occasion: 'Summer BBQ Bash',
     confirmed_guest_count: 35,
     confirmed_budget_cents: 500000,
@@ -370,7 +370,7 @@ export const DEMO_INQUIRIES = [
     channel: 'website',
     status: 'quoted',
     source_message:
-      "Our company is having a team dinner for about 18 people. We'd like a nice plated dinner — modern American or Mediterranean.",
+      "Our company is having a team dinner for about 18 people. We'd like a nice plated dinner - modern American or Mediterranean.",
     confirmed_occasion: 'Q1 Team Kickoff Dinner',
     confirmed_guest_count: 18,
     confirmed_budget_cents: 450000,
@@ -382,7 +382,7 @@ export const DEMO_INQUIRIES = [
     channel: 'other',
     status: 'confirmed',
     source_message:
-      "Our friend Marcus recommended you. We'd love to book a spring dinner party — 8 guests, Japanese or Mediterranean fusion.",
+      "Our friend Marcus recommended you. We'd love to book a spring dinner party - 8 guests, Japanese or Mediterranean fusion.",
     confirmed_occasion: 'Spring Dinner Party',
     confirmed_guest_count: 8,
     confirmed_budget_cents: 200000,
@@ -455,7 +455,7 @@ export const DEMO_MENUS = [
   },
   {
     name: 'Mediterranean Voyage',
-    description: 'A culinary journey from Barcelona to Beirut — bold flavors, shared plates.',
+    description: 'A culinary journey from Barcelona to Beirut - bold flavors, shared plates.',
     cuisine_type: 'Mediterranean',
     target_guest_count: 6,
     is_template: true,
@@ -873,7 +873,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 0,
     entry_type: 'deposit',
     amount_cents: 50000,
-    description: 'Deposit — Winter Dinner Party',
+    description: 'Deposit - Winter Dinner Party',
     daysAgo: 60,
     payment_method: 'venmo',
   },
@@ -881,7 +881,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 0,
     entry_type: 'payment',
     amount_cents: 150000,
-    description: 'Final payment — Winter Dinner Party',
+    description: 'Final payment - Winter Dinner Party',
     daysAgo: 44,
     payment_method: 'venmo',
   },
@@ -889,7 +889,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 0,
     entry_type: 'tip',
     amount_cents: 40000,
-    description: 'Gratuity — Winter Dinner Party',
+    description: 'Gratuity - Winter Dinner Party',
     daysAgo: 44,
     payment_method: 'venmo',
   },
@@ -898,7 +898,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 1,
     entry_type: 'deposit',
     amount_cents: 37500,
-    description: 'Deposit — 25th Anniversary',
+    description: 'Deposit - 25th Anniversary',
     daysAgo: 45,
     payment_method: 'zelle',
   },
@@ -906,7 +906,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 1,
     entry_type: 'payment',
     amount_cents: 112500,
-    description: 'Final payment — 25th Anniversary',
+    description: 'Final payment - 25th Anniversary',
     daysAgo: 29,
     payment_method: 'zelle',
   },
@@ -914,7 +914,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 1,
     entry_type: 'tip',
     amount_cents: 30000,
-    description: 'Gratuity — 25th Anniversary',
+    description: 'Gratuity - 25th Anniversary',
     daysAgo: 29,
     payment_method: 'zelle',
   },
@@ -923,7 +923,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 2,
     entry_type: 'deposit',
     amount_cents: 45000,
-    description: 'Deposit — Wine Pairing',
+    description: 'Deposit - Wine Pairing',
     daysAgo: 35,
     payment_method: 'card',
   },
@@ -931,7 +931,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 2,
     entry_type: 'payment',
     amount_cents: 135000,
-    description: 'Final payment — Wine Pairing',
+    description: 'Final payment - Wine Pairing',
     daysAgo: 20,
     payment_method: 'card',
   },
@@ -940,7 +940,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 3,
     entry_type: 'deposit',
     amount_cents: 112500,
-    description: 'Deposit — Q4 Team Dinner',
+    description: 'Deposit - Q4 Team Dinner',
     daysAgo: 28,
     payment_method: 'check',
   },
@@ -948,7 +948,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 3,
     entry_type: 'payment',
     amount_cents: 337500,
-    description: 'Final payment — Q4 Team Dinner',
+    description: 'Final payment - Q4 Team Dinner',
     daysAgo: 13,
     payment_method: 'check',
   },
@@ -957,7 +957,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 9,
     entry_type: 'deposit',
     amount_cents: 50000,
-    description: 'Deposit — Book Club Birthday',
+    description: 'Deposit - Book Club Birthday',
     daysAgo: 5,
     payment_method: 'venmo',
   },
@@ -966,7 +966,7 @@ export const DEMO_LEDGER_ENTRIES = [
     eventIndex: 10,
     entry_type: 'deposit',
     amount_cents: 87500,
-    description: 'Deposit — Engagement Party',
+    description: 'Deposit - Engagement Party',
     daysAgo: 3,
     payment_method: 'zelle',
   },
@@ -979,21 +979,21 @@ export const DEMO_EXPENSES = [
     eventIndex: 0,
     category: 'groceries',
     amount_cents: 42000,
-    description: 'Whole Foods — Winter Dinner ingredients',
+    description: 'Whole Foods - Winter Dinner ingredients',
     daysAgo: 47,
   },
   {
     eventIndex: 0,
     category: 'groceries',
     amount_cents: 18500,
-    description: 'Fish market — Scallops & seafood',
+    description: 'Fish market - Scallops & seafood',
     daysAgo: 46,
   },
   {
     eventIndex: 1,
     category: 'groceries',
     amount_cents: 35000,
-    description: 'Specialty market — Anniversary dinner',
+    description: 'Specialty market - Anniversary dinner',
     daysAgo: 32,
   },
   {
@@ -1007,21 +1007,21 @@ export const DEMO_EXPENSES = [
     eventIndex: 2,
     category: 'groceries',
     amount_cents: 52000,
-    description: 'Premium proteins & produce — Wine dinner',
+    description: 'Premium proteins & produce - Wine dinner',
     daysAgo: 23,
   },
   {
     eventIndex: 3,
     category: 'groceries',
     amount_cents: 78000,
-    description: 'Costco + Whole Foods — Team dinner (20 pax)',
+    description: 'Costco + Whole Foods - Team dinner (20 pax)',
     daysAgo: 16,
   },
   {
     eventIndex: 3,
     category: 'labor',
     amount_cents: 25000,
-    description: 'Sous chef — Q4 Team event',
+    description: 'Sous chef - Q4 Team event',
     daysAgo: 14,
   },
   {
@@ -1302,15 +1302,15 @@ export const DEMO_CALENDAR_ENTRIES = [
   { daysOut: 8, public_note: 'Open for intimate dinner (2-6 guests)', type: 'target_booking' },
   {
     daysOut: 15,
-    public_note: 'Available — perfect for a weekend gathering',
+    public_note: 'Available - perfect for a weekend gathering',
     type: 'target_booking',
   },
   { daysOut: 22, public_note: 'Open for private dining or tasting menu', type: 'target_booking' },
-  { daysOut: 29, public_note: 'Weekend available — book now', type: 'target_booking' },
+  { daysOut: 29, public_note: 'Weekend available - book now', type: 'target_booking' },
   { daysOut: 36, public_note: 'Open for events up to 20 guests', type: 'target_booking' },
   {
     daysOut: 43,
-    public_note: 'Last weekend of the month — still available',
+    public_note: 'Last weekend of the month - still available',
     type: 'target_booking',
   },
 ]

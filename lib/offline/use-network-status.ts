@@ -1,6 +1,6 @@
 'use client'
 
-// useNetworkStatus — Network detection with verification.
+// useNetworkStatus - Network detection with verification.
 //
 // navigator.onLine is unreliable on Windows with VPN software (e.g. NordVPN/NordLynx).
 // VPN tunnel reconnections trigger false "offline" events even when the network is fine.
@@ -8,17 +8,17 @@
 // Strategy:
 //   - Trust "online" events immediately (no false positives there)
 //   - When browser says "offline", verify with a real fetch before believing it
-//   - If the fetch succeeds, the browser lied — stay online
+//   - If the fetch succeeds, the browser lied - stay online
 //   - If the fetch also fails, we're genuinely offline
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 export type NetworkStatus = 'online' | 'offline'
 
-/** Lightweight connectivity check — fetch a tiny resource to verify real network state */
+/** Lightweight connectivity check - fetch a tiny resource to verify real network state */
 async function isActuallyOffline(): Promise<boolean> {
   try {
-    // Use HEAD to /api/health — tiny response, no DB hit, already exists
+    // Use HEAD to /api/health - tiny response, no DB hit, already exists
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 3000)
     await fetch('/api/health', {
@@ -27,9 +27,9 @@ async function isActuallyOffline(): Promise<boolean> {
       signal: controller.signal,
     })
     clearTimeout(timeout)
-    return false // fetch succeeded — we're online
+    return false // fetch succeeded - we're online
   } catch {
-    return true // fetch failed — genuinely offline
+    return true // fetch failed - genuinely offline
   }
 }
 

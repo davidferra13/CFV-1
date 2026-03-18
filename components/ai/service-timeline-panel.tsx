@@ -41,7 +41,7 @@ export function ServiceTimelinePanel({ eventId }: { eventId: string }) {
     ) : who === 'Chef' ? (
       <ChefHat className="w-3 h-3 text-amber-600" />
     ) : (
-      <span className="text-[10px] text-stone-500">Both</span>
+      <span className="text-xxs text-stone-500">Both</span>
     )
 
   if (!result) {
@@ -100,14 +100,14 @@ export function ServiceTimelinePanel({ eventId }: { eventId: string }) {
             className="flex items-start gap-3 py-1.5 border-b border-stone-50 last:border-0"
           >
             <div className="w-16 flex-shrink-0 text-xs font-mono text-stone-400">{entry.time}</div>
-            <div className="w-12 flex-shrink-0 text-[11px] text-stone-400">{entry.duration}</div>
+            <div className="w-12 flex-shrink-0 text-xs-tight text-stone-400">{entry.duration}</div>
             <div className="flex-1 text-sm text-stone-300">{entry.task}</div>
             <div className="flex-shrink-0">{whoIcon(entry.who)}</div>
           </div>
         ))}
       </div>
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Draft · Review and adjust times before sharing with staff
       </p>
     </div>

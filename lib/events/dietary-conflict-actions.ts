@@ -1,6 +1,6 @@
 // Dietary Conflict Detection Server Actions
 // Checks event menu items against guest dietary restrictions and tracks alerts.
-// Table: dietary_conflict_alerts — event_id FK (CASCADE), chef_id FK,
+// Table: dietary_conflict_alerts - event_id FK (CASCADE), chef_id FK,
 //   guest_name TEXT, allergy TEXT, conflicting_dish TEXT,
 //   severity ('critical'|'warning'|'info'), acknowledged BOOLEAN DEFAULT false
 

@@ -94,7 +94,7 @@ function StationCard({ station }: { station: StationSnapshot }) {
           <div>
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-stone-400">Stock at par</span>
-              <Badge variant={parBadgeVariant(station.parPercent)} className="text-[10px]">
+              <Badge variant={parBadgeVariant(station.parPercent)} className="text-xxs">
                 {station.parPercent}%
               </Badge>
             </div>
@@ -288,7 +288,7 @@ export default async function DailyOpsPage() {
                           )}
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="error" className="text-[10px]">
+                          <Badge variant="error" className="text-xxs">
                             {task.priority}
                           </Badge>
                           <span className="text-xs text-red-400">
@@ -423,12 +423,12 @@ export default async function DailyOpsPage() {
                         {isReady ? 'Ready now' : `${hours}h ${minutes}m`}
                       </p>
                       {isReady && (
-                        <Badge variant="success" className="text-[10px]">
+                        <Badge variant="success" className="text-xxs">
                           Done
                         </Badge>
                       )}
                       {isApproaching && !isReady && (
-                        <Badge variant="warning" className="text-[10px]">
+                        <Badge variant="warning" className="text-xxs">
                           Soon
                         </Badge>
                       )}
@@ -468,7 +468,7 @@ export default async function DailyOpsPage() {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Badge variant={alertBadgeVariant(alert.type)} className="text-[10px]">
+                      <Badge variant={alertBadgeVariant(alert.type)} className="text-xxs">
                         {alertLabel(alert.type)}
                       </Badge>
                       <div>

@@ -1,6 +1,6 @@
 // Agent Account Bootstrap
 // Creates/updates a persistent VS Code agent account in Supabase.
-// Idempotent — safe to run multiple times.
+// Idempotent - safe to run multiple times.
 //
 // Usage: npx tsx scripts/setup-agent-account.ts
 //

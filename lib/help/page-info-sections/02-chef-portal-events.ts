@@ -4,7 +4,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/events': {
     title: 'Events',
     description:
-      'All your events in one place — filter by status, switch between list and kanban board views.',
+      'All your events in one place - filter by status, switch between list and kanban board views.',
     features: [
       'List view with sortable table',
       'Kanban board view organized by status',
@@ -29,7 +29,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/new': {
     title: 'New Event',
-    description: 'Create a new event — set the date, occasion, guest count, location, and client.',
+    description: 'Create a new event - set the date, occasion, guest count, location, and client.',
     features: [
       'Event type and occasion selection',
       'Date, time, and guest count',
@@ -51,7 +51,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/new/wizard': {
     title: 'Event Setup Wizard',
-    description: 'Step-by-step guided event creation — perfect for your first few events.',
+    description: 'Step-by-step guided event creation - perfect for your first few events.',
     features: [
       'Guided multi-step form',
       'Client selection or creation',
@@ -63,7 +63,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/events/[id]': {
     title: 'Event Detail',
     description:
-      'Everything about this event — status, timeline, menu, financials, staff, and all supporting documents.',
+      'Everything about this event - status, timeline, menu, financials, staff, and all supporting documents.',
     features: [
       'Event status and lifecycle transitions',
       'Timeline and schedule overview',
@@ -78,7 +78,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/[id]/edit': {
     title: 'Edit Event',
-    description: 'Update event details — date, time, guest count, location, and notes.',
+    description: 'Update event details - date, time, guest count, location, and notes.',
     features: [
       'Edit all event fields',
       'Update client assignment',
@@ -90,7 +90,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/events/[id]/schedule': {
     title: 'Event Schedule',
     description:
-      'Timeline of prep and execution tasks for this event — the full day-of-party plan.',
+      'Timeline of prep and execution tasks for this event - the full day-of-party plan.',
     features: [
       'Prep tasks sorted by timeline',
       'Day-of-party execution plan',
@@ -101,7 +101,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/[id]/interactive': {
     title: 'Interactive Timeline',
-    description: 'Live interactive timeline during event service — track progress in real time.',
+    description: 'Live interactive timeline during event service - track progress in real time.',
     features: [
       'Real-time task tracking',
       'Mark tasks complete as you go',
@@ -113,7 +113,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/events/[id]/dop/mobile': {
     title: 'Mobile Day-of-Party',
     description:
-      'Mobile-optimized day-of-party interface — designed for use during active service.',
+      'Mobile-optimized day-of-party interface - designed for use during active service.',
     features: [
       'Large touch targets for kitchen use',
       'Task checklist with swipe-to-complete',
@@ -125,7 +125,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/events/[id]/aar': {
     title: 'After Action Review',
     description:
-      'Post-event self-assessment — what went well, what to improve, and lessons learned.',
+      'Post-event self-assessment - what went well, what to improve, and lessons learned.',
     features: [
       'Calm and prep quality ratings',
       'What went well / what to improve',
@@ -137,7 +137,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/events/[id]/close-out': {
     title: 'Event Close-Out',
     description:
-      'Finalize the event — settle all financials, upload final receipts, and mark complete.',
+      'Finalize the event - settle all financials, upload final receipts, and mark complete.',
     features: [
       'Final financial reconciliation',
       'Outstanding balance resolution',
@@ -148,7 +148,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/[id]/debrief': {
     title: 'Event Debrief',
-    description: 'Detailed post-event analysis — performance, financials, and client feedback.',
+    description: 'Detailed post-event analysis - performance, financials, and client feedback.',
     features: [
       'Performance summary',
       'Financial outcome vs. quoted',
@@ -160,7 +160,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/events/[id]/financial': {
     title: 'Event Financials',
     description:
-      'Full financial picture for this event — revenue, costs, profit margin, and payment history.',
+      'Full financial picture for this event - revenue, costs, profit margin, and payment history.',
     features: [
       'Quoted vs. collected revenue',
       'Direct expenses and food costs',
@@ -172,7 +172,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/[id]/invoice': {
     title: 'Event Invoice',
-    description: 'The invoice for this event — line items, totals, payment terms, and status.',
+    description: 'The invoice for this event - line items, totals, payment terms, and status.',
     features: [
       'Line-item breakdown',
       'Deposit and balance amounts',
@@ -183,7 +183,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/[id]/receipts': {
     title: 'Event Receipts',
-    description: 'Upload and manage receipts for this event — grocery runs, rentals, supplies.',
+    description: 'Upload and manage receipts for this event - grocery runs, rentals, supplies.',
     features: [
       'Receipt photo upload',
       'Categorize by expense type',
@@ -194,7 +194,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/[id]/travel': {
     title: 'Event Travel',
-    description: 'Travel details for this event — distance, mileage, and travel expenses.',
+    description: 'Travel details for this event - distance, mileage, and travel expenses.',
     features: [
       'Mileage tracking and logging',
       'Travel expense recording',
@@ -205,7 +205,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/events/[id]/pack': {
     title: 'Packing Checklist',
     description:
-      'Everything you need to bring — equipment, ingredients, supplies, and personal items.',
+      'Everything you need to bring - equipment, ingredients, supplies, and personal items.',
     features: [
       'Categorized packing list',
       'Check items off as you pack',
@@ -236,7 +236,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/[id]/kds': {
     title: 'Kitchen Display',
-    description: 'Kitchen Display System — real-time order and course tracking during service.',
+    description: 'Kitchen Display System - real-time order and course tracking during service.',
     features: [
       'Course-by-course display',
       'Timing and pacing',
@@ -246,7 +246,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/[id]/split-billing': {
     title: 'Split Billing',
-    description: 'Split the event invoice between multiple payers — great for co-hosted events.',
+    description: 'Split the event invoice between multiple payers - great for co-hosted events.',
     features: [
       'Assign portions to different payers',
       'Individual payment tracking',
@@ -262,7 +262,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/upcoming': {
     title: 'Upcoming Events',
-    description: 'Confirmed events coming up — your active pipeline.',
+    description: 'Confirmed events coming up - your active pipeline.',
     features: [
       'Chronological upcoming events',
       'Days until each event',
@@ -272,7 +272,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/confirmed': {
     title: 'Confirmed Events',
-    description: 'Events with payment confirmed — ready for execution.',
+    description: 'Events with payment confirmed - ready for execution.',
     features: ['Confirmed events list', 'Prep status indicators'],
   },
 
@@ -284,7 +284,7 @@ export const CHEF_PORTAL_EVENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/events/cancelled': {
     title: 'Cancelled Events',
-    description: 'Events that were cancelled — track reasons and refund status.',
+    description: 'Events that were cancelled - track reasons and refund status.',
     features: ['Cancellation history', 'Refund tracking', 'Reason documentation'],
   },
 

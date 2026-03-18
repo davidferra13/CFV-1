@@ -1,13 +1,13 @@
-// Ask Remy — Shared Types
-// No 'use server' — safe to import from any context (client, server, tests)
+// Ask Remy - Shared Types
+// No 'use server' - safe to import from any context (client, server, tests)
 
 export type ApprovalTier = 1 | 2 | 3
 
 export type TaskStatus =
-  | 'pending' // tier 2 — draft ready, awaiting chef approval
+  | 'pending' // tier 2 - draft ready, awaiting chef approval
   | 'running'
-  | 'done' // tier 1 — completed automatically
-  | 'held' // tier 3 — parked, awaiting clarification
+  | 'done' // tier 1 - completed automatically
+  | 'held' // tier 3 - parked, awaiting clarification
   | 'error' // execution failed
   | 'approved' // chef approved a tier 2 draft
   | 'rejected' // chef dismissed this result

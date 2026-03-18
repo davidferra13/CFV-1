@@ -1,4 +1,4 @@
-// Staff Onboarding — Constants (no 'use server' — values only)
+// Staff Onboarding - Constants (no 'use server' - values only)
 
 export const ONBOARDING_ITEM_KEYS = [
   'BACKGROUND_CHECK',

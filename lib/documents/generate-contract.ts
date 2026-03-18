@@ -1,6 +1,6 @@
 // Contract PDF Generator
 // Renders a signed (or unsigned) service agreement as a formal PDF.
-// Both chef and client can access — ownership is verified by the caller.
+// Both chef and client can access - ownership is verified by the caller.
 // Multi-page allowed: contracts can be long.
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -73,7 +73,7 @@ export async function fetchContractData(
   const event = contract.events as any
   const client = contract.clients as any
 
-  // Partial IP — hide first octet for privacy
+  // Partial IP - hide first octet for privacy
   let signerIpPartial: string | null = null
   if (contract.signer_ip_address) {
     const parts = String(contract.signer_ip_address).split('.')
@@ -113,7 +113,7 @@ export async function fetchContractData(
 
 // ─── Markdown renderer ────────────────────────────────────────────────────────
 // The body_snapshot is stored as markdown. We render it to PDF without
-// any external library — basic parsing only.
+// any external library - basic parsing only.
 
 function renderMarkdownBody(pdf: PDFLayout, markdown: string) {
   const lines = markdown.split('\n')

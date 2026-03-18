@@ -123,7 +123,7 @@ export function RecipeScalingPanel({
                 <td className="py-1 pr-3 font-medium text-stone-200">
                   {ing.scaledQuantity} {ing.unit}
                 </td>
-                <td className="py-1 text-amber-600 text-[11px]">{ing.scalingNote ?? '-'}</td>
+                <td className="py-1 text-amber-600 text-xs-tight">{ing.scalingNote ?? '-'}</td>
               </tr>
             ))}
           </tbody>
@@ -141,7 +141,7 @@ export function RecipeScalingPanel({
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Draft · Verify scaled quantities with your kitchen measurements
       </p>
     </div>

@@ -40,13 +40,9 @@ export default function SeasonalTrendsPanel({ defaultYearsBack = 3 }: Props) {
     })
   }, [defaultYearsBack])
 
-  const maxEventCount = data
-    ? Math.max(...data.months.map((m) => m.totalEventCount), 1)
-    : 1
+  const maxEventCount = data ? Math.max(...data.months.map((m) => m.totalEventCount), 1) : 1
 
-  const maxRevenue = data
-    ? Math.max(...data.months.map((m) => m.avgRevenueCents), 1)
-    : 1
+  const maxRevenue = data ? Math.max(...data.months.map((m) => m.avgRevenueCents), 1) : 1
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6">
@@ -54,17 +50,18 @@ export default function SeasonalTrendsPanel({ defaultYearsBack = 3 }: Props) {
         <h3 className="text-lg font-semibold text-gray-900">Seasonal Trends</h3>
         {data && data.yearsAnalyzed.length > 0 && (
           <p className="text-sm text-gray-500">
-            Based on {data.yearsAnalyzed.length} year{data.yearsAnalyzed.length !== 1 ? 's' : ''} of data ({data.yearsAnalyzed.join(', ')})
+            Based on {data.yearsAnalyzed.length} year{data.yearsAnalyzed.length !== 1 ? 's' : ''} of
+            data ({data.yearsAnalyzed.join(', ')})
           </p>
         )}
       </div>
 
-      {error && (
-        <div className="rounded bg-red-50 p-3 text-sm text-red-700">{error}</div>
-      )}
+      {error && <div className="rounded bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       {isPending && !data && (
-        <div className="flex h-48 items-center justify-center text-sm text-gray-400">Loading...</div>
+        <div className="flex h-48 items-center justify-center text-sm text-gray-400">
+          Loading...
+        </div>
       )}
 
       {data && (
@@ -89,9 +86,9 @@ export default function SeasonalTrendsPanel({ defaultYearsBack = 3 }: Props) {
                   className={`flex flex-col items-center rounded p-2 ${getHeatColor(month.totalEventCount, maxEventCount)}`}
                   title={`${month.monthName}: ${month.totalEventCount} events (avg ${month.avgEventCount}/yr)`}
                 >
-                  <span className="text-[10px] font-medium">{month.monthName}</span>
+                  <span className="text-xxs font-medium">{month.monthName}</span>
                   <span className="text-sm font-bold">{month.totalEventCount}</span>
-                  <span className="text-[10px]">{month.avgEventCount}/yr</span>
+                  <span className="text-xxs">{month.avgEventCount}/yr</span>
                 </div>
               ))}
             </div>
@@ -107,7 +104,7 @@ export default function SeasonalTrendsPanel({ defaultYearsBack = 3 }: Props) {
                   className={`flex flex-col items-center rounded p-2 ${getHeatColor(month.avgRevenueCents, maxRevenue)}`}
                   title={`${month.monthName}: avg ${formatCents(month.avgRevenueCents)}/yr (total ${formatCents(month.totalRevenueCents)})`}
                 >
-                  <span className="text-[10px] font-medium">{month.monthName}</span>
+                  <span className="text-xxs font-medium">{month.monthName}</span>
                   <span className="text-xs font-bold">{formatCents(month.avgRevenueCents)}</span>
                 </div>
               ))}
@@ -132,8 +129,12 @@ export default function SeasonalTrendsPanel({ defaultYearsBack = 3 }: Props) {
                     <td className="px-2 py-1 font-medium text-gray-700">{month.monthName}</td>
                     <td className="px-2 py-1 text-right text-gray-600">{month.totalEventCount}</td>
                     <td className="px-2 py-1 text-right text-gray-600">{month.avgEventCount}</td>
-                    <td className="px-2 py-1 text-right text-gray-600">{formatCents(month.avgRevenueCents)}</td>
-                    <td className="px-2 py-1 text-right text-gray-600">{formatCents(month.totalRevenueCents)}</td>
+                    <td className="px-2 py-1 text-right text-gray-600">
+                      {formatCents(month.avgRevenueCents)}
+                    </td>
+                    <td className="px-2 py-1 text-right text-gray-600">
+                      {formatCents(month.totalRevenueCents)}
+                    </td>
                   </tr>
                 ))}
               </tbody>

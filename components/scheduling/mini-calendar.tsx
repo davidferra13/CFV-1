@@ -153,10 +153,7 @@ export function MiniCalendar({
       {/* Day headers */}
       <div className="grid grid-cols-7 mb-1">
         {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => (
-          <div
-            key={d}
-            className="text-center text-[10px] font-semibold text-stone-300 uppercase py-1"
-          >
+          <div key={d} className="text-center text-xxs font-semibold text-stone-300 uppercase py-1">
             {d}
           </div>
         ))}

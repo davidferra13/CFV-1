@@ -47,7 +47,7 @@ export interface BusinessHealthSummary {
 export async function getBusinessHealthSummary(): Promise<BusinessHealthSummary> {
   await requireChef()
 
-  // Fetch key engines in parallel — catch nulls gracefully
+  // Fetch key engines in parallel - catch nulls gracefully
   const [
     demand,
     rebooking,
@@ -186,7 +186,7 @@ export async function getBusinessHealthSummary(): Promise<BusinessHealthSummary>
       insights.push(`${champions + loyals} loyal/champion clients (${healthyPct}% of portfolio)`)
     }
     if (dormant > 2) {
-      insights.push(`${dormant} dormant clients — re-engagement opportunity`)
+      insights.push(`${dormant} dormant clients - re-engagement opportunity`)
     }
   }
 
@@ -219,7 +219,7 @@ export async function getBusinessHealthSummary(): Promise<BusinessHealthSummary>
         severity: 'warning',
         category: 'Capacity',
         title: `Operating at ${utilization}% capacity`,
-        detail: 'Near maximum — burnout risk',
+        detail: 'Near maximum - burnout risk',
         action: 'Consider raising prices or limiting bookings',
         source: 'capacity-ceiling',
       })
@@ -229,7 +229,7 @@ export async function getBusinessHealthSummary(): Promise<BusinessHealthSummary>
       insights.push(`Healthy utilization: ${utilization}% of capacity`)
     } else if (utilization < 30) {
       opsScore = 35
-      insights.push(`Low utilization: ${utilization}% — room for more bookings`)
+      insights.push(`Low utilization: ${utilization}% - room for more bookings`)
     } else {
       opsScore = 60
     }

@@ -1,4 +1,4 @@
-// Recipe Share — Chef-to-Chef Email
+// Recipe Share - Chef-to-Chef Email
 // Sent to a chef when another chef shares a recipe with them.
 
 import { Text, Link } from '@react-email/components'
@@ -71,7 +71,7 @@ export function RecipeShareEmail({
       </div>
 
       <Text style={muted}>
-        Accepting creates a fully independent copy in your recipe library — you can edit it freely
+        Accepting creates a fully independent copy in your recipe library - you can edit it freely
         without affecting the original. You can also decline if it&apos;s not a fit.
       </Text>
     </BaseLayout>

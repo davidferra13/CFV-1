@@ -1,4 +1,4 @@
-// Vendor constants — extracted from actions.ts so client components can import
+// Vendor constants - extracted from actions.ts so client components can import
 // without violating the 'use server' rule (which only permits async function exports).
 
 export const VENDOR_TYPE_LABELS: Record<string, string> = {

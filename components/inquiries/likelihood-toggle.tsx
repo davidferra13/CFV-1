@@ -66,7 +66,7 @@ export function LikelihoodToggle({ inquiryId, currentLikelihood }: LikelihoodTog
 
   return (
     <div className="flex items-center gap-1">
-      <span className="text-[10px] text-stone-300 mr-0.5">Your gut feel:</span>
+      <span className="text-xxs text-stone-300 mr-0.5">Your gut feel:</span>
       {TAGS.map((tag) => {
         const isActive = optimistic === tag.value
         return (

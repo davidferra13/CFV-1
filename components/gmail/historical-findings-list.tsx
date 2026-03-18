@@ -337,7 +337,7 @@ function ClassificationBadge({ classification }: { classification: string }) {
   }
   return (
     <span
-      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${styles[classification] ?? 'bg-stone-800 text-stone-400'}`}
+      className={`inline-block px-1.5 py-0.5 rounded text-xxs font-medium ${styles[classification] ?? 'bg-stone-800 text-stone-400'}`}
     >
       {labels[classification] ?? classification}
     </span>
@@ -352,7 +352,7 @@ function ConfidenceBadge({ confidence }: { confidence: string }) {
   }
   return (
     <span
-      className={`inline-block px-1.5 py-0.5 rounded text-[10px] ${styles[confidence] ?? 'bg-stone-800 text-stone-500'}`}
+      className={`inline-block px-1.5 py-0.5 rounded text-xxs ${styles[confidence] ?? 'bg-stone-800 text-stone-500'}`}
     >
       {confidence}
     </span>

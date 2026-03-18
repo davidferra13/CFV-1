@@ -1,4 +1,4 @@
-// Quote Expired — Chef Notification Email
+// Quote Expired - Chef Notification Email
 // Sent to the chef when a quote has passed its valid-until date with no client response.
 
 import { Text, Link } from '@react-email/components'

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Image from 'next/image'
 import { toast } from 'sonner'
 import type { DirectoryCandidate } from '@/lib/directory/admin-actions'
 import { approveChefForDirectory, revokeChefFromDirectory } from '@/lib/directory/admin-actions'
@@ -32,10 +33,11 @@ export function DirectoryToggleRow({ chef }: { chef: DirectoryCandidate }) {
     <div className="flex items-center gap-4 px-4 py-3">
       {/* Avatar */}
       {chef.profile_image_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={chef.profile_image_url}
           alt={chef.display_name || chef.business_name}
+          width={40}
+          height={40}
           className="h-10 w-10 rounded-full object-cover flex-shrink-0"
         />
       ) : (

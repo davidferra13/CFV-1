@@ -1,5 +1,5 @@
-// Incident Report System — Local File-Based Failure Reports
-// No 'use server' — utility module, importable from any server-side context.
+// Incident Report System - Local File-Based Failure Reports
+// No 'use server' - utility module, importable from any server-side context.
 //
 // Writes human-readable Markdown reports to data/incidents/ on the developer's PC.
 // Organized by system (ollama/, queue/, circuit-breaker/, health/, webhook/)
@@ -7,10 +7,10 @@
 //
 // PURPOSE: When something fails, a report is written so the developer can
 // browse the folder, see what went wrong, and understand the context.
-// Console logs are ephemeral — these reports persist.
+// Console logs are ephemeral - these reports persist.
 //
 // PRIVACY: No PII is written to reports. Only system/operational data.
-// COST: $0 — local filesystem, no external calls.
+// COST: $0 - local filesystem, no external calls.
 
 import * as fs from 'fs'
 import * as path from 'path'
@@ -30,11 +30,11 @@ export type IncidentSystem =
   | 'general'
 
 export interface IncidentReport {
-  /** Severity level — how bad is this? */
+  /** Severity level - how bad is this? */
   severity: IncidentSeverity
   /** Which system failed */
   system: IncidentSystem
-  /** Short title — what happened (e.g., "Ollama Timeout") */
+  /** Short title - what happened (e.g., "Ollama Timeout") */
   title: string
   /** Human-readable description of what went wrong */
   description: string
@@ -62,14 +62,14 @@ const SEVERITY_LABELS: Record<IncidentSeverity, string> = {
 }
 
 // ============================================
-// DEDUPLICATION — prevents spam
+// DEDUPLICATION - prevents spam
 // ============================================
 // Tracks recent incident titles so we don't write the same report 50 times.
 // Key: "system:title-slug", Value: timestamp of last write.
 // Same incident type is suppressed for DEDUP_WINDOW_MS after the first write.
 
 const recentIncidents = new Map<string, number>()
-const DEDUP_WINDOW_MS = 30 * 60 * 1000 // 30 minutes — same incident won't repeat for 30 min
+const DEDUP_WINDOW_MS = 30 * 60 * 1000 // 30 minutes - same incident won't repeat for 30 min
 
 function isDuplicate(system: IncidentSystem, title: string): boolean {
   const key = `${system}:${slugify(title)}`
@@ -77,7 +77,7 @@ function isDuplicate(system: IncidentSystem, title: string): boolean {
   const now = Date.now()
 
   if (lastWritten && now - lastWritten < DEDUP_WINDOW_MS) {
-    return true // Already reported recently — suppress
+    return true // Already reported recently - suppress
   }
 
   recentIncidents.set(key, now)
@@ -99,7 +99,7 @@ function isDuplicate(system: IncidentSystem, title: string): boolean {
 
 /**
  * Write an incident report to disk as a Markdown file.
- * Non-blocking — wraps in try/catch so it never crashes the caller.
+ * Non-blocking - wraps in try/catch so it never crashes the caller.
  *
  * File goes to: data/incidents/{system}/{YYYY-MM-DD}/{HH-MM-SS}_{slug}.md
  */
@@ -172,7 +172,7 @@ export function reportTaskFailure(opts: {
   const isDead = opts.isDead ?? opts.attempt >= opts.maxAttempts
 
   // Only write a report when the task is DEAD (exhausted all retries).
-  // Individual retry attempts are normal — they're not incidents.
+  // Individual retry attempts are normal - they're not incidents.
   // This prevents 3 reports for what is really 1 problem.
   if (!isDead) return null
 
@@ -206,7 +206,7 @@ export function reportCircuitBreakerChange(opts: {
   failures?: number
 }): string | null {
   // Only report when a circuit OPENS (something broke).
-  // Recovery transitions (HALF_OPEN, CLOSED) are normal — not incidents.
+  // Recovery transitions (HALF_OPEN, CLOSED) are normal - not incidents.
   if (opts.to !== 'OPEN') return null
 
   return writeIncident({
@@ -277,7 +277,7 @@ export function reportWorkerBackoff(opts: {
 function formatMarkdown(report: IncidentReport, timestamp: Date): string {
   const lines: string[] = []
 
-  lines.push(`# ${SEVERITY_LABELS[report.severity]} — ${report.title}`)
+  lines.push(`# ${SEVERITY_LABELS[report.severity]} - ${report.title}`)
   lines.push('')
   lines.push(`**Time:** ${timestamp.toISOString()}`)
   lines.push(`**Severity:** ${report.severity}`)
@@ -346,11 +346,11 @@ function appendToDailyIndex(report: IncidentReport, timestamp: Date, filename: s
       needsHeader = true
     }
 
-    const line = `| ${timeStr} | ${SEVERITY_LABELS[report.severity]} | ${report.system} | ${report.endpoint?.toUpperCase() ?? '—'} | ${report.title} | \`${report.system}/${dateStr}/${filename}\` |\n`
+    const line = `| ${timeStr} | ${SEVERITY_LABELS[report.severity]} | ${report.system} | ${report.endpoint?.toUpperCase() ?? '-'} | ${report.title} | \`${report.system}/${dateStr}/${filename}\` |\n`
 
     if (needsHeader) {
       const header =
-        `# Incident Log — ${dateStr}\n\n` +
+        `# Incident Log - ${dateStr}\n\n` +
         `| Time | Severity | System | Endpoint | Title | Report File |\n` +
         `|------|----------|--------|----------|-------|-------------|\n`
       fs.writeFileSync(indexPath, header + line, 'utf-8')

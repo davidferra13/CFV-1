@@ -2,9 +2,9 @@
 
 // Review Request Drafter
 // AI crafts a personalized review request message per client.
-// Distinct from followup-draft.ts (general follow-up) — this specifically asks for a review.
+// Distinct from followup-draft.ts (general follow-up) - this specifically asks for a review.
 // Routed to Gemini (quality-critical client communication).
-// Output is DRAFT ONLY — chef must approve before sending.
+// Output is DRAFT ONLY - chef must approve before sending.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -73,7 +73,7 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
   const prompt = `You are a personal chef crafting a review request message to a client after a successful event.
 Write in first person singular. Warm, genuine, never pushy or salesy.
 Reference specific details from the event to make it personal.
-The ask should feel natural — like a friend asking for a favor, not a business soliciting reviews.
+The ask should feel natural - like a friend asking for a favor, not a business soliciting reviews.
 
 Chef: ${chef?.display_name ?? 'Chef'}, ${chef?.business_name ?? ''}
 Client first name: ${firstName}
@@ -86,7 +86,7 @@ Service style: ${event.service_style ?? 'plated'}
 Rules:
 - Open with a personal reference to the specific event (not a generic opener)
 - Express genuine enjoyment of the experience
-- Ask for a review in one sentence — keep it casual
+- Ask for a review in one sentence - keep it casual
 - Offer to answer any questions
 - Sign off naturally (not "Best regards")
 - NO exclamation points in the opening line

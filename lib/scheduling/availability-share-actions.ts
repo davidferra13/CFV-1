@@ -1,7 +1,7 @@
 'use server'
 
 // Availability Share Token Actions
-// Lets chefs generate a shareable URL that shows their open dates — without
+// Lets chefs generate a shareable URL that shows their open dates - without
 // exposing client names, financials, or any private data.
 // Uses chef_availability_share_tokens table (migration 20260322000023).
 
@@ -106,7 +106,7 @@ export async function getShareTokens(): Promise<ShareToken[]> {
 
 /**
  * Validates a share token and returns availability for the next 60 days.
- * This function is intentionally public — no requireChef() — because it is
+ * This function is intentionally public - no requireChef() - because it is
  * called from a public page viewed by potential clients.
  *
  * Only exposes: date + available boolean. No client names or financial data.
@@ -185,7 +185,7 @@ export async function getSharedAvailability(token: string): Promise<{
     unavailable.add(d)
   }
 
-  // Get chef display name (first_name only — no last name for privacy)
+  // Get chef display name (first_name only - no last name for privacy)
   const { data: chefRow } = await supabase
     .from('chefs')
     .select('first_name')

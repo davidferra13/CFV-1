@@ -1,4 +1,4 @@
-// Priority Queue — Inquiry Provider
+// Priority Queue - Inquiry Provider
 // Surfaces: new inquiries, awaiting_chef, overdue follow-ups, unresolved unknown_fields
 
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -85,12 +85,12 @@ export async function getInquiryQueueItems(
     const summary = inquirySummary(inq as any)
     const chLabel = channelLabel(inq.channel)
 
-    // New inquiries — chef has not responded yet
+    // New inquiries - chef has not responded yet
     if (inq.status === 'new') {
       const isTac = inq.channel === 'take_a_chef'
       const isYhangry = inq.channel === 'yhangry'
       const isPlatform = isTac || isYhangry
-      // Platform leads get a priority boost — platform expectations for response time
+      // Platform leads get a priority boost - platform expectations for response time
       const platformBoost = isPlatform ? 0.15 : 0
       const inputs: ScoreInputs = {
         hoursUntilDue: Math.max(0, (isPlatform ? 12 : 24) - hoursSinceCreated),
@@ -108,14 +108,14 @@ export async function getInquiryQueueItems(
       let title: string
       let description: string
       if (isTac) {
-        title = `New TakeAChef lead from ${clientName}${platformStale ? ' — STALE' : ''}`
-        description = `${clientName} requested via TakeAChef — untouched ${ageLabel(hoursSinceCreated)}.`
+        title = `New TakeAChef lead from ${clientName}${platformStale ? ' - STALE' : ''}`
+        description = `${clientName} requested via TakeAChef - untouched ${ageLabel(hoursSinceCreated)}.`
       } else if (isYhangry) {
         title = summary ? `Yhangry: ${summary}` : `New Yhangry inquiry`
-        description = `Yhangry lead — untouched ${ageLabel(hoursSinceCreated)}. First response sets the tone.`
+        description = `Yhangry lead - untouched ${ageLabel(hoursSinceCreated)}. First response sets the tone.`
       } else if (summary) {
         title = `${clientName}: ${summary}`
-        description = `Reached out via ${chLabel} — untouched ${ageLabel(hoursSinceCreated)}.`
+        description = `Reached out via ${chLabel} - untouched ${ageLabel(hoursSinceCreated)}.`
       } else {
         title = `New inquiry from ${clientName}`
         description = `${clientName} reached out via ${chLabel}. First response sets the tone.`
@@ -133,7 +133,7 @@ export async function getInquiryQueueItems(
         context: {
           primaryLabel: clientName,
           secondaryLabel: isPlatform
-            ? `${chLabel} — ${ageLabel(hoursSinceCreated)}`
+            ? `${chLabel} - ${ageLabel(hoursSinceCreated)}`
             : `via ${chLabel}`,
         },
         createdAt: inq.created_at,
@@ -144,7 +144,7 @@ export async function getInquiryQueueItems(
       })
     }
 
-    // Awaiting chef — client has replied, ball is in chef's court
+    // Awaiting chef - client has replied, ball is in chef's court
     if (inq.status === 'awaiting_chef') {
       const inputs: ScoreInputs = {
         hoursUntilDue: Math.max(0, 12 - hoursSinceCreated),

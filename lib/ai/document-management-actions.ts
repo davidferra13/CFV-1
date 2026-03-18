@@ -1,6 +1,6 @@
 'use server'
 
-// Document & Folder Management — Server Actions
+// Document & Folder Management - Server Actions
 // PRIVACY: Document contents = business data → local only.
 // CRUD for chef_folders + chef_documents management via Remy commands.
 

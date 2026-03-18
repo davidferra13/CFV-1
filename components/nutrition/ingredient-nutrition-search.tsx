@@ -107,9 +107,7 @@ export function IngredientNutritionSearch({
       </div>
 
       {/* Error */}
-      {searchError && (
-        <p className="text-sm text-red-600">{searchError}</p>
-      )}
+      {searchError && <p className="text-sm text-red-600">{searchError}</p>}
 
       {/* Results list */}
       {results.length > 0 && (
@@ -124,9 +122,7 @@ export function IngredientNutritionSearch({
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {food.description}
-                  </p>
+                  <p className="text-sm font-medium text-gray-900 truncate">{food.description}</p>
                   <div className="flex gap-3 mt-1 text-xs text-gray-500">
                     <span>{food.dataType}</span>
                     {food.brandOwner && <span>{food.brandOwner}</span>}
@@ -173,7 +169,7 @@ export function IngredientNutritionSearch({
             <NutrientBadge label="Sugar" value={`${selectedNutrients.sugar_g}g`} />
           </div>
 
-          <p className="text-[10px] text-gray-400 mt-2">
+          <p className="text-xxs text-gray-400 mt-2">
             Values per 100g as reported by USDA FoodData Central
           </p>
 
@@ -196,7 +192,7 @@ function NutrientBadge({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded bg-white px-2 py-1 text-center border border-gray-200">
       <div className="font-medium text-gray-900">{value}</div>
-      <div className="text-gray-500 text-[10px]">{label}</div>
+      <div className="text-gray-500 text-xxs">{label}</div>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-// ACE Ollama — Private AI drafting for client correspondence
+// ACE Ollama - Private AI drafting for client correspondence
 // All client PII (names, emails, budgets, messages) stays local via Ollama.
 // No Gemini fallback. If Ollama is offline, OllamaOfflineError is thrown.
 
@@ -96,7 +96,7 @@ async function generateText(
 
 export async function extractTasksFromChat(conversation: string) {
   const systemPrompt = `You extract actionable business tasks from a private chef's conversations.
-Return ONLY valid JSON — an array of task objects. No markdown, no explanation.
+Return ONLY valid JSON - an array of task objects. No markdown, no explanation.
 Each task: { "title": "string", "description": "string", "priority": "low|medium|high", "category": "prep|admin|procurement|delivery", "dueDate": "ISO date string" }`
 
   const text = await generateText(systemPrompt, `Extract tasks from:\n\n"${conversation}"`, 0.3)
@@ -123,7 +123,7 @@ export async function draftChefResponse(
 VOICE RULES:
 - First person singular: I, me, my. Never "we", "our", "the team" or third-person references.
 - Tone: calm, direct, grounded, human. Not salesy, corporate, or overly enthusiastic.
-- If there's a choice between sounding impressive and sounding comfortable — comfortable wins.
+- If there's a choice between sounding impressive and sounding comfortable - comfortable wins.
 - 2-4 short paragraphs, 1-2 sentences each. Keep it concise.
 - No subject lines, no [Client Name] placeholders, no bullets or lists.
 - No em dashes, no internal system references, no marketing copy.
@@ -177,7 +177,7 @@ ${params.systemRules}
 
 ${params.depthInstruction}
 
-${params.rateCard ? `=== RATE CARD (reference only — never calculate, only format) ===\n${params.rateCard}` : '=== PRICING: NOT ALLOWED at current stage. Do not include any dollar amounts, ranges, or pricing language. ==='}
+${params.rateCard ? `=== RATE CARD (reference only - never calculate, only format) ===\n${params.rateCard}` : '=== PRICING: NOT ALLOWED at current stage. Do not include any dollar amounts, ranges, or pricing language. ==='}
 
 === SAFETY RULES ===
 - If the inquiry is outside scope (restaurant recs, catering drop-off, bulk meal prep not fitting service model), politely redirect in one sentence.

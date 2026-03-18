@@ -1,9 +1,25 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { requireChef } from '@/lib/auth/get-user'
 import { isCommTriageEnabled } from '@/lib/features'
 import { getUnifiedInbox, getInboxStats } from '@/lib/inbox/actions'
 import { InboxFeed } from '@/components/inbox/inbox-feed'
-import { CommunicationInboxClient } from '@/components/communication/communication-inbox-client'
+
+const CommunicationInboxClient = dynamic(
+  () =>
+    import('@/components/communication/communication-inbox-client').then(
+      (m) => m.CommunicationInboxClient
+    ),
+  {
+    loading: () => (
+      <div className="space-y-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-16 rounded-lg bg-stone-800 animate-pulse" />
+        ))}
+      </div>
+    ),
+  }
+)
 import { InboxCalendarPeek } from '@/components/communication/inbox-calendar-peek'
 import {
   getCommunicationInbox,

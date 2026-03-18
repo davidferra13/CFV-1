@@ -163,7 +163,7 @@ export function PartnerDetailClient({
                       className="h-20 w-28 object-cover rounded-md"
                     />
                     {img.season && (
-                      <span className="absolute bottom-1 left-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded">
+                      <span className="absolute bottom-1 left-1 text-xxs bg-black/60 text-white px-1.5 py-0.5 rounded">
                         {img.season}
                       </span>
                     )}
@@ -189,7 +189,7 @@ export function PartnerDetailClient({
                   className="h-20 w-28 object-cover rounded-md"
                 />
                 {img.season && (
-                  <span className="absolute bottom-1 left-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded">
+                  <span className="absolute bottom-1 left-1 text-xxs bg-black/60 text-white px-1.5 py-0.5 rounded">
                     {img.season}
                   </span>
                 )}

@@ -20,14 +20,14 @@ export interface WeatherRequest {
  * Returns a record keyed by date string. If multiple locations exist on the same date,
  * the first successful result wins (calendar views typically need one forecast per day).
  *
- * Non-blocking: never throws — returns partial results on failure.
+ * Non-blocking: never throws - returns partial results on failure.
  */
 export async function getWeatherBatch(
   requests: WeatherRequest[]
 ): Promise<Record<string, EventWeather>> {
   if (!requests.length) return {}
 
-  // Deduplicate by "lat,lng,date" key — same location+date only needs one API call
+  // Deduplicate by "lat,lng,date" key - same location+date only needs one API call
   const seen = new Map<string, WeatherRequest>()
   for (const req of requests) {
     // Skip requests without valid coordinates
@@ -39,7 +39,7 @@ export async function getWeatherBatch(
   const unique = Array.from(seen.values())
   const results: Record<string, EventWeather> = {}
 
-  // Fetch all in parallel — each call has its own try/catch inside getEventWeather
+  // Fetch all in parallel - each call has its own try/catch inside getEventWeather
   const settled = await Promise.allSettled(
     unique.map(async (req) => {
       const weather = await getEventWeather(req.lat, req.lng, req.date)

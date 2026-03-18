@@ -3,9 +3,10 @@
 'use client'
 
 import { useState } from 'react'
+import NextImage from 'next/image'
 import { ExternalLink, MapPin, Users, ChevronDown, ChevronUp } from '@/components/ui/icons'
 
-type Image = {
+type PartnerImage = {
   id: string
   image_url: string
   caption: string | null
@@ -32,7 +33,7 @@ type Partner = {
   description: string | null
   cover_image_url: string | null
   partner_locations: Location[]
-  partner_images: Image[]
+  partner_images: PartnerImage[]
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -79,10 +80,11 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
       {/* Cover Image */}
       {partner.cover_image_url ? (
         <div className="relative h-56 overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <NextImage
             src={partner.cover_image_url}
             alt={partner.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
             className="w-full h-full object-cover"
           />
           <div className="absolute top-3 left-3">
@@ -187,10 +189,11 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {filteredImages.map((img) => (
                     <div key={img.id} className="relative rounded-lg overflow-hidden aspect-[4/3]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <NextImage
                         src={img.image_url}
                         alt={img.caption || partner.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 33vw"
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       />
                       {img.caption && (
@@ -199,7 +202,7 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
                         </div>
                       )}
                       {img.season && (
-                        <span className="absolute top-2 right-2 text-[10px] bg-stone-900/90 backdrop-blur px-2 py-0.5 rounded-full font-medium">
+                        <span className="absolute top-2 right-2 text-xxs bg-stone-900/90 backdrop-blur px-2 py-0.5 rounded-full font-medium">
                           {SEASON_LABELS[img.season] || img.season}
                         </span>
                       )}

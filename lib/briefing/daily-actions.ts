@@ -1,6 +1,6 @@
 // Daily Briefing Server Actions
 // Generates and retrieves daily briefing summaries for chefs.
-// Table: chef_daily_briefings — chef_id FK, briefing_date DATE, content JSONB, sent_at TIMESTAMPTZ
+// Table: chef_daily_briefings - chef_id FK, briefing_date DATE, content JSONB, sent_at TIMESTAMPTZ
 
 'use server'
 
@@ -94,7 +94,7 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
     status: e.status,
   }))
 
-  // 2. Tasks due — events needing closure items or upcoming prep
+  // 2. Tasks due - events needing closure items or upcoming prep
   const { data: closureEvents } = await supabase
     .from('events')
     .select(
@@ -144,7 +144,7 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
     }
   }
 
-  // 3. Revenue this week — sum of ledger payments in the 7-day window
+  // 3. Revenue this week - sum of ledger payments in the 7-day window
   const weekStart = new Date(briefingDate)
   const dayOfWeek = weekStart.getDay()
   weekStart.setDate(weekStart.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
@@ -178,7 +178,7 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
     }
   }
 
-  // 4. Upcoming deadlines — events within 7 days needing prep
+  // 4. Upcoming deadlines - events within 7 days needing prep
   const sevenDaysOut = new Date(briefingDate)
   sevenDaysOut.setDate(sevenDaysOut.getDate() + 7)
   const sevenDaysOutStr = sevenDaysOut.toISOString().split('T')[0]

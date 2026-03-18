@@ -54,7 +54,7 @@ export async function getEventsWithOutstandingBalances(): Promise<OutstandingBal
 /**
  * Checks events against payment reminder thresholds and fires notifications.
  * Designed to be called by the automation cron or evaluator.
- * Does NOT send emails — fires internal notifications only.
+ * Does NOT send emails - fires internal notifications only.
  *
  * @param tenantId - Chef's tenant ID (used by admin cron; omit to use current session)
  */
@@ -123,7 +123,7 @@ export async function checkAndFirePaymentReminders(tenantId?: string): Promise<{
           category: 'payment',
           action: 'payment_due_approaching',
           title: 'Balance due soon',
-          body: `${eventLabel} on ${row.event_date} — balance of ${balanceStr} due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}.`,
+          body: `${eventLabel} on ${row.event_date} - balance of ${balanceStr} due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}.`,
           eventId: row.event_id,
         })
         fired++
@@ -145,7 +145,7 @@ export async function checkAndFirePaymentReminders(tenantId?: string): Promise<{
           category: 'payment',
           action: 'payment_overdue',
           title: 'Balance overdue',
-          body: `${eventLabel} — balance of ${balanceStr} is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) !== 1 ? 's' : ''} overdue.`,
+          body: `${eventLabel} - balance of ${balanceStr} is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) !== 1 ? 's' : ''} overdue.`,
           eventId: row.event_id,
         })
         fired++

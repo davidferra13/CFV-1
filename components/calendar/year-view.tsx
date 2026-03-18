@@ -147,7 +147,7 @@ function MonthGrid({
       {/* Day headers */}
       <div className="mb-0.5 grid grid-cols-7 gap-0">
         {DAY_HEADERS.map((d, i) => (
-          <div key={i} className="text-center text-[9px] font-medium text-zinc-400">
+          <div key={i} className="text-center text-2xs font-medium text-zinc-400">
             {d}
           </div>
         ))}
@@ -170,7 +170,7 @@ function MonthGrid({
               key={dateStr}
               type="button"
               className={`
-                relative flex h-5 items-center justify-center text-[10px]
+                relative flex h-5 items-center justify-center text-xxs
                 ${isToday ? 'font-bold text-orange-600 dark:text-orange-400' : 'text-zinc-600 dark:text-zinc-400'}
                 ${hasEvents ? 'cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700' : ''}
                 rounded

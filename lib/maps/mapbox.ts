@@ -1,7 +1,7 @@
-// Mapbox — maps, geocoding, directions
+// Mapbox - maps, geocoding, directions
 // https://www.mapbox.com/
 // 50K map loads/month free (card on file)
-// Google Maps alternative — better free tier
+// Google Maps alternative - better free tier
 
 const MAPBOX_BASE = 'https://api.mapbox.com'
 
@@ -13,7 +13,7 @@ function getAccessToken(): string {
 
 /**
  * Get a static map image URL.
- * Use directly in <img> tags — no JavaScript SDK needed.
+ * Use directly in <img> tags - no JavaScript SDK needed.
  *
  * @param lng - Longitude
  * @param lat - Latitude
@@ -37,7 +37,7 @@ export function getStaticMapUrl(
 }
 
 /**
- * Forward geocode — address to coordinates.
+ * Forward geocode - address to coordinates.
  * Alternative to Geocodio for non-US/Canada addresses.
  */
 export async function geocode(

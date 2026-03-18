@@ -1,4 +1,4 @@
-// Payment Received — Chef Notification Email
+// Payment Received - Chef Notification Email
 // Sent to the chef when a client pays via Stripe.
 // Complements the existing in-app notification.
 

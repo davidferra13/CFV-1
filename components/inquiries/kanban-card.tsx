@@ -70,12 +70,12 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
           {inquiry.client_name || 'Unknown Lead'}
         </p>
         {isStuck && (
-          <span className="shrink-0 text-[10px] font-medium text-red-600 bg-red-900 px-1.5 py-0.5 rounded">
+          <span className="shrink-0 text-xxs font-medium text-red-600 bg-red-900 px-1.5 py-0.5 rounded">
             {daysSinceUpdate}d
           </span>
         )}
         {isSlowing && !isStuck && (
-          <span className="shrink-0 text-[10px] font-medium text-amber-700 bg-amber-900 px-1.5 py-0.5 rounded">
+          <span className="shrink-0 text-xxs font-medium text-amber-700 bg-amber-900 px-1.5 py-0.5 rounded">
             {daysSinceUpdate}d
           </span>
         )}

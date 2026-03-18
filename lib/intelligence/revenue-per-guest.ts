@@ -165,7 +165,7 @@ export async function getRevenuePerGuest(): Promise<RevenuePerGuestResult | null
     }
   }
 
-  // Sweet spot — individual guest count with highest per-guest revenue (need 2+ events)
+  // Sweet spot - individual guest count with highest per-guest revenue (need 2+ events)
   const guestCountMap = new Map<number, number[]>()
   for (const d of dataPoints) {
     if (!guestCountMap.has(d.guestCount)) guestCountMap.set(d.guestCount, [])

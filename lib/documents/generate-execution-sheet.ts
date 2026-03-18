@@ -1,8 +1,8 @@
-// Execution Sheet Generator (Printed Sheet #2 — Service Execution Sheet)
+// Execution Sheet Generator (Printed Sheet #2 - Service Execution Sheet)
 // Single page taped to the counter at the client's house during service.
 // Sections: FRONT OF HOUSE → ALLERGY ALERT → ARRIVAL SETUP → COURSE EXECUTION → clean-as-you-go.
-// DIETARY WARNINGS are the most prominent element — safety-critical.
-// MUST fit on ONE page — no exceptions.
+// DIETARY WARNINGS are the most prominent element - safety-critical.
+// MUST fit on ONE page - no exceptions.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -44,7 +44,7 @@ export type ExecutionSheetData = {
     }>
   }>
   totalComponentCount: number
-  /** Components that need to be started the moment the chef arrives — ordered by lead time descending */
+  /** Components that need to be started the moment the chef arrives - ordered by lead time descending */
   arrivalTasks: Array<{
     name: string
     execution_notes: string | null
@@ -99,7 +99,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
 
   if (!dishes || dishes.length === 0) return null
 
-  // Fetch components — include make_ahead_window_hours for arrival task ordering
+  // Fetch components - include make_ahead_window_hours for arrival task ordering
   const dishIds = dishes.map((d: any) => d.id)
   const { data: components } = await supabase
     .from('components')
@@ -178,9 +178,9 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
 
   // Derive arrival tasks: components that need to be started immediately on arrival.
   // Two criteria:
-  //   1. make_ahead_window_hours > 0 — items that were prepped at home but need finishing on-site
+  //   1. make_ahead_window_hours > 0 - items that were prepped at home but need finishing on-site
   //      (e.g., re-churn gelato, reheat braise, finish sous vide). Ordered by hours descending.
-  //   2. Execution notes containing long-cook keywords — items cooked on-site but needing long lead time
+  //   2. Execution notes containing long-cook keywords - items cooked on-site but needing long lead time
   //      (e.g., "sous vide", "oven", "slow", "braise", "roast"). Ordered before quick-cook tasks.
   const LONG_COOK_KEYWORDS = [
     'sous vide',
@@ -256,7 +256,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
 export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
   const { event, client, courses, totalComponentCount, arrivalTasks } = data
 
-  // Scale down for dense menus — more aggressive because FOH + BOH + arrival tasks all on one page
+  // Scale down for dense menus - more aggressive because FOH + BOH + arrival tasks all on one page
   const hasArrivalTasks = arrivalTasks.length > 0
   const densityFactor = totalComponentCount + arrivalTasks.length
   if (densityFactor > 20) pdf.setFontScale(0.85)
@@ -264,7 +264,7 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
   if (densityFactor > 40) pdf.setFontScale(0.7)
 
   // ===== HEADER =====
-  // "MENU — [Client Name]"
+  // "MENU - [Client Name]"
   pdf.title(`MENU \u2014 ${client.full_name}`, 14)
 
   // Detail bar: "[N] Guests | Day of Week, Date | Address | Arrive [time] | Serve [time]"
@@ -300,7 +300,7 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
   }
   pdf.space(2)
 
-  // ===== DIETARY WARNINGS — SAFETY-CRITICAL =====
+  // ===== DIETARY WARNINGS - SAFETY-CRITICAL =====
   // Merge event + client allergies and dietary restrictions
   const allAllergies = new Set<string>()
   for (const a of event.allergies) allAllergies.add(a.toLowerCase())
@@ -332,7 +332,7 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
     pdf.space(1)
   }
 
-  // ===== ARRIVAL TASKS — start these the moment you walk in =====
+  // ===== ARRIVAL TASKS - start these the moment you walk in =====
   if (hasArrivalTasks) {
     pdf.sectionHeader('ON ARRIVAL \u2014 START IMMEDIATELY', 11, true)
     arrivalTasks.forEach((task, idx) => {
@@ -348,23 +348,23 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
     pdf.space(2)
   }
 
-  // ===== COURSE EXECUTION — COMPONENT BREAKDOWN =====
+  // ===== COURSE EXECUTION - COMPONENT BREAKDOWN =====
   pdf.sectionHeader('COURSE EXECUTION', 11, true)
 
   for (const course of courses) {
-    // Compute allergen conflict once per course — dish-level granularity
+    // Compute allergen conflict once per course - dish-level granularity
     const conflictingAllergens = course.dishAllergenFlags
       .filter((flag) => allAllergies.has(flag.toLowerCase()))
       .map((a) => a.toUpperCase())
 
-    // Course header: allergen flag goes here (once, at the dish level — not on every component)
+    // Course header: allergen flag goes here (once, at the dish level - not on every component)
     const courseHeaderText =
       conflictingAllergens.length > 0
         ? `COURSE ${course.courseNumber} \u2014 ${course.courseName} (${course.componentCount} components)  \u26a0 CONTAINS ${conflictingAllergens.join(', ')}`
         : `COURSE ${course.courseNumber} \u2014 ${course.courseName} (${course.componentCount} components)`
     pdf.courseHeader(courseHeaderText)
 
-    // List ALL components numbered — no split by make-ahead (that's the Prep Sheet's domain)
+    // List ALL components numbered - no split by make-ahead (that's the Prep Sheet's domain)
     course.components.forEach((comp, idx) => {
       const parts: string[] = [`${idx + 1}. ${comp.name}`]
 
@@ -410,7 +410,7 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
 
   pdf.text(summaryLine, 9, 'bold')
 
-  // Footer — serve time is always shown; arrive time is conditional
+  // Footer - serve time is always shown; arrive time is conditional
   const footerParts: string[] = []
   if (event.arrival_time) footerParts.push(`Arrive by ${event.arrival_time}`)
   footerParts.push(`Serve at ${event.serve_time}`)

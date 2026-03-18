@@ -1,4 +1,4 @@
-// Tax Workflow — Server Actions
+// Tax Workflow - Server Actions
 // IRS-compliant mileage logging, quarterly tax estimate computation,
 // and accountant-ready annual export.
 // NOTE: Tax estimates are approximations only. Always consult a CPA.
@@ -140,7 +140,7 @@ export async function getTaxSettings(year: number) {
 /**
  * Rough self-employment tax estimate for a quarter.
  * Uses ledger income minus expenses as net profit, then applies SE tax rate.
- * This is a directional estimate — not tax advice.
+ * This is a directional estimate - not tax advice.
  */
 export async function computeQuarterlyEstimate(year: number, quarter: 1 | 2 | 3 | 4) {
   const user = await requireChef()

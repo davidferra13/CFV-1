@@ -83,7 +83,7 @@ export function isCozymealEmail(fromAddress: string): boolean {
 // ─── Email Type Detection ───────────────────────────────────────────────
 
 const TYPE_PATTERNS: Array<{ pattern: RegExp; type: CozymealEmailType }> = [
-  // New booking/request — aggressive matching
+  // New booking/request - aggressive matching
   { pattern: /new (booking|request|reservation)/i, type: 'cozymeal_new_booking' },
   { pattern: /booking request/i, type: 'cozymeal_new_booking' },
   { pattern: /new event request/i, type: 'cozymeal_new_booking' },
@@ -106,7 +106,7 @@ const TYPE_PATTERNS: Array<{ pattern: RegExp; type: CozymealEmailType }> = [
   { pattern: /payout/i, type: 'cozymeal_payment' },
   { pattern: /earning/i, type: 'cozymeal_payment' },
   { pattern: /you earned/i, type: 'cozymeal_payment' },
-  // Administrative — reviews, tips, marketing (catch-alls at the end)
+  // Administrative - reviews, tips, marketing (catch-alls at the end)
   { pattern: /review/i, type: 'cozymeal_administrative' },
   { pattern: /rating/i, type: 'cozymeal_administrative' },
   { pattern: /newsletter/i, type: 'cozymeal_administrative' },
@@ -130,7 +130,7 @@ export function detectCozymealEmailType(subject: string, body?: string): Cozymea
   return 'cozymeal_administrative'
 }
 
-// ─── Field Extraction — New Booking ─────────────────────────────────────
+// ─── Field Extraction - New Booking ─────────────────────────────────────
 
 function parseNewBookingEmail(
   subject: string,
@@ -138,7 +138,7 @@ function parseNewBookingEmail(
 ): { data: CozymealParsedBooking; warnings: string[] } {
   const warnings: string[] = []
 
-  // Client name — try subject first: "Booking request from {Name}" or "New booking from {Name}"
+  // Client name - try subject first: "Booking request from {Name}" or "New booking from {Name}"
   const subjectNameMatch = subject.match(/(?:from|by)\s+(.+?)[\s!]*$/i)
   // Fallback to body patterns
   const bodyNameMatch = body.match(
@@ -149,13 +149,13 @@ function parseNewBookingEmail(
     warnings.push('Could not extract client name from booking email')
   }
 
-  // Event type — "Private Chef", "Cooking Class", "Private Chef Experience", etc.
+  // Event type - "Private Chef", "Cooking Class", "Private Chef Experience", etc.
   const eventTypeMatch = body.match(
     /(?:Event|Experience|Type|Service|Booking type)[\s:]+(.+?)(?:\n|\r|$)/i
   )
   const eventType = eventTypeMatch?.[1]?.trim() || null
 
-  // Location — city or address
+  // Location - city or address
   const locationMatch = body.match(/(?:Location|City|Address|Where)[\s:]+(.+?)(?:\n|\r|$)/i)
   const location = locationMatch?.[1]?.trim() || null
 
@@ -163,13 +163,13 @@ function parseNewBookingEmail(
   const dateMatch = body.match(/(?:Date|When|Event date|Booking date)[\s:]+(.+?)(?:\n|\r|$)/i)
   const eventDate = dateMatch?.[1]?.trim() || null
 
-  // Guest count — "Guests: 8", "Number of guests: 8", "Party size: 8"
+  // Guest count - "Guests: 8", "Number of guests: 8", "Party size: 8"
   const guestMatch = body.match(
     /(?:Guests?|Number of guests|Party size|Group size|Head count|# of guests)[\s:]+(\d+)/i
   )
   const guestCount = guestMatch ? parseInt(guestMatch[1], 10) : null
 
-  // Price per person — "$85/person", "$85 per person", "Price per person: $85"
+  // Price per person - "$85/person", "$85 per person", "Price per person: $85"
   let pricePerPersonCents: number | null = null
   const pricePerPersonMatch = body.match(
     /(?:Price per person|Per person|Per guest)[\s:]*\$?([\d,.]+)/i
@@ -184,7 +184,7 @@ function parseNewBookingEmail(
     }
   }
 
-  // Total amount — "Total: $680", "Total amount: $680.00"
+  // Total amount - "Total: $680", "Total amount: $680.00"
   let totalCents: number | null = null
   const totalMatch = body.match(
     /(?:Total|Total amount|Grand total|Amount|Subtotal)[\s:]*\$?([\d,.]+)/i
@@ -193,7 +193,7 @@ function parseNewBookingEmail(
     totalCents = Math.round(parseFloat(totalMatch[1].replace(',', '')) * 100)
   }
 
-  // CTA link — Cozymeal URL for viewing/accepting the booking
+  // CTA link - Cozymeal URL for viewing/accepting the booking
   const ctaMatch = body.match(
     /href="(https?:\/\/(?:www\.)?cozymeal\.com[^"]*)"[^>]*>(?:[^<]*?)(?:View|Accept|Respond|See details|View booking)/i
   )
@@ -216,7 +216,7 @@ function parseNewBookingEmail(
   }
 }
 
-// ─── Field Extraction — Booking Confirmed ───────────────────────────────
+// ─── Field Extraction - Booking Confirmed ───────────────────────────────
 
 function parseConfirmationEmail(
   subject: string,
@@ -260,7 +260,7 @@ function parseConfirmationEmail(
     totalCents = Math.round(parseFloat(totalMatch[1].replace(',', '')) * 100)
   }
 
-  // Booking ID — "Booking #12345", "Booking ID: 12345", "Reservation #12345"
+  // Booking ID - "Booking #12345", "Booking ID: 12345", "Reservation #12345"
   const bookingIdMatch = body.match(
     /(?:Booking|Reservation|Order|Confirmation)\s*(?:#|ID:?|number:?)\s*(\w+)/i
   )
@@ -298,7 +298,7 @@ function parseConfirmationEmail(
   }
 }
 
-// ─── Field Extraction — Client Message ──────────────────────────────────
+// ─── Field Extraction - Client Message ──────────────────────────────────
 
 function parseMessageEmail(
   subject: string,
@@ -322,7 +322,7 @@ function parseMessageEmail(
   )
   const eventDate = dateMatch?.[1]?.trim() || subjectDateMatch?.[1]?.trim() || null
 
-  // CTA link — "View message", "Reply", "Read message"
+  // CTA link - "View message", "Reply", "Read message"
   const ctaMatch = body.match(
     /href="(https?:\/\/(?:www\.)?cozymeal\.com[^"]*)"[^>]*>(?:[^<]*?)(?:View message|Reply|Read message|Respond)/i
   )
@@ -339,7 +339,7 @@ function parseMessageEmail(
   }
 }
 
-// ─── Field Extraction — Payment ─────────────────────────────────────────
+// ─── Field Extraction - Payment ─────────────────────────────────────────
 
 function parsePaymentEmail(
   subject: string,
@@ -347,7 +347,7 @@ function parsePaymentEmail(
 ): { data: CozymealParsedPayment; warnings: string[] } {
   const warnings: string[] = []
 
-  // Amount — "$500.00", "Amount: $500", "You earned $500.00"
+  // Amount - "$500.00", "Amount: $500", "You earned $500.00"
   const amountMatch = body.match(
     /(?:Amount|Total|Payout|Earned|You earned|Payment)[\s:]*\$?([\d,.]+)/i
   )
@@ -429,7 +429,7 @@ export function parseCozymealEmail(email: ParsedEmail): CozymealParseResult {
       break
     }
     case 'cozymeal_administrative':
-      // No structured extraction needed — just log the type
+      // No structured extraction needed - just log the type
       break
   }
 

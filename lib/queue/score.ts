@@ -1,4 +1,4 @@
-// Priority Queue — Scoring Engine
+// Priority Queue - Scoring Engine
 // Pure function. No database calls. No side effects. Fully testable.
 
 import type { ScoreInputs, QueueUrgency } from './types'
@@ -10,11 +10,11 @@ import type { ScoreInputs, QueueUrgency } from './types'
  * Higher score = higher priority.
  *
  * Five weighted dimensions (v2 - revenue-weighted):
- *   TIME PRESSURE  (0-300)  — How soon? Overdue items get maximum.
- *   IMPACT         (0-200)  — Business consequence of delay.
- *   BLOCKING       (0-150)  — Is downstream work stuck?
- *   STALENESS      (0-100)  — How long has this been sitting? Exponential growth.
- *   REVENUE        (0-250)  — Is money directly on the line?
+ *   TIME PRESSURE  (0-300)  - How soon? Overdue items get maximum.
+ *   IMPACT         (0-200)  - Business consequence of delay.
+ *   BLOCKING       (0-150)  - Is downstream work stuck?
+ *   STALENESS      (0-100)  - How long has this been sitting? Exponential growth.
+ *   REVENUE        (0-250)  - Is money directly on the line?
  *
  * Total max: 1000
  */

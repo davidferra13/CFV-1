@@ -40,7 +40,7 @@ export type CampaignBookingInput = {
 }
 
 // ============================================================
-// GET CAMPAIGN INFO (public — no auth)
+// GET CAMPAIGN INFO (public - no auth)
 // ============================================================
 
 export async function getCampaignByToken(token: string): Promise<PublicDinnerInfo | null> {
@@ -65,7 +65,7 @@ export async function getCampaignByToken(token: string): Promise<PublicDinnerInf
 
   const chefName = chef?.display_name || chef?.business_name || 'Your Chef'
 
-  // Fetch menu preview (courses only — no costs)
+  // Fetch menu preview (courses only - no costs)
   let menuPreview: Array<{ name: string; course_name: string }> = []
   if (campaign.menu_id) {
     const { data: dishes } = await db
@@ -103,7 +103,7 @@ export async function getCampaignByToken(token: string): Promise<PublicDinnerInf
 }
 
 // ============================================================
-// SUBMIT BOOKING (public — no auth)
+// SUBMIT BOOKING (public - no auth)
 // ============================================================
 
 const BookingSchema = z.object({
@@ -148,7 +148,7 @@ export async function submitCampaignBooking(
 
   // 2. Check seat availability
   if (campaign.seats_available !== null && campaign.seats_booked >= campaign.seats_available) {
-    return { success: false, error: 'Sorry — this dinner is fully booked.' }
+    return { success: false, error: 'Sorry - this dinner is fully booked.' }
   }
 
   // 3. Find or create client (idempotent by email + chef_id)
@@ -290,7 +290,7 @@ export async function submitCampaignBooking(
 
     await sendEmail({
       to: input.email,
-      subject: `Booking request received — ${campaign.name}`,
+      subject: `Booking request received - ${campaign.name}`,
       react: React.default.createElement(CampaignEmail, {
         chefName,
         bodyText: ackBody,

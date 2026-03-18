@@ -5,7 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { z } from 'zod'
 
 // ---------------------------------------------------------------------------
-// Public actions (no auth required — guests submitting interest)
+// Public actions (no auth required - guests submitting interest)
 // ---------------------------------------------------------------------------
 
 const GuestLeadSchema = z.object({
@@ -18,7 +18,7 @@ const GuestLeadSchema = z.object({
 
 /**
  * Look up chef info by event guest code.
- * Public — no auth required. Returns only public-safe fields.
+ * Public - no auth required. Returns only public-safe fields.
  */
 export async function getChefByGuestCode(code: string) {
   const supabase = createServerClient({ admin: true })
@@ -55,7 +55,7 @@ export async function getChefByGuestCode(code: string) {
 
 /**
  * Submit a guest lead from the public landing page.
- * No auth required — uses admin client.
+ * No auth required - uses admin client.
  */
 export async function submitGuestLead(input: {
   guestCode: string
@@ -324,7 +324,7 @@ export async function getEventGuestLeadCount(eventId: string) {
 
 /**
  * Draft a post-event guest outreach email (for chef review).
- * Returns a template string — chef must review and approve before sending.
+ * Returns a template string - chef must review and approve before sending.
  */
 export async function draftGuestOutreachEmail(eventId: string) {
   const user = await requireChef()
@@ -367,7 +367,7 @@ export async function draftGuestOutreachEmail(eventId: string) {
     ``,
     `Thank you for joining us at ${occasion} on ${eventDate}! It was a pleasure cooking for you and your fellow guests.`,
     ``,
-    `If you enjoyed the experience and would like to host your own private dining event, I'd love to help make that happen. Whether it's an intimate dinner for two, a birthday celebration, or a gathering with friends — I'm here to create something special for you.`,
+    `If you enjoyed the experience and would like to host your own private dining event, I'd love to help make that happen. Whether it's an intimate dinner for two, a birthday celebration, or a gathering with friends - I'm here to create something special for you.`,
     ``,
     profileUrl
       ? `You can learn more and submit an inquiry here: ${profileUrl}`

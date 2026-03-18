@@ -1,4 +1,4 @@
-// Form validation rules — lightweight, no external dependencies.
+// Form validation rules - lightweight, no external dependencies.
 // Used by useFieldValidation hook for real-time inline validation.
 
 export type ValidationRule = {

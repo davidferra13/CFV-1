@@ -1,8 +1,8 @@
 'use server'
 
 // Contract / Proposal Generator
-// PRIVACY: Sends client PII (name, email, phone, address) + financial data — must stay local.
-// Output is DRAFT ONLY — chef reviews and must approve before sending.
+// PRIVACY: Sends client PII (name, email, phone, address) + financial data - must stay local.
+// Output is DRAFT ONLY - chef reviews and must approve before sending.
 // NOTE: Always surfaces disclaimer to consult attorney for binding contracts.
 
 import { z } from 'zod'
@@ -116,7 +116,7 @@ Return JSON: {
 }`
 
   const { result, source } = await withAiFallback(
-    // Template: standard contract sections with variable substitution — deterministic
+    // Template: standard contract sections with variable substitution - deterministic
     () =>
       generateContractTemplate({
         chefName: chef?.full_name ?? 'Chef',

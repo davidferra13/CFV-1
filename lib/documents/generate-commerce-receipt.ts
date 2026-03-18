@@ -1,4 +1,4 @@
-// Commerce Engine V1 — PDF Receipt Generator
+// Commerce Engine V1 - PDF Receipt Generator
 // Generates a professional receipt PDF for a commerce sale using PDFKit.
 // Follows the same pattern as pdf-generator.ts for invoices.
 // Brand color: terracotta orange #e88f47

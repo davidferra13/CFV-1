@@ -1,4 +1,4 @@
-// GET_PREPARABLE_ACTIONS — The Core Engine
+// GET_PREPARABLE_ACTIONS - The Core Engine
 // Deterministic. Pure. No database calls.
 //
 // Input:  EventContext[]  (pre-fetched event data)
@@ -10,7 +10,7 @@ import { STAGE_EVALUATORS } from './stage-definitions'
 
 /**
  * Evaluate a single event and return its work surface.
- * Pure function — no side effects.
+ * Pure function - no side effects.
  */
 export function getEventWorkSurface(ctx: EventContext): EventWorkSurface {
   const facts = deriveConfirmedFacts(ctx)

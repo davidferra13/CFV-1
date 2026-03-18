@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import NextImage from 'next/image'
 import { format } from 'date-fns'
 import {
   ExternalLink,
@@ -60,7 +61,7 @@ export function ChatMessageBubble({
 
         {/* Timestamp and read receipt */}
         {showTimestamp && (
-          <p className={`text-[10px] mt-1 ${isOwn ? 'text-brand-400' : 'text-stone-400'}`}>
+          <p className={`text-xxs mt-1 ${isOwn ? 'text-brand-400' : 'text-stone-400'}`}>
             {format(new Date(message.created_at), 'h:mm a')}
             {isOwn && isRead && <span className="ml-1.5 text-brand-500">Read</span>}
           </p>
@@ -147,12 +148,13 @@ function ImageContent({ message }: { message: ChatMessage }) {
         </div>
       ) : imageUrl ? (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <NextImage
             src={imageUrl}
             alt={message.attachment_filename || 'Image'}
+            width={400}
+            height={256}
+            sizes="(max-width: 768px) 80vw, 400px"
             className="max-w-full max-h-64 rounded-lg cursor-pointer object-cover"
-            loading="lazy"
             onClick={() => setExpanded(true)}
           />
           {/* Lightbox */}
@@ -161,10 +163,12 @@ function ImageContent({ message }: { message: ChatMessage }) {
               className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
               onClick={() => setExpanded(false)}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <NextImage
                 src={imageUrl}
                 alt={message.attachment_filename || 'Image'}
+                width={1200}
+                height={800}
+                sizes="95vw"
                 className="max-w-full max-h-full object-contain"
               />
             </div>

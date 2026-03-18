@@ -67,7 +67,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
 
   // ── 4. Fetch client context ───────────────────────────────────────────────
 
-  let clientContext = 'New client — no prior history.'
+  let clientContext = 'New client - no prior history.'
   let clientHasPriorEvents = false
 
   if (inquiry.client_id) {
@@ -144,7 +144,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
 
     calendarContext =
       conflicts && conflicts.length > 0
-        ? `Date ${inquiry.confirmed_date} has ${conflicts.length} existing event(s) — may be UNAVAILABLE.`
+        ? `Date ${inquiry.confirmed_date} has ${conflicts.length} existing event(s) - may be UNAVAILABLE.`
         : `Date ${inquiry.confirmed_date} appears to be OPEN.`
   }
 
@@ -359,7 +359,7 @@ function buildInquirySummary(
 
   // Missing blocking data
   if (detection.missingBlocking.length > 0) {
-    lines.push('MISSING (blocking — must collect to advance):')
+    lines.push('MISSING (blocking - must collect to advance):')
     detection.missingBlocking.forEach((f) => lines.push(`  - ${f}`))
     lines.push('')
   }
@@ -367,7 +367,7 @@ function buildInquirySummary(
   // Missing non-blocking
   const nonBlocking = detection.dataFields.filter((f) => f.status === 'missing_non_blocking')
   if (nonBlocking.length > 0) {
-    lines.push('MISSING (non-blocking — accept if offered):')
+    lines.push('MISSING (non-blocking - accept if offered):')
     nonBlocking.forEach((f) => lines.push(`  - ${f.field}`))
     lines.push('')
   }

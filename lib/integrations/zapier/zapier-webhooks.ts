@@ -20,7 +20,7 @@ export async function createWebhookSubscription(input: {
   const user = await requireChef()
   const supabase: any = createServerClient({ admin: true })
 
-  // SECURITY: Validate URL to prevent SSRF — blocks private IPs, requires HTTPS
+  // SECURITY: Validate URL to prevent SSRF - blocks private IPs, requires HTTPS
   const targetUrl = validateWebhookUrl(input.targetUrl).toString()
 
   // Validate event types
@@ -176,7 +176,9 @@ export async function dispatchWebhookEvent(
   })
 
   // Do not await. Fire and forget (non-blocking side effect)
-  Promise.allSettled(deliveries).catch(() => {})
+  Promise.allSettled(deliveries).catch((err) => {
+    console.error('[non-blocking] zapier webhook dispatch failed:', err)
+  })
 }
 
 // Test webhook

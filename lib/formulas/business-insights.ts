@@ -1,4 +1,4 @@
-// Business Insights — Deterministic Decision Tree
+// Business Insights - Deterministic Decision Tree
 // Generates 4-6 actionable insight cards from computed business metrics.
 // No AI needed: the rules are clear, the thresholds are defined,
 // and template strings produce consistent, honest recommendations.

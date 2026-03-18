@@ -703,12 +703,12 @@ export function PushDinnerBuilder() {
                           {menu.name}
                         </span>
                         {menu.service_style && (
-                          <Badge variant="default" className="shrink-0 text-[10px]">
+                          <Badge variant="default" className="shrink-0 text-xxs">
                             {menu.service_style.replace(/_/g, ' ')}
                           </Badge>
                         )}
                         {menu.cuisine_type && (
-                          <Badge variant="info" className="shrink-0 text-[10px]">
+                          <Badge variant="info" className="shrink-0 text-xxs">
                             {menu.cuisine_type}
                           </Badge>
                         )}

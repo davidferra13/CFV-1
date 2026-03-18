@@ -1,4 +1,4 @@
-// Remy Auto-Blink Engine — Layer 3 of the 3-layer animation system.
+// Remy Auto-Blink Engine - Layer 3 of the 3-layer animation system.
 // Drives eye state independently of body and mouth layers.
 //
 // Features:
@@ -55,9 +55,9 @@ function getEmotionEyeHint(emotion: RemyEmotion): EyeState | null {
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
 interface UseAutoBlinkOptions {
-  /** Current body state — some states force eye state */
+  /** Current body state - some states force eye state */
   bodyState: BodyState
-  /** Current emotion — can hint at eye state */
+  /** Current emotion - can hint at eye state */
   emotion: RemyEmotion
 }
 

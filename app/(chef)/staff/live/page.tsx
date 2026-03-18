@@ -80,7 +80,7 @@ function StaffCard({ staff }: { staff: StaffActivity }) {
                   ? 'warning'
                   : 'default'
             }
-            className="text-[10px]"
+            className="text-xxs"
           >
             {statusStyle.label}
           </Badge>
@@ -89,7 +89,7 @@ function StaffCard({ staff }: { staff: StaffActivity }) {
         {/* Current task */}
         {staff.currentTask && (
           <div className="mt-3 rounded-md bg-sky-950/30 border border-sky-900/30 px-3 py-2">
-            <p className="text-[11px] text-sky-400 font-medium">Working on</p>
+            <p className="text-xs-tight text-sky-400 font-medium">Working on</p>
             <p className="text-sm text-stone-200 mt-0.5">{staff.currentTask}</p>
           </div>
         )}
@@ -116,14 +116,14 @@ function StaffCard({ staff }: { staff: StaffActivity }) {
               </div>
             )}
           </div>
-          <span className={`text-[11px] ${statusStyle.text}`}>
+          <span className={`text-xs-tight ${statusStyle.text}`}>
             {formatMinutesAgo(staff.minutesSinceActivity)}
           </span>
         </div>
 
         {/* Last activity type */}
         {staff.lastActivityType && (
-          <p className="mt-1 text-[11px] text-stone-600">
+          <p className="mt-1 text-xs-tight text-stone-600">
             Last: {ACTIVITY_LABELS[staff.lastActivityType] ?? staff.lastActivityType}
           </p>
         )}

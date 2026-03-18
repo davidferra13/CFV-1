@@ -1,7 +1,7 @@
 'use server'
 
 /**
- * Remy Anonymous Usage Metrics — counts only, never content.
+ * Remy Anonymous Usage Metrics - counts only, never content.
  *
  * Records how often Remy is used, which feature categories, error rates,
  * and response times. This helps ChefFlow improve Remy without knowing
@@ -28,7 +28,7 @@ interface MetricInput {
 
 /**
  * Record a single Remy interaction metric.
- * Called after each conversation turn — increments counts for today.
+ * Called after each conversation turn - increments counts for today.
  * Non-blocking: failures are logged, never thrown.
  */
 export async function recordRemyMetric(input: MetricInput): Promise<void> {

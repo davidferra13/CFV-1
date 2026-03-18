@@ -1,4 +1,4 @@
-// @ts-nocheck — standalone script, Supabase client type mismatch with generated types
+// @ts-nocheck - standalone script, Supabase client type mismatch with generated types
 // Demo Data Clear
 // Removes all business data from the demo chef's tenant.
 // Preserves the demo chef and demo client accounts themselves.
@@ -72,7 +72,7 @@ async function main() {
   // Delete in reverse dependency order to avoid FK violations.
   // Tables with foreign keys to other tables must be deleted first.
 
-  // Ledger entries (may have immutability triggers — use admin client)
+  // Ledger entries (may have immutability triggers - use admin client)
   await clearTable(admin, 'ledger_entries', tenantId)
 
   // Expenses
@@ -99,7 +99,7 @@ async function main() {
   // Calendar entries (use chef_id, not tenant_id)
   await clearTable(admin, 'chef_calendar_entries', chefId, 'chef_id')
 
-  // Clients — delete all EXCEPT the demo client account (which has an auth user)
+  // Clients - delete all EXCEPT the demo client account (which has an auth user)
   if (demoClient.clientId) {
     const { data, error } = await admin
       .from('clients')

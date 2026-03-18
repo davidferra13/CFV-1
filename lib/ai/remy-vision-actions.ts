@@ -1,8 +1,8 @@
 'use server'
 
-// Remy — Vision Actions (Phase 4A & 4B)
+// Remy - Vision Actions (Phase 4A & 4B)
 // Receipt scanning and dish photo documentation via Ollama vision models.
-// PRIVACY: All images processed locally via Ollama (LLaVA) — never sent to cloud.
+// PRIVACY: All images processed locally via Ollama (LLaVA) - never sent to cloud.
 // This handles private data: store names, prices, dish photos for the chef's portfolio.
 
 import { Ollama } from 'ollama'
@@ -127,7 +127,7 @@ export async function formatReceiptForConfirmation(
 
   if (data.confidence === 'low') {
     lines.push(
-      "**Receipt quality is low** — I couldn't read much. You may need to enter this manually.\n"
+      "**Receipt quality is low** - I couldn't read much. You may need to enter this manually.\n"
     )
   }
 
@@ -140,7 +140,7 @@ export async function formatReceiptForConfirmation(
     lines.push(`\n**${data.lineItems.length} items:**`)
     for (const item of data.lineItems.slice(0, 20)) {
       const qty = item.quantity && item.quantity > 1 ? `${item.quantity}x ` : ''
-      const price = item.price !== null ? ` — $${item.price.toFixed(2)}` : ''
+      const price = item.price !== null ? ` - $${item.price.toFixed(2)}` : ''
       lines.push(`- ${qty}${item.name}${price}`)
     }
     if (data.lineItems.length > 20) {

@@ -1,6 +1,6 @@
 'use server'
 
-// Staff Onboarding Checklist — Server Actions
+// Staff Onboarding Checklist - Server Actions
 // Tracks per-staff vetting items: certs, agreements, briefings.
 
 import { requireChef } from '@/lib/auth/get-user'

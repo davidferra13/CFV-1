@@ -1,4 +1,4 @@
-// Capacity Check — Pure Computation
+// Capacity Check - Pure Computation
 // No server context, no Supabase calls.
 // Can be imported in both server and client contexts.
 

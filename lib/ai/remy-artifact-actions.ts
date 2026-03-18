@@ -1,6 +1,6 @@
 'use server'
 
-// Remy Artifact Actions — save, list, pin, delete Remy's creations
+// Remy Artifact Actions - save, list, pin, delete Remy's creations
 // PRIVACY: Artifacts are tenant-scoped. RLS on the table enforces ownership.
 
 import { requireChef } from '@/lib/auth/get-user'

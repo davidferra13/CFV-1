@@ -144,7 +144,7 @@ export function GroceryLivePricingSidebar({ eventId }: Props) {
           <p className="mt-1 text-xs text-stone-400">
             Manual mode for scratch lists. Add items and watch estimated spend update automatically.
           </p>
-          <p className="mt-1 text-[11px] text-stone-500">Event: {eventId.slice(0, 8)}...</p>
+          <p className="mt-1 text-xs-tight text-stone-500">Event: {eventId.slice(0, 8)}...</p>
         </div>
 
         <div className="space-y-3 max-h-[52vh] overflow-y-auto pr-1">
@@ -225,7 +225,7 @@ export function GroceryLivePricingSidebar({ eventId }: Props) {
           <p className="mt-1 text-xs text-stone-500">
             Coverage: {pricedCount}/{requestedCount} items priced
           </p>
-          <p className="mt-1 text-[11px] text-stone-500">
+          <p className="mt-1 text-xs-tight text-stone-500">
             {result?.mealMeConfigured
               ? 'MealMe active: includes local-store pricing where available.'
               : 'MealMe not configured: local-store source is currently unavailable.'}

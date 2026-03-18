@@ -1,8 +1,8 @@
 'use server'
 
 // Quote Draft Generator
-// PRIVACY: Sends dietary restrictions, budget, client event history — must stay local.
-// Output is DRAFT ONLY — chef reviews and adjusts before sending.
+// PRIVACY: Sends dietary restrictions, budget, client event history - must stay local.
+// Output is DRAFT ONLY - chef reviews and adjusts before sending.
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
@@ -40,14 +40,14 @@ RULES:
 - If a client budget is given, aim to meet it while keeping the quote realistic
 - Description should be 1-2 sentences capturing the event vision
 - Notes should include payment terms, what's included, and any caveats
-- Be specific in line item descriptions — "Private chef services for 8-guest Valentine's dinner" not "Chef services"
+- Be specific in line item descriptions - "Private chef services for 8-guest Valentine's dinner" not "Chef services"
 
 EXAMPLE OUTPUT:
 {
   "title": "Valentine's Dinner for 8",
   "description": "An intimate multi-course Valentine's dinner featuring seasonal ingredients with wine pairing suggestions.",
   "lineItems": [
-    { "description": "Private chef services — 4-course dinner (8 guests)", "quantity": 8, "unit_price_cents": 17500 },
+    { "description": "Private chef services - 4-course dinner (8 guests)", "quantity": 8, "unit_price_cents": 17500 },
     { "description": "Premium ingredients & groceries", "quantity": 1, "unit_price_cents": 45000 },
     { "description": "Tableware & presentation supplies", "quantity": 1, "unit_price_cents": 8500 }
   ],

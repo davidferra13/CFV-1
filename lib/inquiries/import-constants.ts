@@ -1,4 +1,4 @@
-// Inquiry import constants — no 'use server' directive.
+// Inquiry import constants - no 'use server' directive.
 // Used by the bulk inquiry import UI for dropdown options.
 
 export const IMPORT_STATUS_OPTIONS = [

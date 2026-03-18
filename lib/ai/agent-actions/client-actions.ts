@@ -1,4 +1,4 @@
-// Remy Agent — Client Actions
+// Remy Agent - Client Actions
 // Create, update, invite clients on the chef's behalf.
 
 import type { AgentActionDefinition, AgentActionContext } from '@/lib/ai/agent-registry'
@@ -79,8 +79,8 @@ export const clientAgentActions: AgentActionDefinition[] = [
     description:
       'Create a new client from a natural language description. Extracts name, email, phone, dietary info, and more.',
     inputSchema:
-      '{ "description": "string — natural language description of the new client, e.g. Sarah Johnson, email sarah@example.com, gluten free, lives in Portland" }',
-    tierNote: 'ALWAYS tier 2 — chef must review client details before saving.',
+      '{ "description": "string - natural language description of the new client, e.g. Sarah Johnson, email sarah@example.com, gluten free, lives in Portland" }',
+    tierNote: 'ALWAYS tier 2 - chef must review client details before saving.',
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
@@ -194,8 +194,8 @@ export const clientAgentActions: AgentActionDefinition[] = [
     description:
       "Update an existing client's profile. Finds the client by name and applies changes.",
     inputSchema:
-      '{ "description": "string — what to change, e.g. Update Sarah Johnson\'s dietary restrictions to vegan, nut allergy" }',
-    tierNote: 'ALWAYS tier 2 — chef must review changes before saving.',
+      '{ "description": "string - what to change, e.g. Update Sarah Johnson\'s dietary restrictions to vegan, nut allergy" }',
+    tierNote: 'ALWAYS tier 2 - chef must review changes before saving.',
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
@@ -246,7 +246,7 @@ export const clientAgentActions: AgentActionDefinition[] = [
 
     async commitAction(payload) {
       if (payload._error) {
-        return { success: false, message: 'Cannot update — client not found.' }
+        return { success: false, message: 'Cannot update - client not found.' }
       }
       const clientId = String(payload.clientId)
       const updates = payload.updates as Record<string, unknown>
@@ -267,8 +267,8 @@ export const clientAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Send a client invitation via email. Provide the client name and email address.',
     inputSchema:
-      '{ "full_name": "string — client full name", "email": "string — client email address" }',
-    tierNote: 'ALWAYS tier 2 — chef must confirm before sending invitation.',
+      '{ "full_name": "string - client full name", "email": "string - client email address" }',
+    tierNote: 'ALWAYS tier 2 - chef must confirm before sending invitation.',
 
     async executor(inputs) {
       const fullName = String(inputs.full_name ?? inputs.name ?? '')

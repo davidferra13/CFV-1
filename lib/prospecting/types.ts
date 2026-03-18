@@ -1,4 +1,4 @@
-// Prospecting Hub — Shared Types
+// Prospecting Hub - Shared Types
 // Extracted from server action files to avoid 'use server' export restrictions.
 
 export interface Prospect {

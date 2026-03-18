@@ -117,7 +117,7 @@ export function RecentPagesSection() {
               className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm font-medium text-stone-400 hover:bg-stone-800 hover:text-stone-100 transition-colors text-left"
             >
               <span className="flex-1 truncate">{page.label}</span>
-              <span className="text-[10px] text-stone-500 flex-shrink-0 tabular-nums">
+              <span className="text-xxs text-stone-500 flex-shrink-0 tabular-nums">
                 {relativeTime(page.visitedAt)}
               </span>
             </button>

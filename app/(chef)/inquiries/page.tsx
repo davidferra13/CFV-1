@@ -1,5 +1,5 @@
-// Chef Inquiry Pipeline — Unified inbox for all channels
-// Tabs + list view (Option B from spec — simpler and effective)
+// Chef Inquiry Pipeline - Unified inbox for all channels
+// Tabs + list view (Option B from spec - simpler and effective)
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
@@ -135,7 +135,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                   <InquiryStatusBadge status={inquiry.status as any} />
                   <InquiryChannelBadge channel={inquiry.channel} />
                   {isDemoInquiry(inquiry) && (
-                    <Badge variant="info" className="text-[10px] px-1.5 py-0">
+                    <Badge variant="info" className="text-xxs px-1.5 py-0">
                       Sample
                     </Badge>
                   )}

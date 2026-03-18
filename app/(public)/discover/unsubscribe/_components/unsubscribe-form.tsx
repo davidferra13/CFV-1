@@ -60,7 +60,7 @@ export function UnsubscribeForm({ initialEmail }: Props) {
       >
         {isPending ? 'Processing...' : 'Unsubscribe'}
       </button>
-      <p className="text-[11px] text-stone-600">
+      <p className="text-xs-tight text-stone-600">
         This only affects directory notification emails. It does not remove your listing.
       </p>
     </form>

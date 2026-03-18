@@ -1,4 +1,4 @@
-// SMS Notification Sender — Twilio REST API
+// SMS Notification Sender - Twilio REST API
 // Raw fetch to Twilio's Messages API. No SDK dependency.
 // Reads TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER from env.
 //
@@ -17,8 +17,8 @@ export async function sendSms(to: string, body: string): Promise<SmsResult> {
   const fromNumber = process.env.TWILIO_FROM_NUMBER
 
   if (!accountSid || !authToken || !fromNumber) {
-    // Twilio not configured — silently degrade, log for ops awareness
-    console.warn('[sendSms] Twilio env vars not configured — SMS skipped')
+    // Twilio not configured - silently degrade, log for ops awareness
+    console.warn('[sendSms] Twilio env vars not configured - SMS skipped')
     return 'not_configured'
   }
 
@@ -57,12 +57,12 @@ export async function sendSms(to: string, body: string): Promise<SmsResult> {
 
 /**
  * Format a notification for SMS delivery.
- * Keeps messages brief — SMS charges per segment (160 chars).
+ * Keeps messages brief - SMS charges per segment (160 chars).
  */
 export function formatSmsBody(title: string, body?: string): string {
   const app = 'ChefFlow'
   if (body) {
-    const message = `${app}: ${title} — ${body}`
+    const message = `${app}: ${title} - ${body}`
     return message.length <= 160 ? message : message.slice(0, 157) + '…'
   }
   return `${app}: ${title}`

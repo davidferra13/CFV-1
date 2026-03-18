@@ -1,4 +1,4 @@
-// Contract Signed — Chef Notification Email
+// Contract Signed - Chef Notification Email
 // Sent to the chef when a client signs their event contract.
 
 import { Text, Link } from '@react-email/components'
@@ -25,7 +25,7 @@ export function ContractSignedChefEmail({
       <Text style={heading}>Contract signed</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>
-        Great news — <strong>{clientName}</strong> has signed the service contract for{' '}
+        Great news - <strong>{clientName}</strong> has signed the service contract for{' '}
         <strong>{occasion}</strong>.
       </Text>
 

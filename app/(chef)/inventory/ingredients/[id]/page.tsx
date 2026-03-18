@@ -2,10 +2,18 @@
 // Shows price history chart and multi-vendor price comparison for a single ingredient.
 
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { PriceHistoryChart } from '@/components/inventory/price-history-chart'
+
+const PriceHistoryChart = dynamic(
+  () => import('@/components/inventory/price-history-chart').then((m) => m.PriceHistoryChart),
+  {
+    loading: () => <div className="h-64 rounded-lg bg-stone-800 animate-pulse" />,
+    ssr: false,
+  }
+)
 import { VendorComparisonPanel } from '@/components/inventory/vendor-comparison-panel'
 
 export const metadata: Metadata = { title: 'Ingredient Price Detail - ChefFlow' }

@@ -2,7 +2,7 @@
 
 // Module Toggle Actions
 // Manages which feature modules a chef has enabled (progressive disclosure).
-// Independent of tier — controls what the chef SEES, not what they CAN access.
+// Independent of tier - controls what the chef SEES, not what they CAN access.
 
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
@@ -41,7 +41,7 @@ export async function updateEnabledModules(modules: string[]): Promise<void> {
   const validSlugs = new Set(ALL_MODULE_SLUGS)
   const filtered = modules.filter((slug) => validSlugs.has(slug))
 
-  // Always include 'dashboard' — it cannot be toggled off
+  // Always include 'dashboard' - it cannot be toggled off
   if (!filtered.includes('dashboard')) {
     filtered.unshift('dashboard')
   }

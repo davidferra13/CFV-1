@@ -84,7 +84,7 @@ export function ChefBioPanel() {
       {view === 'tagline' && (
         <div className="space-y-2">
           <div className="bg-brand-950 border border-brand-700 rounded p-3">
-            <div className="text-[11px] text-brand-600 mb-0.5">Primary Tagline</div>
+            <div className="text-xs-tight text-brand-600 mb-0.5">Primary Tagline</div>
             <div className="text-lg font-medium text-stone-200">{result.tagline}</div>
           </div>
           <div className="space-y-1">
@@ -127,7 +127,7 @@ export function ChefBioPanel() {
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">Auto draft · Edit before publishing</p>
+      <p className="text-xs-tight text-stone-400">Auto draft · Edit before publishing</p>
     </div>
   )
 }

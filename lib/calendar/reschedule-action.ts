@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-// Statuses that allow rescheduling — events that are confirmed, in-progress,
+// Statuses that allow rescheduling - events that are confirmed, in-progress,
 // completed, or cancelled are locked and cannot be moved.
 const RESCHEDULABLE_STATUSES = ['draft', 'proposed', 'accepted']
 

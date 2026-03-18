@@ -1,5 +1,5 @@
-// Seasonal Produce Data — US-Centric
-// Pure data module — no 'use server', no async.
+// Seasonal Produce Data - US-Centric
+// Pure data module - no 'use server', no async.
 // Maps months (1-12) to curated seasonal produce grouped by category.
 
 export type SeasonalCategory = 'produce' | 'fresh_herb' | 'protein' | 'specialty'

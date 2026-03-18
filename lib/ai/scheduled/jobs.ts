@@ -1,6 +1,6 @@
 'use server'
 
-// Scheduled Intelligence Layer — Job Implementations
+// Scheduled Intelligence Layer - Job Implementations
 // PRIVACY: All jobs handle tenant business data → local Ollama only.
 //
 // Each job is called by the queue worker on a schedule.
@@ -120,7 +120,7 @@ export async function handleLeadScoring(
 
   let scored = 0
   for (const inq of unscoredInquiries) {
-    // Same scoring logic as reactive handler — pure rules, no LLM
+    // Same scoring logic as reactive handler - pure rules, no LLM
     let score = 50
     if (inq.confirmed_budget_cents && inq.confirmed_budget_cents > 100000) score += 15
     if (inq.confirmed_guest_count && inq.confirmed_guest_count >= 20) score += 10
@@ -140,7 +140,7 @@ export async function handleLeadScoring(
 }
 
 // ============================================
-// 3. WEEKLY BUSINESS INSIGHTS (heavy — Pi preferred)
+// 3. WEEKLY BUSINESS INSIGHTS (heavy - Pi preferred)
 // ============================================
 
 export async function handleWeeklyInsights(
@@ -210,7 +210,7 @@ export async function handleWeeklyInsights(
 }
 
 // ============================================
-// 4. REVENUE GOAL PROGRESS (heavy — Pi preferred)
+// 4. REVENUE GOAL PROGRESS (heavy - Pi preferred)
 // ============================================
 
 export async function handleRevenueGoal(
@@ -246,7 +246,7 @@ export async function handleRevenueGoal(
 }
 
 // ============================================
-// 5. CLIENT CHURN PREDICTION (heavy — Pi preferred)
+// 5. CLIENT CHURN PREDICTION (heavy - Pi preferred)
 // ============================================
 
 export async function handleChurnPrediction(
@@ -279,7 +279,7 @@ export async function handleChurnPrediction(
 }
 
 // ============================================
-// 6. FOOD COST % ALERT (pure SQL — runs on PC)
+// 6. FOOD COST % ALERT (pure SQL - runs on PC)
 // ============================================
 
 export async function handleFoodCostAlert(
@@ -325,7 +325,7 @@ export async function handleFoodCostAlert(
 }
 
 // ============================================
-// 7. PIPELINE BOTTLENECK REPORT (heavy — Pi preferred)
+// 7. PIPELINE BOTTLENECK REPORT (heavy - Pi preferred)
 // ============================================
 
 export async function handlePipelineBottleneck(
@@ -349,7 +349,7 @@ export async function handlePipelineBottleneck(
 
   // Identify bottlenecks (where events pile up)
   const bottlenecks: string[] = []
-  if (counts.draft > 5) bottlenecks.push(`${counts.draft} events stuck in draft — send proposals`)
+  if (counts.draft > 5) bottlenecks.push(`${counts.draft} events stuck in draft - send proposals`)
   if (counts.proposed > 3) bottlenecks.push(`${counts.proposed} events awaiting client acceptance`)
   if (counts.accepted > 3) bottlenecks.push(`${counts.accepted} accepted events awaiting payment`)
 
@@ -359,7 +359,7 @@ export async function handlePipelineBottleneck(
     summary:
       bottlenecks.length > 0
         ? `Pipeline bottlenecks: ${bottlenecks.join('; ')}`
-        : 'Pipeline flowing smoothly — no bottlenecks detected.',
+        : 'Pipeline flowing smoothly - no bottlenecks detected.',
     generatedAt: new Date().toISOString(),
   }
 }
@@ -405,7 +405,7 @@ export async function handleCertExpiry(
     summary:
       certs.length > 0
         ? `${certs.length} certification${certs.length !== 1 ? 's' : ''} expiring within 30 days: ${certs.map((c) => `${c.name} (${c.daysUntil}d)`).join(', ')}`
-        : 'All certifications current — nothing expiring in the next 30 days.',
+        : 'All certifications current - nothing expiring in the next 30 days.',
     generatedAt: new Date().toISOString(),
   }
 }
@@ -428,7 +428,7 @@ export async function handleFoodRecallMonitor(
     if (!response.ok) {
       return {
         recalls: [],
-        summary: 'FDA API unavailable — will retry.',
+        summary: 'FDA API unavailable - will retry.',
         generatedAt: new Date().toISOString(),
       }
     }
@@ -453,14 +453,14 @@ export async function handleFoodRecallMonitor(
   } catch {
     return {
       recalls: [],
-      summary: 'FDA API check failed — will retry.',
+      summary: 'FDA API check failed - will retry.',
       generatedAt: new Date().toISOString(),
     }
   }
 }
 
 // ============================================
-// 10. QUOTE WIN/LOSS ANALYSIS (heavy — Pi preferred)
+// 10. QUOTE WIN/LOSS ANALYSIS (heavy - Pi preferred)
 // ============================================
 
 export async function handleQuoteAnalysis(
@@ -504,7 +504,7 @@ export async function handleQuoteAnalysis(
 }
 
 // ============================================
-// 11. PLATFORM ANOMALY DETECTION (heavy — Pi preferred)
+// 11. PLATFORM ANOMALY DETECTION (heavy - Pi preferred)
 // ============================================
 
 export async function handleAnomalyDetection(
@@ -552,7 +552,7 @@ export async function handleAnomalyDetection(
 }
 
 // ============================================
-// 12. MENU ENGINEERING REPORT (heavy — Pi preferred)
+// 12. MENU ENGINEERING REPORT (heavy - Pi preferred)
 // ============================================
 
 export async function handleMenuEngineering(
@@ -598,7 +598,7 @@ export async function handleMenuEngineering(
 }
 
 // ============================================
-// 13. STALE INQUIRY SCANNER (pure SQL — triggers reactive.inquiry_stale)
+// 13. STALE INQUIRY SCANNER (pure SQL - triggers reactive.inquiry_stale)
 // ============================================
 
 export async function handleStaleInquiryScanner(
@@ -641,7 +641,7 @@ export async function handleStaleInquiryScanner(
       })
       enqueued++
     } catch {
-      // Dedup or queue full — skip silently
+      // Dedup or queue full - skip silently
     }
   }
 
@@ -654,7 +654,7 @@ export async function handleStaleInquiryScanner(
 }
 
 // ============================================
-// 14. PAYMENT OVERDUE SCANNER (pure SQL — triggers reactive.payment_overdue)
+// 14. PAYMENT OVERDUE SCANNER (pure SQL - triggers reactive.payment_overdue)
 // ============================================
 
 export async function handlePaymentOverdueScanner(
@@ -700,7 +700,7 @@ export async function handlePaymentOverdueScanner(
       })
       enqueued++
     } catch {
-      // Dedup or queue full — skip
+      // Dedup or queue full - skip
     }
   }
 
@@ -713,7 +713,7 @@ export async function handlePaymentOverdueScanner(
 }
 
 // ============================================
-// 15. SOCIAL POST DRAFT (Ollama-powered — Pi preferred)
+// 15. SOCIAL POST DRAFT (Ollama-powered - Pi preferred)
 // ============================================
 
 export async function handleSocialPostDraft(
@@ -758,7 +758,7 @@ export async function handleSocialPostDraft(
 
   try {
     const result = await parseWithOllama(
-      `You are a social media assistant for ${chefName}, a private chef. Generate 2-3 social media post ideas based on their recent activity. Mix promotional and engagement posts. Never mention specific client names — privacy first. Return JSON: { "posts": [{ "platform": "Instagram|Facebook|LinkedIn", "caption": "post text", "hashtags": ["tag1", "tag2"], "postType": "recap|promo|engagement|seasonal" }] }`,
+      `You are a social media assistant for ${chefName}, a private chef. Generate 2-3 social media post ideas based on their recent activity. Mix promotional and engagement posts. Never mention specific client names - privacy first. Return JSON: { "posts": [{ "platform": "Instagram|Facebook|LinkedIn", "caption": "post text", "hashtags": ["tag1", "tag2"], "postType": "recap|promo|engagement|seasonal" }] }`,
       `Recent completed events:\n${(recentEvents ?? []).map((e: any) => `- ${e.occasion ?? 'Private event'} (${e.guest_count ?? '?'} guests, ${e.event_date})`).join('\n') || 'None this week'}\n\nUpcoming events: ${upcomingEvents?.length ?? 0}\nSeason: ${new Date().toLocaleString('default', { month: 'long' })}`,
       PostSchema,
       { modelTier: 'standard', maxTokens: 800 }
@@ -774,7 +774,7 @@ export async function handleSocialPostDraft(
     if (err instanceof OllamaOfflineError) throw err
     return {
       posts: [],
-      summary: 'Could not generate social posts — start Ollama.',
+      summary: 'Could not generate social posts - start Ollama.',
       generatedAt: new Date().toISOString(),
       fallback: true,
     }
@@ -828,7 +828,7 @@ export async function handleClientSentiment(
   const signals: string[] = []
   if (completionRate < 80) signals.push(`Low completion rate: ${completionRate}%`)
   if (cancelledEvents > 2) signals.push(`${cancelledEvents} cancellations in 30 days`)
-  if (messageCount === 0) signals.push('No client messages in 30 days — engagement may be dropping')
+  if (messageCount === 0) signals.push('No client messages in 30 days - engagement may be dropping')
 
   // If we have messages and Ollama is running, do a light sentiment scan
   let sentimentAnalysis: Record<string, unknown> | null = null
@@ -849,7 +849,7 @@ export async function handleClientSentiment(
         .join('\n')
 
       sentimentAnalysis = await parseWithOllama(
-        'Analyze the overall client sentiment from these recent messages to a private chef. Look for satisfaction signals, complaints, enthusiasm, or concerns. Do NOT include client names in your output — use "a client" instead. Return JSON: { "overallSentiment": "positive|neutral|negative|mixed", "highlights": ["positive signals"], "concerns": ["negative signals or risks"] }',
+        'Analyze the overall client sentiment from these recent messages to a private chef. Look for satisfaction signals, complaints, enthusiasm, or concerns. Do NOT include client names in your output - use "a client" instead. Return JSON: { "overallSentiment": "positive|neutral|negative|mixed", "highlights": ["positive signals"], "concerns": ["negative signals or risks"] }',
         `Recent client messages (last 30 days):\n${messageSample}`,
         SentimentSchema,
         { modelTier: 'fast', maxTokens: 400 }

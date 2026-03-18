@@ -5,7 +5,7 @@
 // the webhook fired and what the outcome was.
 //
 // Fire-and-forget: this function NEVER throws. Logging failure must
-// never cause a webhook handler to fail — a missed audit log entry
+// never cause a webhook handler to fail - a missed audit log entry
 // is far less bad than a missed payment.
 //
 // Full payloads are NOT stored. Only metadata:

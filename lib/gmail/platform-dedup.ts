@@ -75,7 +75,7 @@ export async function checkPlatformInquiryDuplicate(
     }
   }
 
-  // Strategy 2: Match by client name + date (fuzzy — for when we don't have an external ID)
+  // Strategy 2: Match by client name + date (fuzzy - for when we don't have an external ID)
   if (opts.clientName && opts.eventDate) {
     const { data } = await supabase
       .from('inquiries')

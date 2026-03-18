@@ -87,14 +87,14 @@ export function PublicHeader() {
             href="/chefs"
             analyticsName="header_mobile_explore"
             analyticsProps={{ section: 'public_header_mobile' }}
-            className="inline-flex h-9 items-center justify-center rounded-lg border border-brand-700/50 bg-brand-950/50 px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-200"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-brand-700/50 bg-brand-950/50 px-3 text-xs-tight font-semibold uppercase tracking-[0.08em] text-brand-200 touch-manipulation"
           >
             Explore
           </TrackedLink>
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="rounded-lg p-2 text-muted-soft hover:bg-stone-700"
+            className="flex items-center justify-center w-11 h-11 rounded-lg text-muted-soft hover:bg-stone-700 touch-manipulation"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

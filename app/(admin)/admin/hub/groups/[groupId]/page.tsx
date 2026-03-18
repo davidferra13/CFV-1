@@ -130,9 +130,9 @@ export default async function AdminHubGroupTranscriptPage({
                 <p className="text-xs text-stone-400">
                   {message.authorDisplayName ?? message.authorProfileId} - {message.messageType}
                 </p>
-                <p className="text-[11px] text-stone-500">{formatDate(message.createdAt)}</p>
+                <p className="text-xs-tight text-stone-500">{formatDate(message.createdAt)}</p>
               </div>
-              <span className="text-[11px] text-stone-500">{message.id}</span>
+              <span className="text-xs-tight text-stone-500">{message.id}</span>
             </div>
             <p className="mt-2 text-sm text-stone-200 whitespace-pre-wrap">{message.body ?? '-'}</p>
             {message.deletedAt ? (

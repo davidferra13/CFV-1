@@ -59,7 +59,7 @@ export function GoalCard({ view, onCheckIn }: GoalCardProps) {
                 {formatPeriod(goal.periodStart, goal.periodEnd)}
               </span>
               {manual && (
-                <span className="text-[10px] text-stone-400 border border-stone-200 rounded px-1.5 py-0.5">
+                <span className="text-xxs text-stone-400 border border-stone-200 rounded px-1.5 py-0.5">
                   manual
                 </span>
               )}

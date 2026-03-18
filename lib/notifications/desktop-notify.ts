@@ -1,7 +1,7 @@
 // Desktop notification bridge
 // Sends a native OS notification when running inside the Tauri desktop app.
 // Falls back silently (no-op) when running in a browser.
-// Never call this from server-side code — browser-only.
+// Never call this from server-side code - browser-only.
 
 type DesktopNotification = {
   title: string
@@ -10,7 +10,7 @@ type DesktopNotification = {
 
 /**
  * Send a native desktop notification if running inside the Tauri shell.
- * Safe to call anywhere on the client — silently does nothing in browsers.
+ * Safe to call anywhere on the client - silently does nothing in browsers.
  */
 export async function sendDesktopNotification(notification: DesktopNotification): Promise<void> {
   const inTauri =
@@ -32,7 +32,7 @@ export async function sendDesktopNotification(notification: DesktopNotification)
       sendNotification({ title: notification.title, body: notification.body })
     }
   } catch (err) {
-    // Non-blocking — desktop notifications must never crash the app
+    // Non-blocking - desktop notifications must never crash the app
     console.warn('[desktop-notify] failed to send notification', err)
   }
 }

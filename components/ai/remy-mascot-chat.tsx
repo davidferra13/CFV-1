@@ -182,7 +182,7 @@ export function RemyMascotChat() {
           <RemyAvatar size="sm" />
           <div>
             <div className="text-sm font-semibold text-stone-100">Remy</div>
-            <div className="text-[10px] text-stone-400">
+            <div className="text-xxs text-stone-400">
               {surveyActive ? 'Getting to know you' : 'Quick chat'}
             </div>
           </div>
@@ -263,7 +263,7 @@ export function RemyMascotChat() {
                 <button
                   onClick={() => handleRetry(msg.retryMessage!)}
                   disabled={loading || drawerBusy}
-                  className="mt-1.5 flex items-center gap-1 text-[10px] text-brand-400 hover:text-brand-300 disabled:opacity-40"
+                  className="mt-1.5 flex items-center gap-1 text-xxs text-brand-400 hover:text-brand-300 disabled:opacity-40"
                 >
                   <RotateCcw className="h-3 w-3" />
                   Retry
@@ -298,7 +298,7 @@ export function RemyMascotChat() {
       {/* Input */}
       <div className="border-t border-stone-700 bg-stone-900 p-2.5">
         {drawerBusy && !loading && (
-          <p className="text-[10px] text-stone-500 mb-1.5 text-center">
+          <p className="text-xxs text-stone-500 mb-1.5 text-center">
             Remy is busy in the drawer...
           </p>
         )}
@@ -333,7 +333,7 @@ export function RemyMascotChat() {
             </button>
           )}
         </div>
-        <p className="mt-1 text-center text-[9px] text-stone-600">
+        <p className="mt-1 text-center text-2xs text-stone-600">
           {surveyActive ? 'Optional - skip any question or stop anytime' : 'Quick chat'}
         </p>
       </div>

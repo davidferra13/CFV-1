@@ -1,6 +1,6 @@
-// AI Observability Metrics — in-memory counters for AI subsystem health
+// AI Observability Metrics - in-memory counters for AI subsystem health
 // Pattern: mirrors lib/activity/observability.ts
-// No 'use server' — imported by parse-ollama.ts which has 'use server'.
+// No 'use server' - imported by parse-ollama.ts which has 'use server'.
 
 type AiMetricName =
   | 'ai.call.success'

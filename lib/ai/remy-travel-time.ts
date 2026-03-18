@@ -1,6 +1,6 @@
 'use server'
 
-// Remy — Travel Time Estimates (Phase 6B)
+// Remy - Travel Time Estimates (Phase 6B)
 // Estimates driving time between back-to-back events using OSRM (free, no API key).
 // Alerts when two events are too close together to allow travel + setup.
 // PRIVACY: Only sends location text to Open-Meteo geocoding → coordinates to OSRM.
@@ -210,7 +210,7 @@ export async function formatTravelEstimates(estimates: TravelEstimate[]): Promis
     if (est.warning) {
       lines.push(`  ⚠️ ${est.warning}`)
     } else {
-      lines.push(`  ${est.gapMinutes} min gap — plenty of time`)
+      lines.push(`  ${est.gapMinutes} min gap - plenty of time`)
     }
     lines.push('')
   }

@@ -1,4 +1,4 @@
-// Chef Breadcrumb Types — Navigation tracking for "Retrace" mode
+// Chef Breadcrumb Types - Navigation tracking for "Retrace" mode
 
 export type BreadcrumbType = 'page_view' | 'click' | 'form_open' | 'tab_switch' | 'search'
 

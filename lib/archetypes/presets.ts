@@ -1,8 +1,8 @@
-// Chef Archetype Presets — defines nav defaults for each chef persona.
+// Chef Archetype Presets - defines nav defaults for each chef persona.
 // Archetypes are starting-point presets only; nothing is locked out.
 // Chefs can always customize via Settings > Navigation and Settings > Modules.
 //
-// NOT a server action file — no 'use server'.
+// NOT a server action file - no 'use server'.
 
 export type ArchetypeId =
   | 'private-chef'
@@ -26,7 +26,7 @@ export type ArchetypeDefinition = {
 }
 
 // ─── Shared constants ─────────────────────────────────────────────
-// These modules are ON for every archetype — they're universally useful.
+// These modules are ON for every archetype - they're universally useful.
 const ALWAYS_ON = ['dashboard', 'finance']
 
 // ─── Archetype Definitions ────────────────────────────────────────

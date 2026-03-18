@@ -1,13 +1,13 @@
 'use server'
 
-// Client-Facing Intelligence — Event Recap, Menu Explanation
+// Client-Facing Intelligence - Event Recap, Menu Explanation
 // PRIVACY: Handles client/event data → local Ollama only.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 
 // ============================================
-// 1. EVENT RECAP SUMMARY (pure DB — no Ollama)
+// 1. EVENT RECAP SUMMARY (pure DB - no Ollama)
 // ============================================
 
 export interface EventRecapResult {
@@ -84,12 +84,12 @@ export async function getEventRecap(eventName: string): Promise<EventRecapResult
     status: event.status,
     menuItems: items,
     financials: { quotedCents, paidCents, outstandingCents },
-    summary: `"${event.occasion ?? eventName}" for ${clientName} on ${event.event_date ?? '(no date)'} — ${event.guest_count ?? '?'} guests, ${event.status}. ${items.length > 0 ? `Menu: ${items.join(', ')}.` : 'No menu items yet.'} Quoted: $${(quotedCents / 100).toFixed(2)}, Paid: $${(paidCents / 100).toFixed(2)}${outstandingCents > 0 ? `, Outstanding: $${(outstandingCents / 100).toFixed(2)}` : ''}.`,
+    summary: `"${event.occasion ?? eventName}" for ${clientName} on ${event.event_date ?? '(no date)'} - ${event.guest_count ?? '?'} guests, ${event.status}. ${items.length > 0 ? `Menu: ${items.join(', ')}.` : 'No menu items yet.'} Quoted: $${(quotedCents / 100).toFixed(2)}, Paid: $${(paidCents / 100).toFixed(2)}${outstandingCents > 0 ? `, Outstanding: $${(outstandingCents / 100).toFixed(2)}` : ''}.`,
   }
 }
 
 // ============================================
-// 2. MENU EXPLANATION (pure DB — no Ollama)
+// 2. MENU EXPLANATION (pure DB - no Ollama)
 // ============================================
 
 export interface MenuExplanationResult {

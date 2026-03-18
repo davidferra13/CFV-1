@@ -1,10 +1,10 @@
-// Chef Culinary Profile — Constants & Types
+// Chef Culinary Profile - Constants & Types
 // Separated from chef-profile-actions.ts because 'use server' files
 // can only export async functions.
 
 export const CULINARY_QUESTIONS = [
   { key: 'cooking_philosophy', question: "What's your cooking philosophy in one sentence?" },
-  { key: 'signature_dish', question: "What's your signature dish — the one that defines you?" },
+  { key: 'signature_dish', question: "What's your signature dish - the one that defines you?" },
   { key: 'favorite_cuisines', question: 'What cuisines inspire you most?' },
   { key: 'cant_live_without', question: 'What 5 ingredients can you not live without?' },
   {

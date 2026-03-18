@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Refund Actions
+// Commerce Engine V1 - Refund Actions
 // Create and process refunds against commerce_payments.
 // The DB trigger auto-creates ledger entries for processed refunds.
 
@@ -102,7 +102,7 @@ export async function createRefund(input: CreateRefundInput) {
     }
   }
 
-  // Determine initial status — manual refunds are immediate, Stripe ones are pending
+  // Determine initial status - manual refunds are immediate, Stripe ones are pending
   const refundStatus = input.stripeRefundId ? 'pending' : 'processed'
 
   const { data: refund, error } = await supabase

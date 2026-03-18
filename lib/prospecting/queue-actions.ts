@@ -1,6 +1,6 @@
 'use server'
 
-// Prospecting Hub — Call Queue Actions
+// Prospecting Hub - Call Queue Actions
 // Builds daily call queues, logs outcomes, converts prospects to inquiries.
 
 import { requireAdmin } from '@/lib/auth/admin'
@@ -26,7 +26,7 @@ export async function buildDailyQueue(
 
   // Smart queue priority:
   //   1. Follow-ups that are due (overdue first)
-  //   2. Pipeline "responded" / "meeting_set" prospects (hot leads — no recent outreach)
+  //   2. Pipeline "responded" / "meeting_set" prospects (hot leads - no recent outreach)
   //   3. New/queued prospects (highest lead score first)
   //   4. Called/contacted prospects with no recent outreach (cold re-engage)
   const prospects: Prospect[] = []
@@ -62,7 +62,7 @@ export async function buildDailyQueue(
   )
   if (followUps) addUnique(followUps as Prospect[])
 
-  // 2. Hot pipeline prospects (responded/meeting_set) — they showed interest, keep momentum
+  // 2. Hot pipeline prospects (responded/meeting_set) - they showed interest, keep momentum
   if (prospects.length < count) {
     const { data: hotPipeline } = await applyFilters(
       supabase

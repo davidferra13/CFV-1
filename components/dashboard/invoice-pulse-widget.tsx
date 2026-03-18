@@ -165,7 +165,7 @@ export function InvoicePulseWidget({ invoices, monthlyStats }: InvoicePulseWidge
                 }
               />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-stone-200">
+            <span className="absolute inset-0 flex items-center justify-center text-xxs font-bold text-stone-200">
               {rate}%
             </span>
           </div>

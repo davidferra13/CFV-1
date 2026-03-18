@@ -3,7 +3,7 @@ import type { PageInfoEntry } from '../page-info-types'
 export const ADMIN_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/admin': {
     title: 'Platform Overview',
-    description: 'Admin command center — KPIs, live sessions, and quick-action tiles.',
+    description: 'Admin command center - KPIs, live sessions, and quick-action tiles.',
     features: [
       '8 stat cards (chefs, clients, events, GMV)',
       'Quick access tiles to all admin sections',
@@ -33,7 +33,7 @@ export const ADMIN_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/admin/cannabis': {
     title: 'Cannabis Tier Admin',
-    description: 'Control cannabis portal access — approve, grant, and manage tiers.',
+    description: 'Control cannabis portal access - approve, grant, and manage tiers.',
     features: ['User tier list', 'Pending invite approvals', 'Direct grant functionality'],
   },
 
@@ -51,13 +51,13 @@ export const ADMIN_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/admin/events': {
     title: 'All Events',
-    description: 'Every event across all chefs — platform-wide view.',
+    description: 'Every event across all chefs - platform-wide view.',
     features: ['Status distribution', 'Events table', 'Chef and status filters'],
   },
 
   '/admin/feedback': {
     title: 'User Feedback',
-    description: 'All user-submitted feedback — sentiment analysis and trends.',
+    description: 'All user-submitted feedback - sentiment analysis and trends.',
     features: ['Sentiment chips', 'Feedback table', 'Page context tracking'],
   },
 
@@ -75,7 +75,7 @@ export const ADMIN_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/admin/presence': {
     title: 'Live Presence',
-    description: "Real-time visitor tracking — who's online right now.",
+    description: "Real-time visitor tracking - who's online right now.",
     features: ['Live indicator', 'Anonymous visitors', 'Logged-in users'],
   },
 
@@ -109,7 +109,7 @@ export const ADMIN_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/admin/users/[chefId]': {
     title: 'Chef Detail',
-    description: "Full view of a single chef's account — financials, health, events, and clients.",
+    description: "Full view of a single chef's account - financials, health, events, and clients.",
     features: [
       'Health score breakdown',
       'Financial summary',

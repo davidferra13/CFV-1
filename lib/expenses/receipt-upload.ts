@@ -1,4 +1,4 @@
-// Receipt Upload — Supabase Storage
+// Receipt Upload - Supabase Storage
 // Handles receipt photo upload, signed URL retrieval, and cleanup
 
 'use server'
@@ -12,7 +12,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'i
 
 /**
  * Upload a receipt photo to Supabase Storage.
- * Returns the storage path (not a signed URL — use getReceiptUrl for that).
+ * Returns the storage path (not a signed URL - use getReceiptUrl for that).
  *
  * NOTE: The 'receipts' bucket must be created in Supabase Storage:
  *   1. Go to Supabase Dashboard → Storage

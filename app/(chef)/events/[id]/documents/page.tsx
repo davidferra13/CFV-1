@@ -370,7 +370,7 @@ export default async function EventDocumentsPage({
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="rounded border border-stone-800 p-3 space-y-2">
-            <p className="text-[11px] uppercase tracking-wide text-stone-500">Step 1</p>
+            <p className="text-xs-tight uppercase tracking-wide text-stone-500">Step 1</p>
             <p className="text-sm font-medium text-stone-100">Fill Missing Data</p>
             <p className="text-xs text-stone-500">
               {missingDataRows.length === 0
@@ -389,7 +389,7 @@ export default async function EventDocumentsPage({
           </div>
 
           <div className="rounded border border-stone-800 p-3 space-y-2">
-            <p className="text-[11px] uppercase tracking-wide text-stone-500">Step 2</p>
+            <p className="text-xs-tight uppercase tracking-wide text-stone-500">Step 2</p>
             <p className="text-sm font-medium text-stone-100">Create PDFs</p>
             <p className="text-xs text-stone-500">
               {readyToArchiveRows.length === 0
@@ -400,7 +400,7 @@ export default async function EventDocumentsPage({
           </div>
 
           <div className="rounded border border-stone-800 p-3 space-y-2">
-            <p className="text-[11px] uppercase tracking-wide text-stone-500">Step 3</p>
+            <p className="text-xs-tight uppercase tracking-wide text-stone-500">Step 3</p>
             <p className="text-sm font-medium text-stone-100">Open or Share</p>
             <p className="text-xs text-stone-500">
               {archivedRows.length}/{recommendedDocReadiness.length} recommended docs archived.
@@ -657,25 +657,25 @@ export default async function EventDocumentsPage({
             <>
               <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
                 <div className="rounded border border-stone-800 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-stone-500">Quoted</p>
+                  <p className="text-xs-tight uppercase tracking-wide text-stone-500">Quoted</p>
                   <p className="text-sm font-semibold text-stone-100">
                     {formatCurrency(financialSummary.revenue.quotedPriceCents)}
                   </p>
                 </div>
                 <div className="rounded border border-stone-800 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-stone-500">Received</p>
+                  <p className="text-xs-tight uppercase tracking-wide text-stone-500">Received</p>
                   <p className="text-sm font-semibold text-stone-100">
                     {formatCurrency(financialSummary.revenue.totalReceivedCents)}
                   </p>
                 </div>
                 <div className="rounded border border-stone-800 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-stone-500">Total Cost</p>
+                  <p className="text-xs-tight uppercase tracking-wide text-stone-500">Total Cost</p>
                   <p className="text-sm font-semibold text-stone-100">
                     {formatCurrency(financialSummary.costs.totalCostCents)}
                   </p>
                 </div>
                 <div className="rounded border border-stone-800 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-stone-500">Net Profit</p>
+                  <p className="text-xs-tight uppercase tracking-wide text-stone-500">Net Profit</p>
                   <p
                     className={`text-sm font-semibold ${financialSummary.margins.netProfitWithTipCents >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}
                   >
@@ -727,21 +727,23 @@ export default async function EventDocumentsPage({
               <div className="space-y-3">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   <div className="rounded border border-stone-800 px-3 py-2">
-                    <p className="text-[11px] uppercase tracking-wide text-stone-500">Total</p>
+                    <p className="text-xs-tight uppercase tracking-wide text-stone-500">Total</p>
                     <p className="text-lg font-semibold text-stone-100">{generationHealth.total}</p>
                   </div>
                   <div className="rounded border border-stone-800 px-3 py-2">
-                    <p className="text-[11px] uppercase tracking-wide text-stone-500">Succeeded</p>
+                    <p className="text-xs-tight uppercase tracking-wide text-stone-500">
+                      Succeeded
+                    </p>
                     <p className="text-lg font-semibold text-emerald-500">
                       {generationHealth.succeeded}
                     </p>
                   </div>
                   <div className="rounded border border-stone-800 px-3 py-2">
-                    <p className="text-[11px] uppercase tracking-wide text-stone-500">Failed</p>
+                    <p className="text-xs-tight uppercase tracking-wide text-stone-500">Failed</p>
                     <p className="text-lg font-semibold text-rose-500">{generationHealth.failed}</p>
                   </div>
                   <div className="rounded border border-stone-800 px-3 py-2">
-                    <p className="text-[11px] uppercase tracking-wide text-stone-500">
+                    <p className="text-xs-tight uppercase tracking-wide text-stone-500">
                       In Progress
                     </p>
                     <p className="text-lg font-semibold text-amber-500">
@@ -804,7 +806,7 @@ export default async function EventDocumentsPage({
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {run.docs.map((doc) => {
-                              const className = `text-[11px] rounded border px-2 py-0.5 ${
+                              const className = `text-xs-tight rounded border px-2 py-0.5 ${
                                 doc.status === 'succeeded'
                                   ? 'border-emerald-700/60 text-emerald-400'
                                   : doc.status === 'failed'
@@ -881,7 +883,7 @@ export default async function EventDocumentsPage({
                   <input type="hidden" name="version" value={versionQuery} />
                 )}
                 <div>
-                  <p className="text-[11px] text-stone-500 mb-1">From</p>
+                  <p className="text-xs-tight text-stone-500 mb-1">From</p>
                   <input
                     type="date"
                     name="from"
@@ -890,7 +892,7 @@ export default async function EventDocumentsPage({
                   />
                 </div>
                 <div>
-                  <p className="text-[11px] text-stone-500 mb-1">To</p>
+                  <p className="text-xs-tight text-stone-500 mb-1">To</p>
                   <input
                     type="date"
                     name="to"

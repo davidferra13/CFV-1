@@ -163,7 +163,7 @@ export async function updateStorageLocation(
       .eq('is_default', true)
   }
 
-  // Build the update payload — only include fields that were provided
+  // Build the update payload - only include fields that were provided
   const updatePayload: Record<string, any> = {}
   if (parsed.name !== undefined) updatePayload.name = parsed.name
   if (parsed.locationType !== undefined) updatePayload.location_type = parsed.locationType
@@ -191,7 +191,7 @@ export async function updateStorageLocation(
 
 /**
  * Soft-delete a storage location by setting is_active = false.
- * Does not remove data — transactions referencing this location keep their location_id.
+ * Does not remove data - transactions referencing this location keep their location_id.
  */
 export async function deleteStorageLocation(id: string): Promise<void> {
   const user = await requireChef()

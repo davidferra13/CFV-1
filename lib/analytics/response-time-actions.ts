@@ -1,4 +1,4 @@
-// Response Time SLA — compute per-inquiry urgency and overall SLA metrics
+// Response Time SLA - compute per-inquiry urgency and overall SLA metrics
 // Built on top of existing getAvgInquiryResponseTime() in pipeline-analytics.ts
 // This file adds per-inquiry urgency flags for the inquiry list
 

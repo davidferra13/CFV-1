@@ -2,10 +2,10 @@
 
 // Client Health Score
 // Computes a 0–100 score for each client based on four dimensions:
-//   Recency (30pts)  — days since last event
-//   Frequency (25pts) — events per year
-//   Monetary (25pts)  — lifetime value vs chef median
-//   Engagement (20pts) — profile completeness + referrals
+//   Recency (30pts)  - days since last event
+//   Frequency (25pts) - events per year
+//   Monetary (25pts)  - lifetime value vs chef median
+//   Engagement (20pts) - profile completeness + referrals
 //
 // Used as a badge on client cards, a filter on the client list,
 // and as a trigger condition for automations.
@@ -91,14 +91,14 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
   const supabase: any = createServerClient()
 
   // Fetch client financial summary + event counts
-  // cast as any — total_events/days_since_last_event may not be in generated types
+  // cast as any - total_events/days_since_last_event may not be in generated types
   const { data: summaries } = await supabase
     .from('client_financial_summary')
     .select('client_id, lifetime_value_cents, total_events, days_since_last_event')
     .eq('tenant_id', user.tenantId!)
 
   // Fetch client profile completeness indicators
-  // cast as any — some columns may not be in generated types yet
+  // cast as any - some columns may not be in generated types yet
   const { data: clients } = await supabase
     .from('clients')
     .select(
@@ -108,7 +108,7 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
     .eq('is_active', true)
 
   // Fetch referral counts per client (how many new clients they've referred)
-  // cast as any — referred_by_client_id not in generated types yet
+  // cast as any - referred_by_client_id not in generated types yet
   const { data: referrals } = await supabase
     .from('clients')
     .select('referred_by_client_id')
@@ -151,7 +151,7 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
     const daysSince: number | null = summary?.days_since_last_event ?? null
 
     // Frequency: events per year based on account age (rough: total_events / max(1, months/12))
-    const eventsPerYear = totalEvents // simplified — if we have event history we can refine
+    const eventsPerYear = totalEvents // simplified - if we have event history we can refine
 
     // Engagement: profile completeness (0–15) + referrals (0–5)
     let engagementScore = 0

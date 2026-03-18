@@ -97,7 +97,7 @@ export function MileageSummaryWidget({ summary }: Props) {
         )}
       </div>
 
-      <p className="text-[10px] text-stone-600 mt-3">IRS 2026: 72.5¢/mi</p>
+      <p className="text-xxs text-stone-600 mt-3">IRS 2026: 72.5¢/mi</p>
     </div>
   )
 }

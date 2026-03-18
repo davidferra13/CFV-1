@@ -1,8 +1,21 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { requireChef } from '@/lib/auth/get-user'
 import { UpgradeGate } from '@/components/billing/upgrade-gate'
-import { IntelligenceHubContent } from '@/components/intelligence/intelligence-hub'
+
+const IntelligenceHubContent = dynamic(
+  () => import('@/components/intelligence/intelligence-hub').then((m) => m.IntelligenceHubContent),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-32 rounded-lg bg-muted animate-pulse" />
+        ))}
+      </div>
+    ),
+  }
+)
 
 export const metadata: Metadata = {
   title: 'Intelligence Hub - ChefFlow',

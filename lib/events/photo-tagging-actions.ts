@@ -72,7 +72,7 @@ const FILENAME_TAG_MAP: Record<string, string[]> = {
 
 /**
  * Suggest tags for a photo based on its URL/filename pattern.
- * This is a heuristic approach — no AI involved.
+ * This is a heuristic approach - no AI involved.
  * Returns suggested tags and a best-guess dish name.
  */
 export async function suggestPhotoTags(photoUrl: string): Promise<PhotoTagSuggestion> {

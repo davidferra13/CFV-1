@@ -1,8 +1,8 @@
 'use server'
 
 // AI Staff Briefing Generator
-// PRIVACY: Sends guest names, allergens, client vibe notes, staff names — must stay local.
-// Output is DRAFT ONLY — chef edits and approves before sharing with staff.
+// PRIVACY: Sends guest names, allergens, client vibe notes, staff names - must stay local.
+// Output is DRAFT ONLY - chef edits and approves before sharing with staff.
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
@@ -105,7 +105,7 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
   const systemPrompt = `You are a private chef drafting a professional staff briefing document for an upcoming event.
 Write it as if you are the chef, speaking directly to your team.
 Tone: warm, professional, precise. Use "we" when referring to the team.
-The briefing must fit on ONE printed page — be comprehensive but concise.
+The briefing must fit on ONE printed page - be comprehensive but concise.
 Do NOT invent information not provided. Use "TBD" for missing details.
 Return ONLY valid JSON.`
 
@@ -125,13 +125,13 @@ Menu:
 ${menu.map((m) => `  [${m.course_type ?? 'Course'}] ${m.name}${m.description ? ': ' + m.description : ''}${m.allergen_tags ? ' ! ' + m.allergen_tags.join(', ') : ''}`).join('\n') || '  Menu not yet assigned'}
 
 Allergen Alerts (CRITICAL):
-${allergenSummary.length > 0 ? allergenSummary.map((a) => '  ! ' + a).join('\n') : '  None noted — verify with client'}
+${allergenSummary.length > 0 ? allergenSummary.map((a) => '  ! ' + a).join('\n') : '  None noted - verify with client'}
 
 Guest List (${guests.length} RSVPd):
 ${guests.map((g) => `  ${g.full_name}${(g.dietary_restrictions ?? []).length ? ': ' + (g.dietary_restrictions ?? []).join(', ') : ''}${(g.allergies ?? []).length ? ' | allergies: ' + (g.allergies ?? []).join(', ') : ''}`).join('\n') || '  No individual guest list yet'}
 
 Return JSON: {
-  "subject": "Staff Briefing — [occasion + date]",
+  "subject": "Staff Briefing - [occasion + date]",
   "openingParagraph": "...",
   "serviceProtocol": "...",
   "menuNarrative": "...",
@@ -145,7 +145,7 @@ Return JSON: {
 }`
 
   const { result, source } = await withAiFallback(
-    // Template: structured briefing with variable substitution — deterministic
+    // Template: structured briefing with variable substitution - deterministic
     () =>
       generateStaffBriefingTemplate({
         chefName: chef?.display_name ?? 'Chef',

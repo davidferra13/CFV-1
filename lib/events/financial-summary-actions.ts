@@ -12,9 +12,9 @@ import { revalidatePath } from 'next/cache'
 
 // IRS standard mileage rate (cents per mile).
 // 2025 rate: $0.70/mile (67 cents in 2024). The 2026 rate is typically announced
-// in December of the prior year — check https://www.irs.gov/tax-professionals/standard-mileage-rates
+// in December of the prior year - check https://www.irs.gov/tax-professionals/standard-mileage-rates
 // and update this constant when the IRS publishes the new rate.
-const IRS_MILEAGE_RATE_CENTS_PER_MILE = 70 // $0.70/mile — verify 2026 rate when published
+const IRS_MILEAGE_RATE_CENTS_PER_MILE = 70 // $0.70/mile - verify 2026 rate when published
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -78,7 +78,7 @@ export type EventFinancialSummaryData = {
     vsAverageMarginPercent: number | null
     vsClientHistoryNotes: string | null
   } | null
-  // Draft mode — which data is pending
+  // Draft mode - which data is pending
   pendingItems: string[]
 }
 
@@ -161,7 +161,7 @@ export async function getEventFinancialSummaryFull(
     quotedPriceCents > 0 ? parseFloat(((netFoodCostCents / quotedPriceCents) * 100).toFixed(1)) : 0
   const netProfitWithTipCents = grossProfitCents + tipCents
 
-  // Time tracking — from profitSummary.timeInvested (already computed by getEventProfitSummary)
+  // Time tracking - from profitSummary.timeInvested (already computed by getEventProfitSummary)
   const timeInvested = profitSummary?.timeInvested ?? null
   const shoppingMinutes = timeInvested?.shoppingMinutes ?? null
   const prepMinutes = timeInvested?.prepMinutes ?? null
@@ -181,7 +181,7 @@ export async function getEventFinancialSummaryFull(
     ? Math.round(mileageMiles * IRS_MILEAGE_RATE_CENTS_PER_MILE)
     : null
 
-  // Historical comparison — fetch chef's average across completed events
+  // Historical comparison - fetch chef's average across completed events
   let comparison: EventFinancialSummaryData['comparison'] = null
   const { data: historicalSummaries } = await supabase
     .from('event_financial_summary')
@@ -297,7 +297,7 @@ export async function markFinancialClosed(eventId: string) {
     throw new Error('Failed to close event financially')
   }
 
-  // Update closure streak — non-blocking, don't fail the close if streak update fails
+  // Update closure streak - non-blocking, don't fail the close if streak update fails
   if (eventRow?.event_date) {
     try {
       const { recordClosureForStreak } = await import('@/lib/chefs/streaks')
@@ -362,7 +362,7 @@ export async function recordTip({
       entry_type: 'tip' as const,
       amount_cents: amountCents,
       payment_method: paymentMethod,
-      description: `Tip received — ${paymentMethod}`,
+      description: `Tip received - ${paymentMethod}`,
       event_id: eventId,
       is_refund: false,
       created_by: user.id,
@@ -507,7 +507,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
   // Net profit = gross + tip
   const netProfitWithTipCents = grossProfit + tipCents
 
-  // Effective hourly rate — columns use time_ prefix (added in 20260216000003_operational_refinements.sql)
+  // Effective hourly rate - columns use time_ prefix (added in 20260216000003_operational_refinements.sql)
   const { data: timeRow } = await supabase
     .from('events')
     .select(

@@ -49,7 +49,7 @@ export function ExpenseCategorizeSuggest({ description, amountCents, onAccept }:
 
   if (loading) {
     return (
-      <div className="flex items-center gap-1 text-[11px] text-stone-400">
+      <div className="flex items-center gap-1 text-xs-tight text-stone-400">
         <Loader2 className="w-3 h-3 animate-spin" />
         <span>Auto-categorizing...</span>
       </div>
@@ -69,10 +69,10 @@ export function ExpenseCategorizeSuggest({ description, amountCents, onAccept }:
   return (
     <div className="flex items-center gap-2">
       <Sparkles className="w-3 h-3 text-brand-500" />
-      <span className="text-[11px] text-stone-500">Suggested:</span>
+      <span className="text-xs-tight text-stone-500">Suggested:</span>
       <button
         onClick={() => onAccept(result.category)}
-        className={`text-[11px] px-2 py-0.5 rounded border font-medium ${confidenceColor} hover:opacity-80 transition-opacity`}
+        className={`text-xs-tight px-2 py-0.5 rounded border font-medium ${confidenceColor} hover:opacity-80 transition-opacity`}
         title={result.reasoning}
       >
         {label}
@@ -80,7 +80,7 @@ export function ExpenseCategorizeSuggest({ description, amountCents, onAccept }:
       {result.alternativeCategory && (
         <button
           onClick={() => onAccept(result.alternativeCategory!)}
-          className="text-[11px] text-stone-400 hover:text-stone-400"
+          className="text-xs-tight text-stone-400 hover:text-stone-400"
           title="Alternative suggestion"
         >
           or {EXPENSE_CATEGORY_LABELS[result.alternativeCategory]}

@@ -1,8 +1,8 @@
 /**
- * GOLDMINE Pricing Benchmarks — deterministic runtime module.
+ * GOLDMINE Pricing Benchmarks - deterministic runtime module.
  *
  * Hardcoded from conversion-intelligence.json analysis of 49 real threads
- * with 20 pricing data points. No file I/O, no Ollama — pure lookup.
+ * with 20 pricing data points. No file I/O, no Ollama - pure lookup.
  *
  * Used as a FALLBACK when the chef has no accepted quotes of their own.
  * The chef's own pricing history always takes priority (getPricingSuggestion).

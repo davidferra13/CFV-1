@@ -1,4 +1,4 @@
-// Seasonal Palette — Type Definitions
+// Seasonal Palette - Type Definitions
 // Pure types for the seasonal palette system.
 
 export interface MicroWindow {
@@ -6,7 +6,7 @@ export interface MicroWindow {
   start_date: string // MM-DD
   end_date: string // MM-DD
   notes: string
-  // Legacy fields — kept optional for backward compatibility with existing data
+  // Legacy fields - kept optional for backward compatibility with existing data
   name?: string
   urgency?: 'high' | 'normal'
 }

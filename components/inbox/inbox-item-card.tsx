@@ -88,7 +88,7 @@ function SourceBadge({ source, contentType }: { source: string; contentType: str
 
   return (
     <span
-      className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${colors[source] || 'bg-stone-100 text-stone-600'}`}
+      className={`text-xxs font-medium px-1.5 py-0.5 rounded ${colors[source] || 'bg-stone-100 text-stone-600'}`}
     >
       {labels[source]}
     </span>

@@ -1,5 +1,5 @@
-// OllamaOfflineError — shared error type for privacy-sensitive AI operations
-// No 'use server' — safe to import from any context (server actions, API routes, tests)
+// OllamaOfflineError - shared error type for privacy-sensitive AI operations
+// No 'use server' - safe to import from any context (server actions, API routes, tests)
 // This lives in its own file because 'use server' modules can only export async functions.
 
 export type OllamaErrorCode =
@@ -16,7 +16,7 @@ const OLLAMA_OFFLINE_MESSAGE = 'Local AI is offline. Start Ollama to use this fe
 
 /**
  * Thrown when a privacy-sensitive operation cannot be completed because
- * Ollama is not configured or not reachable. Never caught silently — always
+ * Ollama is not configured or not reachable. Never caught silently - always
  * surfaced to the UI so the user knows data was not sent externally.
  */
 export class OllamaOfflineError extends Error {
@@ -56,7 +56,7 @@ export function getOllamaErrorHelp(code: OllamaErrorCode): string {
     case 'unreachable':
       return 'Ollama is not running. Start it with "ollama serve" or check the Windows service.'
     case 'timeout':
-      return 'Ollama is taking too long. The model may be loading — try again in 30 seconds.'
+      return 'Ollama is taking too long. The model may be loading - try again in 30 seconds.'
     case 'model_missing':
       return 'The configured model is not installed. Run "ollama pull <model>" to download it.'
     case 'empty_response':

@@ -8,7 +8,7 @@
 //
 //   2. draftPersonalizedOutreach() → OLLAMA (private data)
 //      Writes a 1:1 personalised invite for a specific recipient.
-//      Uses client name, past event history, dietary prefs — all private.
+//      Uses client name, past event history, dietary prefs - all private.
 //      Stores the draft directly in campaign_recipients.
 //      Throws OllamaOfflineError if Ollama is offline.
 //
@@ -29,7 +29,7 @@ const getGeminiClient = () => {
 }
 
 // ============================================================
-// 1. GEMINI — CAMPAIGN CONCEPT COPY (no client PII)
+// 1. GEMINI - CAMPAIGN CONCEPT COPY (no client PII)
 // ============================================================
 
 const CampaignConceptSchema = z.object({
@@ -62,7 +62,7 @@ export async function draftCampaignConcept(input: {
     : 'a date to be announced'
 
   const prompt = `You are writing promotional copy for a private chef's exclusive dinner invitation.
-The tone should be warm, refined, and exciting — like an invitation from a friend who happens to be a brilliant chef.
+The tone should be warm, refined, and exciting - like an invitation from a friend who happens to be a brilliant chef.
 Not salesy. Not corporate. Personal and genuine.
 
 Chef: ${input.chef_name}
@@ -107,7 +107,7 @@ Return ONLY valid JSON: { "hook": "...", "description": "...", "callToAction": "
 }
 
 // ============================================================
-// 2. OLLAMA — PERSONALIZED OUTREACH (private data — stays local)
+// 2. OLLAMA - PERSONALIZED OUTREACH (private data - stays local)
 // ============================================================
 
 const OutreachSchema = z.object({
@@ -125,7 +125,7 @@ export interface PersonalizedDraft {
  * Fetches client PII + history from DB, sends to LOCAL Ollama only.
  * Stores the draft in campaign_recipients.draft_subject / draft_body.
  *
- * Throws OllamaOfflineError if Ollama is not running — caller re-throws.
+ * Throws OllamaOfflineError if Ollama is not running - caller re-throws.
  */
 export async function draftPersonalizedOutreach(recipientId: string): Promise<PersonalizedDraft> {
   const chef = await requireChef()
@@ -189,7 +189,7 @@ export async function draftPersonalizedOutreach(recipientId: string): Promise<Pe
   const systemPrompt = `You are a private chef writing a warm, personal dinner invitation to one of your long-term clients.
 You know this client well. The message should feel like a personal note from a friend, not a mass email.
 Write in first person. One short paragraph or two at most. 120-160 words maximum.
-End with a natural sign-off — just your first name, nothing formal.
+End with a natural sign-off - just your first name, nothing formal.
 No exclamation points. No "I hope this email finds you well." No bullet points.
 Return ONLY valid JSON: { "subject": "...", "body": "..." }`
 
@@ -217,7 +217,7 @@ Return ONLY valid JSON: { "subject": "...", "body": "..." }`
     '',
     'Write a subject line and personal email body inviting this specific client to this dinner.',
     'Reference the past event if there was one. Make it feel genuine and personal.',
-    'Do NOT say "I am writing to invite you" — just dive in naturally.',
+    'Do NOT say "I am writing to invite you" - just dive in naturally.',
   ]
     .filter(Boolean)
     .join('\n')
@@ -279,7 +279,7 @@ export async function generateAllDrafts(campaignId: string): Promise<GenerateAll
     } catch (err) {
       if (err instanceof OllamaOfflineError) {
         ollamaOffline = true
-        break // No point continuing — Ollama won't come back up mid-loop
+        break // No point continuing - Ollama won't come back up mid-loop
       }
       console.error('[generate-all-drafts] Failed for recipient', recipient.id, err)
       failed++

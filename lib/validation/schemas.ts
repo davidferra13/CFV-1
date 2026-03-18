@@ -1,7 +1,7 @@
 /**
  * Shared Zod validation schemas
  * Import from here instead of re-defining per-file.
- * This file has NO 'use server' directive — safe to import in both server and client code.
+ * This file has NO 'use server' directive - safe to import in both server and client code.
  */
 
 import { z } from 'zod'
@@ -14,7 +14,7 @@ export const DateStringSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be
 
 // PostgreSQL INTEGER max is 2,147,483,647. Cap to 10M dollars (1,000,000,000 cents)
 // to prevent overflow in arithmetic operations (e.g., subtotal + tax + tip).
-const MAX_CENTS = 1_000_000_000 // $10,000,000 — more than any single event will ever cost
+const MAX_CENTS = 1_000_000_000 // $10,000,000 - more than any single event will ever cost
 
 export const CentsSchema = z
   .number()

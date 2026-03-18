@@ -1,7 +1,7 @@
 'use server'
 
-// SMS Ingestion — Inbound Message Processing
-// PRIVACY: SMS content may contain client PII — classification via local Ollama only.
+// SMS Ingestion - Inbound Message Processing
+// PRIVACY: SMS content may contain client PII - classification via local Ollama only.
 //
 // Accepts inbound SMS (from Twilio webhook or manual forward), matches sender
 // to a known client, stores in messages table, and classifies with Ollama.
@@ -47,7 +47,7 @@ export async function ingestInboundSms(
 
   const knownClientEmails = (clients ?? []).map((c: any) => c.email).filter(Boolean) as string[]
 
-  // 3. Classify the message (reuse email classifier — works for any text)
+  // 3. Classify the message (reuse email classifier - works for any text)
   let classification: { category: string; confidence: string }
   try {
     classification = await classifyEmail(
@@ -147,7 +147,7 @@ export async function ingestInboundSms(
             category: 'inquiry',
             action: 'new_inquiry',
             title: 'New inquiry via SMS',
-            body: `${client?.full_name ?? from} — ${body.slice(0, 100)}`,
+            body: `${client?.full_name ?? from} - ${body.slice(0, 100)}`,
             actionUrl: `/inquiries/${inquiry.id}`,
             inquiryId: inquiry.id,
             clientId: clientId ?? undefined,
@@ -172,7 +172,7 @@ export async function ingestInboundSms(
     }
   }
 
-  // If existing client replied — auto-advance any awaiting_client inquiry
+  // If existing client replied - auto-advance any awaiting_client inquiry
   if (client?.id && classification.category === 'existing_thread') {
     try {
       const { data: openInquiry } = await supabase
@@ -191,7 +191,7 @@ export async function ingestInboundSms(
           .update({
             status: 'awaiting_chef',
             follow_up_due_at: null,
-            next_action_required: 'Client replied via SMS — review and respond',
+            next_action_required: 'Client replied via SMS - review and respond',
             next_action_by: 'chef',
           })
           .eq('id', openInquiry.id)
@@ -215,7 +215,7 @@ export async function ingestInboundSms(
               category: 'inquiry',
               action: 'inquiry_reply',
               title: 'Client replied via SMS',
-              body: `${client.full_name ?? from} — ${body.slice(0, 100)}`,
+              body: `${client.full_name ?? from} - ${body.slice(0, 100)}`,
               actionUrl: `/inquiries/${openInquiry.id}`,
               inquiryId: openInquiry.id,
               clientId: client.id,
@@ -226,7 +226,7 @@ export async function ingestInboundSms(
         }
       }
     } catch {
-      // Non-fatal — message was logged regardless
+      // Non-fatal - message was logged regardless
     }
   }
 

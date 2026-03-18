@@ -1,4 +1,4 @@
-// Gift Card Purchased — Chef Notification Email
+// Gift Card Purchased - Chef Notification Email
 // Sent to the chef when someone purchases a gift card from their profile.
 
 import { Text } from '@react-email/components'

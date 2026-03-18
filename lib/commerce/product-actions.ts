@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Product Projection Actions
+// Commerce Engine V1 - Product Projection Actions
 // CRUD for sellable item snapshots. POS reads only these during checkout.
 
 'use server'

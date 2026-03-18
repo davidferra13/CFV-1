@@ -67,7 +67,7 @@ function ResumeRow({ item }: { item: ResumeItem }) {
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-stone-200 truncate">{item.title}</span>
           <span
-            className={`text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0 ${statusStyle}`}
+            className={`text-xxs font-medium px-1.5 py-0.5 rounded border shrink-0 ${statusStyle}`}
           >
             {item.status}
           </span>

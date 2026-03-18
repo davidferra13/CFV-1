@@ -3,7 +3,7 @@
 // Menu Nutritional Summary
 // AI estimates per-serving nutritional breakdown for the full proposed menu.
 // Routed to Gemini (nutritional knowledge, not PII).
-// Output is ESTIMATE ONLY — clearly labeled as approximate, not medical advice.
+// Output is ESTIMATE ONLY - clearly labeled as approximate, not medical advice.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -29,7 +29,7 @@ export interface MenuNutritionalSummary {
   totalCarbsG: number | null
   totalFatG: number | null
   courses: CourseNutrition[]
-  highlights: string[] // e.g. "High protein meal — ~48g per guest"
+  highlights: string[] // e.g. "High protein meal - ~48g per guest"
   dietarySuitability: string[] // e.g. "Suitable for: gluten-free guests (courses 1-3 only)"
   disclaimer: string
   generatedAt: string
@@ -100,7 +100,7 @@ export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNu
 
   const prompt = `You are a registered dietitian nutritionist estimating nutritional content for a private chef's menu.
 Provide per-serving estimates for each course.
-Be conservative and realistic — use typical portion sizes for fine dining.
+Be conservative and realistic - use typical portion sizes for fine dining.
 Clearly note confidence level based on ingredient detail available.
 These are estimates for general awareness, NOT medical nutrition advice.
 

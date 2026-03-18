@@ -1,7 +1,7 @@
 // Scenario Generator
 // Uses Ollama to generate diverse, realistic chef/catering scenarios for each module.
 // The generator acts as the "simulation" in sim-to-real: synthetic but realistic data.
-// Not a server action — called from simulation-actions.ts on the server.
+// Not a server action - called from simulation-actions.ts on the server.
 
 import { getOllamaConfig } from '@/lib/ai/providers'
 import { makeOllamaClient } from './ollama-client'
@@ -17,25 +17,25 @@ function buildGeneratorPrompt(module: SimModule): { system: string; user: string
       return {
         system: `You are generating realistic private chef inquiry emails for testing an AI parser.
 Each scenario should feel like a real email from a potential client.
-Return a JSON array of inquiry email strings — no other text.
+Return a JSON array of inquiry email strings - no other text.
 Vary: event occasions (birthday, anniversary, corporate, date night, holiday), guest counts (4–80),
 dietary restrictions (vegan, gluten-free, nut allergy, kosher, halal, shellfish allergy, none),
 budgets ($300–$5000), event dates (near future), and writing styles (formal, casual, brief, detailed).
 
-CRITICAL RULES for generating emails — the parser has strict null extraction rules:
+CRITICAL RULES for generating emails - the parser has strict null extraction rules:
 - When expectedName is a non-null value, the email MUST contain the name in an EXPLICIT format:
-  "My name is [Name]", "I'm [Name]", "This is [Name]", or a signature line like "— [Name]" or "Best, [Name]".
+  "My name is [Name]", "I'm [Name]", "This is [Name]", or a signature line like "- [Name]" or "Best, [Name]".
   A greeting like "Hi there" or "Hello" does NOT count as providing a name.
 - When expectedGuestCount is a non-null number, the email MUST contain a SPECIFIC number:
   "12 guests", "party of 20", "dinner for 8". Vague phrases like "a few of us" or "some friends" do NOT count.
 - If you want to test null handling (parser correctly returns null), set the expected value to null
-  AND make the email genuinely ambiguous — omit the name entirely, or use only vague language for guest count.
+  AND make the email genuinely ambiguous - omit the name entirely, or use only vague language for guest count.
 - At least 1 of the 5 scenarios should test null handling for name (no name in email, expectedName: null).
 - At least 1 of the 5 scenarios should test null handling for guest count (no specific number, expectedGuestCount: null).`,
         user: `Generate 5 realistic private chef inquiry emails. Each email should contain:
-- Client name in an explicit format ("My name is X", "I'm X", or as a signature) — or omit entirely if testing null
+- Client name in an explicit format ("My name is X", "I'm X", or as a signature) - or omit entirely if testing null
 - Event date (specific, within 6 months from now)
-- Guest count as a specific number — or omit/use vague language if testing null
+- Guest count as a specific number - or omit/use vague language if testing null
 - At least one dietary restriction or allergy (or explicitly none)
 - Budget or budget range (sometimes implied, sometimes explicit)
 - Event occasion/type
@@ -47,7 +47,7 @@ Return JSON: [{"email": "...", "expectedName": "..." or null, "expectedGuestCoun
       return {
         system: `You are generating realistic client profile notes for a private chef's CRM.
 These are the kinds of notes a chef might paste when adding a new client.
-Return a JSON array — no other text.
+Return a JSON array - no other text.
 Vary: formal/casual writing, complete/partial info, different dietary profiles.`,
         user: `Generate 5 realistic private chef client notes. Each should describe a new client with:
 - Full name
@@ -64,7 +64,7 @@ Return JSON: [{"note": "...", "expectedName": "...", "expectedEmail": "...", "ex
         system: `You are generating allergen risk test scenarios for a private chef's food safety system.
 Create scenarios with menus and guest lists that include real allergen combinations.
 Include tricky edge cases: cross-contamination risks, hidden allergens, overlapping restrictions.
-Return JSON — no other text.`,
+Return JSON - no other text.`,
         user: `Generate 5 allergen risk scenarios. Each should have:
 - A menu of 3–5 dishes (with realistic descriptions)
 - A guest list of 3–8 guests with different dietary restrictions/allergies
@@ -81,7 +81,7 @@ Return JSON: [{
       return {
         system: `You are generating test contexts for a private chef's AI email correspondence tool.
 Create realistic inquiry contexts at different lifecycle stages.
-Return JSON — no other text.`,
+Return JSON - no other text.`,
         user: `Generate 5 inquiry contexts for email drafting. Each should be at a specific lifecycle stage.
 Stages to cover: INBOUND_SIGNAL, QUALIFIED_INQUIRY, PRICING_PRESENTED, BOOKED, SERVICE_COMPLETE.
 
@@ -99,7 +99,7 @@ Return JSON: [{
       return {
         system: `You are generating event contexts for a private chef's menu suggestion AI.
 Create realistic event scenarios with varied dietary combos and guest counts.
-Return JSON — no other text.`,
+Return JSON - no other text.`,
         user: `Generate 5 event contexts for menu suggestion testing. Each should vary in:
 - Occasion (birthday, anniversary, holiday dinner, corporate lunch, date night)
 - Guest count (4–60)
@@ -119,7 +119,7 @@ Return JSON: [{
       return {
         system: `You are generating inquiry contexts for a private chef's quote drafting AI.
 Create realistic scenarios that test pricing logic.
-Return JSON — no other text.`,
+Return JSON - no other text.`,
         user: `Generate 5 quote drafting scenarios. Each should have:
 - Guest count (4–80)
 - Event type and occasion
@@ -194,7 +194,7 @@ function parseGeneratedScenarios(
 
       case 'quote_draft': {
         // Recompute expectedPriceRangeCents deterministically using the same
-        // formula the pipeline uses — the LLM's guessed range is unreliable.
+        // formula the pipeline uses - the LLM's guessed range is unreliable.
         const guestCount = Number(ctx.guestCount) || 10
         const serviceStyle = String(ctx.serviceStyle ?? 'plated').toLowerCase()
         const travelRequired = Boolean(ctx.travelRequired)
@@ -248,7 +248,7 @@ export async function generateScenarios(module: SimModule, count: number): Promi
   const prompt = buildGeneratorPrompt(module)
 
   try {
-    // stream: false is passed via `as any` — Ollama returns ChatResponse, not an iterator
+    // stream: false is passed via `as any` - Ollama returns ChatResponse, not an iterator
     const response = (await ollama.chat({
       model: config.model,
       messages: [

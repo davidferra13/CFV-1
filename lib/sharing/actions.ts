@@ -472,7 +472,7 @@ export async function createEventShare(eventId: string) {
 
   if (existingShare) {
     const fullShareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/share/${existingShare.token}`
-    // Shorten URL (non-blocking — fall back to full URL if shortening fails)
+    // Shorten URL (non-blocking - fall back to full URL if shortening fails)
     let shareUrl = fullShareUrl
     try {
       const shortened = await shortenUrl(fullShareUrl)
@@ -487,7 +487,7 @@ export async function createEventShare(eventId: string) {
   const token = crypto.randomBytes(32).toString('hex')
 
   // Default expiration: 90 days from now.
-  // Share tokens should not live forever — they expose guest PII (names, dietary
+  // Share tokens should not live forever - they expose guest PII (names, dietary
   // restrictions, allergies). 90 days covers the full event lifecycle.
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + 90)
@@ -510,7 +510,7 @@ export async function createEventShare(eventId: string) {
   }
 
   const fullShareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/share/${token}`
-  // Shorten URL (non-blocking — fall back to full URL if shortening fails)
+  // Shorten URL (non-blocking - fall back to full URL if shortening fails)
   let shareUrl = fullShareUrl
   try {
     const shortened = await shortenUrl(fullShareUrl)
@@ -2645,7 +2645,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
         title: `${validated.full_name} RSVPed: ${validated.rsvp_status}`,
         body:
           hasAllergies || hasDietary
-            ? `Dietary info included — review before finalizing menu`
+            ? `Dietary info included - review before finalizing menu`
             : undefined,
         eventId: share.event_id,
       })

@@ -1,4 +1,4 @@
-// Instant Booking — Chef Notification Email
+// Instant Booking - Chef Notification Email
 // Sent to the chef when a client books instantly via the public booking page.
 
 import { Text, Link } from '@react-email/components'
@@ -29,7 +29,7 @@ export function InstantBookingChefEmail({
   eventUrl,
 }: Props) {
   return (
-    <BaseLayout preview={`New instant booking from ${clientName} — ${occasion}`}>
+    <BaseLayout preview={`New instant booking from ${clientName} - ${occasion}`}>
       <Text style={heading}>New instant booking</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

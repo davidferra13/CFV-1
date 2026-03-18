@@ -1,4 +1,4 @@
-// Public Review Feed & Stats — No authentication required
+// Public Review Feed & Stats - No authentication required
 // Aggregates consented client reviews, public chef feedback,
 // external reviews, and approved guest testimonials into a
 // single feed with unified statistics for the public chef profile.
@@ -78,12 +78,12 @@ function providerLabel(provider: string): string {
 
 /**
  * Get all public-facing reviews for a chef by their tenant ID.
- * No authentication required — uses admin client.
+ * No authentication required - uses admin client.
  *
  * Sources included:
  * 1. client_reviews where display_consent = true
  * 2. chef_feedback where public_display = true
- * 3. external_reviews (all — inherently public platform data)
+ * 3. external_reviews (all - inherently public platform data)
  * 4. guest_testimonials where is_approved = true
  */
 export async function getPublicChefReviewFeed(tenantId: string): Promise<PublicReviewFeedResult> {

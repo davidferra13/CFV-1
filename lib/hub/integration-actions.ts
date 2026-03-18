@@ -144,7 +144,7 @@ export async function syncRSVPToHubProfile(input: {
       }
     }
   } catch (err) {
-    // Non-blocking — RSVP should never fail because of hub sync
+    // Non-blocking - RSVP should never fail because of hub sync
     console.error('[non-blocking] Hub profile sync failed:', err)
   }
 }

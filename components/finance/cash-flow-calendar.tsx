@@ -83,7 +83,7 @@ export function CashFlowCalendar({ data }: Props) {
       {/* Day-of-week headers */}
       <div className="grid grid-cols-7 gap-px text-center">
         {DAY_NAMES.map((d) => (
-          <div key={d} className="text-[10px] font-medium text-stone-400 py-1">
+          <div key={d} className="text-xxs font-medium text-stone-400 py-1">
             {d}
           </div>
         ))}
@@ -111,22 +111,22 @@ export function CashFlowCalendar({ data }: Props) {
               {day && (
                 <div className="space-y-0.5 mt-0.5 min-h-0 overflow-hidden">
                   {day.incomeCents > 0 && (
-                    <div className="text-[9px] font-medium text-emerald-700 leading-tight truncate">
+                    <div className="text-2xs font-medium text-emerald-700 leading-tight truncate">
                       +{formatCurrency(day.incomeCents)}
                     </div>
                   )}
                   {day.outgoingCents > 0 && (
-                    <div className="text-[9px] text-red-500 leading-tight truncate">
+                    <div className="text-2xs text-red-500 leading-tight truncate">
                       −{formatCurrency(day.outgoingCents)}
                     </div>
                   )}
                   {day.eventCount > 0 && (
-                    <div className="text-[9px] text-brand-600 leading-tight">
+                    <div className="text-2xs text-brand-600 leading-tight">
                       {day.eventCount} event{day.eventCount > 1 ? 's' : ''}
                     </div>
                   )}
                   {day.installmentsDueCents > 0 && (
-                    <div className="text-[9px] text-amber-600 leading-tight truncate">
+                    <div className="text-2xs text-amber-600 leading-tight truncate">
                       {formatCurrency(day.installmentsDueCents)} due
                     </div>
                   )}

@@ -1,5 +1,5 @@
 // Financial Summary PDF Generator
-// Renders the per-event P&L summary as a portable PDF — useful for accountants,
+// Renders the per-event P&L summary as a portable PDF - useful for accountants,
 // tax prep, or archived event records.
 // Mirrors the 7-section layout of FinancialSummaryView (screen component).
 // Multi-page allowed: 7 sections with many data rows.
@@ -15,7 +15,7 @@ function formatCents(cents: number): string {
 }
 
 function formatMinutes(minutes: number | null): string {
-  if (!minutes || minutes === 0) return '—'
+  if (!minutes || minutes === 0) return '-'
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
   if (h === 0) return `${m}m`
@@ -98,7 +98,7 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
   pdf.sectionHeader('REVENUE', 10, true)
   dataRow(pdf, 'Quoted price', formatCents(revenue.quotedPriceCents))
   dataRow(pdf, 'Service payment received', formatCents(revenue.basePaymentReceivedCents))
-  dataRow(pdf, 'Tip / gratuity', revenue.tipCents > 0 ? formatCents(revenue.tipCents) : '—')
+  dataRow(pdf, 'Tip / gratuity', revenue.tipCents > 0 ? formatCents(revenue.tipCents) : '-')
   dataRow(pdf, 'Total received', formatCents(revenue.totalReceivedCents))
   if (revenue.varianceCents !== 0) {
     const sign = revenue.varianceCents > 0 ? '+' : ''

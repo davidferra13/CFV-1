@@ -1,6 +1,6 @@
 // Email Notification Dispatchers
 // Centralized email-sending functions called from transitions, webhooks, and crons.
-// Each function is non-blocking (fire-and-forget) — errors logged, never thrown.
+// Each function is non-blocking (fire-and-forget) - errors logged, never thrown.
 
 import { parseISO } from 'date-fns'
 import { createElement } from 'react'
@@ -546,7 +546,7 @@ export async function sendPaymentReminderEmail(params: {
   })
 }
 
-// ─── Payment Received — Chef Notification ───────────────────────────────
+// ─── Payment Received - Chef Notification ───────────────────────────────
 
 export async function sendPaymentReceivedChefEmail(params: {
   chefEmail: string
@@ -594,7 +594,7 @@ export async function sendEventPrepareEmail(params: {
 }) {
   await sendEmail({
     to: params.clientEmail,
-    subject: `${params.chefName} is coming in 7 days — here's what to know`,
+    subject: `${params.chefName} is coming in 7 days - here's what to know`,
     react: createElement(EventPrepareEmail, {
       clientName: params.clientName,
       chefName: params.chefName,
@@ -757,7 +757,7 @@ export async function sendPhotosReadyEmail(params: {
   })
 }
 
-// ─── New Message — Chef Notification ────────────────────────────────────────
+// ─── New Message - Chef Notification ────────────────────────────────────────
 
 export async function sendNewMessageChefEmail(params: {
   chefEmail: string
@@ -778,7 +778,7 @@ export async function sendNewMessageChefEmail(params: {
   })
 }
 
-// ─── Quote Accepted — Chef Notification ─────────────────────────────────────
+// ─── Quote Accepted - Chef Notification ─────────────────────────────────────
 
 export async function sendQuoteAcceptedChefEmail(params: {
   chefEmail: string
@@ -805,7 +805,7 @@ export async function sendQuoteAcceptedChefEmail(params: {
   })
 }
 
-// ─── Follow-Up Due — Chef Notification ──────────────────────────────────────
+// ─── Follow-Up Due - Chef Notification ──────────────────────────────────────
 
 export async function sendFollowUpDueChefEmail(params: {
   chefEmail: string
@@ -830,7 +830,7 @@ export async function sendFollowUpDueChefEmail(params: {
   })
 }
 
-// ─── New Inquiry — Chef Notification ────────────────────────────────────────
+// ─── New Inquiry - Chef Notification ────────────────────────────────────────
 
 export async function sendNewInquiryChefEmail(params: {
   chefEmail: string
@@ -857,7 +857,7 @@ export async function sendNewInquiryChefEmail(params: {
   })
 }
 
-// ─── Gift Card Purchased — Chef Notification ─────────────────────────────────
+// ─── Gift Card Purchased - Chef Notification ─────────────────────────────────
 
 export async function sendGiftCardPurchasedChefEmail(params: {
   chefEmail: string
@@ -880,7 +880,7 @@ export async function sendGiftCardPurchasedChefEmail(params: {
   })
 }
 
-// ─── Collaboration Invite — Chef-to-Chef ─────────────────────────────────────
+// ─── Collaboration Invite - Chef-to-Chef ─────────────────────────────────────
 
 export async function sendCollaborationInviteEmail(params: {
   chefEmail: string // Recipient (invited chef)
@@ -906,7 +906,7 @@ export async function sendCollaborationInviteEmail(params: {
   })
 }
 
-// ─── Recipe Share — Chef-to-Chef ─────────────────────────────────────────────
+// ─── Recipe Share - Chef-to-Chef ─────────────────────────────────────────────
 
 export async function sendRecipeShareEmail(params: {
   chefEmail: string // Recipient (chef receiving the share)
@@ -969,7 +969,7 @@ export async function sendInstantBookingChefEmail(params: {
 }) {
   await sendEmail({
     to: params.chefEmail,
-    subject: `New instant booking: ${params.clientName} — ${params.occasion}`,
+    subject: `New instant booking: ${params.clientName} - ${params.occasion}`,
     react: createElement(InstantBookingChefEmail, {
       chefName: params.chefName,
       clientName: params.clientName,
@@ -984,7 +984,7 @@ export async function sendInstantBookingChefEmail(params: {
   })
 }
 
-// ─── Quote Rejected — Chef Notification ─────────────────────────────────────
+// ─── Quote Rejected - Chef Notification ─────────────────────────────────────
 
 export async function sendQuoteRejectedChefEmail(params: {
   chefEmail: string
@@ -1009,7 +1009,7 @@ export async function sendQuoteRejectedChefEmail(params: {
   })
 }
 
-// ─── Quote Expired — Chef Notification ──────────────────────────────────────
+// ─── Quote Expired - Chef Notification ──────────────────────────────────────
 
 export async function sendQuoteExpiredChefEmail(params: {
   chefEmail: string
@@ -1032,7 +1032,7 @@ export async function sendQuoteExpiredChefEmail(params: {
   })
 }
 
-// ─── Quote Expired — Client Notification ────────────────────────────────────
+// ─── Quote Expired - Client Notification ────────────────────────────────────
 
 export async function sendQuoteExpiredClientEmail(params: {
   clientEmail: string
@@ -1053,7 +1053,7 @@ export async function sendQuoteExpiredClientEmail(params: {
   })
 }
 
-// ─── Event Starting — Client Notification ───────────────────────────────────
+// ─── Event Starting - Client Notification ───────────────────────────────────
 
 export async function sendEventStartingEmail(params: {
   clientEmail: string
@@ -1067,7 +1067,7 @@ export async function sendEventStartingEmail(params: {
 }) {
   await sendEmail({
     to: params.clientEmail,
-    subject: `${params.chefName} is on the way — ${params.occasion}`,
+    subject: `${params.chefName} is on the way - ${params.occasion}`,
     react: createElement(EventStartingEmail, {
       clientName: params.clientName,
       chefName: params.chefName,
@@ -1080,7 +1080,7 @@ export async function sendEventStartingEmail(params: {
   })
 }
 
-// ─── Instant Booking — Client Confirmation ──────────────────────────────────
+// ─── Instant Booking - Client Confirmation ──────────────────────────────────
 
 export async function sendInstantBookingClientEmail(params: {
   clientEmail: string
@@ -1095,7 +1095,7 @@ export async function sendInstantBookingClientEmail(params: {
 }) {
   await sendEmail({
     to: params.clientEmail,
-    subject: `Booking confirmed — ${params.occasion} with ${params.chefName}`,
+    subject: `Booking confirmed - ${params.occasion} with ${params.chefName}`,
     react: createElement(InstantBookingClientEmail, {
       clientName: params.clientName,
       chefName: params.chefName,
@@ -1109,7 +1109,7 @@ export async function sendInstantBookingClientEmail(params: {
   })
 }
 
-// ─── Review Submitted — Chef Notification ───────────────────────────────────
+// ─── Review Submitted - Chef Notification ───────────────────────────────────
 
 export async function sendReviewSubmittedChefEmail(params: {
   chefEmail: string
@@ -1207,7 +1207,7 @@ export async function sendPostEventReferralAskEmail(params: {
   })
 }
 
-// ─── Contract Signed — Chef Notification ────────────────────────────────────
+// ─── Contract Signed - Chef Notification ────────────────────────────────────
 
 export async function sendContractSignedChefEmail(params: {
   chefEmail: string
@@ -1219,7 +1219,7 @@ export async function sendContractSignedChefEmail(params: {
 }) {
   await sendEmail({
     to: params.chefEmail,
-    subject: `Contract signed — ${params.occasion}`,
+    subject: `Contract signed - ${params.occasion}`,
     react: createElement(ContractSignedChefEmail, {
       chefName: params.chefName,
       clientName: params.clientName,
@@ -1230,7 +1230,7 @@ export async function sendContractSignedChefEmail(params: {
   })
 }
 
-// ─── Menu Approved — Chef Notification ──────────────────────────────────────
+// ─── Menu Approved - Chef Notification ──────────────────────────────────────
 
 export async function sendMenuApprovedChefEmail(params: {
   chefEmail: string
@@ -1242,7 +1242,7 @@ export async function sendMenuApprovedChefEmail(params: {
 }) {
   await sendEmail({
     to: params.chefEmail,
-    subject: `Menu approved — ${params.occasion}`,
+    subject: `Menu approved - ${params.occasion}`,
     react: createElement(MenuApprovedChefEmail, {
       chefName: params.chefName,
       clientName: params.clientName,
@@ -1253,7 +1253,7 @@ export async function sendMenuApprovedChefEmail(params: {
   })
 }
 
-// ─── Menu Revision Requested — Chef Notification ────────────────────────────
+// ─── Menu Revision Requested - Chef Notification ────────────────────────────
 
 export async function sendMenuRevisionChefEmail(params: {
   chefEmail: string
@@ -1266,7 +1266,7 @@ export async function sendMenuRevisionChefEmail(params: {
 }) {
   await sendEmail({
     to: params.chefEmail,
-    subject: `Menu revision requested — ${params.occasion}`,
+    subject: `Menu revision requested - ${params.occasion}`,
     react: createElement(MenuRevisionChefEmail, {
       chefName: params.chefName,
       clientName: params.clientName,
@@ -1278,7 +1278,7 @@ export async function sendMenuRevisionChefEmail(params: {
   })
 }
 
-// ─── Availability Signal — Notify Opted-In Clients ──────────────────────────
+// ─── Availability Signal - Notify Opted-In Clients ──────────────────────────
 
 export async function sendAvailabilitySignalEmail(params: {
   clientEmail: string

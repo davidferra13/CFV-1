@@ -79,7 +79,7 @@ export function BookingSeasonalityWidget({ seasonality }: Props) {
                   }`}
                   title={`${month.monthName}: ${month.eventCount} events`}
                 />
-                <span className="text-[9px] text-stone-600">{month.shortName}</span>
+                <span className="text-2xs text-stone-600">{month.shortName}</span>
               </div>
             )
           })}

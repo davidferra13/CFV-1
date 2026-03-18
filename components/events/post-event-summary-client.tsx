@@ -215,6 +215,7 @@ export function PostEventSummaryClient({
               <Link
                 href={`/api/documents/foh-menu/${event.id}`}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-sm text-brand-500 hover:text-brand-400 font-medium"
               >
                 <FileText className="w-4 h-4" />
@@ -237,6 +238,7 @@ export function PostEventSummaryClient({
               <Link
                 href={`/api/documents/receipt/${event.id}`}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="text-xs text-brand-500 hover:text-brand-400 font-medium"
               >
                 Download Receipt

@@ -6,7 +6,7 @@ import { getOrCreateClientHubProfile } from './client-hub-actions'
 import type { HubGuestProfile } from './types'
 
 // ---------------------------------------------------------------------------
-// Hub Guest Friends — peer-to-peer friend connections
+// Hub Guest Friends - peer-to-peer friend connections
 // ---------------------------------------------------------------------------
 
 export interface HubFriend {

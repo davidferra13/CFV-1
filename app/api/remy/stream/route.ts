@@ -160,6 +160,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Pre-flight Ollama health check - verify the service is actually responding
+    try {
+      const health = await fetch('http://localhost:11434/api/tags', {
+        signal: AbortSignal.timeout(3000),
+      })
+      if (!health.ok) {
+        return sseErrorResponse(
+          'Ollama is not available. Please start Ollama to use this feature.',
+          503
+        )
+      }
+    } catch {
+      return sseErrorResponse(
+        'Ollama is not available. Please start Ollama to use this feature.',
+        503
+      )
+    }
+
     //  RECIPE GENERATION BLOCK (hard rule - AI never generates recipes)
     const recipeBlock = checkRecipeGenerationBlock(message)
     if (recipeBlock) {

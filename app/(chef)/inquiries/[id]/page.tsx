@@ -429,7 +429,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                 <a
                   href={tacPageCapture.pageUrl}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
                 >
                   Open captured page

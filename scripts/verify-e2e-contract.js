@@ -1,6 +1,6 @@
 /**
  * E2E Contract Verification Script
- * Adapted from legacy BillyBob8 — ensures the test setup cannot silently drift.
+ * Adapted from legacy BillyBob8 - ensures the test setup cannot silently drift.
  *
  * Verifies:
  *  - Playwright config matches package.json dev port

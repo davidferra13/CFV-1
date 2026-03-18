@@ -1,4 +1,4 @@
-// Remy Sprite Sheet Registry — metadata for every sprite sheet in the system.
+// Remy Sprite Sheet Registry - metadata for every sprite sheet in the system.
 // Each manifest describes a sheet's grid layout, timing, and availability.
 //
 // To add a new asset:
@@ -121,14 +121,14 @@ export const MANIFESTS: Record<string, SpriteManifest> = {
     fps: 8,
     loop: false,
     labelOffset: 0,
-    available: false, // different art style — not mapped to any body state
+    available: false, // different art style - not mapped to any body state
     // Build-up (1-4), reaction peak held (5-8), recovery (9-12), settle with long final hold (13-16)
     frameDurations: [
       1.0, 1.0, 0.8, 0.8, 1.5, 1.5, 1.3, 1.3, 1.0, 1.0, 1.0, 1.0, 1.2, 1.2, 1.0, 2.0,
     ],
   },
 
-  // === PENDING — flip available to true when assets arrive ===
+  // === PENDING - flip available to true when assets arrive ===
 
   'remy-body-wave': {
     name: 'remy-body-wave',

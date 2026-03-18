@@ -199,7 +199,7 @@ export async function getRevenuePath(goalId: string): Promise<RevenuePathData> {
   const serviceTypes = await getServiceTypes()
 
   // Sum already-booked revenue for this goal's period
-  // Counts events in confirmed/active states — not draft or cancelled
+  // Counts events in confirmed/active states - not draft or cancelled
   const { data: eventRows } = await supabase
     .from('events')
     .select('quoted_price_cents')
@@ -227,7 +227,7 @@ export async function getRevenuePath(goalId: string): Promise<RevenuePathData> {
 }
 
 // ── Client matching for a service type ───────────────────────────────────────
-// Uses heuristic scoring only — no LLM, no parseWithOllama.
+// Uses heuristic scoring only - no LLM, no parseWithOllama.
 // Client data stays server-side and is not sent externally.
 
 export async function getClientMatchesForServiceType(
@@ -331,11 +331,11 @@ export async function getClientMatchesForServiceType(
         avgSpend2 / effectivePrice2 >= 0.5 &&
         avgSpend2 / effectivePrice2 <= 1.5
       if (withinRange && dollarAvg) {
-        matchReason = `${dollarAvg} — fits this service`
+        matchReason = `${dollarAvg} - fits this service`
       } else if (days <= 180 && dollarAvg) {
-        matchReason = `Active client — ${dollarAvg}`
+        matchReason = `Active client - ${dollarAvg}`
       } else {
-        matchReason = dollarAvg ? `Past client — ${dollarAvg}` : 'Past client'
+        matchReason = dollarAvg ? `Past client - ${dollarAvg}` : 'Past client'
       }
 
       return {

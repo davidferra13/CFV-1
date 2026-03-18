@@ -77,7 +77,7 @@ export function WeekStrip({ schedule, dayRevenueCents }: WeekStripProps) {
               <button
                 type="button"
                 onClick={() => setShowRevenue(!showRevenue)}
-                className={`text-[10px] px-2 py-0.5 rounded transition-colors ${
+                className={`text-xxs px-2 py-0.5 rounded transition-colors ${
                   showRevenue
                     ? 'bg-brand-700 text-brand-100'
                     : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
@@ -124,7 +124,7 @@ export function WeekStrip({ schedule, dayRevenueCents }: WeekStripProps) {
                 key={day.date}
                 className={`rounded-lg p-2 text-center min-h-[88px] flex flex-col ${DAY_STYLES[day.dayType]} ${isToday ? 'ring-2 ring-brand-500 ring-offset-1' : ''} ${CAPACITY_BG[capacity.label]}`}
               >
-                <div className="text-[11px] font-medium text-stone-300 uppercase tracking-wide">
+                <div className="text-xs-tight font-medium text-stone-300 uppercase tracking-wide">
                   {day.dayOfWeek.slice(0, 3)}
                 </div>
                 <div
@@ -136,7 +136,7 @@ export function WeekStrip({ schedule, dayRevenueCents }: WeekStripProps) {
                 {/* Capacity label */}
                 {capacity.label !== 'free' && (
                   <div
-                    className={`text-[8px] font-bold uppercase ${CAPACITY_COLORS[capacity.label]}`}
+                    className={`text-3xs font-bold uppercase ${CAPACITY_COLORS[capacity.label]}`}
                   >
                     {capacity.label}
                   </div>
@@ -156,17 +156,15 @@ export function WeekStrip({ schedule, dayRevenueCents }: WeekStripProps) {
                       <div
                         className={`w-1.5 h-1.5 rounded-full shrink-0 ${PREP_DOT[event.prepStatus]}`}
                       />
-                      <span className="text-[10px] font-medium text-stone-300 truncate">
+                      <span className="text-xxs font-medium text-stone-300 truncate">
                         {event.clientName.split(' ')[0]}
                       </span>
                     </div>
-                    <div className="text-[10px] text-stone-300">
+                    <div className="text-xxs text-stone-300">
                       {event.guestCount}g &middot; {event.serveTime}
                     </div>
                     {extraEvents > 0 && (
-                      <div className="text-[9px] text-brand-600 font-medium">
-                        +{extraEvents} more
-                      </div>
+                      <div className="text-2xs text-brand-600 font-medium">+{extraEvents} more</div>
                     )}
                   </div>
                 )}
@@ -174,20 +172,20 @@ export function WeekStrip({ schedule, dayRevenueCents }: WeekStripProps) {
                 {/* Prep day */}
                 {day.dayType === 'prep' && !event && (
                   <div className="mt-auto">
-                    <span className="text-[10px] text-amber-600 font-medium">Prep</span>
+                    <span className="text-xxs text-amber-600 font-medium">Prep</span>
                   </div>
                 )}
 
                 {/* Free day */}
                 {day.dayType === 'free' && !event && (
                   <div className="mt-auto">
-                    <span className="text-[10px] text-stone-300">Free</span>
+                    <span className="text-xxs text-stone-300">Free</span>
                   </div>
                 )}
 
                 {/* Revenue overlay */}
                 {showRevenue && revenue > 0 && (
-                  <div className="text-[9px] font-semibold text-emerald-400 mt-0.5">
+                  <div className="text-2xs font-semibold text-emerald-400 mt-0.5">
                     {formatCurrency(revenue)}
                   </div>
                 )}
@@ -207,7 +205,7 @@ export function WeekStrip({ schedule, dayRevenueCents }: WeekStripProps) {
         )}
 
         {/* Legend */}
-        <div className="flex items-center gap-4 mt-3 text-[10px] text-stone-300">
+        <div className="flex items-center gap-4 mt-3 text-xxs text-stone-300">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-green-500" /> Ready
           </span>

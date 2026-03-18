@@ -1,6 +1,6 @@
 'use server'
 
-// Allergen Detection Server Action — uses Edamam Nutrition Analysis API
+// Allergen Detection Server Action - uses Edamam Nutrition Analysis API
 // to identify allergens, cautions, and health labels from recipe ingredients.
 // Non-blocking: if Edamam fails or keys are missing, returns empty arrays.
 // Uses Upstash cache upstream (in lib/nutrition/edamam.ts) to stay under 10K/month limit.

@@ -1,8 +1,8 @@
 'use server'
 
-// Proactive Nudges / Reminders — Server Actions
+// Proactive Nudges / Reminders - Server Actions
 // PRIVACY: Uses client data + events → must stay local.
-// Generates reminders from DB queries only — no LLM needed (pure SQL logic).
+// Generates reminders from DB queries only - no LLM needed (pure SQL logic).
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -29,7 +29,7 @@ export interface RemyNudge {
 
 /**
  * Generate proactive nudges based on current business state.
- * Pure DB queries — no LLM, no hallucination risk, instant results.
+ * Pure DB queries - no LLM, no hallucination risk, instant results.
  */
 export async function getProactiveNudges(): Promise<RemyNudge[]> {
   const user = await requireChef()
@@ -55,7 +55,7 @@ export async function getProactiveNudges(): Promise<RemyNudge[]> {
       id: `stale-inq-${inq.id}`,
       type: 'stale_inquiry',
       title: 'Inquiry needs attention',
-      message: `${clientName}'s inquiry has been waiting ${Math.round((now.getTime() - new Date(inq.created_at).getTime()) / (1000 * 60 * 60))}h. First impressions matter — respond soon.`,
+      message: `${clientName}'s inquiry has been waiting ${Math.round((now.getTime() - new Date(inq.created_at).getTime()) / (1000 * 60 * 60))}h. First impressions matter - respond soon.`,
       priority: 'high',
       actionLabel: 'View inquiry',
       actionHref: `/inquiries/${inq.id}`,
@@ -114,7 +114,7 @@ export async function getProactiveNudges(): Promise<RemyNudge[]> {
       id: `followup-${evt.id}`,
       type: 'follow_up',
       title: `Follow up with ${clientName}`,
-      message: `${(evt as any).occasion ?? 'Event'} was recently completed. A quick thank-you note goes a long way — want me to draft one?`,
+      message: `${(evt as any).occasion ?? 'Event'} was recently completed. A quick thank-you note goes a long way - want me to draft one?`,
       priority: 'medium',
       actionLabel: 'View event',
       actionHref: `/events/${evt.id}`,
@@ -161,7 +161,7 @@ export async function getProactiveNudges(): Promise<RemyNudge[]> {
  * Dismiss a nudge (save to chef_reminders as dismissed).
  */
 export async function dismissNudge(nudgeId: string): Promise<{ success: boolean }> {
-  // For now, nudges are ephemeral — dismissal is handled client-side.
+  // For now, nudges are ephemeral - dismissal is handled client-side.
   // Future: could persist to chef_reminders table with dismissed_at timestamp.
   return { success: true }
 }

@@ -159,7 +159,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
             <button
               type="button"
               onClick={() => setActiveFilter('all')}
-              className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+              className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs-tight font-medium transition-colors ${
                 activeFilter === 'all'
                   ? 'bg-stone-800 text-white'
                   : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
@@ -175,7 +175,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
                   key={cat}
                   type="button"
                   onClick={() => setActiveFilter(cat)}
-                  className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                  className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs-tight font-medium transition-colors ${
                     activeFilter === cat
                       ? `${meta.bg} ${meta.text} ring-1 ring-current`
                       : 'bg-stone-800 text-stone-500 hover:bg-stone-700'
@@ -229,7 +229,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
                 <div className="flex items-start gap-3">
                   {/* Category badge */}
                   <span
-                    className={`flex-shrink-0 mt-0.5 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${CATEGORY_META[note.category].bg} ${CATEGORY_META[note.category].text}`}
+                    className={`flex-shrink-0 mt-0.5 inline-flex items-center px-2 py-0.5 rounded text-xxs font-medium ${CATEGORY_META[note.category].bg} ${CATEGORY_META[note.category].text}`}
                   >
                     {CATEGORY_META[note.category].label}
                   </span>
@@ -255,7 +255,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
                       </button>
                     )}
 
-                    <p className="text-[10px] text-stone-400 mt-1">
+                    <p className="text-xxs text-stone-400 mt-1">
                       {new Date(note.created_at).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',

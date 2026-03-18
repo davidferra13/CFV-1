@@ -102,7 +102,7 @@ export function OnboardingChecklistWidget({ progress }: Props) {
                     <Circle className="h-4 w-4 text-stone-300 shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-stone-200">{step.label}</p>
-                      <p className="text-[11px] text-stone-300 mt-0.5">{step.detail}</p>
+                      <p className="text-xs-tight text-stone-300 mt-0.5">{step.detail}</p>
                     </div>
                     <ArrowRight className="h-3.5 w-3.5 text-brand-400 shrink-0 mt-0.5" />
                   </Link>

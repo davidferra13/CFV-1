@@ -32,8 +32,8 @@ const TRANSITION_CONFIG: Partial<
 }
 
 function toReadable(value: unknown): string {
-  if (value === null || value === undefined) return '—'
-  if (typeof value === 'string') return value || '—'
+  if (value === null || value === undefined) return '-'
+  if (typeof value === 'string') return value || '-'
   if (typeof value === 'number' || typeof value === 'boolean') return String(value)
   if (Array.isArray(value)) return value.map((entry) => toReadable(entry)).join(', ')
   try {
@@ -68,7 +68,7 @@ function parseFieldDiffs(context: Record<string, unknown>): EntityFieldDiff[] {
 
       parsed.push({
         field: toLabel(field),
-        before: '—',
+        before: '-',
         after: toReadable(raw),
       })
     }
@@ -82,7 +82,7 @@ function parseFieldDiffs(context: Record<string, unknown>): EntityFieldDiff[] {
       if (typeof field !== 'string') continue
       parsed.push({
         field: toLabel(field),
-        before: '—',
+        before: '-',
         after: 'Updated',
       })
     }

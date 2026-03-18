@@ -14,7 +14,7 @@ export const CHEF_PORTAL_EXPENSES_TOP_LEVEL_PAGE_INFO: Record<string, PageInfoEn
 
   '/expenses/[id]': {
     title: 'Expense Detail',
-    description: 'View or edit a specific expense — amount, category, receipt, and event linkage.',
+    description: 'View or edit a specific expense - amount, category, receipt, and event linkage.',
     features: ['Full expense data', 'Receipt image', 'Category and vendor', 'Event linkage'],
   },
 

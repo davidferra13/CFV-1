@@ -105,11 +105,11 @@ Categories: shopping, prep, cooking, plating, service, cleanup, transport`
 - Guests: ${guestCount ?? 'Unknown'}
 - Date: ${eventDate ?? 'TBD'}
 - Service time: ${serviceTime ?? 'Evening (assume 7:00 PM)'}
-- Menu items: ${menuItemNames.length > 0 ? menuItemNames.join(', ') : 'No menu specified — generate a general timeline'}
+- Menu items: ${menuItemNames.length > 0 ? menuItemNames.join(', ') : 'No menu specified - generate a general timeline'}
 - Notes: ${(event as any).notes ?? 'None'}`
 
   const { result, source } = await withAiFallback(
-    // Formula: backward-from-service-time scheduling with guest scaling — deterministic
+    // Formula: backward-from-service-time scheduling with guest scaling - deterministic
     () =>
       buildPrepTimelineFormula({
         eventName,
@@ -117,7 +117,7 @@ Categories: shopping, prep, cooking, plating, service, cleanup, transport`
         guestCount,
         serviceTime,
         menuItems: menuItemNames,
-        isOffsite: true, // default conservative — offsite adds transport buffer
+        isOffsite: true, // default conservative - offsite adds transport buffer
         notes: (event as any).notes ?? undefined,
       }),
     // AI: enhanced timeline with contextual tips (when Ollama is online)

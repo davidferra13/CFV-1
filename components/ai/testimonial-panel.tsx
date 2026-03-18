@@ -94,7 +94,7 @@ export function TestimonialPanel() {
                   <Copy className="w-3 h-3" />
                 </Button>
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-stone-500">
+              <div className="flex items-center gap-2 text-xs-tight text-stone-500">
                 <span>
                   {t.clientNameInitial} · {t.eventType}
                 </span>
@@ -104,7 +104,7 @@ export function TestimonialPanel() {
                 </span>
                 <span>{t.bestPlatform}</span>
               </div>
-              <div className="text-[11px] text-green-700">{t.why}</div>
+              <div className="text-xs-tight text-green-700">{t.why}</div>
             </div>
           ))}
         </div>
@@ -118,7 +118,7 @@ export function TestimonialPanel() {
           {result.needsEditing.map((t, i) => (
             <div key={i} className="border border-stone-700 bg-stone-800 rounded p-3 space-y-1">
               <blockquote className="text-sm text-stone-300 italic">"{t.quote}"</blockquote>
-              <div className="flex items-center gap-2 text-[11px] text-stone-500">
+              <div className="flex items-center gap-2 text-xs-tight text-stone-500">
                 <span>
                   {t.clientNameInitial} · {t.eventType}
                 </span>
@@ -132,7 +132,7 @@ export function TestimonialPanel() {
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Auto draft · Get client permission before publishing testimonials publicly
       </p>
     </div>

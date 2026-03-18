@@ -25,7 +25,7 @@ export async function getClientReferralTree(clientId: string): Promise<ReferralN
   const client = clientRaw as any
   if (!client) throw new Error('Client not found')
 
-  // Get clients this person referred — using referral_source matching by name as fallback
+  // Get clients this person referred - using referral_source matching by name as fallback
   // (referred_by_client_id is not in schema; use referral_source text match)
   const { data: referredClientsRaw } = await supabase
     .from('clients')
@@ -48,22 +48,29 @@ export async function getClientReferralTree(clientId: string): Promise<ReferralN
     0
   )
 
-  // For each referred client, fetch their completed event revenue separately
-  const referredWithRevenue = await Promise.all(
-    referredClients.map(async (rc: any) => {
-      const { data: rcEvents } = await supabase
-        .from('events')
-        .select('quoted_price_cents')
-        .eq('client_id', rc.id)
-        .eq('tenant_id', user.entityId)
-        .eq('status', 'completed')
-      const rev = (rcEvents || []).reduce(
-        (sum: number, e: any) => sum + (e.quoted_price_cents || 0),
-        0
-      )
-      return { id: rc.id, name: rc.full_name, totalRevenueCents: rev }
-    })
-  )
+  // Batch-fetch completed event revenue for all referred clients in one query
+  const referredClientIds = referredClients.map((rc: any) => rc.id)
+  let referredEventsMap = new Map<string, number>()
+
+  if (referredClientIds.length > 0) {
+    const { data: allReferredEvents } = await supabase
+      .from('events')
+      .select('client_id, quoted_price_cents')
+      .in('client_id', referredClientIds)
+      .eq('tenant_id', user.entityId)
+      .eq('status', 'completed')
+
+    for (const e of allReferredEvents || []) {
+      const prev = referredEventsMap.get(e.client_id) ?? 0
+      referredEventsMap.set(e.client_id, prev + (e.quoted_price_cents || 0))
+    }
+  }
+
+  const referredWithRevenue = referredClients.map((rc: any) => ({
+    id: rc.id,
+    name: rc.full_name,
+    totalRevenueCents: referredEventsMap.get(rc.id) ?? 0,
+  }))
 
   const referralRevenueCents = referredWithRevenue.reduce((sum, r) => sum + r.totalRevenueCents, 0)
 

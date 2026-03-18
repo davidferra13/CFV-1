@@ -1,6 +1,6 @@
 // Messaging & Response Templates Server Actions
 // Chef-only: Log communication history, manage response templates
-// This is a COMMUNICATION LOG, not a sending system — V1 records conversations, not dispatches them
+// This is a COMMUNICATION LOG, not a sending system - V1 records conversations, not dispatches them
 
 'use server'
 
@@ -421,7 +421,7 @@ export async function deleteResponseTemplate(id: string) {
 
 /**
  * Returns built-in default templates that every chef starts with.
- * These are suggestions — the chef can customize or replace them entirely.
+ * These are suggestions - the chef can customize or replace them entirely.
  * Professional but warm tone, reflecting a private chef's real communication style.
  */
 export async function getDefaultTemplates(): Promise<

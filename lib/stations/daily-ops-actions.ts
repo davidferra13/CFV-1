@@ -1,6 +1,6 @@
-// Daily Ops Command Center — Server Actions
+// Daily Ops Command Center - Server Actions
 // Fetches all data needed for the morning ops overview in one call.
-// Uses Promise.allSettled for resilience — a single query failure won't crash the page.
+// Uses Promise.allSettled for resilience - a single query failure won't crash the page.
 
 'use server'
 
@@ -280,7 +280,7 @@ export async function getDailyOpsData(): Promise<DailyOpsData> {
           type: 'expiring',
           stationName,
           componentName,
-          detail: `Shelf life: ${shelfLifeDays}d — ${expiresDateStr === today ? 'expires today' : 'expired'}`,
+          detail: `Shelf life: ${shelfLifeDays}d - ${expiresDateStr === today ? 'expires today' : 'expired'}`,
         })
       }
     }

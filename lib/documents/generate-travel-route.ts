@@ -1,7 +1,7 @@
 // Travel Route PDF Generator
 // One page per leg (or multi-leg summary).
 // Prints turn-by-turn route with stops, timing, and ingredient checklist for specialty runs.
-// Unlike other documents this ALLOWS multiple pages — one per leg plus a cover summary.
+// Unlike other documents this ALLOWS multiple pages - one per leg plus a cover summary.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -85,7 +85,7 @@ export async function fetchTravelRouteData(eventId: string): Promise<TravelRoute
       })
     }
   } catch {
-    // Table may not exist yet — return empty legs
+    // Table may not exist yet - return empty legs
     legs = []
   }
 
@@ -121,7 +121,7 @@ function renderLegPage(
 
   // ── Header ────────────────────────────────────────────────────────────────
 
-  pdf.title(`TRAVEL ROUTE — ${typeLabel.toUpperCase()}`, 13)
+  pdf.title(`TRAVEL ROUTE - ${typeLabel.toUpperCase()}`, 13)
 
   pdf.headerBar([
     ['Event', eventLabel],
@@ -140,7 +140,7 @@ function renderLegPage(
     pdf.keyValue('Depart', formatLegTime(leg.departure_time))
   }
   const originParts = [leg.origin_label, leg.origin_address].filter(Boolean)
-  pdf.keyValue('From', originParts.join(' — ') || 'Not specified')
+  pdf.keyValue('From', originParts.join(' - ') || 'Not specified')
   pdf.space(2)
 
   // ── Stops ─────────────────────────────────────────────────────────────────
@@ -166,7 +166,7 @@ function renderLegPage(
 
   pdf.sectionHeader('ARRIVAL', 10, true)
   const destParts = [leg.destination_label, leg.destination_address].filter(Boolean)
-  pdf.keyValue('To', destParts.join(' — ') || 'Not specified')
+  pdf.keyValue('To', destParts.join(' - ') || 'Not specified')
   if (leg.estimated_return_time) {
     pdf.keyValue('ETA', formatLegTime(leg.estimated_return_time))
   }
@@ -201,7 +201,7 @@ function renderLegPage(
     for (const ing of leg.ingredients) {
       const qty = ing.quantity != null ? `${ing.quantity} ${ing.unit ?? ''}`.trim() : ''
       const store = ing.store_name ? ` @ ${ing.store_name}` : ''
-      const label = `${ing.ingredient_name ?? 'Unknown'}${qty ? ` — ${qty}` : ''}${store}`
+      const label = `${ing.ingredient_name ?? 'Unknown'}${qty ? ` - ${qty}` : ''}${store}`
       const isSourced = ing.status === 'sourced'
       const statusNote = isSourced
         ? 'sourced'
@@ -231,7 +231,7 @@ export function renderTravelRoute(pdf: PDFLayout, data: TravelRouteData) {
   const eventLabel = [event.occasion || 'Dinner', `for ${clientName}`].join(' ')
 
   if (legs.length === 0) {
-    // No legs — summary placeholder
+    // No legs - summary placeholder
     pdf.title('TRAVEL ROUTE', 14)
     pdf.headerBar([
       ['Event', eventLabel],

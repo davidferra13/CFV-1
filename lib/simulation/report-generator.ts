@@ -1,12 +1,12 @@
 // Simulation Report Generator
 // After each automated simulation run, this generates a plain-English fix report
-// using Ollama — then writes it to docs/simulation-report.md.
+// using Ollama - then writes it to docs/simulation-report.md.
 //
 // History is appended to docs/simulation-history.md so the AI can see what was
 // already diagnosed and fixed, preventing repeated recommendations.
 //
-// No private client data involved — all simulation data is synthetic.
-// No 'use server' — plain server-side module.
+// No private client data involved - all simulation data is synthetic.
+// No 'use server' - plain server-side module.
 
 import { getOllamaConfig } from '@/lib/ai/providers'
 import { makeOllamaClient } from './ollama-client'
@@ -60,9 +60,9 @@ async function appendHistoryEntry(input: ReportInput): Promise<void> {
   const pct = Math.round(overallPassRate * 100)
 
   const entry = `
-## ${date} — ${pct}% pass rate — Run ${runId.slice(0, 8)}
+## ${date} - ${pct}% pass rate - Run ${runId.slice(0, 8)}
 Passing: ${passing.length > 0 ? passing.join(', ') : 'none'}
-Failing: ${failing.length > 0 ? failing.join(', ') : 'none — all modules passed'}
+Failing: ${failing.length > 0 ? failing.join(', ') : 'none - all modules passed'}
 `
 
   try {
@@ -129,11 +129,11 @@ Overall pass rate: ${Math.round(overallPassRate * 100)}%
 Per-module: ${moduleTable}
 
 Failing modules and sample failure reasons:
-${failureSection || 'No failures recorded — all modules passed.'}
+${failureSection || 'No failures recorded - all modules passed.'}
 
 Write a fix report in markdown with these sections:
 1. ## Summary (2-3 sentences: overall health, which modules need attention, note any improvements vs prior runs)
-2. ## Failures & Root Causes (one subsection per CURRENTLY failing module — what's going wrong and why)
+2. ## Failures & Root Causes (one subsection per CURRENTLY failing module - what's going wrong and why)
 3. ## Prompt Fix Recommendations (specific changes to make to each failing module's prompt)
 4. ## What's Working Well (briefly note passing modules, call out any that recently improved)
 
@@ -143,7 +143,7 @@ Do not recommend fixes for modules that are currently passing.`
   let reportContent: string
 
   try {
-    // stream: false is passed via `as any` — Ollama returns ChatResponse, not an iterator
+    // stream: false is passed via `as any` - Ollama returns ChatResponse, not an iterator
     const response = (await ollama.chat({
       model,
       messages: [
@@ -157,7 +157,7 @@ Do not recommend fixes for modules that are currently passing.`
     reportContent = response.message.content.trim()
   } catch (err) {
     console.warn('[sim-report] Ollama unavailable for report generation:', err)
-    reportContent = `# Simulation Report — ${completedAt}
+    reportContent = `# Simulation Report - ${completedAt}
 
 *Report generation requires Ollama. Start Ollama to enable AI-generated fix recommendations.*
 
@@ -169,9 +169,9 @@ ${moduleTable}
 `
   }
 
-  // Write the latest report (always overwritten — history file is the record)
+  // Write the latest report (always overwritten - history file is the record)
   const fullReport = `# ChefFlow AI Simulation Report
-*Auto-generated — last run: ${completedAt}*
+*Auto-generated - last run: ${completedAt}*
 *Run ID: ${input.runId}*
 
 ---

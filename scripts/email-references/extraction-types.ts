@@ -1,7 +1,7 @@
 /**
  * Shared types for the GOLDMINE extraction pipeline.
  *
- * NO 'use server' — must be importable from both build scripts and server actions.
+ * NO 'use server' - must be importable from both build scripts and server actions.
  * Zod schemas for deterministic extraction, Ollama enrichment, follow-up parsing,
  * outbound analysis, and thread intelligence.
  */

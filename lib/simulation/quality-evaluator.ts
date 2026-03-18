@@ -345,7 +345,7 @@ Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
  * Uses deterministic checks for inquiry_parse, correspondence, quote_draft (Formula > AI).
  * Uses Ollama for subjective quality evaluation on client_parse, allergen_risk, menu_suggestions.
  * Returns score (0–100), passed (>=70), and specific failure reasons.
- * Never throws — returns score=0 with error on failure.
+ * Never throws - returns score=0 with error on failure.
  */
 export async function evaluateOutput(
   scenario: SimScenario,

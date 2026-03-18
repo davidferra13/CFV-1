@@ -1,5 +1,5 @@
-// AI Task Queue — Self-Monitoring System
-// No 'use server' — utility module, importable server-side.
+// AI Task Queue - Self-Monitoring System
+// No 'use server' - utility module, importable server-side.
 //
 // The queue watches itself. Detects problems before they become
 // catastrophic. Logs everything. Auto-pauses when things go wrong.
@@ -15,7 +15,7 @@
 // WHAT IT DOES WITH THE DATA:
 //   - Writes local stats to data/remy-stats/ (gitignored, on your PC)
 //   - Provides getMonitorReport() for admin UI / Remy drawer nudges
-//   - Never sends data externally — all local
+//   - Never sends data externally - all local
 
 import * as fs from 'fs'
 import * as path from 'path'

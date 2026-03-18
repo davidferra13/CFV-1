@@ -1,4 +1,4 @@
-// Sales tax constants — NOT 'use server'; safe to import in both client and server contexts
+// Sales tax constants - NOT 'use server'; safe to import in both client and server contexts
 
 export const COMMON_STATE_RATES_BPS: Record<string, { label: string; rateBps: number }> = {
   AL: { label: 'Alabama', rateBps: 400 },

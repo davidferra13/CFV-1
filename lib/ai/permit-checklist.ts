@@ -3,7 +3,7 @@
 // Health Permit Renewal Checklist Generator
 // AI generates a step-by-step permit renewal checklist from stored permit type and jurisdiction.
 // Routed to Gemini (regulatory knowledge, not PII).
-// Output is INFORMATIONAL ONLY — chef verifies with local authority before acting.
+// Output is INFORMATIONAL ONLY - chef verifies with local authority before acting.
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
@@ -87,7 +87,7 @@ export async function generatePermitRenewalChecklist(
   }
 
   const permitType = permitData?.permit_type ?? 'Food Handler / Food Service Establishment'
-  const jurisdiction = permitData?.jurisdiction ?? 'US (general — verify with your local authority)'
+  const jurisdiction = permitData?.jurisdiction ?? 'US (general - verify with your local authority)'
   const expiryDate = permitData?.expiry_date ?? null
 
   // Calculate renewal start date (60 days before expiry is typical)
@@ -106,7 +106,7 @@ Flag which steps MUST be done before others (dependencies).
 Permit Details:
   Type: ${permitType}
   Jurisdiction: ${jurisdiction}
-  Expiry date: ${expiryDate ?? 'Unknown — set reminder to check'}
+  Expiry date: ${expiryDate ?? 'Unknown - set reminder to check'}
   Any existing notes: ${permitData?.notes ?? 'None'}
 
 Generate a realistic checklist with:

@@ -1,11 +1,11 @@
 /**
- * SeasonalPaletteComposition — Remotion animation explaining seasonal palettes.
+ * SeasonalPaletteComposition - Remotion animation explaining seasonal palettes.
  *
  * Defines the jargon:
- *  1. Seasonal Palette — a season-specific collection of ingredients & ideas
- *  2. Micro-windows — narrow peak-season windows for specific ingredients
- *  3. Proven Wins — dishes that have been successfully served before
- *  4. Creative Thesis — your seasonal cooking philosophy
+ *  1. Seasonal Palette - a season-specific collection of ingredients & ideas
+ *  2. Micro-windows - narrow peak-season windows for specific ingredients
+ *  3. Proven Wins - dishes that have been successfully served before
+ *  4. Creative Thesis - your seasonal cooking philosophy
  */
 
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion'
@@ -39,7 +39,7 @@ const TERMS = [
     icon: '🎨',
     term: 'Seasonal Palette',
     definition: 'A curated collection of ingredients, ideas, and dishes for a specific season',
-    example: 'e.g. "Summer 2026" — stone fruits, heirloom tomatoes, fresh herbs',
+    example: 'e.g. "Summer 2026" - stone fruits, heirloom tomatoes, fresh herbs',
     color: '#dbeafe',
     borderColor: '#93c5fd',
     textColor: '#1e40af',
@@ -56,8 +56,8 @@ const TERMS = [
   {
     icon: '🏆',
     term: 'Proven Win',
-    definition: "A dish you've successfully served before — tested, refined, client-approved",
-    example: 'e.g. "Seared Duck Breast" — served 12 times, 5-star feedback',
+    definition: "A dish you've successfully served before - tested, refined, client-approved",
+    example: 'e.g. "Seared Duck Breast" - served 12 times, 5-star feedback',
     color: '#fef3c7',
     borderColor: '#fcd34d',
     textColor: '#92400e',
@@ -65,7 +65,7 @@ const TERMS = [
   {
     icon: '📐',
     term: 'Creative Thesis',
-    definition: 'Your seasonal cooking philosophy — the thread that ties your menus together',
+    definition: 'Your seasonal cooking philosophy - the thread that ties your menus together',
     example: 'e.g. "Hyper-local ingredients, minimal manipulation, maximum flavor"',
     color: '#fce7f3',
     borderColor: '#f9a8d4',
@@ -263,7 +263,7 @@ export function SeasonalPaletteComposition() {
             Repertoire
           </div>
           <div style={{ fontSize: 18, fontWeight: 700, color: STONE[900] }}>
-            Seasonal palettes — your creative toolkit
+            Seasonal palettes - your creative toolkit
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 'use server'
 
-// System Nerve Center — Heal Actions
+// System Nerve Center - Heal Actions
 // Server actions that execute fixes for broken services.
 // Every action is admin-only.
 

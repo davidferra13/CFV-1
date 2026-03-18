@@ -128,7 +128,7 @@ export async function getLineGameData(): Promise<{ events: EventForGame[] }> {
 
     return { events: result }
   } catch {
-    // Non-blocking — game works fine without prep mode data
+    // Non-blocking - game works fine without prep mode data
     return { events: [] }
   }
 }

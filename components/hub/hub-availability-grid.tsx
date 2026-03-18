@@ -454,7 +454,7 @@ function AvailabilityCard({
                               {dateResponses.map((r) => (
                                 <span
                                   key={r.id}
-                                  className={`rounded px-1 text-[10px] ${
+                                  className={`rounded px-1 text-xxs ${
                                     r.status === 'available'
                                       ? 'bg-green-500/10 text-green-400'
                                       : r.status === 'maybe'

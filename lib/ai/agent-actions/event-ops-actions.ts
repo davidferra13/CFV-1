@@ -1,4 +1,4 @@
-// Remy Agent — Event Operations Actions
+// Remy Agent - Event Operations Actions
 // Clone events, debrief, safety/equipment checklists, alcohol logging,
 // prep timelines, photo tagging, tips, mileage, scope drift.
 
@@ -54,8 +54,8 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description:
       'Make a copy of an existing event for a new date. Copies menu, guest count, service style, etc.',
-    inputSchema: '{ "description": "string — e.g. Clone the Johnson dinner to April 15" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews cloned event details.',
+    inputSchema: '{ "description": "string - e.g. Clone the Johnson dinner to April 15" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews cloned event details.',
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
@@ -118,8 +118,8 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
     description:
       'Save chef reflections and outcome notes for a completed event. Rate the event and add notes about what went well or what to improve.',
     inputSchema:
-      '{ "description": "string — e.g. The Johnson dinner went great, 5 out of 5. The scallops were a hit, would skip the soup course next time." }',
-    tierNote: 'ALWAYS tier 2 — chef reviews debrief before saving.',
+      '{ "description": "string - e.g. The Johnson dinner went great, 5 out of 5. The scallops were a hit, would skip the soup course next time." }',
+    tierNote: 'ALWAYS tier 2 - chef reviews debrief before saving.',
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
@@ -193,8 +193,8 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
     safety: 'significant',
     description:
       'Initialize or complete the safety checklist for an event. Confirms all safety items are addressed.',
-    inputSchema: '{ "eventIdentifier": "string — event to complete safety checklist for" }',
-    tierNote: 'ALWAYS tier 2 — chef confirms safety compliance.',
+    inputSchema: '{ "eventIdentifier": "string - event to complete safety checklist for" }',
+    tierNote: 'ALWAYS tier 2 - chef confirms safety compliance.',
 
     async executor(inputs, ctx) {
       const identifier = String(inputs.eventIdentifier ?? inputs.description ?? '')
@@ -244,8 +244,8 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'significant',
     description: 'Record a tip/gratuity received for an event.',
-    inputSchema: '{ "description": "string — e.g. Got a $150 cash tip at the Johnson dinner" }',
-    tierNote: 'ALWAYS tier 2 — financial data requires chef confirmation.',
+    inputSchema: '{ "description": "string - e.g. Got a $150 cash tip at the Johnson dinner" }',
+    tierNote: 'ALWAYS tier 2 - financial data requires chef confirmation.',
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
@@ -322,7 +322,7 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Record mileage driven for an event (for tax deduction tracking).',
-    inputSchema: '{ "description": "string — e.g. 45 miles round trip for the Johnson dinner" }',
+    inputSchema: '{ "description": "string - e.g. 45 miles round trip for the Johnson dinner" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs, ctx) {
@@ -381,7 +381,7 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Log alcohol served at an event for compliance tracking.',
     inputSchema:
-      '{ "description": "string — e.g. Served red wine to 8 guests at the Johnson dinner" }',
+      '{ "description": "string - e.g. Served red wine to 8 guests at the Johnson dinner" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs, ctx) {
@@ -451,8 +451,8 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Generate an AI prep timeline/schedule for an event, showing what to do and when.',
-    inputSchema: '{ "eventIdentifier": "string — event to generate prep timeline for" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews before following the timeline.',
+    inputSchema: '{ "eventIdentifier": "string - event to generate prep timeline for" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before following the timeline.',
 
     async executor(inputs, ctx) {
       const identifier = String(inputs.eventIdentifier ?? inputs.description ?? '')
@@ -510,7 +510,7 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
     safety: 'significant',
     description:
       'Acknowledge that an event scope has changed (e.g., more guests, changed menu) so financials can be reviewed.',
-    inputSchema: '{ "eventIdentifier": "string — event with scope drift to acknowledge" }',
+    inputSchema: '{ "eventIdentifier": "string - event with scope drift to acknowledge" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs, ctx) {

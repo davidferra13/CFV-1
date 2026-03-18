@@ -1,4 +1,4 @@
-// Unsplash — free stock photography API
+// Unsplash - free stock photography API
 // https://unsplash.com/developers
 // 50 requests/hour (demo), 5,000/hour (production)
 // Beautiful food photography for empty states, menu placeholders
@@ -91,7 +91,7 @@ export async function getRandomFoodPhoto(
 }
 
 /**
- * Trigger a download event — required by Unsplash API guidelines.
+ * Trigger a download event - required by Unsplash API guidelines.
  * Call this when a user actually uses/downloads a photo.
  */
 export async function trackDownload(downloadLocation: string): Promise<void> {
@@ -100,7 +100,7 @@ export async function trackDownload(downloadLocation: string): Promise<void> {
       headers: { Authorization: `Client-ID ${getAccessKey()}` },
     })
   } catch {
-    // Non-blocking — don't fail the app if tracking fails
+    // Non-blocking - don't fail the app if tracking fails
   }
 }
 

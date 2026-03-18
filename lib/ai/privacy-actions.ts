@@ -36,7 +36,7 @@ export async function getAiPreferences(): Promise<AiPreferences> {
     .single()
 
   if (!data) {
-    // Return defaults — row doesn't exist yet
+    // Return defaults - row doesn't exist yet
     return {
       remy_enabled: false,
       onboarding_completed: false,
@@ -229,7 +229,7 @@ export async function deleteAllMemories(): Promise<{ success: boolean; deleted: 
   const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
-  // Hard delete — user explicitly asked to remove memories
+  // Hard delete - user explicitly asked to remove memories
   const { data, error } = await supabase
     .from('remy_memories')
     .delete()

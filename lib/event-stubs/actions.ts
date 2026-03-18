@@ -7,7 +7,7 @@ import type { Json } from '@/types/database'
 import type { EventStub } from '@/lib/hub/types'
 
 // ---------------------------------------------------------------------------
-// Event Stubs — Client-initiated events (pre-chef)
+// Event Stubs - Client-initiated events (pre-chef)
 // ---------------------------------------------------------------------------
 
 const CreateStubSchema = z.object({
@@ -278,7 +278,7 @@ export async function adoptEventStub(input: {
     .single()
 
   // Look up or create a client for the stub creator
-  // Stubs are created by hub guest profiles — we need a client_id for the event
+  // Stubs are created by hub guest profiles - we need a client_id for the event
   const { data: creatorProfile } = await supabase
     .from('hub_guest_profiles')
     .select('email, display_name, client_id')

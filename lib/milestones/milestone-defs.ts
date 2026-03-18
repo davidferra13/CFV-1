@@ -2,7 +2,7 @@
  * Milestone definitions for ChefFlow.
  * Maps threshold rules to animation configs.
  *
- * No 'use server' — pure client-safe config.
+ * No 'use server' - pure client-safe config.
  * AnimationType matches the system in lib/holidays/overlay-configs.ts.
  */
 
@@ -18,7 +18,7 @@ export interface MilestoneDef {
   /** Number of particles (1 for walk/sticker/pulse) */
   count: number
   durationMs: number
-  // Detection — exactly one of these will be set:
+  // Detection - exactly one of these will be set:
   clientThreshold?: number
   eventThreshold?: number
   /** Revenue threshold in cents */

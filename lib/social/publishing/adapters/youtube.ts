@@ -155,7 +155,7 @@ export async function refreshYouTubeToken(credential: PlatformCredential): Promi
     const data = await res.json()
     return {
       accessToken: data.access_token as string,
-      // Google does not issue a new refresh token — keep the old one
+      // Google does not issue a new refresh token - keep the old one
       refreshToken: credential.refreshToken,
       expiresAt: new Date(Date.now() + (data.expires_in ?? 3600) * 1000),
     }

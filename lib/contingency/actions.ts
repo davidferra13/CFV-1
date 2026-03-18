@@ -92,7 +92,7 @@ const SCENARIO_TYPES = [
   'other',
 ] as const
 
-// NOTE: SCENARIO_LABELS has been moved to './constants' — import from there instead.
+// NOTE: SCENARIO_LABELS has been moved to './constants' - import from there instead.
 
 const ContingencyNoteSchema = z.object({
   scenario_type: z.enum(SCENARIO_TYPES),

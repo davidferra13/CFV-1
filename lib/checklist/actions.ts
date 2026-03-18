@@ -50,7 +50,7 @@ export async function getChefChecklist(eventId?: string) {
 
   const items: ChecklistItem[] = []
 
-  // 1. Permanent items — default + any chef custom items
+  // 1. Permanent items - default + any chef custom items
   const { data: chef } = await supabase.from('chefs').select('id').eq('id', user.tenantId!).single()
 
   if (!chef) throw new Error('Chef not found')
@@ -102,7 +102,7 @@ export async function getChefChecklist(eventId?: string) {
     }
   }
 
-  // 3. Learned items — forgotten 2+ times across AARs
+  // 3. Learned items - forgotten 2+ times across AARs
   const forgottenFreq = await getForgottenItemsFrequency()
   const permanentNormalized = new Set(items.map((i) => i.item.toLowerCase()))
 

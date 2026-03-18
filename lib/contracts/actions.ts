@@ -1,4 +1,4 @@
-// Contracts & Legal — Server Actions
+// Contracts & Legal - Server Actions
 // Manages contract templates and event-specific e-sign contracts.
 // Chef creates templates; contracts are generated per event and signed by clients.
 
@@ -434,7 +434,7 @@ export async function signContract(input: SignContractInput) {
 
   if (!contract) throw new Error('Contract not found')
   if (contract.status === 'signed') throw new Error('Already signed')
-  if (contract.status === 'voided') throw new Error('Contract voided — contact your chef')
+  if (contract.status === 'voided') throw new Error('Contract voided - contact your chef')
   if (!['sent', 'viewed'].includes(contract.status)) {
     throw new Error('Contract is not ready for signing')
   }

@@ -81,9 +81,9 @@ export const HOLIDAYS: Holiday[] = [
     premiumPricing: true,
     categories: ['romantic'],
     menuNotes:
-      'Tasting menu for two — oysters, filet, chocolate lava cake. Intimate plated service.',
+      'Tasting menu for two - oysters, filet, chocolate lava cake. Intimate plated service.',
     outreachLeadDays: 28,
-    outreachHook: "Valentine's Day is coming — want to do a private dinner for two?",
+    outreachHook: "Valentine's Day is coming - want to do a private dinner for two?",
   },
   {
     key: 'mothers_day',
@@ -96,7 +96,7 @@ export const HOLIDAYS: Holiday[] = [
     menuNotes: 'Elevated brunch or Sunday dinner. Crowd-pleasing family-style or plated.',
     outreachLeadDays: 28,
     outreachHook:
-      "Mother's Day is approaching — would your family like a private celebration dinner?",
+      "Mother's Day is approaching - would your family like a private celebration dinner?",
   },
   {
     key: 'thanksgiving',
@@ -106,10 +106,10 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'high',
     premiumPricing: true,
     categories: ['family', 'seasonal'],
-    menuNotes: 'Full feast service — turkey, sides, pies. Family-style. High guest counts.',
+    menuNotes: 'Full feast service - turkey, sides, pies. Family-style. High guest counts.',
     outreachLeadDays: 45,
     outreachHook:
-      'Thanksgiving is 6 weeks out — want a private chef so the host can actually enjoy the day?',
+      'Thanksgiving is 6 weeks out - want a private chef so the host can actually enjoy the day?',
   },
   {
     key: 'christmas_eve',
@@ -121,10 +121,10 @@ export const HOLIDAYS: Holiday[] = [
     premiumPricing: true,
     categories: ['family', 'religious', 'seasonal'],
     menuNotes:
-      'Elegant family dinner — prime rib, standing rib roast, seafood for Italian traditions.',
+      'Elegant family dinner - prime rib, standing rib roast, seafood for Italian traditions.',
     outreachLeadDays: 45,
     outreachHook:
-      'Christmas Eve is a special night — want a private chef to handle the feast this year?',
+      'Christmas Eve is a special night - want a private chef to handle the feast this year?',
   },
   {
     key: 'christmas_day',
@@ -135,7 +135,7 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'high',
     premiumPricing: true,
     categories: ['family', 'religious', 'seasonal'],
-    menuNotes: 'Christmas brunch or dinner. Relaxed luxury — let the family enjoy the day.',
+    menuNotes: 'Christmas brunch or dinner. Relaxed luxury - let the family enjoy the day.',
     outreachLeadDays: 45,
     outreachHook: 'Want to actually enjoy Christmas this year instead of cooking all day?',
   },
@@ -151,13 +151,13 @@ export const HOLIDAYS: Holiday[] = [
     menuNotes: 'Tasting menu or passed apps + dinner. Champagne pairings. Late service.',
     outreachLeadDays: 45,
     outreachHook:
-      'NYE is filling up fast — only a few dates left. Want to host a private celebration?',
+      'NYE is filling up fast - only a few dates left. Want to host a private celebration?',
   },
   {
     key: 'passover',
     name: 'Passover (First Seder)',
     type: 'floating',
-    // Approximate: 15 Nisan. Rough approximation — varies by Jewish calendar.
+    // Approximate: 15 Nisan. Rough approximation - varies by Jewish calendar.
     // We use a lookup table for accuracy through 2035
     getDate: (y) => {
       const seders: Record<number, [number, number]> = {
@@ -186,7 +186,7 @@ export const HOLIDAYS: Holiday[] = [
       'Seder plate must be kosher-style. Matzo, brisket, roasted chicken, tzimmes, gefilte fish.',
     outreachLeadDays: 35,
     outreachHook:
-      'Passover Seder is coming — want a private chef to handle the feast while you lead the Haggadah?',
+      'Passover Seder is coming - want a private chef to handle the feast while you lead the Haggadah?',
   },
   {
     key: 'yom_kippur_break_fast',
@@ -218,7 +218,7 @@ export const HOLIDAYS: Holiday[] = [
       'Buffet of bagels, lox, whitefish, kugel, rugelach. Light, no-meat-mixing (often dairy).',
     outreachLeadDays: 28,
     outreachHook:
-      'Break-the-Fast is one of the most catered events of the year — want a chef to handle it?',
+      'Break-the-Fast is one of the most catered events of the year - want a chef to handle it?',
   },
   {
     key: 'fathers_day',
@@ -231,7 +231,7 @@ export const HOLIDAYS: Holiday[] = [
     menuNotes: 'Backyard BBQ elevated or steakhouse-style dinner at home.',
     outreachLeadDays: 21,
     outreachHook:
-      "Father's Day is coming up — a private chef BBQ or steak dinner at home is unforgettable.",
+      "Father's Day is coming up - a private chef BBQ or steak dinner at home is unforgettable.",
   },
   {
     key: 'super_bowl',
@@ -244,10 +244,10 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'high',
     premiumPricing: false,
     categories: ['social', 'seasonal'],
-    menuNotes: 'Party food elevated — wings, sliders, dips, nacho bar, loaded apps. Crowd-pleaser.',
+    menuNotes: 'Party food elevated - wings, sliders, dips, nacho bar, loaded apps. Crowd-pleaser.',
     outreachLeadDays: 21,
     outreachHook:
-      'Super Bowl party coming up? Skip the pizza delivery — a private chef makes the spread unforgettable.',
+      'Super Bowl party coming up? Skip the pizza delivery - a private chef makes the spread unforgettable.',
   },
   {
     key: 'new_years_day',
@@ -260,7 +260,7 @@ export const HOLIDAYS: Holiday[] = [
     categories: ['family', 'social'],
     menuNotes: 'Hangover brunch or black-eyed peas tradition. Hearty, restorative.',
     outreachLeadDays: 14,
-    outreachHook: "Start the New Year right — a private New Year's Day brunch sets the tone.",
+    outreachHook: "Start the New Year right - a private New Year's Day brunch sets the tone.",
   },
 
   // ─── MEDIUM RELEVANCE ──────────────────────────────────────────────────────
@@ -293,7 +293,7 @@ export const HOLIDAYS: Holiday[] = [
     menuNotes: 'Easter brunch or lamb dinner. Ham, deviled eggs, spring salads, hot cross buns.',
     outreachLeadDays: 21,
     outreachHook:
-      'Easter Sunday brunch or dinner at home — want a private chef so everyone can relax?',
+      'Easter Sunday brunch or dinner at home - want a private chef so everyone can relax?',
   },
   {
     key: 'hanukkah',
@@ -323,7 +323,7 @@ export const HOLIDAYS: Holiday[] = [
     categories: ['religious', 'family'],
     menuNotes: 'Latkes, brisket, sufganiyot, rugelach. Family gathering, multiple nights.',
     outreachLeadDays: 28,
-    outreachHook: 'Hanukkah is around the corner — a festive private dinner for the whole family?',
+    outreachHook: 'Hanukkah is around the corner - a festive private dinner for the whole family?',
   },
   {
     key: 'mardi_gras',
@@ -355,9 +355,9 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'medium',
     premiumPricing: false,
     categories: ['cultural', 'social'],
-    menuNotes: 'Cajun feast — gumbo, jambalaya, crawfish étouffée, beignets, king cake.',
+    menuNotes: 'Cajun feast - gumbo, jambalaya, crawfish étouffée, beignets, king cake.',
     outreachLeadDays: 14,
-    outreachHook: 'Mardi Gras is the perfect excuse for a Cajun dinner party — interested?',
+    outreachHook: 'Mardi Gras is the perfect excuse for a Cajun dinner party - interested?',
   },
   {
     key: 'fourth_of_july',
@@ -371,7 +371,7 @@ export const HOLIDAYS: Holiday[] = [
     menuNotes: 'Elevated backyard BBQ or cookout. American classics upgraded.',
     outreachLeadDays: 28,
     outreachHook:
-      'Fourth of July cookout — want a private chef to handle the food so you actually enjoy the holiday?',
+      'Fourth of July cookout - want a private chef to handle the food so you actually enjoy the holiday?',
   },
   {
     key: 'labor_day',
@@ -384,7 +384,7 @@ export const HOLIDAYS: Holiday[] = [
     menuNotes: 'End-of-summer cookout. Last big outdoor event of the season.',
     outreachLeadDays: 21,
     outreachHook:
-      "Labor Day weekend — one last big summer gathering? Let's plan a private cookout.",
+      "Labor Day weekend - one last big summer gathering? Let's plan a private cookout.",
   },
   {
     key: 'memorial_day',
@@ -397,7 +397,7 @@ export const HOLIDAYS: Holiday[] = [
     menuNotes: 'Kickoff to summer cookout. Grilling, sides, fresh salads, seasonal fruits.',
     outreachLeadDays: 21,
     outreachHook:
-      'Memorial Day weekend kicks off summer — private cookout or backyard dinner party?',
+      'Memorial Day weekend kicks off summer - private cookout or backyard dinner party?',
   },
   {
     key: 'halloween',
@@ -411,14 +411,14 @@ export const HOLIDAYS: Holiday[] = [
     menuNotes: 'Themed dinner party or spooky apps. Great for adult Halloween parties.',
     outreachLeadDays: 21,
     outreachHook:
-      'Adult Halloween dinner party with a private chef — spooky menu, no plastic trays.',
+      'Adult Halloween dinner party with a private chef - spooky menu, no plastic trays.',
   },
   {
     key: 'lunar_new_year',
     name: 'Lunar New Year',
     type: 'floating',
     getDate: (y) => {
-      // Approximate — varies by lunar calendar. Best-effort lookup.
+      // Approximate - varies by lunar calendar. Best-effort lookup.
       const dates: Record<number, [number, number]> = {
         2024: [2, 10],
         2025: [1, 29],
@@ -440,10 +440,10 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'medium',
     premiumPricing: false,
     categories: ['cultural', 'family'],
-    menuNotes: 'Multi-course family feast — dumplings, whole fish, noodles, red envelope theme.',
+    menuNotes: 'Multi-course family feast - dumplings, whole fish, noodles, red envelope theme.',
     outreachLeadDays: 21,
     outreachHook:
-      'Lunar New Year family feast — a private chef handles all 12 courses while you celebrate.',
+      'Lunar New Year family feast - a private chef handles all 12 courses while you celebrate.',
   },
   {
     key: 'graduation_season',
@@ -458,7 +458,7 @@ export const HOLIDAYS: Holiday[] = [
       'Celebration dinner or backyard party. Crowd-pleaser menus, often high guest counts.',
     outreachLeadDays: 35,
     outreachHook:
-      'Graduation parties are booking fast — is there a graduate in the family to celebrate?',
+      'Graduation parties are booking fast - is there a graduate in the family to celebrate?',
   },
   {
     key: 'diwali',
@@ -486,17 +486,17 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'medium',
     premiumPricing: false,
     categories: ['religious', 'cultural', 'family'],
-    menuNotes: 'Indian festive feast — samosas, biryani, paneer dishes, kheer, mithai sweets.',
+    menuNotes: 'Indian festive feast - samosas, biryani, paneer dishes, kheer, mithai sweets.',
     outreachLeadDays: 21,
     outreachHook:
-      'Diwali celebration dinner — a private chef handles the festive feast while you celebrate.',
+      'Diwali celebration dinner - a private chef handles the festive feast while you celebrate.',
   },
   {
     key: 'eid_al_fitr',
     name: 'Eid al-Fitr',
     type: 'floating',
     getDate: (y) => {
-      // End of Ramadan — approximate
+      // End of Ramadan - approximate
       const dates: Record<number, [number, number]> = {
         2024: [4, 10],
         2025: [3, 30],
@@ -518,9 +518,9 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'medium',
     premiumPricing: false,
     categories: ['religious', 'family', 'cultural'],
-    menuNotes: 'Halal feast — lamb, rice dishes, pastries, dates, sweets. Large family gathering.',
+    menuNotes: 'Halal feast - lamb, rice dishes, pastries, dates, sweets. Large family gathering.',
     outreachLeadDays: 21,
-    outreachHook: 'Eid feast — a private halal chef for the family celebration.',
+    outreachHook: 'Eid feast - a private halal chef for the family celebration.',
   },
 
   // ─── LOWER RELEVANCE (still bookable) ─────────────────────────────────────
@@ -534,9 +534,9 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'low',
     premiumPricing: false,
     categories: ['cultural', 'social'],
-    menuNotes: 'Irish-themed dinner — corned beef, lamb stew, soda bread, Guinness desserts.',
+    menuNotes: 'Irish-themed dinner - corned beef, lamb stew, soda bread, Guinness desserts.',
     outreachLeadDays: 14,
-    outreachHook: "St. Patrick's Day dinner party — Irish feast at home instead of crowded bars.",
+    outreachHook: "St. Patrick's Day dinner party - Irish feast at home instead of crowded bars.",
   },
   {
     key: 'cinco_de_mayo',
@@ -547,9 +547,9 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'low',
     premiumPricing: false,
     categories: ['cultural', 'social'],
-    menuNotes: 'Mexican feast — tacos, tamales, mole, margaritas, churros.',
+    menuNotes: 'Mexican feast - tacos, tamales, mole, margaritas, churros.',
     outreachLeadDays: 14,
-    outreachHook: 'Cinco de Mayo — private Mexican feast for a party, skip the restaurant crowds.',
+    outreachHook: 'Cinco de Mayo - private Mexican feast for a party, skip the restaurant crowds.',
   },
   {
     key: 'kentucky_derby',
@@ -559,22 +559,22 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'low',
     premiumPricing: false,
     categories: ['social', 'seasonal'],
-    menuNotes: 'Derby party food — hot browns, bourbon apps, mint juleps, bourbon pie.',
+    menuNotes: 'Derby party food - hot browns, bourbon apps, mint juleps, bourbon pie.',
     outreachLeadDays: 14,
-    outreachHook: 'Kentucky Derby watch party with a proper bourbon menu — interested?',
+    outreachHook: 'Kentucky Derby watch party with a proper bourbon menu - interested?',
   },
   {
     key: 'oktoberfest',
     name: 'Oktoberfest',
     type: 'fixed',
     month: 10,
-    day: 3, // Traditional peak weekend — first Saturday of October used as proxy
+    day: 3, // Traditional peak weekend - first Saturday of October used as proxy
     chefRelevance: 'low',
     premiumPricing: false,
     categories: ['cultural', 'social'],
-    menuNotes: 'German feast — pretzels, schnitzel, bratwurst, spaetzle, strudel, beer pairings.',
+    menuNotes: 'German feast - pretzels, schnitzel, bratwurst, spaetzle, strudel, beer pairings.',
     outreachLeadDays: 14,
-    outreachHook: 'Oktoberfest dinner party — authentic German feast at home.',
+    outreachHook: 'Oktoberfest dinner party - authentic German feast at home.',
   },
   {
     key: 'galentines_day',
@@ -585,9 +585,9 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'low',
     premiumPricing: false,
     categories: ['social', 'romantic'],
-    menuNotes: 'Fun brunch or dinner for groups of women — bubbly, small plates, dessert spread.',
+    menuNotes: 'Fun brunch or dinner for groups of women - bubbly, small plates, dessert spread.',
     outreachLeadDays: 14,
-    outreachHook: "Galentine's Day brunch with the girls — private chef handles everything.",
+    outreachHook: "Galentine's Day brunch with the girls - private chef handles everything.",
   },
   {
     key: 'juneteenth',
@@ -599,9 +599,9 @@ export const HOLIDAYS: Holiday[] = [
     premiumPricing: false,
     categories: ['cultural', 'family'],
     menuNotes:
-      'Celebration cookout or soul food feast — BBQ, red foods tradition, strawberry soda.',
+      'Celebration cookout or soul food feast - BBQ, red foods tradition, strawberry soda.',
     outreachLeadDays: 14,
-    outreachHook: 'Juneteenth celebration feast — soul food or BBQ for the whole family.',
+    outreachHook: 'Juneteenth celebration feast - soul food or BBQ for the whole family.',
   },
   {
     key: 'rosh_hashanah',
@@ -629,9 +629,9 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'low',
     premiumPricing: false,
     categories: ['religious', 'family'],
-    menuNotes: 'Jewish New Year dinner — brisket, apples with honey, round challah, tzimmes.',
+    menuNotes: 'Jewish New Year dinner - brisket, apples with honey, round challah, tzimmes.',
     outreachLeadDays: 21,
-    outreachHook: 'Rosh Hashanah dinner — let a private chef handle the New Year feast.',
+    outreachHook: 'Rosh Hashanah dinner - let a private chef handle the New Year feast.',
   },
   {
     key: 'kwanzaa',
@@ -643,9 +643,9 @@ export const HOLIDAYS: Holiday[] = [
     premiumPricing: false,
     categories: ['cultural', 'family'],
     menuNotes:
-      'Pan-African celebration feast — soul food, African-inspired dishes, communal style.',
+      'Pan-African celebration feast - soul food, African-inspired dishes, communal style.',
     outreachLeadDays: 14,
-    outreachHook: 'Kwanzaa celebration feast — communal dinner with cultural dishes.',
+    outreachHook: 'Kwanzaa celebration feast - communal dinner with cultural dishes.',
   },
   {
     key: 'nowruz',
@@ -657,9 +657,9 @@ export const HOLIDAYS: Holiday[] = [
     premiumPricing: false,
     categories: ['cultural', 'family'],
     menuNotes:
-      'Persian New Year feast — Sabzi Polo Mahi (herb rice with fish), Ash Reshteh, sweets.',
+      'Persian New Year feast - Sabzi Polo Mahi (herb rice with fish), Ash Reshteh, sweets.',
     outreachLeadDays: 14,
-    outreachHook: 'Nowruz celebration — authentic Persian New Year feast at home.',
+    outreachHook: 'Nowruz celebration - authentic Persian New Year feast at home.',
   },
   {
     key: 'dia_de_los_muertos',
@@ -671,9 +671,9 @@ export const HOLIDAYS: Holiday[] = [
     premiumPricing: false,
     categories: ['cultural'],
     menuNotes:
-      'Mexican cultural celebration — tamales, pan de muerto, mole, marigold-themed sweets.',
+      'Mexican cultural celebration - tamales, pan de muerto, mole, marigold-themed sweets.',
     outreachLeadDays: 14,
-    outreachHook: 'Día de los Muertos dinner — cultural feast and celebration.',
+    outreachHook: 'Día de los Muertos dinner - cultural feast and celebration.',
   },
   {
     key: 'three_kings_day',
@@ -687,7 +687,7 @@ export const HOLIDAYS: Holiday[] = [
     menuNotes:
       'Rosca de Reyes (King cake), traditional feast. Big in Latino and some European traditions.',
     outreachLeadDays: 14,
-    outreachHook: 'Three Kings Day celebration — traditional feast with family.',
+    outreachHook: 'Three Kings Day celebration - traditional feast with family.',
   },
   {
     key: 'oscar_night',
@@ -702,9 +702,9 @@ export const HOLIDAYS: Holiday[] = [
     premiumPricing: false,
     categories: ['social'],
     menuNotes:
-      'Elegant dinner party timed to the ceremony — small plates, passed apps, viewing menu.',
+      'Elegant dinner party timed to the ceremony - small plates, passed apps, viewing menu.',
     outreachLeadDays: 14,
-    outreachHook: 'Oscar night dinner party — elegant small plates while you watch the ceremony.',
+    outreachHook: 'Oscar night dinner party - elegant small plates while you watch the ceremony.',
   },
   {
     key: 'bastille_day',
@@ -715,9 +715,9 @@ export const HOLIDAYS: Holiday[] = [
     chefRelevance: 'low',
     premiumPricing: false,
     categories: ['cultural', 'social'],
-    menuNotes: 'French-themed dinner — bouillabaisse, duck confit, baguettes, crème brûlée.',
+    menuNotes: 'French-themed dinner - bouillabaisse, duck confit, baguettes, crème brûlée.',
     outreachLeadDays: 14,
-    outreachHook: 'Bastille Day French dinner party — bring Paris to the table.',
+    outreachHook: 'Bastille Day French dinner party - bring Paris to the table.',
   },
 ]
 

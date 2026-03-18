@@ -43,7 +43,7 @@ export function ShortcutStrip() {
             >
               <s.icon className="w-5 h-5" style={{ color: s.color }} />
             </div>
-            <span className="text-[10px] font-medium text-stone-500 group-hover:text-stone-300 transition-colors">
+            <span className="text-xxs font-medium text-stone-500 group-hover:text-stone-300 transition-colors">
               {s.label}
             </span>
           </Link>

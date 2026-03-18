@@ -1,5 +1,5 @@
 // Purchase Order Server Actions
-// Chef-only: Full PO lifecycle — draft, submit, receive, cancel.
+// Chef-only: Full PO lifecycle - draft, submit, receive, cancel.
 // Receiving creates inventory_transactions (type: receive) and updates ingredient prices.
 
 'use server'
@@ -498,7 +498,7 @@ export async function removePOItem(itemId: string): Promise<void> {
 }
 
 /**
- * Submit a purchase order — transitions from draft to submitted.
+ * Submit a purchase order - transitions from draft to submitted.
  */
 export async function submitPO(poId: string): Promise<PurchaseOrder> {
   const user = await requireChef()
@@ -506,7 +506,7 @@ export async function submitPO(poId: string): Promise<PurchaseOrder> {
 
   const po = await verifyPOOwnership(supabase, poId, user.tenantId!)
   if (po.status !== 'draft') {
-    throw new Error(`Cannot submit PO in "${po.status}" status — must be draft`)
+    throw new Error(`Cannot submit PO in "${po.status}" status - must be draft`)
   }
 
   const { data, error } = await db(supabase)

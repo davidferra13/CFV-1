@@ -1,9 +1,9 @@
-// HACCP Plan Templates — Pure Deterministic Generator
+// HACCP Plan Templates - Pure Deterministic Generator
 // One tailored plan per chef archetype, following the 7 HACCP principles.
 // Based on FDA Food Code 2022, ServSafe standards, and industry best practices.
-// No AI — pure code. Every experienced food safety consultant knows these.
+// No AI - pure code. Every experienced food safety consultant knows these.
 //
-// NOT a server action file — no 'use server'.
+// NOT a server action file - no 'use server'.
 
 import type { ArchetypeId } from '@/lib/archetypes/presets'
 import type {
@@ -197,7 +197,7 @@ function getCleanupStep(): ProcessStep {
         likelihood: 'medium',
         isCCP: false,
         preventiveMeasure:
-          'Follow wash-rinse-sanitize protocol. Use approved sanitizer at correct concentration. Air dry — never towel-dry sanitized items.',
+          'Follow wash-rinse-sanitize protocol. Use approved sanitizer at correct concentration. Air dry - never towel-dry sanitized items.',
       },
       {
         id: 'h-clean-chem',
@@ -613,7 +613,7 @@ function getCatererCCPs(): CriticalControlPoint[] {
       monitoring: {
         what: 'Temperature of transported items on departure and arrival',
         how: 'Probe thermometer of representative items',
-        frequency: 'Every trip — check before loading and after unloading',
+        frequency: 'Every trip - check before loading and after unloading',
         who: 'Chef or transport team lead',
       },
       correctiveActions: [
@@ -647,7 +647,7 @@ function getCatererCCPs(): CriticalControlPoint[] {
       correctiveActions: [
         'If food has been at room temperature over 2 hours (or 1 hour above 90°F): discard',
         'Keep food in holding until just before service starts',
-        'Stagger setup — bring items out in waves, not all at once',
+        'Stagger setup - bring items out in waves, not all at once',
       ],
       verificationProcedures: [
         'Review setup timing logs after each event',
@@ -778,7 +778,7 @@ function getMealPrepCCPs(): CriticalControlPoint[] {
       monitoring: {
         what: 'Internal temperature of cooling items',
         how: 'Probe thermometer at 2-hour mark and at 6-hour mark',
-        frequency: 'Every cooling cycle — check at 2 hours and 6 hours',
+        frequency: 'Every cooling cycle - check at 2 hours and 6 hours',
         who: 'Chef or designated staff',
       },
       correctiveActions: [
@@ -910,7 +910,7 @@ function getRestaurantSteps(): ProcessStep[] {
           likelihood: 'medium',
           isCCP: true,
           preventiveMeasure:
-            'Reheat to 165°F (74°C) within 2 hours. Never use hot-holding equipment (steam table, crock pot) to reheat — use oven, stove, or microwave.',
+            'Reheat to 165°F (74°C) within 2 hours. Never use hot-holding equipment (steam table, crock pot) to reheat - use oven, stove, or microwave.',
         },
       ],
     },
@@ -1302,7 +1302,7 @@ function getBakeryCCPs(): CriticalControlPoint[] {
       correctiveActions: [
         'If not at 70°F within 2 hours: move to blast chiller or ice bath',
         'If not at 41°F within 6 hours: discard the batch',
-        'Investigate cooling method — use shallower pans, smaller portions next time',
+        'Investigate cooling method - use shallower pans, smaller portions next time',
       ],
       verificationProcedures: [
         'Review cooling logs weekly',
@@ -1358,7 +1358,7 @@ function getSharedPrereqs(): PrerequisiteProgram[] {
       procedures: [
         'Wash hands with soap and warm water for 20 seconds: before starting work, after touching raw meat, after using the restroom, after touching face/hair, after handling waste, and between tasks',
         'Wear clean clothing or aprons. Change if visibly soiled',
-        'No bare-hand contact with ready-to-eat food — use gloves, tongs, or utensils',
+        'No bare-hand contact with ready-to-eat food - use gloves, tongs, or utensils',
         'Report illness (vomiting, diarrhea, jaundice, sore throat with fever) to supervisor before working. Exclude from food handling when symptomatic',
         'Cover cuts and wounds with bandages and gloves',
         'No eating, drinking, or smoking in food prep areas',
@@ -1399,10 +1399,10 @@ function getSharedPrereqs(): PrerequisiteProgram[] {
       procedures: [
         'Follow the wash-rinse-sanitize protocol for all food-contact surfaces and equipment',
         'Use approved sanitizers at correct concentration (test with test strips)',
-        'Clean as you go — sanitize surfaces between tasks, especially when switching from raw to ready-to-eat',
+        'Clean as you go - sanitize surfaces between tasks, especially when switching from raw to ready-to-eat',
         'Deep-clean kitchen and storage areas at least weekly',
         'Maintain a cleaning schedule with assigned responsibilities',
-        'Air-dry all sanitized items — never towel-dry',
+        'Air-dry all sanitized items - never towel-dry',
         'Store cleaning chemicals separately from food, clearly labeled',
       ],
     },
@@ -1440,7 +1440,7 @@ function getSharedPrereqs(): PrerequisiteProgram[] {
       procedures: [
         'Use only potable water from an approved municipal or tested source',
         'Clean and sanitize ice machines regularly',
-        'Use clean scoops for ice — never use hands or glasses',
+        'Use clean scoops for ice - never use hands or glasses',
         'If using a water tank (mobile operations): clean monthly, use food-grade materials',
       ],
     },
@@ -1450,7 +1450,7 @@ function getSharedPrereqs(): PrerequisiteProgram[] {
       description: 'Safe disposal of food waste, wastewater, and other refuse.',
       procedures: [
         'Use covered waste containers in all prep and service areas',
-        'Empty bins regularly — do not let waste accumulate',
+        'Empty bins regularly - do not let waste accumulate',
         'Separate grease waste for proper disposal (never pour down drain)',
         'Dispose of wastewater through approved sewage systems',
         'Clean waste containers and surrounding areas regularly',
@@ -1565,51 +1565,51 @@ function getArchetypePrereqs(archetypeId: ArchetypeId): PrerequisiteProgram[] {
 
 function getRecordKeepingSummary(archetypeId: ArchetypeId): string[] {
   const shared = [
-    'Receiving temperature logs — every delivery',
-    'Cold storage temperature logs — twice daily',
-    'Cooking temperature logs — every batch/item',
-    'Thermometer calibration records — monthly',
-    'Cleaning and sanitization schedule — daily/weekly',
-    'Staff training records — with dates and topics',
-    'Supplier approval records — updated annually',
-    'Corrective action reports — as needed',
+    'Receiving temperature logs - every delivery',
+    'Cold storage temperature logs - twice daily',
+    'Cooking temperature logs - every batch/item',
+    'Thermometer calibration records - monthly',
+    'Cleaning and sanitization schedule - daily/weekly',
+    'Staff training records - with dates and topics',
+    'Supplier approval records - updated annually',
+    'Corrective action reports - as needed',
   ]
 
   const specific: Record<ArchetypeId, string[]> = {
     'private-chef': [
-      'Transport temperature logs — every client visit',
-      'Client kitchen assessment records — every visit',
-      'Client allergen profiles — updated per client',
+      'Transport temperature logs - every client visit',
+      'Client kitchen assessment records - every visit',
+      'Client allergen profiles - updated per client',
     ],
     caterer: [
-      'Hot-holding temperature logs — every event (every 30 min during service)',
-      'Cold-holding temperature logs — every event',
-      'Transport temperature logs — every trip',
-      'Event setup timing logs — food staging start/end times',
-      'Venue assessment records — per venue',
+      'Hot-holding temperature logs - every event (every 30 min during service)',
+      'Cold-holding temperature logs - every event',
+      'Transport temperature logs - every trip',
+      'Event setup timing logs - food staging start/end times',
+      'Venue assessment records - per venue',
     ],
     'meal-prep': [
-      'Cooling temperature logs — every batch (2h and 6h checks)',
-      'Portioning time logs — every session',
-      'Delivery temperature logs — every route',
-      'Labeling accuracy checks — per batch',
+      'Cooling temperature logs - every batch (2h and 6h checks)',
+      'Portioning time logs - every session',
+      'Delivery temperature logs - every route',
+      'Labeling accuracy checks - per batch',
     ],
     restaurant: [
-      'Hot-holding logs — every shift',
-      'Cold-holding (prep station) logs — every shift',
-      'Reheating temperature logs — every reheated item',
+      'Hot-holding logs - every shift',
+      'Cold-holding (prep station) logs - every shift',
+      'Reheating temperature logs - every reheated item',
     ],
     'food-truck': [
-      'Water tank fill records — every fill (source, date, amount)',
-      'Handwash station supply checks — every shift',
-      'Hot-holding temperature logs — every shift',
-      'Waste tank emptying records — as needed',
+      'Water tank fill records - every fill (source, date, amount)',
+      'Handwash station supply checks - every shift',
+      'Hot-holding temperature logs - every shift',
+      'Waste tank emptying records - as needed',
     ],
     bakery: [
-      'Allergen batch changeover records — every changeover',
-      'Cooling logs for filled products — every batch',
-      'Display case temperature logs — twice daily',
-      'Production sequence records — daily (allergen-free first)',
+      'Allergen batch changeover records - every changeover',
+      'Cooling logs for filled products - every batch',
+      'Display case temperature logs - twice daily',
+      'Production sequence records - daily (allergen-free first)',
     ],
   }
 
@@ -1620,7 +1620,7 @@ function getRecordKeepingSummary(archetypeId: ArchetypeId): string[] {
 
 /**
  * Generate a complete HACCP plan for the given chef archetype.
- * Pure deterministic — no AI, no network calls.
+ * Pure deterministic - no AI, no network calls.
  * Based on FDA Food Code 2022 and industry best practices.
  */
 export function generateHACCPPlan(archetypeId: ArchetypeId): HACCPPlanData {
@@ -1663,7 +1663,7 @@ export function generateHACCPPlan(archetypeId: ArchetypeId): HACCPPlanData {
     version: 1,
     archetypeId,
     generatedAt: new Date().toISOString(),
-    planTitle: `HACCP Plan — ${meta.label}`,
+    planTitle: `HACCP Plan - ${meta.label}`,
     businessDescription: meta.description,
     processSteps,
     criticalControlPoints,

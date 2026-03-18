@@ -112,7 +112,7 @@ export default function DemoControlPanel() {
         <a
           href="/chef/chef-demo-showcase"
           target="_blank"
-          rel="noopener"
+          rel="noopener noreferrer"
           style={{
             display: 'block',
             marginTop: 12,

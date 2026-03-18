@@ -1,4 +1,4 @@
-// Expense Category Constants — single source of truth
+// Expense Category Constants - single source of truth
 // All UI files and Zod schemas import from here.
 
 // Canonical list of all expense category values (as const for Zod literal inference)
@@ -35,7 +35,7 @@ export type ExpenseCategoryGroup = {
   }[]
 }
 
-// Flat map — all 17 categories with display metadata
+// Flat map - all 17 categories with display metadata
 export const EXPENSE_CATEGORIES: Record<ExpenseCategory, CategoryMeta> = {
   // Food & Drink
   groceries: { label: 'Groceries', color: 'bg-green-100 text-green-800' },

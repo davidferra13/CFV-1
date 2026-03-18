@@ -1,6 +1,6 @@
-// System Nerve Center — Health Sweep Engine
+// System Nerve Center - Health Sweep Engine
 // Checks all ChefFlow services in dependency order.
-// Not a 'use server' file — pure utility (exports constants + functions).
+// Not a 'use server' file - pure utility (exports constants + functions).
 
 import { createClient } from '@supabase/supabase-js'
 import { breakers, getCircuitBreakerHealth } from '@/lib/resilience/circuit-breaker'
@@ -248,7 +248,7 @@ async function checkAuth(): Promise<ServiceHealthResult> {
   if (missing.length > 0) {
     return result(def, 'error', `Missing: ${missing.join(', ')}`, null, 'Env vars not set')
   }
-  // Auth depends on database being healthy — if we got here, database is OK
+  // Auth depends on database being healthy - if we got here, database is OK
   return result(def, 'healthy', 'Active', null)
 }
 
@@ -379,7 +379,7 @@ async function checkService(def: ServiceDefinition): Promise<ServiceHealthResult
   }
 }
 
-// Gmail doesn't have a circuit breaker — override the check
+// Gmail doesn't have a circuit breaker - override the check
 async function checkGmailService(): Promise<ServiceHealthResult> {
   const def = getDef('gmail')
   const missing = def.envVars.filter((v) => !process.env[v])

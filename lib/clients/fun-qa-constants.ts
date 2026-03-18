@@ -12,7 +12,7 @@ export const FUN_QA_QUESTIONS = [
   {
     key: 'last_meal',
     emoji: '🥂',
-    question: 'Last meal on earth — what is it? (food + drink)',
+    question: 'Last meal on earth - what is it? (food + drink)',
     placeholder: "Make it count. Don't hold back.",
   },
   {
@@ -24,7 +24,7 @@ export const FUN_QA_QUESTIONS = [
   {
     key: 'sweet_or_savory',
     emoji: '🍫',
-    question: "Sweet or savory — and what's the one thing that always wins you over?",
+    question: "Sweet or savory - and what's the one thing that always wins you over?",
     placeholder: 'e.g. Savory, but a warm chocolate chip cookie will always derail me',
   },
   {
@@ -49,7 +49,7 @@ export const FUN_QA_QUESTIONS = [
     key: 'dinner_vibe',
     emoji: '✨',
     question:
-      "Pick one: cozy dinner party, chaotic feast, or quiet two-person meal — what's your vibe?",
+      "Pick one: cozy dinner party, chaotic feast, or quiet two-person meal - what's your vibe?",
     placeholder: 'Or describe your own...',
   },
   {
@@ -69,7 +69,7 @@ export const FUN_QA_QUESTIONS = [
     key: 'best_meal_ever',
     emoji: '🏆',
     question: "What's the best meal you've ever had, and what made it unforgettable?",
-    placeholder: 'The food, the people, the place — all of it',
+    placeholder: 'The food, the people, the place - all of it',
   },
   {
     key: 'meal_preference',

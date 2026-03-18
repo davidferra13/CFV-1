@@ -3,7 +3,7 @@
 // Partner Portal Server Actions
 // All actions require the user to be an authenticated partner (via requirePartner()).
 // Uses admin client for DB reads to bypass chef-only RLS on the data,
-// but ALWAYS validates via requirePartner() first — the admin client is never
+// but ALWAYS validates via requirePartner() first - the admin client is never
 // a shortcut around authentication, only around RLS scoping.
 
 import { requirePartner } from '@/lib/auth/get-user'
@@ -79,7 +79,7 @@ export type PartnerPortalData = {
 /**
  * Fetch everything the partner needs to render their dashboard and pages.
  * Returns aggregate stats, all locations with images, and recent events.
- * No client PII is returned — events show only occasion, date, guest count, status.
+ * No client PII is returned - events show only occasion, date, guest count, status.
  */
 export async function getPartnerPortalData(): Promise<PartnerPortalData> {
   const user = await requirePartner()
@@ -115,7 +115,7 @@ export async function getPartnerPortalData(): Promise<PartnerPortalData> {
   const activeLocations = locations.filter((l) => l.is_active)
   const locationIds = activeLocations.map((l) => l.id)
 
-  // Fetch events at this partner's locations (no client PII — privacy by design)
+  // Fetch events at this partner's locations (no client PII - privacy by design)
   let recentEvents: PartnerEvent[] = []
   if (locationIds.length > 0) {
     const { data: eventsData } = await supabase
@@ -129,7 +129,7 @@ export async function getPartnerPortalData(): Promise<PartnerPortalData> {
     recentEvents = (eventsData as PartnerEvent[]) || []
   }
 
-  // Aggregate stats — only completed events count toward guests served
+  // Aggregate stats - only completed events count toward guests served
   const completedEvents = recentEvents.filter((e) => e.status === 'completed')
   const totalGuests = completedEvents.reduce((sum, e) => sum + (e.guest_count ?? 0), 0)
 
@@ -206,7 +206,7 @@ export async function getPartnerLocationEvents(locationId: string): Promise<Part
 
 /**
  * Update the partner's own profile fields (name, description, contact info).
- * The chef controls is_showcase_visible — partners cannot change it themselves.
+ * The chef controls is_showcase_visible - partners cannot change it themselves.
  */
 export async function updatePartnerProfile(input: {
   name?: string
@@ -220,7 +220,7 @@ export async function updatePartnerProfile(input: {
   const user = await requirePartner()
   const supabase = createServerClient({ admin: true })
 
-  // Whitelist — never allow partners to change tenant_id, auth_user_id, is_showcase_visible, etc.
+  // Whitelist - never allow partners to change tenant_id, auth_user_id, is_showcase_visible, etc.
   const allowed = {
     name: input.name,
     description: input.description,

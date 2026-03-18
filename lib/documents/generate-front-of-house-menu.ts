@@ -168,7 +168,7 @@ export function renderFrontOfHouseMenu(pdf: PDFLayout, data: FrontOfHouseMenuDat
   const title = event.occasion?.trim() ? `${event.occasion} Menu` : 'Seasonal Tasting Menu'
   const dateLabel = format(parseISO(event.event_date), 'EEEE, MMMM d, yyyy')
 
-  // Title — serif for classic elegance
+  // Title - serif for classic elegance
   drawCenteredText(pdf, title, 20, 'times', 'bold')
   pdf.space(1.5)
 
@@ -194,7 +194,7 @@ export function renderFrontOfHouseMenu(pdf: PDFLayout, data: FrontOfHouseMenuDat
   for (const course of courses) {
     if (pdf.y > MAX_Y - 26) break
 
-    // Course name — serif bold, prominent
+    // Course name - serif bold, prominent
     drawCenteredText(pdf, course.courseName, 14, 'times', 'bold')
 
     if (course.dishDescription) {

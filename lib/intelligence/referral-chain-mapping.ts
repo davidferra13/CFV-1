@@ -243,7 +243,7 @@ export async function getReferralChainMapping(): Promise<ReferralChainResult | n
     .filter(([, s]) => s.clients.size >= 1)
     .map(([source, s]) => {
       // Chain revenue includes secondary referral revenue
-      const chainRevenue = s.revenue // simplified — ideally trace full chain
+      const chainRevenue = s.revenue // simplified - ideally trace full chain
       return {
         source,
         clientCount: s.clients.size,

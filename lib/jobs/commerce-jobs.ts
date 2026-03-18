@@ -1,8 +1,8 @@
-// Commerce Engine V1 — Inngest Background Jobs
+// Commerce Engine V1 - Inngest Background Jobs
 //
-// 1. Business day closeout — generates daily reconciliation report at end of day
-// 2. Payment reconciliation — flags mismatches between payments and ledger entries
-// 3. Settlement mapping — maps Stripe payouts to individual commerce payments
+// 1. Business day closeout - generates daily reconciliation report at end of day
+// 2. Payment reconciliation - flags mismatches between payments and ledger entries
+// 3. Settlement mapping - maps Stripe payouts to individual commerce payments
 //
 // All jobs are non-blocking. Failures are logged, never thrown to callers.
 

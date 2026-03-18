@@ -1,4 +1,4 @@
-// PostHog — product analytics (self-hostable)
+// PostHog - product analytics (self-hostable)
 // https://posthog.com/
 // 1M events/month free, no credit card
 // Know which features people use, where they drop off
@@ -15,7 +15,7 @@
  * This file provides typed event helpers for ChefFlow-specific analytics.
  */
 
-// PostHog event names — keep them consistent across the app
+// PostHog event names - keep them consistent across the app
 export const ANALYTICS_EVENTS = {
   // Marketing & funnel
   CTA_CLICKED: 'cta_clicked',
@@ -78,7 +78,7 @@ export function trackEvent(
       posthog.capture(event, properties)
     }
   } catch {
-    // PostHog not loaded — silently skip
+    // PostHog not loaded - silently skip
   }
 }
 

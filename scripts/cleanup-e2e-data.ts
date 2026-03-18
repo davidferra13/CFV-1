@@ -5,7 +5,7 @@
 // Deletes all auth users whose email ends with @chefflow.test.
 // Because every table cascades on chef/client deletion, this removes
 // all seeded events, clients, quotes, menus, etc. in one operation.
-// Safe to run at any time — only targets @chefflow.test addresses.
+// Safe to run at any time - only targets @chefflow.test addresses.
 
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'

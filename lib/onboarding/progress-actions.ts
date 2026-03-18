@@ -2,7 +2,7 @@
 
 // Onboarding Progress Actions
 // Computes per-phase completion status without any schema changes.
-// All queries hit existing tables — nothing new required.
+// All queries hit existing tables - nothing new required.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'

@@ -53,7 +53,7 @@ export async function getBusinessDocInfo(eventId: string): Promise<BusinessDocIn
     quoteRow = inquiryQuotes?.[0] ?? null
   }
 
-  // Most recent contract — scope by tenant_id (not chef_id) to match the
+  // Most recent contract - scope by tenant_id (not chef_id) to match the
   // established tenant-isolation pattern used everywhere else in the codebase.
   const { data: contracts } = await supabase
     .from('event_contracts')
@@ -220,7 +220,7 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
       ready: hasTravelRoute,
       missing: hasTravelRoute
         ? []
-        : ['No service travel leg added yet — open Travel Plan to add one'],
+        : ['No service travel leg added yet - open Travel Plan to add one'],
     },
   }
 }

@@ -182,9 +182,7 @@ export function InquiryRecipeLinker({
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-stone-100 truncate">{recipe.name}</p>
-                        <p className="text-[10px] text-stone-400">
-                          {formatCategory(recipe.category)}
-                        </p>
+                        <p className="text-xxs text-stone-400">{formatCategory(recipe.category)}</p>
                       </div>
                     </button>
                   ))
@@ -282,7 +280,7 @@ export function InquiryRecipeLinker({
 
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-stone-100">{link.recipe.name}</p>
-              <p className="text-[10px] text-stone-400">{formatCategory(link.recipe.category)}</p>
+              <p className="text-xxs text-stone-400">{formatCategory(link.recipe.category)}</p>
               {link.note && <p className="text-xs text-stone-400 mt-0.5 italic">{link.note}</p>}
             </div>
 

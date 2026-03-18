@@ -1,5 +1,5 @@
 // Social Post Pre-Flight Check
-// Pure computation — no server action, no PII leaving the machine.
+// Pure computation - no server action, no PII leaving the machine.
 // Run before publishing any social post to catch NDA/permission violations.
 
 export type PreflightWarning = {
@@ -29,7 +29,7 @@ export function runPreflightChecks(params: {
     if (client.photo_permission === 'none') {
       warnings.push({
         type: 'hard_block',
-        message: `Photos of ${client.name}'s event cannot be posted — NDA/no-photo agreement in effect`,
+        message: `Photos of ${client.name}'s event cannot be posted - NDA/no-photo agreement in effect`,
         clientId: client.id,
         clientName: client.name,
       })
@@ -48,7 +48,7 @@ export function runPreflightChecks(params: {
     if (postText.toLowerCase().includes(name.toLowerCase())) {
       warnings.push({
         type: 'soft_warning',
-        message: `Post may reference client ${name} — confirm they're okay being mentioned publicly`,
+        message: `Post may reference client ${name} - confirm they're okay being mentioned publicly`,
         clientName: name,
       })
     }

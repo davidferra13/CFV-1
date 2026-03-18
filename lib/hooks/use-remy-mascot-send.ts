@@ -1,4 +1,4 @@
-// Remy Mascot Chat — Lightweight Send Hook
+// Remy Mascot Chat - Lightweight Send Hook
 // Ephemeral (session-only) message sending for the mascot's inline chat.
 // No IndexedDB persistence, no memory extraction, no conversation management.
 // Uses the same /api/remy/stream endpoint and shared SSE parser.
@@ -25,7 +25,7 @@ function generateId(): string {
   return 'mc_' + Math.random().toString(36).slice(2) + Date.now().toString(36)
 }
 
-// Debug commands — same as the drawer for consistency
+// Debug commands - same as the drawer for consistency
 const DEBUG_COMMANDS: Record<string, BodyEvent['type']> = {
   'remy wave': 'DRAWER_OPENED',
   'remy think': 'RESPONSE_STARTED',
@@ -53,7 +53,7 @@ export interface UseRemyMascotSendConfig {
   drawerBusy: boolean
   /** When true, overrides activeForm to 'remy-survey' for survey mode */
   surveyActive?: boolean
-  /** Current survey question info — used for post-response extraction */
+  /** Current survey question info - used for post-response extraction */
   currentSurveyQuestion?: { key: string; prompt: string } | null
 }
 
@@ -201,10 +201,10 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
         setStreamingContent('')
         lipSyncStop()
 
-        // Cross-chat digest — record this exchange for the drawer to reference
+        // Cross-chat digest - record this exchange for the drawer to reference
         updateChannelDigest('mascot', message, cleanContent)
 
-        // Survey answer extraction — non-blocking Ollama fast-tier extraction
+        // Survey answer extraction - non-blocking Ollama fast-tier extraction
         if (surveyActive && currentSurveyQuestion) {
           extractSurveyAnswer(
             currentSurveyQuestion.key,
@@ -224,7 +224,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
             id: generateId(),
             role: 'remy',
             content:
-              'Request timed out — the AI model was probably still loading. Hit retry and I should be ready!',
+              'Request timed out - the AI model was probably still loading. Hit retry and I should be ready!',
             timestamp: new Date().toISOString(),
             isRetryable: true,
             retryMessage: message,
@@ -239,7 +239,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
             id: generateId(),
             role: 'remy',
             content: isOllamaOffline
-              ? "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!"
+              ? "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!"
               : errMsg,
             timestamp: new Date().toISOString(),
             isRetryable: true,

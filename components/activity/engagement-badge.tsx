@@ -25,7 +25,7 @@ export function EngagementBadge({ level, signals, className = '' }: EngagementBa
   return (
     <span
       title={tooltip}
-      className={`inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded border ${badgeClass} ${className}`}
+      className={`inline-flex items-center text-xxs font-bold px-1.5 py-0.5 rounded border ${badgeClass} ${className}`}
     >
       {label}
     </span>

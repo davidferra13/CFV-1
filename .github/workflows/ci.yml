@@ -97,6 +97,32 @@ jobs:
         run: npm run test:unit
 
   # ─────────────────────────────────────────────────────────────────────────────
+  # Job 2c: Dependency Vulnerability Check
+  # Catches critical vulnerabilities in production dependencies
+  # ─────────────────────────────────────────────────────────────────────────────
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # Non-blocking for now: reports critical vulns but does not fail the build.
+      # Remove "|| true" once all existing critical vulnerabilities are resolved.
+      - name: Check for critical dependency vulnerabilities
+        run: npm audit --audit-level=critical --omit=dev || true
+
+  # ─────────────────────────────────────────────────────────────────────────────
   # Job 3: Build Check
   # Verifies the production build compiles without errors
   # ─────────────────────────────────────────────────────────────────────────────

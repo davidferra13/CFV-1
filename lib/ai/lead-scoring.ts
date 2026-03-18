@@ -1,6 +1,6 @@
 'use server'
 
-// Lead Scoring — GOLDMINE deterministic formula
+// Lead Scoring - GOLDMINE deterministic formula
 // Formula > AI. No LLM calls. Pure math derived from 49 real conversations.
 //
 // Previously used Ollama to "reason" about conversion likelihood.

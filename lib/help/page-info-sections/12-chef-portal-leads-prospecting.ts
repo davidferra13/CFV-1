@@ -3,7 +3,7 @@ import type { PageInfoEntry } from '../page-info-types'
 export const CHEF_PORTAL_LEADS_PROSPECTING_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/leads': {
     title: 'Website Leads',
-    description: 'Contact form submissions from your website — claim and convert to inquiries.',
+    description: 'Contact form submissions from your website - claim and convert to inquiries.',
     features: [
       'Lead list',
       'Claim into inquiry pipeline',
@@ -38,13 +38,13 @@ export const CHEF_PORTAL_LEADS_PROSPECTING_PAGE_INFO: Record<string, PageInfoEnt
 
   '/leads/archived': {
     title: 'Archived Leads',
-    description: 'Past or inactive leads — kept for reference.',
+    description: 'Past or inactive leads - kept for reference.',
     features: ['Archive history', 'Reactivation option', 'Reason tracking'],
   },
 
   '/prospecting': {
     title: 'Prospecting Hub',
-    description: 'AI-powered lead database — find and qualify new business opportunities.',
+    description: 'AI-powered lead database - find and qualify new business opportunities.',
     features: [
       'Prospect count and status',
       'Search and filter',
@@ -55,13 +55,13 @@ export const CHEF_PORTAL_LEADS_PROSPECTING_PAGE_INFO: Record<string, PageInfoEnt
 
   '/prospecting/[id]': {
     title: 'Prospect Detail',
-    description: 'Full view of a specific prospect — contact info, notes, and outreach history.',
+    description: 'Full view of a specific prospect - contact info, notes, and outreach history.',
     features: ['Prospect profile', 'Outreach history', 'Notes and follow-ups'],
   },
 
   '/prospecting/queue': {
     title: 'Call Queue',
-    description: 'Prospect call queue — outbound dialing and follow-up scheduling.',
+    description: 'Prospect call queue - outbound dialing and follow-up scheduling.',
     features: ['Call list', 'Priority ordering', 'Call outcomes'],
   },
 

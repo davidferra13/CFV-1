@@ -26,26 +26,28 @@ export default function GiftSuggestionsWidget() {
   useEffect(() => {
     let cancelled = false
     getGiftSuggestions()
-      .then(data => {
+      .then((data) => {
         if (!cancelled) {
           setSuggestions(data)
           setLoading(false)
         }
       })
-      .catch(err => {
+      .catch((err) => {
         if (!cancelled) {
           setError('Could not load gift suggestions')
           setLoading(false)
         }
       })
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   function handleQuickLog(suggestion: GiftSuggestion) {
     setError(null)
     const previousLogged = new Set(loggedIds)
 
-    setLoggedIds(prev => new Set(prev).add(suggestion.client_id + suggestion.type))
+    setLoggedIds((prev) => new Set(prev).add(suggestion.client_id + suggestion.type))
 
     startTransition(async () => {
       try {
@@ -89,10 +91,14 @@ export default function GiftSuggestionsWidget() {
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
       <h3 className="text-sm font-semibold text-gray-900 mb-1">Gift Suggestions</h3>
-      <p className="text-xs text-gray-500 mb-3">Upcoming occasions and re-engagement opportunities</p>
+      <p className="text-xs text-gray-500 mb-3">
+        Upcoming occasions and re-engagement opportunities
+      </p>
 
       {suggestions.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-4">No suggestions right now. Check back later!</p>
+        <p className="text-sm text-gray-400 text-center py-4">
+          No suggestions right now. Check back later!
+        </p>
       ) : (
         <div className="space-y-2">
           {suggestions.slice(0, 5).map((s, i) => {
@@ -105,8 +111,12 @@ export default function GiftSuggestionsWidget() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-900 truncate">{s.client_name}</span>
-                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${URGENCY_BADGE[s.urgency]}`}>
+                      <span className="text-sm font-medium text-gray-900 truncate">
+                        {s.client_name}
+                      </span>
+                      <span
+                        className={`rounded-full px-1.5 py-0.5 text-xxs font-medium ${URGENCY_BADGE[s.urgency]}`}
+                      >
                         {s.urgency}
                       </span>
                     </div>

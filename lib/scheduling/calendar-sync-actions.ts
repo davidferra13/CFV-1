@@ -1,4 +1,4 @@
-// Google Calendar Sync — Server Action Wrappers
+// Google Calendar Sync - Server Action Wrappers
 // Callable from client components (buttons, banners, etc.)
 // All actual API work is in calendar-sync.ts.
 

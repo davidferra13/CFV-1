@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ═══════════════════════════════════════════════════════════════════
-// Ollama Control Panel — Standalone Desktop Tool
+// Ollama Control Panel - Standalone Desktop Tool
 // ═══════════════════════════════════════════════════════════════════
 // Runs independently of the ChefFlow app. Use when locked out of
 // localhost, beta, or production. Talks directly to Ollama endpoints.
@@ -434,7 +434,7 @@ function getHTML() {
 </head>
 <body>
   <h1>Ollama Control Panel</h1>
-  <p class="subtitle">Standalone — bypasses ChefFlow app entirely</p>
+  <p class="subtitle">Standalone - bypasses ChefFlow app entirely</p>
 
   <div id="status-bar" class="status-bar offline">
     <span class="dot"></span>
@@ -468,7 +468,7 @@ function getHTML() {
   <div id="toast" class="toast hidden"></div>
 
   <div class="footer">
-    <p>Private AI — data stays on your machine</p>
+    <p>Private AI - data stays on your machine</p>
     <p style="margin-top:0.25rem">Ollama: <a href="${PC_URL}" target="_blank">${PC_URL}</a></p>
     <p style="margin-top:0.25rem">Auto-refreshes every 15s &nbsp;|&nbsp; Port ${PORT}</p>
   </div>

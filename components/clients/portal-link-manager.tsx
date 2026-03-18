@@ -120,12 +120,12 @@ export function PortalLinkManager({
         <Link2 className="h-4 w-4 text-emerald-500 shrink-0" />
         <span className="text-xs font-medium text-stone-300">Client Portal Active</span>
         {createdAt && (
-          <span className="text-[10px] text-stone-400">
+          <span className="text-xxs text-stone-400">
             Generated {new Date(createdAt).toLocaleDateString()}
           </span>
         )}
         {expiresAt && (
-          <span className="text-[10px] text-stone-400">
+          <span className="text-xxs text-stone-400">
             Expires {new Date(expiresAt).toLocaleDateString()}
           </span>
         )}
@@ -168,7 +168,7 @@ export function PortalLinkManager({
             Generate a new link to reveal a fresh shareable URL, or revoke the current one.
           </p>
           {lastUsedAt && (
-            <p className="mt-1 text-[11px] text-stone-500">
+            <p className="mt-1 text-xs-tight text-stone-500">
               Last used {new Date(lastUsedAt).toLocaleString()}
             </p>
           )}

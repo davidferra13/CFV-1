@@ -1,5 +1,5 @@
 // Remy Memory Types
-// No 'use server' — safe to import from any context
+// No 'use server' - safe to import from any context
 
 export type MemoryCategory =
   | 'chef_preference'

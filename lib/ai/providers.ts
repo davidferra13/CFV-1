@@ -1,5 +1,5 @@
 // AI Provider Configuration
-// No 'use server' — safe to import from any context (client, server, edge)
+// No 'use server' - safe to import from any context (client, server, edge)
 // Routing decisions and config for the privacy-first hybrid LLM system
 
 export type AIProvider = 'gemini' | 'ollama'
@@ -30,14 +30,14 @@ export function getOllamaConfig(): { baseUrl: string; model: string } {
  * Returns the Ollama model for a given task-complexity tier.
  *
  * Env vars:
- *   OLLAMA_MODEL_FAST    — small, fast model for classification tasks (~4B, fits in 6GB VRAM)
- *   OLLAMA_MODEL         — default model for structured extraction (~30B MoE)
- *   OLLAMA_MODEL_COMPLEX — large model for conversational/creative tasks (defaults to qwen3:30b)
+ *   OLLAMA_MODEL_FAST    - small, fast model for classification tasks (~4B, fits in 6GB VRAM)
+ *   OLLAMA_MODEL         - default model for structured extraction (~30B MoE)
+ *   OLLAMA_MODEL_COMPLEX - large model for conversational/creative tasks (defaults to qwen3:30b)
  *
  * Architecture rationale (RTX 3050, 6GB VRAM, 128GB RAM):
- *   fast    → qwen3:4b     — fits entirely in VRAM, 40-60 tok/s, for classification/intent parsing
- *   standard → qwen3-coder:30b — MoE (3.3B active), GPU+RAM split, 12-15 tok/s, structured JSON
- *   complex → qwen3:30b    — MoE (3.3B active), same speed, trained for prose/conversation
+ *   fast    → qwen3:4b     - fits entirely in VRAM, 40-60 tok/s, for classification/intent parsing
+ *   standard → qwen3-coder:30b - MoE (3.3B active), GPU+RAM split, 12-15 tok/s, structured JSON
+ *   complex → qwen3:30b    - MoE (3.3B active), same speed, trained for prose/conversation
  */
 export function getOllamaModel(tier: ModelTier = 'standard'): string {
   const defaultModel = process.env.OLLAMA_MODEL || 'qwen3-coder:30b'

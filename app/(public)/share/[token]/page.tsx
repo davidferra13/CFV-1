@@ -353,7 +353,7 @@ export default async function SharePage({ params }: { params: { token: string } 
           <a
             href="https://cheflowhq.com"
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             className="text-xs text-stone-500 hover:text-brand-400 transition-colors"
           >
             Powered by <span className="font-semibold">ChefFlow</span>

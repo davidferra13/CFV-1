@@ -83,9 +83,9 @@ export function isTransientError(error: unknown): boolean {
   // HTTP status-code based classification
   const status = extractHttpStatus(error)
   if (status !== null) {
-    if (status === 429) return true // Rate limited — always retry
+    if (status === 429) return true // Rate limited - always retry
     if (status >= 500 && status < 600) return true // Server errors
-    if (status >= 400 && status < 500) return false // Client errors — permanent
+    if (status >= 400 && status < 500) return false // Client errors - permanent
   }
 
   // Timeout errors

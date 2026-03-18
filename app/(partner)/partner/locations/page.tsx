@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 // Partner Portal - Locations list
 // Shows all locations the partner manages. Read-only overview;
 // click into a location for detail and event history.
 
+import Image from 'next/image'
 import { getPartnerPortalData } from '@/lib/partners/portal-actions'
 import Link from 'next/link'
 import { MapPin, ChevronRight } from '@/components/ui/icons'
@@ -45,10 +45,12 @@ export default async function PartnerLocationsPage() {
               >
                 {/* Thumbnail */}
                 {coverImg ? (
-                  <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-stone-800">
-                    <img
+                  <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-stone-800">
+                    <Image
                       src={coverImg}
                       alt={location.name}
+                      fill
+                      sizes="64px"
                       className="w-full h-full object-cover"
                     />
                   </div>

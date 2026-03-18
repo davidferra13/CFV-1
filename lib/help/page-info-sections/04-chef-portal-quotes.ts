@@ -3,7 +3,7 @@ import type { PageInfoEntry } from '../page-info-types'
 export const CHEF_PORTAL_QUOTES_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/quotes': {
     title: 'Quotes',
-    description: 'Your quote pipeline — draft, send, and track pricing proposals.',
+    description: 'Your quote pipeline - draft, send, and track pricing proposals.',
     features: [
       'Filter by status (draft, sent, accepted, rejected, expired, viewed)',
       'Quote value totals',
@@ -14,7 +14,7 @@ export const CHEF_PORTAL_QUOTES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/quotes/new': {
     title: 'New Quote',
-    description: 'Build a new pricing quote for a client — line items, pricing, and terms.',
+    description: 'Build a new pricing quote for a client - line items, pricing, and terms.',
     features: [
       'Line-item builder',
       'Per-person pricing calculator',
@@ -25,7 +25,7 @@ export const CHEF_PORTAL_QUOTES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/quotes/[id]': {
     title: 'Quote Detail',
-    description: 'View and manage a specific quote — pricing, status, and client response.',
+    description: 'View and manage a specific quote - pricing, status, and client response.',
     features: [
       'Full pricing breakdown',
       'Status tracking (draft → sent → accepted/rejected)',
@@ -48,7 +48,7 @@ export const CHEF_PORTAL_QUOTES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/quotes/draft': {
     title: 'Draft Quotes',
-    description: 'Quotes still being prepared — not yet sent to clients.',
+    description: 'Quotes still being prepared - not yet sent to clients.',
     features: ['Draft list', 'Potential revenue value', 'Quick edit and send'],
   },
 
@@ -60,13 +60,13 @@ export const CHEF_PORTAL_QUOTES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/quotes/accepted': {
     title: 'Accepted Quotes',
-    description: 'Quotes the client has accepted — ready to convert to events.',
+    description: 'Quotes the client has accepted - ready to convert to events.',
     features: ['Accepted quotes list', 'Convert to event action', 'Revenue confirmed'],
   },
 
   '/quotes/rejected': {
     title: 'Rejected Quotes',
-    description: 'Quotes that were declined by clients — learn and improve.',
+    description: 'Quotes that were declined by clients - learn and improve.',
     features: ['Rejection history', 'Feedback notes', 'Price comparison insights'],
   },
 

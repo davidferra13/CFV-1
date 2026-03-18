@@ -97,7 +97,7 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
     }
   }
 
-  // Fetch upcoming milestones (next 14 days) — using personal_milestones field
+  // Fetch upcoming milestones (next 14 days) - using personal_milestones field
   const { data: milestonesData } = await supabase
     .from('clients')
     .select('id, personal_milestones')
@@ -213,7 +213,7 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
         clientName,
         actionType: 'reach_out',
         label: 'Reach out before going cold',
-        description: `No event in ${score.daysSinceLastEvent ?? '?'} days — time to reconnect.`,
+        description: `No event in ${score.daysSinceLastEvent ?? '?'} days - time to reconnect.`,
         href: `/clients/${clientId}`,
         urgency: 'high',
         tier: score.tier,
@@ -225,7 +225,7 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
         clientName,
         actionType: 'ask_referral',
         label: 'Ask for a referral',
-        description: 'This is one of your strongest relationships — ideal for referrals.',
+        description: 'This is one of your strongest relationships - ideal for referrals.',
         href: `/clients/${clientId}`,
         urgency: 'normal',
         tier: score.tier,

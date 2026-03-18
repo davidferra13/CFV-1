@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { clientRedeemReward } from '@/lib/loyalty/client-loyalty-actions'
 import type { LoyaltyReward } from '@/lib/loyalty/actions'
 
@@ -79,40 +80,15 @@ export function RewardCard({
         </div>
       </div>
 
-      {showConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-stone-900 rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-stone-100 mb-2">Redeem Reward?</h3>
-            <p className="text-stone-400 mb-1">
-              You are redeeming <span className="font-medium text-stone-100">{reward.name}</span>.
-            </p>
-            <p className="text-stone-400 mb-6">
-              This will deduct{' '}
-              <span className="font-medium text-stone-100">{reward.points_required} points</span>{' '}
-              from your balance.
-            </p>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowConfirm(false)}
-                disabled={isPending}
-                className="flex-1 px-4 py-2 border border-stone-600 rounded-lg text-stone-300 hover:bg-stone-800 transition disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleRedeem}
-                disabled={isPending}
-                className="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition disabled:opacity-50"
-              >
-                {isPending ? 'Redeeming...' : 'Confirm Redeem'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        open={showConfirm}
+        title="Redeem Reward?"
+        description={`You are redeeming ${reward.name}. This will deduct ${reward.points_required} points from your balance.`}
+        confirmLabel="Confirm Redeem"
+        loading={isPending}
+        onConfirm={handleRedeem}
+        onCancel={() => setShowConfirm(false)}
+      />
     </>
   )
 }

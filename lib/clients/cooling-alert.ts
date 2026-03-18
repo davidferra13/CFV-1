@@ -1,4 +1,4 @@
-// Relationship Cooling Alert — pure computation, no server action.
+// Relationship Cooling Alert - pure computation, no server action.
 // Identifies clients whose relationships may be going cold based on inactivity.
 
 export type CoolingClient = {
@@ -35,7 +35,7 @@ export function findCoolingClients(
       const diffMs = now.getTime() - lastEvent.getTime()
       daysSinceLastEvent = Math.floor(diffMs / (1000 * 60 * 60 * 24))
     } else {
-      // Never had an event — use account age as proxy
+      // Never had an event - use account age as proxy
       daysSinceLastEvent = threshold + 1 // treat as cooling
     }
 

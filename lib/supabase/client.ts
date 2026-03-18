@@ -79,7 +79,7 @@ export function resolveGoogleOAuthCallbackUrl(
 
 /**
  * Sign in with Google OAuth via Supabase.
- * Must be called from a client component — triggers a full-page redirect.
+ * Must be called from a client component - triggers a full-page redirect.
  */
 export async function signInWithGoogle(nextPath?: string) {
   const supabase = createClient()

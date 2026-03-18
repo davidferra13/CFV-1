@@ -68,6 +68,7 @@ export default async function ClipboardPage({
           <Link
             href={`/stations/${params.id}/clipboard?date=${date}&print=true`}
             target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-600 px-3 py-2 text-sm text-stone-300 hover:bg-stone-700 transition-colors"
           >
             Print

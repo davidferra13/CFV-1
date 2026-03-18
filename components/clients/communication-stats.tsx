@@ -64,9 +64,7 @@ function StatCell({
     <div className="bg-stone-900 px-4 py-3">
       <div className="flex items-center gap-2 mb-1">
         <Icon className="w-3.5 h-3.5 text-stone-500" />
-        <span className="text-[10px] font-medium text-stone-500 uppercase tracking-wide">
-          {label}
-        </span>
+        <span className="text-xxs font-medium text-stone-500 uppercase tracking-wide">{label}</span>
       </div>
       <p className="text-lg font-semibold text-stone-100">{value}</p>
     </div>

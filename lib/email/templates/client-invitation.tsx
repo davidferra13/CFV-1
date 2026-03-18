@@ -23,7 +23,7 @@ export function ClientInvitationEmail({
       <Text style={heading}>You&apos;re invited!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        <strong>{chefName}</strong> has invited you to join ChefFlow — where you can view event
+        <strong>{chefName}</strong> has invited you to join ChefFlow - where you can view event
         details, review quotes, make payments, and communicate directly with your chef.
       </Text>
       <Button style={button} href={invitationUrl}>

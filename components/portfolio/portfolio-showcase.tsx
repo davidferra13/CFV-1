@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
 // PortfolioShowcase - Public-facing masonry grid for chef website/marketing.
@@ -6,6 +5,7 @@
 // No auth required. Uses signed URLs from server.
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import type { PublicPortfolioPhoto } from '@/lib/events/photo-actions'
 
 const PHOTO_TYPE_LABELS: Record<string, string> = {
@@ -81,11 +81,13 @@ export function PortfolioShowcase({ photos, chefName }: Props) {
             className="break-inside-avoid group relative cursor-pointer overflow-hidden rounded-xl"
             onClick={() => setLightboxIndex(idx)}
           >
-            <img
+            <Image
               src={photo.signedUrl}
               alt={photo.caption ?? 'Portfolio photo'}
+              width={600}
+              height={400}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="w-full h-auto block transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
             />
 
             {/* Caption overlay on hover */}
@@ -164,9 +166,12 @@ export function PortfolioShowcase({ photos, chefName }: Props) {
             className="flex flex-col items-center max-w-[90vw] max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            <img
+            <Image
               src={photos[lightboxIndex].signedUrl}
               alt={photos[lightboxIndex].caption ?? 'Portfolio photo'}
+              width={1200}
+              height={800}
+              sizes="90vw"
               className="max-w-full max-h-[80vh] object-contain rounded-lg"
             />
 

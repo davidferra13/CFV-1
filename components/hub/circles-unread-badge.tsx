@@ -48,7 +48,7 @@ export function CirclesUnreadBadge() {
   if (count <= 0) return null
 
   return (
-    <span className="ml-auto inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#e88f47] px-1 text-[10px] font-bold text-white">
+    <span className="ml-auto inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#e88f47] px-1 text-xxs font-bold text-white">
       {count > 99 ? '99+' : count}
     </span>
   )

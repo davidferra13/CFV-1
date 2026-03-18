@@ -106,7 +106,7 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
     <span
       className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${color}`}
     >
-      <span className="text-[10px]">
+      <span className="text-xxs">
         {'●'.repeat(confidence)}
         {'○'.repeat(5 - confidence)}
       </span>

@@ -93,7 +93,7 @@ function RatingSelector({
             `}
           >
             <span className="text-lg font-bold">{n}</span>
-            <span className="text-[10px] leading-tight mt-1">{labels[n]}</span>
+            <span className="text-xxs leading-tight mt-1">{labels[n]}</span>
           </button>
         ))}
       </div>
@@ -262,7 +262,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
               />
               <span className="text-sm">{ci.item}</span>
               {ci.category === 'learned' && ci.forgottenCount && (
-                <span className="text-[10px] text-red-500 ml-auto">x{ci.forgottenCount}</span>
+                <span className="text-xxs text-red-500 ml-auto">x{ci.forgottenCount}</span>
               )}
             </label>
           ))}

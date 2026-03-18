@@ -20,10 +20,10 @@ export type ClosureStreakData = {
 }
 
 const MILESTONE_MESSAGES: Record<number, string> = {
-  3: 'Hat trick — 3 events closed on time in a row!',
-  7: 'One week streak — your finances are pristine',
-  14: '2-week streak — the rare chef who closes clean',
-  30: 'Month-long streak — legendary closure discipline',
+  3: 'Hat trick - 3 events closed on time in a row!',
+  7: 'One week streak - your finances are pristine',
+  14: '2-week streak - the rare chef who closes clean',
+  30: 'Month-long streak - legendary closure discipline',
 }
 
 function getMilestoneMessage(streak: number): string | null {
@@ -91,7 +91,7 @@ export async function recordClosureForStreak(eventDate: string): Promise<void> {
     const lastDt = new Date(lastClosureDateStr + 'T12:00:00')
     const daysSinceLastClosure = (today.getTime() - lastDt.getTime()) / (1000 * 60 * 60 * 24)
     if (daysSinceLastClosure > 7) {
-      // Streak broken — start fresh
+      // Streak broken - start fresh
       newStreak = closedOnTime ? 1 : 0
     } else {
       newStreak = closedOnTime ? currentStreak + 1 : Math.max(0, currentStreak - 0) // don't penalize, just don't increment

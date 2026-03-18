@@ -545,7 +545,7 @@ export function RemyDrawer() {
           </div>
           {loading && <Loader2 className="h-4 w-4 animate-spin text-white/80 mt-1" />}
           {messages.length > 0 && !loading && (
-            <span className="text-[10px] text-white/50 font-medium">{messages.length}</span>
+            <span className="text-xxs text-white/50 font-medium">{messages.length}</span>
           )}
           <div className="flex-1" />
           <button
@@ -818,7 +818,7 @@ export function RemyDrawer() {
                   title="Speech speed"
                   className="w-full h-1.5 bg-stone-700 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
                 />
-                <div className="flex justify-between text-[10px] text-stone-300 mt-0.5">
+                <div className="flex justify-between text-xxs text-stone-300 mt-0.5">
                   <span>Slow</span>
                   <span>Normal</span>
                   <span>Fast</span>
@@ -845,7 +845,7 @@ export function RemyDrawer() {
                   title="Speech pitch"
                   className="w-full h-1.5 bg-stone-700 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
                 />
-                <div className="flex justify-between text-[10px] text-stone-300 mt-0.5">
+                <div className="flex justify-between text-xxs text-stone-300 mt-0.5">
                   <span>Lower</span>
                   <span>Normal</span>
                   <span>Higher</span>
@@ -872,7 +872,7 @@ export function RemyDrawer() {
                   title="Speech volume"
                   className="w-full h-1.5 bg-stone-700 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
                 />
-                <div className="flex justify-between text-[10px] text-stone-300 mt-0.5">
+                <div className="flex justify-between text-xxs text-stone-300 mt-0.5">
                   <span>Quiet</span>
                   <span>Full</span>
                 </div>
@@ -882,7 +882,7 @@ export function RemyDrawer() {
               <div className="flex items-center justify-between pt-1 border-t border-stone-700">
                 <div>
                   <label className="text-xs font-medium text-stone-300">Auto-read responses</label>
-                  <p className="text-[10px] text-stone-400 mt-0.5">
+                  <p className="text-xxs text-stone-400 mt-0.5">
                     Speak every new Remy response automatically
                   </p>
                 </div>
@@ -1031,7 +1031,7 @@ export function RemyDrawer() {
                       <p className="text-xs text-stone-300 mt-2 flex items-center gap-1">
                         <Globe className="h-3 w-3" />
                         Web search enabled. Conversations stay in your browser. Press{' '}
-                        <kbd className="bg-stone-700 dark:bg-stone-700 rounded px-1 py-0.5 text-[10px] font-mono">
+                        <kbd className="bg-stone-700 dark:bg-stone-700 rounded px-1 py-0.5 text-xxs font-mono">
                           Ctrl+J
                         </kbd>{' '}
                         anytime.
@@ -1214,7 +1214,7 @@ export function RemyDrawer() {
                                       )}
                                       {!item.editable && (
                                         <span
-                                          className="ml-2 inline-flex rounded-full border border-stone-600 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-stone-400"
+                                          className="ml-2 inline-flex rounded-full border border-stone-600 px-1.5 py-0.5 text-xxs uppercase tracking-wide text-stone-400"
                                           title="Managed in memory/runtime/remy.json"
                                         >
                                           VS Code
@@ -1404,12 +1404,12 @@ export function RemyDrawer() {
                       <Globe className="h-3 w-3" />
                       Remy can make mistakes. Please double-check important info.
                     </p>
-                    <p className="text-[10px] text-stone-500 italic">
+                    <p className="text-xxs text-stone-500 italic">
                       Responses may take a moment - Remy runs on a private, local AI.
                     </p>
                   </div>
                   <span
-                    className={`text-[10px] tabular-nums ${input.length >= 1800 ? (input.length >= 2000 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
+                    className={`text-xxs tabular-nums ${input.length >= 1800 ? (input.length >= 2000 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
                   >
                     {input.length}/2000
                   </span>

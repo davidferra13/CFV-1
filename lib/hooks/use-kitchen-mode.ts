@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 
-// Kitchen Mode — Continuous listening with wake word detection.
+// Kitchen Mode - Continuous listening with wake word detection.
 // Chef says "Hey Remy, [question]" and the question is captured + auto-sent.
 // Auto-restarts after silence. 30-min auto-timeout for battery/CPU.
 
@@ -138,7 +138,7 @@ export function useKitchenMode({ onMessage, isLoading }: UseKitchenModeConfig) {
 
     kitchenModeRef.current = true
     setKitchenMode(true)
-    toast.success('Kitchen Mode on — say "Hey Remy" to start')
+    toast.success('Kitchen Mode on - say "Hey Remy" to start')
 
     // Auto-timeout after 30 min
     autoTimeoutRef.current = setTimeout(() => {

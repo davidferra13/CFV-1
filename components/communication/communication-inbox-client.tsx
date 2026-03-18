@@ -269,6 +269,8 @@ export function CommunicationInboxClient({
           osc.start()
           gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
           osc.stop(ctx.currentTime + 0.3)
+          // Close the AudioContext after the sound finishes to prevent memory leak
+          setTimeout(() => ctx.close().catch(() => {}), 500)
           lastSoundPlayedRef.current = now
         } catch {
           // AudioContext not available
@@ -542,7 +544,7 @@ export function CommunicationInboxClient({
             <ListFilter className="h-3.5 w-3.5" />
             Smart Inbox
             {unreadCount > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold bg-red-600 text-white">
+              <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-xxs font-bold bg-red-600 text-white">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
@@ -557,9 +559,7 @@ export function CommunicationInboxClient({
           >
             <Mail className="h-3.5 w-3.5" />
             Raw Feed
-            {rawFeedLoaded && (
-              <span className="text-[10px] text-stone-500">({rawFeed.length})</span>
-            )}
+            {rawFeedLoaded && <span className="text-xxs text-stone-500">({rawFeed.length})</span>}
           </button>
         </div>
 
@@ -650,11 +650,11 @@ export function CommunicationInboxClient({
                       <span className="text-sm font-medium text-stone-200 truncate">
                         {msg.sender_identity}
                       </span>
-                      <span className="text-[10px] text-stone-600 flex-shrink-0">
+                      <span className="text-xxs text-stone-600 flex-shrink-0">
                         {timeAgo(msg.timestamp)}
                       </span>
                       {msg.direction === 'outbound' && (
-                        <span className="text-[10px] text-indigo-400 flex-shrink-0">You</span>
+                        <span className="text-xxs text-indigo-400 flex-shrink-0">You</span>
                       )}
                     </div>
                     <p className="text-xs text-stone-400 truncate mt-0.5">
@@ -663,22 +663,22 @@ export function CommunicationInboxClient({
                   </div>
                   <div className="flex-shrink-0 flex items-center gap-1.5">
                     {msg.is_dinner_opportunity && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-950 text-brand-400 border border-brand-800">
+                      <span className="text-xxs px-1.5 py-0.5 rounded bg-brand-950 text-brand-400 border border-brand-800">
                         dinner
                       </span>
                     )}
                     {msg.platform_email_type && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400">
+                      <span className="text-xxs px-1.5 py-0.5 rounded bg-stone-800 text-stone-400">
                         {msg.platform_email_type.replace(/^tac_/, '').replace(/^yhangry_/, '')}
                       </span>
                     )}
                     {msg.linked_entity_type && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400">
+                      <span className="text-xxs px-1.5 py-0.5 rounded bg-stone-800 text-stone-400">
                         {msg.linked_entity_type}
                       </span>
                     )}
                     {msg.status === 'resolved' && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-900/50 text-emerald-400">
+                      <span className="text-xxs px-1.5 py-0.5 rounded bg-emerald-900/50 text-emerald-400">
                         done
                       </span>
                     )}
@@ -871,7 +871,7 @@ export function CommunicationInboxClient({
 
               {/* Keyboard shortcut hint bar */}
               {shortcutsEnabled && focusedIndex >= 0 && (
-                <div className="flex items-center gap-3 text-[10px] text-stone-500 px-1">
+                <div className="flex items-center gap-3 text-xxs text-stone-500 px-1">
                   <span>
                     <kbd className="px-1 py-0.5 rounded bg-stone-800 text-stone-400 font-mono">
                       j

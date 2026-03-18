@@ -1,4 +1,4 @@
-// Chef Social Platform — Server Actions
+// Chef Social Platform - Server Actions
 // Cross-tenant social layer: posts, reactions, comments, follows,
 // channels, stories, notifications, saves, discovery.
 // All queries use admin client for cross-tenant access.
@@ -518,7 +518,7 @@ export async function getChannelFeed(input: {
       if (before) q = q.lt('created_at', before)
       return q
     })(),
-    // Strangers (no relationship): public only — channels show all members' public posts
+    // Strangers (no relationship): public only - channels show all members' public posts
     (async () => {
       let q = baseQ()
         .not('chef_id', 'in', `(${knownIds.join(',')})`)

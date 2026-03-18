@@ -1,14 +1,14 @@
-// Cloudinary — image/video CDN + transformations
+// Cloudinary - image/video CDN + transformations
 // https://cloudinary.com/
 // 25 credits/month free, no credit card
 // Resize, crop, optimize images on the fly via URL
 
 /**
  * Cloudinary URL-based image transformations.
- * No SDK needed — just construct URLs with transformation parameters.
+ * No SDK needed - just construct URLs with transformation parameters.
  *
  * Env vars needed:
- *   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME — your cloud name (e.g. "chefflow")
+ *   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME - your cloud name (e.g. "chefflow")
  */
 
 function getCloudName(): string {
@@ -124,7 +124,7 @@ interface FetchOptimizeOptions {
 
 /**
  * Optimize any external image URL via Cloudinary's fetch delivery type.
- * No upload required — Cloudinary fetches the image from the original URL,
+ * No upload required - Cloudinary fetches the image from the original URL,
  * applies transformations, and serves it through its CDN.
  *
  * Falls back to the original URL if:

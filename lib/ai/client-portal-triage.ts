@@ -3,7 +3,7 @@
 // Client Portal Auto-Triage
 // When chef is mid-service (event status = in_progress), classifies incoming client
 // portal messages and drafts holding responses. Routed to Ollama (client PII).
-// Output is DRAFT ONLY — chef must approve before sending any response.
+// Output is DRAFT ONLY - chef must approve before sending any response.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -88,7 +88,7 @@ Return JSON: {
     return {
       urgency: 'normal',
       category: 'other',
-      summary: 'Unable to classify — review manually',
+      summary: 'Unable to classify - review manually',
       draftResponse: `Hi ${clientName}, thank you for your message. I'll follow up with you shortly.`,
       suggestedFollowUpAt: 'within 2 hours',
       confidence: 'low',

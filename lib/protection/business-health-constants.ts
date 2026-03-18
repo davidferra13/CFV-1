@@ -1,4 +1,4 @@
-// Business Health Checklist — static constants
+// Business Health Checklist - static constants
 // Exported from a separate file (no 'use server') so they can be imported
 // by both server actions and client components without restriction.
 

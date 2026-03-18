@@ -1,4 +1,4 @@
-// AI Task Queue — Type Definitions
+// AI Task Queue - Type Definitions
 // Pure types. No logic. No 'use server'.
 // Shared across worker, actions, UI, and registry.
 
@@ -7,7 +7,7 @@
 // ============================================
 
 /**
- * Priority ladder — higher = processed first.
+ * Priority ladder - higher = processed first.
  * Interactive Remy chat BYPASSES the queue entirely (direct Ollama).
  * These priorities govern everything else.
  */
@@ -30,16 +30,16 @@ export type AiPriorityLevel = (typeof AI_PRIORITY)[keyof typeof AI_PRIORITY]
 
 /**
  * Every AI task declares its approval tier upfront.
- * This is enforced by the queue — not optional.
+ * This is enforced by the queue - not optional.
  *
- * auto  — Executes, result stored, chef sees it on next visit.
+ * auto  - Executes, result stored, chef sees it on next visit.
  *         Example: lead scoring, allergen check, daily briefing.
  *
- * draft — Executes, result held as a draft for chef review.
+ * draft - Executes, result held as a draft for chef review.
  *         Chef must approve before it becomes visible/actionable.
  *         Example: email drafts, event creation, social captions.
  *
- * hold  — Cannot execute without chef input first.
+ * hold  - Cannot execute without chef input first.
  *         Chef is presented options/questions, then execution proceeds.
  *         Example: ambiguous requests, multi-option decisions.
  */
@@ -52,8 +52,8 @@ export type ApprovalTier = 'auto' | 'draft' | 'hold'
 export type AiTaskStatus =
   | 'pending' // Queued, waiting for worker
   | 'processing' // Worker has claimed it, Ollama is running
-  | 'completed' // Done — result stored (auto tier)
-  | 'awaiting_approval' // Done — result held for chef review (draft tier)
+  | 'completed' // Done - result stored (auto tier)
+  | 'awaiting_approval' // Done - result held for chef review (draft tier)
   | 'approved' // Chef approved the draft
   | 'rejected' // Chef rejected the draft
   | 'failed' // Execution failed (will retry if attempts < max)
@@ -94,7 +94,7 @@ export interface AiTaskDefinition {
   maxAttempts: number
   /** For recurring tasks: PostgreSQL interval string, null for one-shot */
   recurrence: string | null
-  /** The handler function — receives payload, returns result */
+  /** The handler function - receives payload, returns result */
   handler: (payload: Record<string, unknown>, tenantId: string) => Promise<Record<string, unknown>>
 }
 
@@ -174,12 +174,12 @@ export interface WorkerState {
 }
 
 // ============================================
-// OLLAMA GUARD — SAFETY CONSTANTS
+// OLLAMA GUARD - SAFETY CONSTANTS
 // ============================================
 
 /**
  * Hard limits to prevent Ollama from being overwhelmed.
- * These are non-negotiable — the system degrades gracefully
+ * These are non-negotiable - the system degrades gracefully
  * rather than melting the machine.
  */
 export const OLLAMA_GUARD = {

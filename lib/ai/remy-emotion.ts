@@ -1,4 +1,4 @@
-// Remy Emotion Detection — Deterministic keyword matching
+// Remy Emotion Detection - Deterministic keyword matching
 // Formula > AI: simple, instant, free, and correct enough.
 // Runs once per completed response, not per character.
 

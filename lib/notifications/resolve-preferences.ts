@@ -30,7 +30,7 @@ export type ResolvedChannels = ChannelSet & {
  * Resolve which delivery channels should fire for a notification.
  *
  * Returns a `ResolvedChannels` object. All boolean fields are guaranteed
- * to be concrete (never null/undefined) — callers can check directly.
+ * to be concrete (never null/undefined) - callers can check directly.
  *
  * SMS will only be true if:
  *   - The tier/preference enables it, AND
@@ -48,7 +48,7 @@ export async function resolveChannels(
   const defaults = getDefaultChannels(action)
   const tier = DEFAULT_TIER_MAP[action]
 
-  // Start with tier defaults — will be overridden by DB prefs below
+  // Start with tier defaults - will be overridden by DB prefs below
   let resolved: ChannelSet = { ...defaults }
 
   try {
@@ -80,7 +80,7 @@ export async function resolveChannels(
       resolved.email = false
     }
 
-    // 3. SMS gate — requires explicit opt-in and phone number
+    // 3. SMS gate - requires explicit opt-in and phone number
     let smsPhone: string | null = null
     if (resolved.sms) {
       const { data: prefs } = await supabase

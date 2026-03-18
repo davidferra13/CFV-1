@@ -13,14 +13,14 @@ type RecipeNutritionPanelProps = {
 
 // Common allergens to flag based on ingredient names
 const ALLERGEN_KEYWORDS: Record<string, string[]> = {
-  'Dairy': ['milk', 'cream', 'butter', 'cheese', 'yogurt', 'whey', 'casein', 'lactose'],
-  'Gluten': ['wheat', 'flour', 'bread', 'pasta', 'barley', 'rye', 'semolina'],
-  'Nuts': ['almond', 'walnut', 'pecan', 'cashew', 'pistachio', 'hazelnut', 'macadamia', 'peanut'],
-  'Shellfish': ['shrimp', 'crab', 'lobster', 'prawn', 'crawfish', 'crayfish'],
-  'Fish': ['salmon', 'tuna', 'cod', 'halibut', 'anchovy', 'sardine', 'tilapia', 'bass'],
-  'Eggs': ['egg', 'eggs', 'mayonnaise'],
-  'Soy': ['soy', 'tofu', 'edamame', 'tempeh', 'miso'],
-  'Sesame': ['sesame', 'tahini'],
+  Dairy: ['milk', 'cream', 'butter', 'cheese', 'yogurt', 'whey', 'casein', 'lactose'],
+  Gluten: ['wheat', 'flour', 'bread', 'pasta', 'barley', 'rye', 'semolina'],
+  Nuts: ['almond', 'walnut', 'pecan', 'cashew', 'pistachio', 'hazelnut', 'macadamia', 'peanut'],
+  Shellfish: ['shrimp', 'crab', 'lobster', 'prawn', 'crawfish', 'crayfish'],
+  Fish: ['salmon', 'tuna', 'cod', 'halibut', 'anchovy', 'sardine', 'tilapia', 'bass'],
+  Eggs: ['egg', 'eggs', 'mayonnaise'],
+  Soy: ['soy', 'tofu', 'edamame', 'tempeh', 'miso'],
+  Sesame: ['sesame', 'tahini'],
 }
 
 /**
@@ -150,22 +150,22 @@ export function RecipeNutritionPanel({ recipeId, recipeName }: RecipeNutritionPa
         {/* Nutrition label */}
         <div className="shrink-0">
           <NutritionLabel
-            nutrients={nutritionData.hasOverride && nutritionData.overrideData
-              ? nutritionData.overrideData
-              : nutritionData.totalNutrients}
+            nutrients={
+              nutritionData.hasOverride && nutritionData.overrideData
+                ? nutritionData.overrideData
+                : nutritionData.totalNutrients
+            }
             servings={nutritionData.servings}
             recipeName={nutritionData.recipeName}
           />
           {nutritionData.hasOverride && (
-            <p className="text-[10px] text-gray-400 mt-1">Using manually overridden values</p>
+            <p className="text-xxs text-gray-400 mt-1">Using manually overridden values</p>
           )}
         </div>
 
         {/* Ingredient breakdown */}
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-semibold text-gray-700 mb-2">
-            Ingredient Breakdown
-          </h4>
+          <h4 className="text-sm font-semibold text-gray-700 mb-2">Ingredient Breakdown</h4>
           <div className="rounded-md border border-gray-200 overflow-hidden">
             <table className="w-full text-xs">
               <thead>
@@ -181,10 +181,7 @@ export function RecipeNutritionPanel({ recipeId, recipeName }: RecipeNutritionPa
               </thead>
               <tbody>
                 {nutritionData.ingredients.map((ing) => (
-                  <tr
-                    key={ing.ingredientId}
-                    className="border-t border-gray-100 hover:bg-gray-50"
-                  >
+                  <tr key={ing.ingredientId} className="border-t border-gray-100 hover:bg-gray-50">
                     <td className="px-3 py-1.5 text-gray-900 truncate max-w-[150px]">
                       {ing.ingredientName}
                     </td>
@@ -200,12 +197,13 @@ export function RecipeNutritionPanel({ recipeId, recipeName }: RecipeNutritionPa
                     <td className="text-right px-2 py-1.5 text-gray-600">
                       {ing.nutrients.carbs_g}
                     </td>
-                    <td className="text-right px-2 py-1.5 text-gray-600">
-                      {ing.nutrients.fat_g}
-                    </td>
+                    <td className="text-right px-2 py-1.5 text-gray-600">{ing.nutrients.fat_g}</td>
                     <td className="text-center px-2 py-1.5">
                       {ing.isEstimated ? (
-                        <span className="text-amber-500" title="No USDA match - values may be inaccurate">
+                        <span
+                          className="text-amber-500"
+                          title="No USDA match - values may be inaccurate"
+                        >
                           ?
                         </span>
                       ) : (
@@ -221,7 +219,7 @@ export function RecipeNutritionPanel({ recipeId, recipeName }: RecipeNutritionPa
           </div>
 
           {nutritionData.completeness < 100 && (
-            <p className="text-[10px] text-gray-400 mt-1.5">
+            <p className="text-xxs text-gray-400 mt-1.5">
               Ingredients marked with ? need to be linked to USDA foods for accurate nutrition data.
             </p>
           )}
@@ -305,10 +303,7 @@ function CompletenessBar({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="w-20 h-2 rounded-full bg-gray-200 overflow-hidden">
-        <div
-          className={`h-full rounded-full ${color}`}
-          style={{ width: `${value}%` }}
-        />
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${value}%` }} />
       </div>
       <span className="text-xs text-gray-500">{value}% matched</span>
     </div>

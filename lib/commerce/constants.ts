@@ -1,5 +1,5 @@
-// Commerce Engine V1 — Constants & Labels
-// NOT a server action file — no 'use server'.
+// Commerce Engine V1 - Constants & Labels
+// NOT a server action file - no 'use server'.
 
 // ─── Sale Status ──────────────────────────────────────────────────
 
@@ -38,7 +38,7 @@ export const SALE_STATUS_COLORS: Record<SaleStatus, string> = {
   voided: 'error',
 }
 
-// Terminal states — no further transitions allowed
+// Terminal states - no further transitions allowed
 export const TERMINAL_SALE_STATUSES: SaleStatus[] = ['fully_refunded', 'voided']
 
 // ─── Sale Channels ────────────────────────────────────────────────

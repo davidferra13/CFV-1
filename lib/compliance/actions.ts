@@ -141,7 +141,7 @@ const TempLogSchema = z.object({
 
 export type TempLogInput = z.infer<typeof TempLogSchema>
 
-// NOTE: SAFE_TEMP_RANGES has been moved to './constants' — import from there instead.
+// NOTE: SAFE_TEMP_RANGES has been moved to './constants' - import from there instead.
 
 export async function logTemperature(input: TempLogInput) {
   const chef = await requireChef()

@@ -218,7 +218,7 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
               <a
                 href={selectedEvent ? `/api/cannabis/rsvps/${selectedEvent.id}/summary` : '#'}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="px-3 py-2 rounded-lg text-xs font-semibold text-center transition-opacity hover:opacity-90"
                 style={{
                   background: 'linear-gradient(135deg, #2d5a30 0%, #4a7c4e 100%)',
@@ -454,7 +454,7 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
                       {guest.fullName}
                     </p>
                     <span
-                      className="inline-flex px-2 py-0.5 rounded-full text-[11px]"
+                      className="inline-flex px-2 py-0.5 rounded-full text-xs-tight"
                       style={{
                         background: pillColor(guest.cannabisParticipation),
                         color: '#d6ebd8',
@@ -513,7 +513,7 @@ function StatCell({
         border: `1px solid ${emphasize ? 'rgba(115,90,40,0.4)' : 'rgba(74,124,78,0.16)'}`,
       }}
     >
-      <p className="text-[11px] uppercase tracking-wider" style={{ color: '#799c7c' }}>
+      <p className="text-xs-tight uppercase tracking-wider" style={{ color: '#799c7c' }}>
         {label}
       </p>
       <p className="text-lg font-semibold leading-tight" style={{ color: '#e4f2e5' }}>

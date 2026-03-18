@@ -1,4 +1,4 @@
-// Availability Signal Settings — Server Actions
+// Availability Signal Settings - Server Actions
 // Manages chef opt-in to show target_booking signals on their public profile,
 // and client opt-out from receiving signal notifications.
 

@@ -106,7 +106,7 @@ export async function getRebookingPredictions(): Promise<RebookingInsights | nul
       factors.push('First-time client')
     }
 
-    // Recency (0-30 pts) — more recent = higher score
+    // Recency (0-30 pts) - more recent = higher score
     if (daysSinceLast <= 30) {
       score += 30
       factors.push('Very recent (within 30 days)')
@@ -124,7 +124,7 @@ export async function getRebookingPredictions(): Promise<RebookingInsights | nul
       factors.push(`${daysSinceLast} days since last event`)
     }
 
-    // Regularity (0-20 pts) — consistent interval = higher score
+    // Regularity (0-20 pts) - consistent interval = higher score
     if (avgDaysBetween > 0 && eventDates.length >= 3) {
       const intervals: number[] = []
       for (let i = 1; i < eventDates.length; i++) {

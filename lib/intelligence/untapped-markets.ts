@@ -158,7 +158,7 @@ export async function getUntappedMarkets(): Promise<UntappedMarketsResult | null
       } else if (conversionRate >= 60) {
         recommendation = `Strong performer at ${conversionRate}% conversion. Consider marketing more.`
       } else {
-        recommendation = `${conversionRate}% conversion — room for improvement.`
+        recommendation = `${conversionRate}% conversion - room for improvement.`
       }
 
       return {

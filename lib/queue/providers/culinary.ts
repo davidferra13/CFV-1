@@ -1,4 +1,4 @@
-// Priority Queue — Culinary Provider
+// Priority Queue - Culinary Provider
 // Surfaces: draft menus on upcoming events, seasonal micro-windows ending soon
 
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -104,7 +104,7 @@ export async function getCulinaryQueueItems(
       }
     }
   } catch {
-    // Seasonal palettes may not be configured — graceful degradation
+    // Seasonal palettes may not be configured - graceful degradation
   }
 
   return items

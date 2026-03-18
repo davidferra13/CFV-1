@@ -302,7 +302,7 @@ export async function createPrepBlock(
 }
 
 /**
- * Save multiple blocks at once — used when chef confirms a batch of suggestions.
+ * Save multiple blocks at once - used when chef confirms a batch of suggestions.
  * This is the only path after autoSuggestEventBlocks. AI policy compliant:
  * the suggestions are never auto-saved; this is always triggered by chef action.
  */
@@ -526,7 +526,7 @@ export async function autoPlacePrepBlocks(eventId: string): Promise<{
 // ============================================
 
 /**
- * Generate suggestions for a single event — does NOT save to DB.
+ * Generate suggestions for a single event - does NOT save to DB.
  * The caller shows these to the chef for review.
  * Only bulkCreatePrepBlocks() (triggered by explicit chef action) persists them.
  *
@@ -561,7 +561,7 @@ export async function autoSuggestEventBlocks(eventId: string): Promise<{
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const schedulingEvent = mapEventToScheduling(event as Record<string, any>)
 
-    // Run engine — pure computation
+    // Run engine - pure computation
     const suggestions = suggestPrepBlocks(schedulingEvent, existingBlocks, prefs)
 
     return { suggestions }

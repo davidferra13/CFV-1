@@ -3,8 +3,8 @@
 // AAR (After-Action Report) Generator
 // AI drafts the full AAR narrative from event data.
 // Extends lib/events/debrief-actions.ts which has only partial AI.
-// Routed to LOCAL Ollama (complex tier) — private data never leaves the machine.
-// Output is DRAFT ONLY — chef edits and confirms before the AAR is finalized.
+// Routed to LOCAL Ollama (complex tier) - private data never leaves the machine.
+// Output is DRAFT ONLY - chef edits and confirms before the AAR is finalized.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -53,7 +53,7 @@ export async function generateAARDraft(eventId: string): Promise<AARDraft> {
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  // event_menu_components is not in generated types — table exists in DB but not yet in types/database.ts
+  // event_menu_components is not in generated types - table exists in DB but not yet in types/database.ts
   const menuResult = (await (supabase.from as Function)('event_menu_components')
     .select('name, course_type, description')
     .eq('event_id', eventId)) as {
@@ -65,7 +65,7 @@ export async function generateAARDraft(eventId: string): Promise<AARDraft> {
     .select('description, amount_cents, category')
     .eq('event_id', eventId)
 
-  // aars table is not in generated types — table exists in DB but not yet in types/database.ts
+  // aars table is not in generated types - table exists in DB but not yet in types/database.ts
   const debrief = (await (supabase.from as Function)('aars')
     .select('chef_notes, client_feedback, rating')
     .eq('event_id', eventId)
@@ -99,7 +99,7 @@ export async function generateAARDraft(eventId: string): Promise<AARDraft> {
   const marginPct = totalRevenue > 0 ? Math.round((grossProfit / totalRevenue) * 100) : 0
 
   const systemPrompt = `You are a private chef writing your own after-action report for a recently completed event.
-Write in first person, honest and reflective. This is for the chef's own records — be candid.
+Write in first person, honest and reflective. This is for the chef's own records - be candid.
 Base your analysis entirely on the data provided. Do not invent details not evidenced.
 For areas with no data, note "Not recorded" rather than guessing.
 
@@ -131,7 +131,7 @@ FINANCIALS:
   Expenses: $${(totalExpenses / 100).toFixed(2)} (${expenses.length} entries)
   Gross profit: $${(grossProfit / 100).toFixed(2)} (${marginPct}% margin)
   Expense breakdown:
-${expenses.map((e) => `  - ${e.category ?? 'other'}: $${((e.amount_cents ?? 0) / 100).toFixed(2)} — ${e.description}`).join('\n') || '  No expenses logged'}
+${expenses.map((e) => `  - ${e.category ?? 'other'}: $${((e.amount_cents ?? 0) / 100).toFixed(2)} - ${e.description}`).join('\n') || '  No expenses logged'}
 
 TEMPERATURE LOG (${temps.length} entries):
 ${temps.map((t) => `  - ${t.item_description}: ${t.temp_fahrenheit}°F at ${t.phase ?? 'unknown phase'}`).join('\n') || '  No temp log'}

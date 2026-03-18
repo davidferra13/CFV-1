@@ -1,4 +1,4 @@
-// REST Countries — free country data API, no key required
+// REST Countries - free country data API, no key required
 // https://restcountries.com/
 // No signup, no limits
 // Useful for international client forms, phone codes, currency info
@@ -23,7 +23,7 @@ export interface Country {
 }
 
 /**
- * Get all countries — cached heavily, data rarely changes.
+ * Get all countries - cached heavily, data rarely changes.
  * Useful for populating country dropdowns on client forms.
  */
 export async function getAllCountries(): Promise<Country[]> {

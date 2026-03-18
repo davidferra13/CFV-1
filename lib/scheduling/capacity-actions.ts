@@ -1,6 +1,6 @@
 'use server'
 
-// Capacity Ceiling & Workload Protection — Server Actions
+// Capacity Ceiling & Workload Protection - Server Actions
 // Reads and writes capacity limits on the chefs table.
 // Columns were added by migration 20260322000012_capacity_protection.sql.
 
@@ -56,7 +56,7 @@ export async function getCapacitySettings(): Promise<CapacitySettings & OffHours
   }
 }
 
-// ─── Write — Workload Limits ──────────────────────────────────────────────────
+// ─── Write - Workload Limits ──────────────────────────────────────────────────
 
 export async function updateCapacitySettings(input: {
   max_events_per_week?: number | null
@@ -88,7 +88,7 @@ export async function updateCapacitySettings(input: {
   return { success: true }
 }
 
-// ─── Write — Off-Hours ────────────────────────────────────────────────────────
+// ─── Write - Off-Hours ────────────────────────────────────────────────────────
 
 export async function updateOffHoursSettings(input: {
   off_hours_start?: string | null

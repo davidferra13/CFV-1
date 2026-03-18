@@ -333,7 +333,7 @@ export function VendorDocumentIntake({ vendorId, uploads }: VendorDocumentIntake
                         {summarizeUploadDetails(upload).map((line, idx) => (
                           <p
                             key={`${upload.id}-detail-${idx}`}
-                            className="text-[11px] text-stone-500"
+                            className="text-xs-tight text-stone-500"
                           >
                             {line}
                           </p>
@@ -344,7 +344,7 @@ export function VendorDocumentIntake({ vendorId, uploads }: VendorDocumentIntake
                           <a
                             href={upload.download_url}
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                             className="text-brand-400 hover:text-brand-300 hover:underline"
                           >
                             Open

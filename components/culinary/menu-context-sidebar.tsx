@@ -94,7 +94,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
           </h4>
           {context.clientAllergies.length > 0 && (
             <div>
-              <p className="text-[10px] text-red-400 font-medium mb-1">ALLERGIES</p>
+              <p className="text-xxs text-red-400 font-medium mb-1">ALLERGIES</p>
               <div className="flex flex-wrap gap-1">
                 {context.clientAllergies.map((allergy) => (
                   <Badge key={allergy} variant="error">
@@ -106,7 +106,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
           )}
           {context.clientDietary.length > 0 && (
             <div>
-              <p className="text-[10px] text-stone-500 font-medium mb-1">Restrictions</p>
+              <p className="text-xxs text-stone-500 font-medium mb-1">Restrictions</p>
               <div className="flex flex-wrap gap-1">
                 {context.clientDietary.map((restriction) => (
                   <Badge key={restriction} variant="warning">
@@ -136,16 +136,14 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
                   {pm.name}
                 </span>
                 {pm.eventDate && (
-                  <span className="text-stone-500 text-[10px]">
+                  <span className="text-stone-500 text-xxs">
                     {new Date(pm.eventDate).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                     })}
                   </span>
                 )}
-                {pm.guestCount && (
-                  <span className="text-stone-600 text-[10px]">{pm.guestCount}g</span>
-                )}
+                {pm.guestCount && <span className="text-stone-600 text-xxs">{pm.guestCount}g</span>}
               </Link>
             ))}
           </div>

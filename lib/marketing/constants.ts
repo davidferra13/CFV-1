@@ -27,12 +27,12 @@ export const SYSTEM_TEMPLATES = [
   {
     name: 'Re-Engagement',
     campaign_type: 're_engagement',
-    subject: "It's been a while — dinner soon?",
+    subject: "It's been a while - dinner soon?",
     body_html: `Hi {{first_name}},
 
 I was just thinking about you and realized it's been a while since we last cooked together.
 
-I'd love to plan something special for you — whether it's an intimate dinner, a celebration, or just a chance to enjoy a great meal at home.
+I'd love to plan something special for you - whether it's an intimate dinner, a celebration, or just a chance to enjoy a great meal at home.
 
 I have some new dishes I'm excited to share. Want to catch up?
 
@@ -47,7 +47,7 @@ Warmly,
 
 The new season is here and I couldn't be more excited to share what I've been working on.
 
-I've updated my menus with the best ingredients coming into market right now — fresh, local, and full of flavor.
+I've updated my menus with the best ingredients coming into market right now - fresh, local, and full of flavor.
 
 If you've been thinking about booking a dinner, this is a great time. Spots are filling up quickly.
 
@@ -64,7 +64,7 @@ Best,
 
 Happy birthday! I hope this year brings you everything you're hoping for.
 
-If you'd like to celebrate with a special dinner — just for you and your favorite people — I'd be honored to cook for you.
+If you'd like to celebrate with a special dinner - just for you and your favorite people - I'd be honored to cook for you.
 
 Reach out anytime and we'll make it happen.
 
@@ -79,7 +79,7 @@ With warmth,
 
 I just wanted to say thank you again for having me cook for you. It was genuinely one of my favorite events.
 
-I hope everything was exactly what you had in mind — and that everyone left happy and full.
+I hope everything was exactly what you had in mind - and that everyone left happy and full.
 
 If you ever want to do it again, or if you have friends looking for a private chef experience, I'd love to hear from you.
 
@@ -94,7 +94,7 @@ Take care,
 
 I've been developing something new and I think you're going to love it.
 
-I'd love to tell you more — and ideally, cook it for you soon.
+I'd love to tell you more - and ideally, cook it for you soon.
 
 If you're interested, just reply to this email and we can figure out the details.
 
@@ -104,12 +104,12 @@ Looking forward to it,
   {
     name: 'Holiday Availability',
     campaign_type: 'seasonal',
-    subject: 'Holiday dinners — limited dates available',
+    subject: 'Holiday dinners - limited dates available',
     body_html: `Hi {{first_name}},
 
 The holidays are coming up fast and I'm already booking private dinners for the season.
 
-If you're planning a gathering — Thanksgiving, Christmas, New Year's, or anything in between — I'd love to help make it special.
+If you're planning a gathering - Thanksgiving, Christmas, New Year's, or anything in between - I'd love to help make it special.
 
 Dates are limited, so reach out soon if you'd like to reserve one.
 

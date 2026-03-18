@@ -1,4 +1,4 @@
-// Sentry — error tracking + crash reporting
+// Sentry - error tracking + crash reporting
 // https://sentry.io/
 // 5,000 errors/month free, no credit card
 // Know when your app breaks in production
@@ -27,6 +27,25 @@ export function captureChefError(
     eventId: context.eventId,
     action: context.action,
   })
+
+  // Fire developer alert for captured errors (rate-limited per action)
+  try {
+    const { sendDeveloperAlert } = require('../email/developer-alerts')
+    const system = context.action ? `sentry-${context.action}` : 'sentry-general'
+    sendDeveloperAlert({
+      severity: 'warning' as const,
+      system,
+      title: `Error: ${error.message.slice(0, 80)}`,
+      description: error.stack?.slice(0, 500) || error.message,
+      context: {
+        ...(context.action ? { action: context.action } : {}),
+        ...(context.chefId ? { chefId: context.chefId } : {}),
+        ...(context.eventId ? { eventId: context.eventId } : {}),
+      },
+    })
+  } catch {
+    // Alert must never affect error capture
+  }
 }
 
 /**
@@ -42,7 +61,7 @@ export function trackBusinessEvent(
   data?: Record<string, string | number | boolean>
 ): void {
   // Lightweight reporter doesn't support breadcrumbs.
-  // Log to console for now — these are informational, not errors.
+  // Log to console for now - these are informational, not errors.
   if (process.env.NODE_ENV === 'development') {
     console.log(`[sentry:business] ${eventName}`, data)
   }
@@ -64,7 +83,7 @@ export function setUserContext(_user: { id: string; email?: string; role?: strin
  * Clear user context on logout.
  */
 export function clearUserContext(): void {
-  // No-op in lightweight mode — user context is per-error, not global.
+  // No-op in lightweight mode - user context is per-error, not global.
 }
 
 // Re-export the core reporter for direct use

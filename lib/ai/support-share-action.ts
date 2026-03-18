@@ -1,7 +1,7 @@
 'use server'
 
 /**
- * Support Share Action — voluntary conversation sharing with ChefFlow support.
+ * Support Share Action - voluntary conversation sharing with ChefFlow support.
  *
  * This is the ONLY way conversation content reaches ChefFlow's servers:
  * the chef explicitly taps "Send to Support" inside a specific conversation.

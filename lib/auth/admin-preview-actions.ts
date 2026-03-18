@@ -1,4 +1,4 @@
-// Admin Preview Mode — Server Actions
+// Admin Preview Mode - Server Actions
 // Toggle the preview cookie. Only real admins can set it.
 
 'use server'
@@ -24,7 +24,7 @@ export async function toggleAdminPreview(enabled: boolean): Promise<void> {
       path: '/',
       httpOnly: true,
       sameSite: 'lax',
-      // No maxAge — session cookie, clears on browser close
+      // No maxAge - session cookie, clears on browser close
     })
   } else {
     store.delete(PREVIEW_COOKIE)

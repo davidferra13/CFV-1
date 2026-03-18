@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 /**
- * Bulk decline inquiries — sets status to 'declined' for the given inquiry IDs.
+ * Bulk decline inquiries - sets status to 'declined' for the given inquiry IDs.
  * Only affects inquiries owned by the authenticated chef's tenant.
  */
 export async function bulkDeclineInquiries(ids: string[]) {
@@ -30,7 +30,7 @@ export async function bulkDeclineInquiries(ids: string[]) {
 }
 
 /**
- * Bulk archive inquiries — soft-deletes inquiries by setting `deleted_at`.
+ * Bulk archive inquiries - soft-deletes inquiries by setting `deleted_at`.
  * Only affects inquiries owned by the authenticated chef's tenant.
  */
 export async function bulkArchiveInquiries(ids: string[]) {

@@ -1,4 +1,4 @@
-// Portfolio photo permission check — pure computation
+// Portfolio photo permission check - pure computation
 
 export type PhotoPermissionStatus = {
   effectivePermission: 'none' | 'portfolio_only' | 'public_with_approval' | 'public_freely'

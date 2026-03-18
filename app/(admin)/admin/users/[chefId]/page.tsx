@@ -49,7 +49,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
   const accountStatus: 'active' | 'suspended' =
     chef.account_status === 'suspended' ? 'suspended' : 'active'
 
-  const [eventsResult, clientsResult, ledgerResult] = await Promise.all([
+  const [eventsSettled, clientsSettled, ledgerSettled] = await Promise.allSettled([
     supabase
       .from('events')
       .select('id, occasion, status, event_date, quoted_price_cents, guest_count')
@@ -69,6 +69,27 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       .order('created_at', { ascending: false })
       .limit(50),
   ])
+  const eventsResult =
+    eventsSettled.status === 'fulfilled'
+      ? eventsSettled.value
+      : (() => {
+          console.error('[admin-chef] Events query failed:', eventsSettled.reason)
+          return { data: null }
+        })()
+  const clientsResult =
+    clientsSettled.status === 'fulfilled'
+      ? clientsSettled.value
+      : (() => {
+          console.error('[admin-chef] Clients query failed:', clientsSettled.reason)
+          return { data: null }
+        })()
+  const ledgerResult =
+    ledgerSettled.status === 'fulfilled'
+      ? ledgerSettled.value
+      : (() => {
+          console.error('[admin-chef] Ledger query failed:', ledgerSettled.reason)
+          return { data: null }
+        })()
 
   const events = eventsResult.data ?? []
   const clients = clientsResult.data ?? []

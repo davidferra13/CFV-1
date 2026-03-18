@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Checkout Actions
+// Commerce Engine V1 - Checkout Actions
 // Atomic counter checkout: creates sale + items + payment in one call.
 // Used by the POS register for fast counter transactions.
 
@@ -801,7 +801,7 @@ async function syncRegisterSessionTotals(ctx: {
 // ─── Counter Checkout ────────────────────────────────────────────
 
 /**
- * Atomic counter checkout — creates a sale with items and a payment
+ * Atomic counter checkout - creates a sale with items and a payment
  * in one server action call. Optimized for POS speed.
  *
  * Steps:
@@ -1614,7 +1614,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     }
   }
 
-  // 8. Inventory deduction (non-blocking — if it fails, the sale still succeeds)
+  // 8. Inventory deduction (non-blocking - if it fails, the sale still succeeds)
   try {
     const { executeSaleDeduction } = await import('./inventory-bridge')
     await executeSaleDeduction(sale.id)

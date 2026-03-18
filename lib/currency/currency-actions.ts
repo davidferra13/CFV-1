@@ -20,7 +20,7 @@ export type CurrencyConversion = {
  * Convert an amount from one currency to another.
  * Returns a formatted result suitable for display.
  * Amounts are in major units (dollars, not cents).
- * Non-blocking — returns null on failure.
+ * Non-blocking - returns null on failure.
  */
 export async function convertQuoteAmount(
   amountCents: number,

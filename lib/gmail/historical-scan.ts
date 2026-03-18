@@ -6,7 +6,7 @@
 // - Runs via cron (no user session). Uses admin Supabase client.
 // - Processes BATCH_SIZE messages per call, persists pagination token so it
 //   resumes exactly where it left off on next run.
-// - Reuses existing gmail_sync_log dedup constraint — any email already
+// - Reuses existing gmail_sync_log dedup constraint - any email already
 //   processed by the live sync is automatically skipped.
 // - Only surfaces inquiry + existing_thread classifications as findings.
 //   Personal, spam, and marketing emails are silently discarded.
@@ -61,7 +61,7 @@ export async function runHistoricalScanBatch(
     return result
   }
 
-  // Safety checks — bail out immediately if scan should not be running
+  // Safety checks - bail out immediately if scan should not be running
   if (!conn.gmail_connected) {
     result.errors.push('Gmail not connected')
     result.status = 'error'
@@ -101,7 +101,7 @@ export async function runHistoricalScanBatch(
     const sinceStr = `${since.getFullYear()}/${String(since.getMonth() + 1).padStart(2, '0')}/${String(since.getDate()).padStart(2, '0')}`
     gmailQuery = `after:${sinceStr}`
   } else {
-    // Full scan — no date restriction, scan entire inbox history
+    // Full scan - no date restriction, scan entire inbox history
     gmailQuery = 'in:anywhere'
   }
 
@@ -189,7 +189,7 @@ async function processHistoricalMessage(
   knownClientEmails: string[],
   result: HistoricalScanBatchResult
 ) {
-  // Dedup — skip if already in gmail_sync_log (live sync or prior historical scan)
+  // Dedup - skip if already in gmail_sync_log (live sync or prior historical scan)
   const { data: existing } = await supabase
     .from('gmail_sync_log')
     .select('id')
@@ -321,7 +321,7 @@ async function logScanEntry(
       classification,
       confidence,
       action_taken: actionTaken,
-      // Remy email awareness — store body content for search/context
+      // Remy email awareness - store body content for search/context
       body_preview: email.body?.slice(0, 2000) || null,
       snippet: email.body?.slice(0, 200) || null,
       received_at: receivedAt,

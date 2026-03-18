@@ -119,7 +119,7 @@ function db(supabase: any) {
 
 /**
  * Record a single inventory transaction.
- * The inventory_transactions table is append-only — this creates a new ledger entry.
+ * The inventory_transactions table is append-only - this creates a new ledger entry.
  */
 export async function recordInventoryTransaction(
   input: RecordTransactionInput

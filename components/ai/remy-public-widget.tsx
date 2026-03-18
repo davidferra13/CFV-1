@@ -281,7 +281,7 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
             )}
           </button>
         </div>
-        <p className="mt-1.5 text-center text-[10px] text-stone-500">
+        <p className="mt-1.5 text-center text-xxs text-stone-500">
           Remy can make mistakes. Please double-check important info.
         </p>
       </div>

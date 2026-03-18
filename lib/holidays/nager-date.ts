@@ -1,10 +1,10 @@
-// Nager.Date — free public holiday API, no key required
+// Nager.Date - free public holiday API, no key required
 // https://date.nager.at/API
 // Unlimited requests, 100+ countries
 
 import { cacheGet, cacheSet } from '@/lib/cache/upstash'
 
-const CACHE_TTL = 90 * 24 * 60 * 60 // 90 days — holidays for a year never change once published
+const CACHE_TTL = 90 * 24 * 60 * 60 // 90 days - holidays for a year never change once published
 
 export interface PublicHoliday {
   date: string // YYYY-MM-DD
@@ -27,7 +27,7 @@ export interface HolidayCheck {
 /**
  * Get all public holidays for a country + year.
  * Default: US holidays.
- * Cached in Upstash Redis for 90 days — holidays for a year never change once published.
+ * Cached in Upstash Redis for 90 days - holidays for a year never change once published.
  */
 export async function getPublicHolidays(
   year: number,
@@ -40,7 +40,7 @@ export async function getPublicHolidays(
     const cached = await cacheGet<PublicHoliday[]>(cacheKey)
     if (cached !== null) return cached
   } catch {
-    // Redis down — fall through to API
+    // Redis down - fall through to API
   }
 
   try {
@@ -90,7 +90,7 @@ export async function checkHoliday(date: string | Date, countryCode = 'US'): Pro
 }
 
 /**
- * Check if a date falls on a "premium" holiday — dates where private chefs
+ * Check if a date falls on a "premium" holiday - dates where private chefs
  * typically charge surge pricing (Thanksgiving, Christmas Eve, NYE, July 4th, etc.)
  */
 export async function isPremiumHoliday(

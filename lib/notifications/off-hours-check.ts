@@ -1,5 +1,5 @@
 // Off-hours notification suppression
-// Pure function — no 'use server', no DB access
+// Pure function - no 'use server', no DB access
 
 export const BYPASS_ACTIONS = [
   'payment_overdue',

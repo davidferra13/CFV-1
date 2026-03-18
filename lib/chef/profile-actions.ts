@@ -191,7 +191,7 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
 
 /**
  * Upload a chef business logo and save the resulting public URL on the profile.
- * Separate from the profile photo — this is the brand/business logo mark.
+ * Separate from the profile photo - this is the brand/business logo mark.
  */
 export async function uploadChefLogo(formData: FormData): Promise<{ success: true; url: string }> {
   const user = await requireChef()

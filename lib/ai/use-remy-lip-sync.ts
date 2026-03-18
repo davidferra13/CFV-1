@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-// useRemyLipSync — React hook that drives Remy's mouth animation
+// useRemyLipSync - React hook that drives Remy's mouth animation
 // Consumes streaming text and outputs the current viseme for rendering.
 
 import { useState, useRef, useCallback, useEffect } from 'react'
@@ -13,7 +13,7 @@ export interface LipSyncState {
   currentViseme: Viseme
   /** Whether Remy is currently "speaking" (animating mouth) */
   isSpeaking: boolean
-  /** Current emotion — determines the rest-state face between responses */
+  /** Current emotion - determines the rest-state face between responses */
   currentEmotion: RemyEmotion
 }
 
@@ -41,8 +41,8 @@ interface LipSyncInternals {
  *
  * The hook handles:
  * - Digraph detection across token boundaries (S|HOULD → SH)
- * - Natural timing — punctuation causes longer pauses
- * - Queue management — fast token bursts don't skip frames
+ * - Natural timing - punctuation causes longer pauses
+ * - Queue management - fast token bursts don't skip frames
  * - Automatic return to resting when queue drains
  * - Emotion detection from accumulated response text
  */
@@ -70,14 +70,14 @@ export function useRemyLipSync(): LipSyncState & {
 
     if (state.frameQueue.length === 0) {
       state.isProcessing = false
-      // Don't immediately go to rest — wait a beat for more tokens
+      // Don't immediately go to rest - wait a beat for more tokens
       state.timer = setTimeout(() => {
         // If still no frames after the grace period, go to rest
         if (state.frameQueue.length === 0) {
           setCurrentViseme('rest')
           setIsSpeaking(false)
         } else {
-          // More frames arrived during grace period — keep going
+          // More frames arrived during grace period - keep going
           processNextFrame()
         }
       }, 150) // Grace period for next streaming token
@@ -154,12 +154,12 @@ export function useRemyLipSync(): LipSyncState & {
       setCurrentViseme('rest')
       setIsSpeaking(false)
     }
-    // Otherwise, let the queue drain naturally — processNextFrame will
+    // Otherwise, let the queue drain naturally - processNextFrame will
     // set rest when it's done.
   }, [])
 
   /**
-   * Full reset — clear everything. Call when starting a new conversation
+   * Full reset - clear everything. Call when starting a new conversation
    * or when the user cancels a request.
    */
   const reset = useCallback(() => {

@@ -1,6 +1,6 @@
 // Recurring Task Engine
 // Checks all tasks with recurring_rule and generates new instances for a given date.
-// Idempotent — skips if a task with the same title + due_date + template already exists.
+// Idempotent - skips if a task with the same title + due_date + template already exists.
 
 'use server'
 

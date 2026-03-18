@@ -257,7 +257,7 @@ export function ZapierSettings({ initialSubscriptions }: { initialSubscriptions:
                         {sub.event_types.map((event) => (
                           <span
                             key={event}
-                            className="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400"
+                            className="text-xxs px-1.5 py-0.5 rounded bg-stone-800 text-stone-400"
                           >
                             {EVENT_LABELS[event] || event}
                           </span>

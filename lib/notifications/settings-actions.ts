@@ -1,5 +1,5 @@
 'use server'
-// Notification Settings — Server Actions
+// Notification Settings - Server Actions
 // Reads and writes per-category channel preferences and SMS setup.
 // All mutations are scoped to the authenticated chef's own user.
 

@@ -4,10 +4,10 @@
 // To activate persistent rate limiting:
 //   1. Create a free Upstash Redis database at https://upstash.com (free tier: 10k commands/day)
 //   2. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in your Vercel environment variables
-//   3. That's it — the limiter automatically switches to Redis when the env vars are present
+//   3. That's it - the limiter automatically switches to Redis when the env vars are present
 //
 // Without Upstash configured, this falls back to the in-memory limiter
-// (resets on deploy, per-process only — acceptable for low-traffic situations).
+// (resets on deploy, per-process only - acceptable for low-traffic situations).
 
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'

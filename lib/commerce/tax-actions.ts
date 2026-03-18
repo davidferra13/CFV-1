@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Tax Actions
+// Commerce Engine V1 - Tax Actions
 // Line-item tax computation for commerce sales.
 // Wraps the existing API Ninjas tax calculation with commerce-specific logic.
 
@@ -41,8 +41,8 @@ const TAX_CLASS_MULTIPLIERS: Record<TaxClass, number> = {
   standard: 1.0,
   reduced: 0.5, // Reduced rate = 50% of standard
   exempt: 0.0, // No tax
-  alcohol: 1.0, // Full rate (may have additional surcharges — future)
-  cannabis: 1.0, // Full rate (may have additional surcharges — future)
+  alcohol: 1.0, // Full rate (may have additional surcharges - future)
+  cannabis: 1.0, // Full rate (may have additional surcharges - future)
   prepared_food: 1.0, // Most jurisdictions tax prepared food at standard rate
   zero: 0.0, // Zero-rated
 }

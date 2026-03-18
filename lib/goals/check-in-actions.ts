@@ -115,7 +115,7 @@ export async function getManualGoalCurrentValue(
   return rows.reduce((sum, r) => sum + (r.logged_value ?? 0), 0)
 }
 
-// ── Get recent check-ins for admin use (no auth check — caller must scope) ────
+// ── Get recent check-ins for admin use (no auth check - caller must scope) ────
 
 export async function getManualGoalRecentCheckIns(
   supabase: { from: (table: string) => unknown },

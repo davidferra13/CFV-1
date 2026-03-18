@@ -112,7 +112,7 @@ export default async function AdminFeedbackPage() {
                           {row.message.length > 140 ? row.message.slice(0, 140) + '…' : row.message}
                         </span>
                         {row.metadata && typeof row.metadata === 'object' ? (
-                          <div className="mt-1 text-[11px] text-slate-500">
+                          <div className="mt-1 text-xs-tight text-slate-500">
                             {[
                               typeof row.metadata['deviceType'] === 'string'
                                 ? `device: ${row.metadata['deviceType']}`

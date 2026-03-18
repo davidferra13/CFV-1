@@ -2,8 +2,8 @@
 
 // Temperature Log Anomaly Detection
 // Analyzes food temperature log entries and flags food-safety violations.
-// Routed to Ollama (internal operational data — not external PII but sensitive).
-// Output is INSIGHT ONLY — flags for chef review, never modifies temp log records.
+// Routed to Ollama (internal operational data - not external PII but sensitive).
+// Output is INSIGHT ONLY - flags for chef review, never modifies temp log records.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -90,7 +90,7 @@ Return JSON: {
   }))
 
   const { result, source } = await withAiFallback(
-    // Formula: deterministic FDA rules — always correct, always available
+    // Formula: deterministic FDA rules - always correct, always available
     () => analyzeTempLogFormula(formulaEntries),
     // AI: enhanced analysis with contextual nuance (when Ollama is online)
     () =>

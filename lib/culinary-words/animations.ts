@@ -1,12 +1,12 @@
 /**
- * Culinary Word Animations — every word animates to FEEL like itself.
+ * Culinary Word Animations - every word animates to FEEL like itself.
  *
  * ~20 animation families, each word hand-mapped.
  * CSS keyframes live in globals.css under the "Culinary Board Animations" section
  */
 
 export type CulinaryAnimation =
-  | 'shatter' // rapid shake + jitter — crunchy, crispy things
+  | 'shatter' // rapid shake + jitter - crunchy, crispy things
   | 'melt' // droop downward + soften
   | 'bounce' // spring up/down
   | 'float' // drift upward gently
@@ -360,7 +360,7 @@ export function getWordAnimation(word: string): CulinaryAnimation {
 }
 
 /**
- * CSS class name for an animation — add this class on click, remove on animationend.
+ * CSS class name for an animation - add this class on click, remove on animationend.
  */
 export function getAnimationClass(anim: CulinaryAnimation): string {
   return 'culinary-anim-' + anim

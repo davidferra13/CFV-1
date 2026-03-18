@@ -1,7 +1,7 @@
-// IP-API — free IP geolocation, no key required
+// IP-API - free IP geolocation, no key required
 // https://ip-api.com/
 // 45 requests/minute, unlimited total
-// NOTE: Free tier is HTTP only (not HTTPS) — use server-side only
+// NOTE: Free tier is HTTP only (not HTTPS) - use server-side only
 
 export interface IpGeoResult {
   status: 'success' | 'fail'
@@ -21,7 +21,7 @@ export interface IpGeoResult {
 
 /**
  * Get geolocation data from an IP address.
- * IMPORTANT: Server-side only — free tier is HTTP, not HTTPS.
+ * IMPORTANT: Server-side only - free tier is HTTP, not HTTPS.
  * Pass the client's IP from request headers.
  */
 export async function getGeoFromIp(ip: string): Promise<IpGeoResult | null> {
@@ -39,7 +39,7 @@ export async function getGeoFromIp(ip: string): Promise<IpGeoResult | null> {
   try {
     const res = await fetch(
       `http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,regionName,city,zip,lat,lon,timezone,currency,isp,query`,
-      { next: { revalidate: 86400 } } // cache 24h — IP location rarely changes
+      { next: { revalidate: 86400 } } // cache 24h - IP location rarely changes
     )
     if (!res.ok) return null
     const data: IpGeoResult = await res.json()

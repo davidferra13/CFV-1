@@ -1,11 +1,23 @@
 // POS Register Page - product grid + cart + payment
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { listProducts } from '@/lib/commerce/product-actions'
 import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
-import { PosRegister } from '@/components/commerce/pos-register'
+
+const PosRegister = dynamic(
+  () => import('@/components/commerce/pos-register').then((m) => m.PosRegister),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-600 border-t-brand-500" />
+      </div>
+    ),
+    ssr: false,
+  }
+)
 import { getPaymentTerminalAdapter } from '@/lib/commerce/terminal'
 import { getPosHardwareStack } from '@/lib/commerce/hardware'
 import { getRecipes } from '@/lib/recipes/actions'

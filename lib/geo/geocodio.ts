@@ -1,11 +1,11 @@
-// Geocodio — free geocoding + address autocomplete (US + Canada)
+// Geocodio - free geocoding + address autocomplete (US + Canada)
 // https://www.geocod.io/
 // 2,500 requests/day free, no credit card
 
 import { cacheGet, cacheSet } from '@/lib/cache/upstash'
 
 const GEOCODIO_BASE = 'https://api.geocod.io/v1.7'
-const CACHE_TTL = 7 * 24 * 60 * 60 // 7 days — addresses don't move
+const CACHE_TTL = 7 * 24 * 60 * 60 // 7 days - addresses don't move
 
 export interface GeocodioResult {
   formatted_address: string
@@ -38,7 +38,7 @@ function getApiKey(): string {
 }
 
 /**
- * Forward geocode — address string to lat/lng.
+ * Forward geocode - address string to lat/lng.
  * Great for converting event addresses to coordinates.
  * Cached in Upstash Redis for 7 days.
  */
@@ -50,7 +50,7 @@ export async function geocodeAddress(address: string): Promise<GeocodioResult | 
     const cached = await cacheGet<GeocodioResult>(cacheKey)
     if (cached !== null) return cached
   } catch {
-    // Redis down — fall through to API
+    // Redis down - fall through to API
   }
 
   try {
@@ -65,7 +65,7 @@ export async function geocodeAddress(address: string): Promise<GeocodioResult | 
     const data: GeocodeResponse = await res.json()
     const result = data.results?.[0] ?? null
 
-    // Store in Upstash (non-blocking — don't await in critical path)
+    // Store in Upstash (non-blocking - don't await in critical path)
     if (result) {
       cacheSet(cacheKey, result, CACHE_TTL).catch(() => {})
     }
@@ -77,7 +77,7 @@ export async function geocodeAddress(address: string): Promise<GeocodioResult | 
 }
 
 /**
- * Reverse geocode — lat/lng to address.
+ * Reverse geocode - lat/lng to address.
  * Cached in Upstash Redis for 7 days.
  */
 export async function reverseGeocode(lat: number, lng: number): Promise<GeocodioResult | null> {
@@ -87,7 +87,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Geocodio
     const cached = await cacheGet<GeocodioResult>(cacheKey)
     if (cached !== null) return cached
   } catch {
-    // Redis down — fall through to API
+    // Redis down - fall through to API
   }
 
   try {
@@ -113,7 +113,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Geocodio
 }
 
 /**
- * Batch geocode — multiple addresses at once.
+ * Batch geocode - multiple addresses at once.
  * Useful for importing client lists with addresses.
  * Max 10,000 addresses per batch.
  */

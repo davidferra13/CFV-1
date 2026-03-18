@@ -200,13 +200,13 @@ export function generateTimeline(
     isFlexible: false,
   })
 
-  // 4. PACKING — prep completion and packing start are the same moment.
+  // 4. PACKING - prep completion and packing start are the same moment.
   // Showing both at the same timestamp creates duplicate entries; fold into one.
   const carPackedMinutes = departMinutes - packingMinutes
   timeline.push({
     id: 'packing',
     time: formatTime(carPackedMinutes),
-    label: 'Prep complete — start packing',
+    label: 'Prep complete - start packing',
     description: `All food prep done. Pack coolers, equipment, and supplies. ${packingMinutes} min.`,
     type: 'packing',
     isDeadline: false,
@@ -215,7 +215,7 @@ export function generateTimeline(
 
   // 5. START PREP / HOME FROM SHOPPING
   // In shop-day-before flow: explicit start_prep block (chef is already home).
-  // In day-of shopping flow: home_from_shopping carries the prep-start meaning —
+  // In day-of shopping flow: home_from_shopping carries the prep-start meaning;
   // adding start_prep at the same timestamp would create a duplicate like finish_prep did.
   const startPrepMinutes = carPackedMinutes - prepMinutes
   const prepHoursLabel = `${Math.round((prepMinutes / 60) * 10) / 10} hours of prep work.`
@@ -223,14 +223,14 @@ export function generateTimeline(
   let wakeMinutesTarget: number
 
   if (!p.shop_day_before && !shoppingHandledElsewhere) {
-    // Day-of shopping — show shopping blocks in the timeline.
+    // Day-of shopping - show shopping blocks in the timeline.
     const homeFromShoppingMinutes = startPrepMinutes
     const leaveForStoreMinutes = homeFromShoppingMinutes - shoppingMinutes - buildRouteDriveTime(p)
 
     timeline.push({
       id: 'home_from_shopping',
       time: formatTime(homeFromShoppingMinutes),
-      label: 'Home from shopping — start prep',
+      label: 'Home from shopping - start prep',
       description: `All ingredients in the house. ${prepHoursLabel}`,
       type: 'shopping',
       isDeadline: false,
@@ -319,7 +319,7 @@ function buildRoute(
   let totalDrive = 0
 
   // Only include store stops when shopping day-of.
-  // If shop_day_before is true, shopping happened yesterday — today's route is HOME → CLIENT only.
+  // If shop_day_before is true, shopping happened yesterday - today's route is HOME → CLIENT only.
   if (!p.shop_day_before && stores.length > 0) {
     const perStoreMinutes = Math.max(10, Math.round(p.default_shopping_minutes / stores.length))
 

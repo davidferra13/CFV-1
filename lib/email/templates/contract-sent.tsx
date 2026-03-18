@@ -1,4 +1,4 @@
-// Contract Sent — Client Notification Email
+// Contract Sent - Client Notification Email
 // Sent to the client when the chef sends a contract for e-signature.
 
 import { Text, Link } from '@react-email/components'
@@ -14,7 +14,7 @@ type Props = {
 
 export function ContractSentEmail({ clientName, occasion, eventDate, signingUrl }: Props) {
   return (
-    <BaseLayout preview={`Your service contract is ready to sign — ${occasion}`}>
+    <BaseLayout preview={`Your service contract is ready to sign - ${occasion}`}>
       <Text style={heading}>Your contract is ready</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

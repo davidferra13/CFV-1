@@ -107,7 +107,7 @@ export function PrintableCard({
               className="rounded-lg"
             />
 
-            <p className="text-[10px] text-stone-300 mt-4">Scan with your phone's camera</p>
+            <p className="text-xxs text-stone-300 mt-4">Scan with your phone's camera</p>
           </div>
         </div>
       </div>

@@ -112,7 +112,7 @@ export async function requireChef(): Promise<AuthUser> {
     throw new Error('Unauthorized: Chef access required')
   }
 
-  // Check suspension status — additive column added by migration 20260307000004
+  // Check suspension status - additive column added by migration 20260307000004
   // account_status defaults to 'active'; only present after that migration is applied.
   if (user.entityId) {
     const supabase = createServerClient()
@@ -158,7 +158,7 @@ export async function requireAuth(): Promise<AuthUser> {
 }
 
 /**
- * Require partner role — used in partner portal pages and server actions.
+ * Require partner role - used in partner portal pages and server actions.
  * Partners are referral sources (Airbnb hosts, venue owners) who have claimed
  * their invite and logged in. They are NOT chefs or clients.
  */
@@ -209,7 +209,7 @@ export async function requirePartner(): Promise<PartnerAuthUser> {
 }
 
 /**
- * Require staff role — used in staff portal pages and server actions.
+ * Require staff role - used in staff portal pages and server actions.
  * Staff are kitchen/service team members who have their own limited login.
  * They see tasks, recipes, schedules, and station clipboards scoped to their chef (tenant).
  */
@@ -260,7 +260,7 @@ export async function requireStaff(): Promise<StaffAuthUser> {
 }
 
 /**
- * Require platform admin with chef context — email must be in ADMIN_EMAILS env var.
+ * Require platform admin with chef context - email must be in ADMIN_EMAILS env var.
  * Returns full AuthUser (with tenantId) for server actions that need both admin + chef data.
  * For page-level admin gating (redirect on failure), use requireAdmin() from lib/auth/admin.ts.
  */

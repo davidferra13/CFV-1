@@ -35,7 +35,7 @@ export function ComparativePeriodsWidget({ periods }: Props) {
             <button
               type="button"
               onClick={() => setMode('month')}
-              className={`text-[10px] px-2 py-0.5 rounded ${mode === 'month' ? 'bg-brand-700 text-brand-100' : 'bg-stone-800 text-stone-400'}`}
+              className={`text-xxs px-2 py-0.5 rounded ${mode === 'month' ? 'bg-brand-700 text-brand-100' : 'bg-stone-800 text-stone-400'}`}
             >
               vs Last Month
             </button>
@@ -43,7 +43,7 @@ export function ComparativePeriodsWidget({ periods }: Props) {
               <button
                 type="button"
                 onClick={() => setMode('year')}
-                className={`text-[10px] px-2 py-0.5 rounded ${mode === 'year' ? 'bg-brand-700 text-brand-100' : 'bg-stone-800 text-stone-400'}`}
+                className={`text-xxs px-2 py-0.5 rounded ${mode === 'year' ? 'bg-brand-700 text-brand-100' : 'bg-stone-800 text-stone-400'}`}
               >
                 vs Last Year
               </button>
@@ -69,7 +69,7 @@ export function ComparativePeriodsWidget({ periods }: Props) {
           />
         </div>
 
-        <p className="text-[10px] text-stone-500 text-right">{label}</p>
+        <p className="text-xxs text-stone-500 text-right">{label}</p>
       </CardContent>
     </Card>
   )

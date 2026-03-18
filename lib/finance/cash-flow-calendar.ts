@@ -1,7 +1,7 @@
 'use server'
 
 // Cash Flow Calendar
-// Returns a month's worth of daily cash flow — payments in (ledger_entries)
+// Returns a month's worth of daily cash flow - payments in (ledger_entries)
 // and upcoming event payment plan installments due.
 
 import { requireChef } from '@/lib/auth/get-user'

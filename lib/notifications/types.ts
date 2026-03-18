@@ -70,7 +70,7 @@ export type NotificationAction =
   | 'goal_nudge'
   | 'goal_milestone'
   | 'goal_weekly_digest'
-  // Protection — insurance & certifications
+  // Protection - insurance & certifications
   | 'insurance_expiring_30d'
   | 'insurance_expiring_7d'
   | 'cert_expiring_90d'
@@ -88,7 +88,7 @@ export type NotificationAction =
   | 'quarterly_checkin_due'
   // Client portal visit (real-time visitor alert)
   | 'client_portal_visit'
-  // Restaurant Ops — Phase 7
+  // Restaurant Ops - Phase 7
   | 'staff_assignment'
   | 'task_assigned'
   | 'schedule_change'
@@ -193,7 +193,7 @@ export const NOTIFICATION_CONFIG: Record<
   // Wix - toast new submissions (time-sensitive leads)
   wix_submission: { category: 'inquiry', icon: 'Globe', toastByDefault: true },
 
-  // Client behavior / intent signals — always toast (time-sensitive, act now)
+  // Client behavior / intent signals - always toast (time-sensitive, act now)
   client_on_payment_page: { category: 'payment', icon: 'CreditCard', toastByDefault: true },
   client_viewed_quote: { category: 'quote', icon: 'Eye', toastByDefault: true },
   quote_viewed_after_delay: { category: 'quote', icon: 'Clock', toastByDefault: true },
@@ -220,11 +220,11 @@ export const NOTIFICATION_CONFIG: Record<
   goal_milestone: { category: 'goals', icon: 'Trophy', toastByDefault: true },
   goal_weekly_digest: { category: 'goals', icon: 'BarChart2', toastByDefault: false },
 
-  // Protection — insurance expiry
+  // Protection - insurance expiry
   insurance_expiring_30d: { category: 'protection', icon: 'ShieldAlert', toastByDefault: false },
   insurance_expiring_7d: { category: 'protection', icon: 'ShieldAlert', toastByDefault: true },
 
-  // Protection — certification expiry
+  // Protection - certification expiry
   cert_expiring_90d: { category: 'protection', icon: 'Award', toastByDefault: false },
   cert_expiring_30d: { category: 'protection', icon: 'Award', toastByDefault: false },
   cert_expiring_7d: { category: 'protection', icon: 'Award', toastByDefault: true },
@@ -242,10 +242,10 @@ export const NOTIFICATION_CONFIG: Record<
   no_education_logged_90d: { category: 'wellbeing', icon: 'BookOpen', toastByDefault: false },
   quarterly_checkin_due: { category: 'wellbeing', icon: 'ClipboardCheck', toastByDefault: false },
 
-  // Client portal visit — real-time visitor alert
+  // Client portal visit - real-time visitor alert
   client_portal_visit: { category: 'client', icon: 'Eye', toastByDefault: true },
 
-  // Restaurant Ops — Phase 7
+  // Restaurant Ops - Phase 7
   staff_assignment: { category: 'ops', icon: 'UserCheck', toastByDefault: true },
   task_assigned: { category: 'ops', icon: 'ClipboardList', toastByDefault: true },
   schedule_change: { category: 'ops', icon: 'CalendarClock', toastByDefault: true },

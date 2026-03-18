@@ -1327,7 +1327,7 @@ export async function duplicateMenu(menuId: string) {
 // ============================================
 
 /**
- * Clone a menu — creates a draft copy with "(Copy)" suffix.
+ * Clone a menu - creates a draft copy with "(Copy)" suffix.
  * Copies the full hierarchy: menu → dishes → components.
  * The clone is never attached to an event and is never a template.
  */
@@ -1426,7 +1426,7 @@ export type PrepTimelineSlot = {
 }
 
 /**
- * Get prep timeline for a menu — components grouped by prep_day_offset
+ * Get prep timeline for a menu - components grouped by prep_day_offset
  */
 export async function getMenuPrepTimeline(menuId: string): Promise<PrepTimelineSlot[]> {
   const user = await requireChef()

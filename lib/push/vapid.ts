@@ -1,7 +1,7 @@
 // VAPID Key Management and JWT Signing
 // VAPID (Voluntary Application Server Identification) is required by Web Push.
 // Keys are generated once and stored as environment variables. Never rotate unless
-// the private key is compromised — rotation invalidates all existing subscriptions.
+// the private key is compromised - rotation invalidates all existing subscriptions.
 //
 // Generate keys (run once in Node.js REPL or via npx web-push generate-vapid-keys):
 //   const { subtle } = require('crypto').webcrypto
@@ -9,13 +9,13 @@
 //   // Export and base64url-encode both keys
 //
 // Environment variables required:
-//   VAPID_PUBLIC_KEY   — base64url-encoded P-256 public key (~88 chars)
-//   VAPID_PRIVATE_KEY  — base64url-encoded P-256 private key (~43 chars)
-//   VAPID_CONTACT_EMAIL — mailto: URI, e.g. mailto:admin@cheflowhq.com
+//   VAPID_PUBLIC_KEY   - base64url-encoded P-256 public key (~88 chars)
+//   VAPID_PRIVATE_KEY  - base64url-encoded P-256 private key (~43 chars)
+//   VAPID_CONTACT_EMAIL - mailto: URI, e.g. mailto:admin@cheflowhq.com
 
 /**
  * Returns the VAPID public key as a base64url string.
- * Safe to expose to the browser — used in PushManager.subscribe().
+ * Safe to expose to the browser - used in PushManager.subscribe().
  */
 export function getVapidPublicKey(): string {
   const key = process.env.VAPID_PUBLIC_KEY
@@ -26,7 +26,7 @@ export function getVapidPublicKey(): string {
 /**
  * Build the Authorization header value for a Web Push request.
  * Returns a JWT signed with the VAPID private key.
- * RFC 8292 §2.1 — claims: aud (push service origin), exp, sub (contact email)
+ * RFC 8292 §2.1 - claims: aud (push service origin), exp, sub (contact email)
  */
 export async function buildVapidAuthHeader(audience: string): Promise<string> {
   const privateKeyBase64 = process.env.VAPID_PRIVATE_KEY

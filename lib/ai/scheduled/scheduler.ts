@@ -1,6 +1,6 @@
 'use server'
 
-// Scheduled Intelligence Layer — Scheduler
+// Scheduled Intelligence Layer - Scheduler
 // Seeds the AI task queue with recurring jobs.
 // Called on server start (or on-demand) to ensure scheduled tasks exist.
 //
@@ -20,12 +20,12 @@ export type { ScheduledJob } from './job-definitions'
 // SCHEDULER
 // ============================================
 
-// Module-level guard — prevents re-seeding within the same server lifecycle
+// Module-level guard - prevents re-seeding within the same server lifecycle
 let _seeded = false
 
 /**
  * Seed scheduled tasks for all active tenants.
- * Safe to call multiple times — idempotent (dedup in enqueueTask).
+ * Safe to call multiple times - idempotent (dedup in enqueueTask).
  * Seeds all enabled jobs (Pi is permanently retired, all jobs run on PC).
  */
 export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: number }> {

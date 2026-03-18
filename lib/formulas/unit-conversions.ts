@@ -1,4 +1,4 @@
-// Unit Conversions — Deterministic Formulas
+// Unit Conversions - Deterministic Formulas
 // Temperature (Fahrenheit ↔ Celsius) and Imperial ↔ Metric for cooking.
 // These are exact mathematical formulas. No AI needed, ever.
 

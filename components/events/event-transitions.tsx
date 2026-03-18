@@ -53,9 +53,9 @@ function GateList({ blockers }: { blockers: GateResult[] }) {
               <span className="mt-0.5 text-xs font-bold shrink-0 text-red-600">✕</span>
               <div>
                 <p className="text-xs font-medium text-red-800">{g.label}</p>
-                <p className="text-[11px] text-stone-500 mt-0.5">{g.description}</p>
+                <p className="text-xs-tight text-stone-500 mt-0.5">{g.description}</p>
                 {g.details && (
-                  <p className="text-[11px] text-red-600 mt-0.5 font-medium">{g.details}</p>
+                  <p className="text-xs-tight text-red-600 mt-0.5 font-medium">{g.details}</p>
                 )}
               </div>
             </div>
@@ -74,9 +74,9 @@ function GateList({ blockers }: { blockers: GateResult[] }) {
               <span className="mt-0.5 text-xs font-bold shrink-0 text-amber-500">!</span>
               <div>
                 <p className="text-xs font-medium text-amber-800">{g.label}</p>
-                <p className="text-[11px] text-stone-500 mt-0.5">{g.description}</p>
+                <p className="text-xs-tight text-stone-500 mt-0.5">{g.description}</p>
                 {g.details && (
-                  <p className="text-[11px] text-amber-700 mt-0.5 font-medium">{g.details}</p>
+                  <p className="text-xs-tight text-amber-700 mt-0.5 font-medium">{g.details}</p>
                 )}
               </div>
             </div>

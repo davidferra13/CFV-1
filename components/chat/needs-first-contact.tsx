@@ -23,9 +23,7 @@ const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
 function getChannelBadge(channel: string) {
   const info = CHANNEL_LABELS[channel] || { label: channel, color: 'bg-stone-800 text-stone-300' }
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${info.color}`}>
-      {info.label}
-    </span>
+    <span className={`text-xxs px-1.5 py-0.5 rounded font-medium ${info.color}`}>{info.label}</span>
   )
 }
 
@@ -68,7 +66,7 @@ export function NeedsFirstContact({ inquiries }: NeedsFirstContactProps) {
               <div className="flex items-center gap-2 mb-0.5">
                 <p className="text-sm font-semibold text-stone-100 truncate">{inq.clientName}</p>
                 {getChannelBadge(inq.channel)}
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/50 text-amber-400 font-medium">
+                <span className="text-xxs px-1.5 py-0.5 rounded bg-amber-900/50 text-amber-400 font-medium">
                   No contact yet
                 </span>
               </div>

@@ -278,7 +278,7 @@ export async function updateCategorySettings(
 
 // ── Category progress (pure, no I/O) ─────────────────────────────────────────
 // Returns average progress % per category across active goals.
-// This is a plain function (not a server action) — no 'use server' needed.
+// This is a plain function (not a server action) - no 'use server' needed.
 
 function computeCategoryProgress(goals: GoalView[]): Partial<Record<GoalCategory, number>> {
   const categoryGroups: Partial<Record<GoalCategory, number[]>> = {}

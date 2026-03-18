@@ -1,6 +1,6 @@
-// Visitor Alert — Real-time notification when a client visits the portal
+// Visitor Alert - Real-time notification when a client visits the portal
 // Debounced to one alert per client per 30-minute window.
-// Non-blocking — failures are logged, never thrown.
+// Non-blocking - failures are logged, never thrown.
 
 import { createServerClient } from '@/lib/supabase/server'
 import { sendNotification } from '@/lib/notifications/send'
@@ -53,7 +53,7 @@ export async function triggerVisitorAlert(params: {
       .limit(1)
       .maybeSingle()
 
-    if (recentAlert) return // Already alerted recently — skip
+    if (recentAlert) return // Already alerted recently - skip
 
     // Check if visitor alerts are enabled for this chef
     const { data: prefs } = await supabase

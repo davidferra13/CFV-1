@@ -1,4 +1,4 @@
-// USDA FoodData Central — free nutrition API, government data
+// USDA FoodData Central - free nutrition API, government data
 // https://fdc.nal.usda.gov/api-guide/
 // 1,000 requests/hour, 380K+ foods, no credit card
 // Complements Spoonacular with authoritative US government nutrient data
@@ -6,7 +6,7 @@
 import { cacheGet, cacheSet } from '@/lib/cache/upstash'
 
 const USDA_BASE = 'https://api.nal.usda.gov/fdc/v1'
-const CACHE_TTL = 30 * 24 * 60 * 60 // 30 days — nutrition data is stable
+const CACHE_TTL = 30 * 24 * 60 * 60 // 30 days - nutrition data is stable
 
 export interface UsdaFood {
   fdcId: number
@@ -56,7 +56,7 @@ export async function searchFoods(query: string, pageSize = 10): Promise<UsdaFoo
     const cached = await cacheGet<UsdaFood[]>(cacheKey)
     if (cached !== null) return cached
   } catch {
-    // Redis down — fall through to API
+    // Redis down - fall through to API
   }
 
   try {
@@ -97,7 +97,7 @@ export async function getFoodDetails(fdcId: number): Promise<UsdaFood | null> {
     const cached = await cacheGet<UsdaFood>(cacheKey)
     if (cached !== null) return cached
   } catch {
-    // Redis down — fall through to API
+    // Redis down - fall through to API
   }
 
   try {

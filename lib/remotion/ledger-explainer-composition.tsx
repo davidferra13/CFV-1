@@ -1,5 +1,5 @@
 /**
- * LedgerExplainerComposition — Remotion animation explaining the ledger-first financial model.
+ * LedgerExplainerComposition - Remotion animation explaining the ledger-first financial model.
  *
  * Shows:
  *  1. Entries appearing one by one in an append-only ledger
@@ -290,7 +290,7 @@ export function LedgerExplainerComposition() {
           }}
         >
           <span style={{ fontSize: 9, color: STONE[400] }}>
-            Balances are always computed from the ledger — never stored directly
+            Balances are always computed from the ledger - never stored directly
           </span>
         </div>
       </div>

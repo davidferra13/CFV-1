@@ -3,9 +3,9 @@
 // Uses sms_send_log table (created in 20260302000004_notification_channels.sql).
 //
 // Default windows (configurable via SMS_RATE_LIMIT_* env vars):
-//   critical tier — 15 minutes between SMS for the same action
-//   alert tier    — 60 minutes
-//   info tier     — never via SMS (but guarded anyway)
+//   critical tier - 15 minutes between SMS for the same action
+//   alert tier    - 60 minutes
+//   info tier     - never via SMS (but guarded anyway)
 //
 // The cleaner cron (activity-cleanup) removes rows older than 48 hours.
 
@@ -43,7 +43,7 @@ export async function isSmsAllowed(tenantId: string, action: NotificationAction)
     .single()
 
   if (error && error.code !== 'PGRST116') {
-    // PGRST116 = no rows found (expected case) — anything else is a DB error
+    // PGRST116 = no rows found (expected case) - anything else is a DB error
     console.error('[isSmsAllowed] DB error:', error)
     // Fail open: allow the send rather than silently dropping
     return true
@@ -63,6 +63,6 @@ export async function recordSmsSent(tenantId: string, action: NotificationAction
 
   if (error) {
     console.error('[recordSmsSent] Insert failed:', error)
-    // Non-fatal — rate limiting will just be less accurate for this window
+    // Non-fatal - rate limiting will just be less accurate for this window
   }
 }

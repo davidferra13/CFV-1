@@ -299,9 +299,9 @@ export function RemyConversationList({
         <>
           {conv.pinned && <Pin className="w-3 h-3 text-brand-400 shrink-0" />}
           <span className="flex-1 truncate text-sm">{conv.title}</span>
-          <span className="text-[10px] text-gray-500 shrink-0">{timeAgo(conv.updatedAt)}</span>
+          <span className="text-xxs text-gray-500 shrink-0">{timeAgo(conv.updatedAt)}</span>
           {conv.bookmarkCount > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] text-amber-400 shrink-0">
+            <span className="flex items-center gap-0.5 text-xxs text-amber-400 shrink-0">
               <Bookmark className="w-2.5 h-2.5" />
               {conv.bookmarkCount}
             </span>
@@ -390,7 +390,7 @@ export function RemyConversationList({
         {/* Pinned Section */}
         {pinnedConversations.length > 0 && (
           <div className="mb-2">
-            <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+            <div className="px-2 py-1 text-xxs font-semibold uppercase tracking-wider text-gray-500">
               <Pin className="w-3 h-3 inline mr-1" />
               Pinned
             </div>
@@ -432,7 +432,7 @@ export function RemyConversationList({
                   <span className="flex-1 text-xs font-medium text-gray-300 truncate">
                     {project.name}
                   </span>
-                  <span className="text-[10px] text-gray-600">{projConvs.length}</span>
+                  <span className="text-xxs text-gray-600">{projConvs.length}</span>
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
@@ -458,7 +458,7 @@ export function RemyConversationList({
         {/* Uncategorized */}
         {uncategorized.length > 0 && (
           <div className="mb-2">
-            <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+            <div className="px-2 py-1 text-xxs font-semibold uppercase tracking-wider text-gray-500">
               Uncategorized
             </div>
             {uncategorized.map((conv) => (
@@ -480,7 +480,7 @@ export function RemyConversationList({
                 <ChevronRight className="w-3 h-3 text-gray-500" />
               )}
               <Archive className="w-3 h-3 text-gray-500" />
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+              <span className="text-xxs font-semibold uppercase tracking-wider text-gray-500">
                 Archived ({archivedConversations.length})
               </span>
             </button>

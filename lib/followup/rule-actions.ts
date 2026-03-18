@@ -119,7 +119,7 @@ export async function toggleFollowupRule(id: string, isActive: boolean): Promise
 /**
  * Evaluate all active followup rules for the current chef and return
  * a list of pending actions that are now due. This function does NOT
- * send emails or execute side effects — it only identifies what needs
+ * send emails or execute side effects - it only identifies what needs
  * to happen. The caller decides whether to execute.
  */
 export async function processFollowupRules(): Promise<PendingFollowup[]> {

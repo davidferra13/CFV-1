@@ -1,4 +1,4 @@
-// Remy Sprite Preloader — lazy-loads sprite sheets on demand.
+// Remy Sprite Preloader - lazy-loads sprite sheets on demand.
 // Tracks loaded/loading state to prevent duplicate requests.
 // Used by the animation system to preload sheets before they're needed.
 
@@ -29,7 +29,7 @@ export function preloadSprite(path: string): Promise<void> {
       resolve()
     }
     img.onerror = () => {
-      // Graceful fail — don't block on missing assets
+      // Graceful fail - don't block on missing assets
       loading.delete(path)
       resolve()
     }

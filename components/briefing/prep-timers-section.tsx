@@ -94,12 +94,12 @@ function TimerCard({ timer }: { timer: Timer }) {
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-medium text-stone-100">{timer.title}</span>
           {ready && (
-            <Badge variant="success" className="text-[10px]">
+            <Badge variant="success" className="text-xxs">
               Ready
             </Badge>
           )}
           {approaching && !ready && (
-            <Badge variant="warning" className="text-[10px]">
+            <Badge variant="warning" className="text-xxs">
               Soon
             </Badge>
           )}
@@ -130,7 +130,7 @@ export function PrepTimersSection({ timers }: Props) {
     <section>
       <h2 className="text-base font-semibold text-stone-200 mb-3">
         Prep Timers
-        <Badge variant="info" className="ml-2 text-[10px]">
+        <Badge variant="info" className="ml-2 text-xxs">
           {timers.length}
         </Badge>
       </h2>

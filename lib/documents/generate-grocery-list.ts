@@ -1,8 +1,8 @@
-// Grocery List Generator (Printed Sheet — Shopping)
+// Grocery List Generator (Printed Sheet - Shopping)
 // Aggregates every ingredient needed across all courses for an event.
 // Organized by store section (Proteins, Produce, Dairy, Pantry) and by stop
 // (grocery store vs liquor store). One page, checkboxes.
-// MUST fit on ONE page — no exceptions
+// MUST fit on ONE page - no exceptions
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -62,7 +62,7 @@ export type GroceryListData = {
   }
   totalBuyItems: number
   hasStop2: boolean
-  // Allergy alert — safety-critical
+  // Allergy alert - safety-critical
   allergies: string[]
 }
 
@@ -156,7 +156,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
       })
     }
   } catch {
-    // Table may not yet exist (migration pending) — degrade gracefully
+    // Table may not yet exist (migration pending) - degrade gracefully
   }
 
   // Menu
@@ -232,7 +232,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
 
   const recipeIds = [...recipeToComponents.keys()]
   if (recipeIds.length === 0) {
-    // No recipes linked — return with empty sections and all components as warnings
+    // No recipes linked - return with empty sections and all components as warnings
     const allAsWarnings: UnrecipedComponent[] = components.map((c: any) => {
       const dish = dishById.get(c.dish_id)
       return {
@@ -298,7 +298,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     } | null
 
     if (!ingredient) continue
-    if (ingredient.is_staple) continue // Skip staples — assumed always on hand
+    if (ingredient.is_staple) continue // Skip staples - assumed always on hand
     if (presourcedIngredientIds.has(ingredient.id)) continue // Already sourced via specialty run
 
     const compList = recipeToComponents.get(ri.recipe_id) || []
@@ -459,7 +459,7 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   } = data
 
   // Estimate density to set font scale
-  // totalBuyItems already includes stop2 items — don't add them again
+  // totalBuyItems already includes stop2 items - don't add them again
   const totalItems = totalBuyItems + unrecipedComponents.length
   if (totalItems > 40) pdf.setFontScale(0.75)
   else if (totalItems > 25) pdf.setFontScale(0.85)
@@ -507,7 +507,7 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
     }
   } else {
     pdf.sectionHeader(`STOP 1: ${groceryStoreName}`, 10, true)
-    pdf.text('No ingredients with recorded recipes — see warnings below.', 8, 'italic')
+    pdf.text('No ingredients with recorded recipes - see warnings below.', 8, 'italic')
     pdf.space(1)
   }
 

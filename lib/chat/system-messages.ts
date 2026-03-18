@@ -18,7 +18,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 /**
  * Post a system message when an event transitions status.
- * Only posts if a conversation exists for this event — no-op otherwise.
+ * Only posts if a conversation exists for this event - no-op otherwise.
  * Non-blocking: callers should wrap in try/catch.
  */
 export async function postEventSystemMessage(
@@ -37,7 +37,7 @@ export async function postEventSystemMessage(
     .limit(1)
     .single()
 
-  if (!conversation) return // No conversation for this event — skip silently
+  if (!conversation) return // No conversation for this event - skip silently
 
   const body = `Event status changed to ${STATUS_LABELS[toStatus] || toStatus}`
 
@@ -56,7 +56,7 @@ export async function postEventSystemMessage(
 
   if (error) {
     console.error('[postEventSystemMessage] Error:', error)
-    // Don't throw — this is a side effect, not critical path
+    // Don't throw - this is a side effect, not critical path
   }
 }
 

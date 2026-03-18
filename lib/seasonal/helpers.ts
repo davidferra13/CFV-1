@@ -1,6 +1,6 @@
-// Seasonal Palette — Pure Helper Functions
+// Seasonal Palette - Pure Helper Functions
 // Date-based season resolution and micro-window alerts.
-// No server/client coupling — can be imported anywhere.
+// No server/client coupling - can be imported anywhere.
 
 import type { SeasonalPalette, MicroWindow } from './types'
 

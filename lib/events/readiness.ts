@@ -91,7 +91,7 @@ const GATE_CATALOG: Record<ReadinessGate, { label: string; description: string }
   },
   kitchen_clean: {
     label: 'Kitchen Left Clean',
-    description: 'Kitchen cleaner than found — confirmed before leaving',
+    description: 'Kitchen cleaner than found - confirmed before leaving',
   },
   dop_complete: {
     label: 'Day-Of Protocol Complete',
@@ -254,7 +254,7 @@ async function evaluateGate(
     case 'kitchen_clean':
     case 'dop_complete':
     case 'financial_reconciled':
-      // These require explicit chef action — they're pending until marked
+      // These require explicit chef action - they're pending until marked
       return {
         gate,
         status: 'pending',
@@ -292,7 +292,7 @@ async function checkDepositGate(
 
   const depositRequired = (event?.deposit_amount_cents ?? 0) as number
 
-  // No deposit required — gate passes automatically
+  // No deposit required - gate passes automatically
   if (!depositRequired || depositRequired <= 0) {
     return {
       gate,
@@ -332,7 +332,7 @@ async function checkDepositGate(
     label: catalog.label,
     description: catalog.description,
     isHardBlock: false, // Soft block: chef can override if deposit was collected off-platform
-    details: `Deposit required: ${formatCents(depositRequired)} — collected: ${formatCents(totalPaid)} — shortfall: ${formatCents(shortfall)}. Record the payment to proceed, or override if collected off-platform.`,
+    details: `Deposit required: ${formatCents(depositRequired)} - collected: ${formatCents(totalPaid)} - shortfall: ${formatCents(shortfall)}. Record the payment to proceed, or override if collected off-platform.`,
   }
 }
 
@@ -347,7 +347,7 @@ async function checkAllergyGate(
   supabase: any
 ): Promise<GateResult> {
   if (!clientId) {
-    // No client assigned — can't verify, treat as passed (no one to check)
+    // No client assigned - can't verify, treat as passed (no one to check)
     return {
       gate,
       status: 'passed',
@@ -365,7 +365,7 @@ async function checkAllergyGate(
     .eq('confirmed_by_chef', false)
 
   if (!unconfirmed || unconfirmed.length === 0) {
-    // Either no allergies, or all confirmed — gate passes
+    // Either no allergies, or all confirmed - gate passes
     return {
       gate,
       status: 'passed',
@@ -472,7 +472,7 @@ async function checkMenuApprovalGate(
     description: catalog.description,
     isHardBlock: false,
     details: pending
-      ? `Approval request sent — awaiting client response`
+      ? `Approval request sent - awaiting client response`
       : `No menu approval request has been sent to the client yet`,
   }
 }
@@ -769,7 +769,7 @@ export async function checkMenuAllergyConflicts(eventId: string): Promise<{
     .eq('event_id', eventId)
 
   if (!components || components.length === 0) {
-    // No menu yet — flag that allergies exist but can't compare
+    // No menu yet - flag that allergies exist but can't compare
     return {
       hasConflicts: false,
       conflicts: allergies.map((a: any) => ({ allergen: a.allergen, severity: a.severity })),

@@ -2,8 +2,8 @@
 
 // Service Timeline / Run-of-Show Generator
 // AI creates a minute-by-minute execution plan for the full service.
-// Routed to Gemini (quality-critical creative scheduling — not PII).
-// Output is DRAFT ONLY — chef approves before printing or sharing with staff.
+// Routed to Gemini (quality-critical creative scheduling - not PII).
+// Output is DRAFT ONLY - chef approves before printing or sharing with staff.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -104,7 +104,7 @@ Staff: ${staffNames || 'Chef only'}
 
 Create a complete run-of-show from chef arrival through post-service cleanup.
 Include: setup, prep, cooking windows, service timing for each course, cleanup.
-Be realistic — build in buffer time.
+Be realistic - build in buffer time.
 Format as a JSON array of timeline entries, plus a plain-text version for printing.
 
 Return JSON: {

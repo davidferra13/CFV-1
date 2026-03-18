@@ -1,12 +1,12 @@
-/* eslint-disable @next/next/no-img-element, jsx-a11y/alt-text */
 'use client'
 
 import { useState, useTransition } from 'react'
+import NextImage from 'next/image'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createProposalTemplate, type ProposalTemplate } from '@/lib/proposals/template-actions'
-import { FileText, Image, Plus } from '@/components/ui/icons'
+import { FileText, Image as ImageIcon, Plus } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type Props = {
@@ -154,12 +154,18 @@ export function VisualBuilder({ templates, menus }: Props) {
         {items.map((t) => (
           <Card key={t.id} className="overflow-hidden">
             {t.coverPhotoUrl ? (
-              <div className="h-32 bg-stone-800 overflow-hidden">
-                <img src={t.coverPhotoUrl} alt={t.name} className="w-full h-full object-cover" />
+              <div className="relative h-32 bg-stone-800 overflow-hidden">
+                <NextImage
+                  src={t.coverPhotoUrl}
+                  alt={t.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="w-full h-full object-cover"
+                />
               </div>
             ) : (
               <div className="h-32 bg-stone-800 flex items-center justify-center">
-                <Image className="h-8 w-8 text-stone-300" />
+                <ImageIcon className="h-8 w-8 text-stone-300" />
               </div>
             )}
             <CardContent className="py-3">

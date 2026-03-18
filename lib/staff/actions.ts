@@ -1,4 +1,4 @@
-﻿// Staff & Team Management — Server Actions
+﻿// Staff & Team Management - Server Actions
 // Chef-only. Manages the staff roster and event assignments.
 
 'use server'

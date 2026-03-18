@@ -465,7 +465,7 @@ export function JourneyHub({ journeys, insights }: JourneyHubProps) {
                         {journey.key_learnings.slice(0, 2).map((learning, index) => (
                           <span
                             key={`${journey.id}-learning-${index}`}
-                            className="inline-flex items-center gap-1 rounded-full bg-amber-950 text-amber-700 px-2 py-0.5 text-[11px]"
+                            className="inline-flex items-center gap-1 rounded-full bg-amber-950 text-amber-700 px-2 py-0.5 text-xs-tight"
                           >
                             <BookOpen className="w-3 h-3" />
                             {learning}
@@ -474,7 +474,7 @@ export function JourneyHub({ journeys, insights }: JourneyHubProps) {
                         {journey.inspiration_ideas.slice(0, 2).map((idea, index) => (
                           <span
                             key={`${journey.id}-idea-${index}`}
-                            className="inline-flex items-center gap-1 rounded-full bg-sky-950 text-sky-700 px-2 py-0.5 text-[11px]"
+                            className="inline-flex items-center gap-1 rounded-full bg-sky-950 text-sky-700 px-2 py-0.5 text-xs-tight"
                           >
                             <Sparkles className="w-3 h-3" />
                             {idea}

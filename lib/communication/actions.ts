@@ -1100,7 +1100,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
     }
   }
 
-  // The most recent event ID — used for Create Inquiry action
+  // The most recent event ID - used for Create Inquiry action
   const primaryEventId = eventIds.length > 0 ? eventIds[eventIds.length - 1] : null
 
   // Fetch system events for the timeline
@@ -1134,7 +1134,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   }
 
   for (const log of actionLogs ?? []) {
-    // Skip ingested/classified — these are implicit from the messages themselves
+    // Skip ingested/classified - these are implicit from the messages themselves
     if (
       log.action === 'communication_event_ingested' ||
       log.action === 'communication_classified'

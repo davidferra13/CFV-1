@@ -112,7 +112,7 @@ export function ChatInputBar({
           <Send className="w-4 h-4" />
         </button>
       </div>
-      <p className="text-[10px] text-stone-400 mt-1 ml-11">
+      <p className="text-xxs text-stone-400 mt-1 ml-11">
         Press Enter to send, Shift+Enter for new line
       </p>
     </div>

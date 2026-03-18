@@ -51,6 +51,23 @@ export async function recordCronError(
     if (error) {
       console.error(`[CronHeartbeat] Failed to record error for "${cronName}":`, error)
     }
+
+    // Fire developer alert for cron failures
+    try {
+      const { sendDeveloperAlert } = require('../email/developer-alerts')
+      sendDeveloperAlert({
+        severity: 'warning' as const,
+        system: `cron-${cronName}`,
+        title: `Cron job failed: ${cronName}`,
+        description: errorText,
+        context: {
+          cronName,
+          durationMs: durationMs ? String(durationMs) : 'unknown',
+        },
+      })
+    } catch {
+      // Alert must never crash heartbeat recording
+    }
   } catch (err) {
     console.error(`[CronHeartbeat] Unexpected error recording error for "${cronName}":`, err)
   }

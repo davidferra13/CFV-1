@@ -132,12 +132,12 @@ export function GeoClusterView({ clusters }: GeoClusterViewProps) {
                   {!isExpanded && topProspects.length > 0 && (
                     <div className="px-4 py-2 flex flex-wrap gap-1">
                       {topProspects.map((p) => (
-                        <Badge key={p.id} variant="default" className="text-[10px]">
+                        <Badge key={p.id} variant="default" className="text-xxs">
                           {p.name}
                         </Badge>
                       ))}
                       {hasMore && (
-                        <Badge variant="default" className="text-[10px]">
+                        <Badge variant="default" className="text-xxs">
                           +{cluster.prospects.length - 3} more
                         </Badge>
                       )}
@@ -171,7 +171,7 @@ export function GeoClusterView({ clusters }: GeoClusterViewProps) {
                                 </span>
                               )}
                               {prospect.category && (
-                                <span className="text-[10px] text-stone-600">
+                                <span className="text-xxs text-stone-600">
                                   {prospect.category.replace(/_/g, ' ')}
                                 </span>
                               )}

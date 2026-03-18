@@ -1,6 +1,6 @@
 /**
  * TypeScript types for the Charity Hours Logging feature.
- * No 'use server' — safe to import in both server and client code.
+ * No 'use server' - safe to import in both server and client code.
  */
 
 export type CharityHourEntry = {

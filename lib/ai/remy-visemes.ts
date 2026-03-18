@@ -1,6 +1,6 @@
 // Remy Lip-Sync Viseme Engine
 // Maps text characters/phonemes to sprite sheet frame coordinates.
-// Deterministic — no AI, no network calls. Pure lookup table.
+// Deterministic - no AI, no network calls. Pure lookup table.
 //
 // Sprite sheet: /public/images/remy/remy-sprite.png
 // Layout: 4 columns x 4 rows = 16 frames, each ~260x256px
@@ -9,18 +9,18 @@
 // ─── Viseme Types ─────────────────────────────────────────────────────────────
 
 export type Viseme =
-  | 'rest' // M P B — closed mouth
-  | 'ah' // AH — wide open
-  | 'eh' // EH — mid open
-  | 'ee' // EE — tight teeth
-  | 'oh' // OH — round open
-  | 'ooh' // OO W Q — puckered
-  | 'fv' // F V — bottom lip bite
-  | 'lth' // L TH — tongue
-  | 'chsh' // CH SH — forward flare
-  | 'rer' // R ER — tight er
-  | 'kgn' // K G N — relaxed open
-  | 'gasp' // GASP — small vertical (surprise)
+  | 'rest' // M P B - closed mouth
+  | 'ah' // AH - wide open
+  | 'eh' // EH - mid open
+  | 'ee' // EE - tight teeth
+  | 'oh' // OH - round open
+  | 'ooh' // OO W Q - puckered
+  | 'fv' // F V - bottom lip bite
+  | 'lth' // L TH - tongue
+  | 'chsh' // CH SH - forward flare
+  | 'rer' // R ER - tight er
+  | 'kgn' // K G N - relaxed open
+  | 'gasp' // GASP - small vertical (surprise)
 
 // ─── Emotion Types ──────────────────────────────────────────────────────────
 
@@ -71,7 +71,7 @@ export const EMOTION_FRAMES: Record<RemyEmotion, SpriteFrame> = {
 }
 
 // ─── Digraph Detection ────────────────────────────────────────────────────────
-// Order matters — check longer patterns first.
+// Order matters - check longer patterns first.
 
 const DIGRAPHS: [string, Viseme][] = [
   ['SH', 'chsh'],
@@ -84,19 +84,19 @@ const DIGRAPHS: [string, Viseme][] = [
 // ─── Single Character → Viseme Map ───────────────────────────────────────────
 
 const CHAR_VISEME: Record<string, Viseme> = {
-  // Resting — closed mouth (M, B, P)
+  // Resting - closed mouth (M, B, P)
   M: 'rest',
   B: 'rest',
   P: 'rest',
 
-  // Ah — wide open (A, I)
+  // Ah - wide open (A, I)
   A: 'ah',
   I: 'ah',
 
-  // Eh — slightly open (E)
+  // Eh - slightly open (E)
   E: 'eh',
 
-  // Ee — tight teeth (C, D, S, T, X, Y, Z)
+  // Ee - tight teeth (C, D, S, T, X, Y, Z)
   C: 'ee',
   D: 'ee',
   S: 'ee',
@@ -105,25 +105,25 @@ const CHAR_VISEME: Record<string, Viseme> = {
   Y: 'ee',
   Z: 'ee',
 
-  // Oh — round O shape (O)
+  // Oh - round O shape (O)
   O: 'oh',
 
-  // Ooh — puckered (U, W, Q)
+  // Ooh - puckered (U, W, Q)
   U: 'ooh',
   W: 'ooh',
   Q: 'ooh',
 
-  // F/V — top teeth on bottom lip
+  // F/V - top teeth on bottom lip
   F: 'fv',
   V: 'fv',
 
-  // L — tongue behind teeth
+  // L - tongue behind teeth
   L: 'lth',
 
-  // R — tight ER (distinct from ee)
+  // R - tight ER (distinct from ee)
   R: 'rer',
 
-  // K, G, N — relaxed open (distinct from ee)
+  // K, G, N - relaxed open (distinct from ee)
   K: 'kgn',
   G: 'kgn',
   N: 'kgn',
@@ -137,7 +137,7 @@ const CHAR_VISEME: Record<string, Viseme> = {
 
 /**
  * Given a text string and a character index, resolve the viseme for that position.
- * Returns [viseme, charsConsumed] — charsConsumed is 2 for digraphs, 1 otherwise.
+ * Returns [viseme, charsConsumed] - charsConsumed is 2 for digraphs, 1 otherwise.
  *
  * Non-letter characters (spaces, punctuation, numbers, emoji) return 'rest'.
  */
@@ -177,7 +177,7 @@ export interface VisemeFrame {
  * Convert a full text string into a sequence of viseme frames.
  * Each frame represents one "mouth position" with the character(s) that produced it.
  *
- * Consecutive identical visemes are NOT collapsed — the consumer controls timing.
+ * Consecutive identical visemes are NOT collapsed - the consumer controls timing.
  * Whitespace and punctuation produce 'rest' frames (mouth closes between words).
  */
 export function textToVisemes(text: string): VisemeFrame[] {
@@ -204,7 +204,7 @@ export function textToVisemes(text: string): VisemeFrame[] {
  * and returns the viseme frames for just that chunk.
  *
  * `pendingChar` handles edge cases where a digraph spans two tokens:
- * e.g., token "S" followed by token "HOULD" — the "SH" digraph bridges them.
+ * e.g., token "S" followed by token "HOULD" - the "SH" digraph bridges them.
  *
  * Returns [frames, newPendingChar].
  */

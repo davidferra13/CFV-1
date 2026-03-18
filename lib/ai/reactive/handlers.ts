@@ -1,6 +1,6 @@
 'use server'
 
-// Reactive Event Layer — Handler Implementations
+// Reactive Event Layer - Handler Implementations
 // PRIVACY: All handlers deal with client PII → local Ollama only.
 //
 // Each handler is called by the queue worker when a reactive task is processed.
@@ -59,7 +59,7 @@ export async function handleInquiryCreated(
 
   if (!inquiry) return { status: 'skipped', reason: 'Inquiry not found' }
 
-  // Simple rule-based scoring (no LLM needed — fast, reliable)
+  // Simple rule-based scoring (no LLM needed - fast, reliable)
   let score = 50
   const factors: string[] = []
 
@@ -307,7 +307,7 @@ export async function handlePaymentReceived(
 
   const clientName = (event as any).client?.full_name ?? 'Client'
 
-  // Pure data — no LLM needed
+  // Pure data - no LLM needed
   return {
     eventId,
     clientName,
@@ -597,7 +597,7 @@ export async function handlePaymentOverdue(
 
   try {
     const result = await parseWithOllama(
-      `You are ${chefName}, a private chef sending a friendly payment reminder. Be warm and professional — never aggressive. Reference the event and outstanding amount. First person "I". 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
+      `You are ${chefName}, a private chef sending a friendly payment reminder. Be warm and professional - never aggressive. Reference the event and outstanding amount. First person "I". 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
       `Client: ${clientName}
 Event: ${(event as any).occasion ?? 'event'} on ${(event as any).event_date ?? 'N/A'}
 Outstanding balance: $${(balanceDueCents / 100).toFixed(2)}`,
@@ -612,7 +612,7 @@ Outstanding balance: $${(balanceDueCents / 100).toFixed(2)}`,
       balanceFormatted: `$${(balanceDueCents / 100).toFixed(2)}`,
       subject: result.subject,
       draftText: `Subject: ${result.subject}\n\n${result.body}`,
-      summary: `Payment reminder drafted for ${clientName} — $${(balanceDueCents / 100).toFixed(2)} outstanding for ${(event as any).occasion ?? 'event'}.`,
+      summary: `Payment reminder drafted for ${clientName} - $${(balanceDueCents / 100).toFixed(2)} outstanding for ${(event as any).occasion ?? 'event'}.`,
     }
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err
@@ -654,7 +654,7 @@ export async function handleInquiryStale(
     const result = await parseWithOllama(
       `You are ${chefName}, a private chef following up on a stale inquiry. The client reached out but hasn't heard back yet. Be apologetic for the delay, warm, and professional. First person "I". 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
       `Client: ${clientName}
-Inquiry: ${(inquiry as any).confirmed_occasion ?? 'event inquiry'} — received ${hoursStale}h ago`,
+Inquiry: ${(inquiry as any).confirmed_occasion ?? 'event inquiry'} - received ${hoursStale}h ago`,
       FollowUpSchema,
       { modelTier: 'standard', maxTokens: 600 }
     )

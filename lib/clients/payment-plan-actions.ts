@@ -174,11 +174,11 @@ function generatePlan(
     if (i === 0) {
       // First payment: due at booking (today or upon acceptance)
       dueDateIso = new Date().toISOString().split('T')[0]
-      label = `Payment ${i + 1} — Due at booking`
+      label = `Payment ${i + 1} - Due at booking`
     } else if (i === count - 1) {
       // Final payment: due 7 days before event
       dueDateIso = subtractDays(eventDate, 7)
-      label = `Final payment — Due 7 days before event`
+      label = `Final payment - Due 7 days before event`
     } else {
       // Middle payments: evenly spaced between now and 7 days before
       const today = new Date().toISOString().split('T')[0]
@@ -210,7 +210,7 @@ function generatePlan(
 
 /**
  * Pure calculation of installment amounts and due dates.
- * Does not require an event — can be used for custom scenarios.
+ * Does not require an event - can be used for custom scenarios.
  */
 export async function calculateInstallments(
   totalCents: number,

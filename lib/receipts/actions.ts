@@ -23,7 +23,7 @@ export type ReceiptPhoto = {
   eventId: string | null
   photoUrl: string
   ocrRaw: string | null
-  uploadStatus: 'pending' | 'processing' | 'extracted' | 'approved'
+  uploadStatus: 'pending' | 'processing' | 'extracted' | 'needs_review' | 'approved'
   approvedAt: string | null
   createdAt: string
   extraction: ReceiptExtractionRecord | null
@@ -59,7 +59,7 @@ const UploadSchema = z.object({
 
 /**
  * Register an uploaded receipt photo URL with the pipeline.
- * The photo must already be in Supabase Storage — this records the URL only.
+ * The photo must already be in Supabase Storage - this records the URL only.
  */
 export async function uploadReceiptPhoto(input: z.infer<typeof UploadSchema>) {
   const user = await requireChef()
@@ -114,7 +114,7 @@ export async function processReceiptOCR(receiptPhotoId: string) {
 
   if (!photo) throw new Error('Receipt photo not found')
   if (photo.upload_status === 'approved')
-    throw new Error('Receipt already approved — cannot re-process')
+    throw new Error('Receipt already approved - cannot re-process')
 
   // Mark as processing
   await supabase
@@ -122,7 +122,7 @@ export async function processReceiptOCR(receiptPhotoId: string) {
     .update({ upload_status: 'processing' })
     .eq('id', receiptPhotoId)
 
-  // Fetch the image as base64 — the photo_url is a Supabase Storage public URL
+  // Fetch the image as base64 - the photo_url is a Supabase Storage public URL
   let imageBase64: string
   let mediaType: 'image/jpeg' | 'image/png' | 'image/webp' = 'image/jpeg'
   try {
@@ -146,8 +146,11 @@ export async function processReceiptOCR(receiptPhotoId: string) {
   const extraction = await parseReceiptImage(imageBase64, mediaType)
 
   // Map confidence string to number
-  const confidenceMap = { high: 0.9, medium: 0.65, low: 0.35 }
+  const confidenceMap: Record<string, number> = { high: 0.9, medium: 0.65, low: 0.35 }
   const confidenceScore = confidenceMap[extraction.confidence] ?? 0.5
+
+  // Low confidence threshold: flag for manual review instead of auto-extracted
+  const needsReview = confidenceScore < 0.5
 
   // Store raw OCR output for debugging
   await supabase
@@ -203,14 +206,14 @@ export async function processReceiptOCR(receiptPhotoId: string) {
 
     if (lineItemsError) {
       console.error('[processReceiptOCR] Line items error:', lineItemsError)
-      // Non-fatal — extraction stored, line items can be added manually
+      // Non-fatal - extraction stored, line items can be added manually
     }
   }
 
-  // Mark as extracted
+  // Mark as extracted or needs_review based on confidence
   await supabase
     .from('receipt_photos')
-    .update({ upload_status: 'extracted' })
+    .update({ upload_status: needsReview ? 'needs_review' : 'extracted' })
     .eq('id', receiptPhotoId)
 
   // Always revalidate the library; per-event page only if event is set
@@ -229,7 +232,7 @@ const UpdateLineItemSchema = z.object({
   priceCents: z.number().int().nonnegative().nullable().optional(),
 })
 
-/** Chef edits a line item inline — tag, category, description, or price. */
+/** Chef edits a line item inline - tag, category, description, or price. */
 export async function updateLineItem(input: z.infer<typeof UpdateLineItemSchema>) {
   const user = await requireChef()
   const { lineItemId, ...fields } = UpdateLineItemSchema.parse(input)
@@ -312,7 +315,7 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
     for (const item of businessItems) {
       const category = categoryMap[item.ingredientCategory ?? 'unknown'] ?? 'groceries'
       const { error } = await supabase.from('expenses').insert({
-        event_id: photo.event_id ?? null, // null for standalone receipts — expenses.event_id allows NULL
+        event_id: photo.event_id ?? null, // null for standalone receipts - expenses.event_id allows NULL
         tenant_id: user.tenantId!,
         amount_cents: item.priceCents!,
         category,
@@ -323,7 +326,7 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
         is_business: true,
         receipt_photo_url: photo.photo_url,
         receipt_uploaded: true,
-        notes: `From receipt ${receiptPhotoId} — line item ${item.id}`,
+        notes: `From receipt ${receiptPhotoId} - line item ${item.id}`,
         created_by: user.id,
       })
 

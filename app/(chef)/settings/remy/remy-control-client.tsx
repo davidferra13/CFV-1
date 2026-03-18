@@ -686,7 +686,7 @@ export function RemyControlClient({
                     </td>
                     <td className="px-2 py-2 align-top">
                       <span
-                        className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] ${safetyBadgeClass(target.safety)}`}
+                        className={`inline-flex rounded-full border px-2 py-0.5 text-xs-tight ${safetyBadgeClass(target.safety)}`}
                       >
                         {target.safety}
                       </span>
@@ -932,7 +932,7 @@ export function RemyControlClient({
                     <td className="px-3 py-2 font-mono text-xs text-stone-200">{entry.taskType}</td>
                     <td className="px-3 py-2">
                       <span
-                        className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] ${statusBadgeClass(entry.status)}`}
+                        className={`inline-flex rounded-full border px-2 py-0.5 text-xs-tight ${statusBadgeClass(entry.status)}`}
                       >
                         {entry.status}
                       </span>

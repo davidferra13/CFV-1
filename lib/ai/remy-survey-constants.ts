@@ -1,4 +1,4 @@
-// Remy "Get to Know You" Survey — Question definitions, groups, and culinary profile mapping.
+// Remy "Get to Know You" Survey - Question definitions, groups, and culinary profile mapping.
 // 25 questions across 5 groups. Each question has a conversational phrasing for Remy
 // and an optional mapping to a culinary profile key for automatic backfill.
 
@@ -58,7 +58,7 @@ export const SURVEY_GROUPS: SurveyGroup[] = [
       {
         key: 'kitchen_0',
         prompt:
-          'What kind of chef are you? Like, if someone asked at a dinner party — how do you describe what you do?',
+          'What kind of chef are you? Like, if someone asked at a dinner party - how do you describe what you do?',
         memoryCategory: 'culinary_note',
         culinaryProfileKey: 'cooking_philosophy',
       },
@@ -99,7 +99,7 @@ export const SURVEY_GROUPS: SurveyGroup[] = [
       {
         key: 'business_1',
         prompt:
-          "What's your dream client like? Not just someone who pays well — who lights you up?",
+          "What's your dream client like? Not just someone who pays well - who lights you up?",
         memoryCategory: 'client_insight',
       },
       {
@@ -127,7 +127,7 @@ export const SURVEY_GROUPS: SurveyGroup[] = [
     questions: [
       {
         key: 'workflow_0',
-        prompt: 'Walk me through your typical prep day — what does that look like?',
+        prompt: 'Walk me through your typical prep day - what does that look like?',
         memoryCategory: 'workflow_preference',
       },
       {
@@ -137,7 +137,7 @@ export const SURVEY_GROUPS: SurveyGroup[] = [
       },
       {
         key: 'workflow_2',
-        prompt: 'How do you handle grocery shopping — one big trip, or day-of?',
+        prompt: 'How do you handle grocery shopping - one big trip, or day-of?',
         memoryCategory: 'scheduling_pattern',
       },
       {
@@ -147,7 +147,7 @@ export const SURVEY_GROUPS: SurveyGroup[] = [
       },
       {
         key: 'workflow_4',
-        prompt: "What's your biggest bottleneck right now — the thing that slows you down most?",
+        prompt: "What's your biggest bottleneck right now - the thing that slows you down most?",
         memoryCategory: 'workflow_preference',
       },
     ],
@@ -175,7 +175,7 @@ export const SURVEY_GROUPS: SurveyGroup[] = [
       {
         key: 'communication_3',
         prompt:
-          'How often do you want me checking in with nudges and reminders — a lot, or only when it matters?',
+          'How often do you want me checking in with nudges and reminders - a lot, or only when it matters?',
         memoryCategory: 'communication_style',
       },
       {
@@ -191,7 +191,7 @@ export const SURVEY_GROUPS: SurveyGroup[] = [
     questions: [
       {
         key: 'personal_0',
-        prompt: "What's a food memory that really shaped you — something you still think about?",
+        prompt: "What's a food memory that really shaped you - something you still think about?",
         memoryCategory: 'culinary_note',
         culinaryProfileKey: 'food_memory',
       },

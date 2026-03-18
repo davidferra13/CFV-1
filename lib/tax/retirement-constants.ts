@@ -1,5 +1,5 @@
 // IRS retirement contribution limits (2024/2025)
-// These are informational — always verify current-year limits with the IRS.
+// These are informational - always verify current-year limits with the IRS.
 
 export const SEP_IRA_RATE = 0.25 // 25% of net self-employment income
 export const SEP_IRA_MAX_CENTS = 6900000 // $69,000 (2024)

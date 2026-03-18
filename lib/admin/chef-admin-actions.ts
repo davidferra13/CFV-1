@@ -1,12 +1,12 @@
 'use server'
 
-// Admin Chef Management Actions — deactivation, reactivation, ledger corrections
+// Admin Chef Management Actions - deactivation, reactivation, ledger corrections
 // All mutations require admin auth and are audit-logged.
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from './audit'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 // ─── Account Status ──────────────────────────────────────────────────────────
 
@@ -38,6 +38,7 @@ export async function suspendChef(chefId: string): Promise<{ success: boolean; e
 
   revalidatePath(`/admin/users/${chefId}`)
   revalidatePath('/admin/users')
+  revalidateTag(`chef-layout-${chefId}`)
   return { success: true }
 }
 
@@ -71,6 +72,7 @@ export async function reactivateChef(
 
   revalidatePath(`/admin/users/${chefId}`)
   revalidatePath('/admin/users')
+  revalidateTag(`chef-layout-${chefId}`)
   return { success: true }
 }
 
@@ -79,7 +81,7 @@ export async function reactivateChef(
 /**
  * Issue an admin credit or adjustment to a chef's ledger.
  * Appends a new immutable ledger entry of type 'adjustment'.
- * This is the correct, additive approach — the ledger is never modified.
+ * This is the correct, additive approach - the ledger is never modified.
  */
 export async function issueAdminCredit(params: {
   chefId: string
@@ -104,7 +106,7 @@ export async function issueAdminCredit(params: {
     event_id: eventId ?? null,
     entry_type: 'adjustment',
     amount_cents: amountCents,
-    description: `[Admin Credit] ${description.trim()} — issued by ${admin.email}`,
+    description: `[Admin Credit] ${description.trim()} - issued by ${admin.email}`,
   } as any)
 
   if (error) {
@@ -115,7 +117,7 @@ export async function issueAdminCredit(params: {
   await logAdminAction({
     actorEmail: admin.email,
     actorUserId: admin.id,
-    actionType: 'admin_toggled_flag', // closest available — ideally add 'admin_ledger_correction' in future
+    actionType: 'admin_toggled_flag', // closest available - ideally add 'admin_ledger_correction' in future
     targetId: chefId,
     targetType: 'chef',
     details: { type: 'ledger_correction', amountCents, description, eventId },

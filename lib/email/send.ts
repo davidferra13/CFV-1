@@ -1,4 +1,4 @@
-// Email Sending — Server-side utility
+// Email Sending - Server-side utility
 // Non-blocking: errors are logged, never thrown to callers
 // All email sends are fire-and-forget side effects
 
@@ -56,7 +56,7 @@ export async function sendEmail({
       return false
     }
 
-    // Log subject only — never log recipient email addresses (PII)
+    // Log subject only - never log recipient email addresses (PII)
     const recipientCount = Array.isArray(to) ? to.length : 1
     console.log(`[sendEmail] Sent: "${subject}" → ${recipientCount} recipient(s)`)
     return true

@@ -84,24 +84,24 @@ export function ContingencyAIPanel({ eventId }: { eventId: string }) {
           <div key={i} className={`border rounded p-3 space-y-1.5 ${RISK_COLORS[plan.riskLevel]}`}>
             <div className="flex items-center gap-2">
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${plan.riskLevel === 'critical' ? 'bg-red-200 text-red-800' : plan.riskLevel === 'high' ? 'bg-amber-200 text-amber-800' : 'bg-stone-700 text-stone-300'}`}
+                className={`text-xxs px-1.5 py-0.5 rounded font-medium ${plan.riskLevel === 'critical' ? 'bg-red-200 text-red-800' : plan.riskLevel === 'high' ? 'bg-amber-200 text-amber-800' : 'bg-stone-700 text-stone-300'}`}
               >
                 {plan.riskLevel}
               </span>
               <span className="text-xs font-medium text-stone-300">{plan.scenarioLabel}</span>
               {plan.timeImpact && (
-                <span className="text-[11px] text-stone-500 ml-auto">{plan.timeImpact}</span>
+                <span className="text-xs-tight text-stone-500 ml-auto">{plan.timeImpact}</span>
               )}
             </div>
             <p className="text-xs text-stone-300">{plan.mitigationNotes}</p>
-            <p className="text-[11px] text-stone-500">
+            <p className="text-xs-tight text-stone-500">
               <span className="font-medium">Prevention:</span> {plan.preventionTip}
             </p>
           </div>
         ))}
       </div>
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Draft · Add these to the Contingency Panel above to save them to this event
       </p>
     </div>

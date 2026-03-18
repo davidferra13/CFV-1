@@ -4,12 +4,12 @@ import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 // ---------------------------------------------------------------------------
-// Public actions (no auth — guests uploading from share page)
+// Public actions (no auth - guests uploading from share page)
 // ---------------------------------------------------------------------------
 
 /**
  * Upload a guest photo via the share page.
- * Public — no auth required. Uses admin client.
+ * Public - no auth required. Uses admin client.
  * Photos are stored in Supabase storage bucket 'guest-photos'.
  */
 export async function uploadGuestPhoto(formData: FormData) {
@@ -100,7 +100,7 @@ export async function uploadGuestPhoto(formData: FormData) {
 }
 
 /**
- * Get visible guest photos for an event (public — share page).
+ * Get visible guest photos for an event (public - share page).
  */
 export async function getEventGuestPhotos(shareToken: string) {
   const supabase = createServerClient({ admin: true })

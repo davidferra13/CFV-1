@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ═══════════════════════════════════════════════════════════════════
-// Gustav (Mission Control AI) — Test Suite
+// Gustav (Mission Control AI) - Test Suite
 // ═══════════════════════════════════════════════════════════════════
 // Tests every tool, instant answer, guardrail, and personality trait.
 // Talks directly to the Gustav chat API on port 41937.
@@ -84,7 +84,7 @@ async function testChat(name, message, validator, timeoutMs = 30000) {
     // Treat timeouts as WARN (LLM may be slow), not FAIL
     if (err.name === 'TimeoutError' || err.message.includes('timed out') || err.message.includes('abort')) {
       results.warn++
-      console.log(`  WARN  ${name}: ${err.message} (timeout — LLM may be slow)`)
+      console.log(`  WARN  ${name}: ${err.message} (timeout - LLM may be slow)`)
     } else {
       results.fail++
       console.log(`  FAIL  ${name}: ${err.message}`)
@@ -248,7 +248,7 @@ async function runTests() {
   console.log('\n=== STATION 5: LLM Responses (requires Ollama) ===')
 
   await testChat('llm-complex-question', 'How many events did we have last month and what was the total revenue? Also check if beta is healthy.', ({ fullResponse }) => {
-    // Should contain action tags or results — meaning Gustav used tools
+    // Should contain action tags or results - meaning Gustav used tools
     if (fullResponse.length < 10) return `Response too short: ${fullResponse}`
     return true
   }, 120000)
@@ -319,7 +319,7 @@ async function runTests() {
     return actionResults.length > 0 ? true : 'No action results returned'
   })
 
-  // ── 9. Universal Data Access (Tier 1 — via instant dispatch) ──
+  // ── 9. Universal Data Access (Tier 1 - via instant dispatch) ──
   console.log('\n=== STATION 9: Universal Data Access ===')
 
   await testChat('instant-ledger', 'ledger', ({ source, actionResults }) => {

@@ -1,4 +1,4 @@
-// Notification Check — Query helpers for reading and managing notifications
+// Notification Check - Query helpers for reading and managing notifications
 // Complements actions.ts with additional query patterns needed by the
 // notifications page (filtered by type, paginated, etc.)
 //

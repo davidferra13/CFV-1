@@ -129,9 +129,7 @@ const NotificationItem = memo(function NotificationItem({
         {notification.body && (
           <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{notification.body}</p>
         )}
-        <p className="text-[10px] text-stone-400 mt-1">
-          {getRelativeTime(notification.created_at)}
-        </p>
+        <p className="text-xxs text-stone-400 mt-1">{getRelativeTime(notification.created_at)}</p>
       </div>
     </button>
   )
@@ -230,7 +228,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
               key={cat.key}
               type="button"
               onClick={() => setCategoryFilter(cat.key)}
-              className={`px-2.5 py-1 text-[11px] font-medium rounded-full transition-colors ${
+              className={`px-2.5 py-1 text-xs-tight font-medium rounded-full transition-colors ${
                 categoryFilter === cat.key
                   ? 'bg-brand-600 text-white'
                   : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
@@ -242,7 +240,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={() => setReadFilter((prev) => (prev === 'all' ? 'unread' : 'all'))}
-            className={`ml-auto flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-full transition-colors ${
+            className={`ml-auto flex items-center gap-1 px-2.5 py-1 text-xs-tight font-medium rounded-full transition-colors ${
               readFilter === 'unread'
                 ? 'bg-brand-600 text-white'
                 : 'bg-stone-800 text-stone-400 hover:bg-stone-700'

@@ -1,4 +1,4 @@
-// Vendor Payment Aging — pure computation, no server action.
+// Vendor Payment Aging - pure computation, no server action.
 // Buckets outstanding vendor payments by days past due.
 
 export type VendorAgingEntry = {

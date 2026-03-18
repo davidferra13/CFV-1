@@ -2,7 +2,7 @@
 // Scores a client record 0–100 based on filled fields.
 // Weights: critical (allergy-related, kitchen constraints) > important > nice-to-have.
 // Used on the client detail header to show a progress bar + missing field nudges.
-// Pure utility — no DB access, accepts the client object directly.
+// Pure utility - no DB access, accepts the client object directly.
 
 export type ProfileCompletenessResult = {
   score: number // 0–100
@@ -42,7 +42,7 @@ type FieldCheck = {
 }
 
 const FIELDS: FieldCheck[] = [
-  // Critical — allergies and safety (weighted heavily)
+  // Critical - allergies and safety (weighted heavily)
   {
     label: 'allergies confirmed',
     weight: 15,
@@ -60,7 +60,7 @@ const FIELDS: FieldCheck[] = [
       typeof c.kitchen_constraints === 'string' && c.kitchen_constraints.trim().length > 0,
   },
 
-  // Important — preferences and logistics
+  // Important - preferences and logistics
   {
     label: 'contact info (phone or email)',
     weight: 8,
@@ -89,7 +89,7 @@ const FIELDS: FieldCheck[] = [
     filled: (c) => typeof c.payment_behavior === 'string' && c.payment_behavior.trim().length > 0,
   },
 
-  // New fields — address, birthday, service preferences
+  // New fields - address, birthday, service preferences
   {
     label: 'birthday or anniversary',
     weight: 5,
@@ -116,7 +116,7 @@ const FIELDS: FieldCheck[] = [
       (typeof c.formality_level === 'string' && c.formality_level.trim().length > 0),
   },
 
-  // Nice-to-have — relationship depth
+  // Nice-to-have - relationship depth
   {
     label: 'regular guests',
     weight: 4,

@@ -74,7 +74,7 @@ export function GuestCodePanel({ eventId, guestCode, guestLeadCount }: Props) {
             className="w-full text-sm"
             href={`/events/${eventId}/guest-card`}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
             Print Table Card
           </Button>
@@ -82,7 +82,7 @@ export function GuestCodePanel({ eventId, guestCode, guestLeadCount }: Props) {
           <a
             href={landingUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="block text-xs text-stone-400 hover:text-stone-400 truncate text-center"
           >
             {landingUrl}

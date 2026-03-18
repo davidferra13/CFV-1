@@ -1,6 +1,6 @@
 'use server'
 
-// Client Sentiment Analysis — Formula First
+// Client Sentiment Analysis - Formula First
 // Keyword scoring handles 80%+ of cases. Thread trend is computed mathematically.
 //
 // Previously used Ollama for all sentiment analysis.

@@ -1,6 +1,6 @@
 'use server'
 
-// Pipeline Revenue Forecast — Expected and best-case revenue from open inquiries + active events.
+// Pipeline Revenue Forecast - Expected and best-case revenue from open inquiries + active events.
 // Applies probability multipliers per stage to compute expected revenue.
 
 import { requireChef } from '@/lib/auth/get-user'

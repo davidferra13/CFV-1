@@ -1,4 +1,4 @@
-// Station Clipboard System — Station CRUD + Component Management
+// Station Clipboard System - Station CRUD + Component Management
 // Chef-only. Manages kitchen stations, their menu items, and components.
 
 'use server'
@@ -130,7 +130,7 @@ export async function deleteStation(id: string) {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Check for existing clipboard entries — prevent deletion if any exist
+  // Check for existing clipboard entries - prevent deletion if any exist
   const { data: entries } = await supabase
     .from('clipboard_entries')
     .select('id')

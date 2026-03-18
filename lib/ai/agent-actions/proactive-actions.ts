@@ -1,4 +1,4 @@
-// Remy Agent — Proactive "What's Next?" Actions
+// Remy Agent - Proactive "What's Next?" Actions
 // Helps the chef figure out what to do next based on their current state.
 // Also includes contingency contacts and document management.
 
@@ -21,8 +21,8 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description:
       "Analyze the chef's current workload and suggest the most important next action. Looks at upcoming events, pending inquiries, overdue tasks, unpaid invoices, and incomplete debriefs.",
-    inputSchema: '{ "context": "optional string — any specific area to focus on" }',
-    tierNote: 'Tier 2 — presents recommendation, chef decides to act.',
+    inputSchema: '{ "context": "optional string - any specific area to focus on" }',
+    tierNote: 'Tier 2 - presents recommendation, chef decides to act.',
 
     async executor(_inputs, ctx) {
       const supabase: any = createServerClient()
@@ -77,7 +77,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
         suggestions.push(`Complete overdue task: "${task.title}" (due ${task.due_date})`)
         fields.push({
           label: 'Overdue Task',
-          value: `${task.title} — due ${task.due_date}`,
+          value: `${task.title} - due ${task.due_date}`,
         })
       }
 
@@ -89,7 +89,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
         )
         fields.push({
           label: 'Pending Inquiry',
-          value: `${inq.lead_name ?? 'Lead'} — ${inq.occasion ?? 'inquiry'}`,
+          value: `${inq.lead_name ?? 'Lead'} - ${inq.occasion ?? 'inquiry'}`,
         })
       }
 
@@ -102,7 +102,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
         )
         fields.push({
           label: 'Next Event',
-          value: `${evt.occasion} — ${evt.event_date} (${clientName})`,
+          value: `${evt.occasion} - ${evt.event_date} (${clientName})`,
         })
       }
 
@@ -112,7 +112,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
         suggestions.push(`Debrief completed event: ${evt.occasion} (${evt.event_date})`)
         fields.push({
           label: 'Needs Debrief',
-          value: `${evt.occasion} — ${evt.event_date}`,
+          value: `${evt.occasion} - ${evt.event_date}`,
         })
       }
 
@@ -120,7 +120,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
         suggestions.push(
           'All caught up! No urgent items. Consider marketing outreach or recipe development.'
         )
-        fields.push({ label: 'Status', value: 'All clear — no urgent items right now.' })
+        fields.push({ label: 'Status', value: 'All clear - no urgent items right now.' })
       }
 
       const topSuggestion = suggestions[0]
@@ -137,7 +137,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
     },
 
     async commitAction(payload) {
-      // This is informational — no write action needed
+      // This is informational - no write action needed
       const suggestions = payload.suggestions as string[]
       return {
         success: true,
@@ -154,7 +154,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
     safety: 'reversible',
     description: 'Add an emergency contact for event contingency planning.',
     inputSchema:
-      '{ "description": "string — e.g. Add backup sous chef Maria Garcia, 503-555-0123, available for emergencies" }',
+      '{ "description": "string - e.g. Add backup sous chef Maria Garcia, 503-555-0123, available for emergencies" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -217,7 +217,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Create a new folder for organizing documents (contracts, recipes, photos, etc.).',
-    inputSchema: '{ "name": "string — folder name, e.g. 2026 Contracts" }',
+    inputSchema: '{ "name": "string - folder name, e.g. 2026 Contracts" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -249,8 +249,8 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Search through your documents by keyword.',
-    inputSchema: '{ "query": "string — search term" }',
-    tierNote: 'Tier 2 — shows results for chef review.',
+    inputSchema: '{ "query": "string - search term" }',
+    tierNote: 'Tier 2 - shows results for chef review.',
 
     async executor(inputs) {
       const query = String(inputs.query ?? inputs.description ?? '')

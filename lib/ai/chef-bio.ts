@@ -3,7 +3,7 @@
 // Chef Bio / Tagline Refresh
 // AI suggests updated bio copy and tagline based on recent events, specialties, milestones.
 // Routed to local Ollama (marketing copy, stays private).
-// Output is DRAFT ONLY — chef reviews and edits before publishing.
+// Output is DRAFT ONLY - chef reviews and edits before publishing.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -70,7 +70,7 @@ export async function generateChefBioDraft(): Promise<ChefBioDraft> {
   const systemPrompt = `You are a brand copywriter specializing in personal chef businesses.
 Write fresh bio copy and a tagline for a chef.
 Write in third person for long bio, first person for short bio.
-Focus on what makes this chef distinctive — their cuisine style, client experience, event types.
+Focus on what makes this chef distinctive - their cuisine style, client experience, event types.
 Be specific, warm, and confidence-inspiring. Avoid cliches like "passionate" and "farm-to-table".
 
 Return JSON with keys: shortBio (2-3 sentence first-person bio for social profiles), longBio (4-6 sentence third-person bio for website), tagline (primary tagline under 10 words), linkedInHeadline (LinkedIn-style professional headline), alternativeTaglines (array of 2 alternative taglines).`

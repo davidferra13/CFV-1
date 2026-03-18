@@ -49,7 +49,7 @@ export async function getTenantFinancialSummary() {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Hard limit to prevent memory exhaustion — a single tenant should never have
+  // Hard limit to prevent memory exhaustion - a single tenant should never have
   // more than 50K ledger entries. If they do, this caps the computation.
   const { data: entries, error } = await supabase
     .from('ledger_entries')
@@ -123,7 +123,7 @@ export async function computeProfitAndLoss(year: number) {
   const startDate = `${year}-01-01`
   const endDate = `${year}-12-31`
 
-  // Revenue from ledger (capped at 50K entries per year — prevents memory exhaustion)
+  // Revenue from ledger (capped at 50K entries per year - prevents memory exhaustion)
   const { data: ledgerEntries } = await supabase
     .from('ledger_entries')
     .select('entry_type, amount_cents, created_at, is_refund')

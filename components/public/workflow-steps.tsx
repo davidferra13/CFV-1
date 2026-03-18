@@ -89,7 +89,7 @@ export function WorkflowSteps() {
             href={step.href}
             className="rounded-xl border border-stone-700 bg-stone-900 px-4 py-3 text-left transition-colors hover:border-brand-700"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-brand-300">
+            <p className="text-xs-tight font-semibold uppercase tracking-[0.1em] text-brand-300">
               {step.label}
             </p>
             <p className="mt-1 text-sm font-semibold text-stone-100">{step.title}</p>
@@ -135,7 +135,7 @@ export function WorkflowSteps() {
 
                 {/* Label */}
                 <span
-                  className={`text-[11px] font-semibold uppercase tracking-widest transition-colors duration-300 ${
+                  className={`text-xs-tight font-semibold uppercase tracking-widest transition-colors duration-300 ${
                     isActive ? 'text-brand-400' : 'text-stone-300'
                   }`}
                 >

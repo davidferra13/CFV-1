@@ -57,12 +57,12 @@ export function PipelineRevenueForecast({ forecast }: Props) {
         <div className="bg-emerald-950 rounded-lg p-3">
           <p className="text-xs text-emerald-700 font-medium mb-0.5">Expected</p>
           <p className="text-xl font-bold text-emerald-800">{formatCurrency(expectedCents)}</p>
-          <p className="text-[10px] text-emerald-600 mt-0.5">probability-weighted</p>
+          <p className="text-xxs text-emerald-600 mt-0.5">probability-weighted</p>
         </div>
         <div className="bg-stone-800 rounded-lg p-3">
           <p className="text-xs text-stone-400 font-medium mb-0.5">Best Case</p>
           <p className="text-xl font-bold text-stone-200">{formatCurrency(bestCaseCents)}</p>
-          <p className="text-[10px] text-stone-500 mt-0.5">if all close</p>
+          <p className="text-xxs text-stone-500 mt-0.5">if all close</p>
         </div>
       </div>
 

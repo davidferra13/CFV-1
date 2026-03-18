@@ -3,7 +3,7 @@ import type { PageInfoEntry } from '../page-info-types'
 export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/settings': {
     title: 'Settings Hub',
-    description: 'Central settings dashboard — configure your ChefFlow experience.',
+    description: 'Central settings dashboard - configure your ChefFlow experience.',
     features: [
       'Business defaults and profile',
       'AI privacy and Remy controls',
@@ -17,7 +17,7 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/my-profile': {
     title: 'My Profile',
-    description: 'Your core chef profile — name, image, and details used across the portal.',
+    description: 'Your core chef profile - name, image, and details used across the portal.',
     features: [
       'Chef name and image',
       'Review link',
@@ -34,7 +34,7 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/public-profile': {
     title: 'Public Profile',
-    description: 'How clients see you — tagline, partner showcase, and branding colors.',
+    description: 'How clients see you - tagline, partner showcase, and branding colors.',
     features: [
       'Tagline',
       'Partner showcase',
@@ -46,14 +46,14 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/settings/client-preview': {
     title: 'Client Preview',
     description:
-      'See exactly what your clients see — live preview of your public profile and client portal.',
+      'See exactly what your clients see - live preview of your public profile and client portal.',
     features: ['Public profile preview', 'Client portal data preview', 'Read-only view'],
   },
 
   '/settings/ai-privacy': {
     title: 'AI & Privacy Trust Center',
     description:
-      'Complete AI controls and privacy practices — manage Remy features and data handling.',
+      'Complete AI controls and privacy practices - manage Remy features and data handling.',
     features: [
       'Remy onboarding wizard',
       'Data flow schematic',
@@ -64,7 +64,7 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/culinary-profile': {
     title: 'Culinary Profile',
-    description: 'Your food identity and cooking philosophy — helps Remy understand your style.',
+    description: 'Your food identity and cooking philosophy - helps Remy understand your style.',
     features: [
       'Cooking philosophy',
       'Signature dishes',
@@ -81,7 +81,7 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/billing': {
     title: 'Subscription & Billing',
-    description: 'Manage your ChefFlow subscription — plan details, billing, and upgrades.',
+    description: 'Manage your ChefFlow subscription - plan details, billing, and upgrades.',
     features: ['Subscription status', 'Plan features', 'Upgrade options', 'Billing history'],
   },
 
@@ -99,7 +99,7 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/notifications': {
     title: 'Notification Settings',
-    description: 'Control how you receive notifications — email, push, and SMS.',
+    description: 'Control how you receive notifications - email, push, and SMS.',
     features: ['Per-category preferences', 'Email/push/SMS channel selection', 'SMS phone setup'],
   },
 
@@ -134,7 +134,7 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/automations': {
     title: 'Automations',
-    description: 'Automated workflows — follow-up reminders, expiry rules, and custom triggers.',
+    description: 'Automated workflows - follow-up reminders, expiry rules, and custom triggers.',
     features: ['Built-in automation rules', 'Custom rule creation', 'Execution history'],
   },
 
@@ -169,14 +169,14 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/modules': {
     title: 'Feature Modules',
-    description: 'Toggle feature modules on/off — control what appears in your sidebar.',
+    description: 'Toggle feature modules on/off - control what appears in your sidebar.',
     features: ['Module toggles', 'Pro feature indicators', 'Tier status'],
   },
 
   '/settings/repertoire': {
     title: 'Seasonal Palettes',
     description:
-      'Your creative thesis and seasonal planning — define your culinary identity by season.',
+      'Your creative thesis and seasonal planning - define your culinary identity by season.',
     features: [
       'Seasonal palette creation',
       'Micro-windows',
@@ -193,7 +193,7 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/journal': {
     title: 'Chef Journal',
-    description: 'Travel inspiration and learning record — document your culinary journey.',
+    description: 'Travel inspiration and learning record - document your culinary journey.',
     features: [
       'Journal entries',
       'Insights and highlights',
@@ -238,13 +238,13 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/professional/momentum': {
     title: 'Professional Momentum',
-    description: 'Growth tracking — new dishes, cuisines, education, and creative projects.',
+    description: 'Growth tracking - new dishes, cuisines, education, and creative projects.',
     features: ['Growth snapshot', 'New dish count', 'Education tracking', 'Creative projects'],
   },
 
   '/settings/protection': {
     title: 'Business Protection',
-    description: 'Safeguard your business — insurance, certifications, NDAs, and crisis planning.',
+    description: 'Safeguard your business - insurance, certifications, NDAs, and crisis planning.',
     features: [
       'Business health checklist',
       'Insurance policies',
@@ -255,13 +255,13 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/protection/business-health': {
     title: 'Business Health',
-    description: 'Business continuity checklist — ensure your business is protected.',
+    description: 'Business continuity checklist - ensure your business is protected.',
     features: ['Continuity checklist', 'Gap identification', 'Action items'],
   },
 
   '/settings/protection/insurance': {
     title: 'Insurance',
-    description: 'Track insurance policies — liability, property, workers comp.',
+    description: 'Track insurance policies - liability, property, workers comp.',
     features: ['Policy list', 'Expiry tracking', 'Coverage details'],
   },
 
@@ -273,13 +273,13 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/protection/crisis': {
     title: 'Crisis Response',
-    description: 'Emergency response plan — what to do when things go wrong.',
+    description: 'Emergency response plan - what to do when things go wrong.',
     features: ['Crisis playbook', 'Contact tree', 'Emergency procedures'],
   },
 
   '/settings/protection/continuity': {
     title: 'Business Continuity',
-    description: 'Business continuity planning — keep operating through disruptions.',
+    description: 'Business continuity planning - keep operating through disruptions.',
     features: ['Continuity plan', 'Backup procedures', 'Recovery steps'],
   },
 
@@ -307,13 +307,13 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/portfolio': {
     title: 'Portfolio',
-    description: 'Photo gallery for your public profile — showcase your best dishes.',
+    description: 'Photo gallery for your public profile - showcase your best dishes.',
     features: ['Photo upload', 'Caption and dish name', 'Featured marker', 'Drag-to-reorder'],
   },
 
   '/settings/favorite-chefs': {
     title: 'Favorite Chefs',
-    description: 'Your culinary heroes and mentors — share your inspirations.',
+    description: 'Your culinary heroes and mentors - share your inspirations.',
     features: ['Chef list', 'Social sharing', 'Inspiration notes'],
   },
 
@@ -354,7 +354,7 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/emergency': {
     title: 'Emergency Contacts',
-    description: 'Backup contacts for event incapacity — sous chef, business partner, peer chef.',
+    description: 'Backup contacts for event incapacity - sous chef, business partner, peer chef.',
     features: ['Contact storage', 'Role assignment', 'Event contingency linking'],
   },
 }

@@ -1,6 +1,6 @@
 'use server'
 
-// Tip Actions — manual tip log + Uber-style tip request system.
+// Tip Actions - manual tip log + Uber-style tip request system.
 // Manual tips: chef records tips received (event_tips table).
 // Tip requests: chef sends a link to client post-service, client submits tip (tip_requests table).
 

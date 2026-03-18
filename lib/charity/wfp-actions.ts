@@ -1,7 +1,7 @@
 'use server'
 
 /**
- * World Food Programme (WFP) news feed — fetches latest stories from WFP's RSS.
+ * World Food Programme (WFP) news feed - fetches latest stories from WFP's RSS.
  * Free, no API key needed. Server-side only.
  *
  * Source: https://www.wfp.org/rss.xml (official WFP RSS feed)
@@ -18,7 +18,7 @@ export type WfpStory = {
 
 /**
  * Fetch latest WFP news stories from their RSS feed.
- * Returns up to `limit` items (default 6). Non-blocking — returns empty on failure.
+ * Returns up to `limit` items (default 6). Non-blocking - returns empty on failure.
  */
 export async function getWfpNews(limit = 6): Promise<WfpStory[]> {
   await requireChef()
@@ -37,7 +37,7 @@ export async function getWfpNews(limit = 6): Promise<WfpStory[]> {
   }
 }
 
-/** Minimal RSS XML parser — extracts <item> elements without a library */
+/** Minimal RSS XML parser - extracts <item> elements without a library */
 function parseRssItems(xml: string, limit: number): WfpStory[] {
   const items: WfpStory[] = []
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi

@@ -140,7 +140,7 @@ export function AllergenMatrix({ menuId }: Props) {
                         {allergenShortName(allergen)}
                       </span>
                       {big9 && (
-                        <Badge variant="error" className="text-[10px] px-1 py-0">
+                        <Badge variant="error" className="text-xxs px-1 py-0">
                           Big 9
                         </Badge>
                       )}

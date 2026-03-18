@@ -149,7 +149,7 @@ export function PrepTimerForm({ stationId, eventId, onDone }: Props) {
         <button
           type="button"
           onClick={() => setUseCustom(!useCustom)}
-          className="text-[11px] text-stone-500 hover:text-stone-300"
+          className="text-xs-tight text-stone-500 hover:text-stone-300"
         >
           {useCustom ? 'Use quick duration' : 'Set specific end time'}
         </button>

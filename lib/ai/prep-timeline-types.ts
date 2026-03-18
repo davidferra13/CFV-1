@@ -1,4 +1,4 @@
-// Prep Timeline — Shared Types
+// Prep Timeline - Shared Types
 // Extracted from server action file to avoid 'use server' export restrictions.
 
 export interface PrepStep {

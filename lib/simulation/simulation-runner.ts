@@ -1,9 +1,9 @@
-// Simulation Runner — Internal (No Auth)
+// Simulation Runner - Internal (No Auth)
 // Extracted from simulation-actions.ts so it can be called by both:
 //   • startSimulationRun() server action (UI trigger, auth-gated)
 //   • /api/scheduled/simulation cron route (automated, CRON_SECRET-gated)
 //
-// This file has NO 'use server' directive — it is a plain server-side module.
+// This file has NO 'use server' directive - it is a plain server-side module.
 // Never import this from a client component.
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -154,7 +154,7 @@ export async function runSimulationInternal(
       })
       .eq('id', runId)
 
-    // Generate an AI fix report — non-blocking, runs after run is marked complete.
+    // Generate an AI fix report - non-blocking, runs after run is marked complete.
     // Ollama analyzes failures and writes docs/simulation-report.md.
     const failingModules = Object.entries(moduleBreakdown)
       .filter(([, stats]) => stats.passRate < 1)

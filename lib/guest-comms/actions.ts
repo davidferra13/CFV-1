@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 /**
- * Get all guests with emails across events — for batch communication.
+ * Get all guests with emails across events - for batch communication.
  * Chef only.
  */
 export async function getGuestEmailList(filters?: { eventId?: string; rsvpStatus?: string }) {
@@ -171,7 +171,7 @@ export async function draftTestimonialRequest(eventId: string) {
     ``,
     `If you enjoyed the experience, would you mind sharing a quick testimonial? Even a sentence or two would mean so much to me and helps other people discover private dining.`,
     ``,
-    `You can simply reply to this email with your thoughts — no pressure at all!`,
+    `You can simply reply to this email with your thoughts - no pressure at all!`,
     ``,
     `Some prompts if helpful:`,
     `- What was the highlight of the evening?`,

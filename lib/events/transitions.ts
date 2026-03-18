@@ -162,7 +162,7 @@ export async function transitionEvent({
   // transition_event_atomic() is a SECURITY DEFINER Postgres function that handles:
   //   - events.status, events.updated_by, events.cancelled_at, events.cancellation_reason,
   //     events.cancellation_initiated_by (for cancellations)
-  //   - event_state_transitions INSERT (both writes are atomic — one commit or both roll back)
+  //   - event_state_transitions INSERT (both writes are atomic - one commit or both roll back)
   const transitionMetadata = {
     ...parsed.metadata,
     source: parsed.systemTransition ? 'system' : 'user',
@@ -283,7 +283,7 @@ export async function transitionEvent({
           category: 'event',
           action: 'event_confirmed_to_client',
           title: 'Event confirmed',
-          body: `"${eventTitle}" is confirmed — everything is set`,
+          body: `"${eventTitle}" is confirmed - everything is set`,
           actionUrl: `/my-events/${eventId}`,
           eventId,
         })
@@ -322,7 +322,7 @@ export async function transitionEvent({
           category: 'event',
           action: 'event_completed_to_client',
           title: 'Event completed',
-          body: `"${eventTitle}" is complete — thank you!`,
+          body: `"${eventTitle}" is complete - thank you!`,
           actionUrl: `/my-events/${eventId}`,
           eventId,
         })
@@ -512,7 +512,7 @@ export async function transitionEvent({
         }
 
         // Auto-send prep sheet PDF to chef only (non-blocking).
-        // Prep sheet is chef-internal — client never sees it.
+        // Prep sheet is chef-internal - client never sees it.
         try {
           const { format } = await import('date-fns')
           const { generatePrepSheet } = await import('@/lib/documents/generate-prep-sheet')
@@ -703,7 +703,7 @@ export async function transitionEvent({
   }
 
   // Auto-place prep blocks when confirmed (non-blocking, idempotent).
-  // Uses deterministic rule-based engine — not AI output. Skips if blocks exist.
+  // Uses deterministic rule-based engine - not AI output. Skips if blocks exist.
   if (toStatus === 'confirmed') {
     try {
       const { autoPlacePrepBlocks } = await import('@/lib/scheduling/prep-block-actions')
@@ -894,7 +894,7 @@ export async function completeEvent(eventId: string) {
     metadata: { action: 'chef_completed', chefId: user.entityId },
   })
 
-  // Auto-award loyalty (Tier 1 autonomous — no chef approval needed)
+  // Auto-award loyalty (Tier 1 autonomous - no chef approval needed)
   // Branches on program_mode: full → points, lite → visit/tier only, off → skip
   try {
     const { getLoyaltyConfigByTenant, awardEventPoints, awardLiteVisit } =
@@ -910,7 +910,7 @@ export async function completeEvent(eventId: string) {
       return { ...result, loyalty: loyaltyResult }
     }
 
-    // Full mode — award points
+    // Full mode - award points
     const loyaltyResult = await awardEventPoints(eventId)
     return { ...result, loyalty: loyaltyResult }
   } catch (err) {

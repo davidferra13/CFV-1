@@ -550,14 +550,14 @@ export function CollabInboxPanel({
     <div className="space-y-6">
       <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
         <article className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2.5">
-          <p className="text-[11px] uppercase tracking-wide text-stone-500">Outgoing (90d)</p>
+          <p className="text-xs-tight uppercase tracking-wide text-stone-500">Outgoing (90d)</p>
           <p className="text-lg font-semibold text-stone-100">{metrics.outgoing_total}</p>
           <p className="text-xs text-stone-400 mt-0.5">
             {metrics.outgoing_open} open · {metrics.outgoing_closed} closed
           </p>
         </article>
         <article className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2.5">
-          <p className="text-[11px] uppercase tracking-wide text-stone-500">Response Quality</p>
+          <p className="text-xs-tight uppercase tracking-wide text-stone-500">Response Quality</p>
           <p className="text-lg font-semibold text-stone-100">
             {formatPercent(metrics.acceptance_rate_pct)}
           </p>
@@ -566,7 +566,7 @@ export function CollabInboxPanel({
           </p>
         </article>
         <article className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2.5">
-          <p className="text-[11px] uppercase tracking-wide text-stone-500">Response Speed</p>
+          <p className="text-xs-tight uppercase tracking-wide text-stone-500">Response Speed</p>
           <p className="text-lg font-semibold text-stone-100">
             {metrics.avg_first_response_hours == null
               ? 'N/A'
@@ -575,7 +575,7 @@ export function CollabInboxPanel({
           <p className="text-xs text-stone-400 mt-0.5">Average first recipient response</p>
         </article>
         <article className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2.5">
-          <p className="text-[11px] uppercase tracking-wide text-stone-500">Incoming</p>
+          <p className="text-xs-tight uppercase tracking-wide text-stone-500">Incoming</p>
           <p className="text-lg font-semibold text-stone-100">{metrics.incoming_total}</p>
           <p className="text-xs text-stone-400 mt-0.5">
             {metrics.incoming_unread} unread · {metrics.incoming_actionable} actionable
@@ -1077,11 +1077,11 @@ export function CollabInboxPanel({
                                   <span className="font-medium">{actorName}</span>{' '}
                                   {formatTimelineEvent(event.event_type).toLowerCase()}
                                 </p>
-                                <p className="text-[11px] text-stone-500">
+                                <p className="text-xs-tight text-stone-500">
                                   {new Date(event.created_at).toLocaleString()}
                                 </p>
                                 {metadataSummary && (
-                                  <p className="text-[11px] text-stone-400 mt-1">
+                                  <p className="text-xs-tight text-stone-400 mt-1">
                                     {metadataSummary}
                                   </p>
                                 )}
@@ -1243,11 +1243,11 @@ export function CollabInboxPanel({
                                   <span className="font-medium">{actorName}</span>{' '}
                                   {formatTimelineEvent(event.event_type).toLowerCase()}
                                 </p>
-                                <p className="text-[11px] text-stone-500">
+                                <p className="text-xs-tight text-stone-500">
                                   {new Date(event.created_at).toLocaleString()}
                                 </p>
                                 {metadataSummary && (
-                                  <p className="text-[11px] text-stone-400 mt-1">
+                                  <p className="text-xs-tight text-stone-400 mt-1">
                                     {metadataSummary}
                                   </p>
                                 )}

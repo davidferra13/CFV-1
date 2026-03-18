@@ -3,7 +3,7 @@
 // Holiday Campaign Draft Automation
 // Runs daily via the sequences cron. For each chef with past clients near an
 // upcoming holiday, creates a DRAFT marketing campaign pre-populated with the
-// holiday outreach template. The chef reviews and sends — never auto-fired.
+// holiday outreach template. The chef reviews and sends - never auto-fired.
 // This is AI-policy-compliant: system drafts, chef approves.
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -15,7 +15,7 @@ const HOLIDAY_OUTREACH_WINDOW_DAYS = 45 // how far ahead to start creating draft
 /**
  * For all active chefs, check upcoming holidays and auto-create draft campaigns
  * for holidays that are entering their outreach window and don't already have one.
- * Called from the sequences cron — no chef auth context, uses admin client.
+ * Called from the sequences cron - no chef auth context, uses admin client.
  */
 export async function processHolidayCampaignDrafts(): Promise<{
   drafted: number
@@ -46,7 +46,7 @@ export async function processHolidayCampaignDrafts(): Promise<{
 
   for (const upcomingHoliday of upcomingHolidays) {
     const { holiday, date, daysUntil } = upcomingHoliday
-    const draftName = `${holiday.name} Outreach — ${date.getFullYear()}`
+    const draftName = `${holiday.name} Outreach - ${date.getFullYear()}`
 
     for (const chef of chefs) {
       try {
@@ -82,7 +82,7 @@ export async function processHolidayCampaignDrafts(): Promise<{
 
         const urgencyNote =
           daysUntil <= 14
-            ? `\n\n⚡ Only ${daysUntil} days until ${holiday.name} — reach out now.`
+            ? `\n\n⚡ Only ${daysUntil} days until ${holiday.name} - reach out now.`
             : ''
 
         // Create the draft campaign
@@ -113,7 +113,7 @@ export async function processHolidayCampaignDrafts(): Promise<{
             })
           }
         } catch {
-          // Non-blocking — notification failure never blocks the draft creation
+          // Non-blocking - notification failure never blocks the draft creation
         }
 
         drafted++

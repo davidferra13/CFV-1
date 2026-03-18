@@ -80,7 +80,7 @@ export function isTheKnotEmail(fromAddress: string): boolean {
 // ─── Email Type Detection ────────────────────────────────────────────────
 
 const TYPE_PATTERNS: Array<{ pattern: RegExp; type: TheKnotEmailType }> = [
-  // New inquiry — aggressive matching
+  // New inquiry - aggressive matching
   { pattern: /new\s+inquiry/i, type: 'knot_new_inquiry' },
   { pattern: /new\s+lead/i, type: 'knot_new_inquiry' },
   { pattern: /new\s+request/i, type: 'knot_new_inquiry' },
@@ -105,7 +105,7 @@ const TYPE_PATTERNS: Array<{ pattern: RegExp; type: TheKnotEmailType }> = [
   { pattern: /you\u2019ve\s+been\s+booked/i, type: 'knot_booking_confirmed' },
   { pattern: /booked\s+you/i, type: 'knot_booking_confirmed' },
 
-  // Administrative — catch marketing, tips, reviews, newsletters
+  // Administrative - catch marketing, tips, reviews, newsletters
   { pattern: /weddingpro\s+insights/i, type: 'knot_administrative' },
   { pattern: /review/i, type: 'knot_administrative' },
   { pattern: /newsletter/i, type: 'knot_administrative' },
@@ -137,7 +137,7 @@ export function detectTheKnotEmailType(subject: string, body?: string): TheKnotE
   return 'knot_administrative'
 }
 
-// ─── Field Extraction — New Inquiry ──────────────────────────────────────
+// ─── Field Extraction - New Inquiry ──────────────────────────────────────
 
 function parseInquiryEmail(
   subject: string,
@@ -167,7 +167,7 @@ function parseInquiryEmail(
     }
   }
 
-  // Wedding date — multiple patterns
+  // Wedding date - multiple patterns
   const dateMatch =
     body.match(/(?:Wedding|Event|Ceremony)\s*(?:Date|Day):\s*(.+)/i) ||
     body.match(/(?:Date|When):\s*(.+)/i) ||
@@ -175,7 +175,7 @@ function parseInquiryEmail(
     body.match(/(\d{1,2}\/\d{1,2}\/\d{2,4})/i)
   const weddingDate = dateMatch?.[1]?.trim() || null
 
-  // Location — venue or city
+  // Location - venue or city
   const locationMatch =
     body.match(/(?:Venue|Location|City|Where):\s*(.+)/i) ||
     body.match(/(?:Reception|Ceremony)\s*(?:Venue|Location):\s*(.+)/i)
@@ -206,14 +206,14 @@ function parseInquiryEmail(
     body.match(/(\$[\d,]+(?:\s*[-–]\s*\$[\d,]+)?)/i)
   const budgetText = budgetMatch?.[1]?.trim() || null
 
-  // Service type — Catering, Wedding Cake, Bar Services, etc.
+  // Service type - Catering, Wedding Cake, Bar Services, etc.
   const serviceMatch =
     body.match(/(?:Service|Services?\s*(?:Type|Requested|Needed)):\s*(.+)/i) ||
     body.match(/(?:Category|Looking\s*for):\s*(.+)/i) ||
     body.match(/interested\s+in\s+(?:your\s+)?(.+?)(?:\s+services?)?(?:\.|$)/i)
   const serviceType = serviceMatch?.[1]?.trim() || null
 
-  // CTA link — link to respond on WeddingPro
+  // CTA link - link to respond on WeddingPro
   const ctaMatch =
     body.match(/href="(https?:\/\/[^"]*(?:weddingpro|theknot|weddingwire)[^"]*)"/i) ||
     body.match(/href="(https?:\/\/[^"]*(?:respond|reply|lead|inquiry|message)[^"]*)"/i) ||
@@ -235,7 +235,7 @@ function parseInquiryEmail(
   }
 }
 
-// ─── Field Extraction — Client Message ───────────────────────────────────
+// ─── Field Extraction - Client Message ───────────────────────────────────
 
 function parseMessageEmail(
   subject: string,
@@ -277,7 +277,7 @@ function parseMessageEmail(
   }
 }
 
-// ─── Field Extraction — Booking Confirmed ────────────────────────────────
+// ─── Field Extraction - Booking Confirmed ────────────────────────────────
 
 function parseBookingEmail(
   subject: string,
@@ -364,7 +364,7 @@ export function parseTheKnotEmail(email: ParsedEmail): TheKnotParseResult {
       break
     }
     case 'knot_administrative':
-      // No structured extraction needed — just log the type
+      // No structured extraction needed - just log the type
       break
   }
 

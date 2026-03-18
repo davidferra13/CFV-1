@@ -1,18 +1,18 @@
-// Upstash — serverless Redis (rate limiting, caching)
+// Upstash - serverless Redis (rate limiting, caching)
 // https://upstash.com/
 // 10K commands/day free, no credit card
 // Perfect for: rate limiting, session cache, real-time counters
 
 /**
- * Upstash Redis via REST API — no persistent connection needed.
+ * Upstash Redis via REST API - no persistent connection needed.
  * Works perfectly in serverless/edge environments (Vercel, Next.js API routes).
  *
  * Setup requires:
  *   npm install @upstash/redis
  *
  * Env vars:
- *   UPSTASH_REDIS_REST_URL — your Redis REST endpoint
- *   UPSTASH_REDIS_REST_TOKEN — your Redis REST token
+ *   UPSTASH_REDIS_REST_URL - your Redis REST endpoint
+ *   UPSTASH_REDIS_REST_TOKEN - your Redis REST token
  *
  * This file provides higher-level utilities for ChefFlow use cases.
  */
@@ -58,7 +58,7 @@ export async function rateLimit(
       resetInSeconds: ttl > 0 ? ttl : windowSeconds,
     }
   } catch {
-    // Redis unavailable — allow the request (fail open)
+    // Redis unavailable - allow the request (fail open)
     return { allowed: true, remaining: limit, resetInSeconds: 0 }
   }
 }
@@ -76,7 +76,7 @@ export async function cacheSet(key: string, value: any, ttlSeconds: number): Pro
     })
     await redis.set(key, JSON.stringify(value), { ex: ttlSeconds })
   } catch {
-    // Cache miss is fine — just skip
+    // Cache miss is fine - just skip
   }
 }
 
@@ -99,7 +99,7 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
 }
 
 /**
- * Cache-through helper — check cache first, call fn if miss, store result.
+ * Cache-through helper - check cache first, call fn if miss, store result.
  */
 export async function cacheFetch<T>(
   key: string,

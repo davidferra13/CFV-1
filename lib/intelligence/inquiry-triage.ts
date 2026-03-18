@@ -90,7 +90,7 @@ export async function getInquiryTriage(): Promise<InquiryTriageResult | null> {
     const hoursUnanswered = Math.round((now - new Date(inquiry.created_at).getTime()) / 3600000)
     const client = inquiry.client as any
 
-    // Time urgency (0-30 pts) — older unanswered = higher priority
+    // Time urgency (0-30 pts) - older unanswered = higher priority
     if (hoursUnanswered > 72) {
       score += 30
       factors.push('Waiting 3+ days')
@@ -177,12 +177,12 @@ export async function getInquiryTriage(): Promise<InquiryTriageResult | null> {
     let suggestedAction: string
     if (inquiry.status === 'new') {
       suggestedAction =
-        hoursUnanswered > 24 ? 'Respond ASAP — inquiry aging' : 'Send initial response'
+        hoursUnanswered > 24 ? 'Respond ASAP - inquiry aging' : 'Send initial response'
     } else if (inquiry.status === 'quoted') {
       suggestedAction =
         hoursUnanswered > 48 ? 'Follow up on sent quote' : 'Awaiting client decision'
     } else if (inquiry.status === 'awaiting_chef') {
-      suggestedAction = 'Your turn — client is waiting'
+      suggestedAction = 'Your turn - client is waiting'
     } else {
       suggestedAction = 'Review and respond'
     }

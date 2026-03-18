@@ -178,6 +178,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
                     href={`/events/${current.eventId}`}
                     className="text-brand-500 hover:text-brand-400"
                     target="_blank"
+                    rel="noopener noreferrer"
                   >
                     View event
                   </Link>

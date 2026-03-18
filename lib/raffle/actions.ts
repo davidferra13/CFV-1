@@ -102,8 +102,8 @@ export type DrawReceipt = {
 /** Create a new raffle round for the current month (or specified month). */
 export async function createRaffleRound(input: {
   prizeDescription: string
-  monthStart: string // ISO date — first of month
-  monthEnd: string // ISO date — last of month
+  monthStart: string // ISO date - first of month
+  monthEnd: string // ISO date - last of month
   prizeTopScorer?: string // optional top scorer prize (null = category disabled)
   prizeMostDedicated?: string // optional most dedicated prize (null = category disabled)
 }): Promise<{ success: boolean; error?: string; roundId?: string }> {
@@ -218,7 +218,7 @@ export async function getRaffleRounds(): Promise<RaffleRound[]> {
   return (data || []) as RaffleRound[]
 }
 
-/** Get detailed round info with entries (chef view — shows real client names). */
+/** Get detailed round info with entries (chef view - shows real client names). */
 export async function getRaffleRoundDetail(roundId: string): Promise<{
   round: RaffleRound | null
   entries: (RaffleEntry & { client_name: string })[]
@@ -555,7 +555,7 @@ export async function submitRaffleEntry(
   if (existingEntries && existingEntries.length > 0) {
     aliasEmoji = existingEntries[0].alias_emoji
   } else {
-    // Assign a new unique alias — check which emojis are already taken in this round
+    // Assign a new unique alias - check which emojis are already taken in this round
     const { data: usedAliases } = await (supabase as any)
       .from('raffle_entries')
       .select('alias_emoji')
@@ -584,7 +584,7 @@ export async function submitRaffleEntry(
   let isNewEntry = true
   if (insertError) {
     if (insertError.code === '23505') {
-      // Already have an entry today — update score if this one is higher
+      // Already have an entry today - update score if this one is higher
       isNewEntry = false
       const today = new Date().toISOString().split('T')[0]
       await (supabase as any)
@@ -665,7 +665,7 @@ export async function drawRaffleWinner(roundId: string): Promise<{
     .eq('round_id', roundId)
 
   if (entriesError || !entries || entries.length === 0) {
-    // No entries — cancel the round
+    // No entries - cancel the round
     await (supabase as any).from('raffle_rounds').update({ status: 'cancelled' }).eq('id', roundId)
     return { success: false, error: 'No entries in this round.' }
   }
@@ -753,7 +753,7 @@ export async function drawRaffleWinner(roundId: string): Promise<{
     return { success: false, error: 'Failed to record draw result.' }
   }
 
-  // ── Non-blocking notifications — group per client if they won multiple categories ──
+  // ── Non-blocking notifications - group per client if they won multiple categories ──
   const winnerNotifications = new Map<string, string[]>()
   winnerNotifications.set(winnerEntry.client_id, ['Random Draw'])
   if (topScorer && round.prize_top_scorer) {

@@ -1,4 +1,4 @@
-// Offline module — public API
+// Offline module - public API
 // Import from '@/lib/offline' for clean access to all offline utilities.
 
 export { enqueueAction, getPendingActions, getPendingCount, isIDBAvailable } from './idb-queue'

@@ -1,7 +1,7 @@
 'use server'
 
-// Ask Remy — Intent Parser
-// PRIVACY: Chef commands may contain client names, financial details — must stay local.
+// Ask Remy - Intent Parser
+// PRIVACY: Chef commands may contain client names, financial details - must stay local.
 // Parses freeform chef input into a structured task plan using local Ollama only.
 
 import { z } from 'zod'
@@ -39,24 +39,24 @@ AVAILABLE TASKS:
 ${taskList}
 
 RULES:
-1. Tasks with no dependencies should run in parallel — set dependsOn to [].
+1. Tasks with no dependencies should run in parallel - set dependsOn to [].
 2. If task B needs data from task A (e.g. email needs a client lookup first), set B.dependsOn = ["t1"].
 3. If confidence < 0.7 for any subtask, set that subtask tier to 3 and add a holdReason.
-4. email.* tasks are ALWAYS tier 2 — even if the chef says "send". Never auto-send.
+4. email.* tasks are ALWAYS tier 2 - even if the chef says "send". Never auto-send.
 5. event.create_draft is ALWAYS tier 2.
 6. If you cannot match part of the command to a known task, create a tier 3 entry with a clear holdReason.
 7. Ambiguous entity (e.g. chef says "Sarah" but there are multiple clients named Sarah) → tier 3.
 8. overallConfidence is your confidence in the full decomposition.
-9. agent.* tasks are ALWAYS tier 2 — they modify data and require chef approval. No exceptions.
+9. agent.* tasks are ALWAYS tier 2 - they modify data and require chef approval. No exceptions.
 10. agent.ledger_write, agent.modify_roles, agent.delete_data, agent.send_email, agent.refund are ALWAYS tier 3.
-11. When the chef says "create", "add", "make", "set up", "update", "change", "edit", "move", "transition", "log", "schedule", "record" — use agent.* write tasks.
-12. For agent.* tasks, include all available info in the inputs even if incomplete — the executor handles missing fields.
-13. Prefer agent.create_event over event.create_draft — it is more capable.
+11. When the chef says "create", "add", "make", "set up", "update", "change", "edit", "move", "transition", "log", "schedule", "record" - use agent.* write tasks.
+12. For agent.* tasks, include all available info in the inputs even if incomplete - the executor handles missing fields.
+13. Prefer agent.create_event over event.create_draft - it is more capable.
 14. If a message asks to create/update clients and also mentions allergies/dietary info, do NOT route to dietary.check unless the chef explicitly asks to run a dietary/menu safety check.
 15. If the chef asks to create more than one client/person in one message, emit one write task per person (multiple agent.create_client tasks OR a single intake task that clearly covers all people).
 16. If the chef asks for a reminder/task ("remind me", "set a reminder", "don't let me forget"), include agent.create_todo.
 
-OUTPUT FORMAT — return ONLY valid JSON, no markdown:
+OUTPUT FORMAT - return ONLY valid JSON, no markdown:
 {
   "overallConfidence": 0.95,
   "tasks": [
@@ -353,7 +353,7 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
       ],
     }),
   },
-  // "If [date] is free, [action]" — conditional command chaining
+  // "If [date] is free, [action]" - conditional command chaining
   {
     pattern: /^if\s+(.+?)\s+(?:is\s+)?(?:free|available|open)[,.]?\s+(?:then\s+)?(.+)/i,
     build: (match, raw) => {
@@ -1540,7 +1540,7 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
 
   // ─── Common conversational queries (covers test suite gaps) ───────────────
 
-  // "[Name] details/info" or "Show [Name]" — client lookup
+  // "[Name] details/info" or "Show [Name]" - client lookup
   {
     pattern: /^(?:show|view|display|pull up)\s+(?!my\s)(.+)/i,
     build: (match, raw) => {
@@ -1590,7 +1590,7 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
     },
   },
 
-  // "[Name] dietary/allergies/restrictions" — dietary check
+  // "[Name] dietary/allergies/restrictions" - dietary check
   {
     pattern: /^(.+?)\s+(?:dietary|allergies|allergy|restrictions?|diet)$/i,
     build: (match, raw) => ({
@@ -1614,7 +1614,7 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
     pattern: /^(?:upcoming|next|my|list|show)\s+(?:upcoming\s+)?events?$/i,
     build: makeSimpleBuild('event.list_upcoming'),
   },
-  // "[Name] events" — events for a specific client
+  // "[Name] events" - events for a specific client
   {
     pattern: /^(.+?)\s+events?$/i,
     build: (match, raw) => ({
@@ -1661,7 +1661,7 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
     pattern: /^(?:show|list|view)\s+(?:my\s+)?recipes?$/i,
     build: makeSimpleBuild('recipe.search'),
   },
-  // "[keyword] recipes" — recipe search
+  // "[keyword] recipes" - recipe search
   {
     pattern: /^(.+?)\s+recipes?$/i,
     build: (match, raw) => ({
@@ -1686,7 +1686,7 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
     build: makeSimpleBuild('inquiry.list_open'),
   },
 
-  // "Show recipes page" / "Go to [page]" / "Open [page]" — navigation
+  // "Show recipes page" / "Go to [page]" / "Open [page]" - navigation
   {
     pattern: /^(?:show|go to|open|navigate to)\s+(?:the\s+)?(.+?)\s+page$/i,
     build: (match, raw) => ({
@@ -1728,7 +1728,7 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
     build: makeSimpleBuild('client.count'),
   },
 
-  // ─── Batch 3: Gap Closure — Circles, Tasks, Travel, Commerce, Stations, etc. ─
+  // ─── Batch 3: Gap Closure - Circles, Tasks, Travel, Commerce, Stations, etc. ─
 
   // Hub Circles
   {

@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
@@ -363,11 +363,12 @@ export function RecipeLibraryClient({ recipes }: Props) {
                   {/* Photo or gradient header */}
                   <div className={`relative h-32 bg-gradient-to-br ${gradient}`}>
                     {recipe.photo_url ? (
-                      <img
+                      <Image
                         src={recipe.photo_url}
                         alt={recipe.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="absolute inset-0 w-full h-full object-cover"
-                        loading="lazy"
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">

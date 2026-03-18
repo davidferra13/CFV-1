@@ -218,7 +218,7 @@ export async function releaseToMarketplace(inquiryId: string) {
     .single()
 
   if (!submission) {
-    throw new Error('No linked contact submission found — this inquiry was not auto-assigned')
+    throw new Error('No linked contact submission found - this inquiry was not auto-assigned')
   }
 
   // Unclaim the submission so it reappears in the marketplace

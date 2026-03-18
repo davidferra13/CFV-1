@@ -810,7 +810,7 @@ export function ProspectDossierClient({
                             `Subject: ${email.subject}\n\n${email.body}`
                           )
                         }
-                        className="flex items-center gap-1 text-[10px] text-stone-500 hover:text-stone-300"
+                        className="flex items-center gap-1 text-xxs text-stone-500 hover:text-stone-300"
                       >
                         <Copy className="h-2.5 w-2.5" />
                         Copy

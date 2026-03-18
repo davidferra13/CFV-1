@@ -1,7 +1,7 @@
 // Client Notification Actions
 // Helper for creating in-app notifications targeted at client recipients.
 // Extends the existing notification system without touching the chef flow.
-// All functions are non-blocking — errors are logged, never thrown.
+// All functions are non-blocking - errors are logged, never thrown.
 
 'use server'
 
@@ -26,7 +26,7 @@ export async function getClientAuthUserId(clientId: string): Promise<string | nu
     .single()
 
   if (error || !data) {
-    // No portal account — silently return null (common for chef-imported contacts)
+    // No portal account - silently return null (common for chef-imported contacts)
     return null
   }
 
@@ -39,7 +39,7 @@ export async function getClientAuthUserId(clientId: string): Promise<string | nu
  * Create an in-app notification targeting a client's bell/panel.
  *
  * Design notes:
- * - Uses the admin client (bypasses RLS) — safe from server actions, crons, and webhooks.
+ * - Uses the admin client (bypasses RLS) - safe from server actions, crons, and webhooks.
  * - Non-blocking: logs errors, never throws. Caller should wrap in try/catch if needed.
  * - If the client has no portal account, silently skips (no error).
  * - recipient_role = 'client' discriminates from chef notifications in the same table.
@@ -60,7 +60,7 @@ export async function createClientNotification(params: {
     const authUserId = await getClientAuthUserId(params.clientId)
 
     if (!authUserId) {
-      // Client has no portal account — skip silently
+      // Client has no portal account - skip silently
       return
     }
 

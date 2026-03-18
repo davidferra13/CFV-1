@@ -1,10 +1,10 @@
 /**
- * SettingsRoadmapComposition — Remotion animation showing settings priorities.
+ * SettingsRoadmapComposition - Remotion animation showing settings priorities.
  *
  * Groups the 15+ settings sections into 3 priority tiers:
- *  1. Essential (do first) — Profile, Business Defaults, Stripe
- *  2. Important (do next) — Booking Page, Templates, Clients
- *  3. Optional (when ready) — Modules, Repertoire, Integrations
+ *  1. Essential (do first) - Profile, Business Defaults, Stripe
+ *  2. Important (do next) - Booking Page, Templates, Clients
+ *  3. Optional (when ready) - Modules, Repertoire, Integrations
  *
  * Helps new chefs understand what to set up and in what order.
  */
@@ -42,7 +42,7 @@ const PURPLE = { bg: '#ede9fe', text: '#5b21b6', border: '#c4b5fd' }
 const TIERS = [
   {
     priority: '① Essential',
-    subtitle: "Set these up first — your app won't work well without them",
+    subtitle: "Set these up first - your app won't work well without them",
     icon: '🔑',
     color: GREEN,
     items: [
@@ -64,7 +64,7 @@ const TIERS = [
   },
   {
     priority: '③ Optional',
-    subtitle: "Customize when you're ready — skip if you're just getting started",
+    subtitle: "Customize when you're ready - skip if you're just getting started",
     icon: '✨',
     color: PURPLE,
     items: [
@@ -298,7 +298,7 @@ export function SettingsRoadmapComposition() {
             Settings Guide
           </div>
           <div style={{ fontSize: 18, fontWeight: 700, color: STONE[900] }}>
-            What to set up — and in what order
+            What to set up - and in what order
           </div>
         </div>
 

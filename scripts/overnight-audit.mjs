@@ -6,13 +6,13 @@
  *
  *  Usage:  node scripts/overnight-audit.mjs
  *  Time:   4-8 hours (designed to run overnight)
- *  Cost:   $0 — no AI, no agents, no VS Code needed
+ *  Cost:   $0 - no AI, no agents, no VS Code needed
  *  Output: reports/overnight-YYYY-MM-DD/report.md
  *
  *  What it does:
  *    Phase 1  TypeScript deep audit              (~3 min)
  *    Phase 2  Unit + integration tests           (~5 min)
- *    Phase 3  Full site crawl — every page       (~1-2 hours)
+ *    Phase 3  Full site crawl - every page       (~1-2 hours)
  *             ├ Desktop + mobile screenshots
  *             ├ Console error capture
  *             ├ Accessibility audit (axe-core)
@@ -44,7 +44,7 @@ const REPORTS_DIR = path.join(ROOT, 'reports', `overnight-${DATE}`);
 const SCREENSHOTS_DIR = path.join(REPORTS_DIR, 'screenshots');
 const TEST_RESULTS_DIR = path.join(REPORTS_DIR, 'test-results');
 const BASE_URL = 'http://localhost:3100';
-const NAV_TIMEOUT = 60_000; // 60s — dev mode compiles on-demand, 30s is too tight
+const NAV_TIMEOUT = 60_000; // 60s - dev mode compiles on-demand, 30s is too tight
 const SUITE_TIMEOUT = 90 * 60 * 1000; // 90 min per test suite (interactions-chef has 38 files)
 const AUDIT_HEADED = ['1', 'true', 'yes'].includes(String(process.env.AUDIT_HEADED || '').toLowerCase());
 
@@ -185,7 +185,7 @@ function resolveDynamic(route, seed) {
         'my-quotes': seed.quoteIds?.draft,
         'my-inquiries': seed.inquiryIds?.awaitingClient,
         chef: seed.chefSlug,
-        calls: null, // skip — no seed data
+        calls: null, // skip - no seed data
       }[ctx];
       if (!val) return null;
       out.push(val);
@@ -278,7 +278,7 @@ async function phaseSiteCrawl(routes) {
     AxeBuilder = axeMod.default || axeMod.AxeBuilder;
     log('  ✓ axe-core loaded for accessibility auditing');
   } catch {
-    log('  ⚠ axe-core not available — using manual a11y checks');
+    log('  ⚠ axe-core not available - using manual a11y checks');
   }
 
   const browser = await chromium.launch({ headless: !AUDIT_HEADED });
@@ -324,10 +324,10 @@ async function phaseSiteCrawl(routes) {
         await page.goto(testUrl, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT });
         const finalUrl = page.url();
         if (finalUrl.includes('/auth/') || finalUrl.includes('/signin')) {
-          log(`  ⚠ Auth session invalid for ${role} — attempting API re-login...`);
+          log(`  ⚠ Auth session invalid for ${role} - attempting API re-login...`);
           const refreshed = await refreshAuth(page, role);
           if (!refreshed) {
-            log(`  ✗ Could not authenticate as ${role} — skipping ${routeList.length} routes`);
+            log(`  ✗ Could not authenticate as ${role} - skipping ${routeList.length} routes`);
             await page.close();
             await context.close();
             return;
@@ -348,7 +348,7 @@ async function phaseSiteCrawl(routes) {
       // Bail out if too many consecutive failures
       if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
         const remaining = routeList.length - i;
-        log(`  ⚠ ${MAX_CONSECUTIVE_FAILURES} consecutive failures — skipping remaining ${remaining} ${role} routes`);
+        log(`  ⚠ ${MAX_CONSECUTIVE_FAILURES} consecutive failures - skipping remaining ${remaining} ${role} routes`);
         // Record skipped routes
         for (let j = i; j < routeList.length; j++) {
           allPages.push({
@@ -373,7 +373,7 @@ async function phaseSiteCrawl(routes) {
 
       // Re-auth check every 20 pages for long crawls
       if (role !== 'public' && i > 0 && i % 20 === 0 && result.redirectedTo?.includes('/auth/')) {
-        log(`  ⚠ Auth appears expired at page ${i}/${routeList.length} — re-authenticating...`);
+        log(`  ⚠ Auth appears expired at page ${i}/${routeList.length} - re-authenticating...`);
         const refreshed = await refreshAuth(page, role);
         if (refreshed) {
           log(`  ✓ Re-authenticated as ${role}`);
@@ -442,7 +442,7 @@ async function phaseSiteCrawl(routes) {
 }
 
 async function crawlPage(page, route, role, AxeBuilder, allLinks, idx, total) {
-  const PAGE_TIMEOUT = 120_000; // 2 min hard cap per page — prevents infinite hangs
+  const PAGE_TIMEOUT = 120_000; // 2 min hard cap per page - prevents infinite hangs
   const result = {
     route, role,
     status: 'ok',
@@ -466,7 +466,7 @@ async function crawlPage(page, route, role, AxeBuilder, allLinks, idx, total) {
   };
   page.on('console', onConsole);
 
-  // Hard timeout wrapper — no single page can stall the entire crawl
+  // Hard timeout wrapper - no single page can stall the entire crawl
   const timeoutPromise = new Promise((_, reject) =>
     setTimeout(() => reject(new Error(`Page timeout after ${PAGE_TIMEOUT / 1000}s`)), PAGE_TIMEOUT)
   );
@@ -477,7 +477,7 @@ async function crawlPage(page, route, role, AxeBuilder, allLinks, idx, total) {
     const t0 = Date.now();
     // domcontentloaded is much faster than networkidle in dev mode
     // networkidle waits for ALL network activity to stop, which in dev mode
-    // means waiting for HMR websockets, analytics pings, etc. — often forever
+    // means waiting for HMR websockets, analytics pings, etc. - often forever
     const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT });
     // Give the page a moment to render after DOM is ready
     await page.waitForTimeout(2000);
@@ -490,7 +490,7 @@ async function crawlPage(page, route, role, AxeBuilder, allLinks, idx, total) {
       result.redirectedTo = finalUrl.replace(BASE_URL, '');
     }
 
-    // If redirected to auth, skip all the heavy analysis — it's the signin page, not the route
+    // If redirected to auth, skip all the heavy analysis - it's the signin page, not the route
     const wasRedirectedToAuth = result.redirectedTo && (
       result.redirectedTo.includes('/auth/') ||
       result.redirectedTo.includes('/signin') ||
@@ -534,7 +534,7 @@ async function crawlPage(page, route, role, AxeBuilder, allLinks, idx, total) {
       // Reset viewport for next page
       await page.setViewportSize({ width: 1280, height: 720 });
 
-      // Accessibility audit (with 30s timeout — axe-core can hang on complex DOMs)
+      // Accessibility audit (with 30s timeout - axe-core can hang on complex DOMs)
       if (AxeBuilder) {
         try {
           const axePromise = new AxeBuilder({ page }).analyze();
@@ -677,7 +677,7 @@ function phaseTestMarathon() {
         countTests(json.suites);
       }
     } catch {
-      // JSON parse failed — suite probably didn't run at all
+      // JSON parse failed - suite probably didn't run at all
     }
 
     const suiteDuration = Date.now() - suiteT0;
@@ -727,7 +727,7 @@ function generateReport(ts, unit, crawl, deadLinks, tests) {
       severity: 'HIGH',
       title: `${totalConsoleErrors} console errors across ${pagesWithErrors.length} pages`,
       details: pagesWithErrors.slice(0, 5).map(p => `- **${p.route}**: ${p.consoleErrors[0]?.slice(0, 150)}`).join('\n'),
-      fix: 'Check the browser console on each affected page. Fix runtime errors — these indicate crashes or failed operations that users will encounter.',
+      fix: 'Check the browser console on each affected page. Fix runtime errors - these indicate crashes or failed operations that users will encounter.',
     });
   }
 
@@ -752,7 +752,7 @@ function generateReport(ts, unit, crawl, deadLinks, tests) {
       severity: 'HIGH',
       title: `${testFail} test failures across ${failedSuites.length} suites`,
       details: failedSuites.slice(0, 5).map(s =>
-        `- **${s.suite}**: ${s.failed} failures — ${s.failures[0]?.title || 'unknown'}`
+        `- **${s.suite}**: ${s.failed} failures - ${s.failures[0]?.title || 'unknown'}`
       ).join('\n'),
       fix: 'Review each failed test. Failures indicate either regressions (code broke something) or stale tests (tests need updating). See the Test Marathon section for details.',
     });
@@ -854,7 +854,7 @@ function generateReport(ts, unit, crawl, deadLinks, tests) {
     w('|------|------|------|---------|');
     ts.errors.slice(0, 50).forEach(e => {
       if (e.file) w(`| ${e.file} | ${e.line} | ${e.code} | ${e.msg?.slice(0, 80)} |`);
-      else w(`| — | — | — | ${e.raw?.slice(0, 80)} |`);
+      else w(`| - | - | - | ${e.raw?.slice(0, 80)} |`);
     });
     if (ts.errors.length > 50) w(`\n*...and ${ts.errors.length - 50} more errors*`);
   }
@@ -886,8 +886,8 @@ function generateReport(ts, unit, crawl, deadLinks, tests) {
     w('|-------|--------|-----------|-----------|--------|------|---------|--------|');
     rolePages.forEach(p => {
       const status = p.redirectedTo ? `→ ${p.redirectedTo.slice(0, 20)}` : (p.status === 'error' ? 'ERR' : p.status);
-      const desktop = p.screenshot.desktop ? `[pic](${p.screenshot.desktop})` : '—';
-      const mobile = p.screenshot.mobile ? `[pic](${p.screenshot.mobile})` : '—';
+      const desktop = p.screenshot.desktop ? `[pic](${p.screenshot.desktop})` : '-';
+      const mobile = p.screenshot.mobile ? `[pic](${p.screenshot.mobile})` : '-';
       w(`| ${p.route} | ${status} | ${p.loadTime}ms | ${p.domNodes} | ${p.consoleErrors.length} | ${p.a11yViolations.length} | ${desktop} | ${mobile} |`);
     });
     w('');
@@ -967,7 +967,7 @@ function generateReport(ts, unit, crawl, deadLinks, tests) {
   w('| Suite | Pass | Fail | Skip | Duration | Status |');
   w('|-------|------|------|------|----------|--------|');
   tests.suites.forEach(s => {
-    const status = s.timedOut ? 'TIMEOUT' : (s.failed === 0 ? (s.passed > 0 ? '✓' : '—') : '✗');
+    const status = s.timedOut ? 'TIMEOUT' : (s.failed === 0 ? (s.passed > 0 ? '✓' : '-') : '✗');
     w(`| ${s.suite} | ${s.passed} | ${s.failed} | ${s.skipped} | ${formatDuration(s.duration)} | ${status} |`);
   });
   w('');
@@ -986,7 +986,7 @@ function generateReport(ts, unit, crawl, deadLinks, tests) {
         w('- Diagnosis: Page or element took too long to load. Likely a slow server response or missing element selector.');
         w('- Fix: Check if the route exists and loads correctly. The selector in the test may need updating.');
       } else if (f.error?.includes('expect(')) {
-        w('- Diagnosis: An assertion failed — the page content doesn\'t match what the test expects.');
+        w('- Diagnosis: An assertion failed - the page content doesn\'t match what the test expects.');
         w('- Fix: Either the feature regressed (fix the code) or the test is outdated (update the assertion).');
       } else if (f.error?.includes('404') || f.error?.includes('Not Found')) {
         w('- Diagnosis: The test tried to navigate to a route that doesn\'t exist or isn\'t rendering.');
@@ -1065,7 +1065,7 @@ async function main() {
       process.exit(1);
     }
   } else {
-    log('Server detected on port 3100 — using existing server');
+    log('Server detected on port 3100 - using existing server');
   }
 
   // Discover routes
@@ -1087,7 +1087,7 @@ async function main() {
   try {
     const seedPath = path.join(ROOT, '.auth', 'seed-ids.json');
     if (!fs.existsSync(seedPath)) {
-      log('  ⚠ .auth/seed-ids.json not found — crawl will run without auth');
+      log('  ⚠ .auth/seed-ids.json not found - crawl will run without auth');
     } else {
       const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://luefkpakzvxcsqroxyhz.supabase.co';
@@ -1107,7 +1107,7 @@ async function main() {
         if (res.ok) {
           log(`  ✓ ${role} auth verified (${email})`);
         } else {
-          log(`  ✗ ${role} auth FAILED (HTTP ${res.status}) — crawl will likely have many redirects`);
+          log(`  ✗ ${role} auth FAILED (HTTP ${res.status}) - crawl will likely have many redirects`);
         }
       }
     }

@@ -1,15 +1,15 @@
-// Remy — New User Welcome Messages & Starters
-// No 'use server' — constants only.
+// Remy - New User Welcome Messages & Starters
+// No 'use server' - constants only.
 // Used by the Remy drawer to greet first-time authenticated chefs.
 
-export const REMY_WELCOME_MESSAGE = `Welcome to ChefFlow! I'm Remy — your AI sous chef.
+export const REMY_WELCOME_MESSAGE = `Welcome to ChefFlow! I'm Remy - your AI sous chef.
 
 I'm here to help you get set up and running. Here are some things I can help with right now:
 
-- **Import your clients** — paste names, upload a CSV, or just tell me about them
-- **Log a past event** — seed your financials with real data from day one
-- **Set up your public page** — so clients can find you and submit inquiries
-- **Just chat** — tell me about your business and I'll remember the details
+- **Import your clients** - paste names, upload a CSV, or just tell me about them
+- **Log a past event** - seed your financials with real data from day one
+- **Set up your public page** - so clients can find you and submit inquiries
+- **Just chat** - tell me about your business and I'll remember the details
 
 What would you like to start with?`
 

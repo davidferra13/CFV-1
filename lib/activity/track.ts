@@ -43,14 +43,16 @@ export async function trackActivity(input: {
 
     incrementMetric('activity.track.success')
 
-    // Non-blocking visitor alert — notify chef when a client is on the site
+    // Non-blocking visitor alert - notify chef when a client is on the site
     if (input.actorType === 'client' && input.clientId) {
       triggerVisitorAlert({
         tenantId: input.tenantId,
         clientId: input.clientId,
         clientName: (input.metadata?.clientName as string) || 'A client',
         eventType: input.eventType,
-      }).catch(() => {}) // fire-and-forget
+      }).catch((err) => {
+        console.error('[non-blocking] triggerVisitorAlert failed:', err)
+      })
     }
   } catch (err) {
     incrementMetric('activity.track.failure')

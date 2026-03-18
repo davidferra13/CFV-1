@@ -68,7 +68,7 @@ export function buildGoalMilestoneMessage(input: {
   if (progressPercent >= 100) {
     return {
       title: `You hit your ${goalLabel} goal! 🎉`,
-      body: `You reached 100%. Fantastic work — consider raising the bar for next period.`,
+      body: `You reached 100%. Fantastic work - consider raising the bar for next period.`,
     }
   }
   if (progressPercent >= 75) {

@@ -1,6 +1,6 @@
 // Ollama-powered menu text parser
 // Takes raw extracted text from a menu document and identifies dishes.
-// Uses LOCAL Ollama only — data never leaves the machine.
+// Uses LOCAL Ollama only - data never leaves the machine.
 // This is text comprehension (reading what the chef wrote), NOT recipe generation.
 
 'use server'
@@ -20,7 +20,7 @@ const ParsedDishSchema = z.object({
 })
 
 const MenuParseResultSchema = z.object({
-  // Cap at 200 dishes — a real menu will never exceed this.
+  // Cap at 200 dishes - a real menu will never exceed this.
   // Prevents Ollama from returning unbounded output on adversarial input.
   dishes: z.array(ParsedDishSchema).max(200),
 })
@@ -52,7 +52,7 @@ CRITICAL RULES:
 - If a course heading is missing, infer the most likely course from the dish name and its position in the menu.
 - If a dish has no description, set description to "".
 - Ignore pricing, footnotes, restaurant names, dates, and non-dish text.
-- Each distinct dish should be its own entry — do not merge multiple dishes into one.
+- Each distinct dish should be its own entry - do not merge multiple dishes into one.
 
 Return a JSON object with a "dishes" array.`
 
@@ -62,7 +62,7 @@ Return a JSON object with a "dishes" array.`
 
 /**
  * Parse raw menu text into structured dish entries using Ollama.
- * This is legitimate AI use — interpreting unstructured text, not generating recipes.
+ * This is legitimate AI use - interpreting unstructured text, not generating recipes.
  */
 export async function parseMenuText(rawText: string): Promise<MenuParseResult> {
   const warnings: string[] = []

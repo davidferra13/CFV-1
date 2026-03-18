@@ -1,7 +1,7 @@
 // Ollama Health Check
-// Proactive availability check — distinct from the passive fallback in parse-ollama.ts
+// Proactive availability check - distinct from the passive fallback in parse-ollama.ts
 // Used by: dashboard badge, /api/ollama-status, watchdog health monitor
-// Not a server action — can be imported from any server-side context
+// Not a server action - can be imported from any server-side context
 
 import { getOllamaConfig } from './providers'
 
@@ -19,7 +19,7 @@ export interface OllamaHealthStatus {
 /**
  * Pings the Ollama /api/tags endpoint and returns availability + latency.
  * Also checks whether the configured model is loaded and detects GPU offloading.
- * Times out after 5 seconds. Never throws — always returns a status object.
+ * Times out after 5 seconds. Never throws - always returns a status object.
  */
 export async function checkOllamaHealth(): Promise<OllamaHealthStatus> {
   const config = getOllamaConfig()

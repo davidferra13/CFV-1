@@ -108,7 +108,7 @@ export async function getUnifiedClientTimeline(
       id: `event-${row.id}`,
       source: 'event',
       timestamp: row.cancelled_at ?? row.created_at,
-      summary: statusLabels[row.status] ?? `Event — ${row.status}`,
+      summary: statusLabels[row.status] ?? `Event - ${row.status}`,
       detail: [
         row.occasion,
         row.guest_count ? `${row.guest_count} guests` : null,
@@ -138,7 +138,7 @@ export async function getUnifiedClientTimeline(
       id: `inquiry-${row.id}`,
       source: 'inquiry',
       timestamp: ts,
-      summary: statusLabels[row.status] ?? `Inquiry — ${row.status}`,
+      summary: statusLabels[row.status] ?? `Inquiry - ${row.status}`,
       detail: row.channel ? `via ${row.channel}` : undefined,
       href: `/pipeline/inquiries/${row.id}`,
       actor: row.status === 'new' ? 'client' : 'chef',
@@ -179,7 +179,7 @@ export async function getUnifiedClientTimeline(
       id: `ledger-${row.id}`,
       source: 'ledger',
       timestamp: ts,
-      summary: typeLabels[row.entry_type] ?? `Payment — ${row.entry_type}`,
+      summary: typeLabels[row.entry_type] ?? `Payment - ${row.entry_type}`,
       detail: [
         formatCents(Math.abs(row.amount_cents)),
         row.payment_method,
@@ -198,7 +198,7 @@ export async function getUnifiedClientTimeline(
       id: `review-${row.id}`,
       source: 'review',
       timestamp: row.created_at,
-      summary: `Client left a review — ${row.rating}/5 stars`,
+      summary: `Client left a review - ${row.rating}/5 stars`,
       detail: snippet(row.what_they_loved || row.what_could_improve),
       actor: 'client',
     })

@@ -448,7 +448,7 @@ export function NotificationListClient() {
               <div key={group}>
                 {/* Date group header */}
                 <div className="px-4 py-2 bg-stone-850 border-b border-stone-800 sticky top-0 z-10">
-                  <h3 className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
+                  <h3 className="text-xs-tight font-semibold text-stone-400 uppercase tracking-wider">
                     {group}
                   </h3>
                 </div>
@@ -505,14 +505,14 @@ export function NotificationListClient() {
                           )}
                           <div className="flex items-center gap-2 mt-1.5">
                             <span
-                              className={`inline-flex items-center text-[10px] px-1.5 py-0.5 rounded border ${badgeClass}`}
+                              className={`inline-flex items-center text-xxs px-1.5 py-0.5 rounded border ${badgeClass}`}
                             >
                               {categoryLabel}
                             </span>
-                            <span className="text-[10px] text-stone-500">
+                            <span className="text-xxs text-stone-500">
                               {formatDate(notification.created_at)}
                             </span>
-                            <span className="text-[10px] text-stone-600">
+                            <span className="text-xxs text-stone-600">
                               ({getRelativeTime(notification.created_at)})
                             </span>
                           </div>

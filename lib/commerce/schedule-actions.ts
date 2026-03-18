@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Payment Schedule Actions
+// Commerce Engine V1 - Payment Schedule Actions
 // Installment plans for events and large orders.
 
 'use server'

@@ -433,7 +433,7 @@ export async function deletePartner(id: string) {
   ])
 
   if ((inquiryCount || 0) > 0 || (eventCount || 0) > 0) {
-    // Soft delete — set inactive to preserve historical data
+    // Soft delete - set inactive to preserve historical data
     const { error } = await supabase
       .from('referral_partners')
       .update({ status: 'inactive' })
@@ -449,7 +449,7 @@ export async function deletePartner(id: string) {
     return { success: true, soft_deleted: true }
   }
 
-  // Hard delete — no linked records
+  // Hard delete - no linked records
   const { error } = await supabase
     .from('referral_partners')
     .delete()
@@ -892,7 +892,7 @@ export async function getEventsNotAssignedToPartner(partnerId: string) {
 
 /**
  * Tags multiple events with a partner and optional location.
- * No status restriction — intended for retroactive historical attribution.
+ * No status restriction - intended for retroactive historical attribution.
  * Only touches partner FK columns, not status or financial data.
  */
 export async function bulkAssignEventsToPartner(
@@ -928,7 +928,7 @@ export async function bulkAssignEventsToPartner(
     if (!location) throw new Error('Location not found or does not belong to this partner')
   }
 
-  // Update events — only touches partner FK columns
+  // Update events - only touches partner FK columns
   const { error } = await supabase
     .from('events')
     .update({
@@ -993,7 +993,7 @@ export async function generatePartnerShareLink(partnerId: string) {
 // ============================================
 
 /**
- * Public action — no auth required.
+ * Public action - no auth required.
  * Fetches all data needed for the partner contribution report page.
  * Uses admin client to bypass RLS (same pattern as event share pages).
  */
@@ -1096,7 +1096,7 @@ export async function getPartnerContributionReport(token: string) {
 // ============================================
 
 /**
- * Public action — no auth required.
+ * Public action - no auth required.
  * Returns showcase-visible partners for a chef's public profile.
  * Uses admin client to bypass RLS (same pattern as event share pages).
  */

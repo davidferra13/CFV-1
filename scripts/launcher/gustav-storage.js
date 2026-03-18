@@ -1,5 +1,5 @@
 /**
- * Gustav Storage — IndexedDB wrapper for Mission Control conversation management.
+ * Gustav Storage - IndexedDB wrapper for Mission Control conversation management.
  *
  * Privacy by architecture: all data stored locally in the browser.
  * The server never sees or stores conversation content.
@@ -305,7 +305,7 @@ async function getConversations(projectId = undefined, includeArchived = false) 
     const store = tx.objectStore(STORES.conversations)
     let request
 
-    // Always getAll — IndexedDB can't index null, so we filter client-side for project
+    // Always getAll - IndexedDB can't index null, so we filter client-side for project
     request = store.getAll()
 
     request.onsuccess = () => {
@@ -962,7 +962,7 @@ async function exportConversationMarkdown(conversationId) {
     const speaker = msg.role === 'user' ? '**You**' : '**Gustav**'
     const bookmark = msg.bookmarked ? ' 🔖' : ''
 
-    lines.push(`### ${speaker} — ${time}${bookmark}`)
+    lines.push(`### ${speaker} - ${time}${bookmark}`)
     lines.push('')
     lines.push(msg.content)
 

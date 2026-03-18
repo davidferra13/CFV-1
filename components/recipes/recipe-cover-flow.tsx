@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, memo } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import type { RecipeListItem } from '@/lib/recipes/actions'
@@ -249,7 +249,14 @@ export function RecipeCoverFlow({ recipes }: Props) {
   )
 }
 
-function CoverCard({ recipe, isActive }: { recipe: RecipeListItem; isActive: boolean }) {
+// Memoized: rendered in .map() for each recipe in the cover flow carousel.
+const CoverCard = memo(function CoverCard({
+  recipe,
+  isActive,
+}: {
+  recipe: RecipeListItem
+  isActive: boolean
+}) {
   const gradient = CATEGORY_GRADIENTS[recipe.category] || CATEGORY_GRADIENTS.other
 
   return (
@@ -262,9 +269,11 @@ function CoverCard({ recipe, isActive }: { recipe: RecipeListItem; isActive: boo
     >
       {recipe.photo_url ? (
         <div className="relative w-full h-full">
-          <img
+          <Image
             src={recipe.photo_url}
             alt={recipe.name}
+            fill
+            sizes="240px"
             className="w-full h-full object-cover"
             draggable={false}
           />
@@ -295,7 +304,7 @@ function CoverCard({ recipe, isActive }: { recipe: RecipeListItem; isActive: boo
                 {recipe.dietary_tags.slice(0, 2).map((tag) => (
                   <span
                     key={tag}
-                    className="text-[10px] px-1.5 py-0.5 bg-white/10 text-white/70 rounded"
+                    className="text-xxs px-1.5 py-0.5 bg-white/10 text-white/70 rounded"
                   >
                     {tag}
                   </span>
@@ -307,4 +316,4 @@ function CoverCard({ recipe, isActive }: { recipe: RecipeListItem; isActive: boo
       )}
     </div>
   )
-}
+})

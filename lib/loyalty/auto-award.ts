@@ -22,9 +22,9 @@ import { revalidatePath } from 'next/cache'
  * Rules:
  *  - Only fires when tenantId is non-null (invitation-based signup or explicit
  *    tenant assignment). Standalone clients with no tenantId are skipped.
- *  - Fully idempotent — guarded by clients.has_received_welcome_points.
+ *  - Fully idempotent - guarded by clients.has_received_welcome_points.
  *  - Skipped silently if the loyalty program is inactive or welcome_points = 0.
- *  - Uses admin client — may be called before any auth session exists.
+ *  - Uses admin client - may be called before any auth session exists.
  *
  * This is a Tier 1 Autonomous action: no chef review, no approval prompt.
  * Welcome points are a friction-free gift to celebrate the client joining.
@@ -35,7 +35,7 @@ export async function autoAwardWelcomePoints(
 ): Promise<{ awarded: boolean; points: number }> {
   const supabase: any = createServerClient({ admin: true })
 
-  // Idempotency check — never double-award
+  // Idempotency check - never double-award
   const { data: client } = await supabase
     .from('clients')
     .select('id, full_name, has_received_welcome_points, loyalty_points')
@@ -59,7 +59,7 @@ export async function autoAwardWelcomePoints(
     .eq('tenant_id', tenantId)
     .single()
 
-  // If program is inactive, no config, or welcome_points = 0 — mark received and skip
+  // If program is inactive, no config, or welcome_points = 0 - mark received and skip
   if (!config || !config.is_active || (config.welcome_points ?? 0) <= 0) {
     await supabase.from('clients').update({ has_received_welcome_points: true }).eq('id', clientId)
     return { awarded: false, points: 0 }
@@ -73,7 +73,7 @@ export async function autoAwardWelcomePoints(
     client_id: clientId,
     type: 'bonus',
     points: welcomePoints,
-    description: 'Welcome bonus — thanks for joining!',
+    description: 'Welcome bonus - thanks for joining!',
     created_by: null, // system-generated
   })
 
@@ -138,7 +138,7 @@ export type PendingDeliveryWithClient = PendingDelivery & {
  * Create a pending delivery record after a reward is redeemed.
  * Called immediately after inserting the loyalty_transactions redemption row.
  *
- * Not chef-approval-required — this is just tracking, not a financial write.
+ * Not chef-approval-required - this is just tracking, not a financial write.
  * Uses admin client when called from the redemption flow.
  */
 export async function createPendingDelivery({
@@ -223,7 +223,7 @@ export async function getPendingRewardDeliveries(): Promise<PendingDeliveryWithC
 }
 
 /**
- * Get all redemptions for a client (chef view — full history).
+ * Get all redemptions for a client (chef view - full history).
  */
 export async function getClientRedemptionHistory(clientId: string): Promise<PendingDelivery[]> {
   const { requireChef } = await import('@/lib/auth/get-user')
@@ -281,7 +281,7 @@ export async function markRewardDelivered(
 
 /**
  * Cancel a pending delivery (e.g. client and chef agreed not to use it).
- * Points are NOT returned — this is an administrative cancel, not an undo.
+ * Points are NOT returned - this is an administrative cancel, not an undo.
  * If a genuine undo is needed, the chef uses awardBonusPoints separately.
  * Chef-only.
  */

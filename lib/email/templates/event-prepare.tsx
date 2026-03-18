@@ -1,5 +1,5 @@
 // Event Prepare Email
-// Sent to client 7 days before their event — prep tips and key details
+// Sent to client 7 days before their event - prep tips and key details
 
 import { Text, Button } from '@react-email/components'
 import * as React from 'react'
@@ -31,7 +31,7 @@ export function EventPrepareEmail({
   appUrl,
 }: EventPrepareProps) {
   return (
-    <BaseLayout preview={`${chefName} is coming in 7 days — here's how to prepare`}>
+    <BaseLayout preview={`${chefName} is coming in 7 days - here's how to prepare`}>
       <Text style={heading}>Your event is one week away!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

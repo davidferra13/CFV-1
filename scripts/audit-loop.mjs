@@ -164,7 +164,7 @@ async function runAuditLoop() {
 
   while (iteration <= maxIterations) {
     log(`\n[${'═'.repeat(60)}]`, 'INFO');
-    log(`ITERATION ${iteration} — Running overnight audit...`, 'INFO');
+    log(`ITERATION ${iteration} - Running overnight audit...`, 'INFO');
     log(`[${'═'.repeat(60)}]\n`, 'INFO');
 
     try {

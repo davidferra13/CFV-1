@@ -82,7 +82,7 @@ export async function getSmartQuoteSuggestion(params: {
       basedOnServiceStyle: false,
     }
 
-    // Guest count similarity (most important — within 50% range)
+    // Guest count similarity (most important - within 50% range)
     const guestRatio = Math.min(dp.guestCount, guestCount) / Math.max(dp.guestCount, guestCount)
     if (guestRatio >= 0.5) {
       score += guestRatio * 40

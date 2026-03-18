@@ -9,11 +9,34 @@ import { ListingManagementTable } from './_components/listing-management-table'
 export default async function AdminDirectoryListingsPage() {
   await requireAdmin()
 
-  const [listings, nominations, outreach] = await Promise.all([
+  const [listingsSettled, nominationsSettled, outreachSettled] = await Promise.allSettled([
     adminGetAllListings(),
     adminGetNominations(),
     getOutreachStats(),
   ])
+  const listings =
+    listingsSettled.status === 'fulfilled'
+      ? listingsSettled.value
+      : (() => {
+          console.error('[admin-directory] Listings query failed:', listingsSettled.reason)
+          return [] as Awaited<ReturnType<typeof adminGetAllListings>>
+        })()
+  const nominations =
+    nominationsSettled.status === 'fulfilled'
+      ? nominationsSettled.value
+      : (() => {
+          console.error('[admin-directory] Nominations query failed:', nominationsSettled.reason)
+          return [] as Awaited<ReturnType<typeof adminGetNominations>>
+        })()
+  const outreach =
+    outreachSettled.status === 'fulfilled'
+      ? outreachSettled.value
+      : (() => {
+          console.error('[admin-directory] Outreach stats failed:', outreachSettled.reason)
+          return { total: 0, sent: 0, opened: 0, clicked: 0, responded: 0 } as Awaited<
+            ReturnType<typeof getOutreachStats>
+          >
+        })()
 
   const pendingNominations = nominations.filter((n) => n.status === 'pending')
 
@@ -34,7 +57,12 @@ export default async function AdminDirectoryListingsPage() {
         <h1 className="text-2xl font-bold text-stone-100">External Directory</h1>
         <p className="mt-1 text-sm text-stone-500">
           Manage food business listings on the public{' '}
-          <a href="/discover" target="_blank" className="font-medium text-brand-600 underline">
+          <a
+            href="/discover"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-brand-600 underline"
+          >
             /discover
           </a>{' '}
           directory. These are external businesses (not ChefFlow platform users).
@@ -57,7 +85,7 @@ export default async function AdminDirectoryListingsPage() {
           },
         ].map((stat) => (
           <div key={stat.label} className="rounded-xl border border-stone-700 bg-stone-900 p-3">
-            <p className="text-[11px] font-medium text-stone-500">{stat.label}</p>
+            <p className="text-xs-tight font-medium text-stone-500">{stat.label}</p>
             <p className={`mt-0.5 text-lg font-bold ${stat.color}`}>{stat.value}</p>
           </div>
         ))}
@@ -78,12 +106,12 @@ export default async function AdminDirectoryListingsPage() {
               >
                 <div>
                   <p className="text-xs font-medium text-stone-200">{nom.business_name}</p>
-                  <p className="text-[11px] text-stone-500">
+                  <p className="text-xs-tight text-stone-500">
                     {nom.business_type} {nom.city && `in ${nom.city}`}
                     {nom.nominator_email && ` - nominated by ${nom.nominator_email}`}
                   </p>
                   {nom.reason && (
-                    <p className="mt-0.5 text-[11px] text-stone-400 italic">"{nom.reason}"</p>
+                    <p className="mt-0.5 text-xs-tight text-stone-400 italic">"{nom.reason}"</p>
                   )}
                 </div>
                 {nom.website_url && (
@@ -91,7 +119,7 @@ export default async function AdminDirectoryListingsPage() {
                     href={nom.website_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[10px] text-brand-400 hover:text-brand-300"
+                    className="text-xxs text-brand-400 hover:text-brand-300"
                   >
                     website
                   </a>
@@ -108,17 +136,17 @@ export default async function AdminDirectoryListingsPage() {
           <h2 className="text-sm font-semibold text-stone-200">Outreach emails</h2>
           <div className="mt-3 flex flex-wrap gap-4">
             <div>
-              <p className="text-[11px] text-stone-500">Total sent</p>
+              <p className="text-xs-tight text-stone-500">Total sent</p>
               <p className="text-lg font-bold text-stone-100">{outreach.totalSent}</p>
             </div>
             {outreach.byType.map((t) => (
               <div key={t.type}>
-                <p className="text-[11px] text-stone-500">{t.type}</p>
+                <p className="text-xs-tight text-stone-500">{t.type}</p>
                 <p className="text-lg font-bold text-stone-300">{t.count}</p>
               </div>
             ))}
             <div>
-              <p className="text-[11px] text-stone-500">Opted out</p>
+              <p className="text-xs-tight text-stone-500">Opted out</p>
               <p
                 className={`text-lg font-bold ${outreach.optOutCount > 0 ? 'text-amber-300' : 'text-stone-500'}`}
               >
@@ -128,7 +156,7 @@ export default async function AdminDirectoryListingsPage() {
           </div>
           {outreach.recentErrors.length > 0 && (
             <div className="mt-3 rounded-lg bg-red-950/20 p-3">
-              <p className="text-[10px] font-medium text-red-300">
+              <p className="text-xxs font-medium text-red-300">
                 {outreach.recentErrors.length} recent send error
                 {outreach.recentErrors.length !== 1 ? 's' : ''}
               </p>

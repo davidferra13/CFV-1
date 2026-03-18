@@ -1,6 +1,6 @@
 'use server'
 
-// Cross-tenant platform analytics — uses service role key to bypass RLS
+// Cross-tenant platform analytics - uses service role key to bypass RLS
 // All functions query across ALL chef tenants (admin-only)
 
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -270,7 +270,7 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
 
   const clientIds = clients.map((c) => c.id)
 
-  // Single events query — used for both count and event-to-client mapping
+  // Single events query - used for both count and event-to-client mapping
   const { data: allClientEvents } = await supabase
     .from('events')
     .select('id, client_id')

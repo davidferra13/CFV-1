@@ -2,7 +2,7 @@
 
 /**
  * Lightweight milestone stats for the MilestoneOverlay.
- * 3 parallel queries — fast count-only, no data returned.
+ * 3 parallel queries - fast count-only, no data returned.
  */
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -12,7 +12,7 @@ export interface ChefMilestoneStats {
   clientCount: number
   completedEventCount: number
   lifetimeRevenueCents: number
-  /** ISO date string — used to detect business birthday anniversaries */
+  /** ISO date string - used to detect business birthday anniversaries */
   chefCreatedAt: string
 }
 
@@ -58,7 +58,7 @@ export async function getChefMilestoneStats(): Promise<ChefMilestoneStats | null
       chefCreatedAt: chefRes.data?.created_at ?? new Date().toISOString(),
     }
   } catch {
-    // Auth failure, network error, etc. — overlay silently does nothing
+    // Auth failure, network error, etc. - overlay silently does nothing
     return null
   }
 }

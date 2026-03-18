@@ -4,7 +4,7 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/culinary': {
     title: 'Culinary Hub',
     description:
-      'Your culinary workspace — recipes, menus, ingredients, food costing, prep planning, and vendors.',
+      'Your culinary workspace - recipes, menus, ingredients, food costing, prep planning, and vendors.',
     features: [
       'Quick stats: recipe count, menu count, ingredient count, vendor count',
       '6 navigation tiles to all subsections',
@@ -25,7 +25,7 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/recipes/[id]': {
     title: 'Recipe Detail',
-    description: 'Full recipe view — ingredients, instructions, cost breakdown, and event history.',
+    description: 'Full recipe view - ingredients, instructions, cost breakdown, and event history.',
     features: [
       'Ingredient list with costs',
       'Step-by-step instructions',
@@ -36,7 +36,7 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/recipes/[id]/edit': {
     title: 'Edit Recipe',
-    description: 'Update recipe details — ingredients, instructions, yield, and costing.',
+    description: 'Update recipe details - ingredients, instructions, yield, and costing.',
     features: ['Ingredient editor', 'Instruction editor', 'Yield adjustment', 'Cost recalculation'],
   },
 
@@ -53,25 +53,25 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/recipes/sprint': {
     title: 'Recipe Sprint',
-    description: 'Focused recipe development session — batch-create and test new recipes.',
+    description: 'Focused recipe development session - batch-create and test new recipes.',
     features: ['Sprint timer', 'Batch recipe creation', 'Testing notes'],
   },
 
   '/culinary/recipes/drafts': {
     title: 'Draft Recipes',
-    description: 'Recipes in progress — not yet finalized.',
+    description: 'Recipes in progress - not yet finalized.',
     features: ['Draft filter', 'In-progress count', 'Quick edit links'],
   },
 
   '/culinary/recipes/dietary-flags': {
     title: 'Dietary Flags',
-    description: 'Tag recipes by dietary category — vegan, gluten-free, nut-free, etc.',
+    description: 'Tag recipes by dietary category - vegan, gluten-free, nut-free, etc.',
     features: ['Dietary category tagging', 'Filter recipes by restriction', 'Allergen flagging'],
   },
 
   '/culinary/recipes/tags': {
     title: 'Recipe Tags',
-    description: 'Organize recipes with custom tags — cuisine type, difficulty, season, etc.',
+    description: 'Organize recipes with custom tags - cuisine type, difficulty, season, etc.',
     features: ['Custom tag creation', 'Tag-based filtering', 'Recipe grouping'],
   },
 
@@ -83,7 +83,7 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/menus': {
     title: 'Menus',
-    description: 'Event menus and reusable templates — build, share, and track approvals.',
+    description: 'Event menus and reusable templates - build, share, and track approvals.',
     features: [
       'Menu count and status labels (draft, shared, approved, archived)',
       'Service style tags (plated, family, buffet, cocktail, tasting)',
@@ -93,7 +93,7 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/menus/[id]': {
     title: 'Menu Detail',
-    description: 'Full menu view — courses, recipes, guest count scaling, and food cost.',
+    description: 'Full menu view - courses, recipes, guest count scaling, and food cost.',
     features: [
       'Course breakdown',
       'Recipe compositions',
@@ -104,13 +104,13 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/menus/new': {
     title: 'New Menu',
-    description: 'Create a new event menu — select courses, assign recipes, set service style.',
+    description: 'Create a new event menu - select courses, assign recipes, set service style.',
     features: ['Course builder', 'Recipe selection', 'Service style', 'Guest count'],
   },
 
   '/culinary/menus/drafts': {
     title: 'Draft Menus',
-    description: 'Menus still being developed — not yet shared with clients.',
+    description: 'Menus still being developed - not yet shared with clients.',
     features: ['Draft filter', 'In-progress count'],
   },
 
@@ -122,7 +122,7 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/menus/templates': {
     title: 'Menu Templates',
-    description: 'Reusable menu blueprints — save time on similar events.',
+    description: 'Reusable menu blueprints - save time on similar events.',
     features: ['Template library', 'Save as template', 'Apply to new events'],
   },
 
@@ -144,25 +144,25 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/ingredients': {
     title: 'Ingredients',
-    description: 'Your pantry database and price library — every ingredient you use.',
+    description: 'Your pantry database and price library - every ingredient you use.',
     features: ['Total ingredient count', 'Price tracking', 'Vendor notes', 'Seasonal availability'],
   },
 
   '/culinary/ingredients/seasonal-availability': {
     title: 'Seasonal Availability',
-    description: "Track ingredient availability by season — know what's fresh and when.",
+    description: "Track ingredient availability by season - know what's fresh and when.",
     features: ['Seasonal calendar', 'Best time to buy indicators', 'Regional availability'],
   },
 
   '/culinary/ingredients/vendor-notes': {
     title: 'Vendor Notes',
-    description: 'Sourcing notes — where to get the best ingredients, pricing, and lead times.',
+    description: 'Sourcing notes - where to get the best ingredients, pricing, and lead times.',
     features: ['Vendor pricing', 'Lead time notes', 'Quality observations'],
   },
 
   '/culinary/costing': {
     title: 'Food Costing',
-    description: 'Recipe and menu cost breakdowns — know your margins.',
+    description: 'Recipe and menu cost breakdowns - know your margins.',
     features: [
       'Food cost percentage analysis',
       'Menu-level costing',
@@ -173,7 +173,7 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/costing/recipe': {
     title: 'Recipe Costing',
-    description: 'Cost breakdown by recipe — ingredient costs per yield and per portion.',
+    description: 'Cost breakdown by recipe - ingredient costs per yield and per portion.',
     features: ['Cost per yield', 'Cost per portion', 'Ingredient cost line items'],
   },
 
@@ -185,13 +185,13 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/costing/food-cost': {
     title: 'Food Cost Analysis',
-    description: 'Food cost percentage tracking — target vs. actual across events.',
+    description: 'Food cost percentage tracking - target vs. actual across events.',
     features: ['Food cost % by event', 'Target benchmarks', 'Trend analysis'],
   },
 
   '/culinary/prep': {
     title: 'Prep Overview',
-    description: 'All make-ahead components sorted by lead time — what to prep and when.',
+    description: 'All make-ahead components sorted by lead time - what to prep and when.',
     features: [
       'Component list by lead time',
       'Upcoming event prep',
@@ -207,7 +207,7 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/prep/timeline': {
     title: 'Prep Timeline',
-    description: 'Day-by-day prep schedule — what to make and when.',
+    description: 'Day-by-day prep schedule - what to make and when.',
     features: ['Lead time sequencing', 'Task ordering', 'Component readiness tracking'],
   },
 
@@ -220,13 +220,13 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/culinary/components': {
     title: 'Components Hub',
     description:
-      'Reusable recipe building blocks — stocks, sauces, garnishes, ferments, and shared elements.',
+      'Reusable recipe building blocks - stocks, sauces, garnishes, ferments, and shared elements.',
     features: ['5 subcategory tiles', 'Cross-recipe usage tracking'],
   },
 
   '/culinary/components/stocks': {
     title: 'Stocks',
-    description: 'Stock recipes — yields, shelf life, and cost per unit.',
+    description: 'Stock recipes - yields, shelf life, and cost per unit.',
     features: ['Stock library', 'Yield and shelf life', 'Cost per batch'],
   },
 
@@ -244,7 +244,7 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/components/ferments': {
     title: 'Ferments',
-    description: 'Fermented components — kimchi, pickles, and other long-lead items.',
+    description: 'Fermented components - kimchi, pickles, and other long-lead items.',
     features: ['Ferment library', 'Fermentation time', 'Shelf life'],
   },
 
@@ -256,7 +256,7 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/culinary/my-kitchen': {
     title: 'My Kitchen',
-    description: 'Your kitchen setup — equipment inventory and workspace details.',
+    description: 'Your kitchen setup - equipment inventory and workspace details.',
     features: ['Equipment list', 'Kitchen capacity', 'Mise en place notes'],
   },
 }

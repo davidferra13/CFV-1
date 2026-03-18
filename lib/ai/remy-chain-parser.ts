@@ -1,10 +1,10 @@
-// Remy — Multi-Step Task Chain Parser (Phase 3B)
+// Remy - Multi-Step Task Chain Parser (Phase 3B)
 // Deterministic parser that splits compound requests into ordered steps.
 // "Draft a thank-you for Henderson and log the final expense" ->
 //   Step 1: "Draft a thank-you for Henderson"
 //   Step 2: "Log the final expense"
 // Max 3 steps per chain. Each step gets individual confirmation.
-// NO LLM — pure regex splitting.
+// NO LLM - pure regex splitting.
 
 const MAX_CHAIN_STEPS = 3
 

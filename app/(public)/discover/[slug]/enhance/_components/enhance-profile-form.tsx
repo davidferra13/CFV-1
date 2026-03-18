@@ -85,7 +85,7 @@ export function EnhanceProfileForm({
           placeholder="Tell visitors what makes your business special..."
           className="w-full rounded-lg border border-stone-700 bg-stone-900/80 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 resize-none"
         />
-        <p className="mt-1 text-[11px] text-stone-500">{description.length}/1000</p>
+        <p className="mt-1 text-xs-tight text-stone-500">{description.length}/1000</p>
       </div>
 
       {/* Address */}
@@ -152,7 +152,7 @@ export function EnhanceProfileForm({
         >
           {isPending ? 'Saving...' : 'Save profile'}
         </button>
-        <p className="text-[11px] text-stone-500">Changes appear immediately on your listing.</p>
+        <p className="text-xs-tight text-stone-500">Changes appear immediately on your listing.</p>
       </div>
     </form>
   )

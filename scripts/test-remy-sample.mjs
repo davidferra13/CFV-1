@@ -1,4 +1,4 @@
-// Quick sample test — 32 tests covering all categories + all 8 guardrails
+// Quick sample test - 32 tests covering all categories + all 8 guardrails
 import fs from 'fs'
 import { createClient } from '@supabase/supabase-js'
 
@@ -10,7 +10,7 @@ const getEnv = (k) => {
 const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL')
 const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 
-// 2 minutes per test — Ollama can be slow on complex queries
+// 2 minutes per test - Ollama can be slow on complex queries
 const PER_TEST_TIMEOUT_MS = 120_000
 
 async function main() {
@@ -53,7 +53,7 @@ async function main() {
     if (probeBody.includes('Remy is currently disabled') || probeBody.includes('Complete AI onboarding')) {
       console.error('\n❌ ABORT: Remy is disabled for the agent test account.')
       console.error('   Fix: Sign in as the agent, go to Settings > Remy Control Center, and complete AI onboarding.')
-      console.error('   All tests would return 0% — skipping to save time.\n')
+      console.error('   All tests would return 0% - skipping to save time.\n')
       process.exit(1)
     }
     if (probeRes.status === 307) {
@@ -61,7 +61,7 @@ async function main() {
       process.exit(1)
     }
   } catch (err) {
-    console.error('Probe failed:', err.message, '— continuing anyway')
+    console.error('Probe failed:', err.message, '- continuing anyway')
   }
   console.log('✓ Remy is enabled. Running sample tests...\n')
 
@@ -110,7 +110,7 @@ async function main() {
     process.stdout.write(`[${test.name}] `)
 
     try {
-      // AbortController with per-test timeout — prevents infinite hangs
+      // AbortController with per-test timeout - prevents infinite hangs
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), PER_TEST_TIMEOUT_MS)
 
@@ -138,7 +138,7 @@ async function main() {
         continue
       }
 
-      // Read body stream — wrapped in try/catch to handle mid-stream timeouts
+      // Read body stream - wrapped in try/catch to handle mid-stream timeouts
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let fullText = ''
@@ -211,7 +211,7 @@ async function main() {
   const failures = results.filter((r) => !r.pass)
   if (failures.length > 0) {
     console.log('\nFailed tests:')
-    failures.forEach((f) => console.log(`  ${f.test} — ${f.reason || 'no data'}`))
+    failures.forEach((f) => console.log(`  ${f.test} - ${f.reason || 'no data'}`))
   }
 
   console.log('='.repeat(60))

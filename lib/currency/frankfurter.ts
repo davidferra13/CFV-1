@@ -1,4 +1,4 @@
-// Frankfurter — free currency exchange API, no key required
+// Frankfurter - free currency exchange API, no key required
 // https://frankfurter.dev/
 // ECB rates, updated daily, unlimited requests
 
@@ -38,7 +38,7 @@ export async function getExchangeRates(base = 'USD'): Promise<ExchangeRates | nu
   try {
     const res = await fetch(
       `https://api.frankfurter.dev/v1/latest?base=${base}`,
-      { next: { revalidate: 3600 } } // cache 1h — rates update daily
+      { next: { revalidate: 3600 } } // cache 1h - rates update daily
     )
     if (!res.ok) return null
     return await res.json()

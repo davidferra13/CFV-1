@@ -1,6 +1,6 @@
 // Web Push Notification Sender
 // Sends encrypted push messages to browser endpoints via the Web Push Protocol (RFC 8030).
-// Uses raw fetch — no npm SDK dependency (web-push is a large package).
+// Uses raw fetch - no npm SDK dependency (web-push is a large package).
 // Encryption follows RFC 8291 (message encryption for Web Push).
 
 import { buildVapidAuthHeader } from './vapid'
@@ -26,9 +26,9 @@ type SendResult = 'sent' | 'failed' | 'gone'
  * Send a push notification to a single subscription endpoint.
  *
  * Returns:
- *   'sent'   — successfully delivered to push service
- *   'gone'   — subscription is expired (410 Gone); caller should deactivate it
- *   'failed' — transient error; caller should increment failure count
+ *   'sent'   - successfully delivered to push service
+ *   'gone'   - subscription is expired (410 Gone); caller should deactivate it
+ *   'failed' - transient error; caller should increment failure count
  */
 export async function sendPushNotification(
   subscription: PushSubscriptionRecord,
@@ -47,7 +47,7 @@ export async function sendPushNotification(
       subscription.auth_key
     )
 
-    // SECURITY: Validate push endpoint URL to prevent SSRF — blocks private IPs
+    // SECURITY: Validate push endpoint URL to prevent SSRF - blocks private IPs
     const parsedUrl = new URL(endpoint)
     if (
       parsedUrl.hostname === 'localhost' ||
@@ -76,7 +76,7 @@ export async function sendPushNotification(
     })
 
     if (response.status === 410 || response.status === 404) {
-      // Browser unsubscribed — subscription is stale
+      // Browser unsubscribed - subscription is stale
       return 'gone'
     }
 

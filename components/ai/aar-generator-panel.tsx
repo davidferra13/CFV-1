@@ -138,7 +138,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
         </pre>
       )}
 
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Auto draft · {new Date(result.generatedAt).toLocaleDateString()} · Edit before finalizing
         your AAR
       </p>

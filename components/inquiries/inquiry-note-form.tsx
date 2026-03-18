@@ -132,7 +132,7 @@ export function InquiryNoteForm({
           >
             <X className="w-3 h-3 text-stone-500 hover:text-red-500" />
           </button>
-          <p className="text-[10px] text-stone-400 mt-1 max-w-[12rem] truncate">
+          <p className="text-xxs text-stone-400 mt-1 max-w-[12rem] truncate">
             {attachmentFilename}
           </p>
         </div>

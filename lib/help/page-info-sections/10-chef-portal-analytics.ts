@@ -4,7 +4,7 @@ export const CHEF_PORTAL_ANALYTICS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/analytics': {
     title: 'Analytics Hub',
     description:
-      'Comprehensive business analytics across 9 domains — clients, pipeline, revenue, operations, and more.',
+      'Comprehensive business analytics across 9 domains - clients, pipeline, revenue, operations, and more.',
     features: [
       'Overview with month revenue and event counts',
       'Client analytics (retention, churn, acquisition, NPS)',
@@ -16,7 +16,7 @@ export const CHEF_PORTAL_ANALYTICS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/analytics/demand': {
     title: 'Demand Trends',
-    description: 'Market demand forecasting — understand booking patterns and seasonal trends.',
+    description: 'Market demand forecasting - understand booking patterns and seasonal trends.',
     features: ['Demand indicators', 'Seasonal patterns', 'Forecasting'],
   },
 
@@ -28,7 +28,7 @@ export const CHEF_PORTAL_ANALYTICS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/analytics/pipeline': {
     title: 'Pipeline Analysis',
-    description: 'Sales pipeline health — conversion rates, bottlenecks, and velocity.',
+    description: 'Sales pipeline health - conversion rates, bottlenecks, and velocity.',
     features: [
       'Funnel visualization',
       'Conversion rates',
@@ -39,13 +39,13 @@ export const CHEF_PORTAL_ANALYTICS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/analytics/referral-sources': {
     title: 'Referral Sources',
-    description: 'Where your clients come from — track referral partner performance.',
+    description: 'Where your clients come from - track referral partner performance.',
     features: ['Source attribution', 'Conversion by source', 'Partner ROI'],
   },
 
   '/analytics/client-ltv': {
     title: 'Client Lifetime Value',
-    description: 'Lifetime revenue per client — understand your most valuable relationships.',
+    description: 'Lifetime revenue per client - understand your most valuable relationships.',
     features: ['LTV calculation', 'Client ranking', 'Retention correlation'],
   },
 

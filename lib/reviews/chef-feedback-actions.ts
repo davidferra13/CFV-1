@@ -1,6 +1,6 @@
 // Chef Feedback Server Actions
 // Allows chefs to manually log verbal feedback, Google reviews, and external testimonials.
-// Separate from client_reviews — this is chef-initiated data capture.
+// Separate from client_reviews - this is chef-initiated data capture.
 
 'use server'
 

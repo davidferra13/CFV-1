@@ -23,7 +23,7 @@ export async function checkRateLimit(
 ): Promise<{ success: boolean; remaining: number; reset: number }> {
   const limiter = getRatelimiter()
   if (!limiter) {
-    // No Redis configured — allow all requests in dev
+    // No Redis configured - allow all requests in dev
     return { success: true, remaining: 99, reset: Date.now() + 60000 }
   }
   const result = await limiter.limit(identifier)

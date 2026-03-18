@@ -2,9 +2,9 @@
 
 // Pricing Intelligence
 // Analyzes chef's historical accepted quotes to suggest optimal price band for a new event.
-// Distinct from quote-draft.ts (which drafts line items) — this is strategic pricing guidance.
+// Distinct from quote-draft.ts (which drafts line items) - this is strategic pricing guidance.
 // Routed to Ollama (chef revenue history is sensitive business data).
-// Output is INSIGHT ONLY — never writes to ledger or quote records.
+// Output is INSIGHT ONLY - never writes to ledger or quote records.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -101,7 +101,7 @@ ${comparables.length > 0 ? 'Avg comparable price: $' + Math.round(comparables.re
 Return JSON: { "suggestedMinCents": number, "suggestedMaxCents": number, "suggestedPerHeadCents": number, "rationale": "...", "underbiddingRisk": bool, "underbiddingWarning": "...or null", "marketPosition": "below_average|at_average|above_average", "comparableEvents": number, "confidence": "high|medium|low" }`
 
   const { result, source } = await withAiFallback(
-    // Formula: percentile math on historical data — deterministic
+    // Formula: percentile math on historical data - deterministic
     () =>
       calculatePricingFormula(
         {

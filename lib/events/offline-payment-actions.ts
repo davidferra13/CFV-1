@@ -25,7 +25,7 @@ export type RecordOfflinePaymentInput = {
  *  1. Validate event ownership and status
  *  2. Determine entry_type (deposit if first payment and deposit not yet met, else payment)
  *  3. Append to ledger
- *  4. Re-fetch financial summary — if deposit or full balance now covered, transition event
+ *  4. Re-fetch financial summary - if deposit or full balance now covered, transition event
  *  5. Email client a receipt (non-blocking)
  *  6. Log chef activity (non-blocking)
  */
@@ -91,7 +91,7 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
     .limit(1)
 
   if (existingEntry && existingEntry.length > 0) {
-    // Already recorded — return idempotently instead of creating a duplicate
+    // Already recorded - return idempotently instead of creating a duplicate
     revalidatePath(`/events/${eventId}`)
     return { success: true, entryId: existingEntry[0].id, deduplicated: true }
   }
@@ -104,7 +104,7 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
       entry_type: entryType,
       amount_cents: amountCents,
       payment_method: paymentMethod,
-      description: `Offline ${entryType} recorded by chef — ${paymentMethod}`,
+      description: `Offline ${entryType} recorded by chef - ${paymentMethod}`,
       event_id: eventId,
       transaction_reference: offlineTxRef,
       internal_notes:
@@ -151,7 +151,7 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
           systemTransition: true,
         })
       } catch (transitionErr) {
-        // Log but don't throw — ledger entry is the source of truth
+        // Log but don't throw - ledger entry is the source of truth
         console.error(
           '[recordOfflinePayment] Event transition failed (non-blocking):',
           transitionErr
@@ -218,7 +218,7 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
     console.error('[recordOfflinePayment] Activity log failed (non-blocking):', activityErr)
   }
 
-  // ── 7. Push notification — payment received (non-blocking) ──────────────
+  // ── 7. Push notification - payment received (non-blocking) ──────────────
   try {
     const { notifyPaymentReceived } = await import('@/lib/notifications/onesignal')
     const amountFormatted = `$${(amountCents / 100).toFixed(2)}`

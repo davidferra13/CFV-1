@@ -1,9 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 // Proposal Live Preview
 // Renders the proposal as the client will see it, with print-friendly layout
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import type { ProposalSection, ProposalTemplate } from '@/lib/quotes/proposal-builder-actions'
 
@@ -40,9 +40,11 @@ function CoverPreview({
       style={{ backgroundColor: primaryColor, color: '#ffffff' }}
     >
       {(content.logo_url || branding.logo_url) && (
-        <img
-          src={content.logo_url || branding.logo_url}
+        <Image
+          src={content.logo_url || branding.logo_url!}
           alt="Logo"
+          width={200}
+          height={64}
           className="mx-auto h-16 mb-6 object-contain"
         />
       )}
@@ -180,10 +182,12 @@ function PhotosPreview({ section }: { section: ProposalSection }) {
         <>
           <div className="grid grid-cols-2 gap-3">
             {photos.map((url, idx) => (
-              <img
+              <Image
                 key={idx}
                 src={url}
                 alt={`Photo ${idx + 1}`}
+                width={400}
+                height={192}
                 className="rounded-lg w-full h-48 object-cover"
               />
             ))}
@@ -211,9 +215,11 @@ function BioPreview({ section }: { section: ProposalSection }) {
       <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">{section.title}</h2>
       <div className="flex gap-6 items-start">
         {content.photo_url && (
-          <img
+          <Image
             src={content.photo_url}
             alt={content.name || 'Chef'}
+            width={96}
+            height={96}
             className="w-24 h-24 rounded-full object-cover flex-shrink-0"
           />
         )}

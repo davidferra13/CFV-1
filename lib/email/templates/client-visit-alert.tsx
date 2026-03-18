@@ -1,4 +1,4 @@
-// Client Visit Alert — Real-time notification email
+// Client Visit Alert - Real-time notification email
 // Sent to the chef when a client visits the portal (debounced per 30-min session).
 
 import { Text, Link } from '@react-email/components'

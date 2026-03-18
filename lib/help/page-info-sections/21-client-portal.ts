@@ -3,7 +3,7 @@ import type { PageInfoEntry } from '../page-info-types'
 export const CLIENT_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/my-events': {
     title: 'My Events',
-    description: 'Your upcoming and past events — check status, make payments, and leave reviews.',
+    description: 'Your upcoming and past events - check status, make payments, and leave reviews.',
     features: [
       'Upcoming events with status badges',
       'Past event history',
@@ -16,7 +16,7 @@ export const CLIENT_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/my-events/[id]': {
     title: 'Event Detail',
     description:
-      'Everything about your event — timeline, menu, payments, photos, and action buttons.',
+      'Everything about your event - timeline, menu, payments, photos, and action buttons.',
     features: [
       'Event status and journey timeline',
       'Menu preview and approval',
@@ -29,13 +29,13 @@ export const CLIENT_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/my-events/[id]/proposal': {
     title: 'Proposal',
-    description: "Your chef's proposal — menu, pricing, and contract all in one view.",
+    description: "Your chef's proposal - menu, pricing, and contract all in one view.",
     features: ['Menu preview', 'Pricing breakdown', 'Contract view', 'Accept and pay actions'],
   },
 
   '/my-events/[id]/pay': {
     title: 'Payment',
-    description: 'Make a payment for your event — secure checkout via Stripe.',
+    description: 'Make a payment for your event - secure checkout via Stripe.',
     features: [
       'Payment summary',
       'Financial breakdown',
@@ -82,7 +82,7 @@ export const CLIENT_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/my-events/[id]/event-summary': {
     title: 'Event Summary',
-    description: 'Post-event recap — menu served, timeline, photos, and highlights.',
+    description: 'Post-event recap - menu served, timeline, photos, and highlights.',
     features: ['Menu recap', 'Event timeline', 'Photo summary', 'Highlights'],
   },
 
@@ -130,7 +130,7 @@ export const CLIENT_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/my-profile': {
     title: 'My Profile',
     description:
-      'Edit your profile — name, contact, dietary preferences, and notification settings.',
+      'Edit your profile - name, contact, dietary preferences, and notification settings.',
     features: [
       'Profile form',
       'Dietary restrictions',
@@ -153,7 +153,7 @@ export const CLIENT_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/my-spending': {
     title: 'My Spending',
-    description: 'Your spending history — total spent, average event cost, and trends.',
+    description: 'Your spending history - total spent, average event cost, and trends.',
     features: ['Total spending', 'Average event cost', 'Spending trends'],
   },
 
@@ -170,13 +170,13 @@ export const CLIENT_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/my-cannabis': {
     title: 'Cannabis Dining',
-    description: 'Your private cannabis dining events — upcoming and past.',
+    description: 'Your private cannabis dining events - upcoming and past.',
     features: ['Cannabis events list', 'Access verification', 'Event details'],
   },
 
   '/survey/[token]': {
     title: 'Satisfaction Survey',
-    description: 'Share your feedback about a recent event — help your chef improve.',
+    description: 'Share your feedback about a recent event - help your chef improve.',
     features: ['Survey form', 'Rating and comments', 'One-time submission'],
   },
 }

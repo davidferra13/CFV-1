@@ -1,4 +1,4 @@
-// Pricing Constants — Single Source of Truth
+// Pricing Constants - Single Source of Truth
 // Imported by both the deterministic pricing engine (compute.ts) and the AI agent brain.
 // All amounts in cents (minor units).
 
@@ -22,13 +22,13 @@ export const MULTI_NIGHT_PACKAGES: Record<string, number> = {
   two_night_5_course: 110000, // $1,100
   two_night_mixed: 90000, // $900
 
-  // Three-night packages — ⚠️ CONFIRM VALUE with chef before shipping
+  // Three-night packages - ⚠️ CONFIRM VALUE with chef before shipping
   three_night_3_course: 0, // ⚠️ CONFIRM VALUE
   three_night_4_course: 0, // ⚠️ CONFIRM VALUE
   three_night_5_course: 0, // ⚠️ CONFIRM VALUE
   three_night_mixed: 0, // ⚠️ CONFIRM VALUE
 
-  // Four-night packages — ⚠️ CONFIRM VALUE with chef before shipping
+  // Four-night packages - ⚠️ CONFIRM VALUE with chef before shipping
   four_night_3_course: 0, // ⚠️ CONFIRM VALUE
   four_night_4_course: 0, // ⚠️ CONFIRM VALUE
   four_night_5_course: 0, // ⚠️ CONFIRM VALUE
@@ -49,7 +49,7 @@ export const DEPOSIT_PERCENTAGE = 0.5 // 50% non-refundable
 // Balance due window
 export const BALANCE_DUE_HOURS_BEFORE = 24 // hours before service
 
-// IRS mileage rate (2026 standard) — update annually
+// IRS mileage rate (2026 standard) - update annually
 export const IRS_MILEAGE_RATE_CENTS = 70 // $0.70/mile
 
 // ─── Thresholds ───────────────────────────────────────────────────────────────
@@ -84,12 +84,12 @@ export const HOLIDAY_PROXIMITY_DAYS = 2
 
 // ─── Weekend Premium ──────────────────────────────────────────────────────────
 
-// Optional Fri/Sat uplift — applied only when weekendPremiumEnabled = true in PricingInput
+// Optional Fri/Sat uplift - applied only when weekendPremiumEnabled = true in PricingInput
 export const WEEKEND_PREMIUM_PERCENT = 0.1 // 10%
 
 // ─── Minimum Booking ──────────────────────────────────────────────────────────
 
-// ⚠️ CONFIRM VALUE with chef — service fee floor (does NOT include travel or add-ons)
+// ⚠️ CONFIRM VALUE with chef - service fee floor (does NOT include travel or add-ons)
 export const MINIMUM_BOOKING_CENTS = 30000 // $300
 
 // ─── Add-On Catalog ───────────────────────────────────────────────────────────
@@ -113,22 +113,22 @@ export const ADD_ON_CATALOG: Record<Exclude<AddOnKey, 'custom'>, AddOnDefinition
   wine_pairing: {
     label: 'Wine Pairing',
     type: 'per_person',
-    perPersonCents: 3500, // $35/person — ⚠️ CONFIRM VALUE
+    perPersonCents: 3500, // $35/person - ⚠️ CONFIRM VALUE
   },
   charcuterie_board: {
     label: 'Charcuterie Board Setup',
     type: 'flat',
-    flatCents: 15000, // $150 flat — ⚠️ CONFIRM VALUE
+    flatCents: 15000, // $150 flat - ⚠️ CONFIRM VALUE
   },
   extra_appetizer_course: {
     label: 'Additional Appetizer Course',
     type: 'per_person',
-    perPersonCents: 2500, // $25/person — ⚠️ CONFIRM VALUE
+    perPersonCents: 2500, // $25/person - ⚠️ CONFIRM VALUE
   },
   birthday_dessert: {
     label: 'Custom Birthday Dessert',
     type: 'flat',
-    flatCents: 7500, // $75 flat — ⚠️ CONFIRM VALUE
+    flatCents: 7500, // $75 flat - ⚠️ CONFIRM VALUE
   },
 }
 
@@ -204,7 +204,7 @@ Large tasting (8-15+): Custom
 
 GROUPS (3+ guests):
 ${groupLines}
-Large group (8-14): Standard group rates apply — confirm feasibility
+Large group (8-14): Standard group rates apply - confirm feasibility
 Large tasting (15+): Custom / Buyout required
 
 WEEKLY/ONGOING:

@@ -1,5 +1,5 @@
 // CSV Inquiry Parser
-// Deterministic column-detection parser for historical inquiry data — no AI required.
+// Deterministic column-detection parser for historical inquiry data - no AI required.
 // Mirrors the pattern established in parse-csv-clients.ts and parse-csv-events.ts.
 
 // ============================================
@@ -352,7 +352,7 @@ function rowToInquiry(row: string[], mappings: InquiryCsvColumnMapping[]): Parse
     return row[m.index]?.trim() || ''
   }
 
-  // Support multiple email/phone columns — use first non-empty
+  // Support multiple email/phone columns - use first non-empty
   const emailMappings = mappings.filter((m) => m.detected === 'email')
   const emailVal =
     emailMappings.map((m) => row[m.index]?.trim()).find((v) => v && v.length > 0) || null
@@ -458,7 +458,7 @@ export function parseInquiriesCsv(csvText: string): CsvInquiriesParseResult {
   }
   if (!hasEmail) {
     warnings.push(
-      'No email column detected. Inquiries will be imported without email — client auto-linking will rely on name matching.'
+      'No email column detected. Inquiries will be imported without email - client auto-linking will rely on name matching.'
     )
   }
 

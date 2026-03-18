@@ -34,7 +34,7 @@ export type FilingSummary = {
 // ─── Helpers ─────────────────────────────────────────────────────
 
 function tinDisplay(tin: string | null): string {
-  if (!tin) return '—'
+  if (!tin) return '-'
   const clean = tin.replace(/\D/g, '')
   if (clean.length >= 4) return `***-**-${clean.slice(-4)}`
   return '***'

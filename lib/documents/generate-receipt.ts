@@ -212,7 +212,7 @@ export async function generateReceipt(eventId: string) {
 import { requireChef } from '@/lib/auth/get-user'
 
 /**
- * Same receipt PDF but scoped to the chef's tenant — for chef records.
+ * Same receipt PDF but scoped to the chef's tenant - for chef records.
  */
 export async function fetchReceiptDataForChef(eventId: string): Promise<ReceiptData> {
   const user = await requireChef()

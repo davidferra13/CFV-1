@@ -39,16 +39,14 @@ export function MultiEventDayAlert({ days }: Props) {
                     {ev.occasion || 'Untitled Event'}
                     {ev.guest_count ? ` · ${ev.guest_count} guests` : ''}
                   </Link>
-                  <span className="text-[10px] text-amber-600 capitalize shrink-0">
-                    {ev.status}
-                  </span>
+                  <span className="text-xxs text-amber-600 capitalize shrink-0">{ev.status}</span>
                 </li>
               ))}
             </ul>
           </div>
         ))}
       </div>
-      <p className="text-[11px] text-stone-400">
+      <p className="text-xs-tight text-stone-400">
         Review each event's logistics to ensure you can cover both.
       </p>
     </div>

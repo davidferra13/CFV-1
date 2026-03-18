@@ -101,7 +101,7 @@ export function detectYhangryEmailType(subject: string, body: string): YhangryEm
   return 'yhangry_administrative'
 }
 
-// ─── Field Extraction — New Inquiry ──────────────────────────────────────
+// ─── Field Extraction - New Inquiry ──────────────────────────────────────
 
 function parseInquiryEmail(
   subject: string,

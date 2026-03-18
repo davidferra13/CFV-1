@@ -1,6 +1,6 @@
-// AI Task Queue — Task Registry
+// AI Task Queue - Task Registry
 // Maps task_type strings to their definitions and handlers.
-// No 'use server' — pure logic, importable anywhere.
+// No 'use server' - pure logic, importable anywhere.
 //
 // Every AI task in the system MUST be registered here.
 // Unregistered tasks are rejected at enqueue time.
@@ -97,7 +97,7 @@ export function isRegisteredTask(taskType: string): boolean {
 // ============================================
 // These are placeholder handlers that will be replaced as each
 // feature is implemented. They exist so the queue can accept
-// tasks immediately — the actual handler is swapped in later.
+// tasks immediately - the actual handler is swapped in later.
 
 const notImplementedHandler = async (
   _payload: Record<string, unknown>,
@@ -121,7 +121,7 @@ registerTask({
   maxAttempts: 1,
   recurrence: null,
   handler: async () => {
-    // Simple ping — just confirms the queue + Ollama are working
+    // Simple ping - just confirms the queue + Ollama are working
     return { status: 'healthy', timestamp: new Date().toISOString() }
   },
 })
@@ -132,11 +132,11 @@ registerTask({
 // before the handler is written (they'll return 'not_implemented').
 
 const placeholderTasks: Array<Omit<AiTaskDefinition, 'handler'>> = [
-  // PHASE 2 — Interactive features (via Remy commands, not queue)
-  // These don't need queue registration — they go through the command orchestrator.
-  // PHASE B — Communication Drafts (placeholders — real handlers registered below)
-  // PHASE C — Reactive triggers (real handlers registered below)
-  // PHASE D — Scheduled intelligence (real handlers registered below)
+  // PHASE 2 - Interactive features (via Remy commands, not queue)
+  // These don't need queue registration - they go through the command orchestrator.
+  // PHASE B - Communication Drafts (placeholders - real handlers registered below)
+  // PHASE C - Reactive triggers (real handlers registered below)
+  // PHASE D - Scheduled intelligence (real handlers registered below)
 ]
 
 // Register all placeholder tasks

@@ -14,19 +14,19 @@
  * ></script>
  *
  * OPTIONS:
- *   data-chef-id  (required) — Your ChefFlow chef ID
- *   data-accent   (optional) — Accent color hex, default #e88f47
- *   data-theme    (optional) — "light" or "dark", default "light"
- *   data-mode     (optional) — "inline" (embeds in page) or "popup" (floating button), default "inline"
- *   data-button-text (optional) — Text for the popup button, default "Book a Private Chef"
- *   data-source   (optional) — UTM source attribution (e.g., "homepage", "blog-post")
- *   data-medium   (optional) — UTM medium (e.g., "embed-widget")
- *   data-campaign  (optional) — UTM campaign name
+ *   data-chef-id  (required) - Your ChefFlow chef ID
+ *   data-accent   (optional) - Accent color hex, default #e88f47
+ *   data-theme    (optional) - "light" or "dark", default "light"
+ *   data-mode     (optional) - "inline" (embeds in page) or "popup" (floating button), default "inline"
+ *   data-button-text (optional) - Text for the popup button, default "Book a Private Chef"
+ *   data-source   (optional) - UTM source attribution (e.g., "homepage", "blog-post")
+ *   data-medium   (optional) - UTM medium (e.g., "embed-widget")
+ *   data-campaign  (optional) - UTM campaign name
  *
  * EVENTS (postMessage):
- *   chefflow-inquiry-submitted — Fired when a form is successfully submitted
- *   chefflow-widget-loaded     — Fired when the widget iframe has loaded
- *   chefflow-widget-resize     — Fired with { height } when iframe content changes size
+ *   chefflow-inquiry-submitted - Fired when a form is successfully submitted
+ *   chefflow-widget-loaded     - Fired when the widget iframe has loaded
+ *   chefflow-widget-resize     - Fired with { height } when iframe content changes size
  */
 
 ;(function () {

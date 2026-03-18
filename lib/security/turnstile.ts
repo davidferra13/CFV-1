@@ -29,7 +29,7 @@ export async function verifyTurnstileToken(
   // In dev/test, missing key = bypass (allows local development without Turnstile).
   if (!secretKey) {
     if (process.env.NODE_ENV === 'production') {
-      console.error('[turnstile] TURNSTILE_SECRET_KEY not set in production — rejecting request')
+      console.error('[turnstile] TURNSTILE_SECRET_KEY not set in production - rejecting request')
       return { success: false, error: 'CAPTCHA service is not configured. Please contact support.' }
     }
     return { success: true }
@@ -53,12 +53,12 @@ export async function verifyTurnstileToken(
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(body).toString(),
-      signal: AbortSignal.timeout(5000), // 5s timeout — don't hang on Cloudflare issues
+      signal: AbortSignal.timeout(5000), // 5s timeout - don't hang on Cloudflare issues
     })
 
     if (!res.ok) {
       console.error(`[turnstile] Cloudflare API returned HTTP ${res.status}`)
-      // In production, fail closed — don't let requests through without verification
+      // In production, fail closed - don't let requests through without verification
       if (process.env.NODE_ENV === 'production') {
         return { success: false, error: 'CAPTCHA verification unavailable. Please try again.' }
       }
@@ -71,7 +71,7 @@ export async function verifyTurnstileToken(
       return { success: true }
     }
 
-    // Cloudflare returns error codes — map to a human-readable message
+    // Cloudflare returns error codes - map to a human-readable message
     const errorCodes: string[] = result['error-codes'] || []
     console.warn('[turnstile] Verification failed:', errorCodes)
 
@@ -81,11 +81,11 @@ export async function verifyTurnstileToken(
     }
   } catch (err) {
     console.error('[turnstile] Verification network error:', err)
-    // In production, fail closed — attackers can't bypass CAPTCHA by disrupting DNS
+    // In production, fail closed - attackers can't bypass CAPTCHA by disrupting DNS
     if (process.env.NODE_ENV === 'production') {
       return { success: false, error: 'CAPTCHA verification unavailable. Please try again.' }
     }
-    // In dev, allow through — don't block local development
+    // In dev, allow through - don't block local development
     return { success: true }
   }
 }

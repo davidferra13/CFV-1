@@ -62,7 +62,7 @@ export async function listRecentMessages(
   return data.messages || []
 }
 
-// ─── List Messages Page (paginated — for historical scan) ───────────────────
+// ─── List Messages Page (paginated - for historical scan) ───────────────────
 
 interface ListMessagesPageOptions {
   pageToken?: string
@@ -122,7 +122,7 @@ export async function listMessagesSinceHistory(
   })
 
   if (!response.ok) {
-    // 404 means the historyId is too old — need full resync
+    // 404 means the historyId is too old - need full resync
     if (response.status === 404) {
       return { messageIds: [], latestHistoryId: '' }
     }
@@ -222,7 +222,7 @@ function extractEmailBody(payload: Record<string, unknown>): string {
     return decodeBase64Url(body.data)
   }
 
-  // Multipart — prefer text/plain, fall back to text/html
+  // Multipart - prefer text/plain, fall back to text/html
   const parts = payload.parts as Array<Record<string, unknown>> | undefined
   if (!parts) return ''
 

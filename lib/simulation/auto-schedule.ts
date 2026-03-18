@@ -1,13 +1,13 @@
 // Simulation Auto-Scheduler
 // Called once from instrumentation.ts on server startup.
 // Checks every 6 hours whether the weekly simulation is due, then fires it
-// by POSTing to /api/scheduled/simulation — so the full request context is
+// by POSTing to /api/scheduled/simulation - so the full request context is
 // available (cookies, headers, etc.) and the auth check remains meaningful.
 //
 // Also warms up Ollama on startup by sending a tiny test prompt to force
 // the model into memory before a real user request hits it.
 //
-// No 'use server' — plain Node.js module, runs in the instrumentation context.
+// No 'use server' - plain Node.js module, runs in the instrumentation context.
 
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000 // every 6 hours
 const RUN_IF_OLDER_THAN_DAYS = 3 // skip if last run was within 3 days
@@ -27,7 +27,7 @@ export function scheduleSimulation(): void {
 /**
  * Send a tiny test prompt to Ollama to force the model into memory.
  * The first real user request will be much faster after this warmup.
- * Non-blocking — failures are logged but never propagated.
+ * Non-blocking - failures are logged but never propagated.
  */
 async function warmupOllama(): Promise<void> {
   const ollamaUrl = process.env.OLLAMA_BASE_URL
@@ -49,7 +49,7 @@ async function warmupOllama(): Promise<void> {
         format: 'json',
         stream: false,
       }),
-      signal: AbortSignal.timeout(120_000), // 2 min — model loading can be slow
+      signal: AbortSignal.timeout(120_000), // 2 min - model loading can be slow
     })
 
     if (res.ok) {
@@ -71,7 +71,7 @@ async function runCheck(): Promise<void> {
   const secret = process.env.CRON_SECRET
 
   if (!secret) {
-    console.warn('[sim-auto] CRON_SECRET not set — skipping simulation check.')
+    console.warn('[sim-auto] CRON_SECRET not set - skipping simulation check.')
     return
   }
 
@@ -83,20 +83,20 @@ async function runCheck(): Promise<void> {
     })
 
     if (!res.ok) {
-      console.warn(`[sim-auto] Check returned ${res.status} — skipping.`)
+      console.warn(`[sim-auto] Check returned ${res.status} - skipping.`)
       return
     }
 
     const { dueFor } = (await res.json()) as { dueFor: string[] }
 
     if (dueFor.length === 0) {
-      console.log('[sim-auto] All tenants ran within the last 7 days — no action needed.')
+      console.log('[sim-auto] All tenants ran within the last 7 days - no action needed.')
       return
     }
 
-    console.log(`[sim-auto] ${dueFor.length} tenant(s) need a simulation run — triggering...`)
+    console.log(`[sim-auto] ${dueFor.length} tenant(s) need a simulation run - triggering...`)
 
-    // Fire the actual simulation run (non-blocking — result is stored in DB)
+    // Fire the actual simulation run (non-blocking - result is stored in DB)
     fetch(`${baseUrl}/api/scheduled/simulation`, {
       method: 'POST',
       headers: {

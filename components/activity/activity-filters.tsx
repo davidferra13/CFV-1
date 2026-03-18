@@ -94,7 +94,7 @@ export function ActivityFilters({
             <>
               <button
                 onClick={() => onDomainChange(null)}
-                className={`text-[11px] font-medium px-2 py-1 rounded-full whitespace-nowrap transition-colors ${
+                className={`text-xs-tight font-medium px-2 py-1 rounded-full whitespace-nowrap transition-colors ${
                   activeDomain === null
                     ? 'bg-stone-800 text-white'
                     : 'bg-stone-800 text-stone-500 hover:bg-stone-700'
@@ -109,7 +109,7 @@ export function ActivityFilters({
                   <button
                     key={domain}
                     onClick={() => onDomainChange(activeDomain === domain ? null : domain)}
-                    className={`text-[11px] font-medium px-2 py-1 rounded-full whitespace-nowrap transition-colors ${
+                    className={`text-xs-tight font-medium px-2 py-1 rounded-full whitespace-nowrap transition-colors ${
                       activeDomain === domain
                         ? `${config.bgColor} ${config.color}`
                         : 'bg-stone-800 text-stone-500 hover:bg-stone-700'

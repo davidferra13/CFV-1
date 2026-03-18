@@ -9,6 +9,7 @@ import { acceptQuote, rejectQuote } from '@/lib/quotes/client-actions'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { Textarea } from '@/components/ui/textarea'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export default function QuoteResponseButtons({
@@ -84,74 +85,34 @@ export default function QuoteResponseButtons({
         </Button>
       </div>
 
-      {/* Accept Confirmation Modal */}
-      {showAcceptConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-stone-900 rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-stone-100 mb-2">Accept This Quote?</h3>
-            <p className="text-stone-400 mb-2">
-              You are accepting a quote for <strong>{formatCurrency(totalCents)}</strong>.
-            </p>
-            <p className="text-stone-400 mb-6">
-              By accepting, you agree to the pricing and terms. Your chef will be notified.
-            </p>
+      <ConfirmModal
+        open={showAcceptConfirm}
+        title="Accept This Quote?"
+        description={`You are accepting a quote for ${formatCurrency(totalCents)}. By accepting, you agree to the pricing and terms. Your chef will be notified.`}
+        confirmLabel="Accept Quote"
+        loading={loading}
+        onConfirm={handleAccept}
+        onCancel={() => setShowAcceptConfirm(false)}
+      />
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowAcceptConfirm(false)}
-                disabled={loading}
-                className="flex-1 px-4 py-2 border border-stone-600 rounded-lg text-stone-300 hover:bg-stone-800 transition disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAccept}
-                disabled={loading}
-                className="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition disabled:opacity-50"
-              >
-                {loading ? 'Accepting...' : 'Accept Quote'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Reject Confirmation Modal */}
-      {showRejectConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-stone-900 rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-stone-100 mb-2">Decline This Quote?</h3>
-            <p className="text-stone-400 mb-4">
-              Let your chef know why so they can adjust if needed.
-            </p>
-
-            <Textarea
-              label="Reason (optional)"
-              placeholder="e.g., Budget is too high, need fewer courses..."
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              rows={3}
-            />
-
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => setShowRejectConfirm(false)}
-                disabled={loading}
-                className="flex-1 px-4 py-2 border border-stone-600 rounded-lg text-stone-300 hover:bg-stone-800 transition disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleReject}
-                disabled={loading}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
-              >
-                {loading ? 'Declining...' : 'Decline Quote'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        open={showRejectConfirm}
+        title="Decline This Quote?"
+        description="Let your chef know why so they can adjust if needed."
+        confirmLabel="Decline Quote"
+        variant="danger"
+        loading={loading}
+        onConfirm={handleReject}
+        onCancel={() => setShowRejectConfirm(false)}
+      >
+        <Textarea
+          label="Reason (optional)"
+          placeholder="e.g., Budget is too high, need fewer courses..."
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+          rows={3}
+        />
+      </ConfirmModal>
     </>
   )
 }

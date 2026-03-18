@@ -151,7 +151,7 @@ function detectOutcome(
   }
 
   // Check for likely_booked: negotiation stage reached, no decline, conversation happened.
-  // Many bookings are confirmed over phone/text — the email thread stops at negotiation
+  // Many bookings are confirmed over phone/text - the email thread stops at negotiation
   // but the dinner still happens.
   const hasNegotiation = stageNames.includes('negotiation')
   const hasInfoGathering = stageNames.includes('information_gathering')
@@ -173,12 +173,12 @@ function detectOutcome(
     return { outcome: 'likely_booked', confidence: 'low' }
   }
 
-  // Info gathering with chef responses but no negotiation yet — still engaged, likely booked
+  // Info gathering with chef responses but no negotiation yet - still engaged, likely booked
   if (hasInfoGathering && outboundCount >= 1 && daysSinceLastMsg > 14) {
     return { outcome: 'likely_booked', confidence: 'low' }
   }
 
-  // Thread went silent with minimal engagement — truly expired
+  // Thread went silent with minimal engagement - truly expired
   if (daysSinceLastMsg > 14) {
     return { outcome: 'expired', confidence: 'medium' }
   }
@@ -298,7 +298,7 @@ function mergeFromFollowUp(facts: AccumulatedFacts, followUp: FollowUpFields): v
       }
     }
     if (key === 'arrival_time' || key === 'address') {
-      // These are logistics, not core facts — stored in notes at thread level
+      // These are logistics, not core facts - stored in notes at thread level
     }
   }
 }

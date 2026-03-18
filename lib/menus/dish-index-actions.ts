@@ -1,4 +1,4 @@
-// Dish Index — Server Actions
+// Dish Index - Server Actions
 // CRUD, search, dedup, analytics for the master dish catalog
 // All queries are tenant-scoped. All data stays local.
 

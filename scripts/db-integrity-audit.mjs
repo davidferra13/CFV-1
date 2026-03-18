@@ -6,7 +6,7 @@
  *
  *  Connects directly to Supabase (service role, bypasses RLS).
  *  Validates every record against business rules.
- *  No browser, no server needed — just the database.
+ *  No browser, no server needed - just the database.
  *
  *  Usage:  node scripts/db-integrity-audit.mjs
  *  Output: reports/overnight-YYYY-MM-DD/db-integrity.md
@@ -173,7 +173,7 @@ function defineChecks(data) {
       run: () => {
         const withTransitions = new Set(eventTransitions.map(t => t.event_id));
         const bad = events.filter(e => !withTransitions.has(e.id));
-        return { pass: bad.length === 0, count: bad.length, details: bad.slice(0, 10).map(e => `Event ${e.id} (${e.status}) — no transition history`) };
+        return { pass: bad.length === 0, count: bad.length, details: bad.slice(0, 10).map(e => `Event ${e.id} (${e.status}) - no transition history`) };
       },
       diagnosis: 'Events exist but have no state transition audit trail.',
       fix: 'These events may have been created directly without the FSM. Add a retrospective transition record.',
@@ -255,7 +255,7 @@ function defineChecks(data) {
         return { pass: bad.length === 0, count: bad.length, details: bad.slice(0, 10).map(l => `Ledger ${l.id} on event ${l.event_id}`) };
       },
       diagnosis: 'Ledger entries must never be zero. This violates the DB constraint.',
-      fix: 'Remove zero entries — they corrupt balance calculations.',
+      fix: 'Remove zero entries - they corrupt balance calculations.',
     },
     {
       id: 'FIN-002', category: 'Financial Integrity', severity: 'critical',
@@ -344,7 +344,7 @@ function defineChecks(data) {
         }
         return { pass: bad.length === 0, count: bad.length, details: bad.slice(0, 10) };
       },
-      diagnosis: 'Same amount recorded twice within a minute — likely a double-submission bug.',
+      diagnosis: 'Same amount recorded twice within a minute - likely a double-submission bug.',
       fix: 'Verify with the chef whether both entries are intentional. Remove the duplicate if not.',
     },
     {
@@ -437,7 +437,7 @@ function defineChecks(data) {
       name: 'Clients with no email and no phone',
       run: () => {
         const bad = clients.filter(c => !c.email && !c.phone);
-        return { pass: bad.length === 0, count: bad.length, details: bad.slice(0, 10).map(c => `Client ${c.id}: "${c.full_name}" — no contact info`) };
+        return { pass: bad.length === 0, count: bad.length, details: bad.slice(0, 10).map(c => `Client ${c.id}: "${c.full_name}" - no contact info`) };
       },
       diagnosis: 'Clients without any contact information cannot be reached.',
       fix: 'Add email or phone, or mark as dormant if no longer reachable.',
@@ -498,7 +498,7 @@ function defineChecks(data) {
         const bad = events.filter(e => e.event_date && e.event_date < '2024-01-01');
         return { pass: bad.length === 0, count: bad.length, details: bad.slice(0, 10).map(e => `Event ${e.id}: date ${e.event_date}`) };
       },
-      diagnosis: 'Events with very old dates — likely test data or entry errors.',
+      diagnosis: 'Events with very old dates - likely test data or entry errors.',
       fix: 'Correct dates or archive if these are test records.',
     },
     {
@@ -568,7 +568,7 @@ function defineChecks(data) {
         }
         return { pass: bad.length === 0, count: bad.length, details: bad.slice(0, 10) };
       },
-      diagnosis: 'Events went backwards in the lifecycle — possible data corruption or manual override.',
+      diagnosis: 'Events went backwards in the lifecycle - possible data corruption or manual override.',
       fix: 'Audit the code path that allowed this regression.',
     },
 
@@ -592,7 +592,7 @@ function defineChecks(data) {
         return { pass: bad.length === 0, count: bad.length, details: bad.slice(0, 10) };
       },
       diagnosis: 'Event records allergies that aren\'t on the client profile. Could be stale or manually overridden.',
-      fix: 'Sync allergies between event and client. SAFETY CRITICAL — allergies can be life-threatening.',
+      fix: 'Sync allergies between event and client. SAFETY CRITICAL - allergies can be life-threatening.',
     },
     {
       id: 'XTB-002', category: 'Cross-Table Consistency', severity: 'high',
@@ -805,10 +805,10 @@ async function main() {
       const r = result instanceof Promise ? await result : result;
       const status = r.pass ? '✓' : '✗';
       const dur = fmt(Date.now() - t0);
-      log(`  ${status} ${check.id}: ${check.name} — ${r.count} issues (${dur})`);
+      log(`  ${status} ${check.id}: ${check.name} - ${r.count} issues (${dur})`);
       results.push({ ...check, ...r, run: undefined });
     } catch (err) {
-      log(`  ! ${check.id}: ERROR — ${err.message}`);
+      log(`  ! ${check.id}: ERROR - ${err.message}`);
       results.push({ ...check, pass: false, count: -1, details: [`Error: ${err.message}`], run: undefined });
     }
   }

@@ -14,13 +14,13 @@ export const AUTH_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/auth/signup': {
     title: 'Sign Up',
-    description: 'Create your ChefFlow account — start managing your private chef business.',
+    description: 'Create your ChefFlow account - start managing your private chef business.',
     features: ['Chef or client signup', 'Invitation token support', 'Business name and phone'],
   },
 
   '/auth/client-signup': {
     title: 'Client Sign Up',
-    description: "Create a client account — access your chef's portal.",
+    description: "Create a client account - access your chef's portal.",
     features: ['Client-specific form', 'Invitation pre-fill', 'Name, phone, password'],
   },
 

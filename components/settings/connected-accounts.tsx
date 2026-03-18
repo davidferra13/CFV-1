@@ -263,7 +263,7 @@ function ClassificationBadge({ classification }: { classification: string }) {
   }
   return (
     <span
-      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0 ${colors[classification] || 'bg-stone-800 text-stone-400'}`}
+      className={`inline-block px-1.5 py-0.5 rounded text-xxs font-medium shrink-0 ${colors[classification] || 'bg-stone-800 text-stone-400'}`}
     >
       {classification}
     </span>

@@ -1,5 +1,5 @@
-// HACCP Plan Types — shared by templates, actions, and UI components.
-// NOT a server action file — no 'use server'.
+// HACCP Plan Types - shared by templates, actions, and UI components.
+// NOT a server action file - no 'use server'.
 // Structure maps to the plan_data JSONB column in haccp_plans table.
 
 import type { ArchetypeId } from '@/lib/archetypes/presets'
@@ -57,7 +57,7 @@ export type PrerequisiteProgram = {
 
 // ── Chef Customizations ─────────────────────────────────────────────────
 
-/** Chef's override for a section — toggle on/off, add notes */
+/** Chef's override for a section - toggle on/off, add notes */
 export type SectionOverride = {
   enabled: boolean
   customNotes?: string

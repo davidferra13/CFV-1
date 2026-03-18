@@ -5,7 +5,7 @@ import { z } from 'zod'
 import type { HubMedia } from './types'
 
 // ---------------------------------------------------------------------------
-// Hub Media — Photo uploads and gallery
+// Hub Media - Photo uploads and gallery
 // ---------------------------------------------------------------------------
 
 const UploadMediaSchema = z.object({
@@ -146,7 +146,7 @@ export async function deleteHubMedia(input: {
   try {
     await supabase.storage.from('hub-media').remove([media.storage_path])
   } catch {
-    // Non-blocking — DB record deletion is more important
+    // Non-blocking - DB record deletion is more important
   }
 
   // Delete record

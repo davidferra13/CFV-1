@@ -127,7 +127,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
 
   try {
     if (!historyId) {
-      // First sync — get last 50 inbox messages (exclude Sent/Drafts/Spam)
+      // First sync - get last 50 inbox messages (exclude Sent/Drafts/Spam)
       const messages = await listRecentMessages(accessToken, {
         maxResults: 50,
         query: 'in:inbox -in:sent',
@@ -141,12 +141,12 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
         .update({ gmail_history_id: profile.historyId })
         .eq('chef_id', chefId)
     } else {
-      // Incremental sync — only new messages since last history ID
+      // Incremental sync - only new messages since last history ID
       const historyResult = await listMessagesSinceHistory(accessToken, historyId)
       messageIds = historyResult.messageIds
 
       if (historyResult.latestHistoryId === '') {
-        // History ID too old — fall back to recent inbox messages
+        // History ID too old - fall back to recent inbox messages
         const messages = await listRecentMessages(accessToken, {
           maxResults: 50,
           query: 'in:inbox -in:sent',
@@ -197,7 +197,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
       }
     }
   } catch (platformErr) {
-    // Non-fatal — inbox messages were already fetched
+    // Non-fatal - inbox messages were already fetched
     console.error('[syncGmailInbox] Platform domain query failed (non-fatal):', platformErr)
   }
 
@@ -284,7 +284,7 @@ async function processMessage(
 
   // ─── Platform Fast Paths ────────────────────────────────────────────
   // Detect known platform emails by sender domain and route to dedicated parsers.
-  // Skips Ollama classification entirely — platform emails are consistently
+  // Skips Ollama classification entirely - platform emails are consistently
   // formatted and don't need AI to classify.
   if (isTakeAChefEmail(email.from.email)) {
     await handleTakeAChefEmail(supabase, email, chefId, tenantId, result)
@@ -426,7 +426,7 @@ async function processMessage(
     return
   }
 
-  // Classify the email FIRST — spam/marketing should never reach the inbox
+  // Classify the email FIRST - spam/marketing should never reach the inbox
   // Pass Gmail metadata for deterministic filtering (labels, headers) before AI
   const classification = await classifyEmail(
     email.subject,
@@ -478,7 +478,7 @@ async function processMessage(
       break
 
     default:
-      // personal, spam, marketing — just log
+      // personal, spam, marketing - just log
       await logSyncEntry(supabase, tenantId, email, {
         classification: classification.category,
         confidence: classification.confidence,
@@ -527,7 +527,7 @@ async function handleInquiry(
       ollamaNotes = parseResult.parsed.notes || null
       ollamaReferralSource = parseResult.parsed.referral_source || null
     } catch (ollamaErr) {
-      // Ollama offline — deterministic extraction still provides all structured fields
+      // Ollama offline - deterministic extraction still provides all structured fields
       console.warn(
         '[handleInquiry] Ollama unavailable, using deterministic extraction only:',
         (ollamaErr as Error).message
@@ -587,7 +587,7 @@ async function handleInquiry(
         first_contact_at: email.date
           ? new Date(email.date).toISOString()
           : new Date().toISOString(),
-        // Deterministic fields (structured data — regex is more reliable than LLM)
+        // Deterministic fields (structured data - regex is more reliable than LLM)
         confirmed_date: detFields.confirmed_date || null,
         confirmed_guest_count: detFields.confirmed_guest_count ?? null,
         confirmed_location: detFields.confirmed_location || null,
@@ -597,7 +597,7 @@ async function handleInquiry(
             ? detFields.confirmed_dietary_restrictions
             : null,
         confirmed_cannabis_preference: detFields.confirmed_cannabis_preference || null,
-        // Ollama fields (freeform interpretation — LLM is better here)
+        // Ollama fields (freeform interpretation - LLM is better here)
         confirmed_occasion: ollamaOccasion || detFields.confirmed_occasion || null,
         confirmed_service_expectations: ollamaServiceExpectations || null,
         // Referral source from either layer
@@ -610,14 +610,14 @@ async function handleInquiry(
         follow_up_due_at: new Date(
           Date.now() +
             (leadScore.lead_tier === 'hot'
-              ? 4 * 3600000 // 4 hours — hot leads need fast response
+              ? 4 * 3600000 // 4 hours - hot leads need fast response
               : leadScore.lead_tier === 'warm'
                 ? 24 * 3600000 // 24 hours
-                : 72 * 3600000) // 72 hours — cold leads
+                : 72 * 3600000) // 72 hours - cold leads
         ).toISOString(),
         next_action_required:
           leadScore.lead_tier === 'hot'
-            ? `🔥 HOT lead (${leadScore.lead_score}/100) — Review email inquiry from ${leadName}`
+            ? `🔥 HOT lead (${leadScore.lead_score}/100) - Review email inquiry from ${leadName}`
             : leadScore.lead_tier === 'warm'
               ? `Review email inquiry from ${leadName} (score: ${leadScore.lead_score}/100)`
               : 'Review auto-captured email inquiry',
@@ -668,7 +668,7 @@ async function handleInquiry(
           category: 'inquiry',
           action: 'new_inquiry',
           title: tierLabel ? `${tierLabel} inquiry received` : 'New inquiry received',
-          body: `${leadName} — ${email.subject || 'No subject'} (score: ${leadScore.lead_score}/100)`,
+          body: `${leadName} - ${email.subject || 'No subject'} (score: ${leadScore.lead_score}/100)`,
           actionUrl: `/inquiries/${inquiry.id}`,
           inquiryId: inquiry.id,
           clientId: clientId || undefined,
@@ -821,7 +821,7 @@ async function handleExistingThread(
             .update({
               status: 'awaiting_chef',
               follow_up_due_at: null,
-              next_action_required: 'Client replied — review and respond',
+              next_action_required: 'Client replied - review and respond',
               next_action_by: 'chef',
             })
             .eq('id', linkedInquiryId)
@@ -898,7 +898,7 @@ async function handleExistingThread(
               )
             }
           } catch (extractErr) {
-            // Non-fatal — thread processing continues even if extraction fails
+            // Non-fatal - thread processing continues even if extraction fails
             console.error('[handleExistingThread] Field extraction failed (non-fatal):', extractErr)
           }
         }
@@ -948,7 +948,7 @@ async function handleExistingThread(
           category: 'inquiry',
           action: 'inquiry_reply',
           title: 'Client replied',
-          body: `${clientName} — ${email.subject || 'No subject'}`,
+          body: `${clientName} - ${email.subject || 'No subject'}`,
           actionUrl: linkedInquiryId ? `/inquiries/${linkedInquiryId}` : undefined,
           inquiryId: linkedInquiryId || undefined,
           clientId: client?.id || undefined,
@@ -1055,7 +1055,7 @@ async function handleTacNewInquiry(
     return
   }
 
-  // Dedup check — same inquiry sent multiple times?
+  // Dedup check - same inquiry sent multiple times?
   const dedup = await checkPlatformInquiryDuplicate(supabase, tenantId, {
     channel: 'take_a_chef',
     externalId: inquiry.ctaUriToken || undefined,
@@ -1262,7 +1262,7 @@ async function handleTacNewInquiry(
         category: 'inquiry',
         action: 'new_inquiry',
         title: 'New TakeAChef inquiry',
-        body: `${inquiry.clientName} — ${inquiry.occasion || 'Event'} on ${inquiry.eventDate || 'TBD'} · ${inquiry.guestCountText || '? guests'} · ${inquiry.pricePerPersonRange || 'budget TBD'}`,
+        body: `${inquiry.clientName} - ${inquiry.occasion || 'Event'} on ${inquiry.eventDate || 'TBD'} · ${inquiry.guestCountText || '? guests'} · ${inquiry.pricePerPersonRange || 'budget TBD'}`,
         actionUrl: `/inquiries/${newInquiry.id}`,
         inquiryId: newInquiry.id,
         clientId: clientId || undefined,
@@ -1323,7 +1323,7 @@ async function handleTacClientMessage(
   })
 
   if (inquiryId) {
-    // Advance status to awaiting_chef (client has messaged — chef needs to respond)
+    // Advance status to awaiting_chef (client has messaged - chef needs to respond)
     const { data: inquiry } = await supabase
       .from('inquiries')
       .select('status, external_link, unknown_fields')
@@ -1336,7 +1336,7 @@ async function handleTacClientMessage(
         .from('inquiries')
         .update({
           status: 'awaiting_chef',
-          next_action_required: `${clientName || 'Client'} messaged you on TakeAChef — respond to keep lead warm`,
+          next_action_required: `${clientName || 'Client'} messaged you on TakeAChef - respond to keep lead warm`,
           next_action_by: 'chef',
           external_link: msg?.ctaLink || inquiry.external_link,
           unknown_fields: mergePlatformIdentityKeys(
@@ -1622,7 +1622,7 @@ async function handleTacBookingConfirmed(
               existingScheduleRequest || (booking.scheduleRequest as unknown as Json) || null,
           }
         ) as unknown as Json,
-        next_action_required: 'TakeAChef booking confirmed — prepare for event',
+        next_action_required: 'TakeAChef booking confirmed - prepare for event',
         next_action_by: 'chef',
       })
       .eq('id', inquiryId)
@@ -1737,7 +1737,7 @@ async function handleTacBookingConfirmed(
             domain: 'event',
             entityType: 'event',
             entityId: event.id,
-            summary: `Auto-created event from TakeAChef booking — Order #${booking.orderId || 'unknown'}. Next: create the final menu.`,
+            summary: `Auto-created event from TakeAChef booking - Order #${booking.orderId || 'unknown'}. Next: create the final menu.`,
             context: {
               source: 'take_a_chef_booking_email',
               order_id: booking.orderId,
@@ -1762,7 +1762,7 @@ async function handleTacBookingConfirmed(
         category: 'inquiry',
         action: 'new_inquiry',
         title: 'TakeAChef booking confirmed!',
-        body: `${booking.clientName || 'A client'} booked — ${booking.amountUsd ? `$${booking.amountUsd}` : 'amount TBD'} · ${booking.serviceDates || 'dates TBD'}`,
+        body: `${booking.clientName || 'A client'} booked - ${booking.amountUsd ? `$${booking.amountUsd}` : 'amount TBD'} · ${booking.serviceDates || 'dates TBD'}`,
         actionUrl: inquiryId ? `/inquiries/${inquiryId}` : '/inquiries',
         inquiryId: inquiryId || undefined,
       })
@@ -1933,7 +1933,7 @@ async function handleTacCustomerInfo(
           category: 'inquiry',
           action: 'inquiry_reply',
           title: 'TakeAChef revealed client contact details',
-          body: `${info.guestName || 'Client'} — phone: ${info.phoneNumber || 'N/A'}`,
+          body: `${info.guestName || 'Client'} - phone: ${info.phoneNumber || 'N/A'}`,
           actionUrl: `/inquiries/${inquiryId}`,
           inquiryId,
         })
@@ -2231,7 +2231,7 @@ async function handleYhangryNewInquiry(
     return
   }
 
-  // Create client record — name comes from Yhangry later, use placeholder
+  // Create client record - name comes from Yhangry later, use placeholder
   let clientId: string | null = null
   try {
     const clientResult = await createClientFromLead(tenantId, {
@@ -2300,7 +2300,7 @@ async function handleYhangryNewInquiry(
               ? 24 * 3600000
               : 72 * 3600000)
       ).toISOString(),
-      next_action_required: `Review Yhangry inquiry — ${inquiry.eventType || 'private event'} in ${inquiry.location || 'location TBD'}`,
+      next_action_required: `Review Yhangry inquiry - ${inquiry.eventType || 'private event'} in ${inquiry.location || 'location TBD'}`,
       next_action_by: 'chef',
     })
     .select('id')
@@ -2397,7 +2397,7 @@ async function handleYhangryClientMessage(
         .from('inquiries')
         .update({
           status: 'awaiting_chef',
-          next_action_required: 'Client messaged you on Yhangry — respond to keep lead warm',
+          next_action_required: 'Client messaged you on Yhangry - respond to keep lead warm',
           next_action_by: 'chef',
         })
         .eq('id', inquiryId)
@@ -2459,7 +2459,7 @@ async function handleYhangryBookingConfirmed(
         status: 'confirmed',
         external_inquiry_id: quoteId,
         confirmed_budget_cents: parsed.booking?.amountCents || null,
-        next_action_required: 'Yhangry booking confirmed — prepare for event',
+        next_action_required: 'Yhangry booking confirmed - prepare for event',
         next_action_by: 'chef',
       })
       .eq('id', inquiryId)
@@ -2515,7 +2515,7 @@ type PlatformChannel =
   | 'hireachef'
   | 'cuisineistchef'
 
-// Common parsed result shape — all parsers follow this pattern
+// Common parsed result shape - all parsers follow this pattern
 interface GenericParseResult {
   emailType: string
   rawSubject: string
@@ -2560,7 +2560,7 @@ const NEW_LEAD_SUFFIXES = [
   '_new_inquiry',
   '_new_booking',
   '_new_message', // GBP messages are potential inquiries
-  '_new_review', // GBP reviews — log but notify
+  '_new_review', // GBP reviews - log but notify
   '_quote_requested', // GigSalad quote requests = new leads
 ]
 
@@ -2623,7 +2623,7 @@ async function handleGenericPlatformEmail(
     } else if (BOOKING_CONFIRMED_SUFFIXES.some((s) => emailType.endsWith(s))) {
       await handleGenericBookingConfirmed(supabase, email, parsed, tenantId, result, platform)
     } else {
-      // Administrative, payment, etc. — log and skip
+      // Administrative, payment, etc. - log and skip
       await logSyncEntry(supabase, tenantId, email, {
         classification: 'marketing',
         confidence: 'high',
@@ -2660,7 +2660,7 @@ function extractLeadFields(parsed: GenericParseResult): {
   ctaLink: string | null
   externalId: string | null
 } {
-  // Each parser stores lead data under different keys — try all common ones
+  // Each parser stores lead data under different keys - try all common ones
   const data =
     (parsed.lead as Record<string, unknown>) ||
     (parsed.inquiry as Record<string, unknown>) ||
@@ -2675,11 +2675,11 @@ function extractLeadFields(parsed: GenericParseResult): {
     (data.reviewerName as string) ||
     'Unknown'
 
-  // Guest count — try various field names
+  // Guest count - try various field names
   const guestCount =
     (data.guestCount as number | null) ?? (data.guestCountNumber as number | null) ?? null
 
-  // Budget — try various patterns
+  // Budget - try various patterns
   let budgetCents =
     (data.budgetMaxCents as number | null) ?? (data.totalCents as number | null) ?? null
   if (!budgetCents && (data.pricePerPersonCents as number | null) && guestCount) {
@@ -2833,7 +2833,7 @@ async function handleGenericNewLead(
       ).toISOString(),
       next_action_required:
         platformLeadScore.lead_tier === 'hot'
-          ? `🔥 HOT lead (${platformLeadScore.lead_score}/100) — Review ${displayName} inquiry from ${fields.clientName}`
+          ? `🔥 HOT lead (${platformLeadScore.lead_score}/100) - Review ${displayName} inquiry from ${fields.clientName}`
           : `Review ${displayName} inquiry from ${fields.clientName}`,
       next_action_by: 'chef',
     })
@@ -2903,7 +2903,7 @@ async function handleGenericNewLead(
         category: 'inquiry',
         action: 'new_inquiry',
         title: `New ${displayName} inquiry`,
-        body: `${fields.clientName} — ${fields.occasion || 'Event'} on ${fields.eventDate || 'TBD'} · ${fields.guestCount ? fields.guestCount + ' guests' : '? guests'}`,
+        body: `${fields.clientName} - ${fields.occasion || 'Event'} on ${fields.eventDate || 'TBD'} · ${fields.guestCount ? fields.guestCount + ' guests' : '? guests'}`,
         actionUrl: `/inquiries/${newInquiry.id}`,
         inquiryId: newInquiry.id,
         clientId: clientId || undefined,
@@ -2964,7 +2964,7 @@ async function handleGenericClientMessage(
   })
 
   if (inquiryId) {
-    // Advance status to awaiting_chef (client has messaged — chef needs to respond)
+    // Advance status to awaiting_chef (client has messaged - chef needs to respond)
     const { data: inquiry } = await supabase
       .from('inquiries')
       .select('status, external_link')
@@ -2977,7 +2977,7 @@ async function handleGenericClientMessage(
         .from('inquiries')
         .update({
           status: 'awaiting_chef',
-          next_action_required: `${fields.clientName !== 'Unknown' ? fields.clientName : 'Client'} messaged you on ${displayName} — respond to keep lead warm`,
+          next_action_required: `${fields.clientName !== 'Unknown' ? fields.clientName : 'Client'} messaged you on ${displayName} - respond to keep lead warm`,
           next_action_by: 'chef',
           external_link: fields.ctaLink || inquiry.external_link,
         })
@@ -3045,7 +3045,7 @@ async function handleGenericBookingConfirmed(
         status: 'confirmed',
         confirmed_budget_cents: fields.budgetCents,
         external_link: fields.ctaLink,
-        next_action_required: `${displayName} booking confirmed — prepare for event`,
+        next_action_required: `${displayName} booking confirmed - prepare for event`,
         next_action_by: 'chef',
       })
       .eq('id', inquiryId)
@@ -3060,7 +3060,7 @@ async function handleGenericBookingConfirmed(
           category: 'inquiry',
           action: 'new_inquiry',
           title: `${displayName} booking confirmed!`,
-          body: `${fields.clientName !== 'Unknown' ? fields.clientName : 'A client'} booked — ${fields.eventDate || 'date TBD'}`,
+          body: `${fields.clientName !== 'Unknown' ? fields.clientName : 'A client'} booked - ${fields.eventDate || 'date TBD'}`,
           actionUrl: `/inquiries/${inquiryId}`,
           inquiryId,
         })
@@ -3162,7 +3162,7 @@ async function logSyncEntry(
       inquiry_id: entry.inquiry_id || null,
       message_id: entry.message_id || null,
       error: entry.error || null,
-      // Remy email awareness — store body content for search/context
+      // Remy email awareness - store body content for search/context
       body_preview: email.body?.slice(0, 2000) || null,
       snippet: email.body?.slice(0, 200) || null,
       to_address: email.to || null,

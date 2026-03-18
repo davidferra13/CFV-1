@@ -1,6 +1,6 @@
 'use server'
 
-// Travel Route Planning — Server Actions
+// Travel Route Planning - Server Actions
 // CRUD for event_travel_legs and travel_leg_ingredients.
 // All mutations are tenant-scoped and chef-authenticated.
 
@@ -558,7 +558,7 @@ export async function searchIngredientsForEvent(
 // ============================================================
 
 /** Create draft service_travel and return_home legs when event is confirmed.
- *  Safe to call repeatedly — skips if legs already exist. */
+ *  Safe to call repeatedly - skips if legs already exist. */
 export async function autoCreateServiceLegs(eventId: string): Promise<void> {
   const user = await requireChef()
   const supabase = createClient()

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 
 /**
- * Debounce a value — useful for search inputs to avoid firing
+ * Debounce a value - useful for search inputs to avoid firing
  * a query on every keystroke.
  *
  * @example
@@ -22,7 +22,7 @@ export function useDebounce<T>(value: T, delayMs = 300): T {
 }
 
 /**
- * Debounce a callback — useful for debouncing event handlers directly
+ * Debounce a callback - useful for debouncing event handlers directly
  * rather than values.
  *
  * @example

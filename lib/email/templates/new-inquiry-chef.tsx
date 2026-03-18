@@ -1,4 +1,4 @@
-// New Inquiry — Chef Notification Email
+// New Inquiry - Chef Notification Email
 // Sent to the chef when a new inquiry arrives (via public portal, Wix, or Gmail).
 // Complements the in-app notification and bell badge.
 

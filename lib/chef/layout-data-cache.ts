@@ -1,4 +1,4 @@
-// Layout Data Cache — wraps uncached layout DB calls in unstable_cache
+// Layout Data Cache - wraps uncached layout DB calls in unstable_cache
 // These functions are called on every page navigation from (chef)/layout.tsx.
 // Without caching, they add 3-4 unnecessary DB round-trips per page load.
 //

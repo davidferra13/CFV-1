@@ -1,4 +1,4 @@
-// Lead Likelihood — Server action for setting the chef's manual likelihood tag.
+// Lead Likelihood - Server action for setting the chef's manual likelihood tag.
 
 'use server'
 

@@ -129,7 +129,7 @@ export function PlaceholderAttribution({ image }: { image: PlaceholderImage | nu
   if (!image) return null
 
   return (
-    <span className="text-[10px] text-stone-500">
+    <span className="text-xxs text-stone-500">
       <a
         href={image.photographerUrl}
         target="_blank"

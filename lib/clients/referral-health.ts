@@ -1,4 +1,4 @@
-// Referral Chain Health — pure computation, no server action.
+// Referral Chain Health - pure computation, no server action.
 // Analyzes the health of a chef's client referral network.
 
 export type ReferralHealthScore = {
@@ -44,7 +44,7 @@ export function computeReferralHealth(
         dormantNodes++
       }
     } else {
-      // No events ever — count as dormant
+      // No events ever - count as dormant
       dormantNodes++
     }
   }

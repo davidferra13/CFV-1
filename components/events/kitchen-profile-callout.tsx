@@ -63,7 +63,7 @@ export function KitchenProfileCallout({ clientId, profile }: KitchenProfileCallo
           href={`/clients/${clientId}`}
           className="text-xs text-brand-500 hover:text-brand-400 font-medium shrink-0"
           target="_blank"
-          rel="noopener"
+          rel="noopener noreferrer"
         >
           Edit in client profile →
         </Link>
@@ -77,7 +77,7 @@ export function KitchenProfileCallout({ clientId, profile }: KitchenProfileCallo
               href={`/clients/${clientId}`}
               className="underline font-medium"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               Add notes
             </Link>{' '}

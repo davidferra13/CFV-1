@@ -3,7 +3,7 @@
 // Remy Intelligence Actions
 // New capabilities that surface existing app data through Remy.
 // PRIVACY: All queries are tenant-scoped. Financial data stays local.
-// FORMULA > AI: Everything here is deterministic — no LLM calls.
+// FORMULA > AI: Everything here is deterministic - no LLM calls.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -652,7 +652,7 @@ export async function executeReEngagementScoring(tenantId: string) {
             ? 'High-value dormant client. Personal outreach recommended.'
             : score >= 30
               ? 'Worth a friendly check-in email.'
-              : 'Low priority — may have moved on.',
+              : 'Low priority - may have moved on.',
       }
     })
     .sort((a: any, b: any) => b.reEngagementScore - a.reEngagementScore)

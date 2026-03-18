@@ -1,7 +1,7 @@
-// Contract/Proposal Template — Fill-in-the-Blank
+// Contract/Proposal Template - Fill-in-the-Blank
 // Standard private chef service agreement with variable substitution.
 // Every catering business uses essentially this same structure.
-// AI can optionally personalize — but the template always works.
+// AI can optionally personalize - but the template always works.
 
 // ── Types (match the AI version exactly) ───────────────────────────────────
 
@@ -63,7 +63,7 @@ function formatCents(cents: number): string {
 
 /**
  * Generates a professional service agreement from event data.
- * Pure template — no AI, no network, deterministic.
+ * Pure template - no AI, no network, deterministic.
  * Returns the exact same type as the AI version for drop-in compatibility.
  */
 export function generateContractTemplate(v: ContractVars): GeneratedContract {
@@ -105,8 +105,8 @@ ${v.specialRequests ? '**Special Requests:** ' + v.specialRequests : ''}`.trim()
     {
       heading: 'Pricing & Payment',
       content: `- **Total Fee:** ${formatCents(v.quotedPriceCents)}
-- **Deposit (50%):** ${formatCents(deposit)} — due upon signing
-- **Balance (50%):** ${formatCents(balance)} — due on or before the event date
+- **Deposit (50%):** ${formatCents(deposit)} - due upon signing
+- **Balance (50%):** ${formatCents(balance)} - due on or before the event date
 
 Payment may be made by bank transfer, credit card, or check. The deposit is required to confirm the booking.`,
     },
@@ -142,7 +142,7 @@ Signature: _______________`,
     },
   ]
 
-  const title = `Private Chef Service Agreement — ${v.occasion}`
+  const title = `Private Chef Service Agreement - ${v.occasion}`
 
   const fullMarkdown = [
     `# ${title}`,

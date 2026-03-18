@@ -49,8 +49,8 @@ RULES:
 - If a piece of text describes one person reaching out about one event, that's ONE inquiry.
 - Dates: output in YYYY-MM-DD format when possible. If the year is unclear, assume the most recent past occurrence.
 - Budget: always in CENTS (e.g., $500 = 50000). If a per-person rate is given with guest count, multiply.
-- Channel: infer from context — "texted me" → "text", "emailed" → "email", "found me on Instagram" → "instagram", "from my website" → "website", "Wix form" → "wix", "referred by" → "referral".
-- Status: infer from context — "booked them" → "confirmed", "never heard back" → "expired", "they went with someone else" → "declined", "still interested" → "new". Default to null if unclear.
+- Channel: infer from context - "texted me" → "text", "emailed" → "email", "found me on Instagram" → "instagram", "from my website" → "website", "Wix form" → "wix", "referred by" → "referral".
+- Status: infer from context - "booked them" → "confirmed", "never heard back" → "expired", "they went with someone else" → "declined", "still interested" → "new". Default to null if unclear.
 - source_message: preserve the original text snippet for this inquiry (brief, first ~200 chars).
 - Names: the FIRST name in each entry is usually the client.
 

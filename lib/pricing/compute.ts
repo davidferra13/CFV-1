@@ -1,5 +1,5 @@
 // Deterministic Pricing Engine
-// Pure functions — no AI, no guessing, no estimation.
+// Pure functions - no AI, no guessing, no estimation.
 // All amounts in cents (minor units).
 // Source of truth: lib/pricing/constants.ts
 
@@ -40,7 +40,7 @@ const TIER_1_HOLIDAYS = [
   { month: 12, day: 24, name: 'Christmas Eve' },
   { month: 12, day: 25, name: 'Christmas Day' },
   { month: 12, day: 31, name: "New Year's Eve" },
-  { month: 1, day: 1, name: "New Year's Day" }, // Jan 1 — major cooking holiday
+  { month: 1, day: 1, name: "New Year's Day" }, // Jan 1 - major cooking holiday
   { month: 2, day: 14, name: "Valentine's Day" },
 ]
 
@@ -120,7 +120,7 @@ export interface PricingBreakdown {
   // Minimum booking floor
   minimumApplied: boolean
 
-  // Grocery estimate (internal only — never shown to client)
+  // Grocery estimate (internal only - never shown to client)
   estimatedGroceryCents: { low: number; high: number }
 
   // Metadata
@@ -138,7 +138,7 @@ export interface PricingBreakdown {
 
 /**
  * Validate a PricingInput before computation.
- * Always returns a result — never throws. Errors are informational.
+ * Always returns a result - never throws. Errors are informational.
  * Exported so callers (e.g., quote forms) can pre-validate UI state.
  */
 export function validatePricingInput(input: PricingInput): { valid: boolean; errors: string[] } {
@@ -159,7 +159,7 @@ export function validatePricingInput(input: PricingInput): { valid: boolean; err
       errors.push('Course count is required for private dinner and must be a positive integer')
     } else if (input.courseCount < 3 || input.courseCount > 5) {
       errors.push(
-        `${input.courseCount}-course menu is outside the standard 3–5 course range — requires custom pricing`
+        `${input.courseCount}-course menu is outside the standard 3–5 course range - requires custom pricing`
       )
     }
   }
@@ -189,7 +189,7 @@ export function validatePricingInput(input: PricingInput): { valid: boolean; err
       )
     } else if (MULTI_NIGHT_PACKAGES[input.multiNightPackage] === 0) {
       errors.push(
-        `Multi-night package "${input.multiNightPackage}" is a placeholder — price not yet confirmed. Requires custom pricing.`
+        `Multi-night package "${input.multiNightPackage}" is a placeholder - price not yet confirmed. Requires custom pricing.`
       )
     }
   }
@@ -199,7 +199,7 @@ export function validatePricingInput(input: PricingInput): { valid: boolean; err
     const days = input.numberOfDays ?? 1
     if (days < WEEKLY_COMMITMENT_MIN_DAYS) {
       errors.push(
-        `Commitment rate requires at least ${WEEKLY_COMMITMENT_MIN_DAYS} consecutive days. Received ${days} day(s) — use weekly_standard for shorter bookings.`
+        `Commitment rate requires at least ${WEEKLY_COMMITMENT_MIN_DAYS} consecutive days. Received ${days} day(s) - use weekly_standard for shorter bookings.`
       )
     }
   }
@@ -216,7 +216,7 @@ export function validatePricingInput(input: PricingInput): { valid: boolean; err
   // Large group (15+): cannot be computed deterministically
   if (input.guestCount > LARGE_GROUP_MAX_GUESTS) {
     errors.push(
-      `Guest count of ${input.guestCount} exceeds ${LARGE_GROUP_MAX_GUESTS} — requires a custom large-group or buyout quote`
+      `Guest count of ${input.guestCount} exceeds ${LARGE_GROUP_MAX_GUESTS} - requires a custom large-group or buyout quote`
     )
   }
 
@@ -338,7 +338,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   const isBuyout = guestCount > LARGE_GROUP_MAX_GUESTS
 
   if (isSolo) {
-    notes.push('Solo guest — priced at couples rate (1 person)')
+    notes.push('Solo guest - priced at couples rate (1 person)')
   }
 
   if (isBuyout) {
@@ -349,7 +349,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
 
   if (isLargeGroup && serviceType === 'private_dinner') {
     notes.push(
-      `Large group (${guestCount} guests) — standard group rates applied; confirm feasibility before quoting`
+      `Large group (${guestCount} guests) - standard group rates applied; confirm feasibility before quoting`
     )
   }
 
@@ -359,7 +359,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   const numberOfDays = isWeeklyType ? Math.max(1, input.numberOfDays ?? 1) : 1
 
   // ── Step 3: Base service fee by service type ──────────────────────────────
-  // Buyout guests bypass the rate table entirely — skip if already custom.
+  // Buyout guests bypass the rate table entirely - skip if already custom.
   if (!isBuyout) {
     switch (serviceType) {
       case 'private_dinner': {
@@ -372,10 +372,10 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
           pricingModel = 'custom'
           requiresCustomPricing = true
           if (courseCount === undefined) {
-            notes.push('Course count not provided — requires custom pricing for private dinner')
+            notes.push('Course count not provided - requires custom pricing for private dinner')
           } else {
             notes.push(
-              `${courseCount}-course menu is outside the standard 3–5 course range — requires custom pricing`
+              `${courseCount}-course menu is outside the standard 3–5 course range - requires custom pricing`
             )
           }
         } else {
@@ -399,23 +399,23 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
         if (!packageKey) {
           pricingModel = 'custom'
           requiresCustomPricing = true
-          notes.push('multi_night requires an explicit package key — no package key was provided')
+          notes.push('multi_night requires an explicit package key - no package key was provided')
         } else if (packageTotal === -1) {
           pricingModel = 'custom'
           requiresCustomPricing = true
-          notes.push(`Unknown multi-night package "${packageKey}" — requires custom pricing`)
+          notes.push(`Unknown multi-night package "${packageKey}" - requires custom pricing`)
         } else if (packageTotal === 0) {
-          // Placeholder value — price not yet confirmed by chef
+          // Placeholder value - price not yet confirmed by chef
           pricingModel = 'custom'
           requiresCustomPricing = true
           notes.push(
-            `Multi-night package "${packageKey}" is reserved but not yet priced — requires custom pricing`
+            `Multi-night package "${packageKey}" is reserved but not yet priced - requires custom pricing`
           )
         } else {
           serviceFeeCents = packageTotal
           pricingModel = 'flat_rate'
           perPersonCents = guestCount > 0 ? Math.round(serviceFeeCents / guestCount) : 0
-          notes.push(`Package: ${packageKey} — ${formatCentsAsDollars(serviceFeeCents)} flat`)
+          notes.push(`Package: ${packageKey} - ${formatCentsAsDollars(serviceFeeCents)} flat`)
         }
         break
       }
@@ -436,7 +436,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
         perPersonCents = 0
         if (numberOfDays < WEEKLY_COMMITMENT_MIN_DAYS) {
           notes.push(
-            `Warning: commitment rate requires ${WEEKLY_COMMITMENT_MIN_DAYS} consecutive days — only ${numberOfDays} provided. Consider weekly_standard.`
+            `Warning: commitment rate requires ${WEEKLY_COMMITMENT_MIN_DAYS} consecutive days - only ${numberOfDays} provided. Consider weekly_standard.`
           )
         } else {
           notes.push(
@@ -461,7 +461,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
       case 'custom': {
         pricingModel = 'custom'
         requiresCustomPricing = true
-        notes.push('Custom service type — requires manual pricing')
+        notes.push('Custom service type - requires manual pricing')
         break
       }
     }
@@ -485,10 +485,10 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
         weekendPremiumPercent = WEEKEND_PREMIUM_PERCENT
         weekendPremiumCents = Math.round(serviceFeeCents * WEEKEND_PREMIUM_PERCENT)
         notes.push(
-          `Weekend premium (+${Math.round(WEEKEND_PREMIUM_PERCENT * 100)}%) — ${formatCentsAsDollars(weekendPremiumCents)}`
+          `Weekend premium (+${Math.round(WEEKEND_PREMIUM_PERCENT * 100)}%) - ${formatCentsAsDollars(weekendPremiumCents)}`
         )
       } else if (isWeekend && weekendPremiumEnabled === false) {
-        notes.push('Friday/Saturday event — weekend premium available but not applied')
+        notes.push('Friday/Saturday event - weekend premium available but not applied')
       }
     }
   }
@@ -496,7 +496,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   // ── Step 5: Holiday detection ─────────────────────────────────────────────
   // Exact match → tier premium on (serviceFeeCents + weekendPremiumCents).
   // No match → proximity check (Tier 1/2 only) → half-premium.
-  // The two are mutually exclusive — never double-count.
+  // The two are mutually exclusive - never double-count.
   //
   // Nager.Date cache: warm the cache for the event year so floating holiday
   // detection (Easter, Thanksgiving, etc.) can cross-reference real API dates.
@@ -511,7 +511,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   let nearHolidayPremiumCents = 0
 
   if (eventDate) {
-    // Warm the Nager.Date holiday cache (non-blocking — falls back to hardcoded if API fails)
+    // Warm the Nager.Date holiday cache (non-blocking - falls back to hardcoded if API fails)
     const eventYear = new Date(eventDate + 'T12:00:00').getFullYear()
     if (!isNaN(eventYear)) {
       try {
@@ -532,15 +532,15 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
       holidayPremiumCents = Math.round((serviceFeeCents + weekendPremiumCents) * premium.default)
       if (requiresCustomPricing) {
         notes.push(
-          `Note: ${holiday.name} (Tier ${holiday.tier}) detected — factor into custom quote`
+          `Note: ${holiday.name} (Tier ${holiday.tier}) detected - factor into custom quote`
         )
       } else {
         notes.push(
-          `${holiday.name} — Tier ${holiday.tier} premium (+${Math.round(premium.default * 100)}%) = ${formatCentsAsDollars(holidayPremiumCents)}`
+          `${holiday.name} - Tier ${holiday.tier} premium (+${Math.round(premium.default * 100)}%) = ${formatCentsAsDollars(holidayPremiumCents)}`
         )
       }
     } else {
-      // No exact holiday — check proximity
+      // No exact holiday - check proximity
       const proximity = detectHolidayProximity(eventDate)
       if (proximity) {
         isNearHoliday = true
@@ -553,11 +553,11 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
 
         if (requiresCustomPricing) {
           notes.push(
-            `Note: event is ${proximity.daysAway} day(s) before ${proximity.name} — factor proximity premium into custom quote`
+            `Note: event is ${proximity.daysAway} day(s) before ${proximity.name} - factor proximity premium into custom quote`
           )
         } else {
           notes.push(
-            `Near ${proximity.name} (${proximity.daysAway} day(s) before) — half-premium (+${Math.round(halfRate * 100)}%) = ${formatCentsAsDollars(nearHolidayPremiumCents)}`
+            `Near ${proximity.name} (${proximity.daysAway} day(s) before) - half-premium (+${Math.round(halfRate * 100)}%) = ${formatCentsAsDollars(nearHolidayPremiumCents)}`
           )
         }
       }
@@ -581,7 +581,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   const { lines: addOnLines, totalCents: addOnTotalCents } = computeAddOns(addOns, guestCount)
   if (addOnLines.length > 0) {
     for (const line of addOnLines) {
-      notes.push(`Add-on: ${line.label} — ${formatCentsAsDollars(line.totalCents)}`)
+      notes.push(`Add-on: ${line.label} - ${formatCentsAsDollars(line.totalCents)}`)
     }
   }
 
@@ -601,14 +601,14 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
     totalServiceCents = MINIMUM_BOOKING_CENTS + travelFeeCents + addOnTotalCents
     minimumApplied = true
     notes.push(
-      `Minimum booking floor applied — service fee raised by ${formatCentsAsDollars(gap)} to ${formatCentsAsDollars(MINIMUM_BOOKING_CENTS)} minimum`
+      `Minimum booking floor applied - service fee raised by ${formatCentsAsDollars(gap)} to ${formatCentsAsDollars(MINIMUM_BOOKING_CENTS)} minimum`
     )
   }
 
   // ── Step 11: Deposit ──────────────────────────────────────────────────────
   const depositCents = Math.round(totalServiceCents * DEPOSIT_PERCENTAGE)
 
-  // ── Step 12: Grocery estimate (internal only — never shown to client) ─────
+  // ── Step 12: Grocery estimate (internal only - never shown to client) ─────
   // Rough estimate: $30–$50 per guest per session.
   // For weekly types, scales by numberOfDays.
   const groceryMultiplier = isWeeklyType ? numberOfDays : 1
@@ -665,11 +665,11 @@ function buildDefaultQuoteName(input: PricingInput, pricing: PricingBreakdown): 
     case 'pizza_experience':
       return `Pizza experience for ${input.guestCount}`
     case 'weekly_standard':
-      return `Weekly cooking — ${pricing.numberOfDays} day(s)`
+      return `Weekly cooking - ${pricing.numberOfDays} day(s)`
     case 'weekly_commitment':
-      return `Commitment rate — ${pricing.numberOfDays} day(s)`
+      return `Commitment rate - ${pricing.numberOfDays} day(s)`
     case 'cook_and_leave':
-      return `Cook & Leave — ${pricing.numberOfDays} session(s)`
+      return `Cook & Leave - ${pricing.numberOfDays} session(s)`
     case 'multi_night':
       return input.multiNightPackage
         ? `Multi-night package (${input.multiNightPackage.replace(/_/g, ' ')})`
@@ -735,15 +735,15 @@ function detectHoliday(dateStr: string): HolidayMatch | null {
   // Tier 1
   for (const h of TIER_1_HOLIDAYS) {
     if ('type' in h && h.type === 'floating') {
-      // Floating holiday — use Nager.Date cache if available, otherwise hardcoded heuristic
+      // Floating holiday - use Nager.Date cache if available, otherwise hardcoded heuristic
       if (cacheAvailable) {
         // Cache is warm: trust the API for floating holiday dates
         if (cachedEntry && cachedEntry.name === h.name) {
           return { name: h.name, tier: 1 }
         }
-        // Cache is warm but this date is NOT this floating holiday — skip heuristic
+        // Cache is warm but this date is NOT this floating holiday - skip heuristic
       } else {
-        // Cache not available — fall back to hardcoded heuristic
+        // Cache not available - fall back to hardcoded heuristic
         // Thanksgiving: 4th Thursday of November
         if (h.month === 11 && month === 11 && dayOfWeek === 4) {
           const thursdays = countWeekdayInMonth(date, 4)
@@ -763,9 +763,9 @@ function detectHoliday(dateStr: string): HolidayMatch | null {
         if (cachedEntry && cachedEntry.name === h.name) {
           return { name: h.name, tier: 2 }
         }
-        // Cache warm but date is NOT this floating holiday — skip heuristic
+        // Cache warm but date is NOT this floating holiday - skip heuristic
       } else {
-        // Cache not available — fall back to hardcoded heuristics
+        // Cache not available - fall back to hardcoded heuristics
         // Mother's Day: 2nd Sunday of May
         if (h.name === "Mother's Day" && month === 5 && dayOfWeek === 0) {
           const sundays = countWeekdayInMonth(date, 0)
@@ -776,7 +776,7 @@ function detectHoliday(dateStr: string): HolidayMatch | null {
           const sundays = countWeekdayInMonth(date, 0)
           if (sundays === 3) return { name: h.name, tier: 2 }
         }
-        // Easter: complex — check within +/- 1 day of known Easter dates
+        // Easter: complex - check within +/- 1 day of known Easter dates
         if (h.name === 'Easter' && (month === 3 || month === 4)) {
           if (isNearEaster(date)) return { name: h.name, tier: 2 }
         }
@@ -795,7 +795,7 @@ function detectHoliday(dateStr: string): HolidayMatch | null {
           return { name: h.name, tier: 3 }
         }
       } else {
-        // Cache not available — fall back to hardcoded heuristics
+        // Cache not available - fall back to hardcoded heuristics
         // Memorial Day: last Monday of May
         if (h.name === 'Memorial Day' && month === 5 && dayOfWeek === 1) {
           const nextMonday = new Date(date)
@@ -858,7 +858,7 @@ function detectHolidayProximity(dateStr: string): HolidayProximityMatch | null {
   if (!isNaN(year) && isCacheWarm(year)) {
     const nearest = findNearestCachedHoliday(dateStr, HOLIDAY_PROXIMITY_DAYS)
     if (nearest && nearest.daysAway > 0) {
-      // Map the cached holiday name back to a tier — only Tier 1 and 2 get proximity premiums
+      // Map the cached holiday name back to a tier - only Tier 1 and 2 get proximity premiums
       const tier = resolveCachedHolidayTier(nearest.holiday.name)
       if (tier === 1 || tier === 2) {
         return { name: nearest.holiday.name, tier, daysAway: nearest.daysAway }
@@ -969,8 +969,8 @@ export function formatPricingForEmail(pricing: PricingBreakdown): string {
 
     lines.push(
       pricing.courseCount
-        ? `For ${guestLabel} at ${pricing.courseCount} courses, it comes out to ${formatCentsAsDollars(pricing.perPersonCents)} per person — ${formatCentsAsDollars(pricing.serviceFeeCents)} for the table.`
-        : `For ${guestLabel}, it comes out to ${formatCentsAsDollars(pricing.perPersonCents)} per person — ${formatCentsAsDollars(pricing.serviceFeeCents)} for the table.`
+        ? `For ${guestLabel} at ${pricing.courseCount} courses, it comes out to ${formatCentsAsDollars(pricing.perPersonCents)} per person - ${formatCentsAsDollars(pricing.serviceFeeCents)} for the table.`
+        : `For ${guestLabel}, it comes out to ${formatCentsAsDollars(pricing.perPersonCents)} per person - ${formatCentsAsDollars(pricing.serviceFeeCents)} for the table.`
     )
   } else if (pricing.pricingModel === 'flat_rate') {
     if (pricing.numberOfDays > 1) {
@@ -999,7 +999,7 @@ export function formatPricingForEmail(pricing: PricingBreakdown): string {
   // ── Near-holiday proximity premium ────────────────────────────────────────
   if (pricing.isNearHoliday && pricing.nearHolidayPremiumCents > 0) {
     lines.push(
-      `This date falls just before ${pricing.nearHolidayName}, so a proximity premium applies — ${formatCentsAsDollars(pricing.nearHolidayPremiumCents)}.`
+      `This date falls just before ${pricing.nearHolidayName}, so a proximity premium applies - ${formatCentsAsDollars(pricing.nearHolidayPremiumCents)}.`
     )
   }
 
@@ -1016,7 +1016,7 @@ export function formatPricingForEmail(pricing: PricingBreakdown): string {
       (line) => `${line.label} (${formatCentsAsDollars(line.totalCents)})`
     )
     lines.push(
-      `Add-ons included: ${descriptions.join(', ')} — ${formatCentsAsDollars(pricing.addOnTotalCents)} total.`
+      `Add-ons included: ${descriptions.join(', ')} - ${formatCentsAsDollars(pricing.addOnTotalCents)} total.`
     )
   }
 

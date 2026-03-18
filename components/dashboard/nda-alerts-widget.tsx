@@ -65,11 +65,11 @@ export function NdaAlertsWidget() {
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="rounded bg-stone-800 p-2">
           <p className="text-lg font-bold text-emerald-400">{counts.signed}</p>
-          <p className="text-[10px] text-stone-500">Active</p>
+          <p className="text-xxs text-stone-500">Active</p>
         </div>
         <div className="rounded bg-stone-800 p-2">
           <p className="text-lg font-bold text-stone-300">{counts.total}</p>
-          <p className="text-[10px] text-stone-500">Total</p>
+          <p className="text-xxs text-stone-500">Total</p>
         </div>
         <div className="rounded bg-stone-800 p-2">
           <p
@@ -77,7 +77,7 @@ export function NdaAlertsWidget() {
           >
             {counts.expiringSoon}
           </p>
-          <p className="text-[10px] text-stone-500">Expiring</p>
+          <p className="text-xxs text-stone-500">Expiring</p>
         </div>
       </div>
 

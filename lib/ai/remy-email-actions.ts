@@ -1,7 +1,7 @@
 'use server'
 
-// Remy — Email Awareness Actions
-// PRIVACY: Email content contains client PII — all processing via local Ollama only.
+// Remy - Email Awareness Actions
+// PRIVACY: Email content contains client PII - all processing via local Ollama only.
 // These functions let Remy read, search, and summarize the chef's email inbox.
 
 import { requireChef } from '@/lib/auth/get-user'

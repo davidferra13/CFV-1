@@ -24,8 +24,8 @@ export function isAdminPreviewActive(): boolean {
 
 /**
  * Effective admin check for UI purposes (Focus Mode, nav filtering, Remy scoping).
- * Returns false when admin has preview mode active — so they see what a chef sees.
- * NEVER use this for security gates — use isAdmin() or requireAdmin() for those.
+ * Returns false when admin has preview mode active - so they see what a chef sees.
+ * NEVER use this for security gates - use isAdmin() or requireAdmin() for those.
  */
 export async function isEffectiveAdmin(): Promise<boolean> {
   const admin = await isAdmin().catch(() => false)

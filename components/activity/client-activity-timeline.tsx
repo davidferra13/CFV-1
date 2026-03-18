@@ -90,12 +90,12 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
   const inner = (
     <div className="flex items-center justify-between text-xs py-1.5 px-2 rounded hover:bg-stone-800 transition-colors">
       <div className="flex items-center gap-2 min-w-0">
-        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${badge.bg}`}>
+        <span className={`text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 ${badge.bg}`}>
           {badge.label}
         </span>
         {domainBadge && (
           <span
-            className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${domainBadge.bgColor} ${domainBadge.color}`}
+            className={`text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 ${domainBadge.bgColor} ${domainBadge.color}`}
           >
             {domainBadge.label}
           </span>

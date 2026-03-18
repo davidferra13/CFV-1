@@ -74,8 +74,8 @@ export function MenuNutritionalPanel({ eventId }: { eventId: string }) {
           ].map(({ label, value, unit }) => (
             <div key={label} className="bg-stone-800 rounded p-2">
               <div className="text-base font-semibold text-stone-200">{value ?? '?'}</div>
-              <div className="text-[10px] text-stone-500">{unit}</div>
-              <div className="text-[10px] text-stone-400">{label}</div>
+              <div className="text-xxs text-stone-500">{unit}</div>
+              <div className="text-xxs text-stone-400">{label}</div>
             </div>
           ))}
         </div>
@@ -88,13 +88,13 @@ export function MenuNutritionalPanel({ eventId }: { eventId: string }) {
               key={i}
               className="flex items-center gap-2 text-xs border-b border-stone-50 py-1 last:border-0"
             >
-              <span className="text-stone-500 w-20 flex-shrink-0 text-[11px]">
+              <span className="text-stone-500 w-20 flex-shrink-0 text-xs-tight">
                 {course.courseName}
               </span>
               <span className="text-stone-300 flex-1">{course.dishName}</span>
               <span className="text-stone-500">{course.calories ?? '?'} kcal</span>
               <span
-                className={`text-[10px] px-1 rounded ${course.confidence === 'high' ? 'bg-green-950 text-green-700' : course.confidence === 'medium' ? 'bg-amber-950 text-amber-700' : 'bg-stone-800 text-stone-500'}`}
+                className={`text-xxs px-1 rounded ${course.confidence === 'high' ? 'bg-green-950 text-green-700' : course.confidence === 'medium' ? 'bg-amber-950 text-amber-700' : 'bg-stone-800 text-stone-500'}`}
               >
                 {course.confidence}
               </span>
@@ -111,7 +111,7 @@ export function MenuNutritionalPanel({ eventId }: { eventId: string }) {
         </div>
       )}
 
-      <p className="text-[11px] text-stone-400">{result.disclaimer}</p>
+      <p className="text-xs-tight text-stone-400">{result.disclaimer}</p>
     </div>
   )
 }

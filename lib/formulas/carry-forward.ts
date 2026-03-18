@@ -1,9 +1,9 @@
-// Carry-Forward Ingredient Matching — Deterministic Fuzzy String Match
+// Carry-Forward Ingredient Matching - Deterministic Fuzzy String Match
 // Matches leftover ingredients from previous events to upcoming event needs.
-// Uses Levenshtein distance for fuzzy matching — the same algorithm that
+// Uses Levenshtein distance for fuzzy matching - the same algorithm that
 // spell-checkers, search engines, and every autocomplete has used for 60 years.
 //
-// Reference: Vladimir Levenshtein, 1965 — "Binary codes capable of correcting
+// Reference: Vladimir Levenshtein, 1965 - "Binary codes capable of correcting
 // deletions, insertions, and reversals"
 
 // ── Types (match the AI version exactly) ───────────────────────────────────
@@ -37,7 +37,7 @@ export type LeftoverItem = {
 
 /**
  * Calculates the Levenshtein edit distance between two strings.
- * Time: O(n×m), Space: O(min(n,m)) — optimized single-row DP.
+ * Time: O(n×m), Space: O(min(n,m)) - optimized single-row DP.
  */
 function levenshtein(a: string, b: string): number {
   if (a === b) return 0
@@ -166,7 +166,7 @@ function extractIngredientName(raw: string): string {
 
 /**
  * Matches leftover ingredients to needed ingredients.
- * Pure string matching — no AI, no network, deterministic.
+ * Pure string matching - no AI, no network, deterministic.
  * Returns the exact same type as the AI version for drop-in compatibility.
  */
 export function matchCarryForwardFormula(
@@ -186,7 +186,7 @@ export function matchCarryForwardFormula(
     return {
       matches: [],
       totalEstimatedSavingsCents: 0,
-      summary: 'No recipe ingredients found for this event — add menu components with recipes.',
+      summary: 'No recipe ingredients found for this event - add menu components with recipes.',
       confidence: 'low',
     }
   }

@@ -1,4 +1,4 @@
-// OCR.space Receipt Scanner — API Utility
+// OCR.space Receipt Scanner - API Utility
 // Free OCR API (500 req/day, no card required)
 // Returns raw extracted text from receipt images.
 //

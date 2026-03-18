@@ -1,6 +1,6 @@
-// Menu Muse — Server Actions
+// Menu Muse - Server Actions
 // Surfaces the chef's own data to break through menu writer's block.
-// Zero AI generation. Everything is truth — recipes, seasons, heroes, ideas.
+// Zero AI generation. Everything is truth - recipes, seasons, heroes, ideas.
 
 'use server'
 

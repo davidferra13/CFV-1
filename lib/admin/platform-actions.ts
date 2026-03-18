@@ -1,6 +1,6 @@
 'use server'
 
-// Platform Settings Actions — admin-only mutations for global platform config.
+// Platform Settings Actions - admin-only mutations for global platform config.
 // Reads and writes platform_settings table via service role.
 
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -16,7 +16,7 @@ export type PlatformAnnouncement = {
 }
 
 /**
- * Read the current platform announcement (public — can be called from chef layout).
+ * Read the current platform announcement (public - can be called from chef layout).
  * Returns null if no active announcement.
  */
 export async function getAnnouncement(): Promise<PlatformAnnouncement | null> {

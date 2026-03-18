@@ -1,6 +1,6 @@
 'use server'
 
-// Push Dinner Campaign — Client Targeting
+// Push Dinner Campaign - Client Targeting
 // Returns candidate client lists for each targeting segment.
 // All segments automatically exclude marketing_unsubscribed=true clients.
 
@@ -50,7 +50,7 @@ export async function getClientsByOccasion(occasion: string): Promise<TargetClie
 
   if (!events || events.length === 0) return []
 
-  // Deduplicate — keep most recent event per client
+  // Deduplicate - keep most recent event per client
   const clientMap = new Map<string, { occasion: string; date: string }>()
   for (const e of events) {
     if (!clientMap.has(e.client_id)) {

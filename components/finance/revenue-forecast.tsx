@@ -119,7 +119,7 @@ function ForecastBarChart({ data }: { data: MonthlyForecastEntry[] }) {
               </div>
 
               {/* Month label */}
-              <span className="text-[10px] text-stone-500">{getLabel(d.month)}</span>
+              <span className="text-xxs text-stone-500">{getLabel(d.month)}</span>
             </div>
           )
         })}
@@ -194,14 +194,14 @@ function SeasonalPatternChart({ pattern }: { pattern: RevenueForecast['seasonalP
         const height = (p.avgRevenueCents / maxVal) * 60
         return (
           <div key={p.month} className="flex-1 flex flex-col items-center gap-0.5 group relative">
-            <div className="absolute bottom-full mb-1 hidden group-hover:block z-10 bg-stone-800 border border-stone-600 rounded px-1.5 py-0.5 text-[10px] text-stone-200 whitespace-nowrap">
+            <div className="absolute bottom-full mb-1 hidden group-hover:block z-10 bg-stone-800 border border-stone-600 rounded px-1.5 py-0.5 text-xxs text-stone-200 whitespace-nowrap">
               {formatCurrency(p.avgRevenueCents)}
             </div>
             <div
               className="w-full bg-brand-500/40 rounded-t-sm"
               style={{ height: Math.max(2, height) }}
             />
-            <span className="text-[9px] text-stone-600">{monthNames[i]}</span>
+            <span className="text-2xs text-stone-600">{monthNames[i]}</span>
           </div>
         )
       })}
@@ -313,7 +313,7 @@ export function RevenueForecastPanel() {
                 <option value={6}>6 months</option>
                 <option value={12}>12 months</option>
               </select>
-              <span className="text-[10px] text-stone-500 bg-stone-800 rounded px-2 py-0.5">
+              <span className="text-xxs text-stone-500 bg-stone-800 rounded px-2 py-0.5">
                 {confidenceLabel} ({forecast.dataMonthsAvailable} months of data)
               </span>
             </div>

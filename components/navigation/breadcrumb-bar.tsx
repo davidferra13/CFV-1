@@ -159,7 +159,7 @@ export function BreadcrumbBar() {
       </ol>
 
       {/* Mobile: show ellipsis + last 2 segments */}
-      <ol className="flex sm:hidden items-center gap-1 text-xs">
+      <ol className="flex sm:hidden items-center gap-1 text-xs min-h-[44px]">
         {crumbs.length > 2 && (
           <li className="text-stone-500 select-none" aria-hidden="true">
             ...
@@ -181,7 +181,7 @@ export function BreadcrumbBar() {
               ) : (
                 <Link
                   href={crumb.href}
-                  className="text-stone-400 hover:text-stone-200 transition-colors"
+                  className="text-stone-400 hover:text-stone-200 transition-colors inline-flex items-center min-h-[44px] touch-manipulation"
                 >
                   {crumb.label}
                 </Link>

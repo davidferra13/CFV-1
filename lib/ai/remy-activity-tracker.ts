@@ -1,10 +1,10 @@
 /**
- * Remy Activity Tracker — Client-Side Session Awareness
+ * Remy Activity Tracker - Client-Side Session Awareness
  *
  * Tracks two things in sessionStorage so Remy knows what the chef has been doing:
  *
- * 1. **Navigation trail** — last 10 pages visited this session
- * 2. **Recent actions** — last 10 mutations (create/update/delete) this session
+ * 1. **Navigation trail** - last 10 pages visited this session
+ * 2. **Recent actions** - last 10 mutations (create/update/delete) this session
  *
  * Both are ephemeral (sessionStorage = cleared on tab close).
  * Sent with each Remy message so the system prompt includes them.
@@ -112,7 +112,7 @@ function labelForPath(path: string): string {
 
   if (staticLabels[p]) return staticLabels[p]
 
-  // Dynamic routes with UUID — label the section
+  // Dynamic routes with UUID - label the section
   if (p.match(/^\/events\/[0-9a-f-]{36}/i)) return 'Event Detail'
   if (p.match(/^\/clients\/[0-9a-f-]{36}/i)) return 'Client Detail'
   if (p.match(/^\/recipes\/[0-9a-f-]{36}/i)) return 'Recipe Detail'
@@ -173,7 +173,7 @@ export function getNavTrail(): PageVisit[] {
  * Examples:
  *   trackAction('Created event', 'Birthday Dinner for Sarah')
  *   trackAction('Updated client', 'Jane Smith')
- *   trackAction('Sent quote', 'Tasting Menu — $2,500')
+ *   trackAction('Sent quote', 'Tasting Menu - $2,500')
  *   trackAction('Added expense', '$145 at Whole Foods')
  */
 export function trackAction(action: string, entity: string): void {

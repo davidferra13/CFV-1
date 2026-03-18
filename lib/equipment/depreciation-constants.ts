@@ -13,7 +13,7 @@ export const IRS_USEFUL_LIFE_DEFAULTS: Record<string, number> = {
 }
 
 // Section 179 annual deduction limit (2024)
-// Consult current IRS limits — this is for informational display only
+// Consult current IRS limits - this is for informational display only
 export const SECTION_179_ANNUAL_LIMIT_CENTS = 123000000 // $1,230,000 (2024)
 
 export const DEPRECIATION_METHOD_LABELS: Record<string, string> = {

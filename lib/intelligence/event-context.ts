@@ -120,7 +120,7 @@ export async function getEventIntelligenceContext(params: {
     }
 
     if (avg >= 50) insights.push(`Strong margin history (${avg}%) for similar events`)
-    else if (avg < 25) insights.push(`Low margins (${avg}%) on similar events — review pricing`)
+    else if (avg < 25) insights.push(`Low margins (${avg}%) on similar events - review pricing`)
   }
 
   // ─── Price Comparison ───
@@ -148,9 +148,9 @@ export async function getEventIntelligenceContext(params: {
       }
 
       if (percentFromAvg > 30)
-        insights.push(`Priced ${percentFromAvg}% above your average — premium event`)
+        insights.push(`Priced ${percentFromAvg}% above your average - premium event`)
       else if (percentFromAvg < -30)
-        insights.push(`Priced ${Math.abs(percentFromAvg)}% below average — consider adjusting`)
+        insights.push(`Priced ${Math.abs(percentFromAvg)}% below average - consider adjusting`)
     }
   }
 
@@ -163,7 +163,7 @@ export async function getEventIntelligenceContext(params: {
       const income = thisFinancials.total_income_cents || 0
       const quoted = params.quotedPriceCents || 0
       if (quoted > 0 && income < quoted * 0.9) {
-        postEventActions.push('Collect remaining payment — outstanding balance detected')
+        postEventActions.push('Collect remaining payment - outstanding balance detected')
       }
     }
 
@@ -174,7 +174,7 @@ export async function getEventIntelligenceContext(params: {
       .eq('event_id', params.eventId)
 
     if (!aarCount || aarCount === 0) {
-      postEventActions.push('Write After Action Review — capture lessons while fresh')
+      postEventActions.push('Write After Action Review - capture lessons while fresh')
     }
 
     // Check if review was requested
@@ -184,7 +184,7 @@ export async function getEventIntelligenceContext(params: {
       .eq('event_id', params.eventId)
 
     if (!reviewCount || reviewCount === 0) {
-      postEventActions.push('Request client feedback — build your reputation')
+      postEventActions.push('Request client feedback - build your reputation')
     }
 
     // Suggest rebooking
@@ -195,9 +195,9 @@ export async function getEventIntelligenceContext(params: {
   if (params.eventDate) {
     const daysUntil = Math.round((new Date(params.eventDate).getTime() - Date.now()) / 86400000)
     if (daysUntil > 0 && daysUntil <= 3) {
-      insights.push(`Event in ${daysUntil} day${daysUntil !== 1 ? 's' : ''} — final prep window`)
+      insights.push(`Event in ${daysUntil} day${daysUntil !== 1 ? 's' : ''} - final prep window`)
     } else if (daysUntil > 3 && daysUntil <= 7) {
-      insights.push(`${daysUntil} days out — confirm details with client`)
+      insights.push(`${daysUntil} days out - confirm details with client`)
     }
   }
 

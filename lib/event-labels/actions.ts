@@ -21,7 +21,7 @@ export interface ChefEventTypeLabel {
 
 /**
  * Fetch all custom event/status labels for the current chef.
- * Returns an array of existing overrides — default labels that have no row
+ * Returns an array of existing overrides - default labels that have no row
  * in the DB should simply show their default_label as the current value.
  */
 export async function getEventLabels(): Promise<ChefEventTypeLabel[]> {

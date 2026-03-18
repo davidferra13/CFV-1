@@ -1,5 +1,5 @@
 /**
- * MenuHierarchyComposition — Remotion animation showing the Menu → Dish → Component → Recipe hierarchy.
+ * MenuHierarchyComposition - Remotion animation showing the Menu → Dish → Component → Recipe hierarchy.
  *
  * Zooms into each layer to explain how they nest:
  *  Menu (container) → Dishes (items on menu) → Components (parts of a dish) → Recipes (reusable instructions)

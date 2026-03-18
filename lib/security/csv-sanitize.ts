@@ -17,7 +17,7 @@ const FORMULA_PREFIXES = new Set(['=', '+', '-', '@', '\t', '\r', '|'])
 /**
  * Sanitize a string value for safe CSV output.
  * Prefixes dangerous characters with a single quote (') which Excel/Sheets
- * treat as a text-force prefix — the value is displayed without the quote
+ * treat as a text-force prefix - the value is displayed without the quote
  * and is never executed as a formula.
  */
 export function sanitizeCsvValue(value: string | number | null | undefined): string {

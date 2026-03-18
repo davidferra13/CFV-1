@@ -5,7 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { z } from 'zod'
 
 // ---------------------------------------------------------------------------
-// Public actions (no auth — guests posting from share page)
+// Public actions (no auth - guests posting from share page)
 // ---------------------------------------------------------------------------
 
 const PostMessageSchema = z.object({
@@ -18,7 +18,7 @@ const PostMessageSchema = z.object({
 
 /**
  * Post a message to the event excitement wall.
- * Public — no auth required. Uses admin client.
+ * Public - no auth required. Uses admin client.
  */
 export async function postGuestMessage(input: {
   shareToken: string
@@ -88,7 +88,7 @@ export async function postGuestMessage(input: {
 }
 
 /**
- * Get visible messages for an event (public — share page).
+ * Get visible messages for an event (public - share page).
  * Only returns visible (non-hidden) messages.
  */
 export async function getEventMessages(shareToken: string) {

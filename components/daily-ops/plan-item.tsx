@@ -84,7 +84,7 @@ export function PlanItem({ item, onUpdate }: Props) {
             {item.title}
           </p>
           {item.timeEstimateMinutes > 0 && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] text-stone-400 shrink-0">
+            <span className="inline-flex items-center gap-0.5 text-xxs text-stone-400 shrink-0">
               <Clock className="h-2.5 w-2.5" />
               {item.timeEstimateMinutes}m
             </span>

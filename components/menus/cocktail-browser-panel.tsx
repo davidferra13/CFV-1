@@ -101,7 +101,7 @@ function CocktailDetail({
         </Button>
       )}
 
-      <p className="text-[10px] text-stone-600 text-right">Source: TheCocktailDB</p>
+      <p className="text-xxs text-stone-600 text-right">Source: TheCocktailDB</p>
     </div>
   )
 }

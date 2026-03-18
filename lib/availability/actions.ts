@@ -1,4 +1,4 @@
-// Availability & Waitlist Management — Server Actions
+// Availability & Waitlist Management - Server Actions
 // Chefs can block dates, view monthly availability, and manage a waitlist.
 
 'use server'
@@ -168,7 +168,7 @@ export async function isDateAvailable(date: string): Promise<boolean> {
 export type DateConflictResult = {
   hasManualBlock: boolean
   existingEvents: { id: string; title: string; status: string }[]
-  isHardBlocked: boolean // full-day manual block — strongest signal
+  isHardBlocked: boolean // full-day manual block - strongest signal
   warnings: string[]
 }
 
@@ -216,7 +216,7 @@ function overlapsWindowMinutes(
 
 /**
  * Check if a proposed event date conflicts with existing blocks or events.
- * Returns warnings (soft) or hard block signal — does NOT prevent creation.
+ * Returns warnings (soft) or hard block signal - does NOT prevent creation.
  * Pass excludeEventId when checking in edit mode to skip the event being edited.
  */
 export async function checkDateConflicts(
@@ -287,7 +287,7 @@ export async function checkDateConflicts(
       warnings.push(...rulesResult.warnings.map((w) => `[Rule] ${w}`))
     }
   } catch {
-    // Rules table may not exist yet — silently skip
+    // Rules table may not exist yet - silently skip
   }
 
   return { hasManualBlock, existingEvents, isHardBlocked, warnings }

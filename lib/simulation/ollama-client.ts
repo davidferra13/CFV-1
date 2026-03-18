@@ -1,22 +1,22 @@
-// Simulation Ollama Client — Long-Timeout HTTP Wrapper
+// Simulation Ollama Client - Long-Timeout HTTP Wrapper
 //
 // Problem: Node.js 18+ uses undici for global fetch(), which enforces a 30-second
 // headersTimeout. With qwen3-coder:30b running mostly on CPU, Ollama takes >30s
-// to start streaming a response — triggering UND_ERR_HEADERS_TIMEOUT before any
+// to start streaming a response - triggering UND_ERR_HEADERS_TIMEOUT before any
 // data arrives.
 //
 // Solution: Provide a custom fetch() built on node:http / node:https that has NO
 // headersTimeout. A 10-minute socket timeout is set as a safety net only.
 //
 // This module is ONLY for the simulation subsystem. Do not use in production AI
-// paths — those use parseWithOllama which surfaces errors to the user promptly.
+// paths - those use parseWithOllama which surfaces errors to the user promptly.
 
 import * as http from 'node:http'
 import * as https from 'node:https'
 import { Ollama } from 'ollama'
 import { getOllamaConfig } from '@/lib/ai/providers'
 
-// No socket timeout — simulation Ollama calls can take as long as needed.
+// No socket timeout - simulation Ollama calls can take as long as needed.
 // The 30B model on CPU may take 20+ minutes per call; we never want to abort early.
 // If something goes catastrophically wrong, the watchdog will restart the server.
 
@@ -96,7 +96,7 @@ function makeNodeFetch(): typeof globalThis.fetch {
         } else if (body instanceof ArrayBuffer) {
           req.write(Buffer.from(body))
         }
-        // ReadableStream not needed — ollama npm sends JSON strings
+        // ReadableStream not needed - ollama npm sends JSON strings
       }
 
       req.end()

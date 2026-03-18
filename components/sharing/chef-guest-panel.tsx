@@ -258,7 +258,7 @@ export function ChefGuestPanel({
                     {guest.dietary_restrictions?.map((d) => (
                       <span
                         key={d}
-                        className="px-1.5 py-0.5 bg-amber-950 text-amber-600 rounded text-[10px]"
+                        className="px-1.5 py-0.5 bg-amber-950 text-amber-600 rounded text-xxs"
                       >
                         {d}
                       </span>
@@ -266,7 +266,7 @@ export function ChefGuestPanel({
                     {guest.allergies?.map((a) => (
                       <span
                         key={a}
-                        className="px-1.5 py-0.5 bg-red-950 text-red-600 rounded text-[10px]"
+                        className="px-1.5 py-0.5 bg-red-950 text-red-600 rounded text-xxs"
                       >
                         {a}
                       </span>

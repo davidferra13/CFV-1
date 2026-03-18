@@ -1,4 +1,4 @@
-// AI Task Queue — Barrel Export
+// AI Task Queue - Barrel Export
 // Single import point for the entire queue system.
 
 // Types

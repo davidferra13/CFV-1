@@ -1,6 +1,6 @@
 'use server'
 
-// Recipe Nutrition — aggregates USDA nutrition data for all ingredients in a recipe.
+// Recipe Nutrition - aggregates USDA nutrition data for all ingredients in a recipe.
 // On-demand only (called when chef clicks "Show Nutrition") because it makes
 // one USDA API call per ingredient. Results are Upstash-cached for 30 days
 // upstream in lib/nutrition/usda.ts, so repeat lookups are free.
@@ -53,10 +53,10 @@ export type IngredientNutrition = {
 // USDA data is per 100g. We need to estimate how many grams each ingredient
 // line represents. For weight units this is exact; for volume units we use
 // water-density approximation (1 mL ≈ 1 g). This is an estimate, not a lab
-// measurement — acceptable for a nutrition summary panel.
+// measurement - acceptable for a nutrition summary panel.
 
 const GRAMS_PER_UNIT: Record<string, number> = {
-  // Weight — exact
+  // Weight - exact
   g: 1,
   gram: 1,
   grams: 1,
@@ -71,7 +71,7 @@ const GRAMS_PER_UNIT: Record<string, number> = {
   pound: 453.592,
   pounds: 453.592,
 
-  // Volume — water-density approximation (1 mL ≈ 1 g)
+  // Volume - water-density approximation (1 mL ≈ 1 g)
   ml: 1,
   milliliter: 1,
   milliliters: 1,
@@ -100,7 +100,7 @@ const GRAMS_PER_UNIT: Record<string, number> = {
   gallons: 3785.41,
   gal: 3785.41,
 
-  // Count-based — rough average for produce items (~100g each)
+  // Count-based - rough average for produce items (~100g each)
   each: 100,
   whole: 100,
   piece: 100,
@@ -192,7 +192,7 @@ export async function getRecipeNutrition(recipeId: string): Promise<RecipeNutrit
         nutrition = await getNutritionSummary(searchResults[0].fdcId)
       }
     } catch {
-      // USDA API failed for this ingredient — skip it gracefully
+      // USDA API failed for this ingredient - skip it gracefully
     }
 
     if (!nutrition || gramsEstimate == null) {

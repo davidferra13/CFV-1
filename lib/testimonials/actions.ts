@@ -5,7 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { z } from 'zod'
 
 // ---------------------------------------------------------------------------
-// Public actions (no auth — guests submitting from recap page)
+// Public actions (no auth - guests submitting from recap page)
 // ---------------------------------------------------------------------------
 
 const TestimonialSchema = z.object({
@@ -21,7 +21,7 @@ const TestimonialSchema = z.object({
 
 /**
  * Submit a testimonial from the recap page.
- * Public — no auth required.
+ * Public - no auth required.
  */
 export async function submitTestimonial(input: {
   shareToken: string

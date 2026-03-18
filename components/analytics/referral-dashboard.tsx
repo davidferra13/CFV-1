@@ -211,12 +211,12 @@ export function ReferralDashboardPage() {
                         style={{ height: `${convertedHeight}%` }}
                       />
                     </div>
-                    <span className="text-[9px] text-stone-600">{monthLabel}</span>
+                    <span className="text-2xs text-stone-600">{monthLabel}</span>
                   </div>
                 )
               })}
             </div>
-            <div className="flex items-center gap-4 mt-3 text-[10px] text-stone-500">
+            <div className="flex items-center gap-4 mt-3 text-xxs text-stone-500">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded bg-stone-600" /> Total
               </span>
@@ -288,7 +288,7 @@ export function ReferralDashboardPage() {
                       <td className="py-2 pr-4 text-stone-300">{ref.referredClientName}</td>
                       <td className="py-2 pr-4">
                         <span
-                          className={`text-[10px] px-1.5 py-0.5 rounded ${STATUS_COLORS[ref.status]}`}
+                          className={`text-xxs px-1.5 py-0.5 rounded ${STATUS_COLORS[ref.status]}`}
                         >
                           {ref.status}
                         </span>

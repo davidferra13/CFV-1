@@ -47,7 +47,7 @@ export type UpdateAutomationSettingsInput = z.infer<typeof UpdateSettingsSchema>
 
 // ─── Get Settings ─────────────────────────────────────────────────────────
 // Returns the chef's settings row, or a default object if none exists yet.
-// Does not create the row — upsert happens on first save.
+// Does not create the row - upsert happens on first save.
 
 export async function getAutomationSettings(): Promise<ChefAutomationSettings> {
   const user = await requireChef()
@@ -64,7 +64,7 @@ export async function getAutomationSettings(): Promise<ChefAutomationSettings> {
   }
 
   if (!data) {
-    // Return defaults — no row in DB yet
+    // Return defaults - no row in DB yet
     return {
       id: '',
       tenant_id: user.tenantId!,

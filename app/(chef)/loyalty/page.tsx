@@ -20,6 +20,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { RewardActions } from './reward-actions'
 import { PendingDeliveriesPanel } from '@/components/loyalty/pending-deliveries-panel'
+import { BackfillLoyaltyButton } from './backfill-button'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',
@@ -371,11 +372,14 @@ export default async function LoyaltyDashboardPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Program Settings</h2>
-            <Link href="/loyalty/settings">
-              <Button variant="ghost" size="sm">
-                Edit Settings
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <BackfillLoyaltyButton />
+              <Link href="/loyalty/settings">
+                <Button variant="ghost" size="sm">
+                  Edit Settings
+                </Button>
+              </Link>
+            </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>

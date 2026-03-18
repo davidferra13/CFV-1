@@ -1,4 +1,4 @@
-// Remy — Shared SSE Stream Parser
+// Remy - Shared SSE Stream Parser
 // Parses Server-Sent Events from /api/remy/stream into typed callbacks.
 // Used by both the drawer (use-remy-send.ts) and the mascot chat (use-remy-mascot-send.ts).
 

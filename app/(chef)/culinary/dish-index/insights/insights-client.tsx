@@ -204,7 +204,7 @@ export function DishInsightsClient({ stats, seasonal, duplicates }: DishInsights
                     }}
                     title={`${label}: ${count} dish appearances`}
                   />
-                  <span className="text-[9px] text-stone-600">{label}</span>
+                  <span className="text-2xs text-stone-600">{label}</span>
                 </div>
               )
             })}

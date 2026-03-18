@@ -1,4 +1,4 @@
-// Open-Meteo weather API — completely free, no API key required
+// Open-Meteo weather API - completely free, no API key required
 // Forecast: https://api.open-meteo.com (up to 16 days ahead)
 // Historical: https://archive-api.open-meteo.com (past dates)
 
@@ -83,7 +83,7 @@ export async function getWeatherForEvents(
         }
       }
     } catch {
-      // Non-blocking — skip this event's weather silently
+      // Non-blocking - skip this event's weather silently
     }
   })
 

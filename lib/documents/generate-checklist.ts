@@ -1,8 +1,8 @@
 // Non-Negotiables Checklist Generator (Printed Sheet #3)
 // Checked before walking out the door. Last thing before departure.
-// Large checkboxes — checked with a pen, possibly wet hands.
+// Large checkboxes - checked with a pen, possibly wet hands.
 // Three sections: ALWAYS + THIS EVENT + LEARNED (forgotten before)
-// MUST fit on ONE page — no exceptions.
+// MUST fit on ONE page - no exceptions.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'

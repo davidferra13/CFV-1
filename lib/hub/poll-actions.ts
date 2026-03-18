@@ -6,7 +6,7 @@ import type { Json } from '@/types/database'
 import type { HubPoll, HubPollOption } from './types'
 
 // ---------------------------------------------------------------------------
-// Hub Polls — Theme voting, date picking, menu preferences
+// Hub Polls - Theme voting, date picking, menu preferences
 // ---------------------------------------------------------------------------
 
 const CreatePollSchema = z.object({

@@ -1,8 +1,8 @@
 'use server'
 
-// Daily Ops — Draft Engine
+// Daily Ops - Draft Engine
 // Auto-drafts routine communications using local Ollama (private data stays local).
-// Pro tier feature — Free tier gets organize + link only.
+// Pro tier feature - Free tier gets organize + link only.
 //
 // PRIVACY: All client data processed locally via parseWithOllama.
 // Never falls back to cloud AI. If Ollama is offline, drafts are skipped gracefully.
@@ -87,7 +87,7 @@ Rules:
  * Scans for follow-up-needed events and upcoming milestones,
  * generates drafts via Ollama, and saves to daily_plan_drafts.
  *
- * Fails gracefully if Ollama is offline — returns empty array.
+ * Fails gracefully if Ollama is offline - returns empty array.
  */
 export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
   try {
@@ -95,7 +95,7 @@ export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
     const supabase: any = createServerClient()
     const todayStr = new Date().toISOString().split('T')[0]
 
-    // Check for existing drafts today — don't regenerate
+    // Check for existing drafts today - don't regenerate
     const { data: existing } = await supabase
       .from('daily_plan_drafts')
       .select('id')
@@ -105,17 +105,17 @@ export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
       .limit(1)
 
     if (existing && existing.length > 0) {
-      // Already have drafts for today — return them
+      // Already have drafts for today - return them
       return loadExistingDrafts(supabase, user.tenantId!, todayStr)
     }
 
     const drafts: GeneratedDraft[] = []
 
-    // 1. Follow-up drafts — completed events without follow-up
+    // 1. Follow-up drafts - completed events without follow-up
     const followUpDrafts = await generateFollowUpDrafts(supabase, user.tenantId!)
     drafts.push(...followUpDrafts)
 
-    // 2. Confirmation drafts — upcoming confirmed events
+    // 2. Confirmation drafts - upcoming confirmed events
     const confirmDrafts = await generateConfirmationDrafts(supabase, user.tenantId!)
     drafts.push(...confirmDrafts)
 
@@ -137,7 +137,7 @@ export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
     return drafts
   } catch (err) {
     if (err instanceof OllamaOfflineError) {
-      console.warn('[DraftEngine] Ollama offline — skipping draft generation')
+      console.warn('[DraftEngine] Ollama offline - skipping draft generation')
       return []
     }
     console.error('[DraftEngine] generateDailyDrafts failed:', err)
@@ -146,7 +146,7 @@ export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
 }
 
 /**
- * Approve a draft — marks it as approved.
+ * Approve a draft - marks it as approved.
  */
 export async function approveDraft(draftId: string): Promise<{ success: boolean }> {
   const user = await requireChef()
@@ -167,7 +167,7 @@ export async function approveDraft(draftId: string): Promise<{ success: boolean 
 }
 
 /**
- * Dismiss a draft — marks it as dismissed.
+ * Dismiss a draft - marks it as dismissed.
  */
 export async function dismissDraft(draftId: string): Promise<{ success: boolean }> {
   const user = await requireChef()

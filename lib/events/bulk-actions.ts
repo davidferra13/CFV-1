@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 /**
- * Bulk archive events — sets `archived = true` for the given event IDs.
+ * Bulk archive events - sets `archived = true` for the given event IDs.
  * Only affects events owned by the authenticated chef's tenant.
  */
 export async function bulkArchiveEvents(ids: string[]) {
@@ -30,7 +30,7 @@ export async function bulkArchiveEvents(ids: string[]) {
 }
 
 /**
- * Bulk delete draft events — soft-deletes events that are in 'draft' status.
+ * Bulk delete draft events - soft-deletes events that are in 'draft' status.
  * Events in any other status are skipped (not deleted).
  * Only affects events owned by the authenticated chef's tenant.
  */

@@ -87,7 +87,7 @@ const UpdatePreferencesSchema = z.object({
 
 export type UpdatePreferencesInput = z.infer<typeof UpdatePreferencesSchema>
 
-// Type assertion helper — chef_preferences not in generated types until migration applied
+// Type assertion helper - chef_preferences not in generated types until migration applied
 function fromChefPreferences(supabase: any): any {
   return supabase.from('chef_preferences')
 }
@@ -321,7 +321,7 @@ export async function getChefPrimaryNavHrefs(): Promise<string[]> {
 // ============================================
 
 /**
- * Update chef preferences (upsert — creates if not exists).
+ * Update chef preferences (upsert - creates if not exists).
  */
 export async function updateChefPreferences(input: UpdatePreferencesInput) {
   const user = await requireChef()

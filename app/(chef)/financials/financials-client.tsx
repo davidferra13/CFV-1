@@ -696,7 +696,7 @@ export function FinancialsClient({
                     <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">
                       Balance
                       {isFiltered && (
-                        <span className="block text-[10px] font-normal normal-case text-amber-600 mt-0.5">
+                        <span className="block text-xxs font-normal normal-case text-amber-600 mt-0.5">
                           Filtered view
                         </span>
                       )}

@@ -1,8 +1,8 @@
-// Equipment Depreciation Calculator — Deterministic Formula
+// Equipment Depreciation Calculator - Deterministic Formula
 // Straight-line depreciation is a textbook formula: (cost - salvage) / useful life.
 // No AI needed. This is the same math every accounting textbook uses.
 //
-// Reference: IRS Publication 946 — How To Depreciate Property
+// Reference: IRS Publication 946 - How To Depreciate Property
 // Default method: Straight-line (most common for small business kitchen equipment)
 // Default useful life: 5 years (IRS MACRS class for restaurant equipment)
 // Default salvage value: $0 (standard for most kitchen equipment)
@@ -41,7 +41,7 @@ export type EquipmentItem = {
   category: string | null
 }
 
-// ── Section 179 threshold (2024 IRS limit — updated annually) ──────────────
+// ── Section 179 threshold (2024 IRS limit - updated annually) ──────────────
 // For 2024: $1,220,000 total limit, per-item no limit for most equipment
 // Private chefs rarely hit this cap, but we note when it applies.
 const SECTION_179_PER_ITEM_THRESHOLD_DOLLARS = 2500
@@ -50,7 +50,7 @@ const SECTION_179_PER_ITEM_THRESHOLD_DOLLARS = 2500
 
 /**
  * Calculates equipment depreciation using straight-line method.
- * Pure math — no AI, no network, no dependencies.
+ * Pure math - no AI, no network, no dependencies.
  * Returns the exact same type as the AI version for drop-in compatibility.
  */
 export function calculateDepreciationFormula(

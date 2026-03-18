@@ -1,4 +1,4 @@
-// Remy Agent — Event Actions
+// Remy Agent - Event Actions
 // Create, update, transition events on the chef's behalf.
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -83,8 +83,8 @@ export const eventAgentActions: AgentActionDefinition[] = [
     description:
       'Create a new event from a natural language description. Extracts date, guest count, location, client, and more.',
     inputSchema:
-      '{ "description": "string — full event description, e.g. Dinner party for Sarah Johnson on March 20, 12 guests at 123 Main St Portland OR 97201, plated service, serve at 7pm" }',
-    tierNote: 'ALWAYS tier 2 — chef must review all event details before saving.',
+      '{ "description": "string - full event description, e.g. Dinner party for Sarah Johnson on March 20, 12 guests at 123 Main St Portland OR 97201, plated service, serve at 7pm" }',
+    tierNote: 'ALWAYS tier 2 - chef must review all event details before saving.',
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
@@ -140,13 +140,13 @@ export const eventAgentActions: AgentActionDefinition[] = [
       const warnings: string[] = []
       if (!clientId && parsed.client_name) {
         warnings.push(
-          `Client "${parsed.client_name}" not found — event will be created without a linked client.`
+          `Client "${parsed.client_name}" not found - event will be created without a linked client.`
         )
       }
-      if (!parsed.event_date) warnings.push('No date specified — you can add it later.')
+      if (!parsed.event_date) warnings.push('No date specified - you can add it later.')
       if (!parsed.location_address)
         warnings.push(
-          'No address specified — required fields will need to be filled in on the event page.'
+          'No address specified - required fields will need to be filled in on the event page.'
         )
 
       return {
@@ -167,7 +167,7 @@ export const eventAgentActions: AgentActionDefinition[] = [
     },
 
     async commitAction(payload) {
-      // Build the event input — fill required fields with defaults if missing
+      // Build the event input - fill required fields with defaults if missing
       const eventInput = {
         client_id: payload.client_id as string | undefined,
         event_date: (payload.event_date as string) ?? new Date().toISOString().slice(0, 10),
@@ -213,8 +213,8 @@ export const eventAgentActions: AgentActionDefinition[] = [
     description:
       'Update an existing event. Finds the event by occasion or client name and applies changes.',
     inputSchema:
-      '{ "description": "string — what to change, e.g. Change the Johnson dinner to 15 guests and move it to March 25" }',
-    tierNote: 'ALWAYS tier 2 — chef must review changes before saving.',
+      '{ "description": "string - what to change, e.g. Change the Johnson dinner to 15 guests and move it to March 25" }',
+    tierNote: 'ALWAYS tier 2 - chef must review changes before saving.',
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
@@ -293,7 +293,7 @@ export const eventAgentActions: AgentActionDefinition[] = [
 
     async commitAction(payload) {
       if (payload._error) {
-        return { success: false, message: 'Cannot update — event not found.' }
+        return { success: false, message: 'Cannot update - event not found.' }
       }
       const eventId = String(payload.eventId)
       const updates = payload.updates as Record<string, unknown>
@@ -315,8 +315,8 @@ export const eventAgentActions: AgentActionDefinition[] = [
     description:
       'Transition an event to a new status (e.g., draft → proposed, proposed → accepted). Shows current and target state with warnings.',
     inputSchema:
-      '{ "eventIdentifier": "string — event occasion or client name", "toStatus": "string — target status: proposed, accepted, paid, confirmed, in_progress, completed, cancelled" }',
-    tierNote: 'ALWAYS tier 2 — state transitions are significant and require chef confirmation.',
+      '{ "eventIdentifier": "string - event occasion or client name", "toStatus": "string - target status: proposed, accepted, paid, confirmed, in_progress, completed, cancelled" }',
+    tierNote: 'ALWAYS tier 2 - state transitions are significant and require chef confirmation.',
 
     async executor(inputs, ctx) {
       const identifier = String(inputs.eventIdentifier ?? '').toLowerCase()
@@ -375,7 +375,7 @@ export const eventAgentActions: AgentActionDefinition[] = [
 
     async commitAction(payload) {
       if (payload._error) {
-        return { success: false, message: 'Cannot transition — event not found.' }
+        return { success: false, message: 'Cannot transition - event not found.' }
       }
 
       const result = await transitionEvent({

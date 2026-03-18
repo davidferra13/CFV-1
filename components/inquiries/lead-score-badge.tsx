@@ -19,7 +19,7 @@ export function LeadScoreBadge({ score, showScore = true }: LeadScoreBadgeProps)
 
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded ${cfg.className}`}
+      className={`inline-flex items-center gap-1 text-xxs font-semibold px-1.5 py-0.5 rounded ${cfg.className}`}
       title={
         score.lead_score_factors.length > 0
           ? `${score.lead_score}/100 - ${score.lead_score_factors.join(' · ')}`

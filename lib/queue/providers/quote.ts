@@ -1,4 +1,4 @@
-// Priority Queue — Quote Provider
+// Priority Queue - Quote Provider
 // Surfaces: draft quotes, expiring sent quotes, accepted quotes not converted to events
 
 import type { SupabaseClient } from '@supabase/supabase-js'

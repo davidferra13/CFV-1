@@ -14,7 +14,7 @@ type BetaSurveyInviteProps = {
 
 export function BetaSurveyInviteEmail({ name, surveyTitle, surveyUrl }: BetaSurveyInviteProps) {
   return (
-    <BaseLayout preview={`${surveyTitle} — We'd love your feedback on ChefFlow.`}>
+    <BaseLayout preview={`${surveyTitle} - We'd love your feedback on ChefFlow.`}>
       <Text style={heading}>Your feedback matters.</Text>
       <Text style={paragraph}>Hi {name},</Text>
       <Text style={paragraph}>

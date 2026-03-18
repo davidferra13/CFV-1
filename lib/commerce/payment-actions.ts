@@ -1,4 +1,4 @@
-// Commerce Engine V1 — Payment Actions
+// Commerce Engine V1 - Payment Actions
 // Record payments for sales. The DB trigger auto-creates ledger entries
 // for captured/settled payments with a client_id.
 
@@ -62,7 +62,7 @@ export async function recordPayment(input: RecordPaymentInput) {
 
   if (saleErr || !sale) throw new Error('Sale not found')
 
-  // Determine payment status — POS counter sales are immediately captured
+  // Determine payment status - POS counter sales are immediately captured
   const paymentStatus = input.status ?? 'captured'
 
   // Build transaction reference for idempotency with existing ledger

@@ -3,10 +3,10 @@
 // inserted into the notifications table.
 //
 // Called as a non-blocking fire-and-forget from createNotification().
-// Never throws — all errors are caught and logged internally.
+// Never throws - all errors are caught and logged internally.
 //
 // Channel build status:
-//   email  ✓ Phase 2 (Resend — generic notification template via lib/email/route-email.ts)
+//   email  ✓ Phase 2 (Resend - generic notification template via lib/email/route-email.ts)
 //   push   ✓ Phase 3 (sends to all active push_subscriptions for the recipient)
 //   sms    ✓ Phase 5 (Twilio REST, rate-limited by sms_send_log)
 //
@@ -66,7 +66,11 @@ export async function routeNotification(input: RouteInput): Promise<void> {
         })
       )
     } else {
-      sends.push(logDelivery(notificationId, tenantId, 'email', 'skipped').catch(() => {}))
+      sends.push(
+        logDelivery(notificationId, tenantId, 'email', 'skipped').catch((err) => {
+          console.error('[non-blocking] logDelivery email-skipped failed:', err)
+        })
+      )
     }
 
     if (channels.push) {
@@ -76,7 +80,11 @@ export async function routeNotification(input: RouteInput): Promise<void> {
         })
       )
     } else {
-      sends.push(logDelivery(notificationId, tenantId, 'push', 'skipped').catch(() => {}))
+      sends.push(
+        logDelivery(notificationId, tenantId, 'push', 'skipped').catch((err) => {
+          console.error('[non-blocking] logDelivery push-skipped failed:', err)
+        })
+      )
     }
 
     if (channels.sms && channels.smsPhone) {
@@ -86,7 +94,11 @@ export async function routeNotification(input: RouteInput): Promise<void> {
         })
       )
     } else {
-      sends.push(logDelivery(notificationId, tenantId, 'sms', 'skipped').catch(() => {}))
+      sends.push(
+        logDelivery(notificationId, tenantId, 'sms', 'skipped').catch((err) => {
+          console.error('[non-blocking] logDelivery sms-skipped failed:', err)
+        })
+      )
     }
 
     await Promise.allSettled(sends)
@@ -144,16 +156,22 @@ async function deliverPush(
       if (result.value === 'sent') {
         sent++
       } else if (result.value === 'gone') {
-        // Subscription is expired — deactivate silently
-        await deactivateSubscription(sub.endpoint).catch(() => {})
+        // Subscription is expired - deactivate silently
+        await deactivateSubscription(sub.endpoint).catch((err) => {
+          console.error('[non-blocking] deactivateSubscription failed:', err)
+        })
         failed++
       } else {
-        // Transient failure — increment failure counter
-        await incrementSubscriptionFailureCount(sub.endpoint).catch(() => {})
+        // Transient failure - increment failure counter
+        await incrementSubscriptionFailureCount(sub.endpoint).catch((err) => {
+          console.error('[non-blocking] incrementSubscriptionFailureCount failed:', err)
+        })
         failed++
       }
     } else {
-      await incrementSubscriptionFailureCount(sub.endpoint).catch(() => {})
+      await incrementSubscriptionFailureCount(sub.endpoint).catch((err) => {
+        console.error('[non-blocking] incrementSubscriptionFailureCount failed:', err)
+      })
       failed++
     }
   }
@@ -183,7 +201,9 @@ async function deliverSms(
   const result = await sendSms(phone, smsBody)
 
   if (result === 'sent') {
-    await recordSmsSent(tenantId, input.action).catch(() => {})
+    await recordSmsSent(tenantId, input.action).catch((err) => {
+      console.error('[non-blocking] recordSmsSent failed:', err)
+    })
     await logDelivery(notificationId, tenantId, 'sms', 'sent')
   } else if (result === 'not_configured') {
     await logDelivery(notificationId, tenantId, 'sms', 'skipped', 'Twilio not configured')

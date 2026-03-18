@@ -194,7 +194,7 @@ export default async function NetworkPage({
               <Icon className="h-4 w-4" />
               <span className="hidden sm:inline">{label}</span>
               {badge > 0 && (
-                <span className="inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-amber-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                <span className="inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-amber-600 px-1.5 py-0.5 text-xxs font-semibold text-white">
                   {badge > 99 ? '99+' : badge}
                 </span>
               )}

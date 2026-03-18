@@ -5,7 +5,7 @@ import { z } from 'zod'
 import type { HubGuestProfile, HubGuestEventHistory } from './types'
 
 // ---------------------------------------------------------------------------
-// Guest Profile — Public (no auth, link-based access)
+// Guest Profile - Public (no auth, link-based access)
 // ---------------------------------------------------------------------------
 
 const CreateProfileSchema = z.object({
@@ -16,7 +16,7 @@ const CreateProfileSchema = z.object({
 
 /**
  * Get or create a guest profile. Deduplicates by email when provided.
- * Public — no auth required.
+ * Public - no auth required.
  */
 export async function getOrCreateProfile(input: {
   display_name?: string
@@ -77,7 +77,7 @@ export async function getOrCreateProfile(input: {
 
 /**
  * Get a profile by its persistent token.
- * Public — no auth required.
+ * Public - no auth required.
  */
 export async function getProfileByToken(profileToken: string): Promise<HubGuestProfile | null> {
   const supabase = createServerClient({ admin: true })

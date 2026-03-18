@@ -1,6 +1,6 @@
 'use server'
 
-// Placeholder image server action — fetches beautiful food photos from
+// Placeholder image server action - fetches beautiful food photos from
 // Unsplash (primary) or Pexels (fallback) for recipes and menus that
 // don't have their own photo. Results are cached in Upstash for 7 days
 // to avoid hitting API rate limits.
@@ -42,7 +42,7 @@ export async function getPlaceholderImage(query: string): Promise<PlaceholderIma
 
   try {
     return await cacheFetch<PlaceholderImage | null>(cacheKey, CACHE_TTL, async () => {
-      // Try Unsplash first — better food photography, required attribution
+      // Try Unsplash first - better food photography, required attribution
       const unsplashResult = await tryUnsplash(query)
       if (unsplashResult) return unsplashResult
 
@@ -50,11 +50,11 @@ export async function getPlaceholderImage(query: string): Promise<PlaceholderIma
       const pexelsResult = await tryPexels(query)
       if (pexelsResult) return pexelsResult
 
-      // Both failed — return null (caller shows CSS gradient)
+      // Both failed - return null (caller shows CSS gradient)
       return null
     })
   } catch {
-    // Cache itself failed — try APIs directly without caching
+    // Cache itself failed - try APIs directly without caching
     try {
       const unsplashResult = await tryUnsplash(query)
       if (unsplashResult) return unsplashResult
@@ -62,7 +62,7 @@ export async function getPlaceholderImage(query: string): Promise<PlaceholderIma
       const pexelsResult = await tryPexels(query)
       if (pexelsResult) return pexelsResult
     } catch {
-      // Non-blocking — both APIs and cache failed
+      // Non-blocking - both APIs and cache failed
     }
     return null
   }
@@ -104,8 +104,8 @@ async function tryUnsplash(query: string): Promise<PlaceholderImage | null> {
 
     const photo = photos[0]
     return {
-      url: photo.urls.regular, // 1080px — good for hero
-      thumbUrl: photo.urls.small, // 400px — good for thumbnails
+      url: photo.urls.regular, // 1080px - good for hero
+      thumbUrl: photo.urls.small, // 400px - good for thumbnails
       alt: photo.alt_description ?? `Food photo related to ${query}`,
       photographerName: photo.user.name,
       photographerUrl: photo.user.link
@@ -126,8 +126,8 @@ async function tryPexels(query: string): Promise<PlaceholderImage | null> {
 
     const photo = photos[0]
     return {
-      url: photo.src.large, // 940px — good for hero
-      thumbUrl: photo.src.medium, // 350px — good for thumbnails
+      url: photo.src.large, // 940px - good for hero
+      thumbUrl: photo.src.medium, // 350px - good for thumbnails
       alt: photo.alt ?? `Food photo related to ${query}`,
       photographerName: photo.photographer,
       photographerUrl: photo.photographer_url,

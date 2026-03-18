@@ -1,6 +1,6 @@
 'use server'
 
-// Payment Plan Actions — CRUD for payment_plan_installments.
+// Payment Plan Actions - CRUD for payment_plan_installments.
 // Allows chefs to define installment schedules for large events.
 
 import { requireChef } from '@/lib/auth/get-user'

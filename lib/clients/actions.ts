@@ -355,7 +355,7 @@ export async function createClient(input: CreateClientInput) {
     }
   }
 
-  // Build insert payload — only include fields that were provided
+  // Build insert payload - only include fields that were provided
   const insertData: Record<string, unknown> = {
     tenant_id: user.tenantId!,
     full_name: validated.full_name,
@@ -576,7 +576,7 @@ export async function getClientById(clientId: string) {
 
 /**
  * Create a client record from lead data (used by Gmail sync pipeline).
- * Does NOT require auth session — uses admin client for automated pipelines.
+ * Does NOT require auth session - uses admin client for automated pipelines.
  * Idempotent: returns existing client if email already exists in tenant.
  */
 export async function createClientFromLead(
@@ -1224,7 +1224,7 @@ export async function getClientFinancialDetail(clientId: string) {
   )
 
   // Tips: compute from ledger entries (entry_type = 'tip') to stay consistent
-  // with getTenantFinancialSummary — ledger is the source of truth, not events.tip_amount_cents
+  // with getTenantFinancialSummary - ledger is the source of truth, not events.tip_amount_cents
   const totalTipsCents = ledgerEntries
     .filter((e: any) => e.entry_type === 'tip')
     .reduce((sum: number, e: any) => sum + e.amount_cents, 0)
@@ -1246,7 +1246,7 @@ export async function getClientFinancialDetail(clientId: string) {
 
 /**
  * Toggle automated emails on/off for a specific client.
- * Chef-controlled only — the client does not see or manage this setting.
+ * Chef-controlled only - the client does not see or manage this setting.
  */
 export async function setClientAutomatedEmails(clientId: string, enabled: boolean) {
   const user = await requireChef()
@@ -1271,7 +1271,7 @@ export async function setClientAutomatedEmails(clientId: string, enabled: boolea
 /**
  * Create a client record directly from an inquiry (chef-only).
  * Used in the "Add as Client" flow on the inquiry detail page.
- * Creates the client without auth account — a "shadow client" the chef manages.
+ * Creates the client without auth account - a "shadow client" the chef manages.
  * Also links the new client to the source inquiry.
  */
 export async function addClientFromInquiry(input: {
@@ -1298,7 +1298,7 @@ export async function addClientFromInquiry(input: {
       .maybeSingle()
 
     if (existing) {
-      // Client already exists — just link the inquiry
+      // Client already exists - just link the inquiry
       await supabase
         .from('inquiries')
         .update({ client_id: existing.id })

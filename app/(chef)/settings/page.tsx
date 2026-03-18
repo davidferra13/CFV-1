@@ -246,6 +246,7 @@ export default async function SettingsPage() {
                 <Link
                   href={`/chef/${profile.slug}`}
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-300 hover:bg-stone-800 transition-colors"
                 >
                   Open Live Profile

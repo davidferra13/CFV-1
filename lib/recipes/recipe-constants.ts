@@ -1,4 +1,4 @@
-// Recipe organization constants — shared between server actions and client components
+// Recipe organization constants - shared between server actions and client components
 // This file is NOT a server action file, so it can export plain objects.
 
 export const SEASON_OPTIONS = ['Spring', 'Summer', 'Fall', 'Winter', 'Year-Round'] as const

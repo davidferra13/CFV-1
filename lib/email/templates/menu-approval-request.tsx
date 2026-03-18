@@ -1,4 +1,4 @@
-// Menu Approval Request — Client Email
+// Menu Approval Request - Client Email
 // Sent to the client when the chef sends a menu for review and approval.
 
 import { Text, Link } from '@react-email/components'
@@ -26,7 +26,7 @@ export function MenuApprovalRequestEmail({
   approvalUrl,
 }: Props) {
   return (
-    <BaseLayout preview={`Menu ready for your review — ${occasion} on ${eventDate}`}>
+    <BaseLayout preview={`Menu ready for your review - ${occasion} on ${eventDate}`}>
       <Text style={heading}>Your menu is ready for review</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

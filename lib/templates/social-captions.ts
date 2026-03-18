@@ -1,6 +1,6 @@
-// Social Media Caption Templates — Mad-Libs Style
+// Social Media Caption Templates - Mad-Libs Style
 // Professional social media captions with variable substitution.
-// AI can optionally add flair — but the template always works.
+// AI can optionally add flair - but the template always works.
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -60,7 +60,7 @@ function elegantCaption(v: CaptionVars): string {
     v.menuHighlights && v.menuHighlights.length > 0
       ? ` The evening featured ${v.menuHighlights.slice(0, 3).join(', ')}.`
       : ''
-  return `An evening of culinary artistry — a ${v.occasion.toLowerCase()} for ${v.guestCount} distinguished guests.${dishes} Every course crafted with intention and care.`
+  return `An evening of culinary artistry - a ${v.occasion.toLowerCase()} for ${v.guestCount} distinguished guests.${dishes} Every course crafted with intention and care.`
 }
 
 function casualCaption(v: CaptionVars): string {
@@ -75,7 +75,7 @@ function casualCaption(v: CaptionVars): string {
 
 /**
  * Generates social media captions for multiple platforms.
- * Pure template — no AI, no network, deterministic.
+ * Pure template - no AI, no network, deterministic.
  */
 export function generateSocialCaptionsFormula(v: CaptionVars): SocialCaptionsResult {
   const captionFn =
@@ -91,7 +91,7 @@ export function generateSocialCaptionsFormula(v: CaptionVars): SocialCaptionsRes
     },
     {
       platform: 'facebook',
-      caption: captionFn(v) + '\n\nBook your next private dining experience — link in bio.',
+      caption: captionFn(v) + '\n\nBook your next private dining experience - link in bio.',
       hashtags: hashtags.slice(0, 5),
       postType: 'event_recap',
     },

@@ -1,7 +1,7 @@
 // Interactive Document Spec Types + Converters
 // Normalizes all document data shapes into one common structure for the interactive viewer.
-// One converter per document type — reuses existing fetch*Data() return values directly.
-// No new DB queries — all data comes from the generators that already power the PDFs.
+// One converter per document type - reuses existing fetch*Data() return values directly.
+// No new DB queries - all data comes from the generators that already power the PDFs.
 
 import type { GroceryListData } from './generate-grocery-list'
 import type { PrepSheetData } from './generate-prep-sheet'
@@ -86,16 +86,16 @@ export function groceryListToSpec(data: GroceryListData): InteractiveDocSpec {
 
   const sections: InteractiveSection[] = []
 
-  // Stop 1 — grocery sections (PROTEINS, PRODUCE, DAIRY/FATS, PANTRY, SPECIALTY)
+  // Stop 1 - grocery sections (PROTEINS, PRODUCE, DAIRY/FATS, PANTRY, SPECIALTY)
   if (stop1Sections.length > 0) {
     for (const storeSection of stop1Sections) {
       const sId = storeSection.sectionName.toLowerCase().replace(/[\s/]+/g, '-')
       sections.push({
         id: `s1-${sId}`,
-        title: `${groceryStoreName} — ${storeSection.sectionName}`,
+        title: `${groceryStoreName} - ${storeSection.sectionName}`,
         items: storeSection.items.map((item, i) => ({
           id: `s1-${sId}-${i}`,
-          label: `${item.ingredientName} — ${fmtQty(item.quantity, item.unit)}${item.isOptional ? ' (optional)' : ''}`,
+          label: `${item.ingredientName} - ${fmtQty(item.quantity, item.unit)}${item.isOptional ? ' (optional)' : ''}`,
           sublabel: item.courseLabel,
           checkable: true,
         })),
@@ -108,39 +108,39 @@ export function groceryListToSpec(data: GroceryListData): InteractiveDocSpec {
       items: [
         {
           id: 's1-empty-0',
-          label: 'No ingredients with linked recipes — see Verify Manually below.',
+          label: 'No ingredients with linked recipes - see Verify Manually below.',
           checkable: false,
         },
       ],
     })
   }
 
-  // Stop 2 — liquor store
+  // Stop 2 - liquor store
   if (stop2Items.length > 0) {
     sections.push({
       id: 's2',
       title: liquorStoreName,
       items: stop2Items.map((item, i) => ({
         id: `s2-${i}`,
-        label: `${item.ingredientName} — ${fmtQty(item.quantity, item.unit)}`,
+        label: `${item.ingredientName} - ${fmtQty(item.quantity, item.unit)}`,
         sublabel: item.courseLabel,
         checkable: true,
       })),
     })
   }
 
-  // Pre-sourced — arrives crossed out (state 2)
+  // Pre-sourced - arrives crossed out (state 2)
   if (presourcedItems.length > 0) {
     sections.push({
       id: 'presourced',
       title: '✓ Pre-Sourced (specialty run)',
-      subtitle: 'Already sourced — verify on arrival',
+      subtitle: 'Already sourced - verify on arrival',
       items: presourcedItems.map((item, i) => {
         const qty = item.quantity != null ? `${item.quantity} ${item.unit ?? ''}`.trim() : ''
         const store = item.storeName ? ` @ ${item.storeName}` : ''
         return {
           id: `pre-${i}`,
-          label: `${item.ingredientName}${qty ? ` — ${qty}` : ''}${store}`,
+          label: `${item.ingredientName}${qty ? ` - ${qty}` : ''}${store}`,
           checkable: true,
           initialState: 2 as ItemState,
         }
@@ -148,15 +148,15 @@ export function groceryListToSpec(data: GroceryListData): InteractiveDocSpec {
     })
   }
 
-  // Verify manually — no recipe linked, informational
+  // Verify manually - no recipe linked, informational
   if (unrecipedComponents.length > 0) {
     sections.push({
       id: 'manual',
       title: '⚠ Verify Manually (no recipe linked)',
-      warning: 'These components have no linked recipe — quantities unknown.',
+      warning: 'These components have no linked recipe - quantities unknown.',
       items: unrecipedComponents.map((comp, i) => ({
         id: `manual-${i}`,
-        label: `${comp.componentName} — Course ${comp.courseNumber} (${comp.courseName})`,
+        label: `${comp.componentName} - Course ${comp.courseNumber} (${comp.courseName})`,
         checkable: false,
       })),
     })
@@ -204,12 +204,12 @@ function prepItemsFromGroups(
       const allergens = dish?.allergen_flags ?? []
       let label = comp.name
       const note = useExecution ? comp.execution_notes : comp.storage_notes
-      if (note) label += ` — ${note}`
+      if (note) label += ` - ${note}`
       if (allergens.length > 0) label += ` [ALLERGEN: ${allergens.join(', ')}]`
       return {
         id: `${prefix}-${courseNum}-${i}`,
         label,
-        sublabel: `Course ${courseNum} — ${course.courseName}`,
+        sublabel: `Course ${courseNum} - ${course.courseName}`,
         checkable: true,
       }
     })
@@ -231,8 +231,8 @@ export function prepSheetToSpec(data: PrepSheetData): InteractiveDocSpec {
   if (makeAheadNow.length > 0) {
     sections.push({
       id: 'prep-now',
-      title: 'AT HOME — Prep Now',
-      subtitle: 'All required ingredients are on hand — start immediately',
+      title: 'AT HOME - Prep Now',
+      subtitle: 'All required ingredients are on hand - start immediately',
       items: prepItemsFromGroups(
         groupByCourse(makeAheadNow, dishById),
         dishById,
@@ -245,7 +245,7 @@ export function prepSheetToSpec(data: PrepSheetData): InteractiveDocSpec {
   if (makeAheadShopping.length > 0) {
     sections.push({
       id: 'prep-shop',
-      title: 'AT HOME — Prep After Shopping',
+      title: 'AT HOME - Prep After Shopping',
       subtitle: 'Blocked until groceries arrive',
       items: prepItemsFromGroups(
         groupByCourse(makeAheadShopping, dishById),
@@ -260,7 +260,7 @@ export function prepSheetToSpec(data: PrepSheetData): InteractiveDocSpec {
     id: 'leaving',
     title: 'Before Leaving',
     items: [
-      { id: 'leaving-0', label: 'Pack all components — frozen items LAST', checkable: true },
+      { id: 'leaving-0', label: 'Pack all components - frozen items LAST', checkable: true },
       { id: 'leaving-1', label: 'Non-negotiables check', checkable: true },
       { id: 'leaving-2', label: `Depart by ${leaveBy}`, checkable: true },
     ],
@@ -270,7 +270,7 @@ export function prepSheetToSpec(data: PrepSheetData): InteractiveDocSpec {
     const siteLocation = [event.location_city, event.location_state].filter(Boolean).join(', ')
     sections.push({
       id: 'on-site',
-      title: siteLocation ? `On Site — ${siteLocation}` : 'On Site',
+      title: siteLocation ? `On Site - ${siteLocation}` : 'On Site',
       items: prepItemsFromGroups(groupByCourse(onSite, dishById), dishById, 'site', true),
     })
   }
@@ -351,7 +351,7 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
   const { event, clientName, specialtyEquipment, paymentReceived, paymentAmountCents } = data
 
   const paymentLabel = paymentReceived
-    ? `Payment received — $${Math.round(paymentAmountCents / 100)}`
+    ? `Payment received - $${Math.round(paymentAmountCents / 100)}`
     : 'Payment collected or Venmo / payment request sent'
 
   const specialtyC =
@@ -362,7 +362,7 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
   const sections: InteractiveSection[] = [
     {
       id: 'a',
-      title: 'A — Bring Everything Inside',
+      title: 'A - Bring Everything Inside',
       items: [
         { id: 'a-0', label: 'All equipment bags brought inside from car', checkable: true },
         { id: 'a-1', label: 'Cooler brought inside from car', checkable: true },
@@ -372,12 +372,12 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
           checkable: true as const,
         })),
         { id: 'a-2', label: 'Any extra bags / dry goods brought inside', checkable: true },
-        { id: 'a-3', label: 'Car completely cleared — nothing left in vehicle', checkable: true },
+        { id: 'a-3', label: 'Car completely cleared - nothing left in vehicle', checkable: true },
       ],
     },
     {
       id: 'b',
-      title: 'B — Cooler + Cold Storage',
+      title: 'B - Cooler + Cold Storage',
       items: [
         { id: 'b-0', label: 'Cooler emptied completely', checkable: true },
         { id: 'b-1', label: 'Cooler wiped down and dried', checkable: true },
@@ -388,12 +388,12 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
           label: 'Kept leftovers stored in fridge with labels (item + date)',
           checkable: true,
         },
-        { id: 'b-5', label: 'Fridge has space — cleared out old items if needed', checkable: true },
+        { id: 'b-5', label: 'Fridge has space - cleared out old items if needed', checkable: true },
       ],
     },
     {
       id: 'c',
-      title: 'C — Equipment + Tools',
+      title: 'C - Equipment + Tools',
       items: [
         { id: 'c-0', label: 'Equipment bags emptied', checkable: true },
         { id: 'c-1', label: 'Dirty tools separated for washing', checkable: true },
@@ -404,7 +404,7 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
     },
     {
       id: 'd',
-      title: 'D — Dishes + Laundry',
+      title: 'D - Dishes + Laundry',
       items: [
         { id: 'd-0', label: 'All dishes in dishwasher or hand washed', checkable: true },
         { id: 'd-1', label: 'Deli containers washed and dried', checkable: true },
@@ -416,7 +416,7 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
     },
     {
       id: 'e',
-      title: 'E — Financial + Records',
+      title: 'E - Financial + Records',
       items: [
         {
           id: 'e-0',
@@ -430,7 +430,7 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
     },
     {
       id: 'f',
-      title: 'F — Next Day (by noon tomorrow)',
+      title: 'F - Next Day (by noon tomorrow)',
       items: [
         { id: 'f-0', label: 'Laundry moved to dryer or hung', checkable: true },
         { id: 'f-1', label: 'Follow-up / thank you message sent to client', checkable: true },
@@ -463,27 +463,27 @@ export function contentShotListToSpec(data: ContentShotListData): InteractiveDoc
   const sections: InteractiveSection[] = [
     {
       id: 'pre-event',
-      title: 'Pre-Event — Grocery & Prep',
+      title: 'Pre-Event - Grocery & Prep',
       items: [
         {
           id: 'pre-0',
-          label: 'Grocery haul flat lay — overhead, all ingredients spread out, vertical 9:16',
+          label: 'Grocery haul flat lay - overhead, all ingredients spread out, vertical 9:16',
           checkable: true,
         },
         {
           id: 'pre-1',
-          label: 'Hero ingredient close-up — primary protein, specialty produce, or imported item',
+          label: 'Hero ingredient close-up - primary protein, specialty produce, or imported item',
           sublabel: 'macro',
           checkable: true,
         },
         {
           id: 'pre-2',
-          label: 'Knife roll / tools laid out — overhead or 45° before cooking begins',
+          label: 'Knife roll / tools laid out - overhead or 45° before cooking begins',
           checkable: true,
         },
         {
           id: 'pre-3',
-          label: 'Mise en place spread — everything prepped, portioned, and arranged',
+          label: 'Mise en place spread - everything prepped, portioned, and arranged',
           sublabel: 'overhead',
           checkable: true,
         },
@@ -495,64 +495,64 @@ export function contentShotListToSpec(data: ContentShotListData): InteractiveDoc
       items: [
         {
           id: 'cook-0',
-          label: 'Knife work — overhead phone mount, clean board, 10–15 sec',
+          label: 'Knife work - overhead phone mount, clean board, 10–15 sec',
           sublabel: 'pre-mount before service starts',
           checkable: true,
         },
         {
           id: 'cook-1',
-          label: 'Pan sizzle / sear — side angle at counter height, 8–10 sec',
+          label: 'Pan sizzle / sear - side angle at counter height, 8–10 sec',
           sublabel: 'do not narrate, let the sound carry',
           checkable: true,
         },
         {
           id: 'cook-2',
-          label: 'Sauce or reduction — overhead close-up, glossy spoon, 5–8 sec',
+          label: 'Sauce or reduction - overhead close-up, glossy spoon, 5–8 sec',
           checkable: true,
         },
         {
           id: 'cook-3',
-          label: 'Hands seasoning or finishing touch — pinch of salt, torn herb, 3–5 sec slow-mo',
+          label: 'Hands seasoning or finishing touch - pinch of salt, torn herb, 3–5 sec slow-mo',
           checkable: true,
         },
         {
           id: 'cook-4',
           label:
-            'Raw → finished time-lapse — fixed mount, 10+ frames, strong caramelization or sear',
+            'Raw → finished time-lapse - fixed mount, 10+ frames, strong caramelization or sear',
           checkable: true,
         },
       ],
     },
     {
       id: 'plating',
-      title: 'Plating — plate one dish for camera before service plates leave the pass',
+      title: 'Plating - plate one dish for camera before service plates leave the pass',
       items: [
         {
           id: 'plate-0',
-          label: 'Hero plate — overhead flat lay',
+          label: 'Hero plate - overhead flat lay',
           sublabel: 'shoot vertical 9:16 then crop to 1:1 square for feed',
           checkable: true,
         },
         {
           id: 'plate-1',
-          label: 'Hero plate — low 30° restaurant angle',
+          label: 'Hero plate - low 30° restaurant angle',
           sublabel: 'shows height, sauce work, and garnish depth',
           checkable: true,
         },
         {
           id: 'plate-2',
-          label: 'Hands placing final garnish — the last touch, 3–5 sec',
+          label: 'Hands placing final garnish - the last touch, 3–5 sec',
           sublabel: 'slow-mo if phone supports',
           checkable: true,
         },
         {
           id: 'plate-3',
-          label: 'Full table at service — all courses set, candlelight if present, wide horizontal',
+          label: 'Full table at service - all courses set, candlelight if present, wide horizontal',
           checkable: true,
         },
         {
           id: 'plate-4',
-          label: 'Texture detail / close-up cross-section — demonstrates technique at macro level',
+          label: 'Texture detail / close-up cross-section - demonstrates technique at macro level',
           checkable: true,
         },
       ],
@@ -563,24 +563,24 @@ export function contentShotListToSpec(data: ContentShotListData): InteractiveDoc
       items: [
         {
           id: 'svc-0',
-          label: 'Empty plate after course — overhead, social proof without showing client faces',
+          label: 'Empty plate after course - overhead, social proof without showing client faces',
           checkable: true,
         },
         {
           id: 'svc-1',
-          label: 'Client reaction — candid only, faces optional',
+          label: 'Client reaction - candid only, faces optional',
           sublabel: 'GET PERMISSION before posting · 3–5 sec',
           checkable: true,
         },
         {
           id: 'svc-2',
-          label: 'Chef self-capture at the pass — builds face recognition and brand identity',
+          label: 'Chef self-capture at the pass - builds face recognition and brand identity',
           sublabel: 'optional',
           checkable: true,
         },
         {
           id: 'svc-3',
-          label: 'Clean kitchen at wrap — wide shot, proves you left it better than you found it',
+          label: 'Clean kitchen at wrap - wide shot, proves you left it better than you found it',
           checkable: true,
         },
       ],
@@ -593,25 +593,25 @@ export function contentShotListToSpec(data: ContentShotListData): InteractiveDoc
         {
           id: 'brand-0',
           label:
-            'Same plate angle every event — choose ONE: overhead OR low 30° — commit to it forever',
+            'Same plate angle every event - choose ONE: overhead OR low 30° - commit to it forever',
           checkable: true,
         },
         {
           id: 'brand-1',
           label:
-            'Same 2–3 surface props in every photo: cutting board, linen napkin, slate tile — bring them',
+            'Same 2–3 surface props in every photo: cutting board, linen napkin, slate tile - bring them',
           checkable: true,
         },
         {
           id: 'brand-2',
           label:
-            'Same editing preset applied to every photo before posting — one preset = one visual identity',
+            'Same editing preset applied to every photo before posting - one preset = one visual identity',
           checkable: true,
         },
         {
           id: 'brand-3',
           label:
-            'Same opening shot type to start every Reel/TikTok — your audience will learn to recognize it',
+            'Same opening shot type to start every Reel/TikTok - your audience will learn to recognize it',
           checkable: true,
         },
       ],
@@ -619,7 +619,7 @@ export function contentShotListToSpec(data: ContentShotListData): InteractiveDoc
     {
       id: 'platform',
       title: 'Platform Specs',
-      subtitle: 'Shoot everything vertical 9:16 first — crop down from there',
+      subtitle: 'Shoot everything vertical 9:16 first - crop down from there',
       items: [
         {
           id: 'plat-0',
@@ -648,18 +648,18 @@ export function contentShotListToSpec(data: ContentShotListData): InteractiveDoc
     },
     {
       id: 'solo',
-      title: 'Solo Setup — mount phone before service starts, never during it',
+      title: 'Solo Setup - mount phone before service starts, never during it',
       items: [
         {
           id: 'solo-0',
           label:
-            '3 positions: (1) Overhead arm above cutting board  (2) Side mount beside stove  (3) Tabletop stand for plating — rotate between these',
+            '3 positions: (1) Overhead arm above cutting board  (2) Side mount beside stove  (3) Tabletop stand for plating - rotate between these',
           checkable: false,
         },
         {
           id: 'solo-1',
           label:
-            'Gear: overhead boom arm + flexible Gorilla Pod + bluetooth remote shutter (~$50 total) — film first, review after guests leave',
+            'Gear: overhead boom arm + flexible Gorilla Pod + bluetooth remote shutter (~$50 total) - film first, review after guests leave',
           checkable: false,
         },
       ],
@@ -721,7 +721,7 @@ export function travelRouteToSpec(data: TravelRouteDataShape): InteractiveDocSpe
     const legItems: InteractiveItem[] = []
 
     if (leg.departure_time) {
-      const origin = [leg.origin_label, leg.origin_address].filter(Boolean).join(' — ')
+      const origin = [leg.origin_label, leg.origin_address].filter(Boolean).join(' - ')
       legItems.push({
         id: `${legId}-depart`,
         label: `Depart: ${leg.departure_time}`,
@@ -744,7 +744,7 @@ export function travelRouteToSpec(data: TravelRouteDataShape): InteractiveDocSpe
       const stop = sortedStops[si]
       legItems.push({
         id: `${legId}-stop-${si}`,
-        label: `${si + 1}. ${stop.name}${stop.purpose ? ` — ${stop.purpose}` : ''}`,
+        label: `${si + 1}. ${stop.name}${stop.purpose ? ` - ${stop.purpose}` : ''}`,
         sublabel:
           [stop.address, stop.estimated_minutes ? `~${stop.estimated_minutes} min` : null]
             .filter(Boolean)
@@ -753,14 +753,14 @@ export function travelRouteToSpec(data: TravelRouteDataShape): InteractiveDocSpe
       })
     }
 
-    const dest = [leg.destination_label, leg.destination_address].filter(Boolean).join(' — ')
+    const dest = [leg.destination_label, leg.destination_address].filter(Boolean).join(' - ')
     legItems.push({
       id: `${legId}-arrive`,
       label: `Arrive: ${dest || 'Destination'}`,
       checkable: false,
     })
 
-    // Specialty sourcing ingredients — checkable
+    // Specialty sourcing ingredients - checkable
     const ings = (leg as TravelLegWithIngredients).ingredients ?? []
     if ((leg.leg_type as string) === 'specialty_sourcing' && ings.length > 0) {
       for (let ii = 0; ii < ings.length; ii++) {
@@ -769,7 +769,7 @@ export function travelRouteToSpec(data: TravelRouteDataShape): InteractiveDocSpe
         const store = ing.store_name ? ` @ ${ing.store_name}` : ''
         legItems.push({
           id: `${legId}-ing-${ii}`,
-          label: `Source: ${(ing as { ingredient_name?: string }).ingredient_name ?? 'Unknown'}${qty ? ` — ${qty}` : ''}${store}`,
+          label: `Source: ${(ing as { ingredient_name?: string }).ingredient_name ?? 'Unknown'}${qty ? ` - ${qty}` : ''}${store}`,
           checkable: true,
           initialState: (ing.status === 'sourced' ? 2 : 0) as ItemState,
         })
@@ -778,7 +778,7 @@ export function travelRouteToSpec(data: TravelRouteDataShape): InteractiveDocSpe
 
     sections.push({
       id: legId,
-      title: `Leg ${li + 1} — ${typeLabel}`,
+      title: `Leg ${li + 1} - ${typeLabel}`,
       subtitle: leg.leg_date ? format(parseISO(leg.leg_date as string), 'EEEE, MMM d') : undefined,
       items: legItems,
     })
@@ -886,7 +886,7 @@ export function eventSummaryToSpec(data: EventSummaryData): InteractiveDocSpec {
     }
     sections.push({
       id: `course-${course.courseNumber}`,
-      title: `Course ${course.courseNumber} — ${course.courseName}`,
+      title: `Course ${course.courseNumber} - ${course.courseName}`,
       items,
     })
   }
@@ -924,8 +924,8 @@ export function executionSheetToSpec(data: ExecutionSheetData): InteractiveDocSp
   if (arrivalTasks.length > 0) {
     sections.push({
       id: 'arrival',
-      title: 'On Arrival — Start Immediately',
-      subtitle: 'Long-cook or extended prep tasks — start these the moment you walk in',
+      title: 'On Arrival - Start Immediately',
+      subtitle: 'Long-cook or extended prep tasks - start these the moment you walk in',
       items: arrivalTasks.map((task, i) => ({
         id: `arrival-${i}`,
         label: task.name,
@@ -938,7 +938,7 @@ export function executionSheetToSpec(data: ExecutionSheetData): InteractiveDocSp
   for (const course of courses) {
     sections.push({
       id: `course-${course.courseNumber}`,
-      title: `Course ${course.courseNumber} — ${course.courseName}`,
+      title: `Course ${course.courseNumber} - ${course.courseName}`,
       subtitle: course.dishDescription ?? undefined,
       items: course.components.map((comp, i) => ({
         id: `course-${course.courseNumber}-${i}`,

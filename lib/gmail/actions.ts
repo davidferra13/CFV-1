@@ -170,7 +170,7 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
         }
         threadId = threadId || headers.threadId || undefined
       } catch {
-        // Non-fatal — send without threading if headers fail
+        // Non-fatal - send without threading if headers fail
         console.warn('[approveAndSendMessage] Could not fetch reply headers')
       }
     }
@@ -239,7 +239,7 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
 
   if (updateErr) {
     console.error('[approveAndSendMessage] Status update failed:', updateErr)
-    // Message was sent but status update failed — log but don't throw
+    // Message was sent but status update failed - log but don't throw
     // The message DID go out to Gmail
   }
 

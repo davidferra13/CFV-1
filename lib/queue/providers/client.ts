@@ -1,4 +1,4 @@
-// Priority Queue — Client Provider
+// Priority Queue - Client Provider
 // Surfaces: upcoming milestones, dormant client re-engagement
 
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -13,7 +13,7 @@ export async function getClientQueueItems(
   const items: QueueItem[] = []
   const now = new Date()
 
-  // 1. Milestones — re-use existing fetcher (already auth-scoped)
+  // 1. Milestones - re-use existing fetcher (already auth-scoped)
   try {
     const outreach = await getMilestoneOutreachSuggestions()
     for (const item of outreach) {
@@ -49,7 +49,7 @@ export async function getClientQueueItems(
       })
     }
   } catch {
-    // Milestones may not be available — graceful degradation
+    // Milestones may not be available - graceful degradation
   }
 
   // 2. Dormant clients (top 5 by lifetime value) from client_financial_summary view
@@ -103,7 +103,7 @@ export async function getClientQueueItems(
       }
     }
   } catch {
-    // View may not exist — graceful degradation
+    // View may not exist - graceful degradation
   }
 
   return items

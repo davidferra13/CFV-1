@@ -1,8 +1,8 @@
-// Event Summary Generator — DOC-EVENT-SUMMARY
+// Event Summary Generator - DOC-EVENT-SUMMARY
 // The index document: single-glance reorientation for any dinner at any lifecycle stage.
 // Answers: who, where, what they're eating, dietary situation, payment status, what's next.
-// Always generatable — adapts to available data at every stage from draft to terminal.
-// MUST fit on ONE page — no exceptions.
+// Always generatable - adapts to available data at every stage from draft to terminal.
+// MUST fit on ONE page - no exceptions.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -175,7 +175,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
       .order('transitioned_at', { ascending: true }),
   ])
 
-  // Menu → dishes → components (optional — gracefully absent)
+  // Menu → dishes → components (optional - gracefully absent)
   const { data: menus } = await supabase
     .from('menus')
     .select('id')
@@ -427,8 +427,8 @@ function buildFinancialSummary(data: EventSummaryData): string {
 
   // Determine status label
   const statusMap: Record<string, string> = {
-    unpaid: 'PENDING — not yet paid',
-    deposit_paid: 'Deposit received — balance outstanding',
+    unpaid: 'PENDING - not yet paid',
+    deposit_paid: 'Deposit received - balance outstanding',
     partial: 'Partially paid',
     paid: 'PAID IN FULL',
     refunded: 'REFUNDED',
@@ -449,10 +449,10 @@ function buildFinancialSummary(data: EventSummaryData): string {
       if (event.payment_status === 'paid') {
         const tipNote =
           event.tip_amount_cents > 0 ? ` (+$${(event.tip_amount_cents / 100).toFixed(0)} tip)` : ''
-        return `PAID — ${amount} received ${dateStr}${tipNote}`
+        return `PAID - ${amount} received ${dateStr}${tipNote}`
       }
       if (event.payment_status === 'deposit_paid') {
-        return `Deposit ${amount} — ${dateStr}. Balance due.`
+        return `Deposit ${amount} - ${dateStr}. Balance due.`
       }
     }
   }
@@ -481,7 +481,7 @@ function buildHistoryEntries(data: EventSummaryData): string[] {
 
   return recent.map((e) => {
     const dateStr = format(e.timestamp, 'MMM d h:mm a')
-    return `${dateStr} — ${e.label}`
+    return `${dateStr} - ${e.label}`
   })
 }
 
@@ -490,7 +490,7 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
   const { event, client, guests, courses, totalComponentCount } = data
   const doc = pdf.doc
 
-  // Font scale — denser menus need smaller text throughout
+  // Font scale - denser menus need smaller text throughout
   if (totalComponentCount > 25) pdf.setFontScale(0.78)
   else if (totalComponentCount > 15) pdf.setFontScale(0.88)
 
@@ -754,8 +754,8 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
 
       const courseHeaderText =
         conflictingAllergens.length > 0
-          ? `COURSE ${course.courseNumber} — ${course.courseName} (${course.componentCount}) \u26a0 ${conflictingAllergens.join(', ')}`
-          : `COURSE ${course.courseNumber} — ${course.courseName} (${course.componentCount} components)`
+          ? `COURSE ${course.courseNumber} - ${course.courseName} (${course.componentCount}) \u26a0 ${conflictingAllergens.join(', ')}`
+          : `COURSE ${course.courseNumber} - ${course.courseName} (${course.componentCount} components)`
 
       if (!pdf.wouldOverflow(3)) {
         pdf.courseHeader(courseHeaderText)
@@ -781,7 +781,7 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
   // ===== 6. FOOTER =====
   const footerClientName = client.preferred_name ?? client.full_name
   const footerDate = format(parseISO(event.event_date), 'MMMM d, yyyy')
-  pdf.footer(`ChefFlow Event Summary — ${footerClientName} — ${footerDate}`)
+  pdf.footer(`ChefFlow Event Summary - ${footerClientName} - ${footerDate}`)
 }
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────

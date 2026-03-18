@@ -4,7 +4,7 @@
 //
 // Stores equipment checklist per event in the event_safety_checklists table,
 // using items with "EQ_" key prefix to distinguish from safety/cross-contamination items.
-// No new migration required — reuses the existing items JSONB column.
+// No new migration required - reuses the existing items JSONB column.
 //
 // Each item serialized as:
 //   { key: "EQ_<id>", label: "<name>", completed: <hasBackup>, completed_at: null,

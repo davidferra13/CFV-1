@@ -1,6 +1,6 @@
-// Lightweight Sentry error reporter — no SDK dependency
+// Lightweight Sentry error reporter - no SDK dependency
 // Sends errors to Sentry via the envelope REST API
-// Fire-and-forget, non-blocking — failures never affect the app
+// Fire-and-forget, non-blocking - failures never affect the app
 
 type SentryDsnParts = {
   publicKey: string
@@ -133,7 +133,7 @@ function parseStackTrace(stack?: string): SentryFrame[] {
 
 /**
  * Send an error to Sentry via the envelope API.
- * Non-blocking — fire and forget. Failures are silently logged.
+ * Non-blocking - fire and forget. Failures are silently logged.
  *
  * @param error - The error to report
  * @param context - Optional tags and extra data
@@ -147,12 +147,12 @@ export async function reportError(
 ): Promise<void> {
   try {
     const dsn = getDsn()
-    if (!dsn) return // No DSN configured — skip silently
+    if (!dsn) return // No DSN configured - skip silently
 
     const envelope = buildEnvelope(dsn, error, context?.tags, context?.extra)
     const url = `https://${dsn.host}/api/${dsn.projectId}/envelope/`
 
-    // Fire and forget — don't await in production usage
+    // Fire and forget - don't await in production usage
     fetch(url, {
       method: 'POST',
       headers: {
@@ -161,11 +161,11 @@ export async function reportError(
       },
       body: envelope,
     }).catch((fetchErr) => {
-      // Swallow fetch errors — never let reporting break the app
+      // Swallow fetch errors - never let reporting break the app
       console.warn('[sentry-reporter] Failed to send error:', fetchErr?.message)
     })
   } catch (err) {
-    // Swallow all errors — reporting must never affect the app
+    // Swallow all errors - reporting must never affect the app
     console.warn('[sentry-reporter] Envelope build failed:', (err as Error)?.message)
   }
 }
@@ -201,7 +201,7 @@ export function reportAppError(
   if (appErr.category) tags.error_category = appErr.category
   if (appErr.traceId) extra.traceId = appErr.traceId
 
-  // Fire and forget — never block the caller
+  // Fire and forget - never block the caller
   reportError(error, { tags, extra }).catch(() => {
     // Already handled inside reportError, but just in case
   })

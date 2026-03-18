@@ -140,7 +140,7 @@ export async function getIngredientAveragePrice(ingredientId: string) {
 }
 
 /**
- * Get price alerts — ingredients where recent price is 30%+ above average
+ * Get price alerts - ingredients where recent price is 30%+ above average
  */
 export async function getIngredientPriceAlerts() {
   const user = await requireChef()

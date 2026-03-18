@@ -1,7 +1,7 @@
 'use server'
 
-// Ask Remy — Orchestrator
-// PRIVACY: Chef commands may contain client PII — all processing via local Ollama only.
+// Ask Remy - Orchestrator
+// PRIVACY: Chef commands may contain client PII - all processing via local Ollama only.
 // DRAFT-FIRST: Tier 2 results are drafts. Nothing is sent or saved until chef approves.
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -261,7 +261,7 @@ async function executeClientSearch(inputs: Record<string, unknown>) {
   }
 
   // Ambiguity detection: if multiple clients match and the top two have similar event counts,
-  // the match is genuinely ambiguous — flag it so dependent tasks can hold for clarification
+  // the match is genuinely ambiguous - flag it so dependent tasks can hold for clarification
   const isAmbiguous =
     enrichedClients.length > 1 &&
     Math.abs(enrichedClients[0].eventCount - enrichedClients[1].eventCount) <= 1
@@ -273,7 +273,7 @@ async function executeClientSearch(inputs: Record<string, unknown>) {
     ...(enrichedClients.length > 1 && {
       disambiguationNote: isAmbiguous
         ? `Found ${enrichedClients.length} clients matching "${query}": ${enrichedClients.map((c) => `${c.name} (${c.eventCount} events)`).join(', ')}. Which one did you mean?`
-        : `Found ${enrichedClients.length} clients matching "${query}". Ranked by event frequency — "${enrichedClients[0].name}" has ${enrichedClients[0].eventCount} events.`,
+        : `Found ${enrichedClients.length} clients matching "${query}". Ranked by event frequency - "${enrichedClients[0].name}" has ${enrichedClients[0].eventCount} events.`,
     }),
   }
 }
@@ -349,7 +349,7 @@ async function executeEmailFollowup(
   // If client search was ambiguous, hold this task for disambiguation
   if (searchResult?.ambiguous && searchResult.clients.length > 1) {
     throw new Error(
-      `Multiple clients match — ${searchResult.disambiguationNote ?? 'which one did you mean?'}`
+      `Multiple clients match - ${searchResult.disambiguationNote ?? 'which one did you mean?'}`
     )
   }
 
@@ -632,7 +632,7 @@ async function executeWebSearch(inputs: Record<string, unknown>) {
       results: [],
       blocked: true,
       message:
-        "Web recipe searches are not allowed — recipes are the chef's creative domain. Use recipe.search to look through your existing recipe book instead.",
+        "Web recipe searches are not allowed - recipes are the chef's creative domain. Use recipe.search to look through your existing recipe book instead.",
     }
   }
   const limit = Number(inputs.limit) || 5
@@ -643,7 +643,7 @@ async function executeWebSearch(inputs: Record<string, unknown>) {
 async function executeWebRead(inputs: Record<string, unknown>) {
   const url = String(inputs.url ?? '')
   if (!url.startsWith('http')) {
-    throw new Error('Invalid URL — must start with http:// or https://')
+    throw new Error('Invalid URL - must start with http:// or https://')
   }
   const result = await readWebPage(url)
   return { url: result.url, title: result.title, summary: result.summary }
@@ -973,7 +973,7 @@ function buildExecutionRounds(tasks: PlannedTask[]): PlannedTask[][] {
     )
 
     if (readyThisRound.length === 0) {
-      // Circular or unresolvable deps — add remaining as held
+      // Circular or unresolvable deps - add remaining as held
       for (const t of remaining.values()) {
         rounds.push([
           {
@@ -1011,7 +1011,7 @@ async function executeLoyaltyStatus(inputs: Record<string, unknown>, tenantId: s
   const client = clients[0]
   const supabase: any = createServerClient()
 
-  // Get loyalty data (loyalty_accounts doesn't exist — derive from loyalty_transactions)
+  // Get loyalty data (loyalty_accounts doesn't exist - derive from loyalty_transactions)
   const { data: loyaltyTxns } = await supabase
     .from('loyalty_transactions')
     .select('points, type')

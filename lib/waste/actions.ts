@@ -1,8 +1,8 @@
 // DEFERRED: Waste tracking system. Requires waste_entries table (Phase 2 schema).
-// Do not remove — will be enabled when schema is extended.
-// NO 'use server' — table doesn't exist yet. Exporting these as server actions would crash at runtime.
+// Do not remove - will be enabled when schema is extended.
+// NO 'use server' - table doesn't exist yet. Exporting these as server actions would crash at runtime.
 
-// ─── Types (safe to export — no DB calls) ───────────────────────────────────
+// ─── Types (safe to export - no DB calls) ───────────────────────────────────
 
 export type WasteReason =
   | 'OVERPRODUCTION'
@@ -50,7 +50,7 @@ export interface WasteStats {
   topReason: [WasteReason, number] | null
 }
 
-// ─── Server Actions (DISABLED — waste_entries table not in schema) ──────────
+// ─── Server Actions (DISABLED - waste_entries table not in schema) ──────────
 // When waste_entries table is added:
 // 1. Add 'use server' directive back at the top of this file
 // 2. Uncomment the functions below

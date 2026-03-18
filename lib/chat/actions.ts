@@ -1,6 +1,6 @@
 // Real-Time Chat Server Actions
 // Handles conversations, messages, read receipts, and image uploads
-// Both chefs and clients can participate — uses requireAuth() as base guard
+// Both chefs and clients can participate - uses requireAuth() as base guard
 
 'use server'
 
@@ -1106,7 +1106,7 @@ export async function searchChatMessages(
 /**
  * Fires after a client sends a message. Looks up the chef's identity,
  * creates an in-app notification, and sends an email.
- * Rate-limited: checks conversation.last_chef_notified_at — max 1 email per hour per conversation.
+ * Rate-limited: checks conversation.last_chef_notified_at - max 1 email per hour per conversation.
  */
 async function notifyChefOfClientMessage(
   conversationId: string,
@@ -1170,7 +1170,7 @@ async function notifyChefOfClientMessage(
     metadata: { conversation_id: conversationId, message_id: messageId },
   })
 
-  // Email — rate-limited to once per conversation per hour
+  // Email - rate-limited to once per conversation per hour
   if (chefProfile) {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
     const { data: recentLog } = await supabase

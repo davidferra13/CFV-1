@@ -1,5 +1,5 @@
-// Calendar color system — single source of truth for all calendar item colors.
-// Pure utility functions — no 'use server' needed (no DB calls, no async).
+// Calendar color system - single source of truth for all calendar item colors.
+// Pure utility functions - no 'use server' needed (no DB calls, no async).
 // Every type/status combination maps to a hex color.
 // Import getItemColor() to get the color for any UnifiedCalendarItem.
 
@@ -20,13 +20,13 @@ export type CalendarLegendEntry = {
 }
 
 // ------------------------------------------------------------------
-// Raw color map — keyed by type identifier
+// Raw color map - keyed by type identifier
 // ------------------------------------------------------------------
 export const CALENDAR_COLORS: Record<string, string> = {
   // ── Events ────────────────────────────────────────────────────
-  event_confirmed: '#F59E0B', // amber — in_progress, confirmed, paid
-  event_draft: '#FDE68A', // light amber — draft, proposed, accepted
-  event_cancelled: '#D1D5DB', // gray — cancelled
+  event_confirmed: '#F59E0B', // amber - in_progress, confirmed, paid
+  event_draft: '#FDE68A', // light amber - draft, proposed, accepted
+  event_cancelled: '#D1D5DB', // gray - cancelled
 
   // ── Prep blocks (keyed by prep_block_type) ───────────────────
   grocery_run: '#16A34A', // green
@@ -71,7 +71,7 @@ export const CALENDAR_COLORS: Record<string, string> = {
 }
 
 // ------------------------------------------------------------------
-// Border styles — used by the UI to render dashed/dotted borders
+// Border styles - used by the UI to render dashed/dotted borders
 // for non-blocking items
 // ------------------------------------------------------------------
 export const CALENDAR_BORDER_STYLES: Record<string, 'solid' | 'dashed' | 'dotted'> = {
@@ -166,7 +166,7 @@ export const REVENUE_CAPABLE_TYPES = new Set([
 ])
 
 // ------------------------------------------------------------------
-// Legend data — for rendering the color legend UI
+// Legend data - for rendering the color legend UI
 // ------------------------------------------------------------------
 export const CALENDAR_LEGEND: CalendarLegendEntry[] = [
   // Events

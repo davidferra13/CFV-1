@@ -29,7 +29,7 @@ const { data: conn } = await admin
   .single()
 
 if (!conn?.refresh_token) {
-  console.log('No refresh token — full reconnect needed in Settings')
+  console.log('No refresh token - full reconnect needed in Settings')
   process.exit(1)
 }
 

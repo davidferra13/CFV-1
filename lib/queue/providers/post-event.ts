@@ -1,4 +1,4 @@
-// Priority Queue — Post-Event Provider
+// Priority Queue - Post-Event Provider
 // Surfaces: unfiled AARs, unsent follow-ups, unsent review links, incomplete resets
 
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -34,7 +34,7 @@ export async function getPostEventQueueItems(
     const hoursSinceEvent = (now.getTime() - new Date(event.event_date).getTime()) / 3600000
     const occasion = event.occasion || 'Event'
 
-    // AAR not filed — 48h ideal window
+    // AAR not filed - 48h ideal window
     if (!event.aar_filed) {
       const inputs: ScoreInputs = {
         hoursUntilDue: Math.max(-hoursSinceEvent, 48 - hoursSinceEvent),
@@ -62,7 +62,7 @@ export async function getPostEventQueueItems(
       })
     }
 
-    // Follow-up not sent — 24h ideal window
+    // Follow-up not sent - 24h ideal window
     if (!event.follow_up_sent) {
       const inputs: ScoreInputs = {
         hoursUntilDue: Math.max(-hoursSinceEvent, 24 - hoursSinceEvent),
@@ -90,7 +90,7 @@ export async function getPostEventQueueItems(
       })
     }
 
-    // Review link not sent — 72h window
+    // Review link not sent - 72h window
     if (!event.review_link_sent) {
       const inputs: ScoreInputs = {
         hoursUntilDue: Math.max(-hoursSinceEvent, 72 - hoursSinceEvent),
@@ -118,7 +118,7 @@ export async function getPostEventQueueItems(
       })
     }
 
-    // Reset not complete — 12h ideal (same night)
+    // Reset not complete - 12h ideal (same night)
     if (!event.reset_complete) {
       const inputs: ScoreInputs = {
         hoursUntilDue: Math.max(-hoursSinceEvent, 12 - hoursSinceEvent),

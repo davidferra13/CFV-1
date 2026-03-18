@@ -1,4 +1,4 @@
-// Recurring service constants — exported separately from actions.ts
+// Recurring service constants - exported separately from actions.ts
 // so they can be imported by client components without triggering 'use server' restrictions.
 
 export const SERVICE_TYPE_LABELS: Record<string, string> = {

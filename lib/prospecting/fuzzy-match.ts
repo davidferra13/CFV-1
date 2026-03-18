@@ -1,6 +1,6 @@
-// Prospecting Hub — Shared Fuzzy Matching Utilities
+// Prospecting Hub - Shared Fuzzy Matching Utilities
 // Extracted for reuse across scrub, CSV import, and merge features.
-// NOT a server action file — safe to export functions/constants.
+// NOT a server action file - safe to export functions/constants.
 
 /**
  * Normalize a business/prospect name for comparison.
@@ -75,7 +75,7 @@ export function isSimilarName(a: string, b: string): boolean {
   if (na === nb) return true
   // One contains the other (e.g., "Hamptons Yacht Club" contains "Hamptons Yacht")
   if (na.includes(nb) || nb.includes(na)) return true
-  // Levenshtein for short names — require exact match
+  // Levenshtein for short names - require exact match
   if (na.length < 5 || nb.length < 5) return na === nb
   const distance = levenshtein(na, nb)
   const maxLen = Math.max(na.length, nb.length)

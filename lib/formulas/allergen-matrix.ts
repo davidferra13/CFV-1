@@ -1,4 +1,4 @@
-// Allergen Risk Matrix — Deterministic Ingredient-to-Allergen Lookup
+// Allergen Risk Matrix - Deterministic Ingredient-to-Allergen Lookup
 // Maps menu dish ingredients/descriptions against guest dietary restrictions.
 // Uses the same allergen keyword map as dietary-conflict-actions.ts but produces
 // the full risk matrix output that the AI version returns.
@@ -31,7 +31,7 @@ export type AllergenRiskResult = {
 type AllergenEntry = {
   /** Keywords that directly indicate this allergen is present */
   directKeywords: string[]
-  /** Keywords for the allergen family — cross-contamination risk */
+  /** Keywords for the allergen family - cross-contamination risk */
   familyKeywords: string[]
   /** FDA Big 9 severity flag */
   isBig9: boolean
@@ -357,7 +357,7 @@ type MenuItem = {
 
 /**
  * Builds the allergen risk matrix for an event.
- * Pure keyword lookup — no AI, no network, deterministic.
+ * Pure keyword lookup - no AI, no network, deterministic.
  * Returns the exact same type as the AI version for drop-in compatibility.
  */
 export function buildAllergenMatrixFormula(
@@ -367,7 +367,7 @@ export function buildAllergenMatrixFormula(
   if (menuItems.length === 0) {
     return {
       rows: [],
-      safetyFlags: ['No menu items assigned yet — add dishes to run allergen analysis.'],
+      safetyFlags: ['No menu items assigned yet - add dishes to run allergen analysis.'],
       confidence: 'low',
     }
   }
@@ -400,7 +400,7 @@ export function buildAllergenMatrixFormula(
             guestName: guest.name,
             riskLevel: 'unknown',
             triggerAllergen: restriction,
-            notes: 'Insufficient dish information — verify ingredients manually.',
+            notes: 'Insufficient dish information - verify ingredients manually.',
           })
         }
         continue
@@ -411,7 +411,7 @@ export function buildAllergenMatrixFormula(
         const allergenEntry = ALLERGEN_DATABASE[normalized]
 
         if (!allergenEntry) {
-          // Unknown allergen — check if the raw restriction text appears in dish
+          // Unknown allergen - check if the raw restriction text appears in dish
           const rawLower = restriction.toLowerCase()
           if (dishText.includes(rawLower)) {
             rows.push({
@@ -424,11 +424,11 @@ export function buildAllergenMatrixFormula(
 
             if (
               !safetyFlags.includes(
-                `ALLERGEN ALERT: ${restriction} detected in ${dish.name} — affects ${guest.name}`
+                `ALLERGEN ALERT: ${restriction} detected in ${dish.name} - affects ${guest.name}`
               )
             ) {
               safetyFlags.push(
-                `ALLERGEN ALERT: ${restriction} detected in ${dish.name} — affects ${guest.name}`
+                `ALLERGEN ALERT: ${restriction} detected in ${dish.name} - affects ${guest.name}`
               )
             }
           } else {
@@ -451,12 +451,12 @@ export function buildAllergenMatrixFormula(
             guestName: guest.name,
             riskLevel: 'contains',
             triggerAllergen: `${normalized} (${directMatch})`,
-            notes: `Dish contains "${directMatch}" — ${normalized} allergen.`,
+            notes: `Dish contains "${directMatch}" - ${normalized} allergen.`,
           })
 
           const flag = allergenEntry.isBig9
-            ? `CRITICAL (FDA Big 9): ${normalized} in "${dish.name}" — ${guest.name} has ${restriction}`
-            : `WARNING: ${normalized} in "${dish.name}" — ${guest.name} has ${restriction}`
+            ? `CRITICAL (FDA Big 9): ${normalized} in "${dish.name}" - ${guest.name} has ${restriction}`
+            : `WARNING: ${normalized} in "${dish.name}" - ${guest.name} has ${restriction}`
 
           if (!safetyFlags.includes(flag)) {
             safetyFlags.push(flag)
@@ -476,7 +476,7 @@ export function buildAllergenMatrixFormula(
           })
 
           if (allergenEntry.isBig9) {
-            const flag = `VERIFY: "${dish.name}" may contain ${normalized} — ${guest.name} has ${restriction}. Confirm ingredients.`
+            const flag = `VERIFY: "${dish.name}" may contain ${normalized} - ${guest.name} has ${restriction}. Confirm ingredients.`
             if (!safetyFlags.includes(flag)) {
               safetyFlags.push(flag)
             }
@@ -484,7 +484,7 @@ export function buildAllergenMatrixFormula(
           continue
         }
 
-        // No match — safe
+        // No match - safe
         rows.push({
           dish: dish.name,
           guestName: guest.name,

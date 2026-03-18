@@ -221,19 +221,19 @@ export async function TacDashboardWidget() {
             <div className="grid grid-cols-4 gap-1.5">
               <div className="rounded-md bg-stone-800 px-2 py-1.5 text-center">
                 <p className="text-base font-bold text-stone-100">{dailyStats.today}</p>
-                <p className="text-[10px] text-stone-500">Today</p>
+                <p className="text-xxs text-stone-500">Today</p>
               </div>
               <div className="rounded-md bg-stone-800 px-2 py-1.5 text-center">
                 <p className="text-base font-bold text-stone-100">{dailyStats.yesterday}</p>
-                <p className="text-[10px] text-stone-500">Yesterday</p>
+                <p className="text-xxs text-stone-500">Yesterday</p>
               </div>
               <div className="rounded-md bg-stone-800 px-2 py-1.5 text-center">
                 <p className="text-base font-bold text-stone-100">{dailyStats.thisWeek}</p>
-                <p className="text-[10px] text-stone-500">Week</p>
+                <p className="text-xxs text-stone-500">Week</p>
               </div>
               <div className="rounded-md bg-stone-800 px-2 py-1.5 text-center">
                 <p className="text-base font-bold text-stone-100">{dailyStats.thisMonth}</p>
-                <p className="text-[10px] text-stone-500">Month</p>
+                <p className="text-xxs text-stone-500">Month</p>
               </div>
             </div>
           </div>

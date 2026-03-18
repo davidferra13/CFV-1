@@ -119,7 +119,7 @@ export async function createServiceCourses(
 }
 
 /**
- * Fire a course — marks it as actively being prepared.
+ * Fire a course - marks it as actively being prepared.
  * Sets status='fired' and records the fired_at timestamp.
  */
 export async function fireCourse(courseId: string) {
@@ -147,7 +147,7 @@ export async function fireCourse(courseId: string) {
 }
 
 /**
- * Mark a course as plated — food is on plates, ready to serve.
+ * Mark a course as plated - food is on plates, ready to serve.
  */
 export async function markCoursePlated(courseId: string) {
   const user = await requireChef()
@@ -171,7 +171,7 @@ export async function markCoursePlated(courseId: string) {
 }
 
 /**
- * Mark a course as served — food has been delivered to guests.
+ * Mark a course as served - food has been delivered to guests.
  * Records the served_at timestamp.
  */
 export async function markCourseServed(courseId: string) {
@@ -208,7 +208,7 @@ export async function markServed(courseId: string) {
 }
 
 /**
- * Mark a course as 86'd (eighty-sixed) — course cancelled or unavailable.
+ * Mark a course as 86'd (eighty-sixed) - course cancelled or unavailable.
  */
 export async function mark86(courseId: string) {
   const user = await requireChef()

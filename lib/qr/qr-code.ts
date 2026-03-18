@@ -1,10 +1,10 @@
-// QR Code API — goqr.me, completely free, no key required
+// QR Code API - goqr.me, completely free, no key required
 // https://goqr.me/api/
-// Generate QR codes as image URLs — no signup, no limits
+// Generate QR codes as image URLs - no signup, no limits
 
 /**
  * Generate a QR code image URL.
- * Returns a URL that renders a PNG QR code — use directly in <img> tags.
+ * Returns a URL that renders a PNG QR code - use directly in <img> tags.
  *
  * @param data - The content to encode (URL, text, etc.)
  * @param size - Image dimensions in pixels (default 300x300)

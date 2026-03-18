@@ -1,4 +1,4 @@
-// Sync Engine — Replays queued offline actions when connectivity returns.
+// Sync Engine - Replays queued offline actions when connectivity returns.
 // Processes actions in strict chronological order (FIFO) to maintain consistency.
 // Failed actions are retried up to 3 times, then marked as permanently failed.
 
@@ -81,7 +81,7 @@ export async function replayPendingActions(): Promise<SyncProgress> {
 
     const fn = actionRegistry.get(action.actionName)
     if (!fn) {
-      // Action not registered — can't replay, mark as failed
+      // Action not registered - can't replay, mark as failed
       await updateActionStatus(action.id, 'failed', `Action "${action.actionName}" not registered`)
       trackQolMetric({
         metricKey: 'offline_replay_failed',
@@ -113,7 +113,7 @@ export async function replayPendingActions(): Promise<SyncProgress> {
 
       await fn(...action.args)
 
-      // Success — remove from queue
+      // Success - remove from queue
       await removeAction(action.id)
       trackQolMetric({
         metricKey: 'offline_replay_succeeded',

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ============================================
-   DESIGN TOKENS — CSS Custom Properties
+   DESIGN TOKENS - CSS Custom Properties
    ============================================ */
 :root {
   /* ── Brand color scale (RGB channels for Tailwind opacity support) ── */
@@ -20,20 +20,20 @@
   --brand-900: 116 64 33;
   --brand-950: 62 32 15;
 
-  /* Elevation surfaces — layered depth instead of flat void */
+  /* Elevation surfaces - layered depth instead of flat void */
   --surface-0: #0c0a09; /* body / deepest background (stone-950) */
   --surface-1: #1c1917; /* recessed panels, sidebar */
-  --surface-2: #292524; /* cards — lifted from surface-1 */
+  --surface-2: #292524; /* cards - lifted from surface-1 */
   --surface-3: #44403c; /* popovers, dropdowns, modals */
 
-  /* Card gradient — barely-perceptible top-light simulating ambient light */
+  /* Card gradient - barely-perceptible top-light simulating ambient light */
   --card-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 40%);
 
-  /* Warm borders — derived from brand-500 accent */
+  /* Warm borders - derived from brand-500 accent */
   --border-warm: rgb(var(--brand-500) / 0.12);
   --border-warm-hover: rgb(var(--brand-500) / 0.25);
 
-  /* Shadows — accent-tinted for brand connection */
+  /* Shadows - accent-tinted for brand connection */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.06);
   --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgb(var(--brand-500) / 0.06);
   --shadow-overlay: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgb(var(--brand-500) / 0.08);
@@ -66,7 +66,7 @@ html {
   color: #f5f5f4;
 }
 
-/* Global scrollbar — thin, refined */
+/* Global scrollbar - thin, refined */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -83,12 +83,12 @@ html {
 }
 
 @layer base {
-  /* Fix placeholder contrast — same issue, placeholders must pass 4.5:1 */
+  /* Fix placeholder contrast - same issue, placeholders must pass 4.5:1 */
   ::placeholder {
     color: var(
       --text-placeholder
     ) !important; /* stone-400 original = 3.85:1 on stone-950,
-                                  but 5.8:1 on stone-800 (input bg) — passes on input bg */
+                                  but 5.8:1 on stone-800 (input bg) - passes on input bg */
   }
 
   .text-stone-500 {
@@ -121,7 +121,7 @@ html {
 
   body {
     @apply bg-stone-950 text-stone-200 antialiased;
-    /* Faint noise texture — breaks up flat digital void, adds tactile feel */
+    /* Faint noise texture - breaks up flat digital void, adds tactile feel */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   }
 
@@ -132,7 +132,7 @@ html {
     --tw-ring-offset-color: #0c0a09;
   }
 
-  /* Display typeface for page headings — editorial culinary feel */
+  /* Display typeface for page headings - editorial culinary feel */
   h1,
   h2 {
     font-family: var(--font-display), Georgia, 'Times New Roman', serif;
@@ -152,7 +152,7 @@ html {
       placeholder:text-stone-500
       focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-stone-800/80
       disabled:cursor-not-allowed disabled:bg-stone-900 disabled:text-stone-500;
-    /* Prevent iOS auto-zoom on focus — requires font-size >= 16px */
+    /* Prevent iOS auto-zoom on focus - requires font-size >= 16px */
     font-size: max(16px, 0.875rem);
   }
 
@@ -176,7 +176,7 @@ html {
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }
-  /* Mobile nav bar — now at top, no bottom padding needed */
+  /* Mobile nav bar - now at top, no bottom padding needed */
   .pb-mobile-nav {
     padding-bottom: 0px;
   }
@@ -194,7 +194,7 @@ html {
   .text-muted-soft {
     color: var(--text-muted-soft);
   }
-  /* Text link — distinct from button orange (lighter, with underline on hover) */
+  /* Text link - distinct from button orange (lighter, with underline on hover) */
   .text-link {
     color: rgb(var(--brand-400));
     text-decoration: none;
@@ -225,13 +225,13 @@ html {
     @apply bg-stone-700 rounded animate-pulse;
   }
 
-  /* Architectural section labels — small uppercase headers used throughout the app */
+  /* Architectural section labels - small uppercase headers used throughout the app */
   .label-section {
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #d6d3d1; /* stone-300 — WCAG AA compliant on dark bg */
+    color: #d6d3d1; /* stone-300 - WCAG AA compliant on dark bg */
   }
   .fluid-display-xl {
     font-size: clamp(2rem, 6vw, 3.75rem);
@@ -272,7 +272,7 @@ html {
 }
 
 /* ============================================
-   FULLCALENDAR — GOOGLE CALENDAR STYLE
+   FULLCALENDAR - GOOGLE CALENDAR STYLE
    ============================================ */
 
 /* Container */
@@ -310,7 +310,7 @@ html {
 .calendar-container .fc .fc-col-header-cell-cushion {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #d6d3d1; /* stone-300 — WCAG AA compliant */
+  color: #d6d3d1; /* stone-300 - WCAG AA compliant */
   text-transform: uppercase;
   letter-spacing: 0.025em;
   text-decoration: none;
@@ -389,7 +389,7 @@ html {
 }
 .calendar-container .fc .fc-timegrid-slot-label {
   font-size: 0.75rem;
-  color: #a8a29e; /* stone-400 — WCAG AA for large text on dark bg */
+  color: #a8a29e; /* stone-400 - WCAG AA for large text on dark bg */
   vertical-align: top;
   padding-top: 2px;
 }
@@ -486,11 +486,11 @@ html {
 }
 
 /* ============================================
-   CULINARY BOARD — Word Click Animations
+   CULINARY BOARD - Word Click Animations
    Each word animates to FEEL like itself.
    ============================================ */
 
-/* SHATTER — rapid shake like something cracking apart */
+/* SHATTER - rapid shake like something cracking apart */
 @keyframes culinary-shatter {
   0% {
     transform: var(--base-rotate);
@@ -527,7 +527,7 @@ html {
   animation: culinary-shatter 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
 }
 
-/* MELT — droop downward like something softening */
+/* MELT - droop downward like something softening */
 @keyframes culinary-melt {
   0% {
     transform: var(--base-rotate);
@@ -550,7 +550,7 @@ html {
   animation: culinary-melt 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
 }
 
-/* BOUNCE — springy up and down */
+/* BOUNCE - springy up and down */
 @keyframes culinary-bounce {
   0% {
     transform: var(--base-rotate);
@@ -578,7 +578,7 @@ html {
   animation: culinary-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-/* FLOAT — drift gently upward */
+/* FLOAT - drift gently upward */
 @keyframes culinary-float {
   0% {
     transform: var(--base-rotate);
@@ -597,7 +597,7 @@ html {
   animation: culinary-float 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
 }
 
-/* WOBBLE — jelly-like wiggle */
+/* WOBBLE - jelly-like wiggle */
 @keyframes culinary-wobble {
   0% {
     transform: var(--base-rotate);
@@ -625,7 +625,7 @@ html {
   animation: culinary-wobble 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
 }
 
-/* GLIDE — smooth slow sway, like silk in a breeze */
+/* GLIDE - smooth slow sway, like silk in a breeze */
 @keyframes culinary-glide {
   0% {
     transform: var(--base-rotate);
@@ -647,7 +647,7 @@ html {
   animation: culinary-glide 0.9s cubic-bezier(0.45, 0, 0.55, 1) !important;
 }
 
-/* FLAME — flicker like fire */
+/* FLAME - flicker like fire */
 @keyframes culinary-flame {
   0% {
     transform: var(--base-rotate);
@@ -690,7 +690,7 @@ html {
   animation: culinary-flame 0.6s ease-in-out !important;
 }
 
-/* FREEZE — shiver then lock solid */
+/* FREEZE - shiver then lock solid */
 @keyframes culinary-freeze {
   0% {
     transform: var(--base-rotate);
@@ -729,7 +729,7 @@ html {
   animation: culinary-freeze 0.6s linear !important;
 }
 
-/* EXPLODE — big pop outward */
+/* EXPLODE - big pop outward */
 @keyframes culinary-explode {
   0% {
     transform: var(--base-rotate) scale(1);
@@ -754,7 +754,7 @@ html {
   animation: culinary-explode 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-/* DRIP — slide down like liquid running */
+/* DRIP - slide down like liquid running */
 @keyframes culinary-drip {
   0% {
     transform: var(--base-rotate);
@@ -779,7 +779,7 @@ html {
   animation: culinary-drip 0.7s cubic-bezier(0.55, 0.06, 0.68, 0.19) !important;
 }
 
-/* SIZZLE — rapid micro-vibration */
+/* SIZZLE - rapid micro-vibration */
 @keyframes culinary-sizzle {
   0% {
     transform: var(--base-rotate);
@@ -828,7 +828,7 @@ html {
   animation: culinary-sizzle 0.4s linear !important;
 }
 
-/* PUFF — expand and fade like smoke */
+/* PUFF - expand and fade like smoke */
 @keyframes culinary-puff {
   0% {
     transform: var(--base-rotate) scale(1);
@@ -855,7 +855,7 @@ html {
   animation: culinary-puff 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
 }
 
-/* THROB — slow deep pulse like a heartbeat */
+/* THROB - slow deep pulse like a heartbeat */
 @keyframes culinary-throb {
   0% {
     transform: var(--base-rotate) scale(1);
@@ -880,7 +880,7 @@ html {
   animation: culinary-throb 0.7s ease-in-out !important;
 }
 
-/* SWIRL — rotate around like stirring a pot */
+/* SWIRL - rotate around like stirring a pot */
 @keyframes culinary-swirl {
   0% {
     transform: var(--base-rotate) rotate(0deg);
@@ -902,7 +902,7 @@ html {
   animation: culinary-swirl 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
 }
 
-/* SQUISH — compress vertically then bounce back */
+/* SQUISH - compress vertically then bounce back */
 @keyframes culinary-squish {
   0% {
     transform: var(--base-rotate) scaleY(1) scaleX(1);
@@ -924,7 +924,7 @@ html {
   animation: culinary-squish 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-/* CRUMBLE — shake and shrink away */
+/* CRUMBLE - shake and shrink away */
 @keyframes culinary-crumble {
   0% {
     transform: var(--base-rotate) scale(1);
@@ -955,7 +955,7 @@ html {
   animation: culinary-crumble 0.6s ease-in-out !important;
 }
 
-/* STRETCH — pull horizontally like taffy */
+/* STRETCH - pull horizontally like taffy */
 @keyframes culinary-stretch {
   0% {
     transform: var(--base-rotate) scaleX(1);
@@ -977,7 +977,7 @@ html {
   animation: culinary-stretch 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
 }
 
-/* SLICE — sharp quick lateral cut */
+/* SLICE - sharp quick lateral cut */
 @keyframes culinary-slice {
   0% {
     transform: var(--base-rotate);
@@ -1002,7 +1002,7 @@ html {
   animation: culinary-slice 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
 }
 
-/* SPARKLE — flash of golden brightness */
+/* SPARKLE - flash of golden brightness */
 @keyframes culinary-sparkle {
   0% {
     transform: var(--base-rotate);
@@ -1029,7 +1029,7 @@ html {
   animation: culinary-sparkle 0.6s ease-in-out !important;
 }
 
-/* BLOOM — slow grow outward like a flower opening */
+/* BLOOM - slow grow outward like a flower opening */
 @keyframes culinary-bloom {
   0% {
     transform: var(--base-rotate) scale(0.9);
@@ -1062,7 +1062,7 @@ html {
    STAGGER & ENTRY ANIMATIONS
    ============================================ */
 
-/* Card/list item stagger — items appear in sequence */
+/* Card/list item stagger - items appear in sequence */
 @keyframes card-enter {
   from {
     opacity: 0;
@@ -1079,7 +1079,7 @@ html {
   animation-delay: calc(var(--stagger-index, 0) * 60ms);
 }
 
-/* Slide up + fade — for overlays entering from bottom */
+/* Slide up + fade - for overlays entering from bottom */
 @keyframes slide-up-fade {
   from {
     opacity: 0;
@@ -1095,7 +1095,7 @@ html {
   animation: slide-up-fade 250ms var(--ease-spring) both;
 }
 
-/* Sidebar warm gradient — barely visible terracotta tint at top */
+/* Sidebar warm gradient - barely visible terracotta tint at top */
 .sidebar-gradient {
   background-image: linear-gradient(180deg, rgb(var(--brand-500) / 0.03) 0%, transparent 30%);
 }
@@ -1104,7 +1104,7 @@ html {
    REMY ANIMATION SYSTEM
    ============================================ */
 
-/* Reduced motion — disables motion-heavy animations and transitions */
+/* Reduced motion - disables motion-heavy animations and transitions */
 /* Subtle always-on "line boil" for Remy's outline (hand-drawn wobble feel). */
 @keyframes remy-line-boil-outline {
   0% {
@@ -1166,7 +1166,7 @@ html {
   }
 }
 
-/* Broken image fallback — CSS-only Remy silhouette */
+/* Broken image fallback - CSS-only Remy silhouette */
 .remy-fallback {
   position: relative;
   background: #e8a878;
@@ -1323,7 +1323,7 @@ html {
 }
 
 /* ============================================
-   PRINT SYSTEM — Universal Print Styles
+   PRINT SYSTEM - Universal Print Styles
    Supports standard (Letter/A4) and thermal
    (80mm/58mm) printers. No chef should ever
    struggle to print from ChefFlow.
@@ -1434,7 +1434,7 @@ html {
   }
 }
 
-/* ---- Thermal 80mm (3 1/8") — 48 columns ---- */
+/* ---- Thermal 80mm (3 1/8") - 48 columns ---- */
 @media print {
   .print-thermal-80 {
     width: 72mm;
@@ -1483,7 +1483,7 @@ html {
   }
 }
 
-/* ---- Thermal 58mm (2 1/4") — 32 columns ---- */
+/* ---- Thermal 58mm (2 1/4") - 32 columns ---- */
 @media print {
   .print-thermal-58 {
     width: 48mm;
@@ -1576,7 +1576,7 @@ html {
 }
 
 /* ============================================
-   WCAG 3.0 LEVEL AAA — Focus Indicators
+   WCAG 3.0 LEVEL AAA - Focus Indicators
    ============================================
    Visible focus indicators on all interactive elements.
    7:1 contrast ratio minimum for AAA compliance.

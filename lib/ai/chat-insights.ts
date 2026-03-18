@@ -1,6 +1,6 @@
 // Chat Insights AI Module
 // Analyzes client messages for actionable business intelligence.
-// PRIVACY: Processes client messages, allergies, and budget data — must stay local.
+// PRIVACY: Processes client messages, allergies, and budget data - must stay local.
 // All output is non-canonical -- requires chef confirmation.
 
 'use server'

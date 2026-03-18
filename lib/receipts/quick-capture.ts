@@ -1,9 +1,9 @@
 'use server'
 
-// Quick Receipt Capture — Server Action
+// Quick Receipt Capture - Server Action
 // Used by the QuickReceiptCapture widget on the event detail page.
 // Handles: storage upload → signed URL → receipt_photos record → background OCR trigger.
-// Allowed for any event state — restriction removed so chefs can capture receipts at any time.
+// Allowed for any event state - restriction removed so chefs can capture receipts at any time.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -21,7 +21,7 @@ const MIME_TO_EXT: Record<string, string> = {
   'image/webp': 'webp',
 }
 
-// 24-hour signed URL — long enough for OCR to process after upload
+// 24-hour signed URL - long enough for OCR to process after upload
 const SIGNED_URL_EXPIRY_SECONDS = 86400
 
 export type QuickCaptureResult =
@@ -88,7 +88,7 @@ export async function quickCaptureReceipt(
 
   if (signError || !signedData?.signedUrl) {
     await supabase.storage.from(RECEIPTS_BUCKET).remove([storagePath])
-    return { success: false, error: 'Failed to generate access URL — please try again' }
+    return { success: false, error: 'Failed to generate access URL - please try again' }
   }
 
   // Register the receipt photo record (storage_path stored for future URL regeneration)
@@ -107,13 +107,13 @@ export async function quickCaptureReceipt(
   if (dbError || !photoRecord) {
     console.error('[quickCaptureReceipt] DB insert error:', dbError)
     await supabase.storage.from(RECEIPTS_BUCKET).remove([storagePath])
-    return { success: false, error: 'Failed to register receipt — please try again' }
+    return { success: false, error: 'Failed to register receipt - please try again' }
   }
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/events/${eventId}/receipts`)
 
-  // Trigger OCR in the background — non-blocking so the UI gets a fast response
+  // Trigger OCR in the background - non-blocking so the UI gets a fast response
   processReceiptOCR(photoRecord.id).catch((err) => {
     console.error('[quickCaptureReceipt] Background OCR error:', err)
   })

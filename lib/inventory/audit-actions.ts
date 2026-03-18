@@ -1,5 +1,5 @@
 // Inventory Audit Server Actions
-// Chef-only: Physical count workflow — create audit, count items, finalize with variance adjustments.
+// Chef-only: Physical count workflow - create audit, count items, finalize with variance adjustments.
 // Finalizing posts audit_adjustment transactions to the inventory ledger for each variance.
 
 'use server'

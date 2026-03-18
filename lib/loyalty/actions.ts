@@ -1,7 +1,7 @@
 // Loyalty Program Server Actions
 // Universal loyalty system: full (points+tiers+rewards), lite (tiers only), or off
-// Earn modes: per_guest, per_dollar, per_event — chef configurable
-// Service-denominated rewards only — the chef never spends money
+// Earn modes: per_guest, per_dollar, per_event - chef configurable
+// Service-denominated rewards only - the chef never spends money
 
 'use server'
 
@@ -412,7 +412,7 @@ export async function getEventLoyaltyImpactByTenant(input: {
 }
 
 // =====================================================================================
-// 1. getLoyaltyConfig — Returns the chef's loyalty program configuration
+// 1. getLoyaltyConfig - Returns the chef's loyalty program configuration
 // =====================================================================================
 
 export async function getLoyaltyConfig(): Promise<LoyaltyConfig> {
@@ -476,7 +476,7 @@ export async function getLoyaltyConfig(): Promise<LoyaltyConfig> {
 }
 
 // =====================================================================================
-// 2. updateLoyaltyConfig — Update loyalty program settings
+// 2. updateLoyaltyConfig - Update loyalty program settings
 // =====================================================================================
 
 export async function updateLoyaltyConfig(input: z.infer<typeof UpdateLoyaltyConfigSchema>) {
@@ -505,7 +505,7 @@ export async function updateLoyaltyConfig(input: z.infer<typeof UpdateLoyaltyCon
 }
 
 // =====================================================================================
-// 3. awardEventPoints — Called when event reaches 'completed'
+// 3. awardEventPoints - Called when event reaches 'completed'
 // =====================================================================================
 
 export async function awardEventPoints(eventId: string) {
@@ -542,7 +542,7 @@ export async function awardEventPoints(eventId: string) {
   }
 
   if (config.program_mode === 'lite') {
-    // Lite mode: visit-based tiers only, no points — handled by awardLiteVisit()
+    // Lite mode: visit-based tiers only, no points - handled by awardLiteVisit()
     return { success: true, programInactive: true, pointsAwarded: 0 }
   }
 
@@ -745,7 +745,7 @@ export async function awardEventPoints(eventId: string) {
 }
 
 // =====================================================================================
-// 3b. getLoyaltyConfigByTenant — Get config without requireChef() (for internal use)
+// 3b. getLoyaltyConfigByTenant - Get config without requireChef() (for internal use)
 // =====================================================================================
 
 export async function getLoyaltyConfigByTenant(tenantId: string): Promise<LoyaltyConfig | null> {
@@ -768,7 +768,7 @@ export async function getLoyaltyConfigByTenant(tenantId: string): Promise<Loyalt
 }
 
 // =====================================================================================
-// 3c. awardLiteVisit — Lite mode: update visit count + tier, no points
+// 3c. awardLiteVisit - Lite mode: update visit count + tier, no points
 // =====================================================================================
 
 export async function awardLiteVisit(eventId: string) {
@@ -864,7 +864,7 @@ export async function awardLiteVisit(eventId: string) {
 }
 
 // =====================================================================================
-// 4. awardBonusPoints — Manual bonus by chef
+// 4. awardBonusPoints - Manual bonus by chef
 // =====================================================================================
 
 export async function awardBonusPoints(clientId: string, points: number, description: string) {
@@ -932,7 +932,7 @@ export async function awardBonusPoints(clientId: string, points: number, descrip
 }
 
 // =====================================================================================
-// 5. redeemReward — Deduct points for a reward
+// 5. redeemReward - Deduct points for a reward
 // =====================================================================================
 
 export async function redeemReward(clientId: string, rewardId: string, eventId?: string) {
@@ -991,14 +991,14 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
     throw new Error('Failed to redeem reward')
   }
 
-  // Update client balance — tier NEVER decreases from redemption
+  // Update client balance - tier NEVER decreases from redemption
   const newBalance = (client.loyalty_points || 0) - reward.points_required
 
   await supabase
     .from('clients')
     .update({
       loyalty_points: newBalance,
-      // Keep current tier — tiers never decrease from redemption
+      // Keep current tier - tiers never decrease from redemption
     })
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
@@ -1036,7 +1036,7 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
 }
 
 // =====================================================================================
-// 6. getClientLoyaltyProfile — Full loyalty status for a client
+// 6. getClientLoyaltyProfile - Full loyalty status for a client
 // =====================================================================================
 
 export async function getClientLoyaltyProfile(clientId: string): Promise<ClientLoyaltyProfile> {
@@ -1123,7 +1123,7 @@ export async function getClientLoyaltyProfile(clientId: string): Promise<ClientL
 }
 
 // =====================================================================================
-// 7. getLoyaltyTransactions — Full transaction history for a client
+// 7. getLoyaltyTransactions - Full transaction history for a client
 // =====================================================================================
 
 export async function getLoyaltyTransactions(clientId: string) {
@@ -1146,7 +1146,7 @@ export async function getLoyaltyTransactions(clientId: string) {
 }
 
 // =====================================================================================
-// 8. createReward — Add a new reward to the catalog
+// 8. createReward - Add a new reward to the catalog
 // =====================================================================================
 
 export async function createReward(input: CreateRewardInput) {
@@ -1180,7 +1180,7 @@ export async function createReward(input: CreateRewardInput) {
 }
 
 // =====================================================================================
-// 9. getRewards — List all active rewards
+// 9. getRewards - List all active rewards
 // =====================================================================================
 
 export async function getRewards() {
@@ -1203,7 +1203,7 @@ export async function getRewards() {
 }
 
 // =====================================================================================
-// 10. updateReward — Edit a reward
+// 10. updateReward - Edit a reward
 // =====================================================================================
 
 export async function updateReward(rewardId: string, input: UpdateRewardInput) {
@@ -1232,7 +1232,7 @@ export async function updateReward(rewardId: string, input: UpdateRewardInput) {
 }
 
 // =====================================================================================
-// 11. deactivateReward — Soft delete
+// 11. deactivateReward - Soft delete
 // =====================================================================================
 
 export async function deactivateReward(rewardId: string) {
@@ -1258,7 +1258,7 @@ export async function deactivateReward(rewardId: string) {
 }
 
 // =====================================================================================
-// 12. getLoyaltyOverview — Dashboard stats
+// 12. getLoyaltyOverview - Dashboard stats
 // =====================================================================================
 
 export async function getLoyaltyOverview(): Promise<LoyaltyOverview> {
@@ -1352,7 +1352,7 @@ export async function getLoyaltyOverview(): Promise<LoyaltyOverview> {
 }
 
 // =====================================================================================
-// 13. getClientsApproachingRewards — Outreach opportunities
+// 13. getClientsApproachingRewards - Outreach opportunities
 // =====================================================================================
 
 export async function getClientsApproachingRewards() {
@@ -1408,6 +1408,389 @@ export async function getClientsApproachingRewards() {
     .filter((c: any): c is NonNullable<typeof c> => c !== null)
 
   return approaching
+}
+
+// =====================================================================================
+// 14. adjustClientLoyalty - Manual chef adjustment (deduct points, set tier, correct stats)
+// =====================================================================================
+
+const AdjustLoyaltySchema = z.object({
+  clientId: z.string().uuid(),
+  adjustmentPoints: z.number().int().optional(), // positive = add, negative = deduct
+  adjustmentReason: z.string().min(1).optional(),
+  overrideTier: z.enum(['bronze', 'silver', 'gold', 'platinum']).optional(),
+  overrideEventsCompleted: z.number().int().min(0).optional(),
+  overrideGuestsServed: z.number().int().min(0).optional(),
+  resetPoints: z.boolean().optional(), // set balance to 0
+})
+
+export type AdjustLoyaltyInput = z.infer<typeof AdjustLoyaltySchema>
+
+export async function adjustClientLoyalty(input: AdjustLoyaltyInput) {
+  const user = await requireChef()
+  const validated = AdjustLoyaltySchema.parse(input)
+  const supabase: any = createServerClient()
+
+  const { data: client } = await supabase
+    .from('clients')
+    .select(
+      'id, full_name, loyalty_points, loyalty_tier, total_events_completed, total_guests_served'
+    )
+    .eq('id', validated.clientId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!client) throw new Error('Client not found')
+
+  const updates: Record<string, any> = {}
+  const actions: string[] = []
+
+  // Point adjustment (add or deduct)
+  if (validated.adjustmentPoints && validated.adjustmentPoints !== 0) {
+    const txType: LoyaltyTransactionType = validated.adjustmentPoints > 0 ? 'bonus' : 'adjustment'
+    const { error: txError } = await supabase.from('loyalty_transactions').insert({
+      tenant_id: user.tenantId!,
+      client_id: validated.clientId,
+      type: txType,
+      points: validated.adjustmentPoints,
+      description:
+        validated.adjustmentReason ||
+        `Manual ${validated.adjustmentPoints > 0 ? 'bonus' : 'deduction'} by chef`,
+      created_by: user.id,
+    })
+    if (txError) throw new Error('Failed to create adjustment transaction')
+
+    updates.loyalty_points = Math.max(0, (client.loyalty_points || 0) + validated.adjustmentPoints)
+    actions.push(`${validated.adjustmentPoints > 0 ? '+' : ''}${validated.adjustmentPoints} points`)
+  }
+
+  // Reset points to zero
+  if (validated.resetPoints) {
+    const currentBalance = updates.loyalty_points ?? (client.loyalty_points || 0)
+    if (currentBalance > 0) {
+      await supabase.from('loyalty_transactions').insert({
+        tenant_id: user.tenantId!,
+        client_id: validated.clientId,
+        type: 'adjustment',
+        points: -currentBalance,
+        description: validated.adjustmentReason || 'Points reset to zero by chef',
+        created_by: user.id,
+      })
+      updates.loyalty_points = 0
+      actions.push('Points reset to 0')
+    }
+  }
+
+  // Tier override
+  if (validated.overrideTier) {
+    updates.loyalty_tier = validated.overrideTier
+    actions.push(`Tier set to ${validated.overrideTier}`)
+  }
+
+  // Stats corrections
+  if (validated.overrideEventsCompleted !== undefined) {
+    updates.total_events_completed = validated.overrideEventsCompleted
+    actions.push(`Events completed set to ${validated.overrideEventsCompleted}`)
+  }
+  if (validated.overrideGuestsServed !== undefined) {
+    updates.total_guests_served = validated.overrideGuestsServed
+    actions.push(`Guests served set to ${validated.overrideGuestsServed}`)
+  }
+
+  // If no tier override, recalculate tier from lifetime earned
+  if (!validated.overrideTier && (validated.adjustmentPoints || validated.resetPoints)) {
+    const config = await getLoyaltyConfig()
+    const { data: lifetimeData } = await supabase
+      .from('loyalty_transactions')
+      .select('points')
+      .eq('client_id', validated.clientId)
+      .eq('tenant_id', user.tenantId!)
+      .in('type', ['earned', 'bonus'])
+
+    const lifetimeEarned = (lifetimeData || []).reduce((sum: number, tx: any) => sum + tx.points, 0)
+    updates.loyalty_tier = computeTier(lifetimeEarned, config)
+  }
+
+  if (Object.keys(updates).length > 0) {
+    const { error: updateError } = await supabase
+      .from('clients')
+      .update(updates)
+      .eq('id', validated.clientId)
+      .eq('tenant_id', user.tenantId!)
+
+    if (updateError) throw new Error('Failed to update client loyalty data')
+  }
+
+  revalidatePath(`/clients/${validated.clientId}`)
+  revalidatePath('/loyalty')
+
+  return { success: true, actions, updates }
+}
+
+// =====================================================================================
+// 15. backfillLoyaltyForHistoricalImports - Retroactive points for imported events
+//     Processes all completed events that haven't been loyalty-awarded yet.
+//     Batch-aware: accumulates stats correctly, sends one summary notification.
+// =====================================================================================
+
+export type BackfillLoyaltyResult = {
+  success: boolean
+  clientsProcessed: number
+  eventsProcessed: number
+  totalPointsAwarded: number
+  tierChanges: {
+    clientId: string
+    clientName: string
+    oldTier: LoyaltyTier
+    newTier: LoyaltyTier
+  }[]
+  errors: string[]
+}
+
+export async function backfillLoyaltyForHistoricalImports(): Promise<BackfillLoyaltyResult> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const config = await getLoyaltyConfig()
+
+  if (!config.is_active || config.program_mode === 'off') {
+    return {
+      success: true,
+      clientsProcessed: 0,
+      eventsProcessed: 0,
+      totalPointsAwarded: 0,
+      tierChanges: [],
+      errors: [],
+    }
+  }
+
+  // Find all completed events that haven't had loyalty awarded
+  const { data: unawarded, error: fetchError } = await supabase
+    .from('events')
+    .select('id, client_id, guest_count, total_price_cents, event_date')
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'completed')
+    .or('loyalty_points_awarded.is.null,loyalty_points_awarded.eq.false')
+    .order('event_date', { ascending: true })
+
+  if (fetchError) {
+    return {
+      success: false,
+      clientsProcessed: 0,
+      eventsProcessed: 0,
+      totalPointsAwarded: 0,
+      tierChanges: [],
+      errors: [fetchError.message],
+    }
+  }
+
+  if (!unawarded || unawarded.length === 0) {
+    return {
+      success: true,
+      clientsProcessed: 0,
+      eventsProcessed: 0,
+      totalPointsAwarded: 0,
+      tierChanges: [],
+      errors: [],
+    }
+  }
+
+  // Group by client for batch processing
+  const byClient = new Map<string, typeof unawarded>()
+  for (const event of unawarded) {
+    const list = byClient.get(event.client_id) || []
+    list.push(event)
+    byClient.set(event.client_id, list)
+  }
+
+  const errors: string[] = []
+  const tierChanges: BackfillLoyaltyResult['tierChanges'] = []
+  let totalEventsProcessed = 0
+  let totalPointsAwarded = 0
+
+  for (const [clientId, events] of byClient) {
+    try {
+      // Get current client state
+      const { data: client } = await supabase
+        .from('clients')
+        .select(
+          'full_name, loyalty_points, loyalty_tier, total_events_completed, total_guests_served'
+        )
+        .eq('id', clientId)
+        .eq('tenant_id', user.tenantId!)
+        .single()
+
+      if (!client) {
+        errors.push(`Client ${clientId} not found, skipping ${events.length} events`)
+        continue
+      }
+
+      const oldTier = (client.loyalty_tier || 'bronze') as LoyaltyTier
+      let runningPointsBalance = client.loyalty_points || 0
+      let runningEventsCompleted = client.total_events_completed || 0
+      let runningGuestsServed = client.total_guests_served || 0
+      let clientPointsAwarded = 0
+
+      // Process events in chronological order
+      for (const event of events) {
+        const guestCount = event.guest_count || 1
+        runningEventsCompleted++
+        runningGuestsServed += guestCount
+
+        if (config.program_mode === 'full') {
+          // Compute base points
+          let basePoints: number
+          let baseDescription: string
+
+          switch (config.earn_mode) {
+            case 'per_dollar': {
+              const dollars = (event.total_price_cents || 0) / 100
+              basePoints = Math.round(dollars * config.points_per_dollar)
+              baseDescription = `$${dollars.toFixed(2)} x ${config.points_per_dollar} pts/$ (historical import)`
+              break
+            }
+            case 'per_event': {
+              basePoints = config.points_per_event
+              baseDescription = `Flat ${config.points_per_event} pts per event (historical import)`
+              break
+            }
+            case 'per_guest':
+            default: {
+              basePoints = guestCount * config.points_per_guest
+              baseDescription = `${guestCount} guests x ${config.points_per_guest} pts/guest (historical import)`
+              break
+            }
+          }
+
+          // Insert base earned transaction
+          await supabase.from('loyalty_transactions').insert({
+            tenant_id: user.tenantId!,
+            client_id: clientId,
+            event_id: event.id,
+            type: 'earned',
+            points: basePoints,
+            description: baseDescription,
+            created_by: user.id,
+          })
+
+          runningPointsBalance += basePoints
+          clientPointsAwarded += basePoints
+
+          // Large party bonus
+          if (
+            config.bonus_large_party_threshold &&
+            guestCount >= config.bonus_large_party_threshold
+          ) {
+            const bonusPoints = config.bonus_large_party_points || 0
+            if (bonusPoints > 0) {
+              await supabase.from('loyalty_transactions').insert({
+                tenant_id: user.tenantId!,
+                client_id: clientId,
+                event_id: event.id,
+                type: 'bonus',
+                points: bonusPoints,
+                description: `Large party bonus (${guestCount}+ guests, historical import)`,
+                created_by: user.id,
+              })
+              runningPointsBalance += bonusPoints
+              clientPointsAwarded += bonusPoints
+            }
+          }
+
+          // Milestone bonuses
+          for (const milestone of config.milestone_bonuses) {
+            if (runningEventsCompleted === milestone.events) {
+              await supabase.from('loyalty_transactions').insert({
+                tenant_id: user.tenantId!,
+                client_id: clientId,
+                event_id: event.id,
+                type: 'bonus',
+                points: milestone.bonus,
+                description: `Milestone bonus: ${milestone.events}th event completed! (historical import)`,
+                created_by: user.id,
+              })
+              runningPointsBalance += milestone.bonus
+              clientPointsAwarded += milestone.bonus
+            }
+          }
+        }
+
+        // Mark event as loyalty-awarded
+        await supabase
+          .from('events')
+          .update({ loyalty_points_awarded: true })
+          .eq('id', event.id)
+          .eq('tenant_id', user.tenantId!)
+
+        totalEventsProcessed++
+      }
+
+      // Calculate final tier
+      let newTier: LoyaltyTier
+      if (config.program_mode === 'lite') {
+        // Lite mode: tier based on visit count
+        newTier = computeTier(runningEventsCompleted, config)
+      } else {
+        // Full mode: tier based on lifetime earned points
+        const { data: lifetimeData } = await supabase
+          .from('loyalty_transactions')
+          .select('points')
+          .eq('client_id', clientId)
+          .eq('tenant_id', user.tenantId!)
+          .in('type', ['earned', 'bonus'])
+
+        const lifetimeEarned = (lifetimeData || []).reduce(
+          (sum: number, tx: any) => sum + tx.points,
+          0
+        )
+        newTier = computeTier(lifetimeEarned, config)
+      }
+
+      // Update client record (single update per client, not per event)
+      const clientUpdate: Record<string, any> = {
+        loyalty_tier: newTier,
+        total_events_completed: runningEventsCompleted,
+        total_guests_served: runningGuestsServed,
+      }
+      if (config.program_mode === 'full') {
+        clientUpdate.loyalty_points = runningPointsBalance
+      }
+
+      await supabase
+        .from('clients')
+        .update(clientUpdate)
+        .eq('id', clientId)
+        .eq('tenant_id', user.tenantId!)
+
+      totalPointsAwarded += clientPointsAwarded
+
+      if (newTier !== oldTier) {
+        tierChanges.push({
+          clientId,
+          clientName: client.full_name || 'Unknown',
+          oldTier,
+          newTier,
+        })
+      }
+    } catch (err) {
+      errors.push(
+        `Error processing client ${clientId}: ${err instanceof Error ? err.message : 'Unknown error'}`
+      )
+    }
+  }
+
+  revalidatePath('/loyalty')
+  revalidatePath('/clients')
+  revalidatePath('/dashboard')
+
+  return {
+    success: errors.length === 0,
+    clientsProcessed: byClient.size,
+    eventsProcessed: totalEventsProcessed,
+    totalPointsAwarded,
+    tierChanges,
+    errors,
+  }
 }
 
 // =====================================================================================

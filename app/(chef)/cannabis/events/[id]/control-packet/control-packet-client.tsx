@@ -889,7 +889,7 @@ export function ControlPacketClient({
                             disabled={isFinalized || isPending}
                             className="w-14 rounded px-1 py-1 bg-[#0a130a] border border-[#27432b] text-[#d2e8d4]"
                           />
-                          <label className="flex gap-1 text-[11px] text-[#7cab80]">
+                          <label className="flex gap-1 text-xs-tight text-[#7cab80]">
                             <input
                               type="checkbox"
                               checked={course.doseApplied}
@@ -905,7 +905,7 @@ export function ControlPacketClient({
                             />
                             Dose
                           </label>
-                          <label className="flex gap-1 text-[11px] text-[#7cab80]">
+                          <label className="flex gap-1 text-xs-tight text-[#7cab80]">
                             <input
                               type="checkbox"
                               checked={course.skipped}
@@ -916,7 +916,7 @@ export function ControlPacketClient({
                             />
                             Skip
                           </label>
-                          <label className="flex gap-1 text-[11px] text-[#7cab80]">
+                          <label className="flex gap-1 text-xs-tight text-[#7cab80]">
                             <input
                               type="checkbox"
                               checked={course.optedOutDuringService}
@@ -982,7 +982,7 @@ export function ControlPacketClient({
                     key={item.id}
                     href={item.signedUrl || '#'}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="block rounded overflow-hidden border border-[#27432b]"
                   >
                     <div className="aspect-square bg-[#0a130a]">

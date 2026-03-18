@@ -1,7 +1,7 @@
 'use server'
 
 /**
- * Charity Hours CRUD — server actions for logging volunteer hours.
+ * Charity Hours CRUD - server actions for logging volunteer hours.
  * Pattern follows lib/staff/clock-actions.ts.
  */
 
@@ -172,7 +172,7 @@ export async function getRecentCharityOrgs(): Promise<CharityOrganization[]> {
 
   if (error) throw new Error(`Failed to fetch recent orgs: ${error.message}`)
 
-  // Aggregate client-side — small dataset per chef
+  // Aggregate client-side - small dataset per chef
   const orgMap = new Map<string, CharityOrganization>()
   for (const row of (data as any[]) ?? []) {
     const key = row.organization_name as string

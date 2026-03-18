@@ -96,10 +96,10 @@ const GBP_SUBJECT_INDICATORS = [
 export function isGoogleBusinessEmail(fromAddress: string): boolean {
   const lower = fromAddress.toLowerCase().trim()
 
-  // Exact known GBP senders — always match
+  // Exact known GBP senders - always match
   if (GBP_KNOWN_SENDERS.includes(lower)) return true
 
-  // Generic @google.com — NOT enough on its own
+  // Generic @google.com - NOT enough on its own
   // We only match known senders above. For generic @google.com addresses,
   // the caller should use detectGoogleBusinessEmailType to confirm the
   // subject/body match before treating it as a GBP email.
@@ -107,7 +107,7 @@ export function isGoogleBusinessEmail(fromAddress: string): boolean {
   if (!domain || !GBP_SENDER_DOMAINS.includes(domain)) return false
 
   // It's from @google.com but not a known GBP sender.
-  // Return false — the caller must additionally check the subject.
+  // Return false - the caller must additionally check the subject.
   return false
 }
 
@@ -200,7 +200,7 @@ export function detectGoogleBusinessEmailType(
   return 'gbp_administrative'
 }
 
-// ─── Field Extraction — New Message ─────────────────────────────────────
+// ─── Field Extraction - New Message ─────────────────────────────────────
 
 function parseMessageEmail(
   subject: string,
@@ -231,7 +231,7 @@ function parseMessageEmail(
 
   if (!senderName) warnings.push('Could not extract sender name from message notification')
 
-  // Message content — typically in a quoted block or after a label
+  // Message content - typically in a quoted block or after a label
   let messageContent: string | null = null
   const contentMatch =
     body.match(/(?:message|said|wrote)[:\s]*[""](.+?)[""]/i) ||
@@ -241,7 +241,7 @@ function parseMessageEmail(
     messageContent = contentMatch[1].trim()
   }
 
-  // Business name — "on [Business Name]" or "your business [Business Name]"
+  // Business name - "on [Business Name]" or "your business [Business Name]"
   let businessName: string | null = null
   const businessMatch =
     body.match(
@@ -253,7 +253,7 @@ function parseMessageEmail(
     businessName = businessMatch[1].trim()
   }
 
-  // CTA link — "Reply" or "View message" or "Respond" button
+  // CTA link - "Reply" or "View message" or "Respond" button
   const ctaMatch = body.match(
     /href="([^"]*)"[^>]*>(?:[^<]*?)(?:Reply|View message|Respond|See message|Open message)/i
   )
@@ -276,7 +276,7 @@ function parseMessageEmail(
   }
 }
 
-// ─── Field Extraction — New Review ──────────────────────────────────────
+// ─── Field Extraction - New Review ──────────────────────────────────────
 
 function parseReviewEmail(
   subject: string,
@@ -305,7 +305,7 @@ function parseReviewEmail(
 
   if (!reviewerName) warnings.push('Could not extract reviewer name from review notification')
 
-  // Rating — look for star count or numeric rating
+  // Rating - look for star count or numeric rating
   let rating: number | null = null
   const ratingMatch =
     body.match(/(\d)\s*(?:star|★|⭐)/i) ||
@@ -329,7 +329,7 @@ function parseReviewEmail(
     }
   }
 
-  // Review text — quoted content or after rating
+  // Review text - quoted content or after rating
   let reviewText: string | null = null
   const textMatch =
     body.match(/(?:review|said|wrote)[:\s]*[""](.+?)[""]/i) ||
@@ -348,7 +348,7 @@ function parseReviewEmail(
     businessName = businessMatch[1].trim()
   }
 
-  // CTA link — "View review" or "Reply to review" or "See review"
+  // CTA link - "View review" or "Reply to review" or "See review"
   const ctaMatch = body.match(
     /href="([^"]*)"[^>]*>(?:[^<]*?)(?:View review|Reply to review|See review|Read review|Respond)/i
   )
@@ -372,7 +372,7 @@ function parseReviewEmail(
   }
 }
 
-// ─── Field Extraction — Booking ─────────────────────────────────────────
+// ─── Field Extraction - Booking ─────────────────────────────────────────
 
 function parseBookingEmail(
   subject: string,
@@ -433,7 +433,7 @@ function parseBookingEmail(
     businessName = businessMatch[1].trim()
   }
 
-  // CTA link — "View booking" or "Manage booking"
+  // CTA link - "View booking" or "Manage booking"
   const ctaMatch = body.match(
     /href="([^"]*)"[^>]*>(?:[^<]*?)(?:View booking|Manage booking|See booking|Confirm booking|View reservation)/i
   )
@@ -494,7 +494,7 @@ export function parseGoogleBusinessEmail(email: ParsedEmail): GoogleBusinessPars
       break
     }
     case 'gbp_administrative':
-      // No structured extraction needed — just log the type
+      // No structured extraction needed - just log the type
       break
   }
 

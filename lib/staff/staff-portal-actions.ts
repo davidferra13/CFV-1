@@ -1,4 +1,4 @@
-// Staff Portal — Server Actions
+// Staff Portal - Server Actions
 // Read-heavy actions for staff members to view their tasks, assignments, station, and recipes.
 // All actions call requireStaff() first and scope queries by staff_member_id AND chef_id (tenant).
 
@@ -210,7 +210,7 @@ export async function completeMyTask(taskId: string): Promise<{ success: boolean
     throw new Error('Failed to complete task')
   }
 
-  // Log completion — non-blocking
+  // Log completion - non-blocking
   try {
     await supabase.from('task_completion_log').insert({
       chef_id: user.tenantId,
@@ -228,7 +228,7 @@ export async function completeMyTask(taskId: string): Promise<{ success: boolean
 }
 
 // ============================================
-// UNCOMPLETE MY TASK (reopen — only if assigned to me)
+// UNCOMPLETE MY TASK (reopen - only if assigned to me)
 // ============================================
 
 export async function uncompleteMyTask(taskId: string): Promise<{ success: boolean }> {
@@ -337,14 +337,14 @@ export async function getMyUpcomingAssignments(): Promise<StaffAssignment[]> {
 }
 
 // ============================================
-// GET MY STATION(S) — find which station(s) this staff member is assigned to
+// GET MY STATION(S) - find which station(s) this staff member is assigned to
 // ============================================
 
 export async function getMyStations(): Promise<StaffStation[]> {
   const user = await requireStaff()
   const supabase: any = createServerClient({ admin: true })
 
-  // Find stations through shift_logs — staff who checked in most recently
+  // Find stations through shift_logs - staff who checked in most recently
   // Also check tasks assigned to the staff member that reference a station
   const { data: taskStations, error: taskError } = await supabase
     .from('tasks')
@@ -543,7 +543,7 @@ export async function getStationRecipes(stationId: string): Promise<StaffRecipe[
     .not('menu_item_id', 'is', null)
 
   if (smiError || !stationMenuItems?.length) {
-    // No linked menu items — try to get all recipes for the tenant instead
+    // No linked menu items - try to get all recipes for the tenant instead
     const { data: allRecipes, error: recipesError } = await supabase
       .from('recipes')
       .select(

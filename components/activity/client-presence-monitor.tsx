@@ -256,7 +256,7 @@ export function ClientPresenceMonitor({
             {onlineNow.length > 0 && (
               <div>
                 <div className="px-4 py-2 bg-emerald-950 border-b border-emerald-100">
-                  <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide">
+                  <p className="text-xs-tight font-semibold text-emerald-700 uppercase tracking-wide">
                     Online Now
                   </p>
                 </div>
@@ -272,7 +272,7 @@ export function ClientPresenceMonitor({
             {recentlyActive.length > 0 && (
               <div>
                 <div className="px-4 py-2 bg-stone-800 border-b border-stone-800">
-                  <p className="text-[11px] font-semibold text-stone-300 uppercase tracking-wide">
+                  <p className="text-xs-tight font-semibold text-stone-300 uppercase tracking-wide">
                     Recently Active (last hour)
                   </p>
                 </div>

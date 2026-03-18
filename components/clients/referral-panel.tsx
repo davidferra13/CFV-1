@@ -184,18 +184,16 @@ export function ReferralPanel({ clientId, clientName }: { clientId: string; clie
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded ${STATUS_COLORS[ref.status]}`}
-                    >
+                    <span className={`text-xxs px-1.5 py-0.5 rounded ${STATUS_COLORS[ref.status]}`}>
                       {STATUS_LABELS[ref.status]}
                     </span>
                     {ref.referralSource && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-900/40 text-purple-300">
+                      <span className="text-xxs px-1.5 py-0.5 rounded bg-purple-900/40 text-purple-300">
                         {ref.referralSource}
                       </span>
                     )}
                     {ref.revenueGeneratedCents > 0 && (
-                      <span className="text-[10px] text-emerald-400">
+                      <span className="text-xxs text-emerald-400">
                         {formatCurrency(ref.revenueGeneratedCents)}
                       </span>
                     )}
@@ -210,7 +208,7 @@ export function ReferralPanel({ clientId, clientName }: { clientId: string; clie
                     <button
                       type="button"
                       onClick={() => handleAdvanceStatus(ref)}
-                      className="text-[10px] px-1.5 py-0.5 rounded bg-brand-900/30 text-brand-300 hover:bg-brand-900/50 transition-colors"
+                      className="text-xxs px-1.5 py-0.5 rounded bg-brand-900/30 text-brand-300 hover:bg-brand-900/50 transition-colors"
                       title={`Move to ${NEXT_STATUS[ref.status]}`}
                     >
                       {NEXT_STATUS[ref.status]}

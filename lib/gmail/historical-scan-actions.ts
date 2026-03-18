@@ -1,6 +1,6 @@
 'use server'
 
-// Historical Email Scan — Server Actions
+// Historical Email Scan - Server Actions
 // Opt-in toggle, status retrieval, findings management, and import flow.
 // All actions require requireChef() and are tenant-scoped.
 
@@ -64,7 +64,7 @@ export async function disableHistoricalEmailScan(): Promise<void> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Pause (not reset) — preserves progress and existing findings
+  // Pause (not reset) - preserves progress and existing findings
   await supabase
     .from('google_connections')
     .update({
@@ -190,7 +190,7 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
     })
     clientId = clientResult.id
   } catch {
-    // Non-fatal — create inquiry without client link
+    // Non-fatal - create inquiry without client link
   }
 
   // Build audit trail

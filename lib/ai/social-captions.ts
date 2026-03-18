@@ -3,7 +3,7 @@
 // Social Media Caption Generator
 // Generates Instagram/social captions from event details, menu, and tone.
 // Routed to Gemini (creative marketing copy, not PII).
-// Output is DRAFT ONLY — chef picks and edits before posting.
+// Output is DRAFT ONLY - chef picks and edits before posting.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'

@@ -39,7 +39,7 @@ export function LeadScoreBadge({
 
   if (!score) {
     return compact ? (
-      <button onClick={run} className="text-[11px] text-stone-400 hover:text-brand-600">
+      <button onClick={run} className="text-xs-tight text-stone-400 hover:text-brand-600">
         Score lead
       </button>
     ) : (
@@ -82,9 +82,7 @@ export function LeadScoreBadge({
               ))}
             </div>
           )}
-          <div className="text-stone-500 text-[10px]">
-            Scored by GOLDMINE formula (deterministic)
-          </div>
+          <div className="text-stone-500 text-xxs">Scored by GOLDMINE formula (deterministic)</div>
         </div>
       )}
     </div>

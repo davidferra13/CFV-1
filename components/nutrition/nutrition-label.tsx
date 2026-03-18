@@ -23,9 +23,7 @@ export function NutritionLabel({
 }: NutritionLabelProps) {
   const [showPerServing, setShowPerServing] = useState(true)
 
-  const displayed = showPerServing && servings > 1
-    ? divideDisplay(nutrients, servings)
-    : nutrients
+  const displayed = showPerServing && servings > 1 ? divideDisplay(nutrients, servings) : nutrients
 
   // Daily value percentages (based on 2,000 cal diet)
   const dv = {
@@ -40,24 +38,16 @@ export function NutritionLabel({
   return (
     <div className="w-[280px] border-2 border-black p-2 font-sans bg-white text-black print:border-black">
       {/* Header */}
-      <div className="text-[2rem] font-extrabold leading-none">
-        Nutrition Facts
-      </div>
+      <div className="text-[2rem] font-extrabold leading-none">Nutrition Facts</div>
 
-      {recipeName && (
-        <div className="text-xs text-gray-600 mt-0.5 truncate">
-          {recipeName}
-        </div>
-      )}
+      {recipeName && <div className="text-xs text-gray-600 mt-0.5 truncate">{recipeName}</div>}
 
       <div className="border-b-[8px] border-black mt-1 mb-1" />
 
       {/* Servings toggle */}
       {servings > 1 && (
         <div className="flex items-center justify-between text-xs mb-1">
-          <span className="font-bold">
-            {servings} servings per recipe
-          </span>
+          <span className="font-bold">{servings} servings per recipe</span>
           <button
             onClick={() => setShowPerServing(!showPerServing)}
             className="underline text-gray-600 hover:text-black"
@@ -69,8 +59,7 @@ export function NutritionLabel({
 
       {servingSize && (
         <div className="text-xs">
-          <span className="font-bold">Serving size</span>{' '}
-          {servingSize}
+          <span className="font-bold">Serving size</span> {servingSize}
         </div>
       )}
 
@@ -79,10 +68,10 @@ export function NutritionLabel({
       {/* Calories */}
       <div className="flex items-baseline justify-between py-1">
         <div>
-          <div className="text-xs font-bold">Amount per {showPerServing ? 'serving' : 'recipe'}</div>
-          <div className="text-[1.75rem] font-extrabold leading-none">
-            Calories
+          <div className="text-xs font-bold">
+            Amount per {showPerServing ? 'serving' : 'recipe'}
           </div>
+          <div className="text-[1.75rem] font-extrabold leading-none">Calories</div>
         </div>
         <div className="text-[2rem] font-extrabold leading-none">
           {Math.round(displayed.calories)}
@@ -92,25 +81,13 @@ export function NutritionLabel({
       <div className="border-b-[4px] border-black" />
 
       {/* % Daily Value header */}
-      <div className="text-right text-[10px] font-bold py-0.5">
-        % Daily Value*
-      </div>
+      <div className="text-right text-xxs font-bold py-0.5">% Daily Value*</div>
 
       <div className="border-b border-black" />
 
       {/* Nutrient rows */}
-      <NutrientRow
-        label="Total Fat"
-        value={`${displayed.fat_g}g`}
-        dvPercent={dv.fat}
-        bold
-      />
-      <NutrientRow
-        label="Sodium"
-        value={`${displayed.sodium_mg}mg`}
-        dvPercent={dv.sodium}
-        bold
-      />
+      <NutrientRow label="Total Fat" value={`${displayed.fat_g}g`} dvPercent={dv.fat} bold />
+      <NutrientRow label="Sodium" value={`${displayed.sodium_mg}mg`} dvPercent={dv.sodium} bold />
       <NutrientRow
         label="Total Carbohydrate"
         value={`${displayed.carbs_g}g`}
@@ -140,10 +117,10 @@ export function NutritionLabel({
       <div className="border-b-[8px] border-black mt-0.5" />
 
       {/* Footer */}
-      <p className="text-[9px] leading-tight mt-1 text-gray-700">
-        * Percent Daily Values are based on a 2,000 calorie diet.
-        Values are estimated from USDA FoodData Central and ingredient quantities.
-        Actual values may vary based on preparation methods and specific ingredients used.
+      <p className="text-2xs leading-tight mt-1 text-gray-700">
+        * Percent Daily Values are based on a 2,000 calorie diet. Values are estimated from USDA
+        FoodData Central and ingredient quantities. Actual values may vary based on preparation
+        methods and specific ingredients used.
       </p>
     </div>
   )
@@ -169,14 +146,13 @@ function NutrientRow({
   last?: boolean
 }) {
   return (
-    <div className={`flex items-baseline justify-between py-0.5 text-xs ${last ? '' : 'border-b border-gray-300'}`}>
+    <div
+      className={`flex items-baseline justify-between py-0.5 text-xs ${last ? '' : 'border-b border-gray-300'}`}
+    >
       <span className={indent ? 'pl-4' : ''}>
-        <span className={bold ? 'font-bold' : ''}>{label}</span>{' '}
-        {value}
+        <span className={bold ? 'font-bold' : ''}>{label}</span> {value}
       </span>
-      {dvPercent !== undefined && (
-        <span className="font-bold">{dvPercent}%</span>
-      )}
+      {dvPercent !== undefined && <span className="font-bold">{dvPercent}%</span>}
     </div>
   )
 }

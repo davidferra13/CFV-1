@@ -1,5 +1,5 @@
 // Daily Report Computation
-// Pure function — no 'use server', no requireChef().
+// Pure function - no 'use server', no requireChef().
 // Accepts a tenantId and admin Supabase client so it works from both:
 //   - The cron route (no user session)
 //   - The app page server action (via requireChef + admin client)
@@ -10,7 +10,7 @@ import type { DailyReportContent, HighIntentVisit, DailyReportEvent } from './ty
 type AdminClient = SupabaseClient
 
 /**
- * Safe wrapper — if a fetch fails, return the fallback instead of throwing.
+ * Safe wrapper - if a fetch fails, return the fallback instead of throwing.
  */
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
@@ -501,7 +501,7 @@ export async function computeDailyReport(
         return (data || []).map((inq: any) => ({
           clientName: inq.client?.full_name ?? 'Unknown',
           label: inq.status === 'new' ? 'Respond to inquiry' : 'Follow up',
-          description: `${inq.confirmed_occasion || 'Event'} — waiting for your response`,
+          description: `${inq.confirmed_occasion || 'Event'} - waiting for your response`,
           href: `/inquiries/${inq.id}`,
           urgency: 'high' as const,
         }))

@@ -1,6 +1,6 @@
 // AES-256-GCM encryption for OAuth tokens stored in social_platform_credentials.
 // Key is a 32-byte secret provided via SOCIAL_TOKEN_ENCRYPTION_KEY (base64-encoded).
-// Encrypted format: "<iv_b64>:<authTag_b64>:<ciphertext_b64>" — all three segments base64.
+// Encrypted format: "<iv_b64>:<authTag_b64>:<ciphertext_b64>" - all three segments base64.
 
 import crypto from 'crypto'
 
@@ -36,7 +36,7 @@ export function decryptToken(ciphertext: string): string {
   const key = getKey()
   const parts = ciphertext.split(':')
   if (parts.length !== 3) {
-    throw new Error('Invalid encrypted token format — expected iv:authTag:ciphertext')
+    throw new Error('Invalid encrypted token format - expected iv:authTag:ciphertext')
   }
   const [ivB64, authTagB64, encB64] = parts
   const iv = Buffer.from(ivB64, 'base64')

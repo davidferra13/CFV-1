@@ -46,7 +46,7 @@ export function SentimentBadge({ clientId }: { clientId: string }) {
     return (
       <button
         onClick={run}
-        className="text-[11px] text-stone-300 hover:text-brand-600 flex items-center gap-1"
+        className="text-xs-tight text-stone-300 hover:text-brand-600 flex items-center gap-1"
       >
         <MessageSquare className="w-3 h-3" />
         Analyze sentiment
@@ -102,7 +102,7 @@ export function SentimentBadge({ clientId }: { clientId: string }) {
             <div>Trend: {analysis.trend}</div>
           </div>
 
-          <div className="text-stone-300 text-[10px]">
+          <div className="text-stone-300 text-xxs">
             {analysis.messageSentiments.length} messages analyzed · Confidence:{' '}
             {analysis.confidence}
           </div>

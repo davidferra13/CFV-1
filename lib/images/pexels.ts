@@ -1,4 +1,4 @@
-// Pexels — free stock photography API (backup for Unsplash)
+// Pexels - free stock photography API (backup for Unsplash)
 // https://www.pexels.com/api/
 // 200 requests/hour, no credit card
 // All photos are free for commercial use
@@ -34,7 +34,7 @@ function getApiKey(): string {
 
 /**
  * Search for photos by keyword.
- * Great backup for Unsplash — different photo library.
+ * Great backup for Unsplash - different photo library.
  */
 export async function searchPhotos(
   query: string,
@@ -63,7 +63,7 @@ export async function searchPhotos(
 }
 
 /**
- * Get curated photos — editorially selected, high quality.
+ * Get curated photos - editorially selected, high quality.
  */
 export async function getCuratedPhotos(perPage = 10, page = 1): Promise<PexelsPhoto[]> {
   try {

@@ -1,6 +1,6 @@
 // Demo Data Loader
 // Loads rich sample data into the demo chef's tenant.
-// Idempotent — safe to run multiple times.
+// Idempotent - safe to run multiple times.
 //
 // Usage: npx tsx scripts/demo-data-load.ts
 // Prereq: npm run demo:setup (creates demo accounts first)
@@ -10,7 +10,7 @@ import { readFileSync } from 'fs'
 import { createRequire } from 'module'
 import dotenv from 'dotenv'
 
-// Use createRequire for local .ts imports — tsx + Node 24 on Windows treats
+// Use createRequire for local .ts imports - tsx + Node 24 on Windows treats
 // .ts files as CJS when imported from scripts/, breaking named ESM imports.
 const require = createRequire(import.meta.url)
 
@@ -123,7 +123,7 @@ async function main() {
     const eventId = eventIds[quote.eventIndex]
     await ensureQuote(admin, tenantId, clientId, eventId, quote)
     console.log(
-      `  ✓ ${event.occasion} — $${(quote.total_cents / 100).toFixed(0)} (${quote.status})`
+      `  ✓ ${event.occasion} - $${(quote.total_cents / 100).toFixed(0)} (${quote.status})`
     )
   }
 

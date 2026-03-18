@@ -70,7 +70,7 @@ export function NextBestActionsWidget({ actions }: Props) {
                     <p className="text-xs font-medium text-stone-200 truncate">
                       {action.clientName}
                     </p>
-                    <p className="text-[11px] text-stone-500 truncate">{action.label}</p>
+                    <p className="text-xs-tight text-stone-500 truncate">{action.label}</p>
                   </div>
                 </Link>
               </li>

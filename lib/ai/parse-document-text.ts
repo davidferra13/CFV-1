@@ -1,6 +1,6 @@
 // AI Document Text Parser
 // Extracts structured document data from pasted text (contracts, templates, policies, notes)
-// Privacy: Documents may contain client names, payment terms, and PII — routed through Ollama.
+// Privacy: Documents may contain client names, payment terms, and PII - routed through Ollama.
 
 'use server'
 
@@ -47,7 +47,7 @@ DOCUMENT TYPES:
 - general: Anything that doesn't fit the above categories
 
 INSTRUCTIONS:
-1. Determine the document title — use an existing title if present, or create a concise one
+1. Determine the document title - use an existing title if present, or create a concise one
 2. Classify the document type from the list above
 3. Preserve the full original text as content_text
 4. Write a 1-3 sentence summary of the document
@@ -58,7 +58,7 @@ INSTRUCTIONS:
 
 RULES:
 - Do NOT invent information not in the text
-- Preserve the complete original text — do not truncate or summarize it in content_text
+- Preserve the complete original text - do not truncate or summarize it in content_text
 - Keep summary concise but informative
 - Tags should be lowercase, single words or short phrases
 
@@ -83,7 +83,7 @@ RESPOND WITH ONLY valid JSON matching this exact structure:
  */
 export async function parseDocumentFromText(text: string): Promise<ParseResult<ParsedDocument>> {
   const result = await parseWithOllama(DOCUMENT_SYSTEM_PROMPT, text, ParsedDocumentSchema, {
-    maxTokens: 2048, // Documents can be long — need room for content_text
+    maxTokens: 2048, // Documents can be long - need room for content_text
     timeoutMs: 90_000, // 90s for large documents
   })
   return result as ParseResult<ParsedDocument>

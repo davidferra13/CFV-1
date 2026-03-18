@@ -139,7 +139,7 @@ export async function consumeFromBatch(
 
   if (quantity <= 0) throw new Error('Quantity must be positive')
 
-  // Fetch the batch — verify ownership
+  // Fetch the batch - verify ownership
   const { data: batch, error: fetchError } = await supabase
     .from('inventory_batches' as any)
     .select('id, remaining_qty, is_depleted')
@@ -184,7 +184,7 @@ export async function markBatchExpired(batchId: string): Promise<void> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Fetch the batch — verify ownership
+  // Fetch the batch - verify ownership
   const { data: batch, error: fetchError } = await supabase
     .from('inventory_batches' as any)
     .select('*')
@@ -212,7 +212,7 @@ export async function markBatchExpired(batchId: string): Promise<void> {
         quantity: -remainingQty,
         unit: batchData.unit,
         cost_cents: wasteCostCents,
-        notes: `Batch expired — ${remainingQty} ${batchData.unit} written off`,
+        notes: `Batch expired - ${remainingQty} ${batchData.unit} written off`,
       })
     } catch (err) {
       console.error('[non-blocking] Failed to log waste transaction for expired batch', err)

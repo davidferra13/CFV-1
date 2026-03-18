@@ -63,7 +63,7 @@ export function ChatInboxItem({
               {name}
             </p>
             {contextBadge && (
-              <span className="flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-500">
+              <span className="flex-shrink-0 text-xxs px-1.5 py-0.5 rounded bg-stone-800 text-stone-500">
                 {contextBadge}
               </span>
             )}

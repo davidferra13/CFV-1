@@ -48,19 +48,19 @@ export async function BetaTestersWidget() {
         <div className="mb-4 grid grid-cols-4 gap-2">
           <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-3 text-center">
             <p className="text-lg font-bold text-stone-100">{totalTesters}</p>
-            <p className="text-[10px] text-stone-500">Total</p>
+            <p className="text-xxs text-stone-500">Total</p>
           </div>
           <div className="rounded-lg border border-emerald-800/40 bg-emerald-950/20 p-3 text-center">
             <p className="text-lg font-bold text-emerald-400">{allComplete}</p>
-            <p className="text-[10px] text-stone-500">Complete</p>
+            <p className="text-xxs text-stone-500">Complete</p>
           </div>
           <div className="rounded-lg border border-amber-800/40 bg-amber-950/20 p-3 text-center">
             <p className="text-lg font-bold text-amber-400">{inProgress}</p>
-            <p className="text-[10px] text-stone-500">In Progress</p>
+            <p className="text-xxs text-stone-500">In Progress</p>
           </div>
           <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-3 text-center">
             <p className="text-lg font-bold text-stone-400">{notStarted}</p>
-            <p className="text-[10px] text-stone-500">Not Started</p>
+            <p className="text-xxs text-stone-500">Not Started</p>
           </div>
         </div>
 

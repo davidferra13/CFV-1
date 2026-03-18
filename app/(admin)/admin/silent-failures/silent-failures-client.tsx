@@ -45,7 +45,7 @@ function FailureRow({ failure }: { failure: SideEffectFailure }) {
       <td className="px-3 py-2 whitespace-nowrap text-slate-400">{timeAgo(failure.created_at)}</td>
       <td className="px-3 py-2">
         <span
-          className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium capitalize ${
+          className={`inline-block px-1.5 py-0.5 rounded text-xxs font-medium capitalize ${
             severityColors[failure.severity] ?? severityColors.medium
           }`}
         >
@@ -69,7 +69,7 @@ function FailureRow({ failure }: { failure: SideEffectFailure }) {
         <button
           onClick={handleDismiss}
           disabled={isPending}
-          className="text-slate-400 hover:text-slate-700 text-[10px] underline disabled:opacity-50"
+          className="text-slate-400 hover:text-slate-700 text-xxs underline disabled:opacity-50"
         >
           dismiss
         </button>

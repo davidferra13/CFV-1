@@ -1,5 +1,5 @@
 // Retainer/Subscription module constants
-// No 'use server' — exports const values for use in both client and server code.
+// No 'use server' - exports const values for use in both client and server code.
 
 export const RETAINER_STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',

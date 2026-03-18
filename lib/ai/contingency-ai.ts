@@ -3,8 +3,8 @@
 // Contingency Suggestion Engine
 // AI generates "if X goes wrong, do Y" contingency plans based on event specifics.
 // Extends the existing ContingencyPanel (which only allows manual entry).
-// Routed to local Ollama — event data (location, dietary restrictions, allergies) is private.
-// Output is DRAFT ONLY — chef picks which ones to save to the ContingencyPanel.
+// Routed to local Ollama - event data (location, dietary restrictions, allergies) is private.
+// Output is DRAFT ONLY - chef picks which ones to save to the ContingencyPanel.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -45,7 +45,7 @@ export async function generateContingencyPlans(eventId: string): Promise<Conting
   const user = await requireChef()
   const supabase = createServerClient()
 
-  // event_menu_components is not in generated types — table exists in DB but not yet in types/database.ts
+  // event_menu_components is not in generated types - table exists in DB but not yet in types/database.ts
   const [eventResult, menuResult] = await Promise.all([
     supabase
       .from('events')
@@ -75,7 +75,7 @@ export async function generateContingencyPlans(eventId: string): Promise<Conting
   const systemPrompt = `You are a risk management consultant for a private chef business.
 Generate 4–6 specific, realistic contingency plans for this event.
 Focus on the most likely failure points given the event specifics.
-Each plan should be actionable — the chef should be able to execute it mid-service without calling anyone.
+Each plan should be actionable - the chef should be able to execute it mid-service without calling anyone.
 
 Common private chef risks to assess:
   equipment_failure, ingredient_shortage, timing_overrun, dietary_violation,
@@ -98,7 +98,7 @@ Return ONLY valid JSON.`
 
   const userContent = `Event:
   Occasion: ${event.occasion ?? 'Private Event'}
-  Guests: ${guestCount}${isLargeEvent ? ' (large event — scaling risk higher)' : ''}
+  Guests: ${guestCount}${isLargeEvent ? ' (large event - scaling risk higher)' : ''}
   Location: ${event.location_address ?? 'Unknown venue'}
   Service style: ${event.service_style ?? 'plated'}
   Serve time: ${event.serve_time ?? 'TBD'}

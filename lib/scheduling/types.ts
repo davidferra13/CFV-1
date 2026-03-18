@@ -991,7 +991,7 @@ export interface PrepBlock {
   updated_at: string
 }
 
-// Engine output — not yet saved to DB. Shown to chef for review before confirming.
+// Engine output - not yet saved to DB. Shown to chef for review before confirming.
 export interface PrepBlockSuggestion {
   block_type: PrepBlockType
   title: string

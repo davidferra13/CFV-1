@@ -133,7 +133,7 @@ export function RemyTaskCard({ task, onApprove, onReject }: RemyTaskCardProps) {
                     aria-label="Approval confirmation phrase"
                   />
                   {showLegacyPhraseMismatch && (
-                    <p className="mt-1 text-[11px] text-amber-300">Phrase does not match yet.</p>
+                    <p className="mt-1 text-xs-tight text-amber-300">Phrase does not match yet.</p>
                   )}
                 </div>
               )}
@@ -435,7 +435,7 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
                 {r.title}
               </a>
               <p className="text-stone-500 dark:text-stone-400 mt-0.5 line-clamp-2">{r.snippet}</p>
-              <p className="text-stone-300 dark:text-stone-400 text-[10px] truncate">{r.url}</p>
+              <p className="text-stone-300 dark:text-stone-400 text-xxs truncate">{r.url}</p>
             </div>
           ))}
         </div>

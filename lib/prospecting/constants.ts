@@ -1,5 +1,5 @@
 // Prospecting Hub Constants
-// NOT a server action file — no 'use server'. Safe to export constants.
+// NOT a server action file - no 'use server'. Safe to export constants.
 
 export const PROSPECT_TYPES = ['organization', 'individual'] as const
 export type ProspectType = (typeof PROSPECT_TYPES)[number]
@@ -98,24 +98,24 @@ export const CALL_OUTCOMES = [
   { value: 'left_message', label: 'Left Message', nextStatus: 'called' as ProspectStatus },
   {
     value: 'spoke_follow_up',
-    label: 'Spoke — Follow Up',
+    label: 'Spoke - Follow Up',
     nextStatus: 'follow_up' as ProspectStatus,
   },
   {
     value: 'spoke_not_interested',
-    label: 'Spoke — Not Interested',
+    label: 'Spoke - Not Interested',
     nextStatus: 'not_interested' as ProspectStatus,
   },
   {
     value: 'spoke_booked',
-    label: 'Spoke — Booked Tasting!',
+    label: 'Spoke - Booked Tasting!',
     nextStatus: 'converted' as ProspectStatus,
   },
   { value: 'wrong_number', label: 'Wrong Number', nextStatus: 'dead' as ProspectStatus },
   { value: 'dead', label: 'Dead Lead', nextStatus: 'dead' as ProspectStatus },
 ] as const
 
-// ── Pipeline Stages (Wave 4 — outreach funnel) ─────────────────────────────
+// ── Pipeline Stages (Wave 4 - outreach funnel) ─────────────────────────────
 
 export const PIPELINE_STAGES = [
   'new',

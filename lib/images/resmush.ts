@@ -1,4 +1,4 @@
-// reSmush.it — free image compression API, no key required
+// reSmush.it - free image compression API, no key required
 // https://resmush.it/api/
 // Unlimited requests, max 5MB per image
 
@@ -14,7 +14,7 @@ export interface CompressResult {
   error: string | null
 }
 
-// compressImageByUrl() was removed — it accepted arbitrary URLs without validation,
+// compressImageByUrl() was removed - it accepted arbitrary URLs without validation,
 // creating an SSRF vector. Use compressImageBuffer() with raw image data instead.
 
 /**

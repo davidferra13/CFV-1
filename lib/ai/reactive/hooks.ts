@@ -1,10 +1,10 @@
 'use server'
 
-// Reactive Event Layer — Non-Blocking AI Hooks
+// Reactive Event Layer - Non-Blocking AI Hooks
 // PRIVACY: All hooks deal with client PII → enqueue to local Ollama only.
 //
 // These are NON-BLOCKING side effects. They MUST:
-// 1. Never throw — always try/catch
+// 1. Never throw - always try/catch
 // 2. Never block the main operation
 // 3. Log warnings on failure, never errors that propagate
 //

@@ -316,12 +316,12 @@ export function OllamaStatusBadge() {
                       <Icon className="h-4 w-4 text-stone-400" />
                       <span className="text-sm font-medium text-stone-200">{label}</span>
                       {ep.online ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-500">
+                        <span className="inline-flex items-center gap-1 text-xxs font-medium text-emerald-500">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           {ep.latencyMs}ms
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-500">
+                        <span className="inline-flex items-center gap-1 text-xxs font-medium text-red-500">
                           <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
                           Offline
                         </span>
@@ -329,7 +329,7 @@ export function OllamaStatusBadge() {
                     </div>
                   </div>
 
-                  <div className="text-[11px] text-stone-500 mb-2">
+                  <div className="text-xs-tight text-stone-500 mb-2">
                     {ep.model}
                     {ep.online && ep.modelReady && ' - ready'}
                     {ep.online && !ep.modelReady && ' - not loaded'}
@@ -381,7 +381,7 @@ export function OllamaStatusBadge() {
 
                   {resultKey && (
                     <div
-                      className={`mt-2 text-[11px] ${resultKey.success ? 'text-emerald-400' : 'text-red-400'}`}
+                      className={`mt-2 text-xs-tight ${resultKey.success ? 'text-emerald-400' : 'text-red-400'}`}
                     >
                       {resultKey.message}
                     </div>
@@ -392,7 +392,7 @@ export function OllamaStatusBadge() {
           </div>
 
           <div className="px-4 py-2 border-t border-stone-800 bg-stone-950/50">
-            <div className="text-[10px] text-stone-600">Private AI - data stays on your PC</div>
+            <div className="text-xxs text-stone-600">Private AI - data stays on your PC</div>
           </div>
         </div>
       )}
@@ -426,7 +426,7 @@ function ActionButton({
       type="button"
       onClick={onClick}
       disabled={loading}
-      className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-50 ${colors[color]}`}
+      className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs-tight font-medium transition-colors disabled:opacity-50 ${colors[color]}`}
     >
       {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : icon}
       {label}

@@ -1,6 +1,6 @@
 'use server'
 
-// Operations Intelligence — Portion Calculator, Packing List, Cross-Contamination Risk
+// Operations Intelligence - Portion Calculator, Packing List, Cross-Contamination Risk
 // PRIVACY: Handles event/client data → local Ollama only.
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -8,7 +8,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { searchClientsByName } from '@/lib/clients/actions'
 
 // ============================================
-// 1. PORTION CALCULATOR (pure math — no Ollama)
+// 1. PORTION CALCULATOR (pure math - no Ollama)
 // ============================================
 
 export interface PortionResult {
@@ -67,7 +67,7 @@ export async function calculatePortions(
     const ingName = ing.ingredient?.name ?? ing.name ?? 'Unknown ingredient'
     const scaledQty = origQty * scaleFactor
 
-    // Format nicely — round to reasonable precision
+    // Format nicely - round to reasonable precision
     const formatted =
       scaledQty >= 10
         ? Math.round(scaledQty).toString()
@@ -94,7 +94,7 @@ export async function calculatePortions(
 }
 
 // ============================================
-// 2. PACKING LIST GENERATOR (template-based — no Ollama)
+// 2. PACKING LIST GENERATOR (template-based - no Ollama)
 // ============================================
 
 export interface PackingListResult {
@@ -111,7 +111,7 @@ export async function generatePackingList(eventName: string): Promise<PackingLis
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Find event — try occasion match first, then fuzzy match with client name
+  // Find event - try occasion match first, then fuzzy match with client name
   let { data: events } = await supabase
     .from('events')
     .select('id, occasion, event_date, guest_count, location_type, location_address, status')
@@ -269,7 +269,7 @@ export async function generatePackingList(eventName: string): Promise<PackingLis
 }
 
 // ============================================
-// 3. CROSS-CONTAMINATION RISK ANALYSIS (rule-based — no Ollama)
+// 3. CROSS-CONTAMINATION RISK ANALYSIS (rule-based - no Ollama)
 // ============================================
 
 export interface CrossContaminationResult {
@@ -394,10 +394,10 @@ export async function analyzeCrossContamination(
   ]
 
   if (allergies.some((a) => ['peanut', 'tree nut'].includes(a.toLowerCase()))) {
-    safePractices.push('Clean all surfaces with hot soapy water — nuts leave residue oils')
+    safePractices.push('Clean all surfaces with hot soapy water - nuts leave residue oils')
   }
   if (allergies.some((a) => a.toLowerCase() === 'gluten')) {
-    safePractices.push('Use dedicated gluten-free cookware — shared fryers are a top risk')
+    safePractices.push('Use dedicated gluten-free cookware - shared fryers are a top risk')
   }
 
   return {

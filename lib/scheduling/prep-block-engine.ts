@@ -1,5 +1,5 @@
 // Prep Block Engine
-// Pure computation — zero DB calls. All data is passed in.
+// Pure computation - zero DB calls. All data is passed in.
 // Mirrors the pattern of timeline.ts and dop.ts.
 //
 // Answers two questions:
@@ -21,7 +21,7 @@ import { DEFAULT_PREFERENCES } from './types'
 // CONSTANTS
 // ============================================
 
-/** Required for every event — used for gap detection. */
+/** Required for every event - used for gap detection. */
 const REQUIRED_BLOCK_TYPES: PrepBlockType[] = [
   'grocery_run',
   'prep_session',
@@ -90,7 +90,7 @@ function isCovered(eventId: string, blockType: PrepBlockType, blocks: PrepBlock[
 
 /**
  * Given event and prefs, compute the departure time in "HH:MM".
- * Derived from generateTimeline — finds the 'departure' item.
+ * Derived from generateTimeline - finds the 'departure' item.
  */
 function getDepartureTime(event: SchedulingEvent, prefs: ChefPreferences | null): string {
   const timeline = generateTimeline(event, prefs)
@@ -117,7 +117,7 @@ export function getRequiredBlockTypes(_event: SchedulingEvent): PrepBlockType[] 
 /**
  * Generate prep block suggestions for a single event.
  * Skips types already covered by existingBlocks.
- * Returns suggestions only — caller must persist after chef confirms.
+ * Returns suggestions only - caller must persist after chef confirms.
  * NEVER saves to DB.
  *
  * Timing algorithm (all times derived from generateTimeline):
@@ -184,14 +184,14 @@ export function suggestPrepBlocks(
     if (!isCovered(event.id, 'specialty_sourcing', existingBlocks)) {
       suggestions.push({
         block_type: 'specialty_sourcing',
-        title: `Sourcing — ${store.name}`,
+        title: `Sourcing - ${store.name}`,
         suggested_date: shopDayBefore ? dayBefore : eventDate,
         suggested_start_time: null,
         estimated_duration_minutes: DEFAULT_SPECIALTY_SOURCING_MINUTES,
         notes: `Pick up specialty items from ${store.name}.`,
         store_name: store.name,
         store_address: store.address ?? null,
-        reason: `Sourcing from ${store.name} — plan this alongside your grocery run.`,
+        reason: `Sourcing from ${store.name} - plan this alongside your grocery run.`,
       })
     }
   }
@@ -221,10 +221,10 @@ export function suggestPrepBlocks(
         suggested_date: dayBefore,
         suggested_start_time: '16:00',
         estimated_duration_minutes: 120,
-        notes: 'Doughs, marinades, purees, sauces — anything that holds well overnight.',
+        notes: 'Doughs, marinades, purees, sauces - anything that holds well overnight.',
         store_name: null,
         store_address: null,
-        reason: `${event.menuComponentCount} components detected — splitting prep across two sessions reduces day-of stress.`,
+        reason: `${event.menuComponentCount} components detected - splitting prep across two sessions reduces day-of stress.`,
       })
     }
   }
@@ -256,7 +256,7 @@ export function suggestPrepBlocks(
       notes: 'Check, clean, and stage all equipment. Charge devices. Replace anything worn.',
       store_name: null,
       store_address: null,
-      reason: 'Two days out — enough lead time to source replacements if anything is missing.',
+      reason: 'Two days out - enough lead time to source replacements if anything is missing.',
     })
   }
 

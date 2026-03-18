@@ -52,22 +52,34 @@ export async function sendMenuProposal(
 
   if (!menu) return { success: false, error: 'Menu not found.' }
 
-  // Load ingredients for linked recipes
-  const dishesWithIngredients = await Promise.all(
-    (menu.dishes ?? []).map(async (dish: any) => {
-      if (!dish.linked_recipe_id) return { ...dish, ingredients: [] }
-      const { data: ingredients } = await supabase
-        .from('recipe_ingredients')
-        .select('ingredient_id, ingredients(name)')
-        .eq('recipe_id', dish.linked_recipe_id)
-      return {
-        ...dish,
-        ingredients: (ingredients ?? []).map((ri: any) => ({
-          name: ri.ingredients?.name ?? '',
-        })),
-      }
-    })
-  )
+  // Load ingredients for all linked recipes in one batched query
+  const dishes = menu.dishes ?? []
+  const recipeIds = dishes
+    .map((d: any) => d.linked_recipe_id)
+    .filter((id: string | null): id is string => !!id)
+
+  let ingredientsByRecipeId = new Map<string, { name: string }[]>()
+
+  if (recipeIds.length > 0) {
+    const { data: allIngredients } = await supabase
+      .from('recipe_ingredients')
+      .select('recipe_id, ingredient_id, ingredients(name)')
+      .in('recipe_id', recipeIds)
+
+    for (const ri of allIngredients ?? []) {
+      const name = (ri as any).ingredients?.name ?? ''
+      const list = ingredientsByRecipeId.get(ri.recipe_id) ?? []
+      list.push({ name })
+      ingredientsByRecipeId.set(ri.recipe_id, list)
+    }
+  }
+
+  const dishesWithIngredients = dishes.map((dish: any) => ({
+    ...dish,
+    ingredients: dish.linked_recipe_id
+      ? (ingredientsByRecipeId.get(dish.linked_recipe_id) ?? [])
+      : [],
+  }))
 
   // Run allergen cross-reference if client has allergy records
   let allergenConflicts: AllergenConflict[] = []

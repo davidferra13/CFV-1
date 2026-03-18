@@ -4,7 +4,7 @@
 // Chat Insights Server Actions
 // Processes AI-extracted insights and provides CRUD for chef review.
 //
-// Signal Scanner — Auto-Escalation Rules:
+// Signal Scanner - Auto-Escalation Rules:
 //   confidence >= 0.75 + allergy_mention or dietary_preference:
 //     → Auto-create client_allergy_records (unconfirmed)
 //     → Auto-create pinned dietary note
@@ -269,7 +269,7 @@ async function autoEscalateAllergyInsight({
     console.error('[autoEscalateAllergyInsight] Upsert error:', upsertError)
   }
 
-  // 2. Create a pinned dietary note (always creates — notes are a log, not deduplicated)
+  // 2. Create a pinned dietary note (always creates - notes are a log, not deduplicated)
   const noteEmoji =
     severity === 'anaphylaxis'
       ? '⚠️ ANAPHYLAXIS'
@@ -278,7 +278,7 @@ async function autoEscalateAllergyInsight({
         : severity === 'intolerance'
           ? 'Intolerance'
           : 'Preference'
-  const noteText = `AI Detected — ${noteEmoji}: ${allergen}${insight.detail ? ` — ${insight.detail}` : ''} (confidence: ${Math.round(insight.confidence * 100)}% — confirm in client profile)`
+  const noteText = `AI Detected - ${noteEmoji}: ${allergen}${insight.detail ? ` - ${insight.detail}` : ''} (confidence: ${Math.round(insight.confidence * 100)}% - confirm in client profile)`
 
   await addClientNote({
     client_id: clientId,
@@ -290,7 +290,7 @@ async function autoEscalateAllergyInsight({
   // 3. Notify chef
   const isCritical = severity === 'anaphylaxis'
   const notificationTitle = isCritical
-    ? `CRITICAL: Possible anaphylaxis allergen detected — ${allergen}`
+    ? `CRITICAL: Possible anaphylaxis allergen detected - ${allergen}`
     : `Allergy detected in chat: ${allergen}`
   const notificationBody = isCritical
     ? `Client may have a life-threatening allergy to ${allergen}. Confirm immediately before planning any menus.`

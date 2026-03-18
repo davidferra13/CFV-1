@@ -85,7 +85,7 @@ export function ClaimRemoveActions({ listingId, status }: Props) {
     return (
       <div className="rounded-xl border border-stone-700 bg-stone-900/50 p-4">
         <h3 className="text-sm font-semibold text-stone-200">Claim this listing</h3>
-        <p className="mt-1 text-[11px] text-stone-500">
+        <p className="mt-1 text-xs-tight text-stone-500">
           Provide your details and we will verify your ownership.
         </p>
         <form onSubmit={handleClaimSubmit} className="mt-3 space-y-2">
@@ -130,7 +130,7 @@ export function ClaimRemoveActions({ listingId, status }: Props) {
   return (
     <div className="rounded-xl border border-stone-700 bg-stone-900/50 p-4">
       <h3 className="text-sm font-semibold text-stone-200">Request removal</h3>
-      <p className="mt-1 text-[11px] text-stone-500">
+      <p className="mt-1 text-xs-tight text-stone-500">
         We will process removal requests within 48 hours. No questions asked.
       </p>
       <form onSubmit={handleRemoveSubmit} className="mt-3 space-y-2">

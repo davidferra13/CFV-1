@@ -18,14 +18,14 @@ type PushPayload = {
 
 /**
  * Send a push notification to all subscribed devices for a tenant.
- * Non-blocking — failures are logged, never thrown.
+ * Non-blocking - failures are logged, never thrown.
  */
 export async function sendInboxPushNotification(
   tenantId: string,
   payload: PushPayload
 ): Promise<void> {
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-    // VAPID keys not configured — skip silently
+    // VAPID keys not configured - skip silently
     return
   }
 
@@ -73,14 +73,14 @@ export async function sendInboxPushNotification(
       if (result.status === 'rejected') {
         const statusCode = (result.reason as any)?.statusCode
         if (statusCode === 410 || statusCode === 404) {
-          // Subscription expired — deactivate it
+          // Subscription expired - deactivate it
           try {
             await deactivateSubscription(subscriptions[i].endpoint)
           } catch {
             // Non-blocking
           }
         } else {
-          // Transient failure — increment failure count
+          // Transient failure - increment failure count
           try {
             await incrementSubscriptionFailureCount(subscriptions[i].endpoint)
           } catch {

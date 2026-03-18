@@ -1,9 +1,9 @@
 /**
- * DataFlowComposition — Remotion animation for the Remy privacy data flow.
+ * DataFlowComposition - Remotion animation for the Remy privacy data flow.
  *
  * Shows two paths sequentially:
- *  1. "Other AI Apps" — data leaves the user, goes to remote servers, leaks to third parties (red)
- *  2. "ChefFlow + Remy" — data stays inside ChefFlow's boundary (green)
+ *  1. "Other AI Apps" - data leaves the user, goes to remote servers, leaks to third parties (red)
+ *  2. "ChefFlow + Remy" - data stays inside ChefFlow's boundary (green)
  *
  * Educational, not decorative. Helps users understand the privacy architecture.
  */
@@ -261,7 +261,7 @@ function RedSide() {
   const bullet2Style = useSlideUp(PHASE_1_START + 112)
   const bullet3Style = useSlideUp(PHASE_1_START + 124)
 
-  // Phase visibility — fade out when transitioning to green
+  // Phase visibility - fade out when transitioning to green
   const phaseOpacity = interpolate(frame, [PHASE_1_END, PHASE_1_END + 15], [1, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -430,7 +430,7 @@ function GreenSide() {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
 
-  // Phase visibility — fade in when red fades out
+  // Phase visibility - fade in when red fades out
   const phaseOpacity = interpolate(frame, [PHASE_2_START, PHASE_2_START + 15], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -637,7 +637,7 @@ function GreenSide() {
         />
         <BulletPoint
           y={195}
-          text="Delete anytime — it's truly gone"
+          text="Delete anytime - it's truly gone"
           bgColor={GREEN.bulletBg}
           textColor={GREEN.textDark}
           icon="✓"

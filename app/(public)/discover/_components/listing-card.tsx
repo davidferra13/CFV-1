@@ -9,20 +9,20 @@ type Props = {
 function StatusBadge({ status }: { status: string }) {
   if (status === 'verified') {
     return (
-      <span className="rounded-full bg-emerald-900/85 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-300 backdrop-blur-sm">
+      <span className="rounded-full bg-emerald-900/85 px-2.5 py-0.5 text-xxs font-semibold text-emerald-300 backdrop-blur-sm">
         Verified
       </span>
     )
   }
   if (status === 'claimed') {
     return (
-      <span className="rounded-full bg-sky-900/85 px-2.5 py-0.5 text-[10px] font-semibold text-sky-300 backdrop-blur-sm">
+      <span className="rounded-full bg-sky-900/85 px-2.5 py-0.5 text-xxs font-semibold text-sky-300 backdrop-blur-sm">
         Claimed
       </span>
     )
   }
   return (
-    <span className="rounded-full bg-stone-800/90 px-2.5 py-0.5 text-[10px] font-semibold text-stone-400 backdrop-blur-sm">
+    <span className="rounded-full bg-stone-800/90 px-2.5 py-0.5 text-xxs font-semibold text-stone-400 backdrop-blur-sm">
       Discovered
     </span>
   )
@@ -59,7 +59,7 @@ export function ListingCard({ listing }: Props) {
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-3">
           <StatusBadge status={listing.status} />
           {listing.featured && (
-            <span className="rounded-full bg-brand-900/90 px-2.5 py-0.5 text-[10px] font-semibold text-brand-300 backdrop-blur-sm">
+            <span className="rounded-full bg-brand-900/90 px-2.5 py-0.5 text-xxs font-semibold text-brand-300 backdrop-blur-sm">
               Featured
             </span>
           )}
@@ -79,7 +79,7 @@ export function ListingCard({ listing }: Props) {
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-base font-bold text-stone-100 line-clamp-1">{listing.name}</h3>
-          <span className="flex-shrink-0 rounded-full bg-stone-800 px-2 py-0.5 text-[10px] font-medium text-stone-400">
+          <span className="flex-shrink-0 rounded-full bg-stone-800 px-2 py-0.5 text-xxs font-medium text-stone-400">
             {getBusinessTypeLabel(listing.business_type)}
           </span>
         </div>
@@ -97,7 +97,7 @@ export function ListingCard({ listing }: Props) {
             {cuisineLabels.map((label) => (
               <span
                 key={label}
-                className="rounded-full border border-stone-700 bg-stone-950 px-2 py-0.5 text-[10px] font-medium text-stone-400"
+                className="rounded-full border border-stone-700 bg-stone-950 px-2 py-0.5 text-xxs font-medium text-stone-400"
               >
                 {label}
               </span>

@@ -33,7 +33,7 @@ export async function logChefActivity(input: {
         return // Chef has explicitly opted out
       }
     } catch {
-      // Preference check failed — default to logging (safe default)
+      // Preference check failed - default to logging (safe default)
     }
 
     const payload: TablesInsert<'chef_activity_log'> = {

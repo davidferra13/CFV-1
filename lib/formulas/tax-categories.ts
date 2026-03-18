@@ -1,12 +1,12 @@
-// Tax Deduction Identifier — Deterministic Rule-Based Analysis
+// Tax Deduction Identifier - Deterministic Rule-Based Analysis
 // Scans expenses for common missed deductions using IRS-defined rules.
-// No AI needed — these are well-known tax categories with clear rules.
+// No AI needed - these are well-known tax categories with clear rules.
 //
 // References:
-//   IRS Publication 463 — Travel, Gift, and Car Expenses
-//   IRS Publication 587 — Business Use of Your Home
-//   IRS Publication 946 — How To Depreciate Property
-//   Schedule C (Form 1040) — Profit or Loss from Business
+//   IRS Publication 463 - Travel, Gift, and Car Expenses
+//   IRS Publication 587 - Business Use of Your Home
+//   IRS Publication 946 - How To Depreciate Property
+//   Schedule C (Form 1040) - Profit or Loss from Business
 
 // ── Types (match the AI version exactly) ───────────────────────────────────
 
@@ -48,7 +48,7 @@ export type MileageEntry = {
 /** IRS standard mileage rate: 67 cents/mile for 2024 */
 const IRS_MILEAGE_RATE_CENTS = 67
 
-/** Equipment depreciation threshold — items >$2,500 should be depreciated */
+/** Equipment depreciation threshold - items >$2,500 should be depreciated */
 const DEPRECIATION_THRESHOLD_CENTS = 250000
 
 /** Home office simplified method: $5/sq ft, max 300 sq ft = $1,500 */
@@ -58,7 +58,7 @@ const HOME_OFFICE_SIMPLIFIED_MAX_CENTS = 150000
 
 /**
  * Identifies potentially missed or miscategorized tax deductions.
- * Pure rule-based analysis — no AI, no network, deterministic.
+ * Pure rule-based analysis - no AI, no network, deterministic.
  * Returns the exact same type as the AI version for drop-in compatibility.
  */
 export function identifyDeductionsFormula(
@@ -90,7 +90,7 @@ export function identifyDeductionsFormula(
       description: `Only ${totalMiles} miles logged. Most private chefs drive 3,000–10,000 business miles/year. You may be missing trips.`,
       estimatedAnnualValueCents: IRS_MILEAGE_RATE_CENTS * (3000 - totalMiles),
       affectedEntries: [],
-      action: 'Review your trips — are you logging grocery runs, event travel, and supply pickups?',
+      action: 'Review your trips - are you logging grocery runs, event travel, and supply pickups?',
       priority: 'medium',
     })
   }
@@ -196,7 +196,7 @@ export function identifyDeductionsFormula(
       estimatedAnnualValueCents: null,
       affectedEntries: [],
       action:
-        'If you take any cooking classes, buy cookbooks, subscribe to culinary publications, or attend food industry events — log these as deductible expenses.',
+        'If you take any cooking classes, buy cookbooks, subscribe to culinary publications, or attend food industry events - log these as deductible expenses.',
       priority: 'low',
     })
   }

@@ -156,7 +156,7 @@ export function BulkGenerateRunner({
           </Button>
         )}
       </div>
-      <p className="text-[11px] text-stone-500">
+      <p className="text-xs-tight text-stone-500">
         {defaultTypes.length > 0
           ? `${defaultTypes.length} document${defaultTypes.length === 1 ? '' : 's'} queued in the main run.`
           : 'No documents ready to generate yet.'}
@@ -186,7 +186,7 @@ export function BulkGenerateRunner({
                       href={`/api/documents/snapshots/${row.snapshotId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-stone-400 hover:text-stone-200 hover:underline"
+                      className="text-xs-tight text-stone-400 hover:text-stone-200 hover:underline"
                     >
                       Open
                     </a>
@@ -199,7 +199,7 @@ export function BulkGenerateRunner({
       )}
 
       <details className="rounded border border-stone-800 px-3 py-2">
-        <summary className="cursor-pointer text-[11px] text-stone-400">More options</summary>
+        <summary className="cursor-pointer text-xs-tight text-stone-400">More options</summary>
         <div className="mt-2 space-y-2">
           <div className="flex flex-wrap gap-2">
             <Button
@@ -217,7 +217,7 @@ export function BulkGenerateRunner({
 
           {historicalRetryRuns.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[11px] text-stone-500">Retry failed items from earlier runs:</p>
+              <p className="text-xs-tight text-stone-500">Retry failed items from earlier runs:</p>
               <div className="flex flex-wrap gap-2">
                 {historicalRetryRuns.map((run) => (
                   <Button

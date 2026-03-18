@@ -1,7 +1,7 @@
-// Prep Sheet Generator (Printed Sheet #1) — v2.0
+// Prep Sheet Generator (Printed Sheet #1) - v2.0
 // Used AT HOME during cooking. Gets food on it. Dies after prep.
 // Sections: AT HOME (PREP NOW | PREP AFTER SHOPPING) + BEFORE LEAVING + ON SITE
-// MUST fit on ONE page — no exceptions
+// MUST fit on ONE page - no exceptions
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -289,7 +289,7 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
     ['Guests', String(event.guest_count)],
   ])
 
-  // Departure time is TIMESTAMPTZ (full ISO string) — extract just the time for display
+  // Departure time is TIMESTAMPTZ (full ISO string) - extract just the time for display
   const leaveBy = event.departure_time ? format(new Date(event.departure_time), 'h:mm a') : 'TBD'
   pdf.headerBar([
     ['LEAVE BY', leaveBy],
@@ -313,7 +313,7 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
     const prefs = data.clientPreferences
     pdf.space(1)
 
-    // Allergy + dietary line — highest priority (safety)
+    // Allergy + dietary line - highest priority (safety)
     const allergyLine =
       prefs.allergies.length > 0 ? `ALLERGIES: ${prefs.allergies.join(', ')}` : null
     const dietLine =
@@ -372,7 +372,7 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
 
     // PREP NOW subsection
     if (prepNow.length > 0) {
-      pdf.sectionHeader('PREP NOW — start immediately, everything on hand', 9, false)
+      pdf.sectionHeader('PREP NOW - start immediately, everything on hand', 9, false)
       for (const [courseNum, course] of groupByCourse(prepNow)) {
         pdf.courseHeader(`Course ${courseNum} \u2014 ${course.courseName}`)
         for (const comp of course.components) {
@@ -390,13 +390,13 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
         pdf.space(1)
       }
     } else {
-      pdf.text('All tasks require grocery items — see below.', 8, 'italic')
+      pdf.text('All tasks require grocery items - see below.', 8, 'italic')
       pdf.space(1)
     }
 
     // PREP AFTER SHOPPING subsection
     if (prepAfter.length > 0) {
-      pdf.sectionHeader('PREP AFTER SHOPPING — blocked until groceries arrive', 9, false)
+      pdf.sectionHeader('PREP AFTER SHOPPING - blocked until groceries arrive', 9, false)
       for (const [courseNum, course] of groupByCourse(prepAfter)) {
         pdf.courseHeader(`Course ${courseNum} \u2014 ${course.courseName}`)
         for (const comp of course.components) {
@@ -412,7 +412,7 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
         pdf.space(1)
       }
     } else {
-      pdf.text('All tasks use on-hand ingredients — prep starts immediately.', 8, 'italic')
+      pdf.text('All tasks use on-hand ingredients - prep starts immediately.', 8, 'italic')
       pdf.space(1)
     }
 
@@ -438,7 +438,7 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
   // ─── Before Leaving Section ────────────────────────────────────────────────
 
   pdf.sectionHeader('BEFORE LEAVING', 10, true)
-  pdf.checkbox('Pack all components — frozen items LAST', 8)
+  pdf.checkbox('Pack all components - frozen items LAST', 8)
   pdf.checkbox('Non-negotiables check', 8)
   pdf.checkbox(`Depart by ${leaveBy}`, 8)
   pdf.space(1)

@@ -116,7 +116,7 @@ export function TaskPageClient({
         <span className="ml-auto text-sm text-stone-400">
           {totalTasks === 0 ? 'No tasks' : `${doneTasks}/${totalTasks} completed`}
           {carriedOver.length > 0 && (
-            <Badge variant="warning" className="ml-2 text-[10px]">
+            <Badge variant="warning" className="ml-2 text-xxs">
               {carriedOver.length} overdue
             </Badge>
           )}
@@ -239,7 +239,7 @@ function CarriedOverSection({
                             ? 'warning'
                             : 'default'
                       }
-                      className="text-[10px]"
+                      className="text-xxs"
                     >
                       {task.priority}
                     </Badge>

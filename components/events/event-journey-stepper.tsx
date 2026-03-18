@@ -36,7 +36,7 @@ function ShareButton({ shareText, label }: { shareText: string; label: string })
       type="button"
       onClick={handleShare}
       title={`Share: ${label}`}
-      className="inline-flex items-center gap-1 text-[10px] font-medium text-stone-400 hover:text-brand-600 transition-colors mt-1"
+      className="inline-flex items-center gap-1 text-xxs font-medium text-stone-400 hover:text-brand-600 transition-colors mt-1"
     >
       <Share2 className="w-3 h-3" />
       Share
@@ -88,7 +88,7 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
 
                 {/* Timestamp */}
                 {step.completedAt && (
-                  <p className="mt-0.5 text-[10px] text-stone-400 text-center">
+                  <p className="mt-0.5 text-xxs text-stone-400 text-center">
                     {format(parseISO(step.completedAt), 'MMM d')}
                   </p>
                 )}
@@ -97,7 +97,7 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                 {step.isCurrent && step.actionHref && step.actionLabel && (
                   <Link
                     href={step.actionHref}
-                    className="mt-1.5 inline-block text-[10px] font-semibold text-white bg-brand-600 hover:bg-brand-700 px-2 py-0.5 rounded-full transition-colors text-center whitespace-nowrap"
+                    className="mt-1.5 inline-block text-xxs font-semibold text-white bg-brand-600 hover:bg-brand-700 px-2 py-0.5 rounded-full transition-colors text-center whitespace-nowrap"
                   >
                     {step.actionLabel}
                   </Link>
@@ -177,7 +177,7 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                 <p className="text-xs text-stone-500 mt-0.5 leading-snug">{step.description}</p>
               )}
               {step.completedAt && (
-                <p className="text-[11px] text-stone-400 mt-0.5">
+                <p className="text-xs-tight text-stone-400 mt-0.5">
                   {format(parseISO(step.completedAt), 'MMMM d, yyyy')}
                 </p>
               )}

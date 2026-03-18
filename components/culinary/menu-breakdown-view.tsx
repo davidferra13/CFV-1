@@ -76,7 +76,7 @@ function IngredientRow({ ingredient }: { ingredient: IngredientBreakdown }) {
         {formatQuantity(ingredient.scaledQuantity, ingredient.unit)}
       </span>
       {ingredient.hasMissingPrice ? (
-        <span className="text-amber-400 text-[10px] font-medium w-16 text-right">no price</span>
+        <span className="text-amber-400 text-xxs font-medium w-16 text-right">no price</span>
       ) : (
         <span className="text-stone-400 font-mono tabular-nums w-16 text-right">
           {formatCents(ingredient.scaledCostCents)}

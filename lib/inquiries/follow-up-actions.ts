@@ -1,6 +1,6 @@
 // Auto-Follow-Up Draft Cadence
 // Finds stale inquiries and drafts follow-up messages for chef approval
-// Never auto-sends — always creates drafts for review
+// Never auto-sends - always creates drafts for review
 
 'use server'
 

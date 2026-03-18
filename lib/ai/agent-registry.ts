@@ -1,7 +1,7 @@
-// Remy Agent — Action Registry
+// Remy Agent - Action Registry
 // Declarative registry for all agent write actions.
 // Each action defines: executor (prepares preview), commitAction (executes on approval).
-// No 'use server' — this is a pure registry. Executors/commits are called from the orchestrator.
+// No 'use server' - this is a pure registry. Executors/commits are called from the orchestrator.
 
 import type { AgentSafetyLevel, AgentActionPreview } from '@/lib/ai/command-types'
 
@@ -69,7 +69,7 @@ export function buildAgentTaskListForPrompt(): string {
   const actions = listAgentActions()
   if (actions.length === 0) return ''
 
-  const header = '\n// ─── Agent Write Actions (ALWAYS tier 2 — require chef approval) ───\n'
+  const header = '\n// ─── Agent Write Actions (ALWAYS tier 2 - require chef approval) ───\n'
   const items = actions.map(
     (a) =>
       `- ${a.taskType} (Tier ${a.tier}, "${a.name}"): ${a.description}\n  Inputs: ${a.inputSchema}${a.tierNote ? `\n  IMPORTANT: ${a.tierNote}` : ''}`

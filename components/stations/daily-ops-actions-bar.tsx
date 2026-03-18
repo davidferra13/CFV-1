@@ -68,7 +68,7 @@ export function DailyOpsActionsBar({ openingTemplateId }: Props) {
         </Link>
 
         {/* Print Clipboard */}
-        <Link href="/stations" target="_blank">
+        <Link href="/stations" target="_blank" rel="noopener noreferrer">
           <Button variant="ghost" size="sm">
             Print Clipboards
           </Button>

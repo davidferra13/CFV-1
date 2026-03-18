@@ -1,6 +1,6 @@
-// Temperature Log Anomaly Detection — Deterministic Formula
+// Temperature Log Anomaly Detection - Deterministic Formula
 // FDA Food Code standards applied as exact rules. No AI needed.
-// These are published, well-defined safety thresholds — not opinions.
+// These are published, well-defined safety thresholds - not opinions.
 //
 // References:
 //   FDA Food Code 2022, Chapter 3: Food
@@ -69,7 +69,7 @@ type TempEntry = {
 
 /**
  * Analyzes temperature log entries against FDA Food Code thresholds.
- * Pure math + lookup — no AI, no network, no dependencies.
+ * Pure math + lookup - no AI, no network, no dependencies.
  * Returns the exact same type as the AI version for drop-in compatibility.
  */
 export function analyzeTempLogFormula(entries: TempEntry[]): TempLogAnomalyResult {
@@ -112,19 +112,19 @@ export function analyzeTempLogFormula(entries: TempEntry[]): TempLogAnomalyResul
           recommendation: `Immediately move to safe temperature. If held in danger zone for more than 2 hours, discard.`,
         })
       } else if (stage === 'cooking' || stage === 'cook') {
-        // During cooking, being in danger zone is expected briefly — only flag if it looks like a final temp
+        // During cooking, being in danger zone is expected briefly - only flag if it looks like a final temp
         violations.push({
           item,
           loggedAt,
           tempF,
-          issue: `${item} logged at ${tempF}°F during cooking — below safe minimum. Verify this is not the final internal temperature.`,
+          issue: `${item} logged at ${tempF}°F during cooking - below safe minimum. Verify this is not the final internal temperature.`,
           regulatoryRef: 'FDA Food Code §3-401.11: Minimum cooking temperatures',
           severity: 'warning',
           recommendation:
             'Continue cooking to the required minimum internal temperature before serving.',
         })
       } else if (stage === 'cooling') {
-        // Cooling through danger zone is expected — flag only if temp seems stalled
+        // Cooling through danger zone is expected - flag only if temp seems stalled
         violations.push({
           item,
           loggedAt,
@@ -141,7 +141,7 @@ export function analyzeTempLogFormula(entries: TempEntry[]): TempLogAnomalyResul
           item,
           loggedAt,
           tempF,
-          issue: `${item} is at ${tempF}°F — within the FDA danger zone (${DANGER_ZONE_LOW_F}°F–${DANGER_ZONE_HIGH_F}°F).`,
+          issue: `${item} is at ${tempF}°F - within the FDA danger zone (${DANGER_ZONE_LOW_F}°F–${DANGER_ZONE_HIGH_F}°F).`,
           regulatoryRef: 'FDA Food Code §3-501.16: Time/Temperature Control for Safety',
           severity: 'warning',
           recommendation:
@@ -165,7 +165,7 @@ export function analyzeTempLogFormula(entries: TempEntry[]): TempLogAnomalyResul
         item,
         loggedAt,
         tempF,
-        issue: `Hot holding temperature for ${item} is ${tempF}°F — below the ${DANGER_ZONE_HIGH_F}°F minimum.`,
+        issue: `Hot holding temperature for ${item} is ${tempF}°F - below the ${DANGER_ZONE_HIGH_F}°F minimum.`,
         regulatoryRef: 'FDA Food Code §3-501.16(A)(1): Hot holding minimum 135°F',
         severity: 'critical',
         recommendation:
@@ -179,12 +179,12 @@ export function analyzeTempLogFormula(entries: TempEntry[]): TempLogAnomalyResul
       tempF > DANGER_ZONE_LOW_F
     ) {
       if (tempF <= DANGER_ZONE_HIGH_F) {
-        // Already caught in danger zone check above — but specifically flag cold holding
+        // Already caught in danger zone check above - but specifically flag cold holding
         violations.push({
           item,
           loggedAt,
           tempF,
-          issue: `Cold holding temperature for ${item} is ${tempF}°F — above the ${DANGER_ZONE_LOW_F}°F maximum.`,
+          issue: `Cold holding temperature for ${item} is ${tempF}°F - above the ${DANGER_ZONE_LOW_F}°F maximum.`,
           regulatoryRef: 'FDA Food Code §3-501.16(A)(2): Cold holding maximum 41°F',
           severity: 'critical',
           recommendation:
@@ -202,7 +202,7 @@ export function analyzeTempLogFormula(entries: TempEntry[]): TempLogAnomalyResul
             item,
             loggedAt,
             tempF,
-            issue: `${item} logged at ${tempF}°F — below the minimum safe cooking temp of ${minF}°F for ${label.toLowerCase()}.`,
+            issue: `${item} logged at ${tempF}°F - below the minimum safe cooking temp of ${minF}°F for ${label.toLowerCase()}.`,
             regulatoryRef: `FDA Food Code §3-401.11: ${label} minimum internal temp ${minF}°F`,
             severity: 'critical',
             recommendation: `Continue cooking until internal temperature reaches ${minF}°F. Use a calibrated probe thermometer.`,
@@ -218,7 +218,7 @@ export function analyzeTempLogFormula(entries: TempEntry[]): TempLogAnomalyResul
         item,
         loggedAt,
         tempF,
-        issue: `${item} logged at ${tempF}°F — below freezing. Verify thermometer calibration.`,
+        issue: `${item} logged at ${tempF}°F - below freezing. Verify thermometer calibration.`,
         regulatoryRef: 'FDA Food Code §4-203.11: Thermometer accuracy ±2°F',
         severity: 'info',
         recommendation:
@@ -231,8 +231,8 @@ export function analyzeTempLogFormula(entries: TempEntry[]): TempLogAnomalyResul
         item,
         loggedAt,
         tempF,
-        issue: `${item} logged at ${tempF}°F — unusually high. Verify this is a food temperature, not an oven/grill reading.`,
-        regulatoryRef: 'N/A — possible logging error',
+        issue: `${item} logged at ${tempF}°F - unusually high. Verify this is a food temperature, not an oven/grill reading.`,
+        regulatoryRef: 'N/A - possible logging error',
         severity: 'info',
         recommendation:
           'Confirm this reading is an internal food temperature, not an equipment/ambient temperature.',
@@ -240,7 +240,7 @@ export function analyzeTempLogFormula(entries: TempEntry[]): TempLogAnomalyResul
     }
   }
 
-  // Deduplicate — same item + same issue shouldn't appear twice
+  // Deduplicate - same item + same issue shouldn't appear twice
   const seen = new Set<string>()
   const deduped = violations.filter((v) => {
     const key = `${v.item}|${v.tempF}|${v.severity}`

@@ -1,7 +1,7 @@
 // DEFERRED: Fire order system. Will be enabled when schema is extended.
 // menu_sections/menu_items tables do not exist yet in generated types.
 // Only types and constants are exported. The getFireOrder function is commented out
-// until the schema supports it. No @ts-nocheck needed — only safe code remains.
+// until the schema supports it. No @ts-nocheck needed - only safe code remains.
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

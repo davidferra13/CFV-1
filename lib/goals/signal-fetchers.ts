@@ -210,7 +210,7 @@ export async function fetchReviewAverageBp(
 
 // ── Workshops attended ────────────────────────────────────────────────────────
 // Returns the count of professional_achievements with achieve_type IN
-// ('course', 'certification') — these map to "workshop attended".
+// ('course', 'certification') - these map to "workshop attended".
 // NOTE: professional_achievements uses chef_id, NOT tenant_id.
 // We resolve chef_id from user_roles using the admin client.
 

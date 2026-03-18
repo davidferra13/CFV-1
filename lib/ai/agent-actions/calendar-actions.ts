@@ -1,4 +1,4 @@
-// Remy Agent — Calendar Actions
+// Remy Agent - Calendar Actions
 // Create, update, delete calendar entries (availability blocks, personal events).
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -40,9 +40,9 @@ export const calendarAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description:
-      'Add an entry to the calendar — block off dates, mark available, add personal events, log travel days.',
+      'Add an entry to the calendar - block off dates, mark available, add personal events, log travel days.',
     inputSchema:
-      '{ "description": "string — e.g. Block off March 10-12 for vacation, or Mark March 20 as available for bookings" }',
+      '{ "description": "string - e.g. Block off March 10-12 for vacation, or Mark March 20 as available for bookings" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -96,7 +96,7 @@ export const calendarAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description: 'Update an existing calendar entry (change dates, title, or type).',
-    inputSchema: '{ "description": "string — e.g. Move my vacation block to March 15-17" }',
+    inputSchema: '{ "description": "string - e.g. Move my vacation block to March 15-17" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
@@ -128,7 +128,7 @@ export const calendarAgentActions: AgentActionDefinition[] = [
           summary: `Update calendar: ${parsed.entryTitle}`,
           fields,
           warnings: [
-            'Calendar entry lookup by title is approximate — verify the correct entry is being updated.',
+            'Calendar entry lookup by title is approximate - verify the correct entry is being updated.',
           ],
           safety: 'reversible',
         },
@@ -141,7 +141,7 @@ export const calendarAgentActions: AgentActionDefinition[] = [
       return {
         success: false,
         message:
-          'Calendar entry update by title is not yet supported — please update it directly on the calendar page.',
+          'Calendar entry update by title is not yet supported - please update it directly on the calendar page.',
       }
     },
   },

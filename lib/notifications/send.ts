@@ -1,7 +1,7 @@
-// Notification Send — Convenience dispatch wrapper
+// Notification Send - Convenience dispatch wrapper
 // Central notification system: wraps side effects in try/catch (non-blocking).
 // This module provides a simplified interface for firing notifications from
-// anywhere in the codebase. All calls are non-blocking — if a notification
+// anywhere in the codebase. All calls are non-blocking - if a notification
 // fails to create, the error is logged but never thrown.
 //
 // Currently supports: in-app notifications (database + realtime), email, push, SMS
@@ -17,7 +17,7 @@ import type { NotificationCategory, NotificationAction } from './types'
 export type SendNotificationInput = {
   /** Tenant (chef) ID for scoping */
   tenantId: string
-  /** auth_user_id of the recipient — or staff_member_id resolved to auth_user_id */
+  /** auth_user_id of the recipient - or staff_member_id resolved to auth_user_id */
   recipientId: string
   /** Notification action type */
   type: NotificationAction
@@ -52,7 +52,7 @@ function resolveCategory(action: NotificationAction): NotificationCategory {
 // ─── Send ────────────────────────────────────────────────────────────────
 
 /**
- * Send a notification. This is ALWAYS non-blocking — wrap in try/catch,
+ * Send a notification. This is ALWAYS non-blocking - wrap in try/catch,
  * log failures, never throw. The main operation that calls this will
  * succeed regardless of whether the notification was created.
  *

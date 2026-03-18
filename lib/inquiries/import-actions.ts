@@ -154,7 +154,7 @@ async function importSingleInquiry(
   }
   if (validated.notes) unknownFields.notes = validated.notes
 
-  // Determine first_contact_at — use provided date, fall back to now
+  // Determine first_contact_at - use provided date, fall back to now
   const firstContactAt = validated.first_contact_at
     ? new Date(validated.first_contact_at).toISOString()
     : new Date().toISOString()
@@ -190,7 +190,7 @@ async function importSingleInquiry(
     }
   }
 
-  // Insert initial state transition (no side effects — just the record)
+  // Insert initial state transition (no side effects - just the record)
   try {
     await supabase.from('inquiry_state_transitions').insert({
       inquiry_id: inquiry.id,
@@ -201,7 +201,7 @@ async function importSingleInquiry(
       metadata: { action: 'bulk_import' } as unknown as Json,
     })
   } catch (err) {
-    // Non-blocking — the inquiry was created successfully
+    // Non-blocking - the inquiry was created successfully
     console.error('[importInquiry] State transition insert failed (non-blocking):', err)
   }
 

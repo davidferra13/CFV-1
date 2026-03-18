@@ -19,7 +19,7 @@ export type PublishResult = {
   success: boolean
   externalId?: string
   error?: string
-  /** true = transient error (rate limit, timeout) — will retry. false = permanent. */
+  /** true = transient error (rate limit, timeout) - will retry. false = permanent. */
   retriable?: boolean
 }
 
@@ -289,7 +289,7 @@ export async function runPublishingEngine(): Promise<EngineRun> {
               const { sendChefPublishFailureNotification } = await import('./notify')
               await sendChefPublishFailureNotification(tenantId, post.id, post.title, platform)
             } catch {
-              // Non-fatal — notification failure does not block publishing
+              // Non-fatal - notification failure does not block publishing
             }
           }
         }

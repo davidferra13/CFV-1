@@ -56,7 +56,7 @@ export function RefundInitiatedEmail({
             <td style={detailValue}>
               {isStripeRefund
                 ? '3–5 business days (returned to original payment method)'
-                : 'Cash/offline refund — confirm receipt with your chef'}
+                : 'Cash/offline refund - confirm receipt with your chef'}
             </td>
           </tr>
         </tbody>
@@ -65,7 +65,7 @@ export function RefundInitiatedEmail({
       {isStripeRefund && (
         <Text style={paragraph}>
           The refund will be returned to your original payment method. Processing times may vary by
-          bank — typically within a week of this notice.
+          bank - typically within a week of this notice.
         </Text>
       )}
 

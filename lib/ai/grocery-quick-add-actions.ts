@@ -1,6 +1,6 @@
 'use server'
 
-// Grocery Quick-Add — Server Actions
+// Grocery Quick-Add - Server Actions
 // PRIVACY: Recipe ingredients = business data → local only.
 // Parses natural language grocery items and adds them to an event's shopping list.
 
@@ -88,7 +88,7 @@ Return JSON: { "items": [...] }`
     return {
       items,
       rawInput,
-      summary: `Parsed ${items.length} item${items.length !== 1 ? 's' : ''} (simple parse — Ollama was unavailable for smart parsing).`,
+      summary: `Parsed ${items.length} item${items.length !== 1 ? 's' : ''} (simple parse - Ollama was unavailable for smart parsing).`,
     }
   }
 }

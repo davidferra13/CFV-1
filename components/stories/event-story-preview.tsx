@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import type { StoryData } from '@/lib/stories/story-data'
 
@@ -175,7 +175,13 @@ function SceneOpen({
       style={{ opacity }}
     >
       {logoUrl && (
-        <img src={logoUrl} alt="" className="w-16 h-16 rounded-full object-cover mb-6 opacity-80" />
+        <Image
+          src={logoUrl}
+          alt=""
+          width={64}
+          height={64}
+          className="w-16 h-16 rounded-full object-cover mb-6 opacity-80"
+        />
       )}
       <h1
         className="text-2xl text-center text-stone-100 tracking-wide leading-relaxed"

@@ -6,7 +6,7 @@ import type { Json } from '@/types/database'
 import type { HubMessage, HubPinnedNote } from './types'
 
 // ---------------------------------------------------------------------------
-// Hub Messages — Public (token-validated in app layer)
+// Hub Messages - Public (token-validated in app layer)
 // ---------------------------------------------------------------------------
 
 const PostMessageSchema = z.object({

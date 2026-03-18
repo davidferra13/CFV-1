@@ -149,7 +149,7 @@ const ALLERGEN_MAP: Record<string, string[]> = {
 
 /**
  * Cross-check a client's dietary restrictions against menu items.
- * Pure logic — no LLM needed. Fast, reliable, no hallucination risk.
+ * Pure logic - no LLM needed. Fast, reliable, no hallucination risk.
  */
 export async function checkDietaryConflicts(
   clientId: string,
@@ -238,8 +238,8 @@ export async function checkDietaryConflicts(
           item,
           restriction: term,
           message: isAllergy
-            ? `ALLERGEN ALERT: "${item}" contains "${term}" — ${clientName} has an allergy`
-            : `"${item}" contains "${term}" — may conflict with ${clientName}'s dietary restrictions`,
+            ? `ALLERGEN ALERT: "${item}" contains "${term}" - ${clientName} has an allergy`
+            : `"${item}" contains "${term}" - may conflict with ${clientName}'s dietary restrictions`,
         })
         flagged = true
       }
@@ -331,7 +331,7 @@ export async function checkDietaryByClientName(clientName: string): Promise<Diet
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Find clients — include dietary fields directly
+  // Find clients - include dietary fields directly
   // Use limit(5) to catch family members (e.g. "Garcia" matches David Garcia + Maria Garcia)
   const { data: clients } = await supabase
     .from('clients')
@@ -443,7 +443,7 @@ export async function checkDietaryByClientName(clientName: string): Promise<Diet
       }
     }
 
-    summaryParts.push(`${client.full_name} — ${clientSummary}`)
+    summaryParts.push(`${client.full_name} - ${clientSummary}`)
 
     // Accumulate flags and restrictions
     for (const a of allergyList) {
