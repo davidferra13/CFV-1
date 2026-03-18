@@ -3,10 +3,12 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'fs'
 import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import config from '../config.json' with { type: 'json' }
 
-const BASE_DIR = join(dirname(new URL(import.meta.url).pathname), '..', config.storage.findingsDir)
-const PROGRESS_FILE = join(dirname(new URL(import.meta.url).pathname), '..', config.storage.progressFile)
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const BASE_DIR = join(__dirname, '..', config.storage.findingsDir)
+const PROGRESS_FILE = join(__dirname, '..', config.storage.progressFile)
 
 // ─── Progress tracking ─────────────────────────────────────────────────────────
 

@@ -3,11 +3,12 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync, readdirSync, existsSync, statSync } from 'fs'
-import { join } from 'path'
-import { dirname } from 'path'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import config from '../config.json' with { type: 'json' }
 
-const BASE_DIR = join(dirname(new URL(import.meta.url).pathname), '..', config.storage.findingsDir)
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const BASE_DIR = join(__dirname, '..', config.storage.findingsDir)
 
 let supabase = null
 

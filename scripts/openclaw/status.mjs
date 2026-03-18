@@ -5,18 +5,24 @@
 
 import { readFileSync, existsSync } from 'fs'
 import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 import { countCells } from './lib/grid.mjs'
 import { getStorageStats } from './lib/storage.mjs'
 
-const regionsPath = join(dirname(new URL(import.meta.url).pathname), 'data', 'regions.json')
-const progressPath = join(dirname(new URL(import.meta.url).pathname), 'data', 'progress.json')
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const regionsPath = join(__dirname, 'data', 'regions.json')
+const progressPath = join(__dirname, 'data', 'progress.json')
 
 const regions = JSON.parse(readFileSync(regionsPath, 'utf-8'))
 
 // Count total cells
 let totalCells = 0
 for (const [, info] of Object.entries(regions.US)) {
-  totalCells += countCells(info.bbox)
+  if (info.zones) {
+    for (const zone of info.zones) totalCells += countCells(zone.bbox)
+  } else {
+    totalCells += countCells(info.bbox)
+  }
 }
 
 // Load progress

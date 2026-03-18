@@ -11,6 +11,7 @@
 
 import { readFileSync } from 'fs'
 import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 import { generateCells, countCells } from './lib/grid.mjs'
 import { queryCell } from './lib/osm-client.mjs'
 import {
@@ -27,7 +28,8 @@ import {
 const DRY_RUN = process.env.DRY_RUN === '1'
 
 // Load regions
-const regionsPath = join(dirname(new URL(import.meta.url).pathname), 'data', 'regions.json')
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const regionsPath = join(__dirname, 'data', 'regions.json')
 const regions = JSON.parse(readFileSync(regionsPath, 'utf-8'))
 
 // Population-ranked crawl order (from regions.json)
