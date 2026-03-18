@@ -1,16 +1,13 @@
 #!/usr/bin/env node
 
-// OpenClaw - Autonomous Worldwide Food Business Crawler
-// Runs continuously on Raspberry Pi, systematically covering every region.
-// Grid-walks each US state cell by cell, extracts comprehensive data,
-// stores locally in crawler_findings/, and syncs to Supabase.
+// OpenClaw - Autonomous US Food Business Crawler (Acquisition-Only Mode)
+// Runs continuously on Raspberry Pi, systematically covering every US state.
+// States are crawled in population-ranked order for maximum early impact.
+// All data stays LOCAL - no Supabase sync. Pure data acquisition.
 //
 // Usage:
 //   node daemon.mjs              # Start crawling (resumes where it left off)
 //   DRY_RUN=1 node daemon.mjs   # Preview mode (no writes)
-//
-// The daemon runs until all cells in all states are complete,
-// then reports success and exits.
 
 import { readFileSync } from 'fs'
 import { dirname, join } from 'path'
@@ -26,13 +23,15 @@ import {
   saveFindings,
   getStorageStats,
 } from './lib/storage.mjs'
-import { syncToSupabase } from './lib/sync.mjs'
 
 const DRY_RUN = process.env.DRY_RUN === '1'
 
 // Load regions
 const regionsPath = join(dirname(new URL(import.meta.url).pathname), 'data', 'regions.json')
 const regions = JSON.parse(readFileSync(regionsPath, 'utf-8'))
+
+// Population-ranked crawl order (from regions.json)
+const PRIORITY_ORDER = regions._priorityOrder
 
 function log(msg) {
   const ts = new Date().toISOString()
@@ -47,7 +46,7 @@ function formatDuration(ms) {
   return `${mins}m`
 }
 
-async function crawlState(countryCode, stateCode, stateBbox, stateName) {
+async function crawlState(stateCode, stateBbox, stateName) {
   const cells = generateCells(stateCode, stateBbox)
   const total = cells.length
   let completed = 0
@@ -96,20 +95,42 @@ async function main() {
   loadProgress()
 
   log('='.repeat(60))
-  log('OpenClaw - Autonomous Food Business Crawler')
+  log('OpenClaw - US Food Business Crawler (Acquisition Only)')
   log(`Mode: ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
+  log('Sync: DISABLED (local storage only)')
+  log('Order: Population-ranked (highest pop first)')
   log('='.repeat(60))
 
-  // Count total work
+  // Build ordered state list from priority order
   const usStates = regions.US
-  let totalCells = 0
-  const stateList = Object.entries(usStates)
+  const stateList = []
 
-  for (const [code, info] of stateList) {
-    totalCells += countCells(info.bbox)
+  for (const code of PRIORITY_ORDER) {
+    const info = usStates[code]
+    if (!info) continue
+
+    // Alaska uses multiple zones instead of a single bbox
+    if (info.zones) {
+      stateList.push({ code, name: info.name, zones: info.zones })
+    } else {
+      stateList.push({ code, name: info.name, bbox: info.bbox })
+    }
+  }
+
+  // Count total work
+  let totalCells = 0
+  for (const state of stateList) {
+    if (state.zones) {
+      for (const zone of state.zones) {
+        totalCells += countCells(zone.bbox)
+      }
+    } else {
+      totalCells += countCells(state.bbox)
+    }
   }
 
   const progress = getProgress()
+  log(`States to crawl: ${stateList.length} (population-ranked)`)
   log(`Total cells to cover: ${totalCells}`)
   log(`Already completed: ${progress.totalCellsCompleted}`)
   log(`Businesses found so far: ${progress.totalBusinesses}`)
@@ -117,33 +138,27 @@ async function main() {
 
   let totalNewBusinesses = 0
   let statesCompleted = 0
-  let lastSyncTime = Date.now()
 
-  for (const [stateCode, stateInfo] of stateList) {
-    const result = await crawlState('US', stateCode, stateInfo.bbox, stateInfo.name)
-    totalNewBusinesses += result.newBusinesses
-    statesCompleted++
-
-    // Sync to Supabase every 30 minutes
-    if (!DRY_RUN && Date.now() - lastSyncTime > 30 * 60 * 1000) {
-      log('[sync] Running periodic sync to Supabase...')
-      const syncResult = await syncToSupabase()
-      log(`[sync] Synced: ${syncResult.synced} new, ${syncResult.skipped} dupes, ${syncResult.failed} errors`)
-      lastSyncTime = Date.now()
+  for (const state of stateList) {
+    if (state.zones) {
+      // Multi-zone state (Alaska)
+      log(`[${state.code}] ${state.name} has ${state.zones.length} zones`)
+      let stateBusinesses = 0
+      for (const zone of state.zones) {
+        log(`[${state.code}] Zone: ${zone.name} (${zone.note})`)
+        const result = await crawlState(state.code, zone.bbox, `${state.name} - ${zone.name}`)
+        stateBusinesses += result.newBusinesses
+      }
+      totalNewBusinesses += stateBusinesses
+    } else {
+      const result = await crawlState(state.code, state.bbox, state.name)
+      totalNewBusinesses += result.newBusinesses
     }
 
-    // Save progress after each state
+    statesCompleted++
     saveProgress()
-
     log(`[progress] ${statesCompleted}/${stateList.length} states complete`)
     log('')
-  }
-
-  // Final sync
-  if (!DRY_RUN) {
-    log('[sync] Running final sync to Supabase...')
-    const syncResult = await syncToSupabase()
-    log(`[sync] Final sync: ${syncResult.synced} new, ${syncResult.skipped} dupes, ${syncResult.failed} errors`)
   }
 
   // Retry failed cells
@@ -184,7 +199,7 @@ async function main() {
 
   log('')
   log('='.repeat(60))
-  log('OPENCLAW CRAWL COMPLETE')
+  log('OPENCLAW US CRAWL COMPLETE')
   log('='.repeat(60))
   log(`Duration:           ${formatDuration(elapsed)}`)
   log(`Total cells:        ${totalCells}`)
@@ -194,10 +209,11 @@ async function main() {
   log(`States covered:     ${storage.states}`)
   log(`Cities discovered:  ${storage.cities}`)
   log(`Local files:        ${storage.files}`)
+  log(`Sync status:        DISABLED (acquisition only)`)
   log('')
 
   if (remainingFailed === 0) {
-    log('STATUS: ALL TASKS COMPLETED SUCCESSFULLY')
+    log('STATUS: ALL US STATES COMPLETED SUCCESSFULLY')
   } else {
     log(`STATUS: COMPLETED WITH ${remainingFailed} UNRESOLVABLE CELLS`)
     log('(These cells consistently returned errors from all Overpass endpoints)')
