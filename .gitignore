@@ -31,9 +31,7 @@ yarn-error.log*
 .env.local.backup*
 .env.local.dev
 .env.local.beta
-
-# vercel
-.vercel
+.env.local.prod
 
 # typescript
 *.tsbuildinfo

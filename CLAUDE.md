@@ -789,6 +789,10 @@ Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 | Beta start script    | `scripts/start-beta.ps1`                                                           |
 | Deploy to beta       | `scripts/deploy-beta.sh`                                                           |
 | Rollback beta        | `scripts/rollback-beta.sh`                                                         |
+| Prod env config      | `.env.local.prod`                                                                  |
+| Prod start script    | `scripts/start-prod.ps1`                                                           |
+| Deploy to prod       | `scripts/deploy-prod.sh`                                                           |
+| Rollback prod        | `scripts/rollback-prod.sh`                                                         |
 | MC Manual panel      | `scripts/launcher/index.html` (panel-manual, live codebase scanner)                |
 | MC Codebase scanner  | `scripts/launcher/server.mjs` (`scanCodebase()`, `GET /api/manual/scan`)           |
 | MC File watcher      | `scripts/launcher/server.mjs` (`initFileWatcher()`, `GET /api/activity/summary`)   |
@@ -825,12 +829,28 @@ bash scripts/rollback-beta.sh  # Redeploy previous commit
 
 The deploy script: pushes to GitHub, syncs code to CFv1-beta, builds locally with 12GB heap, swaps builds atomically, restarts beta server on port 3200, runs health check with auto-rollback on failure.
 
+### Production Server (Local PC, port 3300)
+
+- **Directory:** `C:\Users\david\Documents\CFv1-prod\` (separate from dev and beta)
+- **Process:** `next start -p 3300` (auto-starts via Windows Task Scheduler)
+- **Tunnel:** Cloudflare Tunnel (Windows service) → `app.cheflowhq.com`
+- **Env config:** `.env.local.prod` → copied to CFv1-prod as `.env.local` during deploy
+- **Ollama:** Shared with dev/beta on `localhost:11434`
+- **Auto-start script:** `scripts/start-prod.ps1`
+
+### Deploy to Production
+
+```bash
+bash scripts/deploy-prod.sh    # Sync + build + restart (~2 min)
+bash scripts/rollback-prod.sh  # Redeploy previous commit
+```
+
 ### Rules
 
-- **Never deploy to beta during active development** — test locally first
-- **Beta shares the dev Supabase database** (for now) — be careful with destructive data operations
-- **Dev and beta use different ports** — 3100 (dev) and 3200 (beta), no conflicts
-- **Both share Ollama** on port 11434 — concurrent requests handled fine
+- **Never deploy during active development** — test locally first
+- **All three environments share the same Supabase database** — be careful with destructive data operations
+- **Dev (3100), beta (3200), and production (3300) use different ports** — no conflicts
+- **All share Ollama** on port 11434 — concurrent requests handled fine
 
 ---
 
