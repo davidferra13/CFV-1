@@ -292,7 +292,7 @@ const KEYWORD_MAP: Array<{ category: ExpenseCategory; keywords: string[]; alt?: 
         'squarespace',
         'wix',
         'wordpress',
-        'vercel',
+        'self-hosted',
         'hosting',
         'ssl',
         'email marketing',

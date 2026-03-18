@@ -6,7 +6,7 @@ import { createServerClient } from '@/lib/supabase/server'
 // ---------------------------------------------------------------------------
 // Circle Digest
 // Sends batched email digests to members with digest_mode = 'hourly' | 'daily'.
-// Intended to be called by a cron job (Vercel cron or Supabase pg_cron).
+// Intended to be called by a cron job (scheduled cron or Supabase pg_cron).
 // ---------------------------------------------------------------------------
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'

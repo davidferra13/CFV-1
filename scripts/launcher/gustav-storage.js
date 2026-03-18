@@ -1068,7 +1068,7 @@ function autoTitle(firstMessage) {
 // Keyword-based project suggestion (deterministic, no AI)
 const AUTO_PROJECT_RULES = [
   {
-    keywords: ['deploy', 'beta', 'rollback', 'pm2', 'production', 'vercel'],
+    keywords: ['deploy', 'beta', 'rollback', 'pm2', 'production'],
     project: 'Deployments',
     icon: '🚀',
   },

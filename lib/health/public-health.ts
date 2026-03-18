@@ -189,7 +189,7 @@ export async function buildPublicHealthSnapshot(
       },
       build: {
         appEnv: process.env.NEXT_PUBLIC_APP_ENV ?? process.env.APP_ENV ?? process.env.NODE_ENV,
-        version: process.env.NEXT_PUBLIC_APP_VERSION ?? process.env.VERCEL_GIT_COMMIT_SHA ?? null,
+        version: process.env.NEXT_PUBLIC_APP_VERSION ?? null,
       },
     },
   }

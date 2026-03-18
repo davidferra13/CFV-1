@@ -4,7 +4,7 @@ import { verifyCronAuth } from '@/lib/auth/cron-auth'
 // ---------------------------------------------------------------------------
 // Circle Digest Cron
 // Sends batched email digests to members with digest_mode = 'hourly' or 'daily'.
-// Schedule: Every hour via Vercel cron.
+// Schedule: Every hour via scheduled cron.
 // On each run, processes both 'hourly' digests and (at 9 AM UTC) 'daily' digests.
 // ---------------------------------------------------------------------------
 

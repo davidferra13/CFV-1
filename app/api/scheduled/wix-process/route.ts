@@ -1,5 +1,5 @@
 // Scheduled Wix Submission Processor
-// GET /api/scheduled/wix-process - invoked by Vercel Cron Job (Vercel sends GET)
+// GET /api/scheduled/wix-process - invoked by scheduled cron Job (self-hosted sends GET)
 // POST /api/scheduled/wix-process - invoked manually or by external schedulers
 // Picks up any submissions that weren't processed inline (async failure, backlog, etc.).
 // Secured with CRON_SECRET bearer token (same pattern as follow-ups cron).

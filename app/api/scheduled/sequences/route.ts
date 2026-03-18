@@ -1,6 +1,6 @@
 // Sequence Processing Cron
 // Fires pending sequence enrollment steps and checks for new birthday enrollments.
-// Called daily by Vercel Cron. Protected by CRON_SECRET.
+// Called daily by scheduled cron. Protected by CRON_SECRET.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'

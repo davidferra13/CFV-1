@@ -448,57 +448,11 @@ async function checkProduction() {
       /* ignore */
     }
   }
-  // Try to get last deploy info and usage from Vercel API
-  let vercel = null
-  try {
-    const token = process.env.VERCEL_TOKEN
-    if (token) {
-      // Get recent deployments
-      const controller = new AbortController()
-      const timer = setTimeout(() => controller.abort(), 8000)
-      const res = await fetch(
-        'https://api.vercel.com/v6/deployments?limit=3&projectId=' +
-          (process.env.VERCEL_PROJECT_ID || ''),
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: controller.signal,
-        }
-      )
-      clearTimeout(timer)
-      if (res.ok) {
-        const data = await res.json()
-        const deployments = (data.deployments || []).map((d) => ({
-          url: d.url,
-          state: d.state,
-          created: d.created,
-          target: d.target,
-          meta: { branch: d.meta?.githubCommitRef, message: d.meta?.githubCommitMessage },
-        }))
-        vercel = { deployments }
-      }
-      // Get usage/billing if available
-      try {
-        const teamRes = await fetch('https://api.vercel.com/v2/teams?limit=1', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (teamRes.ok) {
-          const teamData = await teamRes.json()
-          vercel = vercel || {}
-          vercel.team = teamData.teams?.[0]?.name
-        }
-      } catch {
-        /* ignore */
-      }
-    }
-  } catch {
-    /* ignore */
-  }
   return {
     online: check.ok,
     latency: check.latency,
     status: check.status,
     details,
-    vercel,
   }
 }
 
@@ -1991,7 +1945,7 @@ async function getProjectTimeline() {
     // Count pushes from reflog events
     const pushCount = reflogEvents.filter((e) => e.type === 'push').length
 
-    // Count Vercel deploys (main branch pushes = production deploys)
+    // Count production deploys (main branch pushes)
     const mainPushCount = reflogEvents.filter(
       (e) => e.type === 'push' && (e.branch === 'refs/remotes/origin/main' || e.branch === 'main')
     ).length
@@ -2011,13 +1965,13 @@ async function getProjectTimeline() {
       gitActivity: {
         totalCommits: commits.length,
         totalPushes: pushCount,
-        vercelDeploys: mainPushCount,
+        prodDeploys: mainPushCount,
         betaDeploys: timelineData.betaDeploys || 0,
         branchesCreated: branchCount,
         commitsFailed: timelineData.commitsFailed || 0,
         pushesFailed: timelineData.pushesFailed || 0,
         betaDeploysFailed: timelineData.betaDeploysFailed || 0,
-        vercelDeploysFailed: timelineData.vercelDeploysFailed || 0,
+        prodDeploysFailed: timelineData.prodDeploysFailed || 0,
       },
     }
   } catch (err) {
@@ -2445,28 +2399,15 @@ async function getAppHealth() {
   }
 }
 
-// ── Production / Vercel ─────────────────────────────────────────
+// ── Production Status ─────────────────────────────────────────
 
-async function getVercelDeployments() {
+async function getProductionStatus() {
   const prod = await checkProduction()
-  if (!prod.vercel?.deployments) {
-    return {
-      ok: false,
-      error: 'No Vercel data available. Set VERCEL_TOKEN and VERCEL_PROJECT_ID in .env.local',
-    }
-  }
   return {
-    ok: true,
-    deployments: prod.vercel.deployments.map((d) => ({
-      state: d.state,
-      branch: d.meta?.branch || 'unknown',
-      message: d.meta?.message || '',
-      created: d.created ? new Date(d.created).toISOString().replace('T', ' ').slice(0, 19) : '',
-      url: d.url || '',
-    })),
-    team: prod.vercel.team || null,
+    ok: prod.online,
     prodOnline: prod.online,
-    message: `${prod.vercel.deployments.length} recent deployments | Production: ${prod.online ? 'ONLINE' : 'OFFLINE'}`,
+    latency: prod.latency,
+    message: `Production: ${prod.online ? 'ONLINE' : 'OFFLINE'}`,
   }
 }
 
@@ -3461,10 +3402,10 @@ function getApiRateLimitInfo() {
       note: 'Free tier: 100 emails/day, 3K/month',
     },
     {
-      name: 'Vercel',
-      envKey: 'VERCEL_TOKEN',
+      name: 'Self-Hosted',
+      envKey: 'NEXT_PUBLIC_APP_URL',
       dailyLimit: null,
-      note: 'Pro plan - no hard daily limit',
+      note: 'Self-hosted production server',
     },
   ]
   return {
@@ -6457,7 +6398,7 @@ function checkGuardrails(message) {
 
   // Block production-dangerous actions
   if (
-    /push (to )?main|merge (to |into )?main|deploy (to )?(prod|production|vercel)|force.?push/i.test(
+    /push (to )?main|merge (to |into )?main|deploy (to )?(prod|production)|force.?push/i.test(
       lower
     )
   ) {
@@ -6549,9 +6490,9 @@ const TOOLS = {
     fn: getAppHealth,
     desc: 'Check app health (database, Redis, circuit breakers) - requires dev server running',
   },
-  'prod/deployments': {
-    fn: getVercelDeployments,
-    desc: 'Show recent Vercel production deployments',
+  'prod/status': {
+    fn: getProductionStatus,
+    desc: 'Show production server status',
   },
 
   // Business Data (read-only Supabase queries)
@@ -6990,7 +6931,7 @@ Search the codebase, read any file, see recent changes, branch status, migration
 Scan for @ts-nocheck files with dangerous exports, startTransition calls missing error handling, stale cache tags without revalidation. SSL certs, Stripe webhooks, email delivery, API rate limits.
 
 ### Station 7: Monitoring
-App health (DB, Redis, circuit breakers), Vercel deployments, uptime reports, error aggregation, bundle size trends.
+App health (DB, Redis, circuit breakers), production status, uptime reports, error aggregation, bundle size trends.
 
 ### Station 8: Universal Data Access
 Query ANY Supabase table directly (db/query), run read-only SQL (db/sql), deep-dive into individual events (ledger, expenses, temps, transitions, staff, quotes), view raw ledger entries, notifications, automations, inventory/equipment, activity feed, webhook history. Cron jobs - list schedules and trigger manually. Business intelligence - synthesized patterns: revenue trends, conversion funnel, loyalty distribution, hot leads.
@@ -7415,7 +7356,6 @@ async function handleRequest(req, res) {
       },
       quickLinks: {
         supabase: 'https://supabase.com/dashboard/project/luefkpakzvxcsqroxyhz',
-        vercel: 'https://vercel.com/dashboard',
         github: 'https://github.com/davidferra13/CFV1',
         cloudflare: 'https://dash.cloudflare.com',
         beta: 'https://beta.cheflowhq.com',

@@ -226,15 +226,6 @@ export default async function AdminSystemPage() {
             <ExternalLink size={14} className="text-slate-400 group-hover:text-slate-600" />
           </a>
           <a
-            href="https://vercel.com/dashboard"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all group"
-          >
-            <span className="text-sm font-medium text-slate-700">Vercel Deployment Dashboard</span>
-            <ExternalLink size={14} className="text-slate-400 group-hover:text-slate-600" />
-          </a>
-          <a
             href="https://dashboard.stripe.com"
             target="_blank"
             rel="noopener noreferrer"

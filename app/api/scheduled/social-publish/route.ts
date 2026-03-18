@@ -1,7 +1,7 @@
 // POST /api/scheduled/social-publish
-// Vercel Cron Job - fires every 5 minutes.
+// scheduled cron Job - fires every 5 minutes.
 // Delegates to the publishing engine which queries queued posts and fires each adapter.
-// Secured with CRON_SECRET (Vercel injects Authorization: Bearer <secret>).
+// Secured with CRON_SECRET (self-hosted injects Authorization: Bearer <secret>).
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { runPublishingEngine } from '@/lib/social/publishing/engine'

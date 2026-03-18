@@ -117,7 +117,7 @@ export async function POST(req: Request) {
   // Process async - don't await this in the response path
   if (connection.auto_create_inquiry && submission) {
     // Fire-and-forget: process the submission asynchronously
-    // In Vercel, use waitUntil if available; otherwise the cron picks it up
+    // In self-hosted, use waitUntil if available; otherwise the cron picks it up
     processWixSubmission(submission.id).catch((err) => {
       console.error('[Wix Webhook] Async processing failed (cron will retry):', err)
     })

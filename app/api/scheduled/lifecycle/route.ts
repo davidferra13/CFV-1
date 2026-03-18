@@ -1,5 +1,5 @@
 // Scheduled Lifecycle Maintenance Cron Endpoint
-// GET /api/scheduled/lifecycle - invoked by Vercel Cron Job (Vercel sends GET)
+// GET /api/scheduled/lifecycle - invoked by scheduled cron Job (self-hosted sends GET)
 // POST /api/scheduled/lifecycle - invoked manually or by external schedulers
 // Expires stale inquiries/quotes and sends client event reminders.
 // Respects chef_automation_settings per tenant and clients.automated_emails_enabled.

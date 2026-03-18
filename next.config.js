@@ -73,14 +73,11 @@ const nextConfig = {
     ignoreBuildErrors: true,
     tsconfigPath: process.env.NEXT_TSCONFIG_PATH || 'tsconfig.next.json',
   },
-  // Use git SHA for build ID (Vercel provides VERCEL_GIT_COMMIT_SHA).
+  // Use git SHA for build ID.
   // When PWA dual-pass build is active, pin to a static ID to prevent
   // _ssgManifest.js ENOENT errors from mismatched build directories.
   generateBuildId: async () => {
     if (process.env.ENABLE_PWA_BUILD === '1') return 'chefflow-build'
-    // VERCEL_GIT_COMMIT_SHA is only available on Vercel.
-    // Locally, fall back to git rev-parse or a timestamp.
-    if (process.env.VERCEL_GIT_COMMIT_SHA) return process.env.VERCEL_GIT_COMMIT_SHA
     try {
       return require('child_process').execSync('git rev-parse --short HEAD').toString().trim()
     } catch {

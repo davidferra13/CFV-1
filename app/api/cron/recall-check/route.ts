@@ -1,6 +1,6 @@
 // FDA Recall Check Cron
-// GET /api/cron/recall-check - invoked daily via Vercel Cron
-// Trigger daily via Vercel Cron: { "path": "/api/cron/recall-check", "schedule": "0 9 * * *" }
+// GET /api/cron/recall-check - invoked daily via scheduled cron
+// Trigger daily via scheduled cron: { "path": "/api/cron/recall-check", "schedule": "0 9 * * *" }
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'

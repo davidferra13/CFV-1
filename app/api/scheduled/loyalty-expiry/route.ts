@@ -1,5 +1,5 @@
 // Scheduled Loyalty Expiry Cron Endpoint
-// GET /api/scheduled/loyalty-expiry - invoked by Vercel Cron Job
+// GET /api/scheduled/loyalty-expiry - invoked by scheduled cron Job
 // POST /api/scheduled/loyalty-expiry - invoked manually or by external schedulers
 //
 // Enforces expiry on client_incentives (vouchers + gift cards).

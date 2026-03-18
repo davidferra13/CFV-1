@@ -1,7 +1,7 @@
 # Environment Variables - Production Deployment
 
-Quick reference for setting Vercel production environment variables.
-All values should be scoped to **Production** environment only in the Vercel dashboard.
+Quick reference for setting production environment variables.
+All values should be set in `.env.local` on the production server.
 
 ## Required (app will not start without these)
 
@@ -60,9 +60,8 @@ All values should be scoped to **Production** environment only in the Vercel das
 
 If any check fails, the app throws and does not start.
 
-## Vercel setup steps
+## Setup steps
 
-1. Go to vercel.com > ChefFlow project > Settings > Environment Variables
-2. For each variable, select **Production** scope only
-3. Paste the value from the corresponding dashboard
-4. After setting all vars, trigger a redeploy: Deployments > latest > Redeploy
+1. Copy `.env.local.example` to `.env.local` on the production server
+2. Fill in each variable from the corresponding dashboard
+3. Restart the production server after updating

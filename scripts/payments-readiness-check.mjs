@@ -10,9 +10,8 @@ function normalize(raw) {
 
 function isProductionLike(env) {
   const explicit = normalize(env.NEXT_PUBLIC_APP_ENV || env.APP_ENV)
-  const vercel = normalize(env.VERCEL_ENV || env.NEXT_PUBLIC_VERCEL_ENV)
   const nodeEnv = normalize(env.NODE_ENV)
-  const value = explicit || vercel || nodeEnv
+  const value = explicit || nodeEnv
   return value.includes('prod')
 }
 

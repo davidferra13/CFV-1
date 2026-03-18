@@ -8,7 +8,7 @@
 // Returns a JSON summary of all crons with status: 'ok' | 'stale' | 'missing'
 // plus an overall health flag.
 //
-// This route itself can be added to vercel.json to run hourly:
+// This route itself can be added to cron config to run hourly:
 //   { "path": "/api/scheduled/monitor", "schedule": "30 * * * *" }
 // (offset to 30 min past the hour so it doesn't collide with other hourly crons)
 
@@ -16,7 +16,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
-// Expected max interval (minutes) for each cron, derived from vercel.json schedules.
+// Expected max interval (minutes) for each cron, derived from cron config schedules.
 // We alert if the last heartbeat is older than 2x this value.
 const CRON_EXPECTED_INTERVALS: Record<string, number> = {
   // 5-minute crons - alert if stale > 10 min

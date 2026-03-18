@@ -1082,7 +1082,7 @@ function BenchmarksTab() {
       <Card className="p-6">
         <h3 className="font-semibold text-stone-200 mb-2">Website Stats</h3>
         <p className="text-sm text-stone-500 mb-4">
-          Record monthly website traffic manually, or connect Vercel Analytics / Plausible.
+          Record monthly website traffic manually, or connect self-hosted Analytics / Plausible.
         </p>
         <a
           href="/analytics/website"

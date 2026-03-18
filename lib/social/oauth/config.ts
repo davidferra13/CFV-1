@@ -114,9 +114,7 @@ export function getOAuthConfig(platform: string): OAuthConfig | null {
 
 /** Canonical redirect URI for each platform's OAuth callback */
 export function getRedirectUri(platform: string): string {
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+  const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   return `${base}/api/integrations/social/callback/${platform}`
 }
 

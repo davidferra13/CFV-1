@@ -117,8 +117,8 @@ export default function PrivacyPage() {
               pass recipient email addresses and message content to this provider for delivery only.
             </li>
             <li>
-              <strong>Vercel</strong> - our hosting platform. Web requests pass through
-              Vercel&apos;s infrastructure and are subject to their data processing terms.
+              <strong>self-hosted</strong> - our hosting platform. Web requests pass through
+              self-hosted&apos;s infrastructure and are subject to their data processing terms.
             </li>
           </ul>
           <p className="mt-4 leading-relaxed">

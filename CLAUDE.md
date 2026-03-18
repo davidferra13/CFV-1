@@ -8,7 +8,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 > **BLOCK 1 — NEVER PUSH TO MAIN**
 >
-> Pushing to `main` = deploying to Vercel = spending real money. You are NEVER allowed to push to `main`, merge to `main`, or trigger a Vercel deployment. EVER. The ONLY exception is if the developer explicitly says "push everything" or "merge to main" or "deploy." Feature branch pushes are always safe ($0). If unsure: don't push.
+> Pushing to `main` = deploying to production. You are NEVER allowed to push to `main`, merge to `main`, or trigger a production deployment. EVER. The ONLY exception is if the developer explicitly says "push everything" or "merge to main" or "deploy." Feature branch pushes are always safe ($0). If unsure: don't push.
 
 > **BLOCK 2 — DO YOUR OWN WORK, TEST YOUR OWN WORK, FIX YOUR OWN BUGS**
 >
@@ -34,7 +34,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
 - **End every session:** commit everything → push the feature branch → update this file if new rules were found
 - **Private AI:** client data stays local via Ollama only — never Gemini, never cloud LLMs
-- **Never:** merge to `main`, deploy to Vercel, or run `supabase db push` without explicit user approval
+- **Never:** merge to `main`, deploy to production, or run `supabase db push` without explicit user approval
 
 ---
 
@@ -357,18 +357,18 @@ When the developer says **"ship it"** (or any variation: "ship", "send it", "pus
 
 1. **`git add`** all modified and created files
 2. **`git commit`** with a clear, descriptive message
-3. **`git push origin <current-branch>`** — push the feature branch to GitHub ($0, Vercel ignores it)
+3. **`git push origin <current-branch>`** — push the feature branch to GitHub ($0)
 4. **`bash scripts/deploy-beta.sh`** — deploy to beta (local PC, port 3200) so `beta.cheflowhq.com` is updated
 5. **Report** what was committed, pushed, and deployed
 
-**This updates localhost (already has the code), GitHub (backup), AND beta (live preview). It does NOT touch Vercel/production. It costs $0.**
+**This updates localhost (already has the code), GitHub (backup), AND beta (live preview). It does NOT touch production. It costs $0.**
 
 The developer should never have to ask for these steps separately. "Ship it" = the full chain, every time.
 
 **What "ship it" does NOT mean:**
 
 - Merge to `main` — NEVER (requires explicit "merge to main" or "deploy to production")
-- Deploy to Vercel — NEVER (requires explicit "deploy" or "push to main")
+- Deploy to production — NEVER (requires explicit "deploy" or "push to main")
 - Run on production — NEVER
 
 ---
@@ -395,7 +395,7 @@ These steps run automatically at the end of every session, whether or not the de
 
 1. **Stage all changes** — `git add` every file that was modified or created
 2. **Commit** — clear, descriptive commit message
-3. **Push the current branch** — `git push origin <current-branch>` → GitHub backup, costs $0, Vercel ignores it
+3. **Push the current branch** — `git push origin <current-branch>` → GitHub backup, costs $0
 4. **Deploy to beta** — `bash scripts/deploy-beta.sh` — builds locally and restarts beta on port 3200
 5. **Update this file** — if any new patterns, rules, or decisions were made this session, add them now
 6. **Report** — tell the developer what was committed, pushed, and deployed
@@ -444,9 +444,9 @@ This file is the **master registry of every page, button, tab, form, modal, over
 
 - Use **feature branches** for new work, not direct commits to `main`.
 - Branch naming: `feature/description` or `fix/description`.
-- **NEVER** merge to `main` or deploy to Vercel unless the user explicitly says so.
+- **NEVER** merge to `main` or deploy to production unless the user explicitly says so.
 - **ALWAYS `git push` the current branch to GitHub at the end of every session.** This is the off-machine backup. Do not wait to be asked.
-- Pushing feature branches is **always safe** — `vercel.json` has `ignoreCommand` set so Vercel only builds when code is pushed to `main`. Feature branch pushes cost $0.
+- Pushing feature branches is **always safe** and costs $0.
 - `git commit` + `git push origin <current-branch>` is the default. Merging to `main` is not.
 
 ### Feature Close-Out (run when user asks to close out a feature)
@@ -456,8 +456,8 @@ Run these in order — stop and report any failure before continuing:
 1. `npx tsc --noEmit --skipLibCheck` → must exit 0
 2. `npx next build --no-lint` → must exit 0
 3. `git add` relevant files + `git commit` with a clear message
-4. `git push origin <current-branch>` — push the feature branch to GitHub (backup, $0 cost, Vercel ignores it)
-5. Confirm branch is clean and ready — do **NOT** merge to `main` or deploy to Vercel
+4. `git push origin <current-branch>` — push the feature branch to GitHub (backup, $0 cost)
+5. Confirm branch is clean and ready — do **NOT** merge to `main` or deploy to production
 
 ### Health Checks (run before merging to main)
 
@@ -802,8 +802,10 @@ ChefFlow runs across three environments, all on the developer's PC. **Never conf
 ```text
 PC localhost:3100           → Development (next dev, hot reload)
 PC localhost:3200           → Beta (next start, Cloudflare Tunnel → beta.cheflowhq.com)
-Vercel (app.cheflowhq.com) → Production (deployed when ready)
+PC localhost:3300           → Production (next start, Cloudflare Tunnel → app.cheflowhq.com)
 ```
+
+All three environments are self-hosted on the developer's PC. Zero paid hosting services.
 
 ### Beta Server (Local PC, port 3200)
 

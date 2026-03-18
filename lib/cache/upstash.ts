@@ -5,7 +5,7 @@
 
 /**
  * Upstash Redis via REST API - no persistent connection needed.
- * Works perfectly in serverless/edge environments (Vercel, Next.js API routes).
+ * Works perfectly in serverless/edge environments (self-hosted, Next.js API routes).
  *
  * Setup requires:
  *   npm install @upstash/redis

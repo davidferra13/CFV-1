@@ -1,5 +1,5 @@
 // Scheduled: Email Historical Scan
-// GET /api/scheduled/email-history-scan - health check (Vercel Cron sends GET)
+// GET /api/scheduled/email-history-scan - health check (scheduled cron sends GET)
 // POST /api/scheduled/email-history-scan - process a batch for each opted-in chef
 //
 // Runs every 15 minutes. Finds chefs with historical_scan_enabled=true and

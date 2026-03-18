@@ -19,7 +19,7 @@ const excludedDirs = new Set([
   '.git',
   '.next',
   '.turbo',
-  '.vercel',
+  '.self-hosted',
   'coverage',
   'dist',
   'node_modules',

@@ -52,7 +52,7 @@ export async function getGeoFromIp(ip: string): Promise<IpGeoResult | null> {
 
 /**
  * Extract client IP from Next.js request headers.
- * Works with Vercel, Cloudflare, and standard proxies.
+ * Works with self-hosted, Cloudflare, and standard proxies.
  */
 export function getClientIp(headers: Headers): string | null {
   return (

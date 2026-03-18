@@ -1,5 +1,5 @@
 // Scheduled Push Subscription Cleanup Cron Endpoint
-// GET /api/scheduled/push-cleanup - invoked by Vercel Cron Job (daily at 4 AM UTC)
+// GET /api/scheduled/push-cleanup - invoked by scheduled cron Job (daily at 4 AM UTC)
 // POST /api/scheduled/push-cleanup - invoked manually or by external schedulers
 //
 // Two jobs in one:

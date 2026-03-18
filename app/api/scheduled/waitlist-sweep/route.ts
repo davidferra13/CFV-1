@@ -1,5 +1,5 @@
 // Scheduled Waitlist Sweep Cron Endpoint
-// GET /api/scheduled/waitlist-sweep - invoked by Vercel Cron Job (daily at 8 AM UTC)
+// GET /api/scheduled/waitlist-sweep - invoked by scheduled cron Job (daily at 8 AM UTC)
 // POST /api/scheduled/waitlist-sweep - invoked manually or by external schedulers
 //
 // Sweeps active waitlist entries and notifies clients when their requested date

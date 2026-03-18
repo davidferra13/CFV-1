@@ -919,7 +919,7 @@ Measures over 100+ repeated navigation loops:
 ```
 Development:  localhost:3100  (next dev, hot reload)
 Beta:         localhost:3200  (next start, Cloudflare Tunnel -> beta.cheflowhq.com)
-Production:   Vercel          (app.cheflowhq.com, deploys from main branch only)
+Production:   Self-hosted     (app.cheflowhq.com, Cloudflare Tunnel)
 ```
 
 ### Development Environment
@@ -946,11 +946,10 @@ Production:   Vercel          (app.cheflowhq.com, deploys from main branch only)
 - **Rollback:** `bash scripts/rollback-beta.sh`
 - **Env:** `.env.local.beta` -> copied as `.env.local` during deploy
 
-### Production (Vercel)
+### Production (Self-hosted)
 
 - **Domain:** app.cheflowhq.com
-- **Deploy trigger:** Push to `main` branch only
-- **`vercel.json`:** `ignoreCommand` set so feature branch pushes are ignored ($0 cost)
+- **Deploy trigger:** `bash scripts/deploy-beta.sh` (or equivalent production deploy script)
 - **NEVER push to main** without explicit developer approval
 
 ### Developer's Hardware
@@ -1165,23 +1164,22 @@ Production:   Vercel          (app.cheflowhq.com, deploys from main branch only)
 
 ### Key Configuration Files
 
-| File                          | Purpose                                                       |
-| ----------------------------- | ------------------------------------------------------------- |
-| `next.config.mjs`             | Next.js config (redirects, headers, image domains, webpack)   |
-| `tsconfig.json`               | TypeScript config (strict mode, paths)                        |
-| `tsconfig.ci.json`            | CI TypeScript config                                          |
-| `tsconfig.web-beta.json`      | Web beta release TypeScript config                            |
-| `tsconfig.scripts.json`       | Scripts TypeScript config                                     |
-| `tailwind.config.ts`          | Tailwind theme (brand colors, fonts, breakpoints)             |
-| `postcss.config.js`           | PostCSS config                                                |
-| `.prettierrc`                 | Prettier formatting rules                                     |
-| `.prettierignore`             | Prettier ignore patterns                                      |
-| `.eslintrc.json`              | ESLint config                                                 |
-| `vercel.json`                 | Vercel deployment config (ignoreCommand for feature branches) |
-| `playwright.config.ts`        | Main Playwright config                                        |
-| `playwright.soak.config.ts`   | Soak test config                                              |
-| `playwright.stress.config.ts` | Stress test config                                            |
-| `capacitor.config.ts`         | Capacitor (mobile, experimental)                              |
+| File                          | Purpose                                                     |
+| ----------------------------- | ----------------------------------------------------------- |
+| `next.config.mjs`             | Next.js config (redirects, headers, image domains, webpack) |
+| `tsconfig.json`               | TypeScript config (strict mode, paths)                      |
+| `tsconfig.ci.json`            | CI TypeScript config                                        |
+| `tsconfig.web-beta.json`      | Web beta release TypeScript config                          |
+| `tsconfig.scripts.json`       | Scripts TypeScript config                                   |
+| `tailwind.config.ts`          | Tailwind theme (brand colors, fonts, breakpoints)           |
+| `postcss.config.js`           | PostCSS config                                              |
+| `.prettierrc`                 | Prettier formatting rules                                   |
+| `.prettierignore`             | Prettier ignore patterns                                    |
+| `.eslintrc.json`              | ESLint config                                               |
+| `playwright.config.ts`        | Main Playwright config                                      |
+| `playwright.soak.config.ts`   | Soak test config                                            |
+| `playwright.stress.config.ts` | Stress test config                                          |
+| `capacitor.config.ts`         | Capacitor (mobile, experimental)                            |
 
 ### Environment Variables (Key Categories)
 
@@ -1266,7 +1264,7 @@ Full checklist in `docs/production-launch-execution-plan.md`:
 2. Create separate production Supabase project
 3. Production auth configuration (Google OAuth, email templates)
 4. Verify RLS policies on all tables
-5. Production environment variables in Vercel
+5. Production environment variables configured
 6. Security audit (secret scanning, vulnerability assessment)
 
 ---

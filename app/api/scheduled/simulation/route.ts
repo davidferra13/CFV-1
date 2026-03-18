@@ -13,7 +13,7 @@ import { ALL_SIM_MODULES } from '@/lib/simulation/types'
 import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
-// Vercel Pro supports up to 800s; local dev has no limit.
+// self-hosted Pro supports up to 800s; local dev has no limit.
 // 6 modules × 2 scenarios × ~15s ≈ 180s - well within budget.
 export const maxDuration = 300
 

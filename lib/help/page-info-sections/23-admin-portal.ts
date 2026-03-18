@@ -97,7 +97,7 @@ export const ADMIN_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
     features: [
       'Row count grid',
       'Integrity signals',
-      'External dashboard links (Supabase, Vercel, Stripe)',
+      'External dashboard links (Supabase, self-hosted, Stripe)',
     ],
   },
 

@@ -236,7 +236,7 @@ export async function runPublishingEngine(): Promise<EngineRun> {
     .lte('schedule_at', cutoff)
     .lt('publish_attempts', 3) // posts that failed 3x are excluded until chef intervenes
     .order('schedule_at', { ascending: true })
-    .limit(50) // cap per run to stay within Vercel function timeout
+    .limit(50) // cap per run to stay within self-hosted function timeout
 
   if (queryErr) {
     run.errors.push(`Query error: ${queryErr.message}`)

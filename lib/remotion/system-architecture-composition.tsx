@@ -3,7 +3,7 @@
  *
  * Animated schematic showing every piece of the system and how they connect:
  *   Phase 1: Your Desk (VS Code → Next.js → Ollama PC + Pi)
- *   Phase 2: The Internet (GitHub → Vercel → Supabase / Stripe / APIs)
+ *   Phase 2: The Internet (GitHub → Self-Hosted → Supabase / Stripe / APIs)
  *   Phase 3: Full picture with data flow arrows
  *
  * Educational. Designed for someone who thinks visually.
@@ -79,7 +79,7 @@ const P1_ARROWS_LOCAL = 130
 // Phase 2: Cloud services - 240-420 (6 seconds)
 const P2_START = 180
 const P2_GITHUB = 195
-const P2_VERCEL = 225
+const P2_SELFHOST = 225
 const P2_SUPABASE = 250
 const P2_STRIPE = 270
 const P2_APIS = 290
@@ -376,7 +376,7 @@ export function SystemArchitectureComposition() {
 
   // Phase 2: Cloud boxes
   const githubStyle = useSlideIn(P2_GITHUB, 'up')
-  const vercelStyle = useSlideIn(P2_VERCEL, 'up')
+  const selfhostStyle = useSlideIn(P2_SELFHOST, 'up')
   const supabaseStyle = useSlideIn(P2_SUPABASE, 'up')
   const stripeStyle = useSlideIn(P2_STRIPE, 'up')
   const apisStyle = useSlideIn(P2_APIS, 'up')
@@ -428,7 +428,7 @@ export function SystemArchitectureComposition() {
 
   // Box positions - cloud
   const GITHUB = { x: 350, y: 65, w: 88, h: 68 }
-  const VERCEL = { x: 462, y: 65, w: 88, h: 68 }
+  const SELFHOST = { x: 462, y: 65, w: 88, h: 68 }
   const SUPABASE = { x: 350, y: 160, w: 88, h: 74 }
   const STRIPE = { x: 462, y: 160, w: 88, h: 74 }
   const GMAIL = { x: 350, y: 260, w: 88, h: 62 }
@@ -554,13 +554,13 @@ export function SystemArchitectureComposition() {
         />
       </div>
 
-      <div style={vercelStyle}>
+      <div style={selfhostStyle}>
         <SystemBox
-          {...VERCEL}
+          {...SELFHOST}
           fill={STONE[50]}
           stroke={STONE[700]}
-          icon="▲"
-          title="Vercel"
+          icon="🖥"
+          title="Self-Hosted"
           subtitle="app.cheflowhq.com"
         />
       </div>
@@ -660,12 +660,12 @@ export function SystemArchitectureComposition() {
 
       {/* ─── ARROWS: Cloud connections ─────────────────────────── */}
 
-      {/* GitHub → Vercel */}
+      {/* GitHub → Self-Hosted */}
       <Arrow
         x1={GITHUB.x + GITHUB.w}
         y1={GITHUB.y + GITHUB.h / 2}
-        x2={VERCEL.x}
-        y2={VERCEL.y + VERCEL.h / 2}
+        x2={SELFHOST.x}
+        y2={SELFHOST.y + SELFHOST.h / 2}
         color={STONE[400]}
         progress={arrowCloudProgress}
         label="deploy"
@@ -711,10 +711,10 @@ export function SystemArchitectureComposition() {
         labelOffset={{ x: 0, y: -30 }}
       />
 
-      {/* Vercel → Supabase */}
+      {/* Self-Hosted → Supabase */}
       <Arrow
-        x1={VERCEL.x + VERCEL.w / 2}
-        y1={VERCEL.y + VERCEL.h}
+        x1={SELFHOST.x + SELFHOST.w / 2}
+        y1={SELFHOST.y + SELFHOST.h}
         x2={SUPABASE.x + SUPABASE.w}
         y2={SUPABASE.y + 10}
         color={GREEN[600]}

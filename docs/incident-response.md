@@ -23,7 +23,6 @@ ChefFlow production incident detection, response, and recovery procedures.
 | Health check (production) | `curl https://app.cheflowhq.com/api/health/readiness?strict=1`  |
 | Health check (beta)       | `curl https://beta.cheflowhq.com/api/health/readiness?strict=1` |
 | Sentry dashboard          | `https://sentry.io` (project: chefflow)                         |
-| Vercel dashboard          | `https://vercel.com` (deployment logs, function logs)           |
 | User reports              | Email, beta tester feedback, in-app feedback form               |
 
 ---
@@ -32,7 +31,7 @@ ChefFlow production incident detection, response, and recovery procedures.
 
 | Level             | Definition                                       | Response time             | Examples                                                                         |
 | ----------------- | ------------------------------------------------ | ------------------------- | -------------------------------------------------------------------------------- |
-| **P0 - Critical** | App completely down or data loss occurring       | Immediate (within 15 min) | Vercel deployment crash, database unreachable, auth broken for all users         |
+| **P0 - Critical** | App completely down or data loss occurring       | Immediate (within 15 min) | Production server crash, database unreachable, auth broken for all users         |
 | **P1 - Major**    | Core feature broken for all users                | Within 1 hour             | Event creation fails, quotes not saving, payments broken, login loop             |
 | **P2 - Degraded** | Non-core feature broken or core feature degraded | Within 4 hours            | Remy AI offline, notifications not sending, calendar sync stale, slow page loads |
 | **P3 - Minor**    | Cosmetic issue or edge case affecting few users  | Next business day         | UI glitch on one browser, tooltip misaligned, non-critical cron job stale        |
@@ -47,18 +46,7 @@ ChefFlow production incident detection, response, and recovery procedures.
 
 ## 3. Rollback Procedures
 
-### 3a. Vercel (Production) - Instant Rollback
-
-Vercel keeps every deployment. Rollback takes ~10 seconds.
-
-1. Go to `https://vercel.com` > ChefFlow project > Deployments
-2. Find the last known-good deployment
-3. Click the three-dot menu > "Promote to Production"
-4. Verify: `curl https://app.cheflowhq.com/api/health/readiness?strict=1`
-
-No code changes needed. The previous build is served immediately.
-
-### 3b. Beta Server - Script Rollback
+### 3a. Production - Script Rollback
 
 The beta deploy script keeps a `.next.backup` of the previous build.
 
@@ -111,14 +99,14 @@ PITR creates a new project with the restored data. You then update environment v
 
 ### 3d. Rollback Decision Matrix
 
-| What broke                             | Rollback method                 | Time to recover    |
-| -------------------------------------- | ------------------------------- | ------------------ |
-| Bad Vercel deploy (UI/server crash)    | Vercel instant rollback         | ~10 seconds        |
-| Bad beta deploy                        | `bash scripts/rollback-beta.sh` | ~30 seconds        |
-| Bad migration (additive, no data loss) | Deploy new migration to undo    | ~5 minutes         |
-| Bad migration (data corrupted)         | Restore from SQL dump or PITR   | ~15-30 minutes     |
-| Supabase outage                        | Wait for Supabase status page   | Out of our control |
-| Ollama down (AI features)              | Restart Ollama: `ollama serve`  | ~10 seconds        |
+| What broke                              | Rollback method                 | Time to recover    |
+| --------------------------------------- | ------------------------------- | ------------------ |
+| Bad production deploy (UI/server crash) | `bash scripts/rollback-beta.sh` | ~30 seconds        |
+| Bad beta deploy                         | `bash scripts/rollback-beta.sh` | ~30 seconds        |
+| Bad migration (additive, no data loss)  | Deploy new migration to undo    | ~5 minutes         |
+| Bad migration (data corrupted)          | Restore from SQL dump or PITR   | ~15-30 minutes     |
+| Supabase outage                         | Wait for Supabase status page   | Out of our control |
+| Ollama down (AI features)               | Restart Ollama: `ollama serve`  | ~10 seconds        |
 
 ---
 
