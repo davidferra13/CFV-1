@@ -26,6 +26,41 @@ import {
 } from './lib/storage.mjs'
 
 const DRY_RUN = process.env.DRY_RUN === '1'
+const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
+const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || 'DFPrivateChef@gmail.com'
+
+// Milestone notifications via Resend (ChefFlow's email provider)
+const NEW_ENGLAND = new Set(['MA', 'NH', 'VT', 'ME', 'CT', 'RI'])
+
+async function sendNotification(subject, body) {
+  if (!RESEND_API_KEY) {
+    log(`[notify] No RESEND_API_KEY set, skipping email: ${subject}`)
+    return
+  }
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'CheFlow <noreply@cheflowhq.com>',
+        to: NOTIFY_EMAIL,
+        subject,
+        text: body,
+      }),
+    })
+    if (res.ok) {
+      log(`[notify] Email sent: ${subject}`)
+    } else {
+      const err = await res.text().catch(() => 'unknown')
+      log(`[notify] Email failed (${res.status}): ${err}`)
+    }
+  } catch (err) {
+    log(`[notify] Email error: ${err.message}`)
+  }
+}
 
 // Load regions
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -161,6 +196,24 @@ async function main() {
     saveProgress()
     log(`[progress] ${statesCompleted}/${stateList.length} states complete`)
     log('')
+
+    // New England milestone: notify when all 6 NE states are done
+    if (NEW_ENGLAND.has(state.code)) {
+      const neFinished = stateList
+        .slice(0, statesCompleted)
+        .filter((s) => NEW_ENGLAND.has(s.code)).length
+      if (neFinished === NEW_ENGLAND.size) {
+        const p = getProgress()
+        await sendNotification(
+          'OpenClaw: New England Complete',
+          `All 6 New England states have been crawled.\n\n` +
+          `Duration: ${formatDuration(Date.now() - startTime)}\n` +
+          `Businesses found so far: ${p.totalBusinesses}\n` +
+          `Cells completed: ${p.totalCellsCompleted}\n\n` +
+          `The crawler is now continuing with the remaining ${stateList.length - statesCompleted} states.`
+        )
+      }
+    }
   }
 
   // Retry failed cells
@@ -221,10 +274,27 @@ async function main() {
     log('(These cells consistently returned errors from all Overpass endpoints)')
   }
   log('='.repeat(60))
+
+  // Final completion notification
+  await sendNotification(
+    'OpenClaw: Full US Crawl Complete',
+    `All ${stateList.length} states have been crawled.\n\n` +
+    `Duration: ${formatDuration(elapsed)}\n` +
+    `Businesses found: ${final.totalBusinesses}\n` +
+    `Cells completed: ${final.totalCellsCompleted}\n` +
+    `Cells failed: ${remainingFailed}\n` +
+    `States: ${storage.states}\n` +
+    `Cities: ${storage.cities}\n` +
+    `Local files: ${storage.files}`
+  )
 }
 
-main().catch((err) => {
+main().catch(async (err) => {
   log(`[fatal] ${err.message}`)
   saveProgress()
+  await sendNotification(
+    'OpenClaw: CRASHED',
+    `The crawler has crashed.\n\nError: ${err.message}\n\nProgress has been saved. Restart with: node daemon.mjs`
+  )
   process.exit(1)
 })
