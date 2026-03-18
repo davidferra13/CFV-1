@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/icons'
 import { AppLogo } from '@/components/branding/app-logo'
 import { NotificationBell } from '@/components/notifications/notification-bell'
+import { ClientHubUnreadBadge } from '@/components/hub/client-hub-unread-badge'
 
 interface ClientNavProps {
   userEmail: string
@@ -110,7 +111,7 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
           <button
             type="button"
             onClick={() => setCollapsed(true)}
-            className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-700 hover:text-stone-400 transition-colors"
+            className="flex items-center justify-center w-11 h-11 rounded-lg text-stone-400 hover:bg-stone-700 hover:text-stone-400 transition-colors touch-manipulation"
             aria-label="Collapse sidebar"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -190,6 +191,7 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
                     className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
                   />
                   {item.label}
+                  {item.href === '/my-hub' && <ClientHubUnreadBadge />}
                 </Link>
               )
             })}
@@ -247,7 +249,7 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
           <div className="flex items-center gap-2">
             <Link
               href={BOOK_NOW_HREF}
-              className="inline-flex items-center rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700"
+              className="inline-flex items-center min-h-[44px] rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 touch-manipulation"
             >
               Book Now
             </Link>
@@ -255,7 +257,7 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 rounded-lg text-stone-500 hover:bg-stone-700"
+              className="flex items-center justify-center w-11 h-11 rounded-lg text-stone-500 hover:bg-stone-700 touch-manipulation"
               aria-label="Toggle menu"
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -274,7 +276,7 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                 type="button"
                 aria-label="Close menu"
                 onClick={closeMenu}
-                className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-700"
+                className="flex items-center justify-center w-11 h-11 rounded-lg text-stone-400 hover:bg-stone-700 touch-manipulation"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -308,6 +310,7 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                       className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
                     />
                     {item.label}
+                    {item.href === '/my-hub' && <ClientHubUnreadBadge />}
                   </Link>
                 )
               })}
@@ -338,19 +341,24 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
 
       <nav className="lg:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 bg-stone-900 border-b border-stone-700">
         <div className="flex items-center justify-around h-11">
-          {navItems.map((item) => {
+          {navItems.slice(0, 5).map((item) => {
             const active = isItemActive(pathname, item.href)
             const Icon = item.icon
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors ${
+                className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-h-[44px] text-xxs font-medium transition-colors touch-manipulation ${
                   active ? 'text-brand-600' : 'text-stone-400'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-5 h-5" />
                 {item.label}
+                {item.href === '/my-hub' && (
+                  <span className="absolute top-0.5 right-1/4">
+                    <ClientHubUnreadBadge />
+                  </span>
+                )}
               </Link>
             )
           })}

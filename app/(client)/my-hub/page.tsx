@@ -9,6 +9,7 @@ import { getMyFriends, getPendingFriendRequests } from '@/lib/hub/friend-actions
 import { getHubTotalUnreadCount } from '@/lib/hub/notification-actions'
 import { HubGroupCard } from '@/components/hub/hub-group-card'
 import { Button } from '@/components/ui/button'
+import { Alert } from '@/components/ui/alert'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { Bell, CalendarPlus, Users, Utensils, Share2 } from '@/components/ui/icons'
 
@@ -17,15 +18,30 @@ export const metadata: Metadata = { title: 'My Dinner Circle - ChefFlow' }
 export default async function MyHubPage() {
   await requireClient()
   const profileToken = await getClientProfileToken()
-  const [groups, friends, pendingRequests, totalUnread] = await Promise.all([
+
+  const [groupsResult, friendsResult, pendingResult, unreadResult] = await Promise.allSettled([
     getClientHubGroups(),
-    getMyFriends().catch(() => []),
-    getPendingFriendRequests().catch(() => []),
-    getHubTotalUnreadCount(profileToken).catch(() => 0),
+    getMyFriends(),
+    getPendingFriendRequests(),
+    getHubTotalUnreadCount(profileToken),
   ])
+
+  const groups = groupsResult.status === 'fulfilled' ? groupsResult.value : []
+  const friends = friendsResult.status === 'fulfilled' ? friendsResult.value : []
+  const pendingRequests = pendingResult.status === 'fulfilled' ? pendingResult.value : []
+  const totalUnread = unreadResult.status === 'fulfilled' ? unreadResult.value : 0
+  const hasLoadError =
+    groupsResult.status === 'rejected' ||
+    friendsResult.status === 'rejected' ||
+    pendingResult.status === 'rejected'
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
+      {hasLoadError && (
+        <Alert variant="warning" className="mb-4">
+          Some data could not be loaded. You may be seeing incomplete information.
+        </Alert>
+      )}
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -40,7 +56,7 @@ export default async function MyHubPage() {
               <Bell className="mr-2 h-4 w-4" />
               Notifications
               {totalUnread > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white">
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-xxs font-bold text-white">
                   {totalUnread > 99 ? '99+' : totalUnread}
                 </span>
               )}
@@ -51,7 +67,7 @@ export default async function MyHubPage() {
               <Users className="mr-2 h-4 w-4" />
               Circle
               {pendingRequests.length > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white">
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-xxs font-bold text-white">
                   {pendingRequests.length}
                 </span>
               )}
@@ -105,8 +121,9 @@ export default async function MyHubPage() {
           </div>
           <h2 className="text-xl font-semibold text-stone-200">No dinner groups yet</h2>
           <p className="mx-auto mt-2 max-w-md text-stone-400">
-            Plan a dinner with friends - pick a date, invite your crew, and coordinate everything
-            from menus to allergies in one shared space.
+            Your dinner groups are private spaces where you coordinate menus, share dietary needs,
+            and stay updated on every detail. They're created automatically when you book with a
+            chef, or you can start one yourself.
           </p>
           <Link href="/my-hub/create" className="mt-6">
             <Button variant="primary" className="px-6">

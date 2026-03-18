@@ -6,7 +6,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { getOrCreateClientHubProfile } from './client-hub-actions'
 
 // ---------------------------------------------------------------------------
-// Hub Notifications — Unread counts + email notifications
+// Hub Notifications - Unread counts + email notifications
 // ---------------------------------------------------------------------------
 
 /**
@@ -33,18 +33,16 @@ export async function getHubUnreadCounts(profileToken: string): Promise<HubUnrea
 
   if (!profile) return []
 
-  // Get all memberships with last_read_at
+  // Get all memberships with last_read_at AND group info in one query
   const { data: memberships } = await supabase
     .from('hub_group_members')
-    .select('group_id, last_read_at')
+    .select('group_id, last_read_at, hub_groups!group_id(name, emoji, group_token)')
     .eq('profile_id', profile.id)
 
   if (!memberships || memberships.length === 0) return []
 
-  const results: HubUnreadCount[] = []
-
-  for (const membership of memberships) {
-    // Count messages after last_read_at
+  // Batch: count unread messages for all groups in parallel
+  const countPromises = memberships.map((membership) => {
     let query = supabase
       .from('hub_messages')
       .select('*', { count: 'exact', head: true })
@@ -55,16 +53,22 @@ export async function getHubUnreadCounts(profileToken: string): Promise<HubUnrea
       query = query.gt('created_at', membership.last_read_at)
     }
 
-    const { count } = await query
-    const unreadCount = count ?? 0
+    return query.then(({ count }) => ({
+      membership,
+      unreadCount: count ?? 0,
+    }))
+  })
 
+  const counts = await Promise.all(countPromises)
+
+  const results: HubUnreadCount[] = []
+  for (const { membership, unreadCount } of counts) {
     if (unreadCount > 0) {
-      // Get group info
-      const { data: group } = await supabase
-        .from('hub_groups')
-        .select('name, emoji, group_token')
-        .eq('id', membership.group_id)
-        .single()
+      const group = (membership as Record<string, unknown>).hub_groups as {
+        name: string
+        emoji: string | null
+        group_token: string
+      } | null
 
       if (group) {
         results.push({
@@ -119,6 +123,15 @@ export async function markMyHubNotificationsRead(input?: {
   revalidatePath('/my-hub')
   revalidatePath('/my-hub/notifications')
   return { success: true }
+}
+
+/**
+ * Get total unread hub count for the authenticated client.
+ * Lightweight wrapper for nav badge polling.
+ */
+export async function getMyHubUnreadCount(): Promise<number> {
+  const profile = await getOrCreateClientHubProfile()
+  return getHubTotalUnreadCount(profile.profile_token)
 }
 
 /**

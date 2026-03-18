@@ -48,6 +48,20 @@ export function HubGroupView({
   const [currentMember, setCurrentMember] = useState<HubGroupMember | null>(null)
   const [isMuted, setIsMuted] = useState(false)
   const [mutePending, startMuteTransition] = useTransition()
+  const [showWelcome, setShowWelcome] = useState(false)
+
+  // Show welcome card on first visit
+  useEffect(() => {
+    const key = `hub-welcome-${group.id}`
+    if (!localStorage.getItem(key)) {
+      setShowWelcome(true)
+    }
+  }, [group.id])
+
+  const dismissWelcome = () => {
+    localStorage.setItem(`hub-welcome-${group.id}`, '1')
+    setShowWelcome(false)
+  }
 
   // Read profile token from prop or cookie, and sync cookie for child components
   useEffect(() => {
@@ -82,11 +96,18 @@ export function HubGroupView({
 
   const baseTabs: { id: Tab; label: string; emoji: string; count?: number }[] = [
     { id: 'chat', label: 'Chat', emoji: '💬' },
-    { id: 'events', label: 'Events', emoji: '🍽️', count: groupEvents.length },
-    { id: 'photos', label: 'Photos', emoji: '📸', count: media.length },
-    { id: 'schedule', label: 'Schedule', emoji: '📅', count: availability.length },
-    { id: 'notes', label: 'Notes', emoji: '📝', count: notes.length },
     { id: 'members', label: 'Members', emoji: '👥', count: members.length },
+    { id: 'photos', label: 'Photos', emoji: '📸', count: media.length },
+    // Conditional tabs: only show when they have content
+    ...(groupEvents.length > 0
+      ? [{ id: 'events' as Tab, label: 'Events', emoji: '🍽️', count: groupEvents.length }]
+      : []),
+    ...(availability.length > 0
+      ? [{ id: 'schedule' as Tab, label: 'Schedule', emoji: '📅', count: availability.length }]
+      : []),
+    ...(notes.length > 0
+      ? [{ id: 'notes' as Tab, label: 'Notes', emoji: '📝', count: notes.length }]
+      : []),
     { id: 'search', label: 'Search', emoji: '🔍' },
   ]
 
@@ -227,6 +248,38 @@ export function HubGroupView({
 
       {/* Content */}
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col overflow-hidden">
+        {showWelcome && (
+          <div className="m-4 rounded-xl border border-stone-700 bg-stone-800/80 p-4">
+            <div className="flex items-start justify-between">
+              <h3 className="text-sm font-semibold text-stone-200">
+                Welcome to your dinner circle
+              </h3>
+              <button
+                type="button"
+                onClick={dismissWelcome}
+                title="Dismiss welcome"
+                className="rounded p-1 text-stone-500 hover:text-stone-300"
+              >
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <ul className="mt-2 space-y-1 text-xs text-stone-400">
+              <li>💬 Chat with your group and the chef</li>
+              <li>📸 Share and browse photos from events</li>
+              <li>🥗 Update your dietary needs so the chef can plan</li>
+              <li>👥 See who else is in your dinner circle</li>
+            </ul>
+          </div>
+        )}
+
         {activeTab === 'chat' && (
           <HubFeed
             groupId={group.id}
@@ -241,7 +294,8 @@ export function HubGroupView({
             <h3 className="mb-4 text-sm font-semibold text-stone-300">Events</h3>
             {groupEvents.length === 0 ? (
               <div className="py-12 text-center text-sm text-stone-600">
-                No events linked yet. Events will appear here when your group plans a dinner!
+                No events scheduled yet. When a date is set and details are confirmed, event info,
+                menus, and RSVPs will appear here.
               </div>
             ) : (
               <div className="space-y-3">

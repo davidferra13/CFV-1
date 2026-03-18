@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { HubMessage, HubNotificationType } from '@/lib/hub/types'
 
 // ---------------------------------------------------------------------------
@@ -13,89 +14,105 @@ interface NotificationCardProps {
 
 const NOTIFICATION_CONFIG: Record<
   HubNotificationType,
-  { icon: string; label: string; color: string; bgColor: string }
+  { icon: string; label: string; color: string; bgColor: string; actionCategory: 'action' | 'info' }
 > = {
   quote_sent: {
     icon: '💰',
     label: 'Quote',
     color: 'text-amber-300',
     bgColor: 'bg-amber-900/30 border-amber-700/50',
+    actionCategory: 'action',
   },
   quote_accepted: {
     icon: '🎉',
     label: 'Quote Accepted',
     color: 'text-green-300',
     bgColor: 'bg-green-900/30 border-green-700/50',
+    actionCategory: 'info',
   },
   payment_received: {
     icon: '✅',
     label: 'Payment',
     color: 'text-green-300',
     bgColor: 'bg-green-900/30 border-green-700/50',
+    actionCategory: 'info',
   },
   event_confirmed: {
     icon: '📅',
     label: 'Confirmed',
     color: 'text-blue-300',
     bgColor: 'bg-blue-900/30 border-blue-700/50',
+    actionCategory: 'info',
   },
   event_completed: {
     icon: '🏁',
     label: 'Complete',
     color: 'text-purple-300',
     bgColor: 'bg-purple-900/30 border-purple-700/50',
+    actionCategory: 'info',
   },
   menu_shared: {
     icon: '🍽️',
     label: 'Menu',
     color: 'text-orange-300',
     bgColor: 'bg-orange-900/30 border-orange-700/50',
+    actionCategory: 'info',
   },
   photos_ready: {
     icon: '📸',
     label: 'Photos',
     color: 'text-pink-300',
     bgColor: 'bg-pink-900/30 border-pink-700/50',
+    actionCategory: 'info',
   },
   contract_ready: {
     icon: '📝',
     label: 'Contract',
     color: 'text-stone-300',
     bgColor: 'bg-stone-800/50 border-stone-600/50',
+    actionCategory: 'action',
   },
   invoice_sent: {
     icon: '🧾',
     label: 'Invoice',
     color: 'text-amber-300',
     bgColor: 'bg-amber-900/30 border-amber-700/50',
+    actionCategory: 'action',
   },
   guest_count_updated: {
     icon: '👥',
     label: 'Guest Update',
     color: 'text-blue-300',
     bgColor: 'bg-blue-900/30 border-blue-700/50',
+    actionCategory: 'info',
   },
   dietary_updated: {
     icon: '🥗',
     label: 'Dietary Update',
     color: 'text-green-300',
     bgColor: 'bg-green-900/30 border-green-700/50',
+    actionCategory: 'info',
   },
   running_late: {
     icon: '⏰',
     label: 'Update',
     color: 'text-yellow-300',
     bgColor: 'bg-yellow-900/30 border-yellow-700/50',
+    actionCategory: 'info',
   },
   repeat_booking_request: {
     icon: '🔄',
     label: 'Booking Request',
     color: 'text-blue-300',
     bgColor: 'bg-blue-900/30 border-blue-700/50',
+    actionCategory: 'action',
   },
 }
 
-export function HubNotificationCard({ message }: NotificationCardProps) {
+// Memoized: rendered in .map() inside hub message feed. Props are stable data objects.
+export const HubNotificationCard = memo(function HubNotificationCard({
+  message,
+}: NotificationCardProps) {
   const notifType = message.notification_type
   if (!notifType) return null
 
@@ -104,6 +121,7 @@ export function HubNotificationCard({ message }: NotificationCardProps) {
     label: 'Update',
     color: 'text-stone-300',
     bgColor: 'bg-stone-800/50 border-stone-600/50',
+    actionCategory: 'info' as const,
   }
 
   const metadata = (message.system_metadata ?? {}) as Record<string, unknown>
@@ -117,13 +135,20 @@ export function HubNotificationCard({ message }: NotificationCardProps) {
           <span className={`text-xs font-semibold uppercase tracking-wide ${config.color}`}>
             {config.label}
           </span>
-          <span className="ml-auto text-[10px] text-stone-500">
+          <span className="ml-auto text-xxs text-stone-500">
             {new Date(message.created_at).toLocaleTimeString([], {
               hour: 'numeric',
               minute: '2-digit',
             })}
           </span>
         </div>
+
+        {/* Action badge */}
+        {config.actionCategory === 'action' && (
+          <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xxs font-semibold uppercase tracking-wide text-amber-400">
+            Action needed
+          </div>
+        )}
 
         {/* Body */}
         {message.body && (
@@ -147,7 +172,7 @@ export function HubNotificationCard({ message }: NotificationCardProps) {
 
         {/* Source badge */}
         {message.source === 'email' && (
-          <div className="mt-2 flex items-center gap-1 text-[10px] text-stone-500">
+          <div className="mt-2 flex items-center gap-1 text-xxs text-stone-500">
             <MailIcon />
             <span>via email</span>
           </div>
@@ -155,7 +180,7 @@ export function HubNotificationCard({ message }: NotificationCardProps) {
       </div>
     </div>
   )
-}
+})
 
 // Render structured data based on notification type
 function NotificationMetadata({

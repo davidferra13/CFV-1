@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import type { HubGuestProfile, HubGroup } from './types'
 
 // ---------------------------------------------------------------------------
-// Client Hub Actions — Authenticated client → hub profile bridging
+// Client Hub Actions - Authenticated client → hub profile bridging
 // ---------------------------------------------------------------------------
 
 /**
@@ -152,4 +152,57 @@ export async function getClientHubGroups(): Promise<ClientHubGroup[]> {
 export async function getClientProfileToken(): Promise<string> {
   const profile = await getOrCreateClientHubProfile()
   return profile.profile_token
+}
+
+/**
+ * Get the circle group token for a client's event, if one exists.
+ */
+export async function getCircleTokenForEvent(eventId: string): Promise<string | null> {
+  const supabase = createServerClient({ admin: true })
+
+  // Check direct event link
+  const { data: group } = await supabase
+    .from('hub_groups')
+    .select('group_token')
+    .eq('event_id', eventId)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (group) return group.group_token
+
+  // Check via inquiry conversion
+  const { data: inquiry } = await supabase
+    .from('inquiries')
+    .select('id')
+    .eq('converted_to_event_id', eventId)
+    .maybeSingle()
+
+  if (inquiry) {
+    const { data: inquiryGroup } = await supabase
+      .from('hub_groups')
+      .select('group_token')
+      .eq('inquiry_id', inquiry.id)
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (inquiryGroup) return inquiryGroup.group_token
+  }
+
+  // Check via hub_group_events junction table
+  const { data: linkedGroup } = await supabase
+    .from('hub_group_events')
+    .select('hub_groups(group_token, is_active)')
+    .eq('event_id', eventId)
+    .limit(1)
+    .maybeSingle()
+
+  if (linkedGroup) {
+    const g = linkedGroup.hub_groups as unknown as {
+      group_token: string
+      is_active: boolean
+    } | null
+    if (g?.is_active) return g.group_token
+  }
+
+  return null
 }

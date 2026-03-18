@@ -38,6 +38,7 @@ import { CancellationPolicyDisplay } from '@/components/events/cancellation-poli
 import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
 import { CalendarAddButtons } from '@/components/events/calendar-add-buttons'
 import { buildJourneySteps } from '@/lib/events/journey-steps'
+import { getCircleTokenForEvent } from '@/lib/hub/client-hub-actions'
 import type { Database } from '@/types/database'
 
 type EventStatus = Database['public']['Enums']['event_status']
@@ -103,6 +104,11 @@ export default async function EventDetailPage({ params }: { params: { id: string
   ])
   const activeShare = shares.find((s: any) => s.is_active) || null
 
+  // Fetch circle token for confirmed+ events
+  const circleToken = ['confirmed', 'paid', 'in_progress', 'completed'].includes(event.status)
+    ? await getCircleTokenForEvent(params.id)
+    : null
+
   // Fetch review data and photos for completed events
   let existingReview = null
   let googleReviewUrl: string | null = null
@@ -147,6 +153,27 @@ export default async function EventDetailPage({ params }: { params: { id: string
           <MessageChefButton context_type="event" event_id={event.id} label="Message Chef" />
         </div>
       </div>
+
+      {/* Dinner Circle nudge */}
+      {circleToken && ['confirmed', 'paid', 'in_progress', 'completed'].includes(event.status) && (
+        <div className="rounded-xl border border-stone-700 bg-stone-800/60 p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">💬</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-stone-200">Your dinner circle is live</p>
+              <p className="text-xs text-stone-400">
+                Chat with your chef and guests, share dietary needs, and follow along with prep.
+              </p>
+            </div>
+            <a
+              href={`/my-hub/g/${circleToken}`}
+              className="shrink-0 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
+            >
+              Open Circle
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Proposed event alert */}
       {event.status === 'proposed' && (

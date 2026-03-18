@@ -5,7 +5,7 @@ import { z } from 'zod'
 import type { HubGroup, HubGroupMember, HubGroupEvent } from './types'
 
 // ---------------------------------------------------------------------------
-// Hub Groups — Public (link-based access)
+// Hub Groups - Public (link-based access)
 // ---------------------------------------------------------------------------
 
 const CreateGroupSchema = z.object({
@@ -170,6 +170,7 @@ export async function joinHubGroup(input: {
       author_profile_id: input.profileId,
       message_type: 'system',
       system_event_type: 'member_joined',
+      body: `${profile?.display_name ?? 'Someone'} joined! Welcome to the dinner circle. Chat with the group, share photos, update dietary needs, and stay in the loop on all event details here.`,
       system_metadata: { display_name: profile?.display_name ?? 'Someone' },
     })
   } catch {
@@ -366,7 +367,7 @@ export async function toggleMuteCircle(input: {
 }
 
 // ---------------------------------------------------------------------------
-// Member Management — Owner/Admin actions
+// Member Management - Owner/Admin actions
 // ---------------------------------------------------------------------------
 
 /**

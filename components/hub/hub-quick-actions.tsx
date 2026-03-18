@@ -19,6 +19,7 @@ interface QuickActionsProps {
   profileToken: string | null
   eventId?: string | null
   eventStatus?: string | null
+  eventDate?: string | null
 }
 
 type ActiveForm = 'guest_count' | 'dietary' | 'running_late' | 'repeat_booking' | null
@@ -28,30 +29,41 @@ export function HubQuickActions({
   profileToken,
   eventId,
   eventStatus,
+  eventDate,
 }: QuickActionsProps) {
   const [activeForm, setActiveForm] = useState<ActiveForm>(null)
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   if (!profileToken) return null
 
-  // Determine available actions based on event status
+  const isEventDay = eventDate
+    ? new Date(eventDate).toDateString() === new Date().toDateString()
+    : false
+  const isEventPast = eventDate ? new Date(eventDate) < new Date() : false
+  const isEventFuture = eventDate ? new Date(eventDate) >= new Date() : true
+
+  // Determine available actions based on event status and date context
   const actions: { key: ActiveForm; label: string; icon: string }[] = []
 
-  if (eventStatus === 'confirmed' || eventStatus === 'paid') {
+  // Guest count and dietary: show before the event
+  if ((eventStatus === 'confirmed' || eventStatus === 'paid') && isEventFuture) {
     actions.push({ key: 'guest_count', label: 'Update Guest Count', icon: '👥' })
     actions.push({ key: 'dietary', label: 'Dietary Update', icon: '🥗' })
   }
 
-  if (eventStatus === 'confirmed' || eventStatus === 'in_progress') {
+  // Running late: only on the day of the event
+  if ((eventStatus === 'confirmed' || eventStatus === 'in_progress') && isEventDay) {
     actions.push({ key: 'running_late', label: 'Running Late', icon: '⏰' })
   }
 
-  if (eventStatus === 'completed') {
+  // Book again: after event is completed and in the past
+  if (eventStatus === 'completed' && isEventPast) {
     actions.push({ key: 'repeat_booking', label: 'Book Again', icon: '🔄' })
   }
 
-  // Always show dietary and guest count if we don't know the status
+  // Fallback: show guest count and dietary if we don't know the status
   if (!eventStatus && eventId) {
     actions.push({ key: 'guest_count', label: 'Update Guest Count', icon: '👥' })
     actions.push({ key: 'dietary', label: 'Dietary Update', icon: '🥗' })
@@ -61,17 +73,29 @@ export function HubQuickActions({
 
   const handleSuccess = (msg: string) => {
     setSuccess(msg)
+    setError(null)
     setActiveForm(null)
     setSubmitting(false)
     setTimeout(() => setSuccess(null), 3000)
   }
 
+  const handleError = () => {
+    setError('Something went wrong. Please try again.')
+    setSubmitting(false)
+    setTimeout(() => setError(null), 4000)
+  }
+
   return (
     <div className="border-t border-stone-800 px-4 py-2">
-      {/* Success toast */}
+      {/* Feedback */}
       {success && (
         <div className="mb-2 rounded-lg bg-green-900/30 px-3 py-1.5 text-xs text-green-300">
           {success}
+        </div>
+      )}
+      {error && (
+        <div className="mb-2 rounded-lg bg-red-900/30 px-3 py-1.5 text-xs text-red-300">
+          {error}
         </div>
       )}
 
@@ -104,7 +128,7 @@ export function HubQuickActions({
               await postGuestCountUpdate({ groupId, profileToken, eventId, newCount: count, note })
               handleSuccess('Guest count updated!')
             } catch {
-              setSubmitting(false)
+              handleError()
             }
           }}
           onCancel={() => setActiveForm(null)}
@@ -129,7 +153,7 @@ export function HubQuickActions({
               })
               handleSuccess('Dietary update sent!')
             } catch {
-              setSubmitting(false)
+              handleError()
             }
           }}
           onCancel={() => setActiveForm(null)}
@@ -147,7 +171,7 @@ export function HubQuickActions({
               await postRunningLate({ groupId, profileToken, etaMinutes, message })
               handleSuccess('Update sent!')
             } catch {
-              setSubmitting(false)
+              handleError()
             }
           }}
           onCancel={() => setActiveForm(null)}
@@ -172,7 +196,7 @@ export function HubQuickActions({
               })
               handleSuccess('Booking request sent!')
             } catch {
-              setSubmitting(false)
+              handleError()
             }
           }}
           onCancel={() => setActiveForm(null)}

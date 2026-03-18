@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, memo } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import type { ChefCircleSummary } from '@/lib/hub/chef-circle-actions'
@@ -62,7 +62,7 @@ export function CirclesInbox({ circles }: CirclesInboxProps) {
         <button
           type="button"
           onClick={() => setShowCreate(true)}
-          className="rounded-lg bg-[#e88f47] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#d07e3a]"
+          className="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-600"
         >
           + Dinner Club
         </button>
@@ -83,8 +83,9 @@ export function CirclesInbox({ circles }: CirclesInboxProps) {
           <div className="mb-3 text-4xl">💬</div>
           <h3 className="text-lg font-semibold text-stone-200">No circles yet</h3>
           <p className="mt-1 text-sm text-stone-400">
-            Circles are created automatically when inquiries come in, or you can create one from any
-            event page.
+            Your client circles live here. Each one is a private channel with your guests for
+            coordinating menus, dietary alerts, quotes, and event updates. They're created
+            automatically from inquiries and events.
           </p>
         </div>
       )}
@@ -103,7 +104,9 @@ export function CirclesInbox({ circles }: CirclesInboxProps) {
   )
 }
 
-function CircleRow({
+// Memoized: rendered in .map() for circle list. Receives stable circle data.
+// Note: parent should wrap onArchive with useCallback.
+const CircleRow = memo(function CircleRow({
   circle,
   onArchive,
 }: {
@@ -120,7 +123,12 @@ function CircleRow({
       </div>
 
       {/* Content */}
-      <Link href={`/hub/g/${circle.group_token}`} target="_blank" className="min-w-0 flex-1">
+      <Link
+        href={`/hub/g/${circle.group_token}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="min-w-0 flex-1"
+      >
         <div className="flex items-center gap-2">
           <span className="truncate text-sm font-semibold text-stone-200">{circle.name}</span>
           {circle.group_type === 'dinner_club' && (
@@ -129,7 +137,7 @@ function CircleRow({
             </span>
           )}
           {circle.unread_count > 0 && (
-            <span className="flex-shrink-0 rounded-full bg-[#e88f47] px-2 py-0.5 text-xs font-bold text-white">
+            <span className="flex-shrink-0 rounded-full bg-brand-500 px-2 py-0.5 text-xs font-bold text-white">
               {circle.unread_count}
             </span>
           )}
@@ -173,7 +181,7 @@ function CircleRow({
       </button>
     </div>
   )
-}
+})
 
 function CreateDinnerClubForm({
   onCreated,
@@ -217,7 +225,7 @@ function CreateDinnerClubForm({
               key={e}
               type="button"
               onClick={() => setEmoji(e)}
-              className={`rounded-lg p-1.5 text-lg ${emoji === e ? 'bg-stone-600 ring-1 ring-[#e88f47]' : 'hover:bg-stone-700'}`}
+              className={`rounded-lg p-1.5 text-lg ${emoji === e ? 'bg-stone-600 ring-1 ring-brand-500' : 'hover:bg-stone-700'}`}
             >
               {e}
             </button>
@@ -228,13 +236,13 @@ function CreateDinnerClubForm({
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Circle name (e.g. Friday Night Dinners)"
-        className="mb-2 w-full rounded-lg bg-stone-900 px-3 py-2 text-sm text-stone-200 outline-none ring-1 ring-stone-700 placeholder:text-stone-500 focus:ring-[#e88f47]"
+        className="mb-2 w-full rounded-lg bg-stone-900 px-3 py-2 text-sm text-stone-200 outline-none ring-1 ring-stone-700 placeholder:text-stone-500 focus:ring-brand-500"
       />
       <input
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description (optional)"
-        className="mb-3 w-full rounded-lg bg-stone-900 px-3 py-2 text-sm text-stone-200 outline-none ring-1 ring-stone-700 placeholder:text-stone-500 focus:ring-[#e88f47]"
+        className="mb-3 w-full rounded-lg bg-stone-900 px-3 py-2 text-sm text-stone-200 outline-none ring-1 ring-stone-700 placeholder:text-stone-500 focus:ring-brand-500"
       />
       {error && (
         <div className="mb-2 rounded-lg bg-red-900/20 px-3 py-2 text-xs text-red-300">{error}</div>
@@ -244,7 +252,7 @@ function CreateDinnerClubForm({
           type="button"
           onClick={handleSubmit}
           disabled={!name.trim() || isPending}
-          className="flex-1 rounded-lg bg-[#e88f47] py-2 text-xs font-semibold text-white disabled:opacity-30"
+          className="flex-1 rounded-lg bg-brand-500 py-2 text-xs font-semibold text-white disabled:opacity-30"
         >
           {isPending ? 'Creating...' : 'Create'}
         </button>
