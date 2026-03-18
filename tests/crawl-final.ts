@@ -147,7 +147,6 @@ const ROUTES: Record<string, string[]> = {
     '/help/guides',
     '/onboarding',
     '/cannabis',
-    '/blog',
     '/games',
     '/import',
   ],

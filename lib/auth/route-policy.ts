@@ -49,7 +49,6 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/marketplace-chefs',
   '/customers',
   '/faq',
-  '/blog',
   '/contact',
   '/privacy',
   '/privacy-policy',
@@ -85,6 +84,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/hub',
   '/g',
   '/availability',
+  '/discover',
 ] as const
 
 export const PUBLIC_ASSET_PATHS = [

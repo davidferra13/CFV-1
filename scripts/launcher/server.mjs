@@ -637,12 +637,12 @@ async function restartBeta() {
     } catch {
       /* no process on port 3200 */
     }
-    // Start beta via the PowerShell script
-    spawn('powershell', ['-File', join(PROJECT_ROOT, 'scripts', 'start-beta.ps1')], {
+    // Start beta via PowerShell - windowStyle hidden to prevent visible popup
+    spawn('powershell', ['-WindowStyle', 'Hidden', '-ExecutionPolicy', 'Bypass', '-File', join(PROJECT_ROOT, 'scripts', 'start-beta.ps1')], {
       cwd: PROJECT_ROOT,
       detached: true,
       stdio: 'ignore',
-      shell: true,
+      windowsHide: true,
     }).unref()
     log('beta', 'Beta start command sent', 'success')
     // Wait then health check

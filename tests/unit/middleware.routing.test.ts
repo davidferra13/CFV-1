@@ -41,7 +41,7 @@ function getLandingRedirect(role: string): string {
 
 describe('Route Policy - source of truth coverage', () => {
   it('includes key public marketing routes', () => {
-    for (const path of ['/compare', '/customers', '/faq', '/blog', '/trust', '/unsubscribe']) {
+    for (const path of ['/compare', '/customers', '/faq', '/trust', '/unsubscribe']) {
       assert.equal(PUBLIC_UNAUTHENTICATED_PATHS.includes(path), true)
     }
   })
@@ -116,7 +116,6 @@ describe('Middleware - public unauthenticated paths', () => {
     assert.equal(isPublicUnauthenticatedPath('/pricing'), true)
     assert.equal(isPublicUnauthenticatedPath('/compare'), true)
     assert.equal(isPublicUnauthenticatedPath('/customers'), true)
-    assert.equal(isPublicUnauthenticatedPath('/blog'), true)
     assert.equal(isPublicUnauthenticatedPath('/faq'), true)
     assert.equal(isPublicUnauthenticatedPath('/trust'), true)
     assert.equal(isPublicUnauthenticatedPath('/unsubscribe'), true)

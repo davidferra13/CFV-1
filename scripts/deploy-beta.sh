@@ -139,10 +139,22 @@ if [ -n "$EXISTING_PID" ] && [ "$EXISTING_PID" != "0" ]; then
   sleep 2
 fi
 
-# Start Next.js production server in background
-NODE_ENV=production nohup npx next start -p 3200 > beta-server.log 2>&1 &
-BETA_PID=$!
-echo "  Beta server started (PID: $BETA_PID)"
+# Start Next.js production server hidden (no visible window)
+powershell.exe -NoProfile -Command "
+  \$psi = New-Object System.Diagnostics.ProcessStartInfo
+  \$psi.FileName = 'node'
+  \$psi.Arguments = '\"$(cygpath -w "$BETA_DIR")\node_modules\next\dist\bin\next\" start -p 3200'
+  \$psi.WorkingDirectory = '$(cygpath -w "$BETA_DIR")'
+  \$psi.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
+  \$psi.CreateNoWindow = \$true
+  \$psi.UseShellExecute = \$false
+  \$psi.EnvironmentVariables['NODE_ENV'] = 'production'
+  \$psi.EnvironmentVariables['PORT'] = '3200'
+  \$proc = [System.Diagnostics.Process]::Start(\$psi)
+  Write-Output \$proc.Id
+" > /tmp/beta-pid.txt 2>/dev/null
+BETA_PID=$(cat /tmp/beta-pid.txt | tr -d '\r\n ')
+echo "  Beta server started hidden (PID: $BETA_PID)"
 
 # Wait for startup
 sleep 8
@@ -182,7 +194,17 @@ else
     rm -rf .next
     mv .next.backup .next
     echo "  Rolled back to build $(cat .next/BUILD_ID)"
-    NODE_ENV=production nohup npx next start -p 3200 > beta-server.log 2>&1 &
+    powershell.exe -NoProfile -Command "
+      \$psi = New-Object System.Diagnostics.ProcessStartInfo
+      \$psi.FileName = 'node'
+      \$psi.Arguments = '\"$(cygpath -w "$BETA_DIR")\node_modules\next\dist\bin\next\" start -p 3200'
+      \$psi.WorkingDirectory = '$(cygpath -w "$BETA_DIR")'
+      \$psi.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
+      \$psi.CreateNoWindow = \$true
+      \$psi.UseShellExecute = \$false
+      \$psi.EnvironmentVariables['NODE_ENV'] = 'production'
+      [System.Diagnostics.Process]::Start(\$psi) | Out-Null
+    " 2>/dev/null
     sleep 5
     ROLLBACK_STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 http://localhost:3200 2>/dev/null)
     echo "  Rollback health check: HTTP $ROLLBACK_STATUS"

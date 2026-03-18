@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { BLOG_POSTS } from '@/lib/blog/posts'
+
 import { COMPARE_PAGES } from '@/lib/marketing/compare-pages'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -111,22 +111,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
-    // Blog posts
-    const blogRoutes: MetadataRoute.Sitemap = [
-      {
-        url: `${BASE_URL}/blog`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-      },
-      ...BLOG_POSTS.map((post) => ({
-        url: `${BASE_URL}/blog/${post.slug}`,
-        lastModified: new Date(post.updatedAt || post.publishedAt),
-        changeFrequency: 'monthly' as const,
-        priority: 0.7,
-      })),
-    ]
-
     // Comparison guides
     const compareRoutes: MetadataRoute.Sitemap = COMPARE_PAGES.map((page) => ({
       url: `${BASE_URL}/compare/${page.slug}`,
@@ -135,14 +119,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
-    return [
-      ...STATIC_ROUTES,
-      ...blogRoutes,
-      ...compareRoutes,
-      ...chefRoutes,
-      ...giftCardRoutes,
-      ...inquiryRoutes,
-    ]
+    return [...STATIC_ROUTES, ...compareRoutes, ...chefRoutes, ...giftCardRoutes, ...inquiryRoutes]
   } catch {
     // If DB is unavailable, return static routes only - don't break the build
     return STATIC_ROUTES

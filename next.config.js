@@ -23,17 +23,22 @@ if (process.env.ENABLE_PWA_BUILD === '1') {
   withPWA = (config) => config
 }
 
-const devConnectSrc =
-  process.env.NODE_ENV === 'development'
-    ? [
-        'http://127.0.0.1:54321',
-        'ws://127.0.0.1:54321',
-        'http://localhost:54321',
-        'ws://localhost:54321',
-        'ws://127.0.0.1:3100',
-        'ws://localhost:3100',
-      ]
-    : []
+const isDev = process.env.NODE_ENV === 'development'
+
+const devConnectSrc = isDev
+  ? [
+      'http://127.0.0.1:54321',
+      'ws://127.0.0.1:54321',
+      'http://localhost:54321',
+      'ws://localhost:54321',
+      'ws://127.0.0.1:3100',
+      'ws://localhost:3100',
+    ]
+  : []
+
+// Next.js dev mode uses eval-based source maps (webpack devtool). Without
+// 'unsafe-eval' in CSP, all client-side JS fails to hydrate in development.
+const devEval = isDev ? " 'unsafe-eval'" : ''
 
 const nextConfig = {
   // Keep dev artifacts separate from production build output.
@@ -135,7 +140,7 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+              `script-src 'self' 'unsafe-inline'${devEval} https://challenges.cloudflare.com`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
@@ -182,7 +187,7 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
+              `script-src 'self' 'unsafe-inline'${devEval}`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://api.qrserver.com https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
@@ -233,7 +238,7 @@ const nextConfig = {
               // NOTE: Do NOT add 'strict-dynamic' — it overrides 'self' and 'unsafe-inline'
               // in CSP3 browsers, requiring nonce-based script loading which Next.js 14
               // does not support. Adding it blocks ALL JS and kills hydration.
-              "script-src 'self' 'unsafe-inline' https://js.stripe.com https://us-assets.i.posthog.com",
+              `script-src 'self' 'unsafe-inline'${devEval} https://js.stripe.com https://us-assets.i.posthog.com`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",

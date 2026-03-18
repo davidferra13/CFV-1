@@ -21,14 +21,6 @@ test('public launch surfaces use launch-mode-aware signup helpers instead of har
   assert.match(remy, /buildMarketingSignupHref/)
 })
 
-test('blog markdown normalizes legacy auth signup links through launch mode', () => {
-  const source = read('components/blog/blog-markdown.tsx')
-
-  assert.match(source, /PRIMARY_SIGNUP_HREF/)
-  assert.match(source, /trimmed === '\/auth\/signup'/)
-  assert.match(source, /trimmed\.startsWith\('\/auth\/signup\?'\)/)
-})
-
 test('beta signup flow persists landing attribution and admin table exposes it', () => {
   const betaActions = read('lib/beta/actions.ts')
   const betaForm = read('components/beta/beta-signup-form.tsx')

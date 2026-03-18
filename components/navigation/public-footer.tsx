@@ -12,7 +12,6 @@ const FOOTER_LINKS = {
   discover: [
     { href: '/', label: 'Home' },
     { href: '/chefs', label: 'Search chefs' },
-    { href: '/blog', label: 'Blog' },
     { href: '/contact', label: 'Contact' },
   ],
   forOperators: [

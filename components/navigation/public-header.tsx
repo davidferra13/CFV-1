@@ -10,7 +10,6 @@ import { AppLogo } from '@/components/branding/app-logo'
 const NAV_ITEMS = [
   { href: '/chefs', label: 'Chefs' },
   { href: '/discover', label: 'Discover' },
-  { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ]
 

@@ -63,13 +63,6 @@ test.describe('Public — Marketing Pages', () => {
     await expect(main).toBeVisible({ timeout: 15_000 })
   })
 
-  test('blog page loads', async ({ page }) => {
-    await page.goto('/blog', { timeout: 45_000 })
-    await page.waitForLoadState('domcontentloaded')
-    const main = page.locator('main').first()
-    await expect(main).toBeVisible({ timeout: 15_000 })
-  })
-
   test('chefs directory page loads', async ({ page }) => {
     await page.goto('/chefs', { timeout: 45_000 })
     await page.waitForLoadState('domcontentloaded')
