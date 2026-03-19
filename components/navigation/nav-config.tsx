@@ -130,6 +130,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/events', label: 'All Events', icon: CalendarCheck, coreFeature: true },
   { href: '/documents', label: 'Documents', icon: FileText, coreFeature: true },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed, coreFeature: true },
+  { href: '/culinary/costing', label: 'Costing', icon: Calculator, coreFeature: true },
   { href: '/rate-card', label: 'Rate Card', icon: Coins },
   { href: '/travel', label: 'Travel', icon: MapPin },
   { href: '/staff', label: 'Staff', icon: IdentificationBadge },
@@ -568,10 +569,10 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── CULINARY (food creation) ───
+  // ─── MENU ENGINE (parse, price, organize) ───
   {
-    id: 'culinary',
-    label: 'Culinary',
+    id: 'menu-engine',
+    label: 'Menu Engine',
     icon: ChefHat,
     module: 'culinary',
     items: [
@@ -604,14 +605,24 @@ export const navGroups: NavGroup[] = [
         children: [{ href: '/culinary/ingredients', label: 'Ingredients Database' }],
       },
       {
-        href: '/culinary/prep',
-        label: 'Prep Workspace',
-        icon: Timer,
-      },
-      {
         href: '/culinary/costing',
         label: 'Costing',
         icon: Calculator,
+      },
+    ],
+  },
+
+  // ─── CULINARY STUDIO (creative planning) ───
+  {
+    id: 'culinary-studio',
+    label: 'Culinary Studio',
+    icon: Chalkboard,
+    module: 'culinary',
+    items: [
+      {
+        href: '/culinary/prep',
+        label: 'Prep Workspace',
+        icon: Timer,
       },
       {
         href: '/culinary-board',
@@ -1244,6 +1255,7 @@ export const MOBILE_TAB_OPTIONS: NavItem[] = [
   { href: '/financials', label: 'Finance', icon: DollarSign },
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
   { href: '/documents', label: 'Documents', icon: FileText },
+  { href: '/culinary/costing', label: 'Costing', icon: Calculator },
   { href: '/queue', label: 'Queue', icon: Zap },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]

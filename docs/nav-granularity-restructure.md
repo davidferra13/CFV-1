@@ -69,6 +69,21 @@ Inventory = what you have. Procurement = what you're buying. Cost Control = anal
 
 Money In = revenue collection. Money Out = spending. Accounting = books and reporting.
 
+### Culinary (7 items) -> Menu Engine (4) + Culinary Studio (3)
+
+| Group               | Items                                             |
+| ------------------- | ------------------------------------------------- |
+| **Menu Engine**     | Menus, Recipes, Ingredients, Costing              |
+| **Culinary Studio** | Prep Workspace, Culinary Board, Seasonal Palettes |
+
+Menu Engine = the core value prop (parse, price, organize). Culinary Studio = creative planning tools.
+
+### Menu Engine Discoverability Enhancements
+
+- **Costing** added to `standaloneTop` as a 1-click shortcut (`coreFeature: true`, visible in Focus Mode)
+- **Costing** added to `MOBILE_TAB_OPTIONS` so chefs can pin it to their mobile bottom bar
+- Combined with existing Menus shortcut, the two headline features (menu management + auto-pricing) are both 1-click from anywhere
+
 ## Focus Mode
 
 Updated `focus-mode-nav.ts`: the old `sales` group ID is now `pipeline`. Focus mode shows: Remy, Pipeline, Events, Clients, Admin (same behavior, new ID).
@@ -80,8 +95,8 @@ Updated `focus-mode-nav.ts`: the old `sales` group ID is now `pipeline`. Focus m
 
 ## Group Count
 
-Before: 17 groups (6 with 8-14 items)
-After: 24 groups (max 6 items per group, most have 3-5)
+Before: 17 groups (7 with 7-14 items)
+After: 25 groups (max 6 items per group, most have 3-5)
 
 ## Module Assignments
 
@@ -89,6 +104,7 @@ All new sub-groups inherit the same module as their parent, so pro/free gating i
 
 - Pipeline, Outreach -> `pipeline`
 - Clients, Client Intelligence, Guests & Partners -> `clients`
+- Menu Engine, Culinary Studio -> `culinary`
 - POS, Commerce, Commerce Ops -> `commerce`
 - Kitchen Ops, Workforce & Assets -> `station-ops`
 - Inventory, Procurement, Cost Control -> `operations`
