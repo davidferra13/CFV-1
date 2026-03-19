@@ -1,21 +1,24 @@
-// Upstash - serverless Redis (rate limiting, caching)
-// https://upstash.com/
-// 10K commands/day free, no credit card
-// Perfect for: rate limiting, session cache, real-time counters
+// In-memory cache (replaces Upstash Redis)
+// Simple Map-based cache with TTL support. Sufficient for single-process self-hosted deployment.
 
-/**
- * Upstash Redis via REST API - no persistent connection needed.
- * Works perfectly in serverless/edge environments (self-hosted, Next.js API routes).
- *
- * Setup requires:
- *   npm install @upstash/redis
- *
- * Env vars:
- *   UPSTASH_REDIS_REST_URL - your Redis REST endpoint
- *   UPSTASH_REDIS_REST_TOKEN - your Redis REST token
- *
- * This file provides higher-level utilities for ChefFlow use cases.
- */
+interface CacheEntry {
+  value: string
+  expiresAt: number
+}
+
+const cache = new Map<string, CacheEntry>()
+const counters = new Map<string, { count: number; resetAt: number }>()
+
+// Clean expired entries periodically (every 5 min)
+setInterval(
+  () => {
+    const now = Date.now()
+    for (const [key, entry] of cache) {
+      if (now > entry.expiresAt) cache.delete(key)
+    }
+  },
+  5 * 60 * 1000
+).unref?.()
 
 interface RateLimitResult {
   allowed: boolean
@@ -24,75 +27,54 @@ interface RateLimitResult {
 }
 
 /**
- * Simple rate limiter using Upstash Redis.
- * e.g. limit API calls to 10 per minute per IP.
- *
- * @param key - Unique identifier (e.g. IP address, user ID)
- * @param limit - Max requests allowed
- * @param windowSeconds - Time window in seconds
+ * Simple in-memory rate limiter.
  */
 export async function rateLimit(
   key: string,
   limit: number,
   windowSeconds: number
 ): Promise<RateLimitResult> {
-  try {
-    const { Redis } = require('@upstash/redis')
-    const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
+  const now = Date.now()
+  const windowMs = windowSeconds * 1000
+  const entry = counters.get(key)
 
-    const redisKey = `ratelimit:${key}`
-    const current = await redis.incr(redisKey)
+  if (!entry || now > entry.resetAt) {
+    counters.set(key, { count: 1, resetAt: now + windowMs })
+    return { allowed: true, remaining: limit - 1, resetInSeconds: windowSeconds }
+  }
 
-    if (current === 1) {
-      await redis.expire(redisKey, windowSeconds)
-    }
+  entry.count++
+  const ttl = Math.ceil((entry.resetAt - now) / 1000)
 
-    const ttl = await redis.ttl(redisKey)
-
-    return {
-      allowed: current <= limit,
-      remaining: Math.max(0, limit - current),
-      resetInSeconds: ttl > 0 ? ttl : windowSeconds,
-    }
-  } catch {
-    // Redis unavailable - allow the request (fail open)
-    return { allowed: true, remaining: limit, resetInSeconds: 0 }
+  return {
+    allowed: entry.count <= limit,
+    remaining: Math.max(0, limit - entry.count),
+    resetInSeconds: ttl > 0 ? ttl : windowSeconds,
   }
 }
 
 /**
  * Cache a value with TTL.
- * Great for expensive API calls or database queries.
  */
 export async function cacheSet(key: string, value: any, ttlSeconds: number): Promise<void> {
-  try {
-    const { Redis } = require('@upstash/redis')
-    const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-    await redis.set(key, JSON.stringify(value), { ex: ttlSeconds })
-  } catch {
-    // Cache miss is fine - just skip
-  }
+  cache.set(key, {
+    value: JSON.stringify(value),
+    expiresAt: Date.now() + ttlSeconds * 1000,
+  })
 }
 
 /**
  * Get a cached value.
  */
 export async function cacheGet<T>(key: string): Promise<T | null> {
+  const entry = cache.get(key)
+  if (!entry) return null
+  if (Date.now() > entry.expiresAt) {
+    cache.delete(key)
+    return null
+  }
   try {
-    const { Redis } = require('@upstash/redis')
-    const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-    const value = await redis.get(key)
-    if (value === null) return null
-    return typeof value === 'string' ? JSON.parse(value) : value
+    return JSON.parse(entry.value) as T
   } catch {
     return null
   }
@@ -115,17 +97,15 @@ export async function cacheFetch<T>(
 }
 
 /**
- * Increment a counter (e.g. page views, API usage tracking).
+ * Increment a counter.
  */
 export async function incrementCounter(key: string): Promise<number> {
-  try {
-    const { Redis } = require('@upstash/redis')
-    const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-    return await redis.incr(`counter:${key}`)
-  } catch {
-    return 0
+  const cacheKey = `counter:${key}`
+  const entry = counters.get(cacheKey)
+  if (entry) {
+    entry.count++
+    return entry.count
   }
+  counters.set(cacheKey, { count: 1, resetAt: Date.now() + 86400000 })
+  return 1
 }

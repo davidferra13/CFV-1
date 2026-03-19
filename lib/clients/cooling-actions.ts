@@ -15,7 +15,7 @@ export async function getCoolingClients(): Promise<CoolingClient[]> {
   // Fetch all clients with tier info
   const { data: clients, error } = await supabase
     .from('clients')
-    .select('id, full_name, tier')
+    .select('id, full_name, loyalty_tier')
     .eq('tenant_id', tenantId)
 
   if (error) throw new Error(`Failed to fetch clients: ${error.message}`)
@@ -39,7 +39,7 @@ export async function getCoolingClients(): Promise<CoolingClient[]> {
     id: c.id,
     name: c.full_name ?? 'Unknown',
     last_event_date: lastEventMap.get(c.id) ?? null,
-    tier: c.tier ?? null,
+    tier: c.loyalty_tier ?? null,
     intentionally_inactive: false, // TODO: add column when schema supports it
   }))
 

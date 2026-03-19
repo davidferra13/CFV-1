@@ -1,35 +1,27 @@
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
+// In-memory API rate limiter (replaces Upstash)
+// Sliding window: 100 requests per minute per identifier.
 
-let ratelimit: Ratelimit | null = null
+const windowMap = new Map<string, { count: number; resetAt: number }>()
 
-function getRatelimiter() {
-  if (!ratelimit) {
-    // Only instantiate if Upstash env vars are set
-    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-      ratelimit = new Ratelimit({
-        redis: Redis.fromEnv(),
-        limiter: Ratelimit.slidingWindow(100, '1 m'),
-        analytics: false,
-        prefix: 'chefflow:api',
-      })
-    }
-  }
-  return ratelimit
-}
+const WINDOW_MS = 60_000
+const MAX_REQUESTS = 100
 
 export async function checkRateLimit(
   identifier: string
 ): Promise<{ success: boolean; remaining: number; reset: number }> {
-  const limiter = getRatelimiter()
-  if (!limiter) {
-    // No Redis configured - allow all requests in dev
-    return { success: true, remaining: 99, reset: Date.now() + 60000 }
+  const now = Date.now()
+  const entry = windowMap.get(identifier)
+
+  if (!entry || now > entry.resetAt) {
+    windowMap.set(identifier, { count: 1, resetAt: now + WINDOW_MS })
+    return { success: true, remaining: MAX_REQUESTS - 1, reset: now + WINDOW_MS }
   }
-  const result = await limiter.limit(identifier)
+
+  entry.count++
+
   return {
-    success: result.success,
-    remaining: result.remaining,
-    reset: result.reset,
+    success: entry.count <= MAX_REQUESTS,
+    remaining: Math.max(0, MAX_REQUESTS - entry.count),
+    reset: entry.resetAt,
   }
 }

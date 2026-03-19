@@ -65,7 +65,7 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
         enabled_modules: Array.isArray((prefsResult.data as any)?.enabled_modules)
           ? ((prefsResult.data as any).enabled_modules as string[])
           : [],
-        focus_mode: (prefsResult.data as any)?.focus_mode ?? true,
+        focus_mode: (prefsResult.data as any)?.focus_mode ?? false,
         subscription_status: (chefResult.data as any)?.subscription_status ?? null,
       }
     },

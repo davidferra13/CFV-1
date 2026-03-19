@@ -130,16 +130,23 @@ export const standaloneTop: NavItem[] = [
   { href: '/events', label: 'All Events', icon: CalendarCheck, coreFeature: true },
   { href: '/documents', label: 'Documents', icon: FileText, coreFeature: true },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed, coreFeature: true },
-  // Items below are accessible via nav groups or command palette (Ctrl+K).
-  // They're excluded from the top-level sidebar to reduce clutter.
-  // Rate Card → Sales group, Staff → Operations group, Stations → Operations group,
-  // Commerce sub-pages → Commerce group. Travel/Portfolio stay as standalone (no group).
+  { href: '/rate-card', label: 'Rate Card', icon: Coins },
   { href: '/travel', label: 'Travel', icon: MapPin },
+  { href: '/staff', label: 'Staff', icon: IdentificationBadge },
+  { href: '/tasks', label: 'Tasks', icon: Kanban },
+  { href: '/stations', label: 'Stations', icon: Notepad },
   { href: '/activity', label: 'Activity', icon: Activity, coreFeature: true },
   { href: '/goals', label: 'Goals', icon: Target, coreFeature: true },
   { href: '/prospecting', label: 'Prospecting', icon: Crosshair, adminOnly: true },
   { href: '/charity', label: 'Charity Hub', icon: HeartHandshake, adminOnly: true },
   { href: '/portfolio', label: 'Portfolio', icon: Image },
+  { href: '/commerce', label: 'Commerce', icon: Store },
+  { href: '/commerce/register', label: 'POS Register', icon: ShoppingCart },
+  { href: '/commerce/virtual-terminal', label: 'Virtual Terminal', icon: CreditCard },
+  { href: '/commerce/table-service', label: 'Table Service', icon: UtensilsCrossed },
+  { href: '/commerce/promotions', label: 'Promotions', icon: Percent },
+  { href: '/commerce/observability', label: 'Observability', icon: AlertTriangle },
+  { href: '/commerce/parity', label: 'Clover Parity', icon: BarChart3 },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
