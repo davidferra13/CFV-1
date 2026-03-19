@@ -1,4 +1,4 @@
-export const STRICT_FOCUS_GROUP_ORDER = ['remy', 'sales', 'events', 'clients', 'admin'] as const
+export const STRICT_FOCUS_GROUP_ORDER = ['remy', 'pipeline', 'events', 'clients', 'admin'] as const
 
 export const STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS = [
   '/dashboard',
@@ -8,7 +8,7 @@ export const STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS = [
   '/clients',
 ] as const
 
-const STRICT_FOCUS_GROUP_IDS = new Set<string>(['remy', 'sales', 'events', 'clients'])
+const STRICT_FOCUS_GROUP_IDS = new Set<string>(['remy', 'pipeline', 'events', 'clients'])
 
 export function getStrictFocusGroupRank(groupId: string): number {
   const rank = STRICT_FOCUS_GROUP_ORDER.indexOf(

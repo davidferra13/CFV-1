@@ -1,5 +1,5 @@
 // Centralized navigation configuration (single source of truth)
-// Organized by what a chef actually does: Sell → Plan → Cook → Stock → Money → Grow
+// Organized by chef workflow with granular sub-categories (3-5 items per group).
 // Rule: nothing hidden. If it's built, it's findable within 1-2 clicks.
 import type { LucideIcon } from '@/components/ui/icons'
 import {
@@ -151,6 +151,7 @@ export const standaloneTop: NavItem[] = [
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
 // Organized by chef workflow: AI → Sell → Plan → Cook → Stock → Money → Grow → Protect
+// Each group targets 3-5 items max for clear differentiation between related concepts.
 export const navGroups: NavGroup[] = [
   // ─── REMY (AI Assistant) ───
   {
@@ -174,10 +175,10 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── SALES & PIPELINE (getting new business) ───
+  // ─── PIPELINE (active deal flow) ───
   {
-    id: 'sales',
-    label: 'Sales',
+    id: 'pipeline',
+    label: 'Pipeline',
     icon: Funnel,
     module: 'pipeline',
     items: [
@@ -209,21 +210,6 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/rate-card',
-        label: 'Rate Card',
-        icon: Coins,
-      },
-      {
-        href: '/proposals',
-        label: 'Proposals',
-        icon: Presentation,
-        children: [
-          { href: '/proposals/builder', label: 'Proposal Builder' },
-          { href: '/proposals/templates', label: 'Templates' },
-          { href: '/proposals/addons', label: 'Add-Ons' },
-        ],
-      },
-      {
         href: '/leads',
         label: 'Leads',
         icon: Target,
@@ -236,9 +222,29 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/marketplace',
-        label: 'Marketplace',
-        icon: Store,
+        href: '/proposals',
+        label: 'Proposals',
+        icon: Presentation,
+        children: [
+          { href: '/proposals/builder', label: 'Proposal Builder' },
+          { href: '/proposals/templates', label: 'Templates' },
+          { href: '/proposals/addons', label: 'Add-Ons' },
+        ],
+      },
+    ],
+  },
+
+  // ─── OUTREACH (finding and nurturing business) ───
+  {
+    id: 'outreach',
+    label: 'Outreach',
+    icon: Megaphone,
+    module: 'pipeline',
+    items: [
+      {
+        href: '/rate-card',
+        label: 'Rate Card',
+        icon: Coins,
       },
       {
         href: '/prospecting',
@@ -262,6 +268,11 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/marketplace',
+        label: 'Marketplace',
+        icon: Store,
+      },
+      {
         href: '/testimonials',
         label: 'Testimonials',
         icon: Star,
@@ -283,7 +294,7 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── CLIENTS & GUESTS (people) ───
+  // ─── CLIENTS (managing client relationships) ───
   {
     id: 'clients',
     label: 'Clients',
@@ -335,6 +346,16 @@ export const navGroups: NavGroup[] = [
           { href: '/clients/preferences/dislikes', label: 'Dislikes' },
         ],
       },
+    ],
+  },
+
+  // ─── CLIENT INTELLIGENCE (insights and retention) ───
+  {
+    id: 'client-intelligence',
+    label: 'Client Intelligence',
+    icon: ChartLineUp,
+    module: 'clients',
+    items: [
       {
         href: '/clients/insights',
         label: 'Client Insights',
@@ -358,6 +379,16 @@ export const navGroups: NavGroup[] = [
           { href: '/clients/loyalty/referrals', label: 'Referrals' },
         ],
       },
+    ],
+  },
+
+  // ─── GUESTS & PARTNERS (external relationships) ───
+  {
+    id: 'guests-partners',
+    label: 'Guests & Partners',
+    icon: Handshake,
+    module: 'clients',
+    items: [
       {
         href: '/guests',
         label: 'Guest Directory',
@@ -435,18 +466,13 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── COMMERCE (POS & sales) ───
+  // ─── POS (point-of-sale transactions) ───
   {
-    id: 'commerce',
-    label: 'Commerce',
-    icon: Store,
+    id: 'pos',
+    label: 'POS',
+    icon: ShoppingCart,
     module: 'commerce',
     items: [
-      {
-        href: '/commerce',
-        label: 'Commerce Hub',
-        icon: Store,
-      },
       {
         href: '/commerce/register',
         label: 'POS Register',
@@ -463,15 +489,30 @@ export const navGroups: NavGroup[] = [
         icon: UtensilsCrossed,
       },
       {
+        href: '/commerce/orders',
+        label: 'Order Queue',
+        icon: Receipt,
+      },
+      {
         href: '/commerce/products',
         label: 'Products',
         icon: Package,
         children: [{ href: '/commerce/products/new', label: 'New Product' }],
       },
+    ],
+  },
+
+  // ─── COMMERCE (storefront and promotions) ───
+  {
+    id: 'commerce',
+    label: 'Commerce',
+    icon: Store,
+    module: 'commerce',
+    items: [
       {
-        href: '/commerce/orders',
-        label: 'Order Queue',
-        icon: Receipt,
+        href: '/commerce',
+        label: 'Commerce Hub',
+        icon: Store,
       },
       {
         href: '/commerce/sales',
@@ -483,16 +524,16 @@ export const navGroups: NavGroup[] = [
         label: 'Promotions',
         icon: Percent,
       },
-      {
-        href: '/commerce/observability',
-        label: 'Observability',
-        icon: AlertTriangle,
-      },
-      {
-        href: '/commerce/parity',
-        label: 'Clover Parity',
-        icon: BarChart3,
-      },
+    ],
+  },
+
+  // ─── COMMERCE OPS (reconciliation and reporting) ───
+  {
+    id: 'commerce-ops',
+    label: 'Commerce Ops',
+    icon: Scales,
+    module: 'commerce',
+    items: [
       {
         href: '/commerce/reconciliation',
         label: 'Reconciliation',
@@ -513,6 +554,16 @@ export const navGroups: NavGroup[] = [
         href: '/commerce/schedules',
         label: 'Payment Schedules',
         icon: CalendarCheck,
+      },
+      {
+        href: '/commerce/observability',
+        label: 'Observability',
+        icon: AlertTriangle,
+      },
+      {
+        href: '/commerce/parity',
+        label: 'Clover Parity',
+        icon: BarChart3,
       },
     ],
   },
@@ -575,10 +626,10 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── OPERATIONS (running the kitchen day-to-day) ───
+  // ─── KITCHEN OPS (day-to-day workflow) ───
   {
-    id: 'operations',
-    label: 'Operations',
+    id: 'kitchen-ops',
+    label: 'Kitchen Ops',
     icon: Activity,
     module: 'station-ops',
     items: [
@@ -607,6 +658,27 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/queue',
+        label: 'Priority Queue',
+        icon: Zap,
+      },
+      {
+        href: '/meal-prep',
+        label: 'Meal Prep',
+        icon: RefreshCw,
+        children: [{ href: '/meal-prep', label: 'Dashboard' }],
+      },
+    ],
+  },
+
+  // ─── WORKFORCE & ASSETS (people and equipment) ───
+  {
+    id: 'workforce',
+    label: 'Workforce & Assets',
+    icon: IdentificationBadge,
+    module: 'station-ops',
+    items: [
+      {
         href: '/staff',
         label: 'Staff',
         icon: IdentificationBadge,
@@ -619,17 +691,6 @@ export const navGroups: NavGroup[] = [
           { href: '/staff/labor', label: 'Labor Dashboard' },
           { href: '/staff/live', label: 'Live Activity' },
         ],
-      },
-      {
-        href: '/queue',
-        label: 'Priority Queue',
-        icon: Zap,
-      },
-      {
-        href: '/meal-prep',
-        label: 'Meal Prep',
-        icon: RefreshCw,
-        children: [{ href: '/meal-prep', label: 'Dashboard' }],
       },
       {
         href: '/operations/kitchen-rentals',
@@ -669,7 +730,7 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── INVENTORY (tracking stock) ───
+  // ─── INVENTORY (physical stock tracking) ───
   {
     id: 'inventory',
     label: 'Inventory',
@@ -682,14 +743,39 @@ export const navGroups: NavGroup[] = [
         icon: Warehouse,
       },
       {
-        href: '/inventory/transactions',
-        label: 'Transaction Ledger',
-        icon: Receipt,
-      },
-      {
         href: '/inventory/locations',
         label: 'Storage Locations',
         icon: MapPin,
+      },
+      {
+        href: '/inventory/counts',
+        label: 'Inventory Counts',
+        icon: ListChecks,
+      },
+      {
+        href: '/inventory/expiry',
+        label: 'Expiry Alerts',
+        icon: Clock,
+      },
+      {
+        href: '/inventory/staff-meals',
+        label: 'Staff Meals',
+        icon: UtensilsCrossed,
+      },
+    ],
+  },
+
+  // ─── PROCUREMENT (purchasing and vendors) ───
+  {
+    id: 'procurement',
+    label: 'Procurement',
+    icon: HandArrowDown,
+    module: 'operations',
+    items: [
+      {
+        href: '/inventory/procurement',
+        label: 'Procurement Hub',
+        icon: HandArrowDown,
       },
       {
         href: '/inventory/purchase-orders',
@@ -698,20 +784,24 @@ export const navGroups: NavGroup[] = [
         children: [{ href: '/inventory/purchase-orders/new', label: 'New PO' }],
       },
       {
-        href: '/inventory/procurement',
-        label: 'Procurement Hub',
-        icon: HandArrowDown,
+        href: '/inventory/vendor-invoices',
+        label: 'Vendor Invoices',
+        icon: Invoice,
       },
+    ],
+  },
+
+  // ─── COST CONTROL (waste, audits, and analysis) ───
+  {
+    id: 'cost-control',
+    label: 'Cost Control',
+    icon: Calculator,
+    module: 'operations',
+    items: [
       {
-        href: '/inventory/counts',
-        label: 'Inventory Counts',
-        icon: ListChecks,
-      },
-      {
-        href: '/inventory/audits',
-        label: 'Physical Audits',
-        icon: MagnifyingGlassPlus,
-        children: [{ href: '/inventory/audits/new', label: 'New Audit' }],
+        href: '/inventory/transactions',
+        label: 'Transaction Ledger',
+        icon: Receipt,
       },
       {
         href: '/inventory/waste',
@@ -719,24 +809,15 @@ export const navGroups: NavGroup[] = [
         icon: AlertTriangle,
       },
       {
-        href: '/inventory/vendor-invoices',
-        label: 'Vendor Invoices',
-        icon: Invoice,
-      },
-      {
         href: '/inventory/food-cost',
         label: 'Food Cost Analysis',
         icon: Calculator,
       },
       {
-        href: '/inventory/staff-meals',
-        label: 'Staff Meals',
-        icon: UtensilsCrossed,
-      },
-      {
-        href: '/inventory/expiry',
-        label: 'Expiry Alerts',
-        icon: Clock,
+        href: '/inventory/audits',
+        label: 'Physical Audits',
+        icon: MagnifyingGlassPlus,
+        children: [{ href: '/inventory/audits/new', label: 'New Audit' }],
       },
       {
         href: '/inventory/demand',
@@ -746,32 +827,13 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── FINANCE (money) ───
+  // ─── MONEY IN (revenue and collections) ───
   {
-    id: 'finance',
-    label: 'Finance',
-    icon: DollarSign,
+    id: 'money-in',
+    label: 'Money In',
+    icon: CurrencyCircleDollar,
     module: 'finance',
     items: [
-      {
-        href: '/financials',
-        label: 'Financial Hub',
-        icon: DollarSign,
-        children: [
-          { href: '/finance/overview', label: 'Overview' },
-          { href: '/finance', label: 'Finance Home' },
-        ],
-      },
-      {
-        href: '/expenses',
-        label: 'Expenses',
-        icon: Coins,
-        children: [
-          { href: '/expenses/new', label: 'Add Expense' },
-          { href: '/receipts', label: 'Receipt Library' },
-          { href: '/finance/expenses', label: 'By Category' },
-        ],
-      },
       {
         href: '/finance/invoices',
         label: 'Invoices',
@@ -802,6 +864,50 @@ export const navGroups: NavGroup[] = [
         children: [
           { href: '/finance/payouts/stripe-payouts', label: 'Stripe Payouts' },
           { href: '/finance/bank-feed', label: 'Bank Feed' },
+        ],
+      },
+    ],
+  },
+
+  // ─── MONEY OUT (expenses and contractors) ───
+  {
+    id: 'money-out',
+    label: 'Money Out',
+    icon: Coins,
+    module: 'finance',
+    items: [
+      {
+        href: '/expenses',
+        label: 'Expenses',
+        icon: Coins,
+        children: [
+          { href: '/expenses/new', label: 'Add Expense' },
+          { href: '/receipts', label: 'Receipt Library' },
+          { href: '/finance/expenses', label: 'By Category' },
+        ],
+      },
+      {
+        href: '/finance/contractors',
+        label: '1099 Contractors',
+        icon: IdentificationBadge,
+      },
+    ],
+  },
+
+  // ─── ACCOUNTING (ledger, reports, tax, forecasting) ───
+  {
+    id: 'accounting',
+    label: 'Accounting',
+    icon: NotebookIcon,
+    module: 'finance',
+    items: [
+      {
+        href: '/financials',
+        label: 'Financial Hub',
+        icon: DollarSign,
+        children: [
+          { href: '/finance/overview', label: 'Overview' },
+          { href: '/finance', label: 'Finance Home' },
         ],
       },
       {
@@ -840,11 +946,6 @@ export const navGroups: NavGroup[] = [
         label: 'Forecasting',
         icon: TrendingUp,
         children: [{ href: '/finance/cash-flow', label: 'Cash Flow Forecast' }],
-      },
-      {
-        href: '/finance/contractors',
-        label: '1099 Contractors',
-        icon: IdentificationBadge,
       },
     ],
   },
