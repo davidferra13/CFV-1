@@ -1021,6 +1021,478 @@ export async function getMenuContextData(menuId: string): Promise<{
 }
 
 // ============================================
+// CROSS-REFERENCING: INVENTORY STOCK CHECK
+// ============================================
+
+export interface MenuIngredientStock {
+  ingredientId: string
+  ingredientName: string
+  neededQuantity: number
+  neededUnit: string
+  onHandQuantity: number
+  onHandUnit: string | null
+  status: 'ok' | 'low' | 'out'
+}
+
+/**
+ * Check current pantry stock for all ingredients in a menu's recipes.
+ * Returns stock status per ingredient so the chef sees shortages during menu building.
+ */
+export async function getMenuIngredientStock(menuId: string): Promise<MenuIngredientStock[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Get all recipe ingredients for this menu's components
+  const { data: dishes } = await supabase.from('dishes').select('id').eq('menu_id', menuId)
+
+  if (!dishes?.length) return []
+
+  const dishIds = dishes.map((d: any) => d.id)
+  const { data: components } = await supabase
+    .from('components')
+    .select('recipe_id, scale_factor')
+    .in('dish_id', dishIds)
+    .not('recipe_id', 'is', null)
+
+  if (!components?.length) return []
+
+  // Collect recipe ingredients with scaled quantities
+  const recipeIds = [...new Set(components.map((c: any) => c.recipe_id))]
+  const { data: recipeIngredients } = await supabase
+    .from('recipe_ingredients')
+    .select('recipe_id, ingredient_id, quantity, unit')
+    .in('recipe_id', recipeIds)
+
+  if (!recipeIngredients?.length) return []
+
+  // Build needed quantities per ingredient (aggregate across all components)
+  const needed = new Map<string, { quantity: number; unit: string }>()
+  for (const ri of recipeIngredients as any[]) {
+    const matchingComps = (components as any[]).filter((c: any) => c.recipe_id === ri.recipe_id)
+    for (const comp of matchingComps) {
+      const scale = comp.scale_factor || 1
+      const key = ri.ingredient_id
+      const existing = needed.get(key)
+      const qty = (ri.quantity || 0) * scale
+      if (existing) {
+        existing.quantity += qty
+      } else {
+        needed.set(key, { quantity: qty, unit: ri.unit || '' })
+      }
+    }
+  }
+
+  if (needed.size === 0) return []
+
+  // Get ingredient names
+  const ingredientIds = [...needed.keys()]
+  const { data: ingredients } = await supabase
+    .from('ingredients')
+    .select('id, name')
+    .in('id', ingredientIds)
+
+  // Get pantry stock for these ingredients
+  const { data: pantryItems } = await supabase
+    .from('pantry_items')
+    .select('ingredient_id, quantity, unit')
+    .eq('tenant_id', user.tenantId!)
+    .in('ingredient_id', ingredientIds)
+
+  // Aggregate pantry stock per ingredient
+  const stock = new Map<string, { quantity: number; unit: string | null }>()
+  for (const pi of (pantryItems || []) as any[]) {
+    const existing = stock.get(pi.ingredient_id)
+    if (existing) {
+      existing.quantity += Number(pi.quantity || 0)
+    } else {
+      stock.set(pi.ingredient_id, { quantity: Number(pi.quantity || 0), unit: pi.unit })
+    }
+  }
+
+  const nameMap = new Map((ingredients || []).map((i: any) => [i.id, i.name]))
+
+  const results: MenuIngredientStock[] = []
+  for (const [ingredientId, need] of needed) {
+    const onHand = stock.get(ingredientId)
+    const onHandQty = onHand?.quantity ?? 0
+    let status: 'ok' | 'low' | 'out' = 'ok'
+    if (onHandQty <= 0) status = 'out'
+    else if (onHandQty < need.quantity) status = 'low'
+
+    results.push({
+      ingredientId,
+      ingredientName: nameMap.get(ingredientId) || 'Unknown',
+      neededQuantity: Math.round(need.quantity * 100) / 100,
+      neededUnit: need.unit,
+      onHandQuantity: Math.round(onHandQty * 100) / 100,
+      onHandUnit: onHand?.unit ?? null,
+      status,
+    })
+  }
+
+  // Sort: out first, then low, then ok
+  const ORDER = { out: 0, low: 1, ok: 2 }
+  results.sort((a, b) => ORDER[a.status] - ORDER[b.status])
+
+  return results
+}
+
+// ============================================
+// CROSS-REFERENCING: ALLERGEN VALIDATION
+// ============================================
+
+export interface MenuAllergenWarning {
+  dishName: string
+  ingredientName: string
+  allergen: string
+  severity: 'critical' | 'warning'
+}
+
+/**
+ * Validate all menu dishes against the linked client's allergies and dietary restrictions.
+ * Returns conflicts so the chef sees warnings inline during menu composition.
+ */
+export async function validateMenuAllergens(menuId: string): Promise<{
+  warnings: MenuAllergenWarning[]
+  clientName: string | null
+  allergies: string[]
+  restrictions: string[]
+}> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Get menu + event + client
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('id, event_id')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!menu?.event_id) {
+    return { warnings: [], clientName: null, allergies: [], restrictions: [] }
+  }
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('client_id, dietary_restrictions, allergies')
+    .eq('id', menu.event_id)
+    .single()
+
+  if (!event?.client_id) {
+    return { warnings: [], clientName: null, allergies: [], restrictions: [] }
+  }
+
+  const { data: client } = await supabase
+    .from('clients')
+    .select('first_name, last_name, dietary_restrictions, allergies')
+    .eq('id', event.client_id)
+    .single()
+
+  // Merge event + client level allergens
+  const allergies = [...(event.allergies || []), ...(client?.allergies || [])].filter(
+    (v: string, i: number, a: string[]) => a.indexOf(v) === i
+  )
+  const restrictions = [
+    ...(event.dietary_restrictions || []),
+    ...(client?.dietary_restrictions || []),
+  ].filter((v: string, i: number, a: string[]) => a.indexOf(v) === i)
+
+  if (allergies.length === 0 && restrictions.length === 0) {
+    const clientName = client
+      ? [client.first_name, client.last_name].filter(Boolean).join(' ')
+      : null
+    return { warnings: [], clientName, allergies: [], restrictions: [] }
+  }
+
+  // Get all dishes + their ingredients via components + recipes
+  const { data: dishes } = await supabase
+    .from('dishes')
+    .select('id, course_name')
+    .eq('menu_id', menuId)
+
+  if (!dishes?.length) {
+    const clientName = client
+      ? [client.first_name, client.last_name].filter(Boolean).join(' ')
+      : null
+    return { warnings: [], clientName, allergies, restrictions }
+  }
+
+  const dishIds = dishes.map((d: any) => d.id)
+  const { data: components } = await supabase
+    .from('components')
+    .select('dish_id, name, recipe_id')
+    .in('dish_id', dishIds)
+
+  // Get all recipe ingredient names
+  const recipeIds = (components || []).filter((c: any) => c.recipe_id).map((c: any) => c.recipe_id)
+
+  let ingredientNames: Map<string, string[]> = new Map() // dish_id -> ingredient names
+  if (recipeIds.length > 0) {
+    const { data: recipeIngrs } = await supabase
+      .from('recipe_ingredients')
+      .select('recipe_id, ingredient_id')
+      .in('recipe_id', recipeIds)
+
+    const ingrIds = [...new Set((recipeIngrs || []).map((ri: any) => ri.ingredient_id))]
+    const { data: ingrs } = await supabase.from('ingredients').select('id, name').in('id', ingrIds)
+
+    const ingrNameMap = new Map((ingrs || []).map((i: any) => [i.id, i.name]))
+    const recipeIngrMap = new Map<string, string[]>()
+    for (const ri of (recipeIngrs || []) as any[]) {
+      const name = ingrNameMap.get(ri.ingredient_id)
+      if (!name) continue
+      const existing = recipeIngrMap.get(ri.recipe_id) || []
+      existing.push(name)
+      recipeIngrMap.set(ri.recipe_id, existing)
+    }
+
+    // Map dish_id -> ingredient names via components
+    for (const comp of (components || []) as any[]) {
+      if (!comp.recipe_id) continue
+      const names = recipeIngrMap.get(comp.recipe_id) || []
+      const existing = ingredientNames.get(comp.dish_id) || []
+      ingredientNames.set(comp.dish_id, [...existing, ...names])
+    }
+  }
+
+  // Import and use the allergen check utility
+  const { ALLERGEN_INGREDIENT_MAP } = await import('@/lib/menus/allergen-check')
+
+  const CRITICAL_TERMS = ['peanut', 'tree_nut', 'shellfish', 'fish', 'sesame']
+  const warnings: MenuAllergenWarning[] = []
+
+  for (const dish of dishes as any[]) {
+    const dishIngredients = ingredientNames.get(dish.id) || []
+    const dishName = dish.course_name || 'Unnamed dish'
+
+    for (const allergen of [...allergies, ...restrictions]) {
+      const normalizedAllergen = allergen.toLowerCase().replace(/[^a-z]/g, '_')
+      // Find matching allergen in the lookup table
+      const matchingKeys = Object.keys(ALLERGEN_INGREDIENT_MAP).filter(
+        (key) =>
+          key === normalizedAllergen ||
+          normalizedAllergen.includes(key) ||
+          key.includes(normalizedAllergen)
+      )
+
+      for (const key of matchingKeys) {
+        const triggerTerms = (ALLERGEN_INGREDIENT_MAP as Record<string, string[]>)[key] || []
+        for (const ingredient of dishIngredients) {
+          const lower = ingredient.toLowerCase()
+          const match = triggerTerms.find((term) => lower.includes(term))
+          if (match) {
+            const severity = CRITICAL_TERMS.some((t) => key.includes(t)) ? 'critical' : 'warning'
+            warnings.push({ dishName, ingredientName: ingredient, allergen, severity })
+          }
+        }
+      }
+    }
+  }
+
+  // Deduplicate
+  const seen = new Set<string>()
+  const unique = warnings.filter((w) => {
+    const key = `${w.dishName}:${w.allergen}:${w.ingredientName}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+
+  unique.sort((a, b) => (a.severity === 'critical' ? -1 : 1) - (b.severity === 'critical' ? -1 : 1))
+
+  const clientName = client ? [client.first_name, client.last_name].filter(Boolean).join(' ') : null
+
+  return { warnings: unique, clientName, allergies, restrictions }
+}
+
+// ============================================
+// CROSS-REFERENCING: RECIPE USAGE LOOKUP
+// ============================================
+
+export interface RecipeUsageEntry {
+  menuId: string
+  menuName: string
+  eventId: string | null
+  eventDate: string | null
+  clientName: string | null
+  dishName: string | null
+}
+
+/**
+ * Find all menus that use a given recipe (via components).
+ * Enables "Used in X menus" display on recipe detail pages.
+ */
+export async function getRecipeUsage(recipeId: string): Promise<RecipeUsageEntry[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Find components that reference this recipe
+  const { data: components } = await supabase
+    .from('components')
+    .select('dish_id')
+    .eq('recipe_id', recipeId)
+
+  if (!components?.length) return []
+
+  const dishIds = [...new Set(components.map((c: any) => c.dish_id))]
+  const { data: dishes } = await supabase
+    .from('dishes')
+    .select('id, menu_id, course_name')
+    .in('id', dishIds)
+
+  if (!dishes?.length) return []
+
+  const menuIds = [...new Set(dishes.map((d: any) => d.menu_id))]
+  const { data: menus } = await supabase
+    .from('menus')
+    .select('id, name, event_id')
+    .in('id', menuIds)
+    .eq('tenant_id', user.tenantId!)
+
+  if (!menus?.length) return []
+
+  // Get event + client info for menus that have events
+  const eventIds = menus.filter((m: any) => m.event_id).map((m: any) => m.event_id)
+  let eventMap = new Map<string, { date: string | null; clientName: string | null }>()
+
+  if (eventIds.length > 0) {
+    const { data: events } = await supabase
+      .from('events')
+      .select('id, event_date, client_id')
+      .in('id', eventIds)
+
+    const clientIds = (events || []).filter((e: any) => e.client_id).map((e: any) => e.client_id)
+    let clientMap = new Map<string, string>()
+    if (clientIds.length > 0) {
+      const { data: clients } = await supabase
+        .from('clients')
+        .select('id, first_name, last_name')
+        .in('id', clientIds)
+
+      for (const c of (clients || []) as any[]) {
+        clientMap.set(c.id, [c.first_name, c.last_name].filter(Boolean).join(' '))
+      }
+    }
+
+    for (const e of (events || []) as any[]) {
+      eventMap.set(e.id, {
+        date: e.event_date,
+        clientName: e.client_id ? clientMap.get(e.client_id) || null : null,
+      })
+    }
+  }
+
+  const dishMenuMap = new Map(
+    dishes.map((d: any) => [d.id, { menuId: d.menu_id, dishName: d.course_name }])
+  )
+
+  const results: RecipeUsageEntry[] = menus.map((m: any) => {
+    const eventInfo = m.event_id ? eventMap.get(m.event_id) : null
+    // Find which dish in this menu uses the recipe
+    const matchingDish = dishes.find((d: any) => d.menu_id === m.id)
+    return {
+      menuId: m.id,
+      menuName: m.name,
+      eventId: m.event_id,
+      eventDate: eventInfo?.date || null,
+      clientName: eventInfo?.clientName || null,
+      dishName: matchingDish?.course_name || null,
+    }
+  })
+
+  results.sort((a, b) => {
+    if (a.eventDate && b.eventDate)
+      return new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+    if (a.eventDate) return -1
+    if (b.eventDate) return 1
+    return 0
+  })
+
+  return results
+}
+
+// ============================================
+// CROSS-REFERENCING: MENU-EVENT SCALE MISMATCH
+// ============================================
+
+/**
+ * Check if a menu's scale doesn't match its event's guest count.
+ * Returns null if no mismatch, or the suggested guest count.
+ */
+export async function checkMenuScaleMismatch(menuId: string): Promise<{
+  menuGuestCount: number
+  eventGuestCount: number
+  eventName: string | null
+} | null> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('id, event_id, target_guest_count')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!menu?.event_id) return null
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('guest_count, name')
+    .eq('id', menu.event_id)
+    .single()
+
+  if (!event?.guest_count) return null
+
+  const menuGuests = menu.target_guest_count || 4
+  if (menuGuests === event.guest_count) return null
+
+  return {
+    menuGuestCount: menuGuests,
+    eventGuestCount: event.guest_count,
+    eventName: event.name,
+  }
+}
+
+// ============================================
+// CROSS-REFERENCING: MENU INQUIRY LINK
+// ============================================
+
+/**
+ * Get the inquiry linked to a menu (via event).
+ * Enables "Back to Inquiry" link from the menu editor.
+ */
+export async function getMenuInquiryLink(menuId: string): Promise<{
+  inquiryId: string
+  inquiryStatus: string | null
+} | null> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('event_id')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!menu?.event_id) return null
+
+  const { data: inquiry } = await supabase
+    .from('inquiries')
+    .select('id, status')
+    .eq('event_id', menu.event_id)
+    .eq('tenant_id', user.tenantId!)
+    .limit(1)
+    .single()
+
+  if (!inquiry) return null
+
+  return { inquiryId: inquiry.id, inquiryStatus: inquiry.status }
+}
+
+// ============================================
 // PHASE 2: MENU ASSEMBLY
 // ============================================
 

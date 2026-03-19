@@ -21,6 +21,8 @@ const LogProductionSchema = z.object({
   best_before: z.string().optional(), // ISO date string
   discard_at: z.string().optional(), // ISO date string
   batch_notes: z.string().optional(),
+  outcome_rating: z.number().min(1).max(5).optional(), // 1-5 star rating for batch quality
+  substitutions: z.string().optional(), // Ingredient swaps made during this batch
   event_id: z.string().uuid().optional(),
 })
 
@@ -59,6 +61,8 @@ export async function logProduction(input: LogProductionInput) {
       best_before: validated.best_before || null,
       discard_at: validated.discard_at || null,
       batch_notes: validated.batch_notes || null,
+      outcome_rating: validated.outcome_rating || null,
+      substitutions: validated.substitutions || null,
       event_id: validated.event_id || null,
     }) as any
   )
@@ -105,6 +109,8 @@ export type ProductionLogEntry = {
   best_before: string | null
   discard_at: string | null
   batch_notes: string | null
+  outcome_rating: number | null
+  substitutions: string | null
   event_id: string | null
   created_at: string
 }

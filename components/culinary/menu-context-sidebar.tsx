@@ -1,11 +1,22 @@
 'use client'
 
-// MenuContextSidebar - Shows client dietary info, past menus, matching templates
-// Appears alongside the menu editor to give chefs context while building menus
+// MenuContextSidebar - Shows client dietary info, past menus, matching templates,
+// inventory stock levels, and allergen validation warnings.
+// Appears alongside the menu editor to give chefs context while building menus.
 
 import { useEffect, useState, useTransition } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { getMenuContextData } from '@/lib/menus/menu-intelligence-actions'
+import {
+  getMenuContextData,
+  getMenuIngredientStock,
+  validateMenuAllergens,
+  checkMenuScaleMismatch,
+  getMenuInquiryLink,
+} from '@/lib/menus/menu-intelligence-actions'
+import type {
+  MenuIngredientStock,
+  MenuAllergenWarning,
+} from '@/lib/menus/menu-intelligence-actions'
 import Link from 'next/link'
 
 interface MenuContextSidebarProps {
@@ -18,13 +29,37 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
   const [context, setContext] = useState<Awaited<ReturnType<typeof getMenuContextData>> | null>(
     null
   )
+  const [stock, setStock] = useState<MenuIngredientStock[]>([])
+  const [allergenData, setAllergenData] = useState<{
+    warnings: MenuAllergenWarning[]
+    clientName: string | null
+  } | null>(null)
+  const [scaleMismatch, setScaleMismatch] = useState<{
+    menuGuestCount: number
+    eventGuestCount: number
+    eventName: string | null
+  } | null>(null)
+  const [inquiryLink, setInquiryLink] = useState<{
+    inquiryId: string
+    inquiryStatus: string | null
+  } | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     startTransition(async () => {
       try {
-        const data = await getMenuContextData(menuId)
+        const [data, stockData, allergens, mismatch, inquiry] = await Promise.all([
+          getMenuContextData(menuId),
+          getMenuIngredientStock(menuId).catch(() => []),
+          validateMenuAllergens(menuId).catch(() => null),
+          checkMenuScaleMismatch(menuId).catch(() => null),
+          getMenuInquiryLink(menuId).catch(() => null),
+        ])
         setContext(data)
+        setStock(stockData)
+        setAllergenData(allergens)
+        setScaleMismatch(mismatch)
+        setInquiryLink(inquiry)
         setLoadError(null)
       } catch (err) {
         console.error('[MenuContextSidebar] Failed to load:', err)
@@ -58,7 +93,16 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
   const hasDietary = context.clientDietary.length > 0 || context.clientAllergies.length > 0
   const hasPreviousMenus = context.previousMenus.length > 0
   const hasTemplates = context.matchingTemplates.length > 0
-  const hasAnyContent = hasDietary || hasPreviousMenus || hasTemplates
+  const stockIssues = stock.filter((s) => s.status !== 'ok')
+  const allergenWarnings = allergenData?.warnings || []
+  const hasAnyContent =
+    hasDietary ||
+    hasPreviousMenus ||
+    hasTemplates ||
+    stockIssues.length > 0 ||
+    allergenWarnings.length > 0 ||
+    scaleMismatch ||
+    inquiryLink
 
   if (!hasAnyContent) {
     return (
@@ -75,6 +119,58 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
     <div
       className={`rounded-lg border border-stone-700 bg-stone-800/50 divide-y divide-stone-700 ${className}`}
     >
+      {/* Scale mismatch alert */}
+      {scaleMismatch && (
+        <div className="px-4 py-3 bg-amber-500/10">
+          <p className="text-xs text-amber-400 font-medium mb-1">Guest Count Mismatch</p>
+          <p className="text-xxs text-stone-400">
+            Menu targets {scaleMismatch.menuGuestCount} guests, but{' '}
+            {scaleMismatch.eventName || 'the event'} has {scaleMismatch.eventGuestCount}. Use the
+            scale dialog to match.
+          </p>
+        </div>
+      )}
+
+      {/* Allergen validation warnings */}
+      {allergenWarnings.length > 0 && (
+        <div className="px-4 py-3 bg-red-500/10">
+          <h4 className="text-xs font-medium text-red-400 uppercase tracking-wider mb-2">
+            Allergen Conflicts ({allergenWarnings.length})
+          </h4>
+          <div className="space-y-1.5 max-h-40 overflow-y-auto">
+            {allergenWarnings.map((w, i) => (
+              <div key={i} className="flex items-start gap-1.5">
+                <Badge
+                  variant={w.severity === 'critical' ? 'error' : 'warning'}
+                  className="text-xxs shrink-0"
+                >
+                  {w.severity === 'critical' ? '!!!' : '!'}
+                </Badge>
+                <p className="text-xxs text-stone-300">
+                  <span className="font-medium">{w.ingredientName}</span> in {w.dishName} conflicts
+                  with <span className="text-red-300">{w.allergen}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Inquiry link */}
+      {inquiryLink && (
+        <div className="px-4 py-2">
+          <Link
+            href={`/inquiries/${inquiryLink.inquiryId}`}
+            className="flex items-center gap-2 text-xs text-stone-400 hover:text-stone-200 transition-colors"
+          >
+            <span>← Back to Inquiry</span>
+            {inquiryLink.inquiryStatus && (
+              <Badge variant="default">{inquiryLink.inquiryStatus.replace(/_/g, ' ')}</Badge>
+            )}
+          </Link>
+        </div>
+      )}
+
       {/* Season + guest tier */}
       <div className="px-4 py-3 flex items-center gap-2">
         <Badge variant="info">{context.season}</Badge>
@@ -116,6 +212,46 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Inventory stock check */}
+      {stockIssues.length > 0 && (
+        <div className="px-4 py-3 space-y-2">
+          <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
+            Stock Alerts ({stockIssues.length})
+          </h4>
+          <div className="space-y-1 max-h-48 overflow-y-auto">
+            {stockIssues.map((item) => (
+              <div
+                key={item.ingredientId}
+                className="flex items-center justify-between gap-2 text-xxs"
+              >
+                <span className="text-stone-300 truncate">{item.ingredientName}</span>
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className={item.status === 'out' ? 'text-red-400' : 'text-amber-400'}>
+                    {item.onHandQuantity} {item.onHandUnit || item.neededUnit}
+                  </span>
+                  <span className="text-stone-600">/</span>
+                  <span className="text-stone-500">
+                    {item.neededQuantity} {item.neededUnit}
+                  </span>
+                  <Badge
+                    variant={item.status === 'out' ? 'error' : 'warning'}
+                    className="text-xxs ml-1"
+                  >
+                    {item.status === 'out' ? 'OUT' : 'LOW'}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Link
+            href="/inventory"
+            className="text-xxs text-stone-500 hover:text-stone-300 transition-colors"
+          >
+            View full inventory →
+          </Link>
         </div>
       )}
 

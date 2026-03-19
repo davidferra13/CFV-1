@@ -7,6 +7,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { MenuDetailClient } from './menu-detail-client'
 import { getMenuRecommendations } from '@/lib/analytics/menu-recommendations'
 import { MenuRecommendationHints } from '@/components/analytics/menu-recommendation-hints'
+import { getMenuInquiryLink } from '@/lib/menus/menu-intelligence-actions'
+import Link from 'next/link'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -36,7 +38,7 @@ export default async function MenuDetailPage({ params }: Props) {
     }
   }
 
-  const [recipeMapResult, recommendations] = await Promise.all([
+  const [recipeMapResult, recommendations, inquiryLink] = await Promise.all([
     recipeIds.size > 0
       ? createServerClient()
           .from('recipes' as any)
@@ -50,6 +52,7 @@ export default async function MenuDetailPage({ params }: Props) {
       dietaryRestrictions: (event as any)?.dietary_restrictions ?? [],
       allergies: (event as any)?.allergies ?? [],
     }).catch(() => null),
+    getMenuInquiryLink(id).catch(() => null),
   ])
 
   let recipeMap: Record<
@@ -70,6 +73,21 @@ export default async function MenuDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      {inquiryLink && (
+        <div className="flex items-center gap-2 px-1">
+          <Link
+            href={`/inquiries/${inquiryLink.inquiryId}`}
+            className="text-sm text-stone-400 hover:text-stone-200 transition-colors"
+          >
+            ← Back to Inquiry
+          </Link>
+          {inquiryLink.inquiryStatus && (
+            <span className="text-xs text-stone-500">
+              ({inquiryLink.inquiryStatus.replace(/_/g, ' ')})
+            </span>
+          )}
+        </div>
+      )}
       <MenuDetailClient
         menu={menu}
         event={event}

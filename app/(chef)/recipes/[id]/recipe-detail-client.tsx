@@ -23,6 +23,7 @@ import { NutritionPanel } from '@/components/recipes/nutrition-panel'
 import { AllergenBadgePanel } from '@/components/recipes/allergen-badge-panel'
 import { SubRecipeSearchModal } from '@/components/recipes/sub-recipe-search-modal'
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
+import { RecipeUsagePanel } from '@/components/recipes/recipe-usage-panel'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import { useDeferredAction } from '@/hooks/use-deferred-action'
 import { toast } from 'sonner'
@@ -74,6 +75,8 @@ export function RecipeDetailClient({ recipe }: Props) {
   const [logBestBefore, setLogBestBefore] = useState('')
   const [logDiscardAt, setLogDiscardAt] = useState('')
   const [logBatchNotes, setLogBatchNotes] = useState('')
+  const [logOutcomeRating, setLogOutcomeRating] = useState<number>(0)
+  const [logSubstitutions, setLogSubstitutions] = useState('')
 
   const loadProductionLog = async () => {
     const entries = await getProductionLog(recipe.id)
@@ -98,6 +101,8 @@ export function RecipeDetailClient({ recipe }: Props) {
         best_before: logBestBefore || undefined,
         discard_at: logDiscardAt || undefined,
         batch_notes: logBatchNotes.trim() || undefined,
+        outcome_rating: logOutcomeRating > 0 ? logOutcomeRating : undefined,
+        substitutions: logSubstitutions.trim() || undefined,
       })
       // Reset form
       setLogQuantity('')
@@ -107,6 +112,8 @@ export function RecipeDetailClient({ recipe }: Props) {
       setLogBestBefore('')
       setLogDiscardAt('')
       setLogBatchNotes('')
+      setLogOutcomeRating(0)
+      setLogSubstitutions('')
       setShowLogForm(false)
       // Reload log
       await loadProductionLog()
@@ -472,6 +479,9 @@ export function RecipeDetailClient({ recipe }: Props) {
           </CardContent>
         </Card>
       )}
+
+      {/* Used in Menus (bidirectional cross-reference) */}
+      <RecipeUsagePanel recipeId={recipe.id} />
 
       {/* Scaling Calculator */}
       <RecipeScalingCalculator recipe={recipe} />
@@ -869,6 +879,40 @@ export function RecipeDetailClient({ recipe }: Props) {
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-stone-500 mb-1">Outcome Rating</label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setLogOutcomeRating(logOutcomeRating === star ? 0 : star)}
+                        className={`text-lg ${
+                          star <= logOutcomeRating ? 'text-amber-400' : 'text-stone-600'
+                        } hover:text-amber-300 transition-colors`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                    {logOutcomeRating > 0 && (
+                      <span className="text-xs text-stone-500 ml-2 self-center">
+                        {logOutcomeRating}/5
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs text-stone-500 mb-1">Substitutions Made</label>
+                  <textarea
+                    value={logSubstitutions}
+                    onChange={(e) => setLogSubstitutions(e.target.value)}
+                    placeholder="e.g. Used ghee instead of butter, swapped arugula for spinach"
+                    rows={2}
+                    className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900 resize-y"
+                  />
+                </div>
+              </div>
               <div className="flex justify-end">
                 <Button
                   size="sm"
@@ -964,8 +1008,29 @@ export function RecipeDetailClient({ recipe }: Props) {
                             </span>
                           )}
                         </div>
+                        {entry.outcome_rating != null && entry.outcome_rating > 0 && (
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <span
+                                key={star}
+                                className={`text-sm ${
+                                  star <= entry.outcome_rating!
+                                    ? 'text-amber-400'
+                                    : 'text-stone-700'
+                                }`}
+                              >
+                                ★
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         {entry.batch_notes && (
                           <p className="text-sm text-stone-400">{entry.batch_notes}</p>
+                        )}
+                        {entry.substitutions && (
+                          <p className="text-sm text-stone-500">
+                            <span className="text-stone-600">Subs:</span> {entry.substitutions}
+                          </p>
                         )}
                       </div>
                       <button
