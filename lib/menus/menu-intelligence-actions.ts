@@ -11,14 +11,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { UnknownAppError } from '@/lib/errors/app-error'
 
-// Cache tag constants for menu intelligence
-export const MENU_CONTEXT_CACHE_TAG = 'menu-context'
-export const MENU_PERF_CACHE_TAG = 'menu-perf'
-export const MENU_SEASONAL_CACHE_TAG = 'menu-seasonal'
-export const MENU_TASTE_CACHE_TAG = 'menu-taste'
+import {
+  MENU_CONTEXT_CACHE_TAG,
+  MENU_PERF_CACHE_TAG,
+  MENU_SEASONAL_CACHE_TAG,
+  MENU_TASTE_CACHE_TAG,
+} from '@/lib/menus/menu-intelligence-cache'
 
 /** Bust all menu intelligence caches for a given menu */
-export function revalidateMenuIntelligenceCache(menuId: string) {
+export async function revalidateMenuIntelligenceCache(menuId: string) {
   revalidateTag(`${MENU_CONTEXT_CACHE_TAG}-${menuId}`)
   revalidateTag(`${MENU_PERF_CACHE_TAG}-${menuId}`)
   revalidateTag(`${MENU_SEASONAL_CACHE_TAG}-${menuId}`)

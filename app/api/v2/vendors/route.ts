@@ -1,5 +1,5 @@
 // API v2: Vendors - List & Create
-// GET  /api/v2/vendors?active_only=true&page=1&per_page=50
+// GET  /api/v2/vendors?status=active&vendor_type=grocery&q=search&is_preferred=true&page=1&per_page=50
 // POST /api/v2/vendors
 
 import { NextRequest } from 'next/server'
@@ -32,6 +32,10 @@ export const GET = withApiAuth(
   async (req, ctx) => {
     const url = new URL(req.url)
     const pagination = parsePagination(url)
+    const status = url.searchParams.get('status')
+    const vendorType = url.searchParams.get('vendor_type')
+    const q = url.searchParams.get('q')
+    const isPreferred = url.searchParams.get('is_preferred')
     const activeOnly = url.searchParams.get('active_only') !== 'false'
 
     let query = (ctx.supabase as any)
@@ -40,7 +44,15 @@ export const GET = withApiAuth(
       .eq('chef_id', ctx.tenantId)
       .order('name', { ascending: true })
 
-    if (activeOnly) query = query.eq('status', 'active')
+    // Specific status filter takes precedence over active_only
+    if (status) {
+      query = query.eq('status', status)
+    } else if (activeOnly) {
+      query = query.eq('status', 'active')
+    }
+    if (vendorType) query = query.eq('vendor_type', vendorType)
+    if (q) query = query.ilike('name', `%${q}%`)
+    if (isPreferred === 'true') query = query.eq('is_preferred', true)
 
     const from = (pagination.page - 1) * pagination.per_page
     const to = from + pagination.per_page - 1
