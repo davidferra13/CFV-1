@@ -1,5 +1,5 @@
 // Notification Settings Page
-// Per-category channel overrides (email, push, SMS) and SMS phone setup.
+// Per-category channel overrides (email, push, SMS), SMS phone setup, and tier customization.
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
@@ -8,17 +8,20 @@ import {
   getNotificationExperienceSettings,
   getSmsSettings,
 } from '@/lib/notifications/settings-actions'
+import { getNotificationTierMap } from '@/lib/notifications/tier-actions'
 import { NotificationSettings } from '@/components/notifications/notification-settings'
+import { NotificationTierSettings } from '@/components/settings/notification-tier-settings'
 
 export const metadata: Metadata = { title: 'Notification Settings - ChefFlow' }
 
 export default async function NotificationSettingsPage() {
   await requireChef()
 
-  const [preferences, smsSettings, experienceSettings] = await Promise.all([
+  const [preferences, smsSettings, experienceSettings, tierMap] = await Promise.all([
     getNotificationPreferences(),
     getSmsSettings(),
     getNotificationExperienceSettings(),
+    getNotificationTierMap(),
   ])
 
   return (
@@ -28,6 +31,7 @@ export default async function NotificationSettingsPage() {
         initialSmsSettings={smsSettings}
         initialExperienceSettings={experienceSettings}
       />
+      <NotificationTierSettings initialTierMap={tierMap} />
     </div>
   )
 }

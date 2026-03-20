@@ -23,6 +23,17 @@ export const API_SCOPES = {
   'documents:write': 'Generate documents',
   'settings:write': 'Update preferences and configuration',
 
+  // Resource scopes
+  'staff:read': 'List and view staff members',
+  'staff:write': 'Create and update staff members',
+  'vendors:read': 'List and view vendors',
+  'vendors:write': 'Create and update vendors',
+  'inventory:read': 'View inventory and stock levels',
+  'inventory:write': 'Create and update inventory items',
+  'calls:read': 'List and view scheduled calls',
+  'calls:write': 'Create and update calls',
+  'recipes:write': 'Create and update recipes',
+
   // Admin scopes
   'webhooks:manage': 'Manage outbound webhook subscriptions',
   'api-keys:manage': 'Manage API keys',

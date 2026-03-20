@@ -3,6 +3,7 @@
 // (tenantId, authUserId, action) combination.
 //
 // Resolution cascade (first match wins):
+//   0. Per-chef tier override in chef_notification_tier_overrides (DB)
 //   1. Per-category channel overrides in notification_preferences (DB)
 //   2. Default tier channels from DEFAULT_TIER_MAP + TIER_CHANNEL_DEFAULTS (code)
 //   3. Special overrides: EMAIL_SUPPRESSED_ACTIONS always disables email
@@ -44,9 +45,33 @@ export async function resolveChannels(
 ): Promise<ResolvedChannels> {
   const category: NotificationCategory = NOTIFICATION_CONFIG[action].category
 
-  // Base defaults from tier config
-  const defaults = getDefaultChannels(action)
-  const tier = DEFAULT_TIER_MAP[action]
+  // Base defaults from tier config, with per-chef tier override applied
+  let tier = DEFAULT_TIER_MAP[action]
+
+  try {
+    const supabase = createServerClient({ admin: true })
+
+    // 0. Check for per-chef tier override before computing channel defaults
+    const { data: tierOverride } = await supabase
+      .from('chef_notification_tier_overrides' as any)
+      .select('tier')
+      .eq('chef_id', tenantId)
+      .eq('action', action)
+      .single()
+
+    if (tierOverride?.tier && ['critical', 'alert', 'info'].includes(tierOverride.tier)) {
+      tier = tierOverride.tier as 'critical' | 'alert' | 'info'
+    }
+  } catch {
+    // If override lookup fails, continue with default tier
+  }
+
+  // Compute channel defaults from the (possibly overridden) tier
+  const tierChannels = { ...TIER_CHANNEL_DEFAULTS[tier] }
+  if (EMAIL_SUPPRESSED_ACTIONS.has(action)) {
+    tierChannels.email = false
+  }
+  const defaults = tierChannels
 
   // Start with tier defaults - will be overridden by DB prefs below
   let resolved: ChannelSet = { ...defaults }

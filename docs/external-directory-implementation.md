@@ -15,11 +15,20 @@ A comprehensive three-layer audit was performed across 495 pages, 28 v2 API rout
 - Recipes and expenses had read-only API (no PATCH)
 - Inquiries had no outbound webhook dispatch
 
-**After this session:**
+**After session 1:**
 
 - 13 features have FULL coverage (update expense gained API, completing the trio)
 - 1 feature remains DARK (price comparison, now mitigated with CTA linking to vendors)
 - 3 previously-classified DARK features confirmed to have working CTAs (network connections, network channels, waste logging)
+
+**After session 2:**
+
+- DELETE handlers added to 4 existing v2 routes (expenses, quotes, menus, inquiries)
+- 5 new resource API groups created (staff, vendors, inventory, invoices, calls)
+- 2 new action endpoints created (clients merge, inquiries convert)
+- 3 action endpoints confirmed already built (events clone, events archive, menus approve)
+- 8 new API scopes registered (staff:read/write, vendors:read/write, inventory:read/write, calls:read/write, recipes:write)
+- Total v2 API routes: 28 -> 42 (14 new route files)
 
 ---
 
@@ -102,24 +111,53 @@ The exploration phase revealed that ~80% of the 5-phase build plan was already i
 
 ---
 
+## Session 2: Tier 1-3 Implementation
+
+### 6. DELETE Handlers (Tier 1)
+
+Added DELETE to 4 existing v2 routes:
+
+| Route                   | Method                             | File                                 |
+| ----------------------- | ---------------------------------- | ------------------------------------ |
+| `/api/v2/quotes/:id`    | Soft delete (deleted_at)           | `app/api/v2/quotes/[id]/route.ts`    |
+| `/api/v2/menus/:id`     | Soft delete (deleted_at)           | `app/api/v2/menus/[id]/route.ts`     |
+| `/api/v2/inquiries/:id` | Soft delete (deleted_at)           | `app/api/v2/inquiries/[id]/route.ts` |
+| `/api/v2/expenses/:id`  | Hard delete (no deleted_at column) | `app/api/v2/expenses/[id]/route.ts`  |
+
+### 7. New Resource APIs (Tier 2)
+
+| Resource            | Routes                                                   | Scopes                          | Notes                                  |
+| ------------------- | -------------------------------------------------------- | ------------------------------- | -------------------------------------- |
+| `/api/v2/staff`     | GET list, POST create, GET [id], PATCH [id], DELETE [id] | staff:read, staff:write         | DELETE deactivates (is_active=false)   |
+| `/api/v2/vendors`   | GET list, POST create, GET [id], PATCH [id], DELETE [id] | vendors:read, vendors:write     | DELETE sets status=inactive            |
+| `/api/v2/inventory` | GET stock summary, POST record transaction               | inventory:read, inventory:write | Append-only transaction model          |
+| `/api/v2/invoices`  | GET list (computed from events+ledger)                   | finance:read                    | Read-only; invoices are computed views |
+| `/api/v2/calls`     | GET list, POST create, GET [id], PATCH [id], DELETE [id] | calls:read, calls:write         | DELETE cancels (status=cancelled)      |
+
+### 8. Action Endpoints (Tier 3)
+
+| Endpoint                             | Status          | File                                         |
+| ------------------------------------ | --------------- | -------------------------------------------- |
+| `POST /api/v2/events/:id/clone`      | Already existed | `app/api/v2/events/[id]/clone/route.ts`      |
+| `POST /api/v2/events/:id/archive`    | Already existed | `app/api/v2/events/[id]/archive/route.ts`    |
+| `POST /api/v2/menus/:id/approve`     | Already existed | `app/api/v2/menus/[id]/approve/route.ts`     |
+| `POST /api/v2/clients/:id/merge`     | NEW             | `app/api/v2/clients/[id]/merge/route.ts`     |
+| `POST /api/v2/inquiries/:id/convert` | NEW             | `app/api/v2/inquiries/[id]/convert/route.ts` |
+
+### 9. New API Scopes
+
+Added to `lib/api/v2/scopes.ts`:
+
+- `staff:read`, `staff:write`
+- `vendors:read`, `vendors:write`
+- `inventory:read`, `inventory:write`
+- `calls:read`, `calls:write`
+- `recipes:write`
+
+---
+
 ## Remaining Gaps (for future work)
-
-### API gaps (Tier 1)
-
-- `DELETE` handlers on expenses, quotes, menus, inquiries v2 routes
-
-### API gaps (Tier 2, new resources)
-
-- `/api/v2/invoices`, `/api/v2/staff`, `/api/v2/vendors`, `/api/v2/inventory`, `/api/v2/calls`
-
-### API gaps (Tier 3, action endpoints)
-
-- `POST /api/v2/events/[id]/clone`
-- `POST /api/v2/events/[id]/archive`
-- `POST /api/v2/menus/[id]/approve`
-- `POST /api/v2/clients/[id]/merge`
-- `POST /api/v2/inquiries/[id]/convert`
 
 ### Module-level API coverage
 
-11 modules still have zero API coverage (Finance beyond expenses, Commerce/POS, Inventory, Staff, Vendors, Analytics, Marketing, Loyalty, Community/Network, Compliance, Proposals).
+6 modules still have zero API coverage (Commerce/POS, Analytics, Marketing, Loyalty, Community/Network, Compliance/Proposals).

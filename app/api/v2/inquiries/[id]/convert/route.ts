@@ -1,0 +1,66 @@
+// API v2: Convert Inquiry to Event
+// POST /api/v2/inquiries/:id/convert
+
+import { withApiAuth, apiCreated, apiNotFound, apiError } from '@/lib/api/v2'
+
+export const POST = withApiAuth(
+  async (_req, ctx, params) => {
+    const id = params?.id
+    if (!id) return apiNotFound('Inquiry')
+
+    // Fetch the inquiry
+    const { data: inquiry } = await ctx.supabase
+      .from('inquiries')
+      .select('*')
+      .eq('id', id)
+      .eq('tenant_id', ctx.tenantId)
+      .is('deleted_at', null)
+      .single()
+
+    if (!inquiry) return apiNotFound('Inquiry')
+
+    const inq = inquiry as Record<string, unknown>
+
+    // Create a draft event from inquiry data
+    const { data: event, error } = await ctx.supabase
+      .from('events')
+      .insert({
+        tenant_id: ctx.tenantId,
+        client_id: inq.client_id,
+        event_date: inq.preferred_date || inq.event_date || new Date().toISOString().split('T')[0],
+        serve_time: inq.preferred_time || inq.serve_time || '18:00',
+        guest_count: inq.guest_count || inq.estimated_guest_count || 10,
+        occasion: inq.confirmed_occasion || inq.occasion || 'Dinner',
+        location_address: inq.location_address || '',
+        location_city: inq.location_city || '',
+        location_state: inq.location_state || '',
+        location_zip: inq.location_zip || '',
+        dietary_restrictions: inq.dietary_restrictions || [],
+        allergies: inq.allergies || [],
+        special_requests: inq.special_requests || '',
+        status: 'draft',
+        inquiry_id: inq.id,
+      } as any)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('[api/v2/inquiries/convert] Error:', error)
+      return apiError('convert_failed', 'Failed to convert inquiry to event', 500)
+    }
+
+    // Mark inquiry as converted
+    await ctx.supabase
+      .from('inquiries')
+      .update({
+        status: 'converted',
+        converted_event_id: (event as any).id,
+        updated_at: new Date().toISOString(),
+      } as any)
+      .eq('id', id)
+      .eq('tenant_id', ctx.tenantId)
+
+    return apiCreated(event)
+  },
+  { scopes: ['events:write', 'inquiries:write'] as any }
+)
