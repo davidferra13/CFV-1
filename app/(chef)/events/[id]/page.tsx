@@ -21,6 +21,10 @@ import { getEventDOPProgress } from '@/lib/scheduling/actions'
 import { getEventLoyaltyImpactByTenant, getLoyaltyTransactions } from '@/lib/loyalty/actions'
 import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
+import { DietaryComplexityBadge } from '@/components/events/dietary-complexity-badge'
+import { EventRiskBadge } from '@/components/events/event-risk-badge'
+import { calculateDietaryComplexity } from '@/lib/formulas/dietary-complexity'
+import { calculateEventRisk } from '@/lib/formulas/event-risk-score'
 import { EventTransitions } from '@/components/events/event-transitions'
 import { EventClosureActions } from '@/components/events/event-closure-actions'
 import { DocumentSection } from '@/components/documents/document-section'
@@ -72,6 +76,7 @@ import { getMarketplaceConversionData } from '@/lib/marketplace/conversion-actio
 import { MarketplaceConvertBanner } from '@/components/events/marketplace-convert-banner'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
 import { getEventCollaborators } from '@/lib/collaboration/actions'
+import { getEventCollaborators as getRevenueSplitCollaborators } from '@/lib/events/collaborator-actions'
 import { ContractSection } from '@/components/contracts/contract-section'
 import { QuickReceiptCapture } from '@/components/events/quick-receipt-capture'
 import { AvailableLeftovers } from '@/components/events/available-leftovers'
@@ -295,6 +300,43 @@ export default async function EventDetailPage({
   )
   const isEventOwner = (event as any).tenant_id === user.entityId
 
+  // Compute dietary complexity from guest data
+  const guestProfiles = (guestList as any[]).map((g: any) => ({
+    dietaryRestrictions: g.dietary_restrictions ?? [],
+    allergies: g.allergies ?? [],
+  }))
+  const dietaryComplexity = calculateDietaryComplexity({
+    guests: guestProfiles,
+    totalGuestCount: event.guest_count || 1,
+  })
+
+  // Compute event risk score
+  const allGuestRestrictions = guestProfiles.flatMap((g) => g.dietaryRestrictions)
+  const allGuestAllergies = guestProfiles.flatMap((g) => g.allergies)
+  const eventTotalCents = (event as any).total_price_cents ?? (event as any).quoted_price_cents ?? 0
+  const eventRisk = calculateEventRisk({
+    eventDate: event.event_date,
+    status: event.status as any,
+    paymentStatus:
+      totalPaid >= eventTotalCents && eventTotalCents > 0
+        ? 'paid'
+        : totalPaid > 0
+          ? 'partial'
+          : 'unpaid',
+    guestCount: event.guest_count ?? 0,
+    dietaryRestrictions: allGuestRestrictions,
+    allergies: allGuestAllergies,
+    hasMenu: !!eventMenus,
+    hasSignedContract: false, // conservative default
+    isRepeatClient: false, // conservative default
+    serviceStyle: (event as any).service_style ?? undefined,
+    quotedPriceCents: (event as any).quoted_price_cents ?? null,
+    outstandingBalanceCents: outstandingBalance,
+    travelDistanceMiles: travelInfo?.distanceMiles ?? null,
+    guestCountConfirmed: (event as any).guest_count_confirmed ?? undefined,
+    occasion: event.occasion ?? null,
+  })
+
   const COLLAB_ROLE_LABELS: Record<string, string> = {
     primary: 'Primary Chef',
     co_host: 'Co-Host',
@@ -333,6 +375,7 @@ export default async function EventDetailPage({
     takeAChefFinance,
     eventHasAllergyData,
     eventChatConversationId,
+    revenueSplitCollaborators,
   ] = await Promise.all([
     // Refund recommendation â€” only for cancelled events with payments
     event.status === 'cancelled' && totalPaid > 0
@@ -422,6 +465,7 @@ export default async function EventDetailPage({
         return null
       }
     })(),
+    getRevenueSplitCollaborators(params.id).catch(() => []),
   ])
 
   // Compute share URL (shortenUrl depends on guestShares resolving)
@@ -458,6 +502,8 @@ export default async function EventDetailPage({
               {event.occasion || 'Untitled Event'}
             </h1>
             <EventStatusBadge status={event.status} />
+            <DietaryComplexityBadge result={dietaryComplexity} />
+            <EventRiskBadge result={eventRisk} />
           </div>
           <p className="text-stone-300 mt-1">
             {format(new Date(event.event_date), "EEEE, MMMM d, yyyy 'at' h:mm a")}
@@ -730,6 +776,8 @@ export default async function EventDetailPage({
         unrecordedComponents={unrecordedComponents}
         aiConfigured={aiConfigured}
         hasAllergyData={eventHasAllergyData as boolean}
+        revenueSplitCollaborators={revenueSplitCollaborators as any[]}
+        eventTotalCents={eventTotalCents}
       />
       {/* TAB: WRAP-UP â€” Debrief, survey, history      */}
       {/* ============================================ */}
