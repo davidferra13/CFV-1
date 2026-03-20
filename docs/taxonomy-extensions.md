@@ -73,6 +73,7 @@ All actions are in `lib/taxonomy/actions.ts`. They require chef authentication v
 | ----------------------- | ------------------------------------------ | --------------------- | ---------------------------------------------- |
 | `getTaxonomy`           | `category`                                 | `TaxonomyEntry[]`     | All entries (system + custom) with hidden flag |
 | `getActiveTaxonomy`     | `category`                                 | `TaxonomyEntry[]`     | Only visible entries (for dropdowns/pickers)   |
+| `getTaxonomyOptions`    | `category`                                 | `TaxonomyEntry[]`     | Alias for getActiveTaxonomy (convenience)      |
 | `addTaxonomyEntry`      | `category, value, displayLabel, metadata?` | `{ success, error? }` | Add a custom entry                             |
 | `removeTaxonomyEntry`   | `id`                                       | `{ success, error? }` | Remove a custom entry (not system defaults)    |
 | `hideTaxonomyDefault`   | `category, value`                          | `{ success, error? }` | Hide a system default for the current chef     |
@@ -83,15 +84,13 @@ Mutations emit a `taxonomy.updated` webhook as a non-blocking side effect and ca
 
 ## API Endpoints
 
-REST endpoints at `/api/v2/taxonomy` (planned, require `settings:write` scope):
+REST endpoints at `/api/v2/settings/taxonomy`:
 
-| Method | Path                                       | Description                         |
-| ------ | ------------------------------------------ | ----------------------------------- |
-| GET    | `/api/v2/taxonomy?category=cuisine`        | List merged taxonomy for a category |
-| POST   | `/api/v2/taxonomy`                         | Add a custom entry                  |
-| DELETE | `/api/v2/taxonomy/:id`                     | Remove a custom entry               |
-| POST   | `/api/v2/taxonomy/hidden`                  | Hide a system default               |
-| DELETE | `/api/v2/taxonomy/hidden/:category/:value` | Unhide a system default             |
+| Method | Path                                         | Scope            | Description                         |
+| ------ | -------------------------------------------- | ---------------- | ----------------------------------- |
+| GET    | `/api/v2/settings/taxonomy?category=cuisine` | `settings:read`  | List merged taxonomy for a category |
+| POST   | `/api/v2/settings/taxonomy`                  | `settings:write` | Add a custom entry                  |
+| DELETE | `/api/v2/settings/taxonomy/:id`              | `settings:write` | Remove a custom entry               |
 
 ## Settings Page
 
@@ -125,4 +124,7 @@ Use this hook in any client component that needs a taxonomy dropdown or picker.
 | `lib/taxonomy/actions.ts`                                         | Server actions (CRUD + hide/unhide) |
 | `components/hooks/use-taxonomy.ts`                                | Client hook for dropdowns           |
 | `app/(chef)/settings/taxonomy/page.tsx`                           | Settings UI page                    |
+| `components/settings/taxonomy-settings.tsx`                       | Client component with tabbed UI     |
+| `app/api/v2/settings/taxonomy/route.ts`                           | API v2: GET + POST                  |
+| `app/api/v2/settings/taxonomy/[id]/route.ts`                      | API v2: DELETE by ID                |
 | `supabase/migrations/20260401000093_chef_taxonomy_extensions.sql` | Database migration                  |

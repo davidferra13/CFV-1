@@ -7,6 +7,7 @@ export interface TaxonomyEntry {
   isSystem: boolean
   isHidden: boolean
   sortOrder: number
+  category?: TaxonomyCategory
   metadata?: Record<string, unknown>
   /** Only set for custom (non-system) entries */
   id?: string
