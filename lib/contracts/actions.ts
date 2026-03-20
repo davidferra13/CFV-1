@@ -571,6 +571,162 @@ export async function voidContract(contractId: string, reason?: string) {
   return { success: true }
 }
 
+// ============================================
+// CONTRACT LIST / DETAIL (chef view)
+// ============================================
+
+export type ContractStatus = 'draft' | 'sent' | 'viewed' | 'signed' | 'voided'
+
+export type ContractListItem = {
+  id: string
+  event_id: string
+  client_id: string
+  status: ContractStatus
+  created_at: string
+  sent_at: string | null
+  signed_at: string | null
+  voided_at: string | null
+  event_occasion: string | null
+  event_date: string | null
+  client_name: string | null
+}
+
+/**
+ * List all contracts for the current chef with optional status filter.
+ * Joins event and client names for display.
+ */
+export async function getContracts(statusFilter?: ContractStatus): Promise<ContractListItem[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  let query = supabase
+    .from('event_contracts')
+    .select(
+      `
+      id, event_id, client_id, status, created_at, sent_at, signed_at, voided_at,
+      events (occasion, event_date),
+      clients (full_name)
+    `
+    )
+    .eq('chef_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  if (statusFilter) {
+    query = query.eq('status', statusFilter)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('[getContracts] Error:', error)
+    throw new Error('Failed to load contracts')
+  }
+
+  return ((data as any[]) ?? []).map((row: any) => ({
+    id: row.id,
+    event_id: row.event_id,
+    client_id: row.client_id,
+    status: row.status as ContractStatus,
+    created_at: row.created_at,
+    sent_at: row.sent_at,
+    signed_at: row.signed_at,
+    voided_at: row.voided_at,
+    event_occasion: row.events?.occasion ?? null,
+    event_date: row.events?.event_date ?? null,
+    client_name: row.clients?.full_name ?? null,
+  }))
+}
+
+/**
+ * Get a single contract by ID (chef view) with full details.
+ */
+export async function getContractById(contractId: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data, error } = await supabase
+    .from('event_contracts')
+    .select(
+      `
+      *,
+      events (occasion, event_date),
+      clients (full_name, email)
+    `
+    )
+    .eq('id', contractId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (error) {
+    console.error('[getContractById] Error:', error)
+    return null
+  }
+
+  return data
+}
+
+/**
+ * Mark a draft contract as sent (updates status + sent_at).
+ */
+export async function markContractSent(contractId: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: contract } = await supabase
+    .from('event_contracts')
+    .select('id, status, event_id')
+    .eq('id', contractId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (!contract) throw new Error('Contract not found')
+  if (contract.status !== 'draft') throw new Error('Only draft contracts can be marked as sent')
+
+  const { error } = await supabase
+    .from('event_contracts')
+    .update({ status: 'sent', sent_at: new Date().toISOString() })
+    .eq('id', contractId)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) throw new Error('Failed to mark contract as sent')
+
+  revalidatePath('/contracts')
+  revalidatePath(`/events/${contract.event_id}`)
+  return { success: true }
+}
+
+/**
+ * Mark a contract as signed (chef-side manual override).
+ * Records the current timestamp as signed_at.
+ */
+export async function markContractSigned(contractId: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: contract } = await supabase
+    .from('event_contracts')
+    .select('id, status, event_id')
+    .eq('id', contractId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (!contract) throw new Error('Contract not found')
+  if (contract.status === 'signed') throw new Error('Contract is already signed')
+  if (contract.status === 'voided') throw new Error('Cannot sign a voided contract')
+
+  const { error } = await supabase
+    .from('event_contracts')
+    .update({ status: 'signed', signed_at: new Date().toISOString() })
+    .eq('id', contractId)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) throw new Error('Failed to mark contract as signed')
+
+  revalidatePath('/contracts')
+  revalidatePath(`/events/${contract.event_id}`)
+  return { success: true }
+}
+
 /**
  * Get the active contract for an event (chef view).
  */

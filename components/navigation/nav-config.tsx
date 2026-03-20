@@ -62,6 +62,7 @@ import {
   Receipt,
   RefreshCw,
   Scales,
+  ScrollText,
   SealCheck,
   Settings,
   ShieldAlert,
@@ -129,6 +130,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/schedule', label: 'Calendar', icon: CalendarDays, coreFeature: true },
   { href: '/events', label: 'All Events', icon: CalendarCheck, coreFeature: true },
   { href: '/documents', label: 'Documents', icon: FileText, coreFeature: true },
+  { href: '/contracts', label: 'Contracts', icon: ScrollText },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed, coreFeature: true },
   { href: '/culinary/costing', label: 'Costing', icon: Calculator, coreFeature: true },
   { href: '/rate-card', label: 'Rate Card', icon: Coins },
@@ -209,6 +211,12 @@ export const navGroups: NavGroup[] = [
           { href: '/quotes/expired', label: 'Expired' },
           { href: '/quotes/rejected', label: 'Rejected' },
         ],
+      },
+      {
+        href: '/contracts',
+        label: 'Contracts',
+        icon: ScrollText,
+        children: [{ href: '/settings/contracts', label: 'Templates' }],
       },
       {
         href: '/leads',
