@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS event_collaborators (
 );
 
 -- Index for fast lookups by event
-CREATE INDEX idx_event_collaborators_event_id ON event_collaborators(event_id);
-CREATE INDEX idx_event_collaborators_chef_id ON event_collaborators(chef_id);
+CREATE INDEX IF NOT EXISTS idx_event_collaborators_event_id ON event_collaborators(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_collaborators_chef_id ON event_collaborators(chef_id);
 
 -- Enable RLS
 ALTER TABLE event_collaborators ENABLE ROW LEVEL SECURITY;

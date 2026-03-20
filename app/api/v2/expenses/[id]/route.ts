@@ -1,10 +1,18 @@
-// API v2: Expenses - Get and Update by ID
-// GET   /api/v2/expenses/:id
-// PATCH /api/v2/expenses/:id
+// API v2: Expenses - Get, Update & Delete by ID
+// GET    /api/v2/expenses/:id
+// PATCH  /api/v2/expenses/:id
+// DELETE /api/v2/expenses/:id
 
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
-import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
+import {
+  withApiAuth,
+  apiSuccess,
+  apiNoContent,
+  apiNotFound,
+  apiValidationError,
+  apiError,
+} from '@/lib/api/v2'
 
 const UpdateExpenseBody = z
   .object({
@@ -78,6 +86,37 @@ export const PATCH = withApiAuth(
     }
 
     return apiSuccess(data)
+  },
+  { scopes: ['finance:write'] }
+)
+
+export const DELETE = withApiAuth(
+  async (_req, ctx, params) => {
+    const id = params?.id
+    if (!id) return apiNotFound('Expense')
+
+    // Verify ownership before deleting
+    const { data: existing } = await ctx.supabase
+      .from('expenses')
+      .select('id')
+      .eq('id', id)
+      .eq('tenant_id', ctx.tenantId)
+      .single()
+
+    if (!existing) return apiNotFound('Expense')
+
+    const { error } = await ctx.supabase
+      .from('expenses')
+      .delete()
+      .eq('id', id)
+      .eq('tenant_id', ctx.tenantId)
+
+    if (error) {
+      console.error('[api/v2/expenses] Delete error:', error)
+      return apiError('delete_failed', 'Failed to delete expense', 500)
+    }
+
+    return apiNoContent()
   },
   { scopes: ['finance:write'] }
 )

@@ -1,10 +1,18 @@
-// API v2: Quotes - Get & Update by ID
-// GET   /api/v2/quotes/:id
-// PATCH /api/v2/quotes/:id
+// API v2: Quotes - Get, Update & Delete by ID
+// GET    /api/v2/quotes/:id
+// PATCH  /api/v2/quotes/:id
+// DELETE /api/v2/quotes/:id
 
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
-import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
+import {
+  withApiAuth,
+  apiSuccess,
+  apiNoContent,
+  apiNotFound,
+  apiValidationError,
+  apiError,
+} from '@/lib/api/v2'
 
 const UpdateQuoteBody = z
   .object({
@@ -82,6 +90,28 @@ export const PATCH = withApiAuth(
     }
 
     return apiSuccess(data)
+  },
+  { scopes: ['quotes:write'] }
+)
+
+export const DELETE = withApiAuth(
+  async (_req, ctx, params) => {
+    const id = params?.id
+    if (!id) return apiNotFound('Quote')
+
+    const { error } = await ctx.supabase
+      .from('quotes')
+      .update({ deleted_at: new Date().toISOString() } as any)
+      .eq('id', id)
+      .eq('tenant_id', ctx.tenantId)
+      .is('deleted_at', null)
+
+    if (error) {
+      console.error('[api/v2/quotes] Delete error:', error)
+      return apiError('delete_failed', 'Failed to delete quote', 500)
+    }
+
+    return apiNoContent()
   },
   { scopes: ['quotes:write'] }
 )

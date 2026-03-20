@@ -1,10 +1,18 @@
-// API v2: Inquiries - Get & Update by ID
-// GET   /api/v2/inquiries/:id
-// PATCH /api/v2/inquiries/:id
+// API v2: Inquiries - Get, Update & Delete by ID
+// GET    /api/v2/inquiries/:id
+// PATCH  /api/v2/inquiries/:id
+// DELETE /api/v2/inquiries/:id
 
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
-import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
+import {
+  withApiAuth,
+  apiSuccess,
+  apiNoContent,
+  apiNotFound,
+  apiValidationError,
+  apiError,
+} from '@/lib/api/v2'
 
 const UpdateInquiryBody = z
   .object({
@@ -72,6 +80,28 @@ export const PATCH = withApiAuth(
     }
 
     return apiSuccess(data)
+  },
+  { scopes: ['inquiries:write'] }
+)
+
+export const DELETE = withApiAuth(
+  async (_req, ctx, params) => {
+    const id = params?.id
+    if (!id) return apiNotFound('Inquiry')
+
+    const { error } = await ctx.supabase
+      .from('inquiries')
+      .update({ deleted_at: new Date().toISOString() } as any)
+      .eq('id', id)
+      .eq('tenant_id', ctx.tenantId)
+      .is('deleted_at', null)
+
+    if (error) {
+      console.error('[api/v2/inquiries] Delete error:', error)
+      return apiError('delete_failed', 'Failed to delete inquiry', 500)
+    }
+
+    return apiNoContent()
   },
   { scopes: ['inquiries:write'] }
 )
