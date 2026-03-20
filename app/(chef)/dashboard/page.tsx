@@ -16,6 +16,9 @@ import { ShortcutStrip } from '@/components/dashboard/shortcut-strip'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-card-shell'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
+import { AARPromptBanner } from '@/components/events/aar-prompt-banner'
+import UpcomingTouchpoints from '@/components/clients/upcoming-touchpoints'
+import { getUpcomingTouchpoints } from '@/lib/clients/touchpoint-actions'
 
 // New card-based sections
 import { ScheduleCards } from './_sections/schedule-cards'
@@ -185,6 +188,25 @@ async function PriorityQueueSection() {
   )
 }
 
+// Streamed touchpoints section (deferred behind Suspense)
+async function TouchpointsSection() {
+  const touchpoints = await safe('touchpoints', getUpcomingTouchpoints, [])
+  if (touchpoints.length === 0) return null
+  return (
+    <div className="col-span-1 sm:col-span-2">
+      <UpcomingTouchpoints initialTouchpoints={touchpoints} />
+    </div>
+  )
+}
+
+function TouchpointsSkeleton() {
+  return (
+    <div className="col-span-1 sm:col-span-2">
+      <WidgetCardSkeleton size="md" />
+    </div>
+  )
+}
+
 function PriorityQueueSkeleton() {
   return (
     <>
@@ -289,6 +311,22 @@ export default async function ChefDashboard() {
       <WidgetErrorBoundary name="Priority Queue" compact>
         <Suspense fallback={<PriorityQueueSkeleton />}>
           <PriorityQueueSection />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      {/* ============================================ */}
+      {/* AAR PROMPT BANNER (completed events needing review) */}
+      {/* ============================================ */}
+      <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+        <AARPromptBanner tenantId={user.tenantId!} />
+      </div>
+
+      {/* ============================================ */}
+      {/* UPCOMING TOUCHPOINTS (streamed, non-blocking) */}
+      {/* ============================================ */}
+      <WidgetErrorBoundary name="Upcoming Touchpoints" compact>
+        <Suspense fallback={<TouchpointsSkeleton />}>
+          <TouchpointsSection />
         </Suspense>
       </WidgetErrorBoundary>
 
