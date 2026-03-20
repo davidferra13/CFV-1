@@ -62,6 +62,7 @@ import {
   Receipt,
   RefreshCw,
   Scales,
+  ScrollText,
   SealCheck,
   Settings,
   ShieldAlert,
@@ -129,6 +130,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/schedule', label: 'Calendar', icon: CalendarDays, coreFeature: true },
   { href: '/events', label: 'All Events', icon: CalendarCheck, coreFeature: true },
   { href: '/documents', label: 'Documents', icon: FileText, coreFeature: true },
+  { href: '/contracts', label: 'Contracts', icon: ScrollText },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed, coreFeature: true },
   // Items below are accessible via nav groups or command palette (Ctrl+K).
   // They're excluded from the top-level sidebar to reduce clutter.
@@ -214,6 +216,14 @@ export const navGroups: NavGroup[] = [
           { href: '/proposals/builder', label: 'Proposal Builder' },
           { href: '/proposals/templates', label: 'Templates' },
           { href: '/proposals/addons', label: 'Add-Ons' },
+        ],
+      },
+      {
+        href: '/contracts',
+        label: 'Contracts',
+        icon: ScrollText,
+        children: [
+          { href: '/settings/contracts', label: 'Templates' },
         ],
       },
       {
