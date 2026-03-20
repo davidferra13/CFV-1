@@ -8,7 +8,7 @@ import { createServerClient } from '@/lib/supabase/server'
 export async function getRecipePrintData(recipeId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: recipe, error: recipeError } = await supabase
     .from('recipes')
@@ -42,12 +42,14 @@ export async function getRecipePrintData(recipeId: string) {
 export async function getGroceryListPrintData(eventId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with client info
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select('id, event_date, serve_time, guest_count, occasion, location_address, location_city, location_state, client_id, menu_id, dietary_restrictions, allergies, clients(full_name)')
+    .select(
+      'id, event_date, serve_time, guest_count, occasion, location_address, location_city, location_state, client_id, menu_id, dietary_restrictions, allergies, clients(full_name)'
+    )
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
     .single()
@@ -80,7 +82,7 @@ export async function getGroceryListPrintData(eventId: string) {
     if (dishes && dishes.length > 0) {
       // For each dish, try to find a matching recipe and its ingredients
       // Dishes link to menus, recipes are separate. We look up recipes by name match.
-      const dishNames = dishes.map(d => d.name).filter(Boolean) as string[]
+      const dishNames = dishes.map((d: any) => d.name).filter(Boolean) as string[]
 
       if (dishNames.length > 0) {
         const { data: recipes } = await supabase
@@ -90,20 +92,24 @@ export async function getGroceryListPrintData(eventId: string) {
           .in('name', dishNames)
 
         if (recipes && recipes.length > 0) {
-          const recipeIds = recipes.map(r => r.id)
+          const recipeIds = recipes.map((r: any) => r.id)
 
           const { data: recipeIngredients } = await supabase
             .from('recipe_ingredients')
-            .select('quantity, unit, is_optional, preparation_notes, recipe_id, ingredients(name, category)')
+            .select(
+              'quantity, unit, is_optional, preparation_notes, recipe_id, ingredients(name, category)'
+            )
             .in('recipe_id', recipeIds)
             .order('sort_order', { ascending: true })
 
           if (recipeIngredients) {
-            const recipeNameMap = new Map(recipes.map(r => [r.id, r.name]))
+            const recipeNameMap = new Map(recipes.map((r: any) => [r.id, r.name]))
 
-            groceryItems = recipeIngredients.map(ri => ({
-              ingredientName: (ri.ingredients as { name: string; category: string } | null)?.name || 'Unknown',
-              category: (ri.ingredients as { name: string; category: string } | null)?.category || 'other',
+            groceryItems = recipeIngredients.map((ri: any) => ({
+              ingredientName:
+                (ri.ingredients as { name: string; category: string } | null)?.name || 'Unknown',
+              category:
+                (ri.ingredients as { name: string; category: string } | null)?.category || 'other',
               quantity: ri.quantity,
               unit: ri.unit,
               recipeName: recipeNameMap.get(ri.recipe_id) || 'Unknown',
@@ -117,15 +123,18 @@ export async function getGroceryListPrintData(eventId: string) {
   }
 
   // Consolidate: group by ingredient name + unit, sum quantities
-  const consolidated = new Map<string, {
-    ingredientName: string
-    category: string
-    totalQuantity: number
-    unit: string
-    recipes: string[]
-    isOptional: boolean
-    preparationNotes: string | null
-  }>()
+  const consolidated = new Map<
+    string,
+    {
+      ingredientName: string
+      category: string
+      totalQuantity: number
+      unit: string
+      recipes: string[]
+      isOptional: boolean
+      preparationNotes: string | null
+    }
+  >()
 
   for (const item of groceryItems) {
     const key = `${item.ingredientName}__${item.unit}`
@@ -192,7 +201,7 @@ export async function getGroceryListPrintData(eventId: string) {
 export async function getMenuPrintData(menuId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: menu, error: menuError } = await supabase
     .from('menus')
@@ -246,11 +255,12 @@ export async function getMenuPrintData(menuId: string) {
 export async function getEventBriefPrintData(eventId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, event_date, serve_time, arrival_time, departure_time,
       guest_count, occasion, service_style,
       location_address, location_city, location_state, location_zip,
@@ -258,7 +268,8 @@ export async function getEventBriefPrintData(eventId: string) {
       special_requests, dietary_restrictions, allergies,
       menu_id, client_id, status,
       clients(full_name, phone, email, allergies, dietary_restrictions, equipment_available, kitchen_constraints, parking_instructions, house_rules)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
     .single()
@@ -268,7 +279,12 @@ export async function getEventBriefPrintData(eventId: string) {
   }
 
   // Get menu dishes if menu exists
-  let menuDishes: { name: string | null; courseName: string; dietaryTags: string[]; allergenFlags: string[] }[] = []
+  let menuDishes: {
+    name: string | null
+    courseName: string
+    dietaryTags: string[]
+    allergenFlags: string[]
+  }[] = []
   if (event.menu_id) {
     const { data: dishes } = await supabase
       .from('dishes')
@@ -279,7 +295,7 @@ export async function getEventBriefPrintData(eventId: string) {
       .order('sort_order', { ascending: true })
 
     if (dishes) {
-      menuDishes = dishes.map(d => ({
+      menuDishes = dishes.map((d: any) => ({
         name: d.name,
         courseName: d.course_name,
         dietaryTags: d.dietary_tags,
@@ -323,17 +339,19 @@ export async function getEventBriefPrintData(eventId: string) {
       allergies: event.allergies,
       status: event.status,
     },
-    client: client ? {
-      fullName: client.full_name,
-      phone: client.phone,
-      email: client.email,
-      allergies: client.allergies,
-      dietaryRestrictions: client.dietary_restrictions,
-      equipmentAvailable: client.equipment_available,
-      kitchenConstraints: client.kitchen_constraints,
-      parkingInstructions: client.parking_instructions,
-      houseRules: client.house_rules,
-    } : null,
+    client: client
+      ? {
+          fullName: client.full_name,
+          phone: client.phone,
+          email: client.email,
+          allergies: client.allergies,
+          dietaryRestrictions: client.dietary_restrictions,
+          equipmentAvailable: client.equipment_available,
+          kitchenConstraints: client.kitchen_constraints,
+          parkingInstructions: client.parking_instructions,
+          houseRules: client.house_rules,
+        }
+      : null,
     menuDishes,
   }
 }

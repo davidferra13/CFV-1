@@ -52,7 +52,7 @@ export async function recordPlatformSpend(input: {
   const data = parsed.data
 
   try {
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const { error } = await supabase.from('marketing_spend_log').insert({
       chef_id: user.tenantId!,
       spend_date: data.spendDate,
@@ -79,7 +79,7 @@ export async function getPlatformCPL(): Promise<PlatformCPLData[]> {
   const tenantId = user.tenantId!
 
   try {
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     // Query 1: Spend by channel
     const { data: spendRows, error: spendErr } = await supabase

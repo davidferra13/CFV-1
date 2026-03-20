@@ -20,11 +20,7 @@ export type StoreType =
   | 'online'
   | 'other'
 
-export type AssignmentReason =
-  | 'best_price'
-  | 'best_quality'
-  | 'only_source'
-  | 'convenience'
+export type AssignmentReason = 'best_price' | 'best_quality' | 'only_source' | 'convenience'
 
 export type PreferredStore = {
   id: string
@@ -64,7 +60,7 @@ export type StoreSplit = {
 
 export async function getPreferredStores(): Promise<PreferredStore[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('chef_preferred_stores')
@@ -86,7 +82,7 @@ export async function addPreferredStore(input: {
   sort_order?: number
 }): Promise<PreferredStore> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If setting as default, unset other defaults first
   if (input.is_default) {
@@ -128,7 +124,7 @@ export async function updatePreferredStore(
   }
 ): Promise<PreferredStore> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If setting as default, unset other defaults first
   if (input.is_default) {
@@ -162,7 +158,7 @@ export async function updatePreferredStore(
 
 export async function deletePreferredStore(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await (supabase as any)
     .from('chef_preferred_stores')
@@ -184,7 +180,7 @@ export async function assignItemToStore(
   reason?: AssignmentReason
 ): Promise<StoreAssignment> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const normalizedKeyword = keyword.trim().toLowerCase()
 
@@ -211,7 +207,7 @@ export async function getStoreAssignments(): Promise<
   (StoreAssignment & { store: PreferredStore })[]
 > {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('store_item_assignments')
@@ -225,7 +221,7 @@ export async function getStoreAssignments(): Promise<
 
 export async function deleteStoreAssignment(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await (supabase as any)
     .from('store_item_assignments')
@@ -237,11 +233,9 @@ export async function deleteStoreAssignment(id: string): Promise<void> {
   revalidatePath('/culinary/grocery')
 }
 
-export async function getStoreShoppingList(
-  storeId: string
-): Promise<StoreAssignment[]> {
+export async function getStoreShoppingList(storeId: string): Promise<StoreAssignment[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('store_item_assignments')
@@ -258,7 +252,7 @@ export async function bulkAssignItems(
   assignments: { keyword: string; storeId: string; reason?: AssignmentReason }[]
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const rows = assignments.map((a) => ({
     chef_id: user.tenantId!,
@@ -288,7 +282,7 @@ export async function splitListByStore(
   items: GroceryItem[]
 ): Promise<{ splits: StoreSplit[]; unassigned: GroceryItem[] }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch stores and assignments in parallel
   const [storesResult, assignmentsResult] = await Promise.all([
@@ -297,10 +291,7 @@ export async function splitListByStore(
       .select('*')
       .eq('chef_id', user.tenantId!)
       .order('sort_order', { ascending: true }),
-    (supabase as any)
-      .from('store_item_assignments')
-      .select('*')
-      .eq('chef_id', user.tenantId!),
+    (supabase as any).from('store_item_assignments').select('*').eq('chef_id', user.tenantId!),
   ])
 
   if (storesResult.error) throw new Error(storesResult.error.message)

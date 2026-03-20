@@ -42,7 +42,7 @@ function getRecommendation(tier: 'hot' | 'warm' | 'cold', score: number): string
 
 export async function scoreInquiry(inquiryId: string): Promise<LeadScore> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the inquiry and its related data
   const { data: inquiry, error } = await supabase

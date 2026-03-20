@@ -18,7 +18,7 @@ export type MenuRevision = {
 
 export async function getRevisionHistory(menuId: string, eventId: string): Promise<MenuRevision[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_revisions')
@@ -41,7 +41,7 @@ export async function compareRevisions(
   revisionBId: string
 ): Promise<{ added: any[]; removed: any[]; modified: any[] } | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: revisions } = await supabase
     .from('menu_revisions')

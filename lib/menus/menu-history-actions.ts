@@ -56,7 +56,7 @@ export async function getClientMenuHistory(
   clientId: string
 ): Promise<{ data: MenuHistoryEntry[]; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_service_history')
@@ -80,7 +80,7 @@ export async function addMenuHistoryEntry(
   input: AddMenuHistoryInput
 ): Promise<{ data: MenuHistoryEntry | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_service_history')
@@ -115,7 +115,7 @@ export async function autoLogMenuFromEvent(
   eventId: string
 ): Promise<{ data: MenuHistoryEntry | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with client info
   const { data: event, error: eventError } = await supabase
@@ -148,7 +148,7 @@ export async function autoLogMenuFromEvent(
     .select('name, category')
     .eq('event_id', eventId)
 
-  const dishes: DishEntry[] = (menuItems ?? []).map((item) => ({
+  const dishes: DishEntry[] = (menuItems ?? []).map((item: any) => ({
     name: item.name,
     category: item.category ?? undefined,
   }))
@@ -183,11 +183,12 @@ export async function updateMenuFeedback(
   feedback: FeedbackInput
 ): Promise<{ success: boolean; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updateFields: Record<string, unknown> = {}
   if (feedback.overall_rating !== undefined) updateFields.overall_rating = feedback.overall_rating
-  if (feedback.client_feedback !== undefined) updateFields.client_feedback = feedback.client_feedback
+  if (feedback.client_feedback !== undefined)
+    updateFields.client_feedback = feedback.client_feedback
   if (feedback.chef_notes !== undefined) updateFields.chef_notes = feedback.chef_notes
   if (feedback.dishes_served !== undefined) updateFields.dishes_served = feedback.dishes_served
 
@@ -217,7 +218,7 @@ export async function getDishFrequency(
   clientId: string
 ): Promise<{ data: { name: string; count: number; lastServed: string }[]; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: entries, error } = await supabase
     .from('menu_service_history')
@@ -259,9 +260,12 @@ export async function getDishFrequency(
  */
 export async function getNeverServedDishes(
   clientId: string
-): Promise<{ data: { id: string; name: string; category: string | null }[]; error: string | null }> {
+): Promise<{
+  data: { id: string; name: string; category: string | null }[]
+  error: string | null
+}> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all chef's recipes
   const { data: recipes, error: recipeError } = await supabase
@@ -297,8 +301,8 @@ export async function getNeverServedDishes(
 
   // Filter recipes not in served set
   const neverServed = (recipes ?? [])
-    .filter((r) => !servedNames.has(r.name.toLowerCase()))
-    .map((r) => ({ id: r.id, name: r.name, category: r.category ?? null }))
+    .filter((r: any) => !servedNames.has(r.name.toLowerCase()))
+    .map((r: any) => ({ id: r.id, name: r.name, category: r.category ?? null }))
 
   return { data: neverServed, error: null }
 }
@@ -306,9 +310,7 @@ export async function getNeverServedDishes(
 /**
  * Get aggregate menu history stats, optionally filtered to a single client.
  */
-export async function getMenuHistoryStats(
-  clientId?: string
-): Promise<{
+export async function getMenuHistoryStats(clientId?: string): Promise<{
   data: {
     totalEvents: number
     uniqueDishes: number
@@ -319,7 +321,7 @@ export async function getMenuHistoryStats(
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('menu_service_history')
@@ -356,8 +358,11 @@ export async function getMenuHistoryStats(
   }
 
   // Average rating (only from entries that have a rating)
-  const ratings = rows.map((r) => r.overall_rating).filter((r): r is number => r !== null)
-  const avgRating = ratings.length > 0 ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10 : null
+  const ratings = rows.map((r: any) => r.overall_rating).filter((r: any): r is number => r !== null)
+  const avgRating =
+    ratings.length > 0
+      ? Math.round((ratings.reduce((a: any, b: any) => a + b, 0) / ratings.length) * 10) / 10
+      : null
 
   // Sort for most/least served
   const sorted = Array.from(freq.entries())
@@ -386,7 +391,7 @@ export async function searchMenuHistory(
   query: string
 ): Promise<{ data: MenuHistoryEntry[]; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!query.trim()) {
     return { data: [], error: null }
@@ -405,9 +410,9 @@ export async function searchMenuHistory(
   }
 
   const lowerQuery = query.toLowerCase()
-  const filtered = (entries ?? []).filter((entry) => {
+  const filtered = (entries ?? []).filter((entry: any) => {
     const dishes = (entry.dishes_served as DishEntry[]) ?? []
-    return dishes.some((d) => d.name.toLowerCase().includes(lowerQuery))
+    return dishes.some((d: any) => d.name.toLowerCase().includes(lowerQuery))
   })
 
   return { data: filtered as MenuHistoryEntry[], error: null }

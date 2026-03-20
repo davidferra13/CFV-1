@@ -33,7 +33,7 @@ export async function getMilestones(eventId: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('payment_milestones')
@@ -64,7 +64,7 @@ export async function createMilestone(input: {
   notes?: string
 }): Promise<{ data: PaymentMilestone | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (input.amount_cents < 0) {
     return { data: null, error: 'Amount cannot be negative' }
@@ -98,7 +98,7 @@ export async function markMilestonePaid(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('payment_milestones')
@@ -133,7 +133,7 @@ export async function updateMilestone(
   }
 ): Promise<{ data: PaymentMilestone | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (input.amount_cents !== undefined && input.amount_cents < 0) {
     return { data: null, error: 'Amount cannot be negative' }
@@ -170,7 +170,7 @@ export async function sendMilestoneReminder(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get the milestone to verify ownership and get event details
   const { data: milestone, error: fetchError } = await supabase

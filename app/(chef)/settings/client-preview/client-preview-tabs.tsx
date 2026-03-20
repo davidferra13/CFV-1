@@ -202,7 +202,7 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
       {activeTab === 'public' ? (
         <PublicProfilePreview
           slug={slug}
-          publicProfileData={publicProfileData}
+          publicProfileData={publicProfileData as any}
           deviceFrame={deviceFrame}
         />
       ) : (

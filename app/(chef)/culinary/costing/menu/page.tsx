@@ -39,7 +39,7 @@ export default async function MenuCostPage() {
     )
   }
 
-  const { menus, components, recipes } = result.data
+  const { menus, components, recipes } = result.data!
 
   // Build recipe cost lookup
   const recipeCostMap = new Map<string, number>()

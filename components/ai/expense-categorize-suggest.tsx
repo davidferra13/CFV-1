@@ -58,7 +58,7 @@ export function ExpenseCategorizeSuggest({ description, amountCents, onAccept }:
 
   if (!result) return null
 
-  const label = EXPENSE_CATEGORY_LABELS[result.category]
+  const label = EXPENSE_CATEGORY_LABELS[result.category as ExpenseCategory]
   const confidenceColor =
     result.confidence === 'high'
       ? 'text-green-700 bg-green-950 border-green-200'
@@ -71,7 +71,7 @@ export function ExpenseCategorizeSuggest({ description, amountCents, onAccept }:
       <Sparkles className="w-3 h-3 text-brand-500" />
       <span className="text-xs-tight text-stone-500">Suggested:</span>
       <button
-        onClick={() => onAccept(result.category)}
+        onClick={() => onAccept(result.category as ExpenseCategory)}
         className={`text-xs-tight px-2 py-0.5 rounded border font-medium ${confidenceColor} hover:opacity-80 transition-opacity`}
         title={result.reasoning}
       >
@@ -79,11 +79,11 @@ export function ExpenseCategorizeSuggest({ description, amountCents, onAccept }:
       </button>
       {result.alternativeCategory && (
         <button
-          onClick={() => onAccept(result.alternativeCategory!)}
+          onClick={() => onAccept(result.alternativeCategory as ExpenseCategory)}
           className="text-xs-tight text-stone-400 hover:text-stone-400"
           title="Alternative suggestion"
         >
-          or {EXPENSE_CATEGORY_LABELS[result.alternativeCategory]}
+          or {EXPENSE_CATEGORY_LABELS[result.alternativeCategory as ExpenseCategory]}
         </button>
       )}
     </div>

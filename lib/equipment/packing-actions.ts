@@ -7,8 +7,16 @@ import { revalidatePath } from 'next/cache'
 // ─── Types ───
 
 export type EquipmentCategory =
-  | 'cookware' | 'bakeware' | 'knives' | 'utensils' | 'appliances'
-  | 'serving' | 'transport' | 'cleaning' | 'specialty' | 'other'
+  | 'cookware'
+  | 'bakeware'
+  | 'knives'
+  | 'utensils'
+  | 'appliances'
+  | 'serving'
+  | 'transport'
+  | 'cleaning'
+  | 'specialty'
+  | 'other'
 
 export interface Equipment {
   id: string
@@ -42,15 +50,23 @@ export interface PackingChecklistItem {
 }
 
 const VALID_CATEGORIES: EquipmentCategory[] = [
-  'cookware', 'bakeware', 'knives', 'utensils', 'appliances',
-  'serving', 'transport', 'cleaning', 'specialty', 'other',
+  'cookware',
+  'bakeware',
+  'knives',
+  'utensils',
+  'appliances',
+  'serving',
+  'transport',
+  'cleaning',
+  'specialty',
+  'other',
 ]
 
 // ─── Chef Equipment CRUD ───
 
 export async function getChefEquipment(): Promise<Equipment[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const { data, error } = await supabase
@@ -71,7 +87,7 @@ export async function addEquipment(input: {
   notes?: string
 }): Promise<Equipment> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   if (!input.name?.trim()) throw new Error('Equipment name is required')
@@ -103,7 +119,7 @@ export async function updateEquipment(
   input: { name?: string; category?: EquipmentCategory; quantity?: number; notes?: string }
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   if (input.category && !VALID_CATEGORIES.includes(input.category)) {
@@ -132,7 +148,7 @@ export async function updateEquipment(
 
 export async function deleteEquipment(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const { error } = await supabase
@@ -149,7 +165,7 @@ export async function deleteEquipment(id: string): Promise<void> {
 
 export async function getClientKitchenGaps(clientId: string): Promise<Equipment[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Get all chef equipment
@@ -169,9 +185,11 @@ export async function getClientKitchenGaps(clientId: string): Promise<Equipment[
 
 // ─── Packing Checklist Generation ───
 
-export async function generatePackingChecklist(eventId: string): Promise<PackingChecklist & { items: PackingChecklistItem[] }> {
+export async function generatePackingChecklist(
+  eventId: string
+): Promise<PackingChecklist & { items: PackingChecklistItem[] }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Check for existing checklist for this event
@@ -227,8 +245,16 @@ export async function generatePackingChecklist(eventId: string): Promise<Packing
   // For now, include all chef equipment. When client kitchen inventory exists,
   // this will filter to only items the client doesn't have.
   const categoryOrder: Record<string, number> = {
-    knives: 0, cookware: 1, bakeware: 2, appliances: 3, utensils: 4,
-    serving: 5, transport: 6, cleaning: 7, specialty: 8, other: 9,
+    knives: 0,
+    cookware: 1,
+    bakeware: 2,
+    appliances: 3,
+    utensils: 4,
+    serving: 5,
+    transport: 6,
+    cleaning: 7,
+    specialty: 8,
+    other: 9,
   }
 
   const items = allEquipment.map((eq, idx) => ({
@@ -243,9 +269,7 @@ export async function generatePackingChecklist(eventId: string): Promise<Packing
   }))
 
   if (items.length > 0) {
-    const { error: itemsErr } = await supabase
-      .from('packing_checklist_items')
-      .insert(items)
+    const { error: itemsErr } = await supabase.from('packing_checklist_items').insert(items)
 
     if (itemsErr) throw new Error(`Failed to create checklist items: ${itemsErr.message}`)
   }
@@ -256,9 +280,11 @@ export async function generatePackingChecklist(eventId: string): Promise<Packing
 
 // ─── Checklist Read ───
 
-export async function getPackingChecklist(checklistId: string): Promise<PackingChecklist & { items: PackingChecklistItem[] }> {
+export async function getPackingChecklist(
+  checklistId: string
+): Promise<PackingChecklist & { items: PackingChecklistItem[] }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const { data: checklist, error: clErr } = await supabase
@@ -284,9 +310,11 @@ export async function getPackingChecklist(checklistId: string): Promise<PackingC
   }
 }
 
-export async function getEventChecklist(eventId: string): Promise<(PackingChecklist & { items: PackingChecklistItem[] }) | null> {
+export async function getEventChecklist(
+  eventId: string
+): Promise<(PackingChecklist & { items: PackingChecklistItem[] }) | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const { data: checklist } = await supabase
@@ -314,7 +342,7 @@ export async function getEventChecklist(eventId: string): Promise<(PackingCheckl
 
 export async function toggleItemPacked(itemId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Verify ownership through checklist
@@ -346,7 +374,7 @@ export async function toggleItemPacked(itemId: string): Promise<void> {
 
 export async function toggleItemReturned(itemId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const { data: item } = await supabase
@@ -379,7 +407,7 @@ export async function addChecklistItem(
   input: { item_name: string; category?: string; notes?: string }
 ): Promise<PackingChecklistItem> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   if (!input.item_name?.trim()) throw new Error('Item name is required')
@@ -423,7 +451,7 @@ export async function addChecklistItem(
 
 export async function removeChecklistItem(itemId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Verify ownership
@@ -444,19 +472,18 @@ export async function removeChecklistItem(itemId: string): Promise<void> {
 
   if (!checklist) throw new Error('Unauthorized')
 
-  const { error } = await supabase
-    .from('packing_checklist_items')
-    .delete()
-    .eq('id', itemId)
+  const { error } = await supabase.from('packing_checklist_items').delete().eq('id', itemId)
 
   if (error) throw new Error(`Failed to remove item: ${error.message}`)
 }
 
 // ─── History ───
 
-export async function getPackingHistory(): Promise<(PackingChecklist & { item_count: number; packed_count: number })[]> {
+export async function getPackingHistory(): Promise<
+  (PackingChecklist & { item_count: number; packed_count: number })[]
+> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const { data: checklists, error } = await supabase
@@ -469,7 +496,7 @@ export async function getPackingHistory(): Promise<(PackingChecklist & { item_co
 
   // Get item counts for each checklist
   const results = await Promise.all(
-    (checklists ?? []).map(async (cl) => {
+    (checklists ?? []).map(async (cl: any) => {
       const { data: items } = await supabase
         .from('packing_checklist_items')
         .select('is_packed')
@@ -479,7 +506,7 @@ export async function getPackingHistory(): Promise<(PackingChecklist & { item_co
       return {
         ...(cl as PackingChecklist),
         item_count: allItems.length,
-        packed_count: allItems.filter((i) => i.is_packed).length,
+        packed_count: allItems.filter((i: any) => i.is_packed).length,
       }
     })
   )

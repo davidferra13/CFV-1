@@ -44,7 +44,7 @@ export async function schedulePostEventFollowUp(
   eventId: string,
   tenantId: string
 ): Promise<{ scheduled: number; error?: string }> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Get event + client info
   const { data: event, error: eventError } = await supabase
@@ -94,7 +94,7 @@ export async function schedulePostEventFollowUp(
 
   if (rules && rules.length > 0) {
     // Use chef's custom rules
-    rules.forEach((rule, index) => {
+    rules.forEach((rule: any, index: number) => {
       const scheduledFor = new Date(now)
       scheduledFor.setDate(scheduledFor.getDate() + rule.delay_days)
       sends.push({
@@ -145,7 +145,7 @@ export async function cancelFollowUpSends(
   clientId: string,
   tenantId: string
 ): Promise<{ cancelled: number }> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data: pending } = await supabase
     .from('follow_up_sends')
@@ -158,7 +158,7 @@ export async function cancelFollowUpSends(
     return { cancelled: 0 }
   }
 
-  const ids = pending.map((s) => s.id)
+  const ids = pending.map((s: any) => s.id)
 
   const { error } = await supabase
     .from('follow_up_sends')
@@ -183,7 +183,7 @@ export async function cancelFollowUpSends(
  * Get the next batch of pending sends that are ready to go.
  */
 export async function getNextPendingSends(limit = 50): Promise<FollowUpSend[]> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('follow_up_sends')
@@ -216,7 +216,7 @@ function getCurrentSeason(): string {
  * Process a single pending follow-up send: fetch context, render email, send it, update status.
  */
 export async function processPendingSend(sendId: string): Promise<boolean> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Fetch the send record with event and client info
   const { data: send, error: sendError } = await supabase

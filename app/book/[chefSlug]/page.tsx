@@ -25,7 +25,7 @@ type ChefPublicProfile = {
 
 const getChefForBooking = unstable_cache(
   async (slug: string): Promise<ChefPublicProfile | null> => {
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     const { data } = await supabase
       .from('chefs')

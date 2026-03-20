@@ -63,7 +63,7 @@ export async function notifyCircleMembers(input: {
   messageBody: string
 }): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
+    const supabase: any = createServerClient({ admin: true })
 
     // Load group info + members + author in parallel
     const [groupResult, membersResult, authorResult] = await Promise.all([
@@ -160,7 +160,7 @@ export async function notifyCircleMembers(input: {
                     })
 
                     // Update last_notified_at
-                    const supa = createServerClient({ admin: true })
+                    const supa: any = createServerClient({ admin: true })
                     await supa
                       .from('hub_group_members')
                       .update({ last_notified_at: new Date().toISOString() })
@@ -221,7 +221,7 @@ export async function notifyFriendRequest(input: {
   addresseeProfileId: string
 }): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
+    const supabase: any = createServerClient({ admin: true })
 
     const [requesterResult, addresseeResult] = await Promise.all([
       supabase

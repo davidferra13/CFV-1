@@ -31,7 +31,7 @@ function StatusBadge({ status }: { status: string }) {
 function ListingRow({ listing }: { listing: DirectoryListing }) {
   const [isPending, startTransition] = useTransition()
   const location = [listing.city, listing.state].filter(Boolean).join(', ')
-  const hasRemovalRequest = !!listing.removal_requested_at
+  const hasRemovalRequest = !!(listing as any).removal_requested_at
 
   function handleStatusChange(newStatus: string) {
     startTransition(async () => {
@@ -86,7 +86,7 @@ function ListingRow({ listing }: { listing: DirectoryListing }) {
       </td>
       <td className="px-3 py-3 text-xs text-stone-500">{listing.source}</td>
       <td className="px-3 py-3 text-xs text-stone-500">
-        {listing.claimed_by_name || listing.claimed_by_email || '-'}
+        {listing.claimed_by_name || (listing as any).claimed_by_email || '-'}
       </td>
       <td className="px-3 py-3">
         <div className="flex gap-1">
@@ -142,14 +142,16 @@ export function ListingManagementTable({ listings }: Props) {
         (l) =>
           l.name.toLowerCase().includes(q) ||
           l.city?.toLowerCase().includes(q) ||
-          l.claimed_by_email?.toLowerCase().includes(q)
+          (l as any).claimed_by_email?.toLowerCase().includes(q)
       )
     }
 
     return result
   }, [listings, filter, search])
 
-  const removalRequests = listings.filter((l) => l.removal_requested_at && l.status !== 'removed')
+  const removalRequests = listings.filter(
+    (l) => (l as any).removal_requested_at && l.status !== 'removed'
+  )
 
   return (
     <div className="space-y-4">

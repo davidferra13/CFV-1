@@ -36,7 +36,7 @@ export async function getMenuRecommendations(params: {
   limit?: number
 }): Promise<MenuRecommendationResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const allergies = params.allergies ?? []
   const limit = params.limit ?? 20
@@ -55,7 +55,7 @@ export async function getMenuRecommendations(params: {
   }
 
   // Fetch allergen flags for required ingredients (allergen_flags lives on ingredients table)
-  const recipeIds = recipes.map((r) => r.id)
+  const recipeIds = recipes.map((r: any) => r.id)
   const { data: recipeIngredients } = await supabase
     .from('recipe_ingredients')
     .select('recipe_id, ingredient:ingredients(allergen_flags)')
@@ -77,7 +77,7 @@ export async function getMenuRecommendations(params: {
 
   // Hard filter by allergens
   let filteredOutCount = 0
-  const safeRecipes = recipes.filter((r) => {
+  const safeRecipes = recipes.filter((r: any) => {
     if (eventAllergens.size === 0) return true
     const recipeAllergens = allergenMap.get(r.id) ?? new Set()
     const conflict = [...eventAllergens].some((a) => recipeAllergens.has(a))
@@ -96,7 +96,7 @@ export async function getMenuRecommendations(params: {
   const now = Date.now()
   const recentMs = RECENT_DAYS * 86_400_000
 
-  const scored = safeRecipes.map((r) => {
+  const scored = safeRecipes.map((r: any) => {
     const isPopular = (r.times_cooked ?? 0) >= POPULAR_THRESHOLD
     const isRecent = r.last_cooked_at
       ? now - new Date(r.last_cooked_at).getTime() < recentMs
@@ -109,9 +109,11 @@ export async function getMenuRecommendations(params: {
     return { ...r, score, reason }
   })
 
-  scored.sort((a, b) => b.score - a.score || (b.times_cooked ?? 0) - (a.times_cooked ?? 0))
+  scored.sort(
+    (a: any, b: any) => b.score - a.score || (b.times_cooked ?? 0) - (a.times_cooked ?? 0)
+  )
 
-  const hints: RecipeHint[] = scored.slice(0, limit).map((r) => ({
+  const hints: RecipeHint[] = scored.slice(0, limit).map((r: any) => ({
     id: r.id,
     name: r.name,
     category: r.category ?? 'other',

@@ -1233,7 +1233,7 @@ export async function getMenuIngredientStock(menuId: string): Promise<MenuIngred
 
     results.push({
       ingredientId,
-      ingredientName: nameMap.get(ingredientId) || 'Unknown',
+      ingredientName: (nameMap.get(ingredientId) as string) || 'Unknown',
       neededQuantity: Math.round(need.quantity * 100) / 100,
       neededUnit: need.unit,
       onHandQuantity: Math.round(onHandQty * 100) / 100,
@@ -1350,7 +1350,7 @@ export async function validateMenuAllergens(menuId: string): Promise<{
     const ingrIds = [...new Set((recipeIngrs || []).map((ri: any) => ri.ingredient_id))]
     const { data: ingrs } = await supabase.from('ingredients').select('id, name').in('id', ingrIds)
 
-    const ingrNameMap = new Map((ingrs || []).map((i: any) => [i.id, i.name]))
+    const ingrNameMap = new Map<string, string>((ingrs || []).map((i: any) => [i.id, i.name]))
     const recipeIngrMap = new Map<string, string[]>()
     for (const ri of (recipeIngrs || []) as any[]) {
       const name = ingrNameMap.get(ri.ingredient_id)
@@ -1736,8 +1736,8 @@ async function _getMenuSeasonalWarningsInner(
   const warnings: SeasonalIngredientWarning[] = []
   const seen = new Set<string>()
 
-  for (const ri of recipeIngredients) {
-    const ingName = ingredientMap.get(ri.ingredient_id)
+  for (const ri of recipeIngredients as any[]) {
+    const ingName = ingredientMap.get(ri.ingredient_id) as string | undefined
     if (!ingName) continue
 
     const ingLower = ingName.toLowerCase()
@@ -1754,7 +1754,7 @@ async function _getMenuSeasonalWarningsInner(
 
           warnings.push({
             ingredientName: ingName,
-            dishName: dishMap.get(dishId) || 'Unknown dish',
+            dishName: (dishMap.get(dishId) as string) || 'Unknown dish',
             eventMonth,
             seasonLabel: seasonal.seasonLabel,
             note: `${ingName} is typically available in ${data.label}, not ${seasonal.seasonLabel}. Expect higher cost or limited availability.`,
@@ -2101,7 +2101,7 @@ export async function getMenuVendorHints(menuId: string): Promise<MenuVendorHint
   if (!vendorPrices?.length) return []
 
   const hints: MenuVendorHint[] = []
-  const ingredientMap = new Map(
+  const ingredientMap = new Map<string, { name: string; price: number | null }>(
     ingredients.map((i: any) => [i.id, { name: i.name, price: i.last_price_cents }])
   )
 
@@ -2305,14 +2305,14 @@ export async function detectMenuDietaryConflicts(
   const conflicts: DietaryConflict[] = []
   const seen = new Set<string>()
 
-  for (const ri of recipeIngredients) {
-    const ingName = ingredientMap.get(ri.ingredient_id)
+  for (const ri of recipeIngredients as any[]) {
+    const ingName = ingredientMap.get(ri.ingredient_id) as string | undefined
     if (!ingName) continue
 
     const ingLower = ingName.toLowerCase()
 
     for (const disliked of dislikedSet) {
-      if (ingLower.includes(disliked) || disliked.includes(ingLower)) {
+      if (ingLower.includes(disliked as string) || (disliked as string).includes(ingLower)) {
         const dishId = recipeToDish.get(ri.recipe_id) || ''
         const key = `${ingName}-${dishId}`
         if (seen.has(key)) continue
@@ -2320,8 +2320,8 @@ export async function detectMenuDietaryConflicts(
 
         conflicts.push({
           ingredientName: ingName,
-          dishName: dishMap.get(dishId) || 'Unknown dish',
-          clientPreference: disliked,
+          dishName: (dishMap.get(dishId) as string) || 'Unknown dish',
+          clientPreference: disliked as string,
         })
       }
     }

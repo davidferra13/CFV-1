@@ -36,7 +36,11 @@ export async function getSurveyData(token: string) {
       .eq('menu_id', event.menu_id)
       .order('course_number', { ascending: true })
 
-    dishes = menuDishes ?? []
+    dishes = (menuDishes ?? []).map((d: any) => ({
+      id: d.id,
+      name: d.name ?? '',
+      course_name: d.course_name ?? null,
+    }))
   }
 
   return {
@@ -51,7 +55,7 @@ export async function getSurveyData(token: string) {
 
 export async function getEventFeedback(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('post_event_surveys')
@@ -70,7 +74,7 @@ export async function getEventFeedback(eventId: string) {
 
 export async function getRecentFeedback(limit = 10) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('post_event_surveys')

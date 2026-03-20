@@ -185,7 +185,7 @@ export async function joinHubGroup(input: {
       .eq('id', input.profileId)
       .single()
 
-    if (currentProfile && !currentProfile.first_group_id) {
+    if (currentProfile && !(currentProfile as any).first_group_id) {
       // Find group creator for referral attribution
       const { data: creator } = await supabase
         .from('hub_group_members')
@@ -194,7 +194,7 @@ export async function joinHubGroup(input: {
         .eq('role', 'owner')
         .single()
 
-      await supabase
+      await (supabase as any)
         .from('hub_guest_profiles')
         .update({
           first_group_id: group.id,

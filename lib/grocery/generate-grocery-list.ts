@@ -80,7 +80,7 @@ function getCategoryDisplay(category: string): string {
 
 export async function generateGroceryList(eventId: string): Promise<GroceryListData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // 1. Fetch event details + menu
   const { data: event, error: eventError } = await supabase

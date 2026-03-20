@@ -19,7 +19,7 @@ const CreateRuleBody = z.object({
     )
     .optional(),
   action_type: z.string().min(1),
-  action_config: z.record(z.unknown()).optional(),
+  action_config: z.record(z.string(), z.unknown()).optional(),
   is_active: z.boolean().optional(),
 })
 

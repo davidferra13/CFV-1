@@ -97,7 +97,7 @@ function daysBetween(a: string | null, b: string | null): number | null {
 
 export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('inquiries')
@@ -106,12 +106,12 @@ export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
 
   const inquiries = data ?? []
   const total = inquiries.length
-  const quotedCount = inquiries.filter((i) =>
+  const quotedCount = inquiries.filter((i: any) =>
     ['quoted', 'confirmed', 'declined', 'expired'].includes(i.status)
   ).length
-  const confirmedCount = inquiries.filter((i) => i.status === 'confirmed').length
-  const declinedCount = inquiries.filter((i) => i.status === 'declined').length
-  const expiredCount = inquiries.filter((i) => i.status === 'expired').length
+  const confirmedCount = inquiries.filter((i: any) => i.status === 'confirmed').length
+  const declinedCount = inquiries.filter((i: any) => i.status === 'declined').length
+  const expiredCount = inquiries.filter((i: any) => i.status === 'expired').length
 
   // Count completed events linked to inquiries
   const { count: completedFromInquiries } = await supabase
@@ -136,7 +136,7 @@ export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
 
 export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('quotes')
@@ -146,14 +146,16 @@ export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
 
   const quotes = data ?? []
   const sent = quotes.length
-  const accepted = quotes.filter((q) => q.status === 'accepted')
-  const rejected = quotes.filter((q) => q.status === 'rejected').length
-  const expired = quotes.filter((q) => q.status === 'expired').length
+  const accepted = quotes.filter((q: any) => q.status === 'accepted')
+  const rejected = quotes.filter((q: any) => q.status === 'rejected').length
+  const expired = quotes.filter((q: any) => q.status === 'expired').length
   const acceptedCount = accepted.length
 
   const avgValue =
     acceptedCount > 0
-      ? Math.round(accepted.reduce((s, q) => s + (q.total_quoted_cents ?? 0), 0) / acceptedCount)
+      ? Math.round(
+          accepted.reduce((s: any, q: any) => s + (q.total_quoted_cents ?? 0), 0) / acceptedCount
+        )
       : 0
 
   return {
@@ -172,7 +174,7 @@ export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
 // Returns safe defaults until the column migration is applied.
 export async function getGhostRateStats(): Promise<GhostRateStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // We can still count expired inquiries (ghosted) even without ghost_at
   const { data } = await supabase
@@ -181,7 +183,7 @@ export async function getGhostRateStats(): Promise<GhostRateStats> {
     .eq('tenant_id', chef.tenantId!)
 
   const all = data ?? []
-  const ghosted = all.filter((i) => i.status === 'expired')
+  const ghosted = all.filter((i: any) => i.status === 'expired')
 
   return {
     totalInquiries: all.length,
@@ -195,7 +197,7 @@ export async function getGhostRateStats(): Promise<GhostRateStats> {
 // Lead time calculation is deferred; sales cycle from quotes still works.
 export async function getLeadTimeStats(): Promise<LeadTimeStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const emptyBuckets = { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 }
 
@@ -208,11 +210,13 @@ export async function getLeadTimeStats(): Promise<LeadTimeStats> {
     .not('accepted_at', 'is', null)
 
   const cycleDays = (quotes ?? [])
-    .map((q) => daysBetween(q.created_at, q.accepted_at))
-    .filter((d): d is number => d !== null && d >= 0)
+    .map((q: any) => daysBetween(q.created_at, q.accepted_at))
+    .filter((d: any): d is number => d !== null && d >= 0)
 
   const avgCycle =
-    cycleDays.length > 0 ? Math.round(cycleDays.reduce((a, b) => a + b, 0) / cycleDays.length) : 0
+    cycleDays.length > 0
+      ? Math.round(cycleDays.reduce((a: any, b: any) => a + b, 0) / cycleDays.length)
+      : 0
 
   return {
     avgLeadTimeDays: 0, // DEFERRED: needs events.inquiry_received_at column
@@ -246,7 +250,7 @@ export async function getNegotiationStats(): Promise<NegotiationStats> {
 
 export async function getAvgInquiryResponseTime(): Promise<ResponseTimeStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find first outbound message per inquiry
   const { data: inquiries } = await supabase
@@ -266,7 +270,7 @@ export async function getAvgInquiryResponseTime(): Promise<ResponseTimeStats> {
     }
   }
 
-  const inquiryIds = inquiries.map((i) => i.id)
+  const inquiryIds = inquiries.map((i: any) => i.id)
   const { data: messages } = await supabase
     .from('messages')
     .select('inquiry_id, created_at')
@@ -295,10 +299,10 @@ export async function getAvgInquiryResponseTime(): Promise<ResponseTimeStats> {
   const total = responseTimes.length
   const avgHours =
     total > 0 ? Math.round((responseTimes.reduce((a, b) => a + b, 0) / total) * 10) / 10 : 0
-  const under1h = responseTimes.filter((h) => h < 1).length
-  const under4h = responseTimes.filter((h) => h < 4).length
-  const under24h = responseTimes.filter((h) => h < 24).length
-  const over24h = responseTimes.filter((h) => h >= 24).length
+  const under1h = responseTimes.filter((h: any) => h < 1).length
+  const under4h = responseTimes.filter((h: any) => h < 4).length
+  const under24h = responseTimes.filter((h: any) => h < 24).length
+  const over24h = responseTimes.filter((h: any) => h >= 24).length
 
   return {
     avgHoursToFirstResponse: avgHours,

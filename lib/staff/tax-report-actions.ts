@@ -55,7 +55,7 @@ const FILING_THRESHOLD_CENTS = 60000
  */
 export async function generate1099Report(year: number): Promise<TaxReportResult> {
   const user = await requirePro('payroll')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const yearStart = `${year}-01-01`
   const yearEnd = `${year}-12-31`

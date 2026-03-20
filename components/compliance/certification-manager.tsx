@@ -13,8 +13,6 @@ import {
   addCertification,
   updateCertification,
   deleteCertification,
-  CERT_TYPE_LABELS,
-  CERT_TYPES,
 } from '@/lib/compliance/certification-actions'
 import type {
   Certification,
@@ -22,6 +20,36 @@ import type {
   CertificationInput,
   CertStatus,
 } from '@/lib/compliance/certification-actions'
+
+const CERT_TYPES: CertType[] = [
+  'servsafe',
+  'food_handler',
+  'servsafe_manager',
+  'allergen_awareness',
+  'business_license',
+  'health_permit',
+  'liability_insurance',
+  'workers_comp',
+  'auto_insurance',
+  'llc',
+  'cottage_food',
+  'other',
+]
+
+const CERT_TYPE_LABELS: Record<CertType, string> = {
+  servsafe: 'ServSafe',
+  food_handler: 'Food Handler Permit',
+  servsafe_manager: 'ServSafe Manager',
+  allergen_awareness: 'Allergen Awareness',
+  business_license: 'Business License',
+  health_permit: 'Health Permit',
+  liability_insurance: 'Liability Insurance',
+  workers_comp: "Workers' Compensation",
+  auto_insurance: 'Auto Insurance',
+  llc: 'LLC',
+  cottage_food: 'Cottage Food',
+  other: 'Other',
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

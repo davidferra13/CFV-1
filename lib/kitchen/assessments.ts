@@ -54,7 +54,7 @@ const KitchenAssessmentSchema = z.object({
 
 export async function getKitchenAssessments(clientId?: string): Promise<KitchenAssessment[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('kitchen_assessments')
@@ -77,7 +77,7 @@ export async function getKitchenAssessments(clientId?: string): Promise<KitchenA
 
 export async function getKitchenAssessment(id: string): Promise<KitchenAssessment | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('kitchen_assessments')
@@ -97,7 +97,7 @@ export async function createKitchenAssessment(
   const parsed = KitchenAssessmentSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid assessment data.' }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('kitchen_assessments')
@@ -145,7 +145,7 @@ export async function updateKitchenAssessment(
   const parsed = KitchenAssessmentSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid assessment data.' }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('kitchen_assessments')
@@ -168,7 +168,7 @@ export async function deleteKitchenAssessment(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('kitchen_assessments')

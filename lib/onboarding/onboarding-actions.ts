@@ -12,7 +12,7 @@ import { ONBOARDING_STEPS, type OnboardingStepKey } from './onboarding-constants
 export async function getOnboardingProgress() {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('onboarding_progress')
@@ -30,7 +30,7 @@ export async function getOnboardingProgress() {
 export async function completeStep(stepKey: string, data?: Record<string, unknown>) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('onboarding_progress').upsert(
     {
@@ -55,7 +55,7 @@ export async function completeStep(stepKey: string, data?: Record<string, unknow
 export async function skipStep(stepKey: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('onboarding_progress').upsert(
     {
@@ -79,7 +79,7 @@ export async function skipStep(stepKey: string) {
 export async function resetOnboarding() {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('onboarding_progress').delete().eq('chef_id', tenantId)
 
@@ -96,12 +96,12 @@ export async function getOnboardingStatus() {
   const progress = await getOnboardingProgress()
 
   const totalSteps = ONBOARDING_STEPS.length
-  const completed = progress.filter((p) => p.completed_at).length
-  const skipped = progress.filter((p) => p.skipped).length
+  const completed = progress.filter((p: any) => p.completed_at).length
+  const skipped = progress.filter((p: any) => p.skipped).length
   const percentComplete = Math.round((completed / totalSteps) * 100)
 
   // Find the first step that hasn't been completed or skipped
-  const doneKeys = new Set(progress.map((p) => p.step_key))
+  const doneKeys = new Set(progress.map((p: any) => p.step_key))
   const currentStep = ONBOARDING_STEPS.find((s) => !doneKeys.has(s.key))?.key ?? null
 
   return {

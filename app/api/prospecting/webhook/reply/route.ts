@@ -108,9 +108,8 @@ export async function POST(request: Request) {
     .eq('chef_id', tenantId)
 
   // 5. Log outreach event
-  await supabase
-    .from('prospect_outreach_log' as any)
-    .insert({
+  try {
+    await supabase.from('prospect_outreach_log' as any).insert({
       prospect_id: prospect.id,
       chef_id: tenantId,
       outreach_type: 'response_received',
@@ -118,21 +117,22 @@ export async function POST(request: Request) {
       outcome: sentiment,
       notes: instantlyCampaignId ? `Campaign: ${instantlyCampaignId}` : null,
     })
-    .catch((err: Error) => {
-      console.error('[webhook/reply] Outreach log error (non-blocking):', err)
-    })
+  } catch (err) {
+    console.error('[webhook/reply] Outreach log error (non-blocking):', err)
+  }
 
   // 6. Record stage history
-  await supabase
-    .from('prospect_stage_history' as any)
-    .insert({
+  try {
+    await supabase.from('prospect_stage_history' as any).insert({
       prospect_id: prospect.id,
       chef_id: tenantId,
       from_stage: prospect.pipeline_stage,
       to_stage: newPipelineStage,
       notes: `Reply received (${sentiment}): ${replyText.slice(0, 200)}`,
     })
-    .catch(() => {})
+  } catch {
+    // non-blocking
+  }
 
   // 7. Update campaign reply count if we can match it
   if (instantlyCampaignId) {
@@ -144,11 +144,14 @@ export async function POST(request: Request) {
       .single()
 
     if (campaign) {
-      await supabase
-        .from('outreach_campaigns' as any)
-        .update({ reply_count: ((campaign as any).reply_count ?? 0) + 1 })
-        .eq('id', (campaign as any).id)
-        .catch(() => {})
+      try {
+        await supabase
+          .from('outreach_campaigns' as any)
+          .update({ reply_count: ((campaign as any).reply_count ?? 0) + 1 })
+          .eq('id', (campaign as any).id)
+      } catch {
+        // non-blocking
+      }
     }
   }
 
@@ -197,15 +200,16 @@ export async function POST(request: Request) {
         .eq('id', prospect.id)
         .eq('chef_id', tenantId)
 
-      await supabase
-        .from('prospect_notes' as any)
-        .insert({
+      try {
+        await supabase.from('prospect_notes' as any).insert({
           prospect_id: prospect.id,
           chef_id: tenantId,
           note_type: 'general',
           content: `Auto-converted to inquiry from interested reply. Score: ${prospect.lead_score}. Inquiry: ${inquiry.id}`,
         })
-        .catch(() => {})
+      } catch {
+        // non-blocking
+      }
     }
   }
 

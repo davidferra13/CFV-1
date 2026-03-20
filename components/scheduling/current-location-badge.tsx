@@ -1,6 +1,11 @@
 'use client'
 
-import { type CurrentLocationResult } from '@/lib/scheduling/seasonal-availability-actions'
+type CurrentLocationResult = {
+  location: string | null
+  season_name: string | null
+  is_available: boolean
+  travel_radius_miles: number | null
+}
 
 // Color mapping by common season keywords
 const SEASON_COLORS: Record<string, { bg: string; text: string; dot: string }> = {

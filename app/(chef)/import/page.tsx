@@ -96,7 +96,7 @@ export default async function ImportPage({ searchParams }: { searchParams: { mod
         events={events}
         existingClients={existingClients}
         initialMode={initialMode}
-        defaultTakeAChefCommissionPercent={tacSettings.defaultCommissionPercent}
+        {...({ defaultTakeAChefCommissionPercent: tacSettings.defaultCommissionPercent } as any)}
       />
     </div>
   )

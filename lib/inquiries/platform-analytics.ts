@@ -54,7 +54,7 @@ const CHANNEL_DISPLAY: Record<string, string> = {
  */
 export async function getPlatformAnalytics(): Promise<PlatformAnalytics> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: inquiries, error } = await supabase
     .from('inquiries')

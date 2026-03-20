@@ -122,7 +122,7 @@ const draftMenuProposal: AgentActionDefinition = {
   taskType: 'draft.menu_proposal',
   name: 'Propose Menu Options',
   tier: 2,
-  safety: 'safe',
+  safety: 'reversible',
   description:
     'Generate a menu proposal message to share with the client. Loads draft menus, formats them for the Dinner Circle. No LLM needed.',
   inputSchema: '{ inquiryId?: string, eventId?: string }',
@@ -172,8 +172,8 @@ const draftMenuProposal: AgentActionDefinition = {
     const preview: AgentActionPreview = {
       actionType: 'draft.menu_proposal',
       summary: `Menu proposal for ${context.clientName} (${menus.length} option${menus.length > 1 ? 's' : ''})`,
-      details: body,
-      requiresApproval: true,
+      fields: [{ label: 'Proposal', value: body }],
+      safety: 'reversible',
     }
 
     return {

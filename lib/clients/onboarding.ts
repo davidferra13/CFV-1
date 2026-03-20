@@ -5,7 +5,7 @@ export async function getOnboardingData(token: string) {
   const tokenData = verifyOnboardingToken(token)
   if (!tokenData) return null
 
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: client } = await supabase
     .from('clients')

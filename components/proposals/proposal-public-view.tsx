@@ -74,7 +74,7 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
   }
 
   // Group dishes by course
-  const courseGroups: Record<string, typeof proposal.menu.dishes> = {}
+  const courseGroups: Record<string, any[]> = {}
   if (proposal.menu?.dishes) {
     for (const dish of proposal.menu.dishes) {
       const course = dish.course || 'Main'

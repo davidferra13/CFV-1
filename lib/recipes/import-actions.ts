@@ -416,7 +416,7 @@ export async function saveImportedRecipe(
   preview: ImportedRecipePreview
 ): Promise<ImportRecipeResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   try {
     // Create the recipe

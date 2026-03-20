@@ -13,7 +13,7 @@ export async function rescheduleEvent(
   newDate: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // 1. Fetch event and verify ownership
   const { data: event, error: fetchError } = await supabase

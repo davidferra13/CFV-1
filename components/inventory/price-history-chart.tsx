@@ -114,7 +114,7 @@ export function PriceHistoryChart({
             count: d.entryCount,
           }))
         )
-        setTrend(trendData)
+        setTrend(trendData as any)
       } catch {
         // Failed to load; show empty state
         setData([])
@@ -191,7 +191,7 @@ export function PriceHistoryChart({
                 borderRadius: '8px',
               }}
               labelStyle={{ color: '#d6d3d1' }}
-              formatter={(value: number) => [`$${value.toFixed(2)}`, 'Avg Price']}
+              formatter={((value: number) => [`$${value.toFixed(2)}`, 'Avg Price']) as any}
             />
             <Line
               type="monotone"

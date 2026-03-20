@@ -42,7 +42,7 @@ export async function matchCarryForwardToEvent(
   targetEventId: string
 ): Promise<CarryForwardMatchResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // event_menu_components is not in generated types - table exists in DB but not yet in types/database.ts
   const [leftovers, recipesResult] = await Promise.all([

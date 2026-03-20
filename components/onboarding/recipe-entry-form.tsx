@@ -116,6 +116,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
           name: result.recipe.name,
           category: result.recipe.category,
           method: result.recipe.method,
+          photo_url: null,
           dietary_tags: result.recipe.dietary_tags ?? [],
           prep_time_minutes: result.recipe.prep_time_minutes,
           cook_time_minutes: result.recipe.cook_time_minutes,

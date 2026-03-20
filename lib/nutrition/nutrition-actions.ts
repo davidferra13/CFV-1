@@ -121,7 +121,12 @@ export async function getFoodNutrients(fdcId: number): Promise<{
     return { success: true, nutrients, description: detail.description }
   } catch (err) {
     console.error('[getFoodNutrients] Error:', err)
-    return { success: false, nutrients: null, description: null, error: 'Failed to fetch nutrient data' }
+    return {
+      success: false,
+      nutrients: null,
+      description: null,
+      error: 'Failed to fetch nutrient data',
+    }
   }
 }
 
@@ -143,7 +148,7 @@ export async function calculateRecipeNutrition(recipeId: string): Promise<{
   error?: string
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   try {
     // Fetch recipe
@@ -182,8 +187,11 @@ export async function calculateRecipeNutrition(recipeId: string): Promise<{
       if (!ingredient) continue
 
       // Check if this ingredient has a USDA FDC ID stored in unknown_fields
-      const fdcId = (ingredient.unknown_fields as Record<string, unknown>)?.usda_fdc_id as number | null
-      const storedNutrientsPer100g = (ingredient.unknown_fields as Record<string, unknown>)?.usda_nutrients_per_100g as NutrientInfo | null
+      const fdcId = (ingredient.unknown_fields as Record<string, unknown>)?.usda_fdc_id as
+        | number
+        | null
+      const storedNutrientsPer100g = (ingredient.unknown_fields as Record<string, unknown>)
+        ?.usda_nutrients_per_100g as NutrientInfo | null
 
       let nutrients = { ...EMPTY_NUTRIENTS }
       let isEstimated = true
@@ -208,9 +216,8 @@ export async function calculateRecipeNutrition(recipeId: string): Promise<{
     }
 
     const totalIngredients = ingredientRows.length
-    const completeness = totalIngredients > 0
-      ? Math.round((matchedCount / totalIngredients) * 100)
-      : 0
+    const completeness =
+      totalIngredients > 0 ? Math.round((matchedCount / totalIngredients) * 100) : 0
 
     const totalNutrients = sumNutrients(ingredientRows.map((r) => r.nutrients))
     const servings = recipe.yield_quantity || 1
@@ -252,7 +259,7 @@ export async function saveNutritionOverride(
   data: NutrientInfo
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   try {
     // Verify recipe belongs to this chef
@@ -307,7 +314,7 @@ export async function getMenuNutrition(menuId: string): Promise<{
   error?: string
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   try {
     // Fetch menu
@@ -462,37 +469,42 @@ function evaluateDietaryIndicators(nutrients: NutrientInfo): DietaryIndicator[] 
     {
       label: 'Low Sodium',
       met: nutrients.sodium_mg < 600,
-      description: nutrients.sodium_mg < 600
-        ? `${nutrients.sodium_mg}mg sodium (under 600mg threshold)`
-        : `${nutrients.sodium_mg}mg sodium (over 600mg threshold)`,
+      description:
+        nutrients.sodium_mg < 600
+          ? `${nutrients.sodium_mg}mg sodium (under 600mg threshold)`
+          : `${nutrients.sodium_mg}mg sodium (over 600mg threshold)`,
     },
     {
       label: 'High Protein',
       met: nutrients.protein_g > 30,
-      description: nutrients.protein_g > 30
-        ? `${nutrients.protein_g}g protein (over 30g threshold)`
-        : `${nutrients.protein_g}g protein (under 30g threshold)`,
+      description:
+        nutrients.protein_g > 30
+          ? `${nutrients.protein_g}g protein (over 30g threshold)`
+          : `${nutrients.protein_g}g protein (under 30g threshold)`,
     },
     {
       label: 'Low Carb',
       met: nutrients.carbs_g < 50,
-      description: nutrients.carbs_g < 50
-        ? `${nutrients.carbs_g}g carbs (under 50g threshold)`
-        : `${nutrients.carbs_g}g carbs (over 50g threshold)`,
+      description:
+        nutrients.carbs_g < 50
+          ? `${nutrients.carbs_g}g carbs (under 50g threshold)`
+          : `${nutrients.carbs_g}g carbs (over 50g threshold)`,
     },
     {
       label: 'High Fiber',
       met: nutrients.fiber_g > 10,
-      description: nutrients.fiber_g > 10
-        ? `${nutrients.fiber_g}g fiber (over 10g threshold)`
-        : `${nutrients.fiber_g}g fiber (under 10g threshold)`,
+      description:
+        nutrients.fiber_g > 10
+          ? `${nutrients.fiber_g}g fiber (over 10g threshold)`
+          : `${nutrients.fiber_g}g fiber (under 10g threshold)`,
     },
     {
       label: 'Low Sugar',
       met: nutrients.sugar_g < 25,
-      description: nutrients.sugar_g < 25
-        ? `${nutrients.sugar_g}g sugar (under 25g threshold)`
-        : `${nutrients.sugar_g}g sugar (over 25g threshold)`,
+      description:
+        nutrients.sugar_g < 25
+          ? `${nutrients.sugar_g}g sugar (under 25g threshold)`
+          : `${nutrients.sugar_g}g sugar (over 25g threshold)`,
     },
   ]
 }

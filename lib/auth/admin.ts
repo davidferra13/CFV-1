@@ -17,7 +17,7 @@ export type AdminUser = {
  * Returns null for unauthenticated users and authenticated non-admins.
  */
 export async function getCurrentAdminUser(): Promise<AdminUser | null> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const {
     data: { user },
     error,

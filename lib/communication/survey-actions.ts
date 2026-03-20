@@ -49,15 +49,12 @@ export type SurveyResults = {
 // QUERIES
 // ==========================================
 
-export async function getSurveys(options?: {
-  eventId?: string
-  completedOnly?: boolean
-}): Promise<{
+export async function getSurveys(options?: { eventId?: string; completedOnly?: boolean }): Promise<{
   data: PostEventSurvey[] | null
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('post_event_surveys')
@@ -88,11 +85,13 @@ export async function getSurveyResults(): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: surveys, error } = await supabase
     .from('post_event_surveys')
-    .select('overall, food_quality, punctuality, communication_rating, would_book_again, completed_at')
+    .select(
+      'overall, food_quality, punctuality, communication_rating, would_book_again, completed_at'
+    )
     .eq('tenant_id', user.entityId)
 
   if (error) {
@@ -115,7 +114,7 @@ export async function getSurveyResults(): Promise<{
     }
   }
 
-  const completed = surveys.filter(s => s.completed_at !== null)
+  const completed = surveys.filter((s: any) => s.completed_at !== null)
 
   function avg(vals: (number | null)[]): number | null {
     const valid = vals.filter((v): v is number => v !== null)
@@ -123,19 +122,23 @@ export async function getSurveyResults(): Promise<{
     return Math.round((valid.reduce((a, b) => a + b, 0) / valid.length) * 10) / 10
   }
 
-  const wouldBookAgain = completed.filter(s => s.would_book_again !== null)
-  const wouldBookPct = wouldBookAgain.length > 0
-    ? Math.round((wouldBookAgain.filter(s => s.would_book_again).length / wouldBookAgain.length) * 100)
-    : null
+  const wouldBookAgain = completed.filter((s: any) => s.would_book_again !== null)
+  const wouldBookPct =
+    wouldBookAgain.length > 0
+      ? Math.round(
+          (wouldBookAgain.filter((s: any) => s.would_book_again).length / wouldBookAgain.length) *
+            100
+        )
+      : null
 
   return {
     data: {
       total_surveys: surveys.length,
       completed_surveys: completed.length,
-      average_overall: avg(completed.map(s => s.overall)),
-      average_food_quality: avg(completed.map(s => s.food_quality)),
-      average_punctuality: avg(completed.map(s => s.punctuality)),
-      average_communication: avg(completed.map(s => s.communication_rating)),
+      average_overall: avg(completed.map((s: any) => s.overall)),
+      average_food_quality: avg(completed.map((s: any) => s.food_quality)),
+      average_punctuality: avg(completed.map((s: any) => s.punctuality)),
+      average_communication: avg(completed.map((s: any) => s.communication_rating)),
       would_book_again_pct: wouldBookPct,
     },
     error: null,
@@ -151,7 +154,7 @@ export async function createSurvey(input: {
   client_id: string
 }): Promise<{ data: PostEventSurvey | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('post_event_surveys')
@@ -195,7 +198,7 @@ export async function submitSurveyResponse(
 ): Promise<{ error: string | null }> {
   // NOTE: This action does NOT require auth since surveys are submitted
   // via token by clients who may not have accounts
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updateData: Record<string, unknown> = {
     completed_at: new Date().toISOString(),
@@ -204,14 +207,17 @@ export async function submitSurveyResponse(
   if (input.food_quality !== undefined) updateData.food_quality = input.food_quality
   if (input.portion_size !== undefined) updateData.portion_size = input.portion_size
   if (input.punctuality !== undefined) updateData.punctuality = input.punctuality
-  if (input.communication_rating !== undefined) updateData.communication_rating = input.communication_rating
+  if (input.communication_rating !== undefined)
+    updateData.communication_rating = input.communication_rating
   if (input.presentation !== undefined) updateData.presentation = input.presentation
   if (input.cleanup !== undefined) updateData.cleanup = input.cleanup
   if (input.overall !== undefined) updateData.overall = input.overall
   if (input.what_they_loved !== undefined) updateData.what_they_loved = input.what_they_loved
-  if (input.what_could_improve !== undefined) updateData.what_could_improve = input.what_could_improve
+  if (input.what_could_improve !== undefined)
+    updateData.what_could_improve = input.what_could_improve
   if (input.would_book_again !== undefined) updateData.would_book_again = input.would_book_again
-  if (input.additional_comments !== undefined) updateData.additional_comments = input.additional_comments
+  if (input.additional_comments !== undefined)
+    updateData.additional_comments = input.additional_comments
   if (input.dish_feedback !== undefined) updateData.dish_feedback = input.dish_feedback
 
   // Check if overall rating qualifies for review request
@@ -237,7 +243,7 @@ export async function requestReview(surveyId: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the survey belongs to this chef and is eligible
   const { data: survey, error: fetchError } = await supabase

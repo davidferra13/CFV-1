@@ -424,8 +424,8 @@ export async function transitionEvent({
                       serveTime: event.serve_time,
                       location,
                       guestCount: event.guest_count,
-                      eventId,
-                    }
+                      calendarUrl: `/my-events/${eventId}`,
+                    } as any
                   ),
                 }
               : undefined,
@@ -573,10 +573,11 @@ export async function transitionEvent({
                     {
                       clientName: client.full_name,
                       chefName,
-                      eventId,
                       occasion,
                       eventDate: event.event_date,
-                    }
+                      receiptUrl: `/my-events/${eventId}`,
+                      reviewUrl: `/my-events/${eventId}`,
+                    } as any
                   ),
                 }
               : undefined,

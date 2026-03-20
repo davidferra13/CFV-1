@@ -32,7 +32,7 @@ export interface ChefCircleSummary {
 export async function getChefCircles(): Promise<ChefCircleSummary[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Get chef's hub profile
   const { data: chefProfile } = await supabase
@@ -54,7 +54,7 @@ export async function getChefCircles(): Promise<ChefCircleSummary[]> {
   if (!groups || groups.length === 0) return []
 
   // Get member counts + chef's last_read_at for each group
-  const groupIds = groups.map((g) => g.id)
+  const groupIds = groups.map((g: any) => g.id)
 
   const { data: memberCounts } = await supabase
     .from('hub_group_members')
@@ -118,7 +118,7 @@ export async function getChefCircles(): Promise<ChefCircleSummary[]> {
 export async function getCirclesUnreadCount(): Promise<number> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Get chef's hub profile
   const { data: chefProfile } = await supabase
@@ -139,7 +139,7 @@ export async function getCirclesUnreadCount(): Promise<number> {
 
   if (!groups || groups.length === 0) return 0
 
-  const groupIds = groups.map((g) => g.id)
+  const groupIds = groups.map((g: any) => g.id)
 
   // Get chef's last_read_at per group
   const { data: memberships } = await supabase
@@ -178,7 +178,7 @@ export async function getCirclesUnreadCount(): Promise<number> {
 export async function createCircleForEvent(eventId: string): Promise<{ groupToken: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Check if circle already exists
   const { data: existing } = await supabase
@@ -295,7 +295,7 @@ export async function createCircleForEvent(eventId: string): Promise<{ groupToke
 export async function archiveCircle(groupId: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   await supabase
     .from('hub_groups')
@@ -310,7 +310,7 @@ export async function archiveCircle(groupId: string): Promise<void> {
 export async function restoreCircle(groupId: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   await supabase
     .from('hub_groups')
@@ -333,7 +333,7 @@ export async function createDinnerClub(input: {
 }): Promise<{ groupToken: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Get or create chef hub profile
   const { getOrCreateProfile } = await import('./profile-actions')
@@ -380,7 +380,7 @@ export async function linkEventToCircle(input: {
 }): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Verify group belongs to tenant
   const { data: group } = await supabase
@@ -422,7 +422,7 @@ export async function unlinkEventFromCircle(input: {
 }): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Verify group belongs to tenant
   const { data: group } = await supabase
@@ -455,7 +455,7 @@ export async function getCircleEvents(groupId: string): Promise<
 > {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data } = await supabase
     .from('hub_group_events')

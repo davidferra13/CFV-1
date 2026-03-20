@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: 'Survey Results - Admin' }
 
 export default async function AdminBetaSurveyDetailPage({ params }: { params: { id: string } }) {
   await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Get the survey definition
   const { data: survey } = await (supabase as any)

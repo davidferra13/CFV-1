@@ -63,7 +63,7 @@ const draftInquiryFirstResponse: AgentActionDefinition = {
   taskType: 'draft.inquiry_first_response',
   name: 'Draft First Response to Inquiry',
   tier: 2,
-  safety: 'safe',
+  safety: 'reversible',
   description:
     "Generate the first response to a new inquiry. Uses the chef's pricing, service config, and communication rules. No LLM needed - deterministic template.",
   inputSchema: '{ inquiryId: string }',
@@ -95,8 +95,11 @@ const draftInquiryFirstResponse: AgentActionDefinition = {
     const preview: AgentActionPreview = {
       actionType: 'draft.inquiry_first_response',
       summary: `First response to ${inquiryData.clientName}'s inquiry`,
-      details: [`Subject: ${response.subject}`, '', response.body].join('\n'),
-      requiresApproval: true,
+      fields: [
+        { label: 'Subject', value: response.subject },
+        { label: 'Body', value: response.body },
+      ],
+      safety: 'reversible',
     }
 
     return {

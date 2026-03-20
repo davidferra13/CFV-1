@@ -80,7 +80,7 @@ export interface MonthlyTrend {
 export async function getExpenses(filters?: ExpenseFilters): Promise<Expense[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const supabase: any = await createServerClient()
 
   let query = supabase
     .from('expenses')
@@ -114,7 +114,7 @@ export async function getExpenses(filters?: ExpenseFilters): Promise<Expense[]> 
 export async function createExpense(input: CreateExpenseInput): Promise<Expense> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const supabase: any = await createServerClient()
 
   const { data, error } = await supabase
     .from('expenses')
@@ -146,7 +146,7 @@ export async function createExpense(input: CreateExpenseInput): Promise<Expense>
   // Outbound webhook (non-blocking)
   try {
     const { emitWebhook } = await import('@/lib/webhooks/emitter')
-    await emitWebhook(tenantId, 'expense.created', { expense: data })
+    await emitWebhook(tenantId, 'expense.created' as any, { expense: data })
   } catch (err) {
     console.error('[non-blocking] expense.created webhook failed', err)
   }
@@ -160,7 +160,7 @@ export async function updateExpense(
 ): Promise<Expense> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const supabase: any = await createServerClient()
 
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (input.category !== undefined) updateData.category = input.category
@@ -195,7 +195,7 @@ export async function updateExpense(
   // Outbound webhook (non-blocking)
   try {
     const { emitWebhook } = await import('@/lib/webhooks/emitter')
-    await emitWebhook(tenantId, 'expense.updated', { expense: data })
+    await emitWebhook(tenantId, 'expense.updated' as any, { expense: data })
   } catch (err) {
     console.error('[non-blocking] expense.updated webhook failed', err)
   }
@@ -206,7 +206,7 @@ export async function updateExpense(
 export async function deleteExpense(id: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const supabase: any = await createServerClient()
 
   const { error } = await supabase.from('expenses').delete().eq('id', id).eq('chef_id', tenantId)
 
@@ -221,7 +221,7 @@ export async function deleteExpense(id: string): Promise<void> {
   // Outbound webhook (non-blocking)
   try {
     const { emitWebhook } = await import('@/lib/webhooks/emitter')
-    await emitWebhook(tenantId, 'expense.deleted', { expense_id: id })
+    await emitWebhook(tenantId, 'expense.deleted' as any, { expense_id: id })
   } catch (err) {
     console.error('[non-blocking] expense.deleted webhook failed', err)
   }
@@ -233,7 +233,7 @@ export async function getExpenseSummary(
 ): Promise<ExpenseSummary[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const supabase: any = await createServerClient()
 
   let query = supabase.from('expenses').select('category, amount_cents').eq('chef_id', tenantId)
 
@@ -277,7 +277,7 @@ export async function getExpenseSummary(
 export async function getMonthlyExpenseTrend(months: number = 12): Promise<MonthlyTrend[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const supabase: any = await createServerClient()
 
   // Calculate date range
   const now = new Date()
@@ -326,7 +326,7 @@ export async function getMonthlyExpenseTrend(months: number = 12): Promise<Month
 export async function getEventExpenses(eventId: string): Promise<Expense[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const supabase: any = await createServerClient()
 
   const { data, error } = await supabase
     .from('expenses')
@@ -346,7 +346,7 @@ export async function getEventExpenses(eventId: string): Promise<Expense[]> {
 export async function getDeductibleTotal(year: number): Promise<number> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const supabase: any = await createServerClient()
 
   const dateFrom = `${year}-01-01`
   const dateTo = `${year}-12-31`

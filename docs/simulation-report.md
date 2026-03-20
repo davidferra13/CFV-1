@@ -1,48 +1,33 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated - last run: 2026-03-20T12:39:54.630Z_
-_Run ID: be492c60-3467-440b-8683-a45d1dac00f3_
+_Auto-generated - last run: 2026-03-20T21:35:56.932Z_
+_Run ID: e1e0a009-e01e-4156-80df-b5f0f8587636_
 
 ---
 
 ## Summary
 
-The system is currently failing on two critical modules: inquiry_parse and client_parse. Both modules are completely failing with 0% pass rate, indicating fundamental parsing issues. The allergen_risk module has improved from previous runs, now passing 100% (it was previously failing in runs 70f96941 and 1a19bb53).
+The system's overall health is moderate with an 83% pass rate. The inquiry_parse module is completely failing and requires immediate attention. All other modules are passing, including allergen_risk which showed improvement from a previous failing state to current passing status.
 
 ## Failures & Root Causes
 
 ### inquiry_parse
 
-The module is completely failing to extract client information from inquiry text. It's returning undefined values for client name and guest count instead of parsing the actual data from input text. This suggests the module's parsing logic is not correctly identifying and extracting key information from the inquiry text.
-
-### client_parse
-
-The module is failing to extract dietary restrictions from client notes. It's not extracting any dietary restrictions at all, despite the input containing clear dietary information like "gluten sensitive". The module also appears to have issues with the overall parsing structure, as it's not properly identifying and extracting the expected fields from client notes.
+The module fails to extract client information and guest count from natural language input. It consistently returns undefined values instead of parsing the expected data from prompts. This suggests the module cannot properly identify and extract structured data from unstructured text input, likely due to insufficient training on client name and guest count patterns in prompts.
 
 ## Prompt Fix Recommendations
 
-### inquiry_parse
+The inquiry_parse module needs updated prompts that explicitly instruct the model to:
 
-Update the prompt to explicitly instruct the module to:
-
-- Extract client name from the inquiry text using clear pattern matching
-- Parse guest count from text using numeric pattern recognition
-- Return structured output with specific field names for client name and guest count
-- Include examples of expected input/output formats in the prompt
-
-### client_parse
-
-Update the prompt to:
-
-- Clearly define dietary restriction extraction rules and expected output format
-- Specify that dietary restrictions should be extracted as a list of single, clear restrictions
-- Include explicit examples showing how to parse different dietary restriction types
-- Require the module to return all extracted dietary restrictions, not just some
-- Define the exact structure of the expected output including dietary restrictions field
+1. Extract client names from phrases like "Client: Sarah Johnson" or "For Sarah Johnson"
+2. Extract guest counts from phrases like "24 guests" or "24 people"
+3. Return structured JSON with clear field names for client name and guest count
+4. Use examples in the prompt showing expected input/output pairs
+5. Include explicit instructions to ignore irrelevant text and focus only on client and guest data
 
 ## What's Working Well
 
-The allergen_risk module is performing well with 100% pass rate, showing that the module is correctly processing allergen information. The correspondence, menu_suggestions, and quote_draft modules are also passing, indicating these components are functioning properly. The improvement in allergen_risk from previous failing runs to current passing status shows positive progress in the system's stability.
+All modules except inquiry_parse are passing. The allergen_risk module has improved from previous failures to current passing status, demonstrating successful fixes. The correspondence, menu_suggestions, and quote_draft modules continue to perform reliably. The client_parse module maintains 100% pass rate, showing consistent performance in parsing client data.
 
 ---
 

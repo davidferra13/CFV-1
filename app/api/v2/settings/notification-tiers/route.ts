@@ -37,7 +37,7 @@ export const GET = withApiAuth(
     }
 
     const overrideMap = new Map<string, string>()
-    for (const row of overrides ?? []) {
+    for (const row of (overrides ?? []) as any[]) {
       overrideMap.set(row.action, row.tier)
     }
 

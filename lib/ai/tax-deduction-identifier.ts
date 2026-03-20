@@ -40,7 +40,7 @@ export async function identifyMissedDeductions(
   taxYearEnd?: string
 ): Promise<TaxDeductionResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const start = taxYearStart ?? `${new Date().getFullYear()}-01-01`
   const end = taxYearEnd ?? `${new Date().getFullYear()}-12-31`
@@ -90,7 +90,7 @@ ${
   expenseList
     .slice(0, 80)
     .map(
-      (e) =>
+      (e: any) =>
         `- ${e.expense_date}: ${e.description} | $${((e.amount_cents ?? 0) / 100).toFixed(2)} | category: ${e.category ?? 'uncategorized'}${e.notes ? ' | ' + e.notes : ''}`
     )
     .join('\n') || '- No expenses found for this period'
@@ -99,7 +99,7 @@ ${
 Mileage logged: ${mileageLogs?.length ?? 0} entries
 ${(mileageLogs ?? [])
   .slice(0, 10)
-  .map((m) => `- ${m.log_date}: ${m.miles ?? 0} miles, ${m.purpose ?? 'purpose unknown'}`)
+  .map((m: any) => `- ${m.log_date}: ${m.miles ?? 0} miles, ${m.purpose ?? 'purpose unknown'}`)
   .join('\n')}
 
 Return JSON: {
@@ -111,14 +111,14 @@ Return JSON: {
 }`
 
   // Map DB column names to formula type field names
-  const formulaExpenses = expenseList.map((e) => ({
+  const formulaExpenses = expenseList.map((e: any) => ({
     description: e.description,
     amount_cents: e.amount_cents,
     category: e.category,
     date: e.expense_date,
     notes: e.notes,
   }))
-  const formulaMileage = (mileageLogs ?? []).map((m) => ({
+  const formulaMileage = (mileageLogs ?? []).map((m: any) => ({
     miles: m.miles,
     purpose: m.purpose,
     date: m.log_date,

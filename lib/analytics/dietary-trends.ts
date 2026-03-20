@@ -65,7 +65,7 @@ function getQuarter(dateStr: string): string {
  */
 export async function getDietaryTrendsReport(): Promise<DietaryTrendsReport> {
   const user = await requirePro('intelligence-hub')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all clients with their dietary data
   const { data: clients } = await supabase
@@ -157,7 +157,7 @@ export async function getDietaryTrendsReport(): Promise<DietaryTrendsReport> {
     if (c.dietary_restrictions?.length) {
       clientRestrictionMap.set(
         c.id,
-        c.dietary_restrictions.map((r) => r.toLowerCase().trim())
+        c.dietary_restrictions.map((r: any) => r.toLowerCase().trim())
       )
     }
   }

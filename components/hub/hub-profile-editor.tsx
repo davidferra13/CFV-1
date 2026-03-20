@@ -13,8 +13,8 @@ interface HubProfileEditorProps {
 export function HubProfileEditor({ profile, onSaved, onCancel }: HubProfileEditorProps) {
   const [displayName, setDisplayName] = useState(profile.display_name)
   const [bio, setBio] = useState(profile.bio ?? '')
-  const [allergies, setAllergies] = useState(profile.known_allergies.join(', '))
-  const [dietary, setDietary] = useState(profile.known_dietary.join(', '))
+  const [allergies, setAllergies] = useState((profile.known_allergies ?? []).join(', '))
+  const [dietary, setDietary] = useState((profile.known_dietary ?? []).join(', '))
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 

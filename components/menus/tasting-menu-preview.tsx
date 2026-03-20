@@ -173,10 +173,10 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
       </div>
 
       {/* Pricing footer */}
-      {(totalPerPerson > 0 || totalWithWine > 0) && (
+      {((totalPerPerson ?? 0) > 0 || (totalWithWine ?? 0) > 0) && (
         <div className="mt-8 border-t border-gray-200 pt-4">
           <div className="flex flex-col items-end gap-1 text-sm">
-            {totalPerPerson > 0 && (
+            {(totalPerPerson ?? 0) > 0 && (
               <div className="flex items-center gap-4">
                 <span className="text-gray-600">Per Person</span>
                 <span className="font-semibold text-gray-900">{formatCents(totalPerPerson)}</span>

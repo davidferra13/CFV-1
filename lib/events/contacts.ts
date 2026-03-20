@@ -39,7 +39,7 @@ const CreateContactSchema = z.object({
 
 export async function getEventContacts(eventId: string): Promise<EventContact[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_contacts')
@@ -62,7 +62,7 @@ export async function addEventContact(
   const parsed = CreateContactSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid contact data.' }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_contacts')
@@ -94,7 +94,7 @@ export async function updateEventContact(
   updates: Partial<z.infer<typeof CreateContactSchema>>
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updateData: Record<string, any> = { updated_at: new Date().toISOString() }
   if (updates.contact_name) updateData.contact_name = updates.contact_name
@@ -124,7 +124,7 @@ export async function removeEventContact(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('event_contacts')

@@ -83,7 +83,7 @@ export async function getInsurancePolicies(): Promise<InsurancePolicy[]> {
     .order('end_date', { ascending: true })
 
   if (error) throw new Error(`Failed to load insurance policies: ${error.message}`)
-  return (data ?? []).map(withComputedStatus)
+  return (data ?? []).map((p: any) => withComputedStatus(p))
 }
 
 export async function getExpiringPolicies(daysAhead: number = 30): Promise<InsurancePolicy[]> {
@@ -103,7 +103,7 @@ export async function getExpiringPolicies(daysAhead: number = 30): Promise<Insur
     .order('end_date', { ascending: true })
 
   if (error) throw new Error(`Failed to load expiring policies: ${error.message}`)
-  return (data ?? []).map(withComputedStatus)
+  return (data ?? []).map((p: any) => withComputedStatus(p))
 }
 
 export async function getInsuranceStats(): Promise<InsuranceStats> {

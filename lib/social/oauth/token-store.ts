@@ -88,7 +88,7 @@ export async function getCredential(
   tenantId: string,
   platform: string
 ): Promise<PlatformCredential | null> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('social_platform_credentials')
@@ -103,7 +103,7 @@ export async function getCredential(
 }
 
 export async function listConnections(tenantId: string): Promise<ConnectionSummary[]> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('social_platform_credentials')
@@ -116,7 +116,7 @@ export async function listConnections(tenantId: string): Promise<ConnectionSumma
 
   if (error) return []
 
-  return (data ?? []).map((row) => ({
+  return (data ?? []).map((row: any) => ({
     id: row.id,
     tenantId: row.tenant_id,
     platform: row.platform,
@@ -134,7 +134,7 @@ export async function listConnections(tenantId: string): Promise<ConnectionSumma
 
 /** Fetch all active credentials with expiring tokens (within next 24h) - for refresh sweep */
 export async function listExpiringCredentials(): Promise<PlatformCredential[]> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const in24h = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
 
   const { data } = await supabase
@@ -152,7 +152,7 @@ export async function listExpiringCredentials(): Promise<PlatformCredential[]> {
 // ── Writes ─────────────────────────────────────────────────────────────────────
 
 export async function upsertCredential(input: UpsertCredentialInput): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const payload = {
     tenant_id: input.tenantId,
     platform: input.platform,
@@ -186,7 +186,7 @@ export async function updateTokens(
   refreshToken?: string | null,
   expiresAt?: Date | null
 ): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { error } = await supabase
     .from('social_platform_credentials')
@@ -209,7 +209,7 @@ export async function recordPublishError(
   platform: string,
   errorMessage: string
 ): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data: current } = await supabase
     .from('social_platform_credentials')
@@ -232,7 +232,7 @@ export async function recordPublishError(
 }
 
 export async function recordPublishSuccess(tenantId: string, platform: string): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   await supabase
     .from('social_platform_credentials')
@@ -246,7 +246,7 @@ export async function recordPublishSuccess(tenantId: string, platform: string): 
 }
 
 export async function disconnectCredential(tenantId: string, platform: string): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { error } = await supabase
     .from('social_platform_credentials')

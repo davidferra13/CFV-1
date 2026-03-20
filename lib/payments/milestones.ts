@@ -49,7 +49,7 @@ export type MilestoneTemplate = {
 
 export async function getMilestoneTemplates(): Promise<MilestoneTemplate[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('payment_milestone_templates')
@@ -98,7 +98,7 @@ export async function createMilestoneTemplate(
   const parsed = CreateMilestoneTemplateSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid template.' }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (parsed.data.is_default) {
     await supabase
@@ -132,7 +132,7 @@ export async function updateMilestoneTemplate(
   input: Partial<z.infer<typeof CreateMilestoneTemplateSchema>>
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, any> = { updated_at: new Date().toISOString() }
   if (input.name) updates.name = input.name
@@ -166,7 +166,7 @@ export async function deleteMilestoneTemplate(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('payment_milestone_templates')
@@ -192,7 +192,7 @@ export async function createMilestonesForEvent(
   templateId?: string
 ): Promise<{ success: boolean; count?: number; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load event
   const { data: event } = await supabase
@@ -232,7 +232,7 @@ export async function createMilestonesForEvent(
   }
 
   // Calculate milestone amounts and dates
-  const milestoneRecords = template.milestones.map((def, index) => {
+  const milestoneRecords = template!.milestones.map((def, index) => {
     const amountCents =
       def.fixed_amount_cents ??
       Math.round((event.quoted_price_cents! * (def.percentage ?? 0)) / 100)
@@ -291,7 +291,7 @@ export async function createMilestonesForEvent(
 
 export async function getEventMilestones(eventId: string): Promise<PaymentMilestone[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_payment_milestones')
@@ -313,7 +313,7 @@ export async function recordMilestonePayment(
   ledgerEntryId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('event_payment_milestones')
@@ -350,7 +350,7 @@ export async function waiveMilestone(
   reason: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('event_payment_milestones')

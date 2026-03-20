@@ -30,6 +30,7 @@ The simulator takes a menu's current dishes and a proposed swap (remove one dish
 ## Integration Points
 
 The `MenuSimulatorPanel` component can be embedded in:
+
 - The menu editor sidebar (alongside the cocktail browser panel pattern)
 - A modal overlay from the menu detail page
 - The menu engineering dashboard for cost optimization
@@ -39,3 +40,8 @@ The parent component provides `onApplySwap(removeDishId, addDish)` to handle the
 ## Tier
 
 This is a **Pro** feature (menu engineering / optimization tools). Gating should be applied at the page level where the panel is rendered.
+
+## 2026-03-20 21:35 UTC - 83% pass rate - Run e1e0a009
+
+Passing: client_parse, allergen_risk, correspondence, menu_suggestions, quote_draft
+Failing: inquiry_parse (0%)

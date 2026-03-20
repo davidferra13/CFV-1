@@ -59,7 +59,7 @@ function detectPlatform(fromAddress: string): string | null {
 export async function getPlatformRawFeed(limit = 50): Promise<RawFeedItem[]> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     // Fetch more rows than needed since we filter in JS
     const fetchLimit = limit * 3

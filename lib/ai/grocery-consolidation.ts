@@ -24,7 +24,7 @@ export type { ConsolidatedIngredient, GroceryConsolidationResult }
 
 export async function consolidateGroceryList(eventId: string): Promise<GroceryConsolidationResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // event_menu_components is not in generated types - table exists in DB but not yet in types/database.ts
   const [eventResult, menuResult] = await Promise.all([

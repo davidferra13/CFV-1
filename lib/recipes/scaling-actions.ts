@@ -31,7 +31,7 @@ export async function getScaledRecipe(
   targetServings: number
 ): Promise<ScaledRecipeResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch recipe with ingredients
   const { data: recipe, error: recipeError } = await supabase
@@ -82,8 +82,8 @@ export async function getScaledRecipe(
 
   // Map to ScalableIngredient format
   const ingredients: ScalableIngredient[] = (recipeIngredients ?? [])
-    .filter((ri) => ri.ingredients)
-    .map((ri) => {
+    .filter((ri: any) => ri.ingredients)
+    .map((ri: any) => {
       const ing = ri.ingredients as unknown as { id: string; name: string; category: string }
       return {
         ingredientId: ing.id,
@@ -110,7 +110,7 @@ export async function getScaledRecipe(
 
 export async function getScaledMenuForEvent(eventId: string): Promise<ScaledMenuResult | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with guest count
   const { data: event, error: eventError } = await supabase
@@ -161,7 +161,7 @@ export async function getScaledMenuForEvent(eventId: string): Promise<ScaledMenu
   }
 
   // Get components with recipe_id for these dishes
-  const dishIds = dishes.map((d) => d.id)
+  const dishIds = dishes.map((d: any) => d.id)
   const { data: components, error: componentsError } = await supabase
     .from('components')
     .select('recipe_id')
@@ -181,7 +181,9 @@ export async function getScaledMenuForEvent(eventId: string): Promise<ScaledMenu
   }
 
   // Get unique recipe IDs
-  const recipeIds = [...new Set(components.map((c) => c.recipe_id).filter(Boolean))] as string[]
+  const recipeIds = [
+    ...new Set(components.map((c: any) => c.recipe_id).filter(Boolean)),
+  ] as string[]
 
   // Scale each recipe to the event's guest count
   const recipes: ScaledRecipeResult[] = []

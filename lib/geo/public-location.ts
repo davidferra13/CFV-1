@@ -227,7 +227,7 @@ function asResolvedLocation(data: GeocodedLocation | CachedLocationRow): Resolve
 }
 
 async function getCachedLocation(lookupKey: string) {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const { data, error } = await supabase
     .from('public_location_references')
     .select(
@@ -245,7 +245,7 @@ async function getCachedLocation(lookupKey: string) {
 }
 
 async function storeCachedLocation(keys: string[], location: GeocodedLocation) {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const rows = keys.map((lookupKey) => ({
     lookup_key: lookupKey,
     input_address: location.query,

@@ -33,7 +33,7 @@ const GratuityFramingSchema = z.object({
 
 export async function draftGratuityFraming(eventId: string): Promise<GratuityFramingDraft> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')

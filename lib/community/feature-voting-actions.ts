@@ -38,7 +38,7 @@ export async function getFeatureRequests(
   category?: string
 ): Promise<FeatureRequest[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('feature_requests')
@@ -76,13 +76,9 @@ export async function getFeatureRequests(
 
 export async function getFeatureRequest(id: string): Promise<FeatureRequest | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('feature_requests')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const { data, error } = await supabase.from('feature_requests').select('*').eq('id', id).single()
 
   if (error) {
     console.error('[feature-voting] Failed to fetch feature request:', error)
@@ -102,7 +98,7 @@ export async function getFeatureRequest(id: string): Promise<FeatureRequest | nu
 
 export async function getMyVotes(): Promise<FeatureRequest[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: votes, error: votesError } = await supabase
     .from('feature_votes')
@@ -131,7 +127,7 @@ export async function getMyVotes(): Promise<FeatureRequest[]> {
 
 export async function getVotingStats(): Promise<VotingStats> {
   await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: all, error } = await supabase
     .from('feature_requests')
@@ -162,7 +158,7 @@ export async function getRoadmap(): Promise<{
   shipped: FeatureRequest[]
 }> {
   await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('feature_requests')
@@ -194,7 +190,7 @@ export async function submitFeatureRequest(
   category: string
 ): Promise<{ success: boolean; error?: string; id?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!title.trim()) {
     return { success: false, error: 'Title is required' }
@@ -223,7 +219,7 @@ export async function voteForFeature(
   featureId: string
 ): Promise<{ success: boolean; voted: boolean; newCount: number; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Check if already voted
   const { data: existing } = await supabase

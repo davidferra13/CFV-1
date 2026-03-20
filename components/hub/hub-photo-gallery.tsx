@@ -151,6 +151,7 @@ export function HubPhotoGallery({ groupId, media, profileToken, canPost }: HubPh
           </button>
 
           {lightboxUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={lightboxUrl}
               alt={items[lightboxIdx]?.caption ?? ''}
@@ -209,6 +210,7 @@ const PhotoThumbnail = memo(function PhotoThumbnail({
       className="group relative aspect-square overflow-hidden rounded-lg bg-stone-800"
     >
       {url ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img src={url} alt={item.caption ?? ''} className="h-full w-full object-cover" />
       ) : (
         <div className="flex h-full w-full items-center justify-center text-stone-600">

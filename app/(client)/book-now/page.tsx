@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default async function BookNowPage() {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Look up the chef's name and slug from the client's tenant
   const { data: chef } = await supabase

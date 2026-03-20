@@ -120,18 +120,17 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   // 3. Record stage history if pipeline_stage changed
   if (body.pipeline_stage) {
-    await supabase
-      .from('prospect_stage_history' as any)
-      .insert({
+    try {
+      await supabase.from('prospect_stage_history' as any).insert({
         prospect_id: params.id,
         chef_id: auth.tenantId,
         from_stage: null, // We don't fetch current stage for API performance
         to_stage: body.pipeline_stage,
         notes: body.notes ?? `Outreach event: ${outreachType}`,
       })
-      .catch((err: Error) => {
-        console.error('[prospecting/log-outreach] Stage history error (non-blocking):', err)
-      })
+    } catch (err) {
+      console.error('[prospecting/log-outreach] Stage history error (non-blocking):', err)
+    }
   }
 
   return NextResponse.json({ success: true })

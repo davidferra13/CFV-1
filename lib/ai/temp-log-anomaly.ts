@@ -37,7 +37,7 @@ export type TempLogAnomalyResult = z.infer<typeof TempLogAnomalyResultSchema>
 
 export async function analyzeTempLog(eventId: string): Promise<TempLogAnomalyResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: tempLog } = await supabase
     .from('event_temp_logs')
@@ -71,7 +71,7 @@ Flag violations as:
 Return valid JSON only.`
 
   const userContent = `Temperature log for event (${tempLog.length} entries):
-${tempLog.map((t) => `- [${t.logged_at?.split('T')[1]?.slice(0, 5) ?? t.logged_at?.split('T')[0] ?? 'Time?'}] ${t.item_description}: ${t.temp_fahrenheit}°F | stage: ${t.phase ?? 'unknown'}${t.notes ? ' | notes: ' + t.notes : ''}`).join('\n')}
+${tempLog.map((t: any) => `- [${t.logged_at?.split('T')[1]?.slice(0, 5) ?? t.logged_at?.split('T')[0] ?? 'Time?'}] ${t.item_description}: ${t.temp_fahrenheit}°F | stage: ${t.phase ?? 'unknown'}${t.notes ? ' | notes: ' + t.notes : ''}`).join('\n')}
 
 Return JSON: {
   "violations": [{ "item": "...", "loggedAt": "...", "tempF": number, "issue": "...", "regulatoryRef": "...", "severity": "critical|warning|info", "recommendation": "..." }],
@@ -81,7 +81,7 @@ Return JSON: {
 }`
 
   // Map DB column names to formula type field names
-  const formulaEntries = tempLog.map((t) => ({
+  const formulaEntries = tempLog.map((t: any) => ({
     food_item: t.item_description,
     temp_f: t.temp_fahrenheit,
     logged_at: t.logged_at,

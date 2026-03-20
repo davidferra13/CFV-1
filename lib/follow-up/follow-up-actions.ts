@@ -31,7 +31,7 @@ export async function getEventFollowUpSends(
   eventId: string
 ): Promise<{ data: FollowUpSend[]; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('follow_up_sends')
@@ -55,7 +55,7 @@ export async function cancelEventFollowUp(
   eventId: string
 ): Promise<{ success: boolean; cancelled: number; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get the client_id from the event
   const { data: event, error: eventError } = await supabase
@@ -81,7 +81,7 @@ export async function cancelEventFollowUp(
     return { success: true, cancelled: 0 }
   }
 
-  const ids = pending.map((s) => s.id)
+  const ids = pending.map((s: any) => s.id)
 
   const { error: updateError } = await supabase
     .from('follow_up_sends')
@@ -108,7 +108,7 @@ export async function triggerFollowUpForEvent(
   eventId: string
 ): Promise<{ success: boolean; scheduled: number; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify event belongs to tenant and is completed
   const { data: event, error: eventError } = await supabase
@@ -148,7 +148,7 @@ export async function getFollowUpStats(): Promise<{
   error?: string
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const empty = { total: 0, pending: 0, sent: 0, opened: 0, skipped: 0, bounced: 0 }
 
@@ -167,7 +167,7 @@ export async function getFollowUpStats(): Promise<{
   }
 
   const stats = data.reduce(
-    (acc, row) => {
+    (acc: any, row: any) => {
       acc.total++
       const status = row.status as string
       if (status === 'pending') acc.pending++

@@ -997,6 +997,6 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
     }
   } catch (err) {
     console.error('[getTakeAChefROI]', err)
-    return empty
+    throw new Error('Failed to load Take-a-Chef ROI data')
   }
 }

@@ -31,15 +31,12 @@ export type AutomationRule = {
 // QUERIES
 // ==========================================
 
-export async function getRules(options?: {
-  triggerEvent?: string
-  activeOnly?: boolean
-}): Promise<{
+export async function getRules(options?: { triggerEvent?: string; activeOnly?: boolean }): Promise<{
   data: AutomationRule[] | null
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('automation_rules')
@@ -77,16 +74,21 @@ export async function createRule(input: {
   is_active?: boolean
 }): Promise<{ data: AutomationRule | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!input.actions || input.actions.length === 0) {
     return { data: null, error: 'Rule must have at least one action' }
   }
 
   const validTriggers = [
-    'new_inquiry', 'event_confirmed', 'event_completed',
-    'payment_received', 'guest_count_changed', 'menu_approved',
-    'survey_completed', 'milestone_overdue',
+    'new_inquiry',
+    'event_confirmed',
+    'event_completed',
+    'payment_received',
+    'guest_count_changed',
+    'menu_approved',
+    'survey_completed',
+    'milestone_overdue',
   ]
 
   if (!validTriggers.includes(input.trigger_event)) {
@@ -126,7 +128,7 @@ export async function updateRule(
   }
 ): Promise<{ data: AutomationRule | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updateData: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -159,7 +161,7 @@ export async function toggleRule(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: current, error: fetchError } = await supabase
     .from('automation_rules')
@@ -197,7 +199,7 @@ export async function executeRule(
   context: Record<string, unknown>
 ): Promise<{ error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the rule
   const { data: rule, error: fetchError } = await supabase

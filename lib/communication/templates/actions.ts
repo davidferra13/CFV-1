@@ -44,7 +44,7 @@ export type TemplateCategory =
 
 export async function getTemplates(category?: TemplateCategory): Promise<ResponseTemplate[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('response_templates')
@@ -70,7 +70,7 @@ export async function getTemplates(category?: TemplateCategory): Promise<Respons
 
 export async function getTemplate(id: string): Promise<ResponseTemplate | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('response_templates')
@@ -121,7 +121,7 @@ export async function createTemplate(
     return { success: false, error: 'Invalid template data.' }
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If this is set as default, unset other defaults in same category
   if (parsed.data.is_default) {
@@ -176,7 +176,7 @@ export async function updateTemplate(
     return { success: false, error: 'Invalid template data.' }
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If setting as default, unset others
   if (parsed.data.is_default) {
@@ -223,7 +223,7 @@ export async function updateTemplate(
 
 export async function deleteTemplate(id: string): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('response_templates')

@@ -50,7 +50,7 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
     }
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const {
     data: { user },
@@ -115,7 +115,7 @@ export async function requireChef(): Promise<AuthUser> {
   // Check suspension status - additive column added by migration 20260307000004
   // account_status defaults to 'active'; only present after that migration is applied.
   if (user.entityId) {
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const { data: chef } = await supabase
       .from('chefs')
       .select('account_status')
@@ -163,7 +163,7 @@ export async function requireAuth(): Promise<AuthUser> {
  * their invite and logged in. They are NOT chefs or clients.
  */
 export async function requirePartner(): Promise<PartnerAuthUser> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const {
     data: { user },
@@ -214,7 +214,7 @@ export async function requirePartner(): Promise<PartnerAuthUser> {
  * They see tasks, recipes, schedules, and station clipboards scoped to their chef (tenant).
  */
 export async function requireStaff(): Promise<StaffAuthUser> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const {
     data: { user },

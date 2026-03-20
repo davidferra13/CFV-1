@@ -50,7 +50,7 @@ const getClient = () => {
 
 export async function generateServiceTimeline(eventId: string): Promise<ServiceTimeline> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, menuResult, staffResult] = await Promise.all([
     supabase
@@ -80,7 +80,7 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
   const serveTime = event.serve_time ?? '7:00 PM'
   const arrivalTime = event.arrival_time ?? '4:00 PM'
   const staffNames = staffRoster
-    .map((s) => s.staff_members?.name ?? 'Staff')
+    .map((s: any) => s.staff_members?.name ?? 'Staff')
     .filter(Boolean)
     .join(', ')
 

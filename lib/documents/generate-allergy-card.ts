@@ -94,7 +94,7 @@ type AllergyCardData = {
 
 async function fetchAllergyCardData(eventId: string): Promise<AllergyCardData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with client data
   const { data: event } = await supabase
@@ -553,7 +553,7 @@ export async function generateAllergyCard(eventId: string): Promise<Buffer> {
 /** Check whether an event has any allergy/dietary data worth printing */
 export async function hasAllergyData(eventId: string): Promise<boolean> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')

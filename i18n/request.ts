@@ -1,6 +1,8 @@
 // next-intl request configuration
 // Cookie-based locale detection (no URL prefix needed)
+// NOTE: next-intl is not yet installed - this file is a stub for future i18n support
 
+// @ts-expect-error next-intl not yet installed
 import { getRequestConfig } from 'next-intl/server'
 import { cookies, headers } from 'next/headers'
 

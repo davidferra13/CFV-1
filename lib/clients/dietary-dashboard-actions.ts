@@ -87,7 +87,7 @@ export async function getClientDietaryProfile(
   clientId: string
 ): Promise<ClientDietaryProfile | null> {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const supabase: any = await createServerClient()
 
   // Fetch client
   const { data: client, error: clientError } = await supabase
@@ -106,7 +106,7 @@ export async function getClientDietaryProfile(
     .eq('client_id', clientId)
     .eq('tenant_id', user.tenantId!)
 
-  const eventIds = (events ?? []).map((e) => e.id)
+  const eventIds = (events ?? []).map((e: any) => e.id)
 
   let guests: GuestDietary[] = []
 
@@ -207,7 +207,7 @@ export async function getClientDietaryProfile(
       .order('event_date', { ascending: false })
       .limit(5)
 
-    recentEvents = (recentEventRows ?? []).map((e) => ({
+    recentEvents = (recentEventRows ?? []).map((e: any) => ({
       id: e.id,
       date: e.event_date ?? '',
       menuName: e.title ?? null,
@@ -249,7 +249,7 @@ export async function updateClientDietary(
   data: { allergies: string[]; dietaryRestrictions: string[]; dislikes: string[] }
 ) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const supabase: any = await createServerClient()
 
   const parsed = UpdateDietarySchema.parse(data)
 

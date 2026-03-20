@@ -11,7 +11,6 @@ const config: CapacitorConfig = {
   appId: 'com.chefflow.app',
   appName: 'ChefFlow',
   webDir: 'public',
-  bundledWebRuntime: false,
   server: {
     url: serverUrl,
     cleartext: shouldUseCapacitorCleartext(serverUrl),

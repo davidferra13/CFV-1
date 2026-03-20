@@ -83,7 +83,7 @@ export type TastingMenuWithCourses = TastingMenu & {
 
 export async function getTastingMenus(): Promise<TastingMenu[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('tasting_menus')
@@ -103,7 +103,7 @@ export async function getTastingMenus(): Promise<TastingMenu[]> {
 
 export async function getTastingMenu(id: string): Promise<TastingMenuWithCourses> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: menu, error: menuError } = await supabase
     .from('tasting_menus')
@@ -136,9 +136,11 @@ export async function getTastingMenu(id: string): Promise<TastingMenuWithCourses
 
 // ─── Create Tasting Menu ────────────────────────────────────────────────────────
 
-export async function createTastingMenu(input: TastingMenuInput): Promise<{ success: true; id: string }> {
+export async function createTastingMenu(
+  input: TastingMenuInput
+): Promise<{ success: true; id: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('tasting_menus')
@@ -166,9 +168,12 @@ export async function createTastingMenu(input: TastingMenuInput): Promise<{ succ
 
 // ─── Update Tasting Menu ────────────────────────────────────────────────────────
 
-export async function updateTastingMenu(id: string, input: Partial<TastingMenuInput>): Promise<{ success: true }> {
+export async function updateTastingMenu(
+  id: string,
+  input: Partial<TastingMenuInput>
+): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('tasting_menus')
@@ -192,7 +197,7 @@ export async function updateTastingMenu(id: string, input: Partial<TastingMenuIn
 
 export async function deleteTastingMenu(id: string): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('tasting_menus')
@@ -216,7 +221,7 @@ export async function addCourse(
   input: CourseInput
 ): Promise<{ success: true; id: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify menu ownership
   const { data: menu, error: menuError } = await supabase
@@ -263,7 +268,7 @@ export async function updateCourse(
   input: Partial<CourseInput>
 ): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership via join
   const { data: course, error: findError } = await supabase
@@ -281,10 +286,7 @@ export async function updateCourse(
     throw new Error('Not authorized')
   }
 
-  const { error } = await supabase
-    .from('tasting_menu_courses')
-    .update(input)
-    .eq('id', courseId)
+  const { error } = await supabase.from('tasting_menu_courses').update(input).eq('id', courseId)
 
   if (error) {
     console.error('[updateCourse] Error:', error)
@@ -299,7 +301,7 @@ export async function updateCourse(
 
 export async function removeCourse(courseId: string): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership via join
   const { data: course, error: findError } = await supabase
@@ -317,10 +319,7 @@ export async function removeCourse(courseId: string): Promise<{ success: true }>
     throw new Error('Not authorized')
   }
 
-  const { error } = await supabase
-    .from('tasting_menu_courses')
-    .delete()
-    .eq('id', courseId)
+  const { error } = await supabase.from('tasting_menu_courses').delete().eq('id', courseId)
 
   if (error) {
     console.error('[removeCourse] Error:', error)
@@ -338,7 +337,7 @@ export async function reorderCourses(
   courseIds: string[]
 ): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify menu ownership
   const { data: menu, error: menuError } = await supabase
@@ -380,7 +379,7 @@ export async function duplicateTastingMenu(
   newName: string
 ): Promise<{ success: true; id: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get the original menu
   const { data: original, error: origError } = await supabase
@@ -430,7 +429,7 @@ export async function duplicateTastingMenu(
   }
 
   if (courses && courses.length > 0) {
-    const courseCopies = courses.map((c) => ({
+    const courseCopies = courses.map((c: any) => ({
       tasting_menu_id: copy.id,
       course_number: c.course_number,
       course_type: c.course_type,
@@ -443,9 +442,7 @@ export async function duplicateTastingMenu(
       prep_notes: c.prep_notes,
     }))
 
-    const { error: insertError } = await supabase
-      .from('tasting_menu_courses')
-      .insert(courseCopies)
+    const { error: insertError } = await supabase.from('tasting_menu_courses').insert(courseCopies)
 
     if (insertError) {
       console.error('[duplicateTastingMenu] Course copy error:', insertError)

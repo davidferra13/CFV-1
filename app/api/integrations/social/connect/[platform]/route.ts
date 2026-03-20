@@ -63,7 +63,7 @@ export async function GET(
     codeChallenge = pkce.codeChallenge
   }
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const { error: stateErr } = await supabase.from('social_oauth_states').insert({
     tenant_id: user.tenantId,
     platform,

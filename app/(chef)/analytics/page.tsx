@@ -252,9 +252,9 @@ export default async function AnalyticsHubPage() {
         })}
         clientAcquisition={val(clientAcquisition, {
           newClientsThisPeriod: 0,
-          totalMarketingSpendCents: null,
-          cacCents: null,
-          cacRatio: null,
+          totalMarketingSpendCents: 0,
+          cacCents: 0,
+          cacRatio: 0,
         })}
         referralConversion={val(referralConversion, {
           referredInquiries: 0,

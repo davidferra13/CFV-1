@@ -27,7 +27,7 @@ export type { BusinessInsights, InsightCard }
 
 export async function getBusinessInsights(): Promise<BusinessInsights> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const thisYear = now.getFullYear()
@@ -66,31 +66,31 @@ export async function getBusinessInsights(): Promise<BusinessInsights> {
   const inquiries = inquiriesResult.data ?? []
 
   // Compute summary stats
-  const completedEvents = events.filter((e) => e.status === 'completed')
+  const completedEvents = events.filter((e: any) => e.status === 'completed')
   const ytdRevenueCents = completedEvents
-    .filter((e) => e.event_date && e.event_date >= ytdStart)
-    .reduce((s: number, e) => s + (e.quoted_price_cents ?? 0), 0)
-  const ytdExpenseCents = expenses.reduce((s: number, e) => s + (e.amount_cents ?? 0), 0)
+    .filter((e: any) => e.event_date && e.event_date >= ytdStart)
+    .reduce((s: number, e: any) => s + (e.quoted_price_cents ?? 0), 0)
+  const ytdExpenseCents = expenses.reduce((s: number, e: any) => s + (e.amount_cents ?? 0), 0)
   const avgEventSizeCents =
     completedEvents.length > 0
       ? Math.round(
-          completedEvents.reduce((s: number, e) => s + (e.quoted_price_cents ?? 0), 0) /
+          completedEvents.reduce((s: number, e: any) => s + (e.quoted_price_cents ?? 0), 0) /
             completedEvents.length
         )
       : 0
-  const conversionCount = inquiries.filter((i) => i.status === 'confirmed').length
-  const closedInquiries = inquiries.filter((i) =>
+  const conversionCount = inquiries.filter((i: any) => i.status === 'confirmed').length
+  const closedInquiries = inquiries.filter((i: any) =>
     ['confirmed', 'declined', 'expired'].includes(i.status)
   ).length
   const conversionRate =
     closedInquiries > 0 ? Math.round((conversionCount / closedInquiries) * 100) : 0
   const activeInquiries = inquiries.filter(
-    (i) => !['confirmed', 'declined', 'expired'].includes(i.status)
+    (i: any) => !['confirmed', 'declined', 'expired'].includes(i.status)
   ).length
 
   // Monthly event distribution
   const monthCounts: Record<number, number> = {}
-  completedEvents.forEach((e) => {
+  completedEvents.forEach((e: any) => {
     if (e.event_date) {
       const m = new Date(e.event_date).getMonth() + 1
       monthCounts[m] = (monthCounts[m] ?? 0) + 1
@@ -109,7 +109,8 @@ export async function getBusinessInsights(): Promise<BusinessInsights> {
     conversionRate,
     closedInquiries,
     totalClients: clients.length,
-    newClientsThisYear: clients.filter((c) => c.created_at?.startsWith(String(thisYear))).length,
+    newClientsThisYear: clients.filter((c: any) => c.created_at?.startsWith(String(thisYear)))
+      .length,
     peakMonth,
     currentMonth: now.getMonth() + 1,
     monthlyDistribution: monthCounts,

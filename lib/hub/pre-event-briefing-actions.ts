@@ -23,7 +23,7 @@ export async function postPreEventBriefing(input: {
     return { success: false, error: 'Chef hub profile not found' }
   }
 
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Load event + client + chef + menu in parallel
   const [eventResult, chefResult] = await Promise.all([
@@ -102,7 +102,7 @@ export async function postPreEventBriefing(input: {
   let whatToHaveReady: string[] = []
   try {
     const { getServiceConfigForTenant } = await import('@/lib/chef-services/service-config-actions')
-    const config = await getServiceConfigForTenant(circle.tenantId)
+    const config: any = await getServiceConfigForTenant(circle.tenantId)
     if (config) {
       if (config.requires_oven) whatToHaveReady.push('Oven available and working')
       if (config.requires_stovetop) whatToHaveReady.push('Stovetop available')

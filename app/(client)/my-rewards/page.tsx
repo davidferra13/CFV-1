@@ -129,7 +129,7 @@ export default async function MyRewardsPage() {
       ? incentivesSettled.value
       : (() => {
           console.error('[my-rewards] Incentives failed:', incentivesSettled.reason)
-          return { vouchers: [], giftCards: [] } as Awaited<
+          return { vouchers: [], giftCards: [] } as unknown as Awaited<
             ReturnType<typeof getVoucherAndGiftCards>
           >
         })()

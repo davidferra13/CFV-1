@@ -43,7 +43,7 @@ const getClient = () => {
 
 export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNutritionalSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, menuResult] = await Promise.all([
     supabase

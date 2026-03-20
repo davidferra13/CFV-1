@@ -30,7 +30,7 @@ export interface SpendingSummary {
  */
 export async function getClientSpendingSummary(): Promise<SpendingSummary> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all non-draft, non-cancelled events for this client with financials
   const { data: events, error } = await supabase
@@ -56,7 +56,7 @@ export async function getClientSpendingSummary(): Promise<SpendingSummary> {
     }
 
   // Fetch financial summary for all events in one query
-  const eventIds = events.map((e) => e.id)
+  const eventIds = events.map((e: any) => e.id)
   if (eventIds.length === 0)
     return {
       lifetimeSpendCents: 0,
@@ -85,7 +85,7 @@ export async function getClientSpendingSummary(): Promise<SpendingSummary> {
     })
   }
 
-  const enriched: SpendingEvent[] = events.map((e) => {
+  const enriched: SpendingEvent[] = events.map((e: any) => {
     const fin = financialMap.get(e.id) ?? {
       total_paid_cents: 0,
       outstanding_balance_cents: 0,

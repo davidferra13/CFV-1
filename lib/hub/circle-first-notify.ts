@@ -88,7 +88,7 @@ export async function circleFirstNotify(input: CircleFirstInput): Promise<void> 
     return
   }
 
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // 1. Post the notification message to the circle
   await supabase.from('hub_messages').insert({
@@ -127,7 +127,7 @@ async function notifyMembersOfUpdate(input: {
   messagePreview: string
 }): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
+    const supabase: any = createServerClient({ admin: true })
 
     const [groupResult, membersResult, chefResult] = await Promise.all([
       supabase.from('hub_groups').select('name').eq('id', input.groupId).single(),

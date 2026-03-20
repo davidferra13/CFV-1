@@ -12,7 +12,7 @@ export async function bulkDeclineInquiries(ids: string[]) {
   if (ids.length === 0) return { success: true, count: 0 }
 
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('inquiries')
@@ -37,7 +37,7 @@ export async function bulkArchiveInquiries(ids: string[]) {
   if (ids.length === 0) return { success: true, count: 0 }
 
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('inquiries')

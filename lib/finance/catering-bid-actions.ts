@@ -63,12 +63,10 @@ const MILEAGE_RATE_CENTS = 7250 // per 100 miles (72.5 cents/mile * 100)
 // GENERATE CATERING BID
 // ============================================
 
-export async function generateCateringBid(
-  params: GenerateBidParams
-): Promise<BidResult> {
+export async function generateCateringBid(params: GenerateBidParams): Promise<BidResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const warnings: string[] = []
 
@@ -101,25 +99,19 @@ export async function generateCateringBid(
   }
 
   // Build lookup maps
-  const costMap = new Map(
-    (recipeCosts || []).map((r) => [r.recipe_id, r])
-  )
-  const recipeMap = new Map(
-    (recipes || []).map((r) => [r.id, r])
-  )
+  const costMap = new Map((recipeCosts || []).map((r: any) => [r.recipe_id, r]))
+  const recipeMap = new Map((recipes || []).map((r: any) => [r.id, r]))
 
   // Calculate food costs per course/recipe
   const breakdown: RecipeBreakdown[] = []
   let totalFoodCostCents = 0
 
   for (const course of params.courses) {
-    const costData = costMap.get(course.recipeId)
-    const recipeData = recipeMap.get(course.recipeId)
+    const costData: any = costMap.get(course.recipeId)
+    const recipeData: any = recipeMap.get(course.recipeId)
 
     if (!costData || !recipeData) {
-      warnings.push(
-        `Recipe not found: ${course.recipeId}. Skipped from cost calculation.`
-      )
+      warnings.push(`Recipe not found: ${course.recipeId}. Skipped from cost calculation.`)
       continue
     }
 
@@ -162,37 +154,27 @@ export async function generateCateringBid(
 
   // Equipment cost
   const equipmentCostCents =
-    params.includeEquipment && params.equipmentCostCents
-      ? params.equipmentCostCents
-      : 0
+    params.includeEquipment && params.equipmentCostCents ? params.equipmentCostCents : 0
 
   // Travel cost: miles * 72.5 cents/mile
   // MILEAGE_RATE_CENTS is 7250 per 100 miles, so per mile = 7250/100 = 72.5
-  const travelCostCents = Math.round(
-    (params.travelMiles * MILEAGE_RATE_CENTS) / 100
-  )
+  const travelCostCents = Math.round((params.travelMiles * MILEAGE_RATE_CENTS) / 100)
 
   // Subtotal before overhead and profit
-  const directCosts =
-    totalFoodCostCents + laborCostCents + equipmentCostCents + travelCostCents
+  const directCosts = totalFoodCostCents + laborCostCents + equipmentCostCents + travelCostCents
 
   // Overhead: percentage of direct costs
-  const overheadCents = Math.round(
-    directCosts * (params.overheadPercent / 100)
-  )
+  const overheadCents = Math.round(directCosts * (params.overheadPercent / 100))
 
   const subtotalCents = directCosts + overheadCents
 
   // Profit: percentage of subtotal
-  const profitCents = Math.round(
-    subtotalCents * (params.profitMarginPercent / 100)
-  )
+  const profitCents = Math.round(subtotalCents * (params.profitMarginPercent / 100))
 
   const totalCents = subtotalCents + profitCents
 
   // Per person
-  const perPersonCents =
-    params.guestCount > 0 ? Math.round(totalCents / params.guestCount) : 0
+  const perPersonCents = params.guestCount > 0 ? Math.round(totalCents / params.guestCount) : 0
 
   return {
     foodCostCents: totalFoodCostCents,
@@ -227,7 +209,7 @@ export async function getRecipeCostEstimate(
 }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: costData, error: costError } = await supabase
     .from('recipe_cost_summary')
@@ -257,8 +239,7 @@ export async function getRecipeCostEstimate(
   const yieldQty = recipe.yield_quantity || 1
   const scaleFactor = servings / yieldQty
   const scaledCostCents = Math.round(baseCostCents * scaleFactor)
-  const costPerServingCents =
-    servings > 0 ? Math.round(scaledCostCents / servings) : 0
+  const costPerServingCents = servings > 0 ? Math.round(scaledCostCents / servings) : 0
 
   return {
     recipeName: costData.recipe_name || '',
@@ -287,7 +268,7 @@ export async function saveBidAsQuote(
 ) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to tenant
   const { data: client } = await supabase
@@ -302,8 +283,7 @@ export async function saveBidAsQuote(
 
   // Build pricing notes from bid breakdown
   const breakdownLines = bidResult.breakdown.map(
-    (r) =>
-      `${r.recipeName}: $${(r.scaledCostCents / 100).toFixed(2)} (${r.servings} servings)`
+    (r) => `${r.recipeName}: $${(r.scaledCostCents / 100).toFixed(2)} (${r.servings} servings)`
   )
   const costSummary = [
     `Food: $${(bidResult.foodCostCents / 100).toFixed(2)}`,
@@ -397,7 +377,7 @@ export async function getBidHistory(): Promise<
 > {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get quotes that were created from catering bids
   // We identify them by pricing_notes containing "Bid Breakdown:"
@@ -416,7 +396,7 @@ export async function getBidHistory(): Promise<
     throw new Error('Failed to fetch bid history')
   }
 
-  return (quotes || []).map((q) => ({
+  return (quotes || []).map((q: any) => ({
     id: q.id,
     quoteName: q.quote_name,
     clientName: (q.client as { name: string } | null)?.name || null,
@@ -432,9 +412,7 @@ export async function getBidHistory(): Promise<
 // SEARCH RECIPES (for bid builder)
 // ============================================
 
-export async function searchRecipesForBid(
-  query: string
-): Promise<
+export async function searchRecipesForBid(query: string): Promise<
   {
     id: string
     name: string
@@ -446,7 +424,7 @@ export async function searchRecipesForBid(
 > {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let queryBuilder = supabase
     .from('recipes')
@@ -468,7 +446,7 @@ export async function searchRecipesForBid(
   }
 
   // Get cost data for found recipes
-  const recipeIds = (recipes || []).map((r) => r.id)
+  const recipeIds = (recipes || []).map((r: any) => r.id)
 
   if (recipeIds.length === 0) return []
 
@@ -478,12 +456,10 @@ export async function searchRecipesForBid(
     .eq('tenant_id', tenantId)
     .in('recipe_id', recipeIds)
 
-  const costMap = new Map(
-    (costs || []).map((c) => [c.recipe_id, c])
-  )
+  const costMap = new Map((costs || []).map((c: any) => [c.recipe_id, c]))
 
-  return (recipes || []).map((r) => {
-    const cost = costMap.get(r.id)
+  return (recipes || []).map((r: any) => {
+    const cost: any = costMap.get(r.id)
     return {
       id: r.id,
       name: r.name,

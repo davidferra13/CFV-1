@@ -43,7 +43,7 @@ export async function generateSocialCaptions(
   tone: CaptionTone = 'warm_personal'
 ): Promise<SocialCaptionsResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, menuResult, chefResult] = await Promise.all([
     supabase

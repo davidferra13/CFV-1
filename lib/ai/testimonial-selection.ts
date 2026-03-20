@@ -49,7 +49,7 @@ const getClient = () => {
 
 export async function selectTestimonialHighlights(): Promise<TestimonialSelectionResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Gather AAR client feedback and positive messages
   const [aarResult, messagesResult, surveysResult] = await Promise.all([

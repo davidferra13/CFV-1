@@ -753,7 +753,7 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
   const [, forceRefresh] = useState(0)
 
   const nextCourseNumber = getNextCourseNumber(
-    (menu.dishes ?? []).map((dish) => dish.course_number)
+    (menu.dishes ?? []).map((dish: any) => dish.course_number)
   )
 
   const handleAddCourse = (e: React.FormEvent) => {

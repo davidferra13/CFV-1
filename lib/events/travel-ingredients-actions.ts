@@ -6,11 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import type {
-  TravelLegType,
-  TravelLegStatus,
-  TravelIngredientStatus,
-} from '@/lib/travel/types'
+import type { TravelLegType, TravelLegStatus, TravelIngredientStatus } from '@/lib/travel/types'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -54,12 +50,10 @@ export type TravelIngredientsResult = {
 
 // ── Server Action ──────────────────────────────────────────────────────────
 
-export async function getTravelLegIngredients(
-  eventId: string
-): Promise<TravelIngredientsResult> {
+export async function getTravelLegIngredients(eventId: string): Promise<TravelIngredientsResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch travel legs for this event
   const { data: legs, error: legsError } = await supabase
@@ -84,15 +78,17 @@ export async function getTravelLegIngredients(
     }
   }
 
-  const legIds = legs.map((l) => l.id)
+  const legIds = legs.map((l: any) => l.id)
 
   // Fetch ingredients for all legs, joining ingredient names
   const { data: rawIngredients, error: ingError } = await supabase
     .from('travel_leg_ingredients')
-    .select(`
+    .select(
+      `
       *,
       ingredients (name)
-    `)
+    `
+    )
     .in('leg_id', legIds)
 
   if (ingError) {
@@ -118,21 +114,22 @@ export async function getTravelLegIngredients(
   let sourcedCount = 0
   let toSourceCount = 0
 
-  const resultLegs: TravelLegWithSourcedIngredients[] = legs.map((leg) => {
-    const legIngredients = allIngredients.filter((i) => i.legId === leg.id)
-    const stops = (leg.stops as Array<{ order: number; name: string; address: string; purpose: string }>) ?? []
+  const resultLegs: TravelLegWithSourcedIngredients[] = legs.map((leg: any) => {
+    const legIngredients = allIngredients.filter((i: any) => i.legId === leg.id)
+    const stops =
+      (leg.stops as Array<{ order: number; name: string; address: string; purpose: string }>) ?? []
 
     // Group ingredients by store name matching stop names
     const stopResults = stops.map((stop) => {
       const stopIngredients = legIngredients.filter(
-        (i) => i.storeName && i.storeName.toLowerCase() === stop.name.toLowerCase()
+        (i: any) => i.storeName && i.storeName.toLowerCase() === stop.name.toLowerCase()
       )
       return {
         order: stop.order,
         name: stop.name,
         address: stop.address,
         purpose: stop.purpose,
-        ingredients: stopIngredients.map((i) => ({
+        ingredients: stopIngredients.map((i: any) => ({
           ingredientId: i.ingredientId,
           ingredientName: i.ingredientName,
           quantity: i.quantity,
@@ -147,11 +144,11 @@ export async function getTravelLegIngredients(
 
     // Ingredients not matched to any stop
     const assignedIds = new Set(
-      stopResults.flatMap((s) => s.ingredients.map((i) => i.ingredientId))
+      stopResults.flatMap((s) => s.ingredients.map((i: any) => i.ingredientId))
     )
     const unassigned = legIngredients
-      .filter((i) => !assignedIds.has(i.ingredientId))
-      .map((i) => ({
+      .filter((i: any) => !assignedIds.has(i.ingredientId))
+      .map((i: any) => ({
         ingredientId: i.ingredientId,
         ingredientName: i.ingredientName,
         quantity: i.quantity,
@@ -164,8 +161,8 @@ export async function getTravelLegIngredients(
 
     // Tally
     totalIngredients += legIngredients.length
-    sourcedCount += legIngredients.filter((i) => i.status === 'sourced').length
-    toSourceCount += legIngredients.filter((i) => i.status === 'to_source').length
+    sourcedCount += legIngredients.filter((i: any) => i.status === 'sourced').length
+    toSourceCount += legIngredients.filter((i: any) => i.status === 'to_source').length
 
     return {
       legId: leg.id,

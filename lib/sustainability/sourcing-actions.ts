@@ -66,7 +66,7 @@ export type Scorecard = {
 
 export async function addSourcingEntry(input: SourcingEntryInput) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await (supabase as any).from('sourcing_entries').insert({
     chef_id: chef.tenantId!,
@@ -94,7 +94,7 @@ export async function getSourcingEntries(opts?: {
   limit?: number
 }) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = (supabase as any)
     .from('sourcing_entries')
@@ -114,7 +114,7 @@ export async function getSourcingEntries(opts?: {
 
 export async function deleteSourcingEntry(id: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await (supabase as any)
     .from('sourcing_entries')
@@ -208,7 +208,7 @@ export async function getMonthlyTrend(): Promise<
   { month: string; localPercent: number; organicPercent: number; entryCount: number }[]
 > {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get last 12 months of entries
   const twelveMonthsAgo = new Date()
@@ -303,7 +303,7 @@ export async function getSourcingScorecard(opts?: {
 
 export async function getEventSourcingReport(eventId: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('sourcing_entries')

@@ -9,7 +9,7 @@ export async function generateOnboardingLink(
   clientId: string
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: client } = await supabase
     .from('clients')

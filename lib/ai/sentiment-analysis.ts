@@ -30,7 +30,7 @@ export type SentimentAnalysis = ThreadSentimentResult
 
 export async function analyzeClientSentiment(clientId: string): Promise<SentimentAnalysis> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: messages } = await supabase
     .from('messages')

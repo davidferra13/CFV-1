@@ -987,6 +987,7 @@ export function ControlPacketClient({
                   >
                     <div className="aspect-square bg-[#0a130a]">
                       {item.signedUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={item.signedUrl}
                           alt="Evidence"

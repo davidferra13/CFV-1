@@ -103,23 +103,26 @@ export async function computeMenuEngineering(
     }
   })
 
-  const totalSales = rawItems.reduce((s, i) => s + i.salesCount, 0)
+  const totalSales = rawItems.reduce((s: any, i: any) => s + i.salesCount, 0)
   const avgPopularity = totalSales / rawItems.length
-  const totalContribution = rawItems.reduce((s, i) => s + i.contribution * i.salesCount, 0)
-  const totalSalesCount = rawItems.reduce((s, i) => s + i.salesCount, 0)
+  const totalContribution = rawItems.reduce(
+    (s: any, i: any) => s + i.contribution * i.salesCount,
+    0
+  )
+  const totalSalesCount = rawItems.reduce((s: any, i: any) => s + i.salesCount, 0)
   const avgContribution = totalSalesCount > 0 ? totalContribution / totalSalesCount : 0
 
-  const items: MenuEngineeringItem[] = rawItems.map((i) => ({
+  const items: MenuEngineeringItem[] = rawItems.map((i: any) => ({
     ...i,
     quadrant: assignQuadrant(i.salesCount, i.contribution, avgPopularity, avgContribution),
   }))
 
-  const totalRevenue = items.reduce((s, i) => s + i.sellingPrice * i.salesCount, 0)
-  const totalFoodCost = items.reduce((s, i) => s + i.foodCost * i.salesCount, 0)
+  const totalRevenue = items.reduce((s: any, i: any) => s + i.sellingPrice * i.salesCount, 0)
+  const totalFoodCost = items.reduce((s: any, i: any) => s + i.foodCost * i.salesCount, 0)
 
   const alerts = items
-    .filter((i) => i.foodCostPct > targetFoodCostPct)
-    .map((i) => ({
+    .filter((i: any) => i.foodCostPct > targetFoodCostPct)
+    .map((i: any) => ({
       itemId: i.id,
       itemName: i.name,
       foodCostPct: i.foodCostPct,

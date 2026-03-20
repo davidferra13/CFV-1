@@ -60,7 +60,7 @@ async function getMenuRecipeMap(
 
   if (!dishes || dishes.length === 0) return new Map()
 
-  const dishIds = dishes.map((d) => d.id)
+  const dishIds = dishes.map((d: any) => d.id)
 
   const { data: components } = await supabase
     .from('components')
@@ -71,7 +71,7 @@ async function getMenuRecipeMap(
 
   if (!components || components.length === 0) return new Map()
 
-  const recipeIds = [...new Set(components.map((c) => c.recipe_id!).filter(Boolean))]
+  const recipeIds = [...new Set(components.map((c: any) => c.recipe_id!).filter(Boolean))]
 
   if (recipeIds.length === 0) return new Map()
 
@@ -105,7 +105,7 @@ async function getMenuRecipeMap(
 export async function checkRepeatMenu(eventId: string): Promise<RepeatMenuResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // 1. Get the current event and its menu
   const { data: currentEvent } = await supabase
@@ -211,7 +211,7 @@ export async function checkRepeatMenu(eventId: string): Promise<RepeatMenuResult
 export async function getClientMenuHistory(clientId: string): Promise<ClientMenuHistoryEntry[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all events for this client that have a menu, ordered newest first
   const { data: events } = await supabase
@@ -265,8 +265,8 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
       const componentEntries: ClientMenuHistoryEntry['dishes'][0]['components'] = []
       if (components) {
         const recipeIds = components
-          .map((c) => c.recipe_id)
-          .filter((id): id is string => id !== null)
+          .map((c: any) => c.recipe_id)
+          .filter((id: any): id is string => id !== null)
 
         let recipeNameMap = new Map<string, string>()
         if (recipeIds.length > 0) {
@@ -277,7 +277,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
             .eq('tenant_id', tenantId)
 
           if (recipes) {
-            recipeNameMap = new Map(recipes.map((r) => [r.id, r.name]))
+            recipeNameMap = new Map(recipes.map((r: any) => [r.id, r.name]))
           }
         }
 

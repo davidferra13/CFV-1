@@ -30,7 +30,7 @@ export async function getMarketplaceConversionData(
   eventId: string
 ): Promise<MarketplaceConversionData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   try {

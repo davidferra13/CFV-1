@@ -38,7 +38,7 @@ const MIN_EVENTS_FOR_ANALYSIS = 5
 export async function getTriageSuggestions(): Promise<TriageSuggestion[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const suggestions: TriageSuggestion[] = []
 
@@ -48,7 +48,9 @@ export async function getTriageSuggestions(): Promise<TriageSuggestion[]> {
 
   const { data: inquiries } = await supabase
     .from('inquiries')
-    .select('id, channel, occasion, guest_count, budget_cents, status, created_at, updated_at, client_id')
+    .select(
+      'id, channel, occasion, guest_count, budget_cents, status, created_at, updated_at, client_id'
+    )
     .eq('tenant_id', tenantId)
     .gte('created_at', ninetyDaysAgo.toISOString())
     .order('created_at', { ascending: false })
@@ -94,11 +96,12 @@ export async function getTriageSuggestions(): Promise<TriageSuggestion[]> {
 
   // ── Pattern 2: High-value inquiries (large guest count) ──────────────────
   const highValueInquiries = inquiries.filter(
-    (inq) => inq.guest_count != null && inq.guest_count >= HIGH_VALUE_GUEST_COUNT
+    (inq: any) => inq.guest_count != null && inq.guest_count >= HIGH_VALUE_GUEST_COUNT
   )
   if (highValueInquiries.length >= 2) {
     const avgGuestCount = Math.round(
-      highValueInquiries.reduce((s, i) => s + (i.guest_count ?? 0), 0) / highValueInquiries.length
+      highValueInquiries.reduce((s: any, i: any) => s + (i.guest_count ?? 0), 0) /
+        highValueInquiries.length
     )
     suggestions.push({
       id: 'high-guest-count',
@@ -143,11 +146,13 @@ export async function getTriageSuggestions(): Promise<TriageSuggestion[]> {
   }
 
   // ── Pattern 4: Common high-budget inquiries ──────────────────────────────
-  const budgetInquiries = inquiries.filter((inq) => inq.budget_cents != null && inq.budget_cents > 0)
+  const budgetInquiries = inquiries.filter(
+    (inq: any) => inq.budget_cents != null && inq.budget_cents > 0
+  )
   if (budgetInquiries.length >= 3) {
     const sortedBudgets = budgetInquiries
-      .map((i) => i.budget_cents!)
-      .sort((a, b) => b - a)
+      .map((i: any) => i.budget_cents!)
+      .sort((a: any, b: any) => b - a)
     const topQuartile = sortedBudgets[Math.floor(sortedBudgets.length * 0.25)]
 
     if (topQuartile && topQuartile > 50000) {

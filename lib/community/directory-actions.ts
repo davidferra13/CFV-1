@@ -40,7 +40,7 @@ export interface DirectorySearchFilters {
 
 export async function getMyListing() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('chef_directory_listings')
@@ -54,7 +54,7 @@ export async function getMyListing() {
 
 export async function updateListing(input: DirectoryListingInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Check if listing exists
   const { data: existing } = await (supabase as any)
@@ -85,7 +85,7 @@ export async function updateListing(input: DirectoryListingInput) {
 
 export async function togglePublished(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current state (scoped to chef)
   const { data: listing, error: fetchErr } = await (supabase as any)
@@ -117,7 +117,7 @@ export async function togglePublished(id: string) {
 // ------------------------------------------------------------------
 
 export async function searchDirectory(filters?: DirectorySearchFilters) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = (supabase as any)
     .from('chef_directory_listings')
@@ -152,7 +152,7 @@ export async function searchDirectory(filters?: DirectorySearchFilters) {
 }
 
 export async function getDirectoryListing(id: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('chef_directory_listings')
@@ -166,7 +166,7 @@ export async function getDirectoryListing(id: string) {
 }
 
 export async function getDirectoryStats() {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: listings, error } = await (supabase as any)
     .from('chef_directory_listings')

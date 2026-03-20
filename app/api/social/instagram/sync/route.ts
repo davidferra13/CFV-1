@@ -29,7 +29,7 @@ interface IGInsightMetric {
 }
 
 async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?: string }> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Get stored token
   const { data: conn } = await supabase

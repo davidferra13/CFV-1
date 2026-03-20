@@ -53,7 +53,7 @@ export interface ExternalReviewSummary {
 
 export async function getSocialConnectionStatuses(): Promise<SocialConnectionStatus[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('social_connected_accounts')
@@ -92,7 +92,7 @@ export async function getLatestSocialSnapshot(
   platform: string
 ): Promise<SocialPlatformSnapshot | null> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('social_stats_snapshots')
@@ -126,7 +126,7 @@ export async function getSocialGrowthTrend(
   months: number = 6
 ): Promise<SocialGrowthTrend[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const cutoff = new Date()
   cutoff.setMonth(cutoff.getMonth() - months)
@@ -139,7 +139,7 @@ export async function getSocialGrowthTrend(
     .gte('snapshot_date', cutoff.toISOString().slice(0, 10))
     .order('snapshot_date', { ascending: true })
 
-  return (data ?? []).map((row) => ({
+  return (data ?? []).map((row: any) => ({
     date: row.snapshot_date,
     followers: row.followers,
     engagementRate: row.avg_engagement_rate ? Number(row.avg_engagement_rate) : null,
@@ -156,7 +156,7 @@ export async function getFollowerGrowthRate(
   growthRate: number | null
 }> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - periodDays)
@@ -184,7 +184,7 @@ export async function getFollowerGrowthRate(
 
 export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get latest and historical snapshots from external_reviews
   const { data: reviews } = await supabase
@@ -199,7 +199,9 @@ export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> 
 
   const totalReviews = reviews.length
   const avgRating =
-    Math.round((reviews.reduce((s, r) => s + Number(r.rating ?? 0), 0) / totalReviews) * 10) / 10
+    Math.round(
+      (reviews.reduce((s: any, r: any) => s + Number(r.rating ?? 0), 0) / totalReviews) * 10
+    ) / 10
 
   const ratingDistribution: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 }
   for (const r of reviews) {
@@ -210,7 +212,7 @@ export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> 
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
   const newReviews = reviews.filter(
-    (r) => r.first_seen_at && new Date(r.first_seen_at) >= sevenDaysAgo
+    (r: any) => r.first_seen_at && new Date(r.first_seen_at) >= sevenDaysAgo
   ).length
 
   // Monthly trend (last 12 months)
@@ -238,7 +240,7 @@ export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> 
 
 export async function getExternalReviewSummary(): Promise<ExternalReviewSummary[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: sources } = await supabase
     .from('external_review_sources')
@@ -259,7 +261,9 @@ export async function getExternalReviewSummary(): Promise<ExternalReviewSummary[
     const total = reviews?.length ?? 0
     const avg =
       total > 0
-        ? Math.round((reviews!.reduce((s, r) => s + Number(r.rating ?? 0), 0) / total) * 10) / 10
+        ? Math.round(
+            (reviews!.reduce((s: any, r: any) => s + Number(r.rating ?? 0), 0) / total) * 10
+          ) / 10
         : 0
 
     results.push({

@@ -111,6 +111,7 @@ export const HubMessageBubble = memo(function HubMessageBubble({
       {!isOwn && (
         <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-stone-700 text-xs font-medium text-stone-300">
           {author?.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={author.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
           ) : (
             initials
@@ -348,6 +349,7 @@ function SeenByIndicator({ messageId }: { messageId: string }) {
               className="mt-1 flex items-center gap-1.5 text-xs text-stone-300"
             >
               {r.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={r.avatar_url} alt="" className="h-4 w-4 rounded-full object-cover" />
               ) : (
                 <div className="flex h-4 w-4 items-center justify-center rounded-full bg-stone-700 text-3xs">

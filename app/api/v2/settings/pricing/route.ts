@@ -45,7 +45,7 @@ const UpdatePricingBody = z
         })
       )
       .optional(),
-    multi_night_packages: z.record(z.number().int().nonnegative()).optional(),
+    multi_night_packages: z.record(z.string(), z.number().int().nonnegative()).optional(),
   })
   .strict()
 

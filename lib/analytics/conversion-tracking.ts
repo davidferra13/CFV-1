@@ -135,7 +135,7 @@ function safePercent(numerator: number, denominator: number): number | null {
 export async function getConversionFunnel(dateRange?: DateRange): Promise<ConversionFunnelData> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all events in range
   let eventsQuery = supabase
@@ -160,7 +160,7 @@ export async function getConversionFunnel(dateRange?: DateRange): Promise<Conver
     }
   }
 
-  const eventIds = events.map((e) => e.id)
+  const eventIds = events.map((e: any) => e.id)
   if (eventIds.length === 0) {
     return {
       stages: [],
@@ -243,7 +243,7 @@ export async function getConversionFunnel(dateRange?: DateRange): Promise<Conver
     .sort((a, b) => b.count - a.count)
 
   const totalCompleted = stageCounts.get('completed') ?? 0
-  const totalCancelled = events.filter((e) => e.status === 'cancelled').length
+  const totalCancelled = events.filter((e: any) => e.status === 'cancelled').length
 
   return {
     stages: funnelStages,
@@ -262,7 +262,7 @@ export async function getConversionFunnel(dateRange?: DateRange): Promise<Conver
 export async function getConversionBySource(dateRange?: DateRange): Promise<SourceConversionRow[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('events')
@@ -277,7 +277,7 @@ export async function getConversionBySource(dateRange?: DateRange): Promise<Sour
   if (!events || events.length === 0) return []
 
   // Get inquiry channels for events that have inquiry_id
-  const inquiryIds = events.map((e) => e.inquiry_id).filter((id): id is string => !!id)
+  const inquiryIds = events.map((e: any) => e.inquiry_id).filter((id: any): id is string => !!id)
 
   let inquiryChannelMap = new Map<string, string>()
   if (inquiryIds.length > 0) {
@@ -294,7 +294,7 @@ export async function getConversionBySource(dateRange?: DateRange): Promise<Sour
   }
 
   // Get transitions to know which stages each event reached
-  const eventIds = events.map((e) => e.id)
+  const eventIds = events.map((e: any) => e.id)
   const { data: transitions } = await supabase
     .from('event_state_transitions')
     .select('event_id, to_status')
@@ -365,7 +365,7 @@ export async function getConversionBySource(dateRange?: DateRange): Promise<Sour
 export async function getAverageTimeInStage(dateRange?: DateRange): Promise<StageTimingRow[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all transitions, optionally filtered by date
   let query = supabase
@@ -399,7 +399,7 @@ export async function getAverageTimeInStage(dateRange?: DateRange): Promise<Stag
 
   for (const [, eventTrans] of eventTransitions) {
     // Sort by timestamp
-    eventTrans.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
+    eventTrans.sort((a: any, b: any) => new Date(a.at).getTime() - new Date(b.at).getTime())
 
     // For each pair, find the transition into `from` and transition into `to`
     for (const pair of TRANSITION_PAIRS) {
@@ -423,7 +423,7 @@ export async function getAverageTimeInStage(dateRange?: DateRange): Promise<Stag
         // The event was created in draft. Use the first transition time minus a lookup
         // Actually, draft entry time is event created_at, which we don't have here.
         // Use the first transition FROM draft as the "entered to" and approximate.
-        const firstFromDraft = eventTrans.find((t) => t.from === 'draft')
+        const firstFromDraft = eventTrans.find((t: any) => t.from === 'draft')
         if (firstFromDraft) {
           enteredToAt = firstFromDraft.at
           // We'll skip draft duration since we don't have created_at here
@@ -447,8 +447,8 @@ export async function getAverageTimeInStage(dateRange?: DateRange): Promise<Stag
     const durations = pairDurations.get(key)!
     if (durations.length === 0) continue
 
-    durations.sort((a, b) => a - b)
-    const sum = durations.reduce((s, d) => s + d, 0)
+    durations.sort((a: any, b: any) => a - b)
+    const sum = durations.reduce((s: any, d: any) => s + d, 0)
     const avg = sum / durations.length
     const medianIdx = Math.floor(durations.length / 2)
     const median =
@@ -477,7 +477,7 @@ export async function getAverageTimeInStage(dateRange?: DateRange): Promise<Stag
 export async function getConversionTrend(months: number = 6): Promise<MonthlyConversionRow[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const startDate = new Date()
   startDate.setMonth(startDate.getMonth() - months)
@@ -523,7 +523,7 @@ export async function getConversionTrend(months: number = 6): Promise<MonthlyCon
 export async function getLeadQualityBySource(): Promise<SourceQualityRow[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get completed events with financials
   const { data: events } = await supabase
@@ -535,7 +535,7 @@ export async function getLeadQualityBySource(): Promise<SourceQualityRow[]> {
   if (!events || events.length === 0) return []
 
   // Get inquiry channels for fallback
-  const inquiryIds = events.map((e) => e.inquiry_id).filter((id): id is string => !!id)
+  const inquiryIds = events.map((e: any) => e.inquiry_id).filter((id: any): id is string => !!id)
 
   let inquiryChannelMap = new Map<string, string>()
   if (inquiryIds.length > 0) {
@@ -552,7 +552,7 @@ export async function getLeadQualityBySource(): Promise<SourceQualityRow[]> {
   }
 
   // Get financial summaries for completed events
-  const completedIds = events.filter((e) => e.status === 'completed').map((e) => e.id)
+  const completedIds = events.filter((e: any) => e.status === 'completed').map((e: any) => e.id)
   let financialMap = new Map<string, number>()
   if (completedIds.length > 0) {
     const { data: financials } = await supabase
@@ -608,7 +608,7 @@ export async function getLeadQualityBySource(): Promise<SourceQualityRow[]> {
 export async function getLostDealsAnalysis(dateRange?: DateRange): Promise<LostDealsAnalysis> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get cancelled events
   let query = supabase
@@ -635,7 +635,7 @@ export async function getLostDealsAnalysis(dateRange?: DateRange): Promise<LostD
   }
 
   // Get the cancellation transitions to know from which stage
-  const eventIds = cancelledEvents.map((e) => e.id)
+  const eventIds = cancelledEvents.map((e: any) => e.id)
   const { data: transitions } = await supabase
     .from('event_state_transitions')
     .select('event_id, from_status, to_status')
@@ -651,7 +651,7 @@ export async function getLostDealsAnalysis(dateRange?: DateRange): Promise<LostD
   }
 
   // Build deals list
-  const deals: LostDealRow[] = cancelledEvents.map((e) => ({
+  const deals: LostDealRow[] = cancelledEvents.map((e: any) => ({
     eventId: e.id,
     occasion: e.occasion,
     source: e.booking_source,
@@ -688,7 +688,7 @@ export async function getLostDealsAnalysis(dateRange?: DateRange): Promise<LostD
     .slice(0, 10)
 
   const totalLostRevenueCents = cancelledEvents.reduce(
-    (sum, e) => sum + (e.quoted_price_cents ?? 0),
+    (sum: any, e: any) => sum + (e.quoted_price_cents ?? 0),
     0
   )
 

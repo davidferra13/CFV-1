@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       60 * 60_000
     )
 
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     const lookup = await findChefByPublicSlug<{ id: string }>(supabase, normalizedChefSlug, 'id')
     const chef = lookup.data

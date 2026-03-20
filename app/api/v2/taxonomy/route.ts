@@ -18,7 +18,7 @@ const CreateEntryBody = z.object({
   category: z.string().min(1),
   value: z.string().min(1),
   display_label: z.string().min(1),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const GET = withApiAuth(
@@ -75,7 +75,7 @@ export const GET = withApiAuth(
       })
     }
 
-    for (const row of customRows ?? []) {
+    for (const row of (customRows ?? []) as any[]) {
       merged.push({
         id: row.id,
         value: row.value,

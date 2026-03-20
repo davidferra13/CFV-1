@@ -60,7 +60,7 @@ function classifySeverity(changeType: ChangeType): Severity {
 
 export async function getDietaryAlerts(unacknowledgedOnly = false): Promise<DietaryAlert[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('dietary_change_log')
@@ -100,7 +100,7 @@ export async function getDietaryAlerts(unacknowledgedOnly = false): Promise<Diet
 
 export async function acknowledgeAlert(alertId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('dietary_change_log')
@@ -116,7 +116,7 @@ export async function acknowledgeAlert(alertId: string): Promise<void> {
 
 export async function acknowledgeAllAlerts(): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('dietary_change_log')
@@ -138,7 +138,7 @@ export async function logDietaryChange(
   newValue: string | null
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const severity = classifySeverity(changeType)
 
@@ -164,7 +164,7 @@ export async function getDietaryTrends(): Promise<{
   risingTrends: DietaryTrend[]
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all dietary changes for this chef
   const { data, error } = await supabase
@@ -237,7 +237,7 @@ export async function getDietaryTrends(): Promise<{
 
 export async function getClientDietaryTimeline(clientId: string): Promise<DietaryAlert[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('dietary_change_log')
@@ -268,7 +268,7 @@ export async function getClientDietaryTimeline(clientId: string): Promise<Dietar
 
 export async function getAlertStats(): Promise<AlertStats> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('dietary_change_log')

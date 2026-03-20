@@ -51,7 +51,7 @@ export type BenchmarkAggregate = {
 
 export async function getCommunityProfile(): Promise<CommunityProfile | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('community_profiles')
@@ -78,7 +78,7 @@ export async function updateCommunityProfile(profileData: {
   specialties?: string[]
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const trimmedName = profileData.display_name?.trim()
   if (!trimmedName || trimmedName.length > 100) {
@@ -119,7 +119,7 @@ export async function searchChefs(filters?: {
   acceptingReferrals?: boolean
 }): Promise<CommunityProfile[]> {
   await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = (supabase as any)
     .from('community_profiles')
@@ -151,7 +151,7 @@ export async function searchChefs(filters?: {
 
 export async function getChefProfile(chefId: string): Promise<CommunityProfile | null> {
   await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('community_profiles')
@@ -178,9 +178,15 @@ export async function submitBenchmark(
   period: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const validMetrics = ['avg_event_price', 'events_per_month', 'food_cost_pct', 'client_retention_rate', 'avg_party_size']
+  const validMetrics = [
+    'avg_event_price',
+    'events_per_month',
+    'food_cost_pct',
+    'client_retention_rate',
+    'avg_party_size',
+  ]
   if (!validMetrics.includes(metricType)) {
     return { success: false, error: 'Invalid metric type' }
   }
@@ -195,17 +201,15 @@ export async function submitBenchmark(
   }
 
   // Upsert: one entry per chef per metric per period
-  const { error } = await (supabase as any)
-    .from('community_benchmarks')
-    .upsert(
-      {
-        chef_id: user.entityId,
-        metric_type: metricType,
-        value,
-        period,
-      },
-      { onConflict: 'chef_id,metric_type,period', ignoreDuplicates: false }
-    )
+  const { error } = await (supabase as any).from('community_benchmarks').upsert(
+    {
+      chef_id: user.entityId,
+      metric_type: metricType,
+      value,
+      period,
+    },
+    { onConflict: 'chef_id,metric_type,period', ignoreDuplicates: false }
+  )
 
   if (error) {
     console.error('[Community] submitBenchmark failed:', error)
@@ -221,7 +225,7 @@ export async function getAggregateBenchmarks(
   period?: string
 ): Promise<BenchmarkAggregate[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // "Give to get" - check if chef has contributed this metric
   const { data: ownContribution } = await (supabase as any)
@@ -285,7 +289,7 @@ export async function sendMessage(
   body: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const trimmedBody = body?.trim()
   if (!trimmedBody || trimmedBody.length > 5000) {
@@ -308,14 +312,12 @@ export async function sendMessage(
     return { success: false, error: 'Recipient not found' }
   }
 
-  const { error } = await (supabase as any)
-    .from('community_messages')
-    .insert({
-      sender_id: user.entityId,
-      recipient_id: recipientId,
-      subject: subject?.trim() || null,
-      body: trimmedBody,
-    })
+  const { error } = await (supabase as any).from('community_messages').insert({
+    sender_id: user.entityId,
+    recipient_id: recipientId,
+    subject: subject?.trim() || null,
+    body: trimmedBody,
+  })
 
   if (error) {
     console.error('[Community] sendMessage failed:', error)
@@ -326,11 +328,9 @@ export async function sendMessage(
   return { success: true }
 }
 
-export async function getMessages(
-  folder: 'inbox' | 'sent'
-): Promise<CommunityMessage[]> {
+export async function getMessages(folder: 'inbox' | 'sent'): Promise<CommunityMessage[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const column = folder === 'inbox' ? 'recipient_id' : 'sender_id'
 
@@ -353,7 +353,7 @@ export async function markMessageRead(
   messageId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await (supabase as any)
     .from('community_messages')

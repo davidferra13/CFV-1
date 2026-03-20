@@ -43,12 +43,12 @@ async function EventsList({ status }: { status: EventStatus }) {
 
   // Filter by status if not 'all'
   if (status !== 'all') {
-    events = events.filter((event) => event.status === status)
+    events = events.filter((event: any) => event.status === status)
   }
 
   // Sort by date (newest first by default)
   events = events.sort(
-    (a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+    (a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
   )
 
   if (events.length === 0) {
@@ -82,7 +82,7 @@ async function EventsList({ status }: { status: EventStatus }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {events.map((event) => (
+          {events.map((event: any) => (
             <TableRow key={event.id}>
               <TableCell className="font-medium">
                 <Link

@@ -73,12 +73,13 @@ export async function generateProposalFromEvent(
 ): Promise<{ success: true; data: ProposalData } | { success: false; error: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with client and menu
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id,
       event_date,
       occasion,
@@ -96,7 +97,8 @@ export async function generateProposalFromEvent(
       pricing_notes,
       menu_id,
       client_id
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
     .single()
@@ -217,12 +219,13 @@ export async function createQuoteFromProposal(
 ): Promise<{ success: true; quoteId: string } | { success: false; error: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the event to get base data
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id,
       client_id,
       inquiry_id,
@@ -230,7 +233,8 @@ export async function createQuoteFromProposal(
       quoted_price_cents,
       pricing_model,
       pricing_notes
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
     .single()
@@ -320,13 +324,16 @@ export async function createQuoteFromProposal(
 // 4. GET DEFAULT TERMS (from chef profile metadata)
 // ============================================
 
-export async function getDefaultTerms(): Promise<{
-  success: true
-  terms: string | null
-} | {
-  success: false
-  error: string
-}> {
+export async function getDefaultTerms(): Promise<
+  | {
+      success: true
+      terms: string | null
+    }
+  | {
+      success: false
+      error: string
+    }
+> {
   // Default terms are stored client-side in localStorage.
   // This action exists as a placeholder for future DB-backed terms.
   // For now, return null and let the client handle it.

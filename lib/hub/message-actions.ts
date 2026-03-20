@@ -25,7 +25,7 @@ export async function postHubMessage(
   input: z.infer<typeof PostMessageSchema>
 ): Promise<HubMessage> {
   const validated = PostMessageSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Resolve profile
   const { data: profile } = await supabase
@@ -91,7 +91,7 @@ export async function postSystemMessage(input: {
   metadata?: Record<string, unknown>
   body?: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   try {
     await supabase.from('hub_messages').insert({
@@ -116,7 +116,7 @@ export async function getHubMessages(input: {
   cursor?: string
   limit?: number
 }): Promise<{ messages: HubMessage[]; nextCursor: string | null }> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
   const limit = input.limit ?? 50
 
   let query = supabase
@@ -136,7 +136,7 @@ export async function getHubMessages(input: {
 
   const rows = data ?? []
   const hasMore = rows.length > limit
-  const messages = (hasMore ? rows.slice(0, limit) : rows).map((m) => ({
+  const messages = (hasMore ? rows.slice(0, limit) : rows).map((m: any) => ({
     ...m,
     author: m.hub_guest_profiles ?? undefined,
     hub_guest_profiles: undefined,
@@ -152,7 +152,7 @@ export async function getHubMessages(input: {
  * Get pinned messages for a group.
  */
 export async function getPinnedMessages(groupId: string): Promise<HubMessage[]> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data, error } = await supabase
     .from('hub_messages')
@@ -164,7 +164,7 @@ export async function getPinnedMessages(groupId: string): Promise<HubMessage[]> 
 
   if (error) throw new Error(`Failed to load pinned messages: ${error.message}`)
 
-  return (data ?? []).map((m) => ({
+  return (data ?? []).map((m: any) => ({
     ...m,
     author: m.hub_guest_profiles ?? undefined,
     hub_guest_profiles: undefined,
@@ -178,7 +178,7 @@ export async function togglePinMessage(input: {
   messageId: string
   profileToken: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: profile } = await supabase
     .from('hub_guest_profiles')
@@ -230,7 +230,7 @@ export async function addReaction(input: {
   profileToken: string
   emoji: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: profile } = await supabase
     .from('hub_guest_profiles')
@@ -277,7 +277,7 @@ export async function removeReaction(input: {
   profileToken: string
   emoji: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: profile } = await supabase
     .from('hub_guest_profiles')
@@ -319,7 +319,7 @@ export async function deleteHubMessage(input: {
   messageId: string
   profileToken: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: profile } = await supabase
     .from('hub_guest_profiles')
@@ -364,7 +364,7 @@ export async function deleteHubMessage(input: {
  * Mark messages as read for a member. Also records per-message reads for "Seen by."
  */
 export async function markHubRead(input: { groupId: string; profileToken: string }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: profile } = await supabase
     .from('hub_guest_profiles')
@@ -396,7 +396,7 @@ export async function recordMessageReads(input: {
   groupId: string
   profileToken: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: profile } = await supabase
     .from('hub_guest_profiles')
@@ -434,7 +434,7 @@ export async function recordMessageReads(input: {
   if (!unreadMessages || unreadMessages.length === 0) return
 
   // Bulk upsert reads (ignore conflicts from duplicate reads)
-  const rows = unreadMessages.map((m) => ({
+  const rows = unreadMessages.map((m: any) => ({
     message_id: m.id,
     profile_id: profile.id,
   }))
@@ -453,7 +453,7 @@ export async function getMessageReaders(
 ): Promise<
   { profile_id: string; display_name: string; avatar_url: string | null; read_at: string }[]
 > {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data, error } = await supabase
     .from('hub_message_reads')
@@ -464,7 +464,7 @@ export async function getMessageReaders(
 
   if (error || !data) return []
 
-  return data.map((r) => {
+  return data.map((r: any) => {
     const profile = r.hub_guest_profiles as unknown as {
       display_name: string
       avatar_url: string | null
@@ -486,7 +486,7 @@ export async function editHubMessage(input: {
   profileToken: string
   body: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: profile } = await supabase
     .from('hub_guest_profiles')
@@ -526,7 +526,7 @@ export async function searchHubMessages(input: {
   query: string
   limit?: number
 }): Promise<HubMessage[]> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
   const limit = input.limit ?? 20
   const q = input.query.trim()
 
@@ -543,7 +543,7 @@ export async function searchHubMessages(input: {
 
   if (error) return []
 
-  return (data ?? []).map((m) => ({
+  return (data ?? []).map((m: any) => ({
     ...m,
     author: m.hub_guest_profiles ?? undefined,
     hub_guest_profiles: undefined,
@@ -569,7 +569,7 @@ export async function createPinnedNote(
   input: z.infer<typeof CreateNoteSchema>
 ): Promise<HubPinnedNote> {
   const validated = CreateNoteSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: profile } = await supabase
     .from('hub_guest_profiles')
@@ -611,7 +611,7 @@ export async function createPinnedNote(
  * Get all pinned notes for a group.
  */
 export async function getGroupNotes(groupId: string): Promise<HubPinnedNote[]> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data, error } = await supabase
     .from('hub_pinned_notes')
@@ -621,7 +621,7 @@ export async function getGroupNotes(groupId: string): Promise<HubPinnedNote[]> {
 
   if (error) throw new Error(`Failed to load notes: ${error.message}`)
 
-  return (data ?? []).map((n) => ({
+  return (data ?? []).map((n: any) => ({
     ...n,
     author: n.hub_guest_profiles ?? undefined,
     hub_guest_profiles: undefined,
@@ -635,7 +635,7 @@ export async function deletePinnedNote(input: {
   noteId: string
   profileToken: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: profile } = await supabase
     .from('hub_guest_profiles')

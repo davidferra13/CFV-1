@@ -21,7 +21,7 @@ const VALID_PLATFORM_KEYS = new Set(SUPPORTED_PLATFORMS.map((p) => p.key))
 export async function getPlatformConnectionStatuses(): Promise<PlatformConnectionStatus[]> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const chefId = user.tenantId!
 
     const { data: rows, error } = await supabase
@@ -88,7 +88,7 @@ export async function updatePlatformConnection(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const chefId = user.tenantId!
 
     if (!VALID_PLATFORM_KEYS.has(platform)) {
@@ -124,7 +124,7 @@ export async function disconnectPlatformConnection(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const chefId = user.tenantId!
 
     if (!VALID_PLATFORM_KEYS.has(platform)) {

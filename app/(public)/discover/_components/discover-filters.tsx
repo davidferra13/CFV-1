@@ -79,7 +79,7 @@ export function DiscoverFilters({ query, businessType, cuisine, state, priceRang
 
   const updateFilter = useCallback(
     (key: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(searchParams?.toString())
       if (value) {
         params.set(key, value)
       } else {

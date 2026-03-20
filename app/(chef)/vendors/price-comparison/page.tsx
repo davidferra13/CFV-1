@@ -53,7 +53,7 @@ export default async function PriceComparisonPage() {
         </div>
       </div>
 
-      <PriceComparison data={data} />
+      <PriceComparison data={data as any} />
       <VendorPriceInsights
         alerts={insights.alerts}
         trends={insights.trends}

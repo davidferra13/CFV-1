@@ -91,38 +91,41 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     .eq('chef_id', auth.tenantId)
 
   // Add conversion note
-  await supabase
-    .from('prospect_notes' as any)
-    .insert({
+  try {
+    await supabase.from('prospect_notes' as any).insert({
       prospect_id: params.id,
       chef_id: auth.tenantId,
       note_type: 'general',
       content: `Auto-converted to inquiry from cold outreach reply. Inquiry: ${inquiry.id}`,
     })
-    .catch(() => {})
+  } catch {
+    // non-blocking
+  }
 
   // Record stage history
-  await supabase
-    .from('prospect_stage_history' as any)
-    .insert({
+  try {
+    await supabase.from('prospect_stage_history' as any).insert({
       prospect_id: params.id,
       chef_id: auth.tenantId,
       from_stage: p.pipeline_stage ?? 'responded',
       to_stage: 'converted',
       notes: 'Auto-converted from cold outreach reply',
     })
-    .catch(() => {})
+  } catch {
+    // non-blocking
+  }
 
   // Log outreach event
-  await supabase
-    .from('prospect_outreach_log' as any)
-    .insert({
+  try {
+    await supabase.from('prospect_outreach_log' as any).insert({
       prospect_id: params.id,
       chef_id: auth.tenantId,
       outreach_type: 'note',
       notes: `Converted to inquiry ${inquiry.id}`,
     })
-    .catch(() => {})
+  } catch {
+    // non-blocking
+  }
 
   return NextResponse.json({ success: true, inquiryId: inquiry.id })
 }

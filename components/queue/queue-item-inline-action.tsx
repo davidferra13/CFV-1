@@ -47,9 +47,10 @@ export function QueueItemInlineAction({ action, onComplete, onCancel }: Props) {
           case 'respond_inquiry': {
             const { sendReplyViaChannel } = await import('@/lib/communication/actions')
             await sendReplyViaChannel({
-              channelId: action.prefill.channelId ?? '',
-              message,
-              replyToId: action.prefill.replyToId,
+              threadId: action.prefill.channelId ?? '',
+              content: message,
+              channel: (action.prefill as any).channel ?? 'email',
+              recipientAddress: (action.prefill as any).recipientAddress ?? '',
             })
             break
           }
@@ -57,19 +58,20 @@ export function QueueItemInlineAction({ action, onComplete, onCancel }: Props) {
           case 'send_message': {
             const { sendChatMessage } = await import('@/lib/chat/actions')
             await sendChatMessage({
-              conversationId: action.prefill.conversationId ?? '',
-              content: message,
+              conversation_id: action.prefill.conversationId ?? '',
+              message_type: 'text' as const,
+              body: message,
             })
             break
           }
           case 'record_payment': {
             const { recordPayment } = await import('@/lib/commerce/payment-actions')
             await recordPayment({
-              eventId: action.prefill.eventId ?? '',
-              amountCents: parseInt(action.prefill.amount ?? '0', 10),
+              event_id: action.prefill.eventId ?? '',
+              amount_cents: parseInt(action.prefill.amount ?? '0', 10),
               method: (action.prefill.suggestedMethod as any) ?? 'other',
               note: message || undefined,
-            })
+            } as any)
             break
           }
           case 'log_expense': {

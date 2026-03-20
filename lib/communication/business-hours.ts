@@ -16,7 +16,7 @@ import type { BusinessHoursConfig, WeekSchedule } from './business-hours-utils'
 
 export async function getBusinessHoursConfig(): Promise<BusinessHoursConfig | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('business_hours_config')
@@ -34,7 +34,7 @@ export async function getBusinessHoursConfig(): Promise<BusinessHoursConfig | nu
 
 // Non-authenticated version for checking hours from cron/system contexts
 export async function getBusinessHoursForChef(chefId: string): Promise<BusinessHoursConfig | null> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data } = await supabase
     .from('business_hours_config')
@@ -52,6 +52,7 @@ export async function getBusinessHoursForChef(chefId: string): Promise<BusinessH
 const BusinessHoursUpdateSchema = z.object({
   timezone: z.string().min(1),
   schedule: z.record(
+    z.string(),
     z.object({
       enabled: z.boolean(),
       start: z.string().regex(/^\d{2}:\d{2}$/),
@@ -72,7 +73,7 @@ export async function updateBusinessHoursConfig(
     return { success: false, error: 'Invalid configuration.' }
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('business_hours_config').upsert(
     {

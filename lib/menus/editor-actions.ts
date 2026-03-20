@@ -438,7 +438,7 @@ export async function reorderEditorCourse(
 
 export async function searchRecipesForEditor(query: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: recipes } = await (supabase as any)
     .from('recipes')

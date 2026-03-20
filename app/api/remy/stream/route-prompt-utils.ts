@@ -133,7 +133,9 @@ export function buildRemySystemPrompt(
   surveyPromptSection?: string | null,
   otherChannelDigest?: string | null,
   previousSessionTopics?: { title: string; topics: string[]; lastActiveAt: string } | null,
-  userMessage?: string
+  userMessage?: string,
+  _contextScope?: ContextScope,
+  _recentConversationSummaries?: Array<{ summary: string; generatedAt: string }> | null
 ): string {
   const parts: string[] = []
 

@@ -190,7 +190,7 @@ export function HubQuickActions({
                 groupId,
                 profileToken,
                 preferredDate,
-                sameMenu,
+                sameMenu: sameMenu ?? false,
                 guestCount,
                 note,
               })

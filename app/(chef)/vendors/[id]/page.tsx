@@ -138,7 +138,7 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
               Edit Vendor Info
             </summary>
             <div className="mt-3">
-              <VendorForm vendor={vendor} />
+              <VendorForm {...({ vendor } as any)} />
             </div>
           </details>
         </CardContent>

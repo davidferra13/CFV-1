@@ -26,7 +26,7 @@ const getClient = () => {
 
 export async function draftReviewRequest(eventId: string): Promise<ReviewRequestDraft> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, chefResult] = await Promise.all([
     supabase

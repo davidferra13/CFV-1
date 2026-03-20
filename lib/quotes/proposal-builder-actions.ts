@@ -64,7 +64,7 @@ const SectionSchema = z.object({
   id: z.string(),
   type: z.enum(['cover', 'menu', 'pricing', 'terms', 'photos', 'bio', 'custom']),
   title: z.string(),
-  content: z.record(z.unknown()),
+  content: z.record(z.string(), z.unknown()),
   order: z.number().int().nonnegative(),
   visible: z.boolean(),
 })
@@ -149,7 +149,7 @@ export async function getProposalTemplate(chefId: string): Promise<ProposalTempl
     throw new Error('Unauthorized: tenant mismatch')
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('proposal_templates')
@@ -185,7 +185,7 @@ export async function saveProposalTemplate(
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
   const validated = SaveTemplateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const chefId = user.tenantId!
 
   // Upsert: insert if no template exists, update if it does
@@ -215,7 +215,7 @@ export async function saveProposalTemplate(
 
 export async function getProposalDraft(eventId: string): Promise<ProposalDraft | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify event belongs to tenant
   const { data: event } = await supabase
@@ -254,7 +254,7 @@ export async function saveProposalDraft(
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
   const validated = SaveDraftSchema.parse({ sections, branding })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify event belongs to tenant
   const { data: event } = await supabase
@@ -311,7 +311,7 @@ export async function saveProposalDraft(
 
 export async function publishProposal(eventId: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify event belongs to tenant
   const { data: event } = await supabase

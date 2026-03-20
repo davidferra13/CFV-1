@@ -37,7 +37,7 @@ export async function getGuestChanges(eventId: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('guest_count_changes')
@@ -66,7 +66,7 @@ export async function requestGuestChange(input: {
   cost_impact_cents?: number
 }): Promise<{ data: GuestCountChange | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (input.new_count < 0) {
     return { data: null, error: 'Guest count cannot be negative' }
@@ -105,7 +105,7 @@ export async function approveGuestChange(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('guest_count_changes')

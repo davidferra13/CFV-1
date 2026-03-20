@@ -55,7 +55,7 @@ function getGuestBucket(count: number): [number, number] {
  */
 export async function detectPriceAnomalies(thresholdPercent = 20): Promise<PriceAnomalyReport> {
   const user = await requirePro('intelligence-hub')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all events with their financial data
   const { data: events } = await supabase
@@ -76,7 +76,7 @@ export async function detectPriceAnomalies(thresholdPercent = 20): Promise<Price
   }
 
   // Get quote totals for all events
-  const eventIds = events.map((e) => e.id)
+  const eventIds = events.map((e: any) => e.id)
   const { data: quotes } = await supabase
     .from('quotes')
     .select('event_id, total_cents')

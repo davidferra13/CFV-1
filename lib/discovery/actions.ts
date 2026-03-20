@@ -190,7 +190,7 @@ export async function getMyDiscoveryProfile() {
 
 export async function updateMyDiscoveryProfile(input: z.input<typeof DiscoveryProfileInputSchema>) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = DiscoveryProfileInputSchema.parse(input)
 
   const payload = {

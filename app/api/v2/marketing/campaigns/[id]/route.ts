@@ -28,7 +28,7 @@ const UpdateCampaignBody = z
     menu_id: z.string().uuid().nullable().optional(),
     subject: z.string().optional(),
     body_html: z.string().optional(),
-    target_segment: z.record(z.unknown()).optional(),
+    target_segment: z.record(z.string(), z.unknown()).optional(),
   })
   .strict()
 

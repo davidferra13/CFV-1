@@ -55,7 +55,7 @@ interface StaffAssignmentRow {
 
 export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffBriefing> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, menuResult, guestsResult, staffResult, chefResult] = await Promise.all([
     supabase
@@ -99,7 +99,7 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
   const allergenSummary = [
     ...(event.dietary_restrictions ?? []),
     ...(event.allergies ?? []),
-    ...guests.flatMap((g) => [...(g.dietary_restrictions ?? []), ...(g.allergies ?? [])]),
+    ...guests.flatMap((g: any) => [...(g.dietary_restrictions ?? []), ...(g.allergies ?? [])]),
   ].filter(Boolean)
 
   const systemPrompt = `You are a private chef drafting a professional staff briefing document for an upcoming event.
@@ -125,10 +125,10 @@ Menu:
 ${menu.map((m) => `  [${m.course_type ?? 'Course'}] ${m.name}${m.description ? ': ' + m.description : ''}${m.allergen_tags ? ' ! ' + m.allergen_tags.join(', ') : ''}`).join('\n') || '  Menu not yet assigned'}
 
 Allergen Alerts (CRITICAL):
-${allergenSummary.length > 0 ? allergenSummary.map((a) => '  ! ' + a).join('\n') : '  None noted - verify with client'}
+${allergenSummary.length > 0 ? allergenSummary.map((a: any) => '  ! ' + a).join('\n') : '  None noted - verify with client'}
 
 Guest List (${guests.length} RSVPd):
-${guests.map((g) => `  ${g.full_name}${(g.dietary_restrictions ?? []).length ? ': ' + (g.dietary_restrictions ?? []).join(', ') : ''}${(g.allergies ?? []).length ? ' | allergies: ' + (g.allergies ?? []).join(', ') : ''}`).join('\n') || '  No individual guest list yet'}
+${guests.map((g: any) => `  ${g.full_name}${(g.dietary_restrictions ?? []).length ? ': ' + (g.dietary_restrictions ?? []).join(', ') : ''}${(g.allergies ?? []).length ? ' | allergies: ' + (g.allergies ?? []).join(', ') : ''}`).join('\n') || '  No individual guest list yet'}
 
 Return JSON: {
   "subject": "Staff Briefing - [occasion + date]",
@@ -167,7 +167,7 @@ Return JSON: {
           description: m.description ?? undefined,
           allergenTags: m.allergen_tags ? m.allergen_tags : undefined,
         })),
-        guests: guests.map((g) => ({
+        guests: guests.map((g: any) => ({
           name: g.full_name ?? 'Guest',
           dietaryRestrictions: g.dietary_restrictions ?? undefined,
           allergies: g.allergies ?? undefined,

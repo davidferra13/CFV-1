@@ -6,8 +6,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { createProtectedBlock } from '@/lib/scheduling/protected-time-actions'
-import type { ProtectedBlockType } from '@/lib/scheduling/protected-time-actions'
+import { createProtectedTime } from '@/lib/scheduling/protected-time-actions'
 
 interface Props {
   onClose: () => void
@@ -17,7 +16,7 @@ export function ProtectedTimeForm({ onClose }: Props) {
   const [title, setTitle] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [blockType, setBlockType] = useState<ProtectedBlockType>('protected_personal')
+  const [blockType, setBlockType] = useState<string>('protected_personal')
   const [error, setError] = useState<string | null>(null)
 
   const [isPending, startTransition] = useTransition()
@@ -40,11 +39,11 @@ export function ProtectedTimeForm({ onClose }: Props) {
 
     startTransition(async () => {
       try {
-        await createProtectedBlock({
-          title: title.trim(),
-          start_date: startDate,
-          end_date: endDate || startDate,
-          block_type: blockType,
+        await createProtectedTime({
+          block_date: startDate,
+          block_type: 'full_day',
+          reason: title.trim(),
+          is_recurring: false,
         })
         onClose()
       } catch (err) {
@@ -97,7 +96,7 @@ export function ProtectedTimeForm({ onClose }: Props) {
         <label className="block text-xs font-medium text-stone-400 mb-1">Block type</label>
         <select
           value={blockType}
-          onChange={(e) => setBlockType(e.target.value as ProtectedBlockType)}
+          onChange={(e) => setBlockType(e.target.value)}
           className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-stone-900"
         >
           <option value="protected_personal">Protected Personal Time</option>

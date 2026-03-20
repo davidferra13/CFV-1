@@ -86,19 +86,16 @@ export function BenchmarkDashboard() {
     <div className="space-y-8">
       {/* Contribute Section */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-          Contribute Your Data
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">Contribute Your Data</h3>
         <p className="text-sm text-gray-500 mb-4">
-          Share anonymized metrics to see how you compare. Your individual data is never shown to others.
+          Share anonymized metrics to see how you compare. Your individual data is never shown to
+          others.
         </p>
 
         {message && (
           <div
             className={`rounded-md p-3 text-sm mb-4 ${
-              message.type === 'success'
-                ? 'bg-green-50 text-green-700'
-                : 'bg-red-50 text-red-700'
+              message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
             }`}
           >
             {message.text}
@@ -107,12 +104,10 @@ export function BenchmarkDashboard() {
 
         <form onSubmit={handleSubmit} className="flex flex-wrap gap-3 items-end">
           <div className="min-w-[180px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Metric
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Metric</label>
             <select
               value={selectedMetric}
-              onChange={(e) => setSelectedMetric(e.target.value)}
+              onChange={(e) => setSelectedMetric(e.target.value as typeof selectedMetric)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
             >
               {METRIC_OPTIONS.map((m) => (
@@ -123,9 +118,7 @@ export function BenchmarkDashboard() {
             </select>
           </div>
           <div className="w-32">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Value
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
             <input
               type="number"
               step="any"
@@ -138,9 +131,7 @@ export function BenchmarkDashboard() {
             />
           </div>
           <div className="w-32">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Period
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Period</label>
             <input
               type="text"
               required
@@ -162,21 +153,17 @@ export function BenchmarkDashboard() {
 
       {/* View Aggregates Section */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-          Community Benchmarks
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">Community Benchmarks</h3>
         <p className="text-sm text-gray-500 mb-4">
           Anonymized averages from the chef community. Only shown when 5 or more chefs contribute.
         </p>
 
         <div className="flex gap-3 items-end mb-4">
           <div className="min-w-[180px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Metric
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Metric</label>
             <select
               value={viewMetric}
-              onChange={(e) => setViewMetric(e.target.value)}
+              onChange={(e) => setViewMetric(e.target.value as typeof viewMetric)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
             >
               {METRIC_OPTIONS.map((m) => (
@@ -195,9 +182,7 @@ export function BenchmarkDashboard() {
           </button>
         </div>
 
-        {aggregateMessage && (
-          <p className="text-sm text-gray-500">{aggregateMessage}</p>
-        )}
+        {aggregateMessage && <p className="text-sm text-gray-500">{aggregateMessage}</p>}
 
         {aggregates.length > 0 && (
           <div className="space-y-2">
@@ -210,7 +195,7 @@ export function BenchmarkDashboard() {
                 <span className="text-sm text-gray-900">
                   {selectedMetricInfo?.unit === '$' && '$'}
                   {agg.average.toLocaleString()}
-                  {selectedMetricInfo?.unit === '%' && '%'}
+                  {(selectedMetricInfo?.unit as string) === '%' && '%'}
                   <span className="ml-2 text-xs text-gray-500">
                     (based on {agg.contributor_count} chefs)
                   </span>

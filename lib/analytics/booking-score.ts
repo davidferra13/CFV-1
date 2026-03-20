@@ -27,7 +27,7 @@ export interface BookingScore {
 
 export async function getBookingScoreForInquiry(inquiryId: string): Promise<BookingScore | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: inquiry, error } = await supabase
     .from('inquiries')
@@ -54,13 +54,15 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
   ])
 
   const allAccepted = (avgData.data ?? []).filter(
-    (q): q is typeof q & { guest_count_estimated: number; total_quoted_cents: number } =>
+    (q: any): q is typeof q & { guest_count_estimated: number; total_quoted_cents: number } =>
       q.guest_count_estimated != null && q.guest_count_estimated > 0 && q.total_quoted_cents != null
   )
   const tenantAvgPerGuest =
     allAccepted.length > 0
-      ? allAccepted.reduce((s, q) => s + q.total_quoted_cents / q.guest_count_estimated, 0) /
-        allAccepted.length
+      ? allAccepted.reduce(
+          (s: any, q: any) => s + q.total_quoted_cents / q.guest_count_estimated,
+          0
+        ) / allAccepted.length
       : 0
 
   const inquiryPerGuest =
@@ -160,7 +162,7 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
 
 export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: inquiries } = await supabase
     .from('inquiries')
@@ -171,7 +173,7 @@ export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]
   if (!inquiries || inquiries.length === 0) return []
 
   const results = await Promise.allSettled(
-    inquiries.map((inq) => getBookingScoreForInquiry(inq.id))
+    inquiries.map((inq: any) => getBookingScoreForInquiry(inq.id))
   )
 
   return results

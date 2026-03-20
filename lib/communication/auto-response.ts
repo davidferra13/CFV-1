@@ -30,7 +30,7 @@ export type AutoResponseConfig = {
 
 export async function getAutoResponseConfig(): Promise<AutoResponseConfig | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('auto_response_config')
@@ -55,7 +55,7 @@ export async function updateAutoResponseConfig(
     return { success: false, error: 'Invalid configuration.' }
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('auto_response_config').upsert(
     {
@@ -86,7 +86,7 @@ export async function triggerAutoResponse(
   inquiryId: string,
   tenantId: string
 ): Promise<{ sent: boolean; reason?: string }> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // 1. Check if auto-response is enabled
   const { data: config } = await supabase
@@ -170,7 +170,7 @@ export async function triggerAutoResponse(
   // 7. Send email (non-blocking import to avoid circular deps)
   try {
     const { sendEmail } = await import('@/lib/email/send')
-    await sendEmail({
+    await (sendEmail as any)({
       to: client.email,
       subject: renderedSubject,
       text: rendered,

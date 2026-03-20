@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ClipboardText as ClipboardList, Clock, ArrowRight } from '@/components/ui/icons'
+import { ClipboardTextIcon as ClipboardList, Clock, ArrowRight } from '@/components/ui/icons'
 import { getVaTaskStats } from '@/lib/staff/va-task-actions'
 import Link from 'next/link'
 

@@ -63,7 +63,7 @@ export async function getComplianceStats(
   endDate?: string
 ): Promise<ComplianceStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('events')
@@ -115,7 +115,7 @@ export async function getComplianceStats(
   }
 
   // Receipt within 24h: check expenses table
-  const eventIds = (events ?? []).map((e) => e.id)
+  const eventIds = (events ?? []).map((e: any) => e.id)
   let receiptUploaded = 0
   if (eventIds.length > 0) {
     const { data: expenses } = await supabase
@@ -125,7 +125,7 @@ export async function getComplianceStats(
       .eq('receipt_uploaded', true)
 
     // Get unique events that had at least one receipt uploaded
-    const uploadedEventIds = new Set((expenses ?? []).map((e) => e.event_id))
+    const uploadedEventIds = new Set((expenses ?? []).map((e: any) => e.event_id))
     receiptUploaded = uploadedEventIds.size
   }
 
@@ -137,7 +137,7 @@ export async function getComplianceStats(
       .select('event_id')
       .in('event_id', eventIds)
 
-    const loggedEventIds = new Set((tempLogs ?? []).map((t) => t.event_id))
+    const loggedEventIds = new Set((tempLogs ?? []).map((t: any) => t.event_id))
     tempLogCount = loggedEventIds.size
   }
 
@@ -156,7 +156,7 @@ export async function getTimePhaseStats(
   endDate?: string
 ): Promise<TimePhaseStats[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('events')
@@ -200,8 +200,8 @@ export async function getTimePhaseStats(
 
   return phases.map(({ label, start, end }) => {
     const durations = (events ?? [])
-      .map((ev) => phaseMinutes(ev[start] as string | null, ev[end] as string | null))
-      .filter((d): d is number => d !== null)
+      .map((ev: any) => phaseMinutes(ev[start] as string | null, ev[end] as string | null))
+      .filter((d: any): d is number => d !== null)
 
     if (durations.length === 0) {
       return {
@@ -214,7 +214,7 @@ export async function getTimePhaseStats(
       }
     }
 
-    const total = durations.reduce((a, b) => a + b, 0)
+    const total = durations.reduce((a: any, b: any) => a + b, 0)
     return {
       phase: label,
       avgMinutes: Math.round(total / durations.length),
@@ -228,7 +228,7 @@ export async function getTimePhaseStats(
 
 export async function getWasteStats(startDate: string, endDate: string): Promise<WasteStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -238,13 +238,13 @@ export async function getWasteStats(startDate: string, endDate: string): Promise
     .gte('event_date', startDate)
     .lte('event_date', endDate)
 
-  const eventIds = (events ?? []).map((e) => e.id)
+  const eventIds = (events ?? []).map((e: any) => e.id)
   const leftoverTotal = (events ?? []).reduce(
-    (s, e) => s + (e.leftover_value_carried_forward_cents ?? 0),
+    (s: any, e: any) => s + (e.leftover_value_carried_forward_cents ?? 0),
     0
   )
   const eventsWithLeftovers = (events ?? []).filter(
-    (e) => (e.leftover_value_carried_forward_cents ?? 0) > 0
+    (e: any) => (e.leftover_value_carried_forward_cents ?? 0) > 0
   ).length
 
   let foodSpend = 0
@@ -256,7 +256,7 @@ export async function getWasteStats(startDate: string, endDate: string): Promise
       .in('category', ['groceries', 'alcohol', 'specialty_items'])
       .eq('is_business', true)
 
-    foodSpend = (expenses ?? []).reduce((s, e) => s + e.amount_cents, 0)
+    foodSpend = (expenses ?? []).reduce((s: any, e: any) => s + e.amount_cents, 0)
   }
 
   return {
@@ -270,7 +270,7 @@ export async function getWasteStats(startDate: string, endDate: string): Promise
 
 export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -279,7 +279,7 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
     .eq('status', 'completed')
 
   const total = events?.length ?? 0
-  const totalGuests = (events ?? []).reduce((s, e) => s + (e.guest_count ?? 0), 0)
+  const totalGuests = (events ?? []).reduce((s: any, e: any) => s + (e.guest_count ?? 0), 0)
   const avgGuests = total > 0 ? Math.round((totalGuests / total) * 10) / 10 : 0
 
   // Most common occasion
@@ -302,7 +302,7 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
     .map(([restriction, count]) => ({ restriction, count, percent: pct(count, total) }))
 
   // Avg courses per event (from dishes table via menus)
-  const eventIds = (events ?? []).map((e) => e.id)
+  const eventIds = (events ?? []).map((e: any) => e.id)
   let avgCourses = 0
   if (eventIds.length > 0) {
     const { data: menus } = await supabase
@@ -313,7 +313,7 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
 
     if (menus?.length) {
       const totalDishes = (menus ?? []).reduce(
-        (s, m) => s + (Array.isArray(m.dishes) ? m.dishes.length : 0),
+        (s: any, m: any) => s + (Array.isArray(m.dishes) ? m.dishes.length : 0),
         0
       )
       avgCourses = Math.round((totalDishes / menus.length) * 10) / 10
@@ -330,7 +330,7 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
 
 export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRateByMonth[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const oneYearAgo = new Date()
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)

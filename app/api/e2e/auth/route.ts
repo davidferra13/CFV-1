@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Use the standard SSR server client - it handles cookie setting automatically
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 

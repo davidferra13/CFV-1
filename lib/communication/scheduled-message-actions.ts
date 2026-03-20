@@ -39,7 +39,7 @@ export async function getScheduledMessages(options?: {
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('scheduled_messages')
@@ -84,7 +84,7 @@ export async function scheduleMessage(input: {
   context_id?: string
 }): Promise<{ data: ScheduledMessage | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const scheduledDate = new Date(input.scheduled_for)
   if (isNaN(scheduledDate.getTime())) {
@@ -125,7 +125,7 @@ export async function cancelMessage(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the message is still cancellable
   const { data: msg, error: fetchError } = await supabase
@@ -168,7 +168,7 @@ export async function rescheduleMessage(
   newScheduledFor: string
 ): Promise<{ data: ScheduledMessage | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const scheduledDate = new Date(newScheduledFor)
   if (isNaN(scheduledDate.getTime())) {

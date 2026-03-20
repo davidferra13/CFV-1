@@ -24,10 +24,9 @@ const AddItemSchema = z.object({
   quantity: z.number().positive().default(1),
   unit: z.string().optional(),
   price_cents: z.number().int().min(0),
-  category: z.enum([
-    'produce', 'protein', 'dairy', 'pantry',
-    'frozen', 'bakery', 'beverage', 'other',
-  ]).optional(),
+  category: z
+    .enum(['produce', 'protein', 'dairy', 'pantry', 'frozen', 'bakery', 'beverage', 'other'])
+    .optional(),
 })
 
 const UpdateItemSchema = AddItemSchema.partial()
@@ -43,7 +42,7 @@ export type UpdateItemInput = z.infer<typeof UpdateItemSchema>
 export async function createGroceryTrip(input: CreateTripInput) {
   const user = await requireChef()
   const validated = CreateTripSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('grocery_trips')
@@ -67,7 +66,7 @@ export async function createGroceryTrip(input: CreateTripInput) {
 
 export async function getGroceryTrips(dateRange?: { from: string; to: string }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = (supabase as any)
     .from('grocery_trips')
@@ -94,15 +93,17 @@ export async function getGroceryTrips(dateRange?: { from: string; to: string }) 
 
 export async function getGroceryTrip(tripId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('grocery_trips')
-    .select(`
+    .select(
+      `
       *,
       grocery_trip_items(*),
       grocery_trip_splits(*, clients:client_id(id, name))
-    `)
+    `
+    )
     .eq('id', tripId)
     .eq('chef_id', user.tenantId!)
     .single()
@@ -117,7 +118,7 @@ export async function getGroceryTrip(tripId: string) {
 
 export async function deleteGroceryTrip(tripId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await (supabase as any)
     .from('grocery_trips')
@@ -140,7 +141,7 @@ export async function deleteGroceryTrip(tripId: string) {
 export async function addTripItem(tripId: string, input: AddItemInput) {
   const user = await requireChef()
   const validated = AddItemSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify trip belongs to this chef
   const { data: trip } = await (supabase as any)
@@ -180,7 +181,7 @@ export async function addTripItem(tripId: string, input: AddItemInput) {
 export async function updateTripItem(itemId: string, input: UpdateItemInput) {
   const user = await requireChef()
   const validated = UpdateItemSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get item with trip ownership check
   const { data: item } = await (supabase as any)
@@ -220,7 +221,7 @@ export async function updateTripItem(itemId: string, input: UpdateItemInput) {
 
 export async function removeTripItem(itemId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get item with trip ownership check
   const { data: item } = await (supabase as any)
@@ -233,10 +234,7 @@ export async function removeTripItem(itemId: string) {
     throw new Error('Item not found')
   }
 
-  const { error } = await (supabase as any)
-    .from('grocery_trip_items')
-    .delete()
-    .eq('id', itemId)
+  const { error } = await (supabase as any).from('grocery_trip_items').delete().eq('id', itemId)
 
   if (error) {
     console.error('[removeTripItem] Error:', error)
@@ -255,7 +253,7 @@ export async function removeTripItem(itemId: string) {
 export async function splitEquallyAcrossClients(tripId: string, clientIds: string[]) {
   const user = await requireChef()
   if (clientIds.length === 0) throw new Error('At least one client required')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify trip and get total
   const { data: trip } = await (supabase as any)
@@ -268,10 +266,7 @@ export async function splitEquallyAcrossClients(tripId: string, clientIds: strin
   if (!trip) throw new Error('Trip not found')
 
   // Clear existing splits
-  await (supabase as any)
-    .from('grocery_trip_splits')
-    .delete()
-    .eq('trip_id', tripId)
+  await (supabase as any).from('grocery_trip_splits').delete().eq('trip_id', tripId)
 
   // Equal split with remainder going to first client
   const perClient = Math.floor(trip.total_cents / clientIds.length)
@@ -284,9 +279,7 @@ export async function splitEquallyAcrossClients(tripId: string, clientIds: strin
     split_method: 'equal',
   }))
 
-  const { error } = await (supabase as any)
-    .from('grocery_trip_splits')
-    .insert(splits)
+  const { error } = await (supabase as any).from('grocery_trip_splits').insert(splits)
 
   if (error) {
     console.error('[splitEquallyAcrossClients] Error:', error)
@@ -302,7 +295,7 @@ export async function splitProportionally(
 ) {
   const user = await requireChef()
   if (clientWeights.length === 0) throw new Error('At least one client required')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: trip } = await (supabase as any)
     .from('grocery_trips')
@@ -314,10 +307,7 @@ export async function splitProportionally(
   if (!trip) throw new Error('Trip not found')
 
   // Clear existing splits
-  await (supabase as any)
-    .from('grocery_trip_splits')
-    .delete()
-    .eq('trip_id', tripId)
+  await (supabase as any).from('grocery_trip_splits').delete().eq('trip_id', tripId)
 
   const totalWeight = clientWeights.reduce((sum, cw) => sum + cw.weight, 0)
   if (totalWeight <= 0) throw new Error('Total weight must be positive')
@@ -341,9 +331,7 @@ export async function splitProportionally(
     splits[0].amount_cents += leftover
   }
 
-  const { error } = await (supabase as any)
-    .from('grocery_trip_splits')
-    .insert(splits)
+  const { error } = await (supabase as any).from('grocery_trip_splits').insert(splits)
 
   if (error) {
     console.error('[splitProportionally] Error:', error)
@@ -353,13 +341,9 @@ export async function splitProportionally(
   revalidatePath('/grocery')
 }
 
-export async function assignItemToClient(
-  itemId: string,
-  clientId: string,
-  eventId?: string
-) {
+export async function assignItemToClient(itemId: string, clientId: string, eventId?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify item ownership
   const { data: item } = await (supabase as any)
@@ -373,21 +357,16 @@ export async function assignItemToClient(
   }
 
   // Remove any existing split for this item
-  await (supabase as any)
-    .from('grocery_trip_splits')
-    .delete()
-    .eq('item_id', itemId)
+  await (supabase as any).from('grocery_trip_splits').delete().eq('item_id', itemId)
 
-  const { error } = await (supabase as any)
-    .from('grocery_trip_splits')
-    .insert({
-      trip_id: item.trip_id,
-      item_id: itemId,
-      client_id: clientId,
-      event_id: eventId || null,
-      amount_cents: item.price_cents,
-      split_method: 'full',
-    })
+  const { error } = await (supabase as any).from('grocery_trip_splits').insert({
+    trip_id: item.trip_id,
+    item_id: itemId,
+    client_id: clientId,
+    event_id: eventId || null,
+    amount_cents: item.price_cents,
+    split_method: 'full',
+  })
 
   if (error) {
     console.error('[assignItemToClient] Error:', error)
@@ -400,7 +379,7 @@ export async function assignItemToClient(
 export async function autoSplitByEvent(tripId: string, eventIds: string[]) {
   const user = await requireChef()
   if (eventIds.length === 0) throw new Error('At least one event required')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify trip
   const { data: trip } = await (supabase as any)
@@ -422,10 +401,7 @@ export async function autoSplitByEvent(tripId: string, eventIds: string[]) {
   if (!events || events.length === 0) throw new Error('No matching events found')
 
   // Clear existing splits
-  await (supabase as any)
-    .from('grocery_trip_splits')
-    .delete()
-    .eq('trip_id', tripId)
+  await (supabase as any).from('grocery_trip_splits').delete().eq('trip_id', tripId)
 
   // Use guest_count as weight; default to 1 if not set
   const totalGuests = events.reduce(
@@ -434,18 +410,20 @@ export async function autoSplitByEvent(tripId: string, eventIds: string[]) {
   )
 
   let allocated = 0
-  const splits = events.map((event: { id: string; client_id: string; guest_count: number | null }) => {
-    const guests = event.guest_count || 1
-    const share = Math.floor((guests / totalGuests) * trip.total_cents)
-    allocated += share
-    return {
-      trip_id: tripId,
-      client_id: event.client_id,
-      event_id: event.id,
-      amount_cents: share,
-      split_method: 'proportional' as const,
+  const splits = events.map(
+    (event: { id: string; client_id: string; guest_count: number | null }) => {
+      const guests = event.guest_count || 1
+      const share = Math.floor((guests / totalGuests) * trip.total_cents)
+      allocated += share
+      return {
+        trip_id: tripId,
+        client_id: event.client_id,
+        event_id: event.id,
+        amount_cents: share,
+        split_method: 'proportional' as const,
+      }
     }
-  })
+  )
 
   // Assign leftover cents to first event
   const leftover = trip.total_cents - allocated
@@ -453,9 +431,7 @@ export async function autoSplitByEvent(tripId: string, eventIds: string[]) {
     splits[0].amount_cents += leftover
   }
 
-  const { error } = await (supabase as any)
-    .from('grocery_trip_splits')
-    .insert(splits)
+  const { error } = await (supabase as any).from('grocery_trip_splits').insert(splits)
 
   if (error) {
     console.error('[autoSplitByEvent] Error:', error)
@@ -467,7 +443,7 @@ export async function autoSplitByEvent(tripId: string, eventIds: string[]) {
 
 export async function getTripSplitSummary(tripId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify trip ownership
   const { data: trip } = await (supabase as any)
@@ -490,14 +466,17 @@ export async function getTripSplitSummary(tripId: string) {
   }
 
   // Aggregate per client
-  const clientTotals = new Map<string, {
-    clientId: string
-    clientName: string
-    totalCents: number
-    splitMethod: string
-  }>()
+  const clientTotals = new Map<
+    string,
+    {
+      clientId: string
+      clientName: string
+      totalCents: number
+      splitMethod: string
+    }
+  >()
 
-  for (const split of (splits ?? [])) {
+  for (const split of splits ?? []) {
     const existing = clientTotals.get(split.client_id)
     if (existing) {
       existing.totalCents += split.amount_cents
@@ -533,8 +512,5 @@ async function recalcTripTotal(supabase: any, tripId: string) {
     0
   )
 
-  await supabase
-    .from('grocery_trips')
-    .update({ total_cents: total })
-    .eq('id', tripId)
+  await supabase.from('grocery_trips').update({ total_cents: total }).eq('id', tripId)
 }

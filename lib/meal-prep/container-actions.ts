@@ -70,7 +70,7 @@ export async function addContainer(input: {
   notes?: string | null
 }): Promise<Container | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tableExists = await checkTableExists(supabase, 'meal_prep_containers')
   if (!tableExists) return { error: MIGRATION_ERROR }
@@ -105,7 +105,7 @@ export async function sendContainerToClient(
   clientName: string
 ): Promise<Container | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tableExists = await checkTableExists(supabase, 'meal_prep_containers')
   if (!tableExists) return { error: MIGRATION_ERROR }
@@ -140,7 +140,7 @@ export async function markContainerReturned(
   containerId: string
 ): Promise<Container | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tableExists = await checkTableExists(supabase, 'meal_prep_containers')
   if (!tableExists) return { error: MIGRATION_ERROR }
@@ -172,7 +172,7 @@ export async function markContainerLost(
   containerId: string
 ): Promise<Container | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tableExists = await checkTableExists(supabase, 'meal_prep_containers')
   if (!tableExists) return { error: MIGRATION_ERROR }
@@ -198,7 +198,7 @@ export async function getContainers(
   statusFilter?: ContainerStatus
 ): Promise<Container[] | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tableExists = await checkTableExists(supabase, 'meal_prep_containers')
   if (!tableExists) return { error: MIGRATION_ERROR }
@@ -223,7 +223,7 @@ export async function getContainers(
  */
 export async function getContainerSummary(): Promise<ContainerSummary | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tableExists = await checkTableExists(supabase, 'meal_prep_containers')
   if (!tableExists) return { error: MIGRATION_ERROR }

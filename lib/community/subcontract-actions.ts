@@ -7,7 +7,15 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-type SubcontractRole = 'sous_chef' | 'line_cook' | 'prep_cook' | 'server' | 'bartender' | 'pastry' | 'lead_chef' | 'other'
+type SubcontractRole =
+  | 'sous_chef'
+  | 'line_cook'
+  | 'prep_cook'
+  | 'server'
+  | 'bartender'
+  | 'pastry'
+  | 'lead_chef'
+  | 'other'
 type SubcontractRateType = 'hourly' | 'flat' | 'percentage'
 type SubcontractStatus = 'draft' | 'sent' | 'accepted' | 'active' | 'completed' | 'cancelled'
 
@@ -52,12 +60,14 @@ type CreateSubcontractInput = {
   notes?: string | null
 }
 
-type UpdateSubcontractInput = Partial<Omit<CreateSubcontractInput, 'rate_cents'> & { rate_cents: number }>
+type UpdateSubcontractInput = Partial<
+  Omit<CreateSubcontractInput, 'rate_cents'> & { rate_cents: number }
+>
 
 // List agreements for the current chef, with optional filters
 export async function getSubcontracts(filters?: SubcontractFilters) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('subcontract_agreements')
@@ -85,7 +95,7 @@ export async function getSubcontracts(filters?: SubcontractFilters) {
 // Create a new subcontract agreement
 export async function createSubcontract(input: CreateSubcontractInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!input.subcontractor_name?.trim()) {
     throw new Error('Subcontractor name is required')
@@ -125,20 +135,26 @@ export async function createSubcontract(input: CreateSubcontractInput) {
 // Update an existing agreement
 export async function updateSubcontract(id: string, input: UpdateSubcontractInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
 
-  if (input.subcontractor_name !== undefined) updateData.subcontractor_name = input.subcontractor_name.trim()
-  if (input.subcontractor_email !== undefined) updateData.subcontractor_email = input.subcontractor_email?.trim() || null
-  if (input.subcontractor_phone !== undefined) updateData.subcontractor_phone = input.subcontractor_phone?.trim() || null
-  if (input.subcontractor_chef_id !== undefined) updateData.subcontractor_chef_id = input.subcontractor_chef_id ?? null
+  if (input.subcontractor_name !== undefined)
+    updateData.subcontractor_name = input.subcontractor_name.trim()
+  if (input.subcontractor_email !== undefined)
+    updateData.subcontractor_email = input.subcontractor_email?.trim() || null
+  if (input.subcontractor_phone !== undefined)
+    updateData.subcontractor_phone = input.subcontractor_phone?.trim() || null
+  if (input.subcontractor_chef_id !== undefined)
+    updateData.subcontractor_chef_id = input.subcontractor_chef_id ?? null
   if (input.event_id !== undefined) updateData.event_id = input.event_id ?? null
   if (input.role !== undefined) updateData.role = input.role
   if (input.rate_type !== undefined) updateData.rate_type = input.rate_type
   if (input.rate_cents !== undefined) updateData.rate_cents = input.rate_cents
-  if (input.estimated_hours !== undefined) updateData.estimated_hours = input.estimated_hours ?? null
-  if (input.insurance_required !== undefined) updateData.insurance_required = input.insurance_required
+  if (input.estimated_hours !== undefined)
+    updateData.estimated_hours = input.estimated_hours ?? null
+  if (input.insurance_required !== undefined)
+    updateData.insurance_required = input.insurance_required
   if (input.notes !== undefined) updateData.notes = input.notes?.trim() || null
 
   const { data, error } = await supabase
@@ -161,7 +177,7 @@ export async function updateSubcontract(id: string, input: UpdateSubcontractInpu
 // Delete a draft agreement only
 export async function deleteSubcontract(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify it's in draft status before deleting
   const { data: existing, error: fetchError } = await supabase
@@ -205,7 +221,7 @@ const VALID_TRANSITIONS: Record<SubcontractStatus, SubcontractStatus[]> = {
 
 export async function updateSubcontractStatus(id: string, newStatus: SubcontractStatus) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current status
   const { data: existing, error: fetchError } = await supabase
@@ -246,7 +262,7 @@ export async function updateSubcontractStatus(id: string, newStatus: Subcontract
 // Mark COI as verified with document URL and expiry
 export async function verifyCOI(id: string, documentUrl: string, expiryDate: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!documentUrl?.trim()) {
     throw new Error('COI document URL is required')
@@ -280,7 +296,7 @@ export async function verifyCOI(id: string, documentUrl: string, expiryDate: str
 // Get total subcontractor costs for an event
 export async function getSubcontractCosts(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('subcontract_agreements')
@@ -311,11 +327,13 @@ export async function getSubcontractCosts(eventId: string) {
 // Get unique subcontractor roster with usage stats
 export async function getSubcontractorRoster() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('subcontract_agreements')
-    .select('subcontractor_name, subcontractor_email, subcontractor_phone, subcontractor_chef_id, status, coi_verified, coi_expiry_date, created_at')
+    .select(
+      'subcontractor_name, subcontractor_email, subcontractor_phone, subcontractor_chef_id, status, coi_verified, coi_expiry_date, created_at'
+    )
     .eq('hiring_chef_id', user.tenantId!)
     .order('created_at', { ascending: false })
 
@@ -325,16 +343,19 @@ export async function getSubcontractorRoster() {
   }
 
   // Group by subcontractor name (or chef ID if linked)
-  const rosterMap = new Map<string, {
-    name: string
-    email: string | null
-    phone: string | null
-    chefId: string | null
-    usageCount: number
-    lastUsed: string
-    coiVerified: boolean
-    coiExpiry: string | null
-  }>()
+  const rosterMap = new Map<
+    string,
+    {
+      name: string
+      email: string | null
+      phone: string | null
+      chefId: string | null
+      usageCount: number
+      lastUsed: string
+      coiVerified: boolean
+      coiExpiry: string | null
+    }
+  >()
 
   for (const row of data ?? []) {
     const key = row.subcontractor_chef_id ?? row.subcontractor_name.toLowerCase()
@@ -370,7 +391,7 @@ export async function getSubcontractorRoster() {
 // Get COIs that are expiring within the given number of days
 export async function getExpiringCOIs(daysAhead: number = 30) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const futureDate = new Date()
   futureDate.setDate(futureDate.getDate() + daysAhead)
@@ -393,7 +414,7 @@ export async function getExpiringCOIs(daysAhead: number = 30) {
 
   const today = new Date().toISOString().split('T')[0]
 
-  return (data ?? []).map(row => ({
+  return (data ?? []).map((row: any) => ({
     ...row,
     isExpired: row.coi_expiry_date ? row.coi_expiry_date < today : false,
   })) as (SubcontractAgreement & { isExpired: boolean })[]

@@ -71,7 +71,7 @@ function pct(numerator: number, denominator: number): number {
 
 export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Count distinct clients with completed events
   const { data: events } = await supabase
@@ -134,7 +134,7 @@ export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
 
 export async function getClientChurnStats(): Promise<ClientChurnStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString()
@@ -179,7 +179,7 @@ export async function getClientChurnStats(): Promise<ClientChurnStats> {
 
 export async function getRevenueConcentration(): Promise<RevenueConcentrationStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get total revenue per client from ledger
   const { data: ledger } = await supabase
@@ -252,7 +252,7 @@ export async function getClientAcquisitionStats(
   endDate: string
 ): Promise<ClientAcquisitionStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // New clients in period = clients whose first_event_date falls in range
   const { count: newClients } = await supabase
@@ -278,7 +278,7 @@ export async function getClientAcquisitionStats(
 
   const avgFirstValue = firstEvents?.length
     ? Math.round(
-        (firstEvents ?? []).reduce((sum, c) => sum + (c.average_spend_cents ?? 0), 0) /
+        (firstEvents ?? []).reduce((sum: any, c: any) => sum + (c.average_spend_cents ?? 0), 0) /
           firstEvents.length
       )
     : 0
@@ -293,7 +293,7 @@ export async function getClientAcquisitionStats(
 
 export async function getReferralConversionStats(): Promise<ReferralConversionStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: inquiries } = await supabase
     .from('inquiries')
@@ -302,10 +302,12 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
     .eq('channel', 'referral')
 
   const referred = inquiries?.length ?? 0
-  const converted = (inquiries ?? []).filter((i) => i.converted_to_event_id != null).length
+  const converted = (inquiries ?? []).filter((i: any) => i.converted_to_event_id != null).length
 
   // Revenue from referral-sourced events
-  const eventIds = (inquiries ?? []).map((i) => i.converted_to_event_id).filter(Boolean) as string[]
+  const eventIds = (inquiries ?? [])
+    .map((i: any) => i.converted_to_event_id)
+    .filter(Boolean) as string[]
 
   let referralRevenue = 0
   if (eventIds.length > 0) {
@@ -317,7 +319,7 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
       .in('entry_type', ['payment', 'deposit', 'installment', 'final_payment', 'add_on'])
 
     referralRevenue = (ledger ?? []).reduce(
-      (sum, e) => sum + (e.is_refund ? -e.amount_cents : e.amount_cents),
+      (sum: any, e: any) => sum + (e.is_refund ? -e.amount_cents : e.amount_cents),
       0
     )
   }

@@ -7,7 +7,7 @@ import { randomUUID } from 'crypto'
 // ── Get feedback for a specific event ──────────────────────────────
 export async function getEventFeedback(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_feedback')
@@ -29,7 +29,7 @@ export async function getAllFeedback(filters?: {
   dateRange?: { from: string; to: string }
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('event_feedback')
@@ -62,7 +62,7 @@ export async function getAllFeedback(filters?: {
 // ── Create a feedback request (generates a token/link) ─────────────
 export async function createFeedbackRequest(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the event belongs to this chef
   const { data: event, error: eventError } = await supabase
@@ -158,7 +158,7 @@ export async function submitFeedback(
 // ── Get feedback stats (averages, NPS, response rate) ──────────────
 export async function getFeedbackStats() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all submitted feedback (has a rating)
   const { data: feedback, error } = await supabase
@@ -195,9 +195,9 @@ export async function getFeedbackStats() {
   }
 
   // NPS: % who would recommend minus % who would not
-  const recommenders = feedback.filter((f) => f.would_recommend === true).length
-  const detractors = feedback.filter((f) => f.would_recommend === false).length
-  const npsResponders = feedback.filter((f) => f.would_recommend !== null).length
+  const recommenders = feedback.filter((f: any) => f.would_recommend === true).length
+  const detractors = feedback.filter((f: any) => f.would_recommend === false).length
+  const npsResponders = feedback.filter((f: any) => f.would_recommend !== null).length
   const npsScore =
     npsResponders > 0 ? Math.round(((recommenders - detractors) / npsResponders) * 100) : 0
 
@@ -212,10 +212,10 @@ export async function getFeedbackStats() {
   return {
     data: {
       totalResponses: total,
-      avgOverall: Math.round(avg(feedback.map((f) => f.overall_rating)) * 10) / 10,
-      avgFood: Math.round(avg(feedback.map((f) => f.food_rating)) * 10) / 10,
-      avgService: Math.round(avg(feedback.map((f) => f.service_rating)) * 10) / 10,
-      avgCommunication: Math.round(avg(feedback.map((f) => f.communication_rating)) * 10) / 10,
+      avgOverall: Math.round(avg(feedback.map((f: any) => f.overall_rating)) * 10) / 10,
+      avgFood: Math.round(avg(feedback.map((f: any) => f.food_rating)) * 10) / 10,
+      avgService: Math.round(avg(feedback.map((f: any) => f.service_rating)) * 10) / 10,
+      avgCommunication: Math.round(avg(feedback.map((f: any) => f.communication_rating)) * 10) / 10,
       npsScore,
       responseRate,
     },
@@ -226,7 +226,7 @@ export async function getFeedbackStats() {
 // ── Toggle public visibility of feedback ───────────────────────────
 export async function toggleFeedbackPublic(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get current state
   const { data: current, error: getError } = await supabase

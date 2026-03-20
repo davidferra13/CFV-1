@@ -18,7 +18,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 export async function processDigests(
   mode: 'hourly' | 'daily'
 ): Promise<{ sent: number; skipped: number }> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
   let sent = 0
   let skipped = 0
 
@@ -111,7 +111,7 @@ export async function processDigests(
           continue
         }
 
-        const digestMessages = messages.map((msg) => ({
+        const digestMessages = messages.map((msg: any) => ({
           authorName:
             (msg.hub_guest_profiles as unknown as { display_name: string })?.display_name ??
             'Someone',

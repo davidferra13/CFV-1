@@ -52,8 +52,8 @@ export async function resolveChannels(
     const supabase = createServerClient({ admin: true })
 
     // 0. Check for per-chef tier override before computing channel defaults
-    const { data: tierOverride } = await supabase
-      .from('chef_notification_tier_overrides' as any)
+    const { data: tierOverride } = await (supabase as any)
+      .from('chef_notification_tier_overrides')
       .select('tier')
       .eq('chef_id', tenantId)
       .eq('action', action)

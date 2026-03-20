@@ -99,7 +99,7 @@ const STATION_LABELS: Record<StationType, string> = {
 //
 // async function getFireOrder(eventId: string): Promise<FireOrderResult> {
 //   const chef = await requireChef()
-//   const supabase = createServerClient()
+//   const supabase: any = createServerClient()
 //
 //   const { data: event, error: eventErr } = await supabase
 //     .from('events')

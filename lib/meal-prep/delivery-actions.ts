@@ -64,7 +64,7 @@ export async function scheduleDelivery(input: {
   notes?: string | null
 }): Promise<Delivery | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tableExists = await checkTableExists(supabase, 'meal_prep_deliveries')
   if (!tableExists) return { error: MIGRATION_ERROR }
@@ -109,7 +109,7 @@ export async function updateDelivery(
   }>
 ): Promise<Delivery | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tableExists = await checkTableExists(supabase, 'meal_prep_deliveries')
   if (!tableExists) return { error: MIGRATION_ERROR }
@@ -144,7 +144,7 @@ export async function updateDelivery(
  */
 export async function markDelivered(deliveryId: string): Promise<Delivery | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tableExists = await checkTableExists(supabase, 'meal_prep_deliveries')
   if (!tableExists) return { error: MIGRATION_ERROR }
@@ -176,7 +176,7 @@ export async function cancelDelivery(
   deliveryId: string
 ): Promise<{ success: boolean } | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tableExists = await checkTableExists(supabase, 'meal_prep_deliveries')
   if (!tableExists) return { error: MIGRATION_ERROR }
@@ -202,7 +202,7 @@ export async function getDeliveries(
   statusFilter?: DeliveryStatus
 ): Promise<Delivery[] | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tableExists = await checkTableExists(supabase, 'meal_prep_deliveries')
   if (!tableExists) return { error: MIGRATION_ERROR }

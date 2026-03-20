@@ -105,7 +105,7 @@ export async function checkMenuAllergenConflicts(
 ): Promise<CrossContaminationResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   // 1. Fetch event with client and menu info
   const { data: event, error: eventError } = await supabase
@@ -320,7 +320,7 @@ export async function checkMenuAllergenConflicts(
 export async function getMenuAllergenMatrix(menuId: string): Promise<AllergenMatrixResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   // Fetch dishes for this menu
   const { data: dishes, error } = await supabase

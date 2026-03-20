@@ -87,9 +87,9 @@ export function QuoteEventContext({
               </p>
               <Badge
                 variant={
-                  context.profitabilityProjection.confidence === 'high'
+                  context.profitabilityProjection.confidenceLevel === 'high'
                     ? 'success'
-                    : context.profitabilityProjection.confidence === 'medium'
+                    : context.profitabilityProjection.confidenceLevel === 'medium'
                       ? 'warning'
                       : 'default'
                 }
@@ -105,19 +105,19 @@ export function QuoteEventContext({
               <p className="text-xs text-stone-500 mb-1">vs. Average</p>
               <p
                 className={`text-xl font-bold ${
-                  context.priceComparison.percentAboveAverage > 0
+                  context.priceComparison.percentFromAvg > 0
                     ? 'text-emerald-400'
-                    : context.priceComparison.percentAboveAverage < -10
+                    : context.priceComparison.percentFromAvg < -10
                       ? 'text-amber-400'
                       : 'text-stone-200'
                 }`}
               >
-                {context.priceComparison.percentAboveAverage > 0 ? '+' : ''}
-                {context.priceComparison.percentAboveAverage}%
+                {context.priceComparison.percentFromAvg > 0 ? '+' : ''}
+                {context.priceComparison.percentFromAvg}%
               </p>
               <p className="text-xxs text-stone-500 mt-0.5">
                 ${(context.priceComparison.perGuestCents / 100).toFixed(0)}/guest (avg $
-                {(context.priceComparison.averagePerGuestCents / 100).toFixed(0)})
+                {(context.priceComparison.avgPerGuestCents / 100).toFixed(0)})
               </p>
             </div>
           )}

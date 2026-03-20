@@ -37,7 +37,7 @@ export async function getSequences(): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('follow_up_sequences')
@@ -60,7 +60,7 @@ export async function getActiveSequencesForTrigger(
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('follow_up_sequences')
@@ -90,7 +90,7 @@ export async function createSequence(input: {
   is_active?: boolean
 }): Promise<{ data: FollowUpSequence | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!input.steps || input.steps.length === 0) {
     return { data: null, error: 'Sequence must have at least one step' }
@@ -129,7 +129,7 @@ export async function updateSequence(
   }
 ): Promise<{ data: FollowUpSequence | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updateData: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -162,7 +162,7 @@ export async function toggleSequence(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get current state
   const { data: current, error: fetchError } = await supabase

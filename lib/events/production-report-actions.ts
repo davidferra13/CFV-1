@@ -54,7 +54,7 @@ export type ProductionReport = {
 export async function generateProductionReport(eventId: string): Promise<ProductionReport> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const supabase: any = await createServerClient()
 
   // 1. Fetch event with client name
   const { data: event, error: eventErr } = await supabase
@@ -126,7 +126,7 @@ export async function generateProductionReport(eventId: string): Promise<Product
     }
   }
 
-  const dishIds = dishes.map((d) => d.id)
+  const dishIds = dishes.map((d: any) => d.id)
 
   // 3. Fetch components for all dishes
   const { data: components, error: compErr } = await supabase
@@ -150,8 +150,8 @@ export async function generateProductionReport(eventId: string): Promise<Product
 
   // 4. Fetch recipes for all components that have recipe_id
   const recipeIds = (components ?? [])
-    .map((c) => c.recipe_id)
-    .filter((id): id is string => id !== null)
+    .map((c: any) => c.recipe_id)
+    .filter((id: any): id is string => id !== null)
   const uniqueRecipeIds = [...new Set(recipeIds)]
 
   let recipesMap: Map<
@@ -253,9 +253,9 @@ export async function generateProductionReport(eventId: string): Promise<Product
     for (const a of dish.allergen_flags ?? []) allAllergens.add(a)
     for (const d of dish.dietary_tags ?? []) allDietary.add(d)
 
-    const dishComponents = (components ?? []).filter((c) => c.dish_id === dish.id)
+    const dishComponents = (components ?? []).filter((c: any) => c.dish_id === dish.id)
 
-    const reportComponents: ReportComponent[] = dishComponents.map((comp) => {
+    const reportComponents: ReportComponent[] = dishComponents.map((comp: any) => {
       const recipe = comp.recipe_id ? recipesMap.get(comp.recipe_id) : null
       const rawIngredients = comp.recipe_id ? (ingredientsByRecipe.get(comp.recipe_id) ?? []) : []
 

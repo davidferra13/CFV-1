@@ -507,7 +507,7 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
           style={{ order: getWidgetOrder('dietary_allergy_alerts') }}
         >
           <CollapsibleWidget widgetId="dietary_allergy_alerts" title="Dietary & Allergy Alerts">
-            <DietaryAlertsWidget alerts={dietaryAlerts} />
+            <DietaryAlertsWidget {...({ alerts: dietaryAlerts } as any)} />
           </CollapsibleWidget>
         </section>
       )}

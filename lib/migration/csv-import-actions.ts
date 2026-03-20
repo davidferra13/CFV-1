@@ -73,7 +73,7 @@ export async function parseCSVPreview(csvText: string, hasHeaders?: boolean): Pr
 export async function importClients(mappedRows: MappedRow[]): Promise<ImportResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const result: ImportResult = { imported: 0, skipped: 0, errors: [] }
 
@@ -154,7 +154,7 @@ export async function importClients(mappedRows: MappedRow[]): Promise<ImportResu
 export async function importRecipes(mappedRows: MappedRow[]): Promise<ImportResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const result: ImportResult = { imported: 0, skipped: 0, errors: [] }
 
@@ -238,7 +238,7 @@ export async function importRecipes(mappedRows: MappedRow[]): Promise<ImportResu
 export async function importEvents(mappedRows: MappedRow[]): Promise<ImportResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const result: ImportResult = { imported: 0, skipped: 0, errors: [] }
 
@@ -481,7 +481,7 @@ function parseSingleMXPRecipe(block: string): MXPRecipe | null {
 export async function getImportHistory(): Promise<ImportHistoryEntry[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('activity_events')
@@ -496,7 +496,7 @@ export async function getImportHistory(): Promise<ImportHistoryEntry[]> {
     return []
   }
 
-  return (data || []).map((row) => {
+  return (data || []).map((row: any) => {
     const meta = (row.metadata || {}) as Record<string, unknown>
     return {
       id: row.id,

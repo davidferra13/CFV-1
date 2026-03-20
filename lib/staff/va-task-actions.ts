@@ -11,7 +11,13 @@ import { revalidatePath } from 'next/cache'
 // TYPES
 // ============================================
 
-export type VaTaskCategory = 'admin' | 'scheduling' | 'communication' | 'data_entry' | 'research' | 'other'
+export type VaTaskCategory =
+  | 'admin'
+  | 'scheduling'
+  | 'communication'
+  | 'data_entry'
+  | 'research'
+  | 'other'
 export type VaTaskPriority = 'low' | 'medium' | 'high' | 'urgent'
 export type VaTaskStatus = 'pending' | 'in_progress' | 'review' | 'completed' | 'cancelled'
 
@@ -76,7 +82,7 @@ const VALID_TRANSITIONS: Record<VaTaskStatus, VaTaskStatus[]> = {
 
 export async function getVaTasks(filters?: VaTaskFilters): Promise<VaTask[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = (supabase as any)
     .from('va_tasks')
@@ -104,7 +110,7 @@ export async function getVaTasks(filters?: VaTaskFilters): Promise<VaTask[]> {
 
 export async function createVaTask(input: CreateVaTaskInput): Promise<VaTask> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('va_tasks')
@@ -133,7 +139,7 @@ export async function createVaTask(input: CreateVaTaskInput): Promise<VaTask> {
 
 export async function updateVaTask(id: string, input: UpdateVaTaskInput): Promise<VaTask> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (input.title !== undefined) updateData.title = input.title
@@ -164,7 +170,7 @@ export async function updateVaTask(id: string, input: UpdateVaTaskInput): Promis
 
 export async function deleteVaTask(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await (supabase as any)
     .from('va_tasks')
@@ -183,7 +189,7 @@ export async function deleteVaTask(id: string): Promise<void> {
 
 export async function updateVaTaskStatus(id: string, newStatus: VaTaskStatus): Promise<VaTask> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current task to validate transition
   const { data: current, error: fetchError } = await (supabase as any)
@@ -242,7 +248,7 @@ export async function getVaTaskStats(): Promise<{
   overdue: number
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('va_tasks')
@@ -272,12 +278,7 @@ export async function getVaTaskStats(): Promise<{
       stats[status as keyof typeof stats]++
     }
     // Count overdue: has a due date in the past and not completed/cancelled
-    if (
-      task.due_date &&
-      task.due_date < now &&
-      status !== 'completed' &&
-      status !== 'cancelled'
-    ) {
+    if (task.due_date && task.due_date < now && status !== 'completed' && status !== 'cancelled') {
       stats.overdue++
     }
   }
@@ -287,7 +288,7 @@ export async function getVaTaskStats(): Promise<{
 
 export async function getVaAssignees(): Promise<string[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('va_tasks')

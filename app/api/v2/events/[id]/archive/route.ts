@@ -44,7 +44,7 @@ export const POST = withApiAuth(
         to_status: 'archived',
         transitioned_by: ctx.keyId,
         metadata: { action: 'event_archived', source: 'api_v2' },
-      })
+      } as any)
     } catch {}
 
     return apiSuccess({ event: data, archived: true })

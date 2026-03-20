@@ -19,7 +19,7 @@ export type { EquipmentExplanation, EquipmentDepreciationReport } from '@/lib/fo
 
 export async function explainEquipmentDepreciation(): Promise<EquipmentDepreciationReport> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // equipment_items uses chef_id (not tenant_id) and useful_life_years (not depreciation_years)
   const { data: equipment } = await supabase
@@ -47,7 +47,7 @@ export async function explainEquipmentDepreciation(): Promise<EquipmentDepreciat
   const currentYear = new Date().getFullYear()
 
   // Map DB columns to formula's expected EquipmentItem shape
-  const formulaEquipment: EquipmentItem[] = equipment.map((e) => ({
+  const formulaEquipment: EquipmentItem[] = equipment.map((e: any) => ({
     name: e.name,
     purchase_price_cents: e.purchase_price_cents,
     purchase_date: e.purchase_date,

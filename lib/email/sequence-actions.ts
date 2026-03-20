@@ -41,10 +41,7 @@ const TEMPLATE_VARS: Record<string, string> = {
   '{{guest_count}}': '12',
 }
 
-function replaceTemplateVars(
-  template: string,
-  vars: Record<string, string>
-): string {
+function replaceTemplateVars(template: string, vars: Record<string, string>): string {
   let result = template
   for (const [key, value] of Object.entries(vars)) {
     result = result.replaceAll(key, value)
@@ -60,15 +57,17 @@ const REVALIDATE_PATH = '/email/sequences'
 
 export async function getSequences() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('email_sequences')
-    .select(`
+    .select(
+      `
       *,
       email_sequence_steps(count),
       email_sequence_enrollments(count)
-    `)
+    `
+    )
     .eq('chef_id', user.tenantId!)
     .order('created_at', { ascending: false })
 
@@ -82,14 +81,16 @@ export async function getSequences() {
 
 export async function getSequence(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('email_sequences')
-    .select(`
+    .select(
+      `
       *,
       email_sequence_steps(*)
-    `)
+    `
+    )
     .eq('id', id)
     .eq('chef_id', user.tenantId!)
     .single()
@@ -101,9 +102,7 @@ export async function getSequence(id: string) {
 
   // Sort steps by step_number
   if (data?.email_sequence_steps) {
-    data.email_sequence_steps.sort(
-      (a: any, b: any) => a.step_number - b.step_number
-    )
+    data.email_sequence_steps.sort((a: any, b: any) => a.step_number - b.step_number)
   }
 
   return data
@@ -111,7 +110,7 @@ export async function getSequence(id: string) {
 
 export async function createSequence(input: SequenceInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('email_sequences')
@@ -135,7 +134,7 @@ export async function createSequence(input: SequenceInput) {
 
 export async function updateSequence(id: string, input: Partial<SequenceInput>) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('email_sequences')
@@ -156,7 +155,7 @@ export async function updateSequence(id: string, input: Partial<SequenceInput>) 
 
 export async function deleteSequence(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await (supabase as any)
     .from('email_sequences')
@@ -178,7 +177,7 @@ export async function deleteSequence(id: string) {
 
 export async function addStep(sequenceId: string, input: StepInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: seq } = await (supabase as any)
@@ -211,12 +210,9 @@ export async function addStep(sequenceId: string, input: StepInput) {
   return data
 }
 
-export async function updateStep(
-  stepId: string,
-  input: Partial<Omit<StepInput, 'step_number'>>
-) {
+export async function updateStep(stepId: string, input: Partial<Omit<StepInput, 'step_number'>>) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership via join
   const { data: step } = await (supabase as any)
@@ -247,7 +243,7 @@ export async function updateStep(
 
 export async function removeStep(stepId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: step } = await (supabase as any)
@@ -260,10 +256,7 @@ export async function removeStep(stepId: string) {
     throw new Error('Step not found')
   }
 
-  const { error } = await (supabase as any)
-    .from('email_sequence_steps')
-    .delete()
-    .eq('id', stepId)
+  const { error } = await (supabase as any).from('email_sequence_steps').delete().eq('id', stepId)
 
   if (error) {
     console.error('[removeStep] Error:', error)
@@ -275,7 +268,7 @@ export async function removeStep(stepId: string) {
 
 export async function reorderSteps(sequenceId: string, stepIds: string[]) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: seq } = await (supabase as any)
@@ -310,13 +303,9 @@ export async function reorderSteps(sequenceId: string, stepIds: string[]) {
 // ENROLLMENT MANAGEMENT
 // ============================================
 
-export async function enrollClient(
-  sequenceId: string,
-  clientId: string,
-  inquiryId?: string
-) {
+export async function enrollClient(sequenceId: string, clientId: string, inquiryId?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify sequence ownership
   const { data: seq } = await (supabase as any)
@@ -365,15 +354,17 @@ export async function enrollClient(
 
 export async function getEnrollments(sequenceId?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = (supabase as any)
     .from('email_sequence_enrollments')
-    .select(`
+    .select(
+      `
       *,
       email_sequences(name, trigger_type),
       clients(full_name, email)
-    `)
+    `
+    )
     .eq('chef_id', user.tenantId!)
     .order('enrolled_at', { ascending: false })
 
@@ -393,7 +384,7 @@ export async function getEnrollments(sequenceId?: string) {
 
 export async function pauseEnrollment(enrollmentId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('email_sequence_enrollments')
@@ -415,7 +406,7 @@ export async function pauseEnrollment(enrollmentId: string) {
 
 export async function cancelEnrollment(enrollmentId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('email_sequence_enrollments')
@@ -441,7 +432,7 @@ export async function cancelEnrollment(enrollmentId: string) {
 
 export async function getSequenceStats(sequenceId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: seq } = await (supabase as any)
@@ -477,7 +468,7 @@ export async function getSequenceStats(sequenceId: string) {
 
 export async function previewStep(stepId: string, clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get step
   const { data: step } = await (supabase as any)

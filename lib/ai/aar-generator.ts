@@ -37,7 +37,7 @@ const AARDraftAISchema = z.object({
 
 export async function generateAARDraft(eventId: string): Promise<AARDraft> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const eventResult = await supabase
     .from('events')
@@ -94,7 +94,7 @@ export async function generateAARDraft(eventId: string): Promise<AARDraft> {
 
   const client = Array.isArray(event.clients) ? event.clients[0] : event.clients
   const totalRevenue = event.quoted_price_cents ?? 0
-  const totalExpenses = expenses.reduce((s: number, e) => s + (e.amount_cents ?? 0), 0)
+  const totalExpenses = expenses.reduce((s: number, e: any) => s + (e.amount_cents ?? 0), 0)
   const grossProfit = totalRevenue - totalExpenses
   const marginPct = totalRevenue > 0 ? Math.round((grossProfit / totalRevenue) * 100) : 0
 
@@ -131,10 +131,10 @@ FINANCIALS:
   Expenses: $${(totalExpenses / 100).toFixed(2)} (${expenses.length} entries)
   Gross profit: $${(grossProfit / 100).toFixed(2)} (${marginPct}% margin)
   Expense breakdown:
-${expenses.map((e) => `  - ${e.category ?? 'other'}: $${((e.amount_cents ?? 0) / 100).toFixed(2)} - ${e.description}`).join('\n') || '  No expenses logged'}
+${expenses.map((e: any) => `  - ${e.category ?? 'other'}: $${((e.amount_cents ?? 0) / 100).toFixed(2)} - ${e.description}`).join('\n') || '  No expenses logged'}
 
 TEMPERATURE LOG (${temps.length} entries):
-${temps.map((t) => `  - ${t.item_description}: ${t.temp_fahrenheit}°F at ${t.phase ?? 'unknown phase'}`).join('\n') || '  No temp log'}
+${temps.map((t: any) => `  - ${t.item_description}: ${t.temp_fahrenheit}°F at ${t.phase ?? 'unknown phase'}`).join('\n') || '  No temp log'}
 
 EXISTING NOTES:
   Chef notes: ${existingDebrief?.chef_notes ?? event.kitchen_notes ?? 'None'}

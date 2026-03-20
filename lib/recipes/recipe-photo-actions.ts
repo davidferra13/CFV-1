@@ -22,7 +22,7 @@ export type RecipeStepPhoto = {
 
 export async function getRecipeStepPhotos(recipeId: string): Promise<RecipeStepPhoto[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('recipe_step_photos')
@@ -49,7 +49,7 @@ export async function addRecipeStepPhoto(data: {
   caption?: string
 }): Promise<RecipeStepPhoto> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Determine next sort_order for this step
@@ -60,7 +60,7 @@ export async function addRecipeStepPhoto(data: {
     .eq('chef_id', tenantId)
     .eq('step_number', data.stepNumber)
 
-  const nextOrder = (count ?? 0)
+  const nextOrder = count ?? 0
 
   const { data: photo, error } = await supabase
     .from('recipe_step_photos')
@@ -89,7 +89,7 @@ export async function updateRecipeStepPhoto(
   data: { caption?: string; sortOrder?: number }
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (data.caption !== undefined) updates.caption = data.caption
@@ -111,7 +111,7 @@ export async function updateRecipeStepPhoto(
 
 export async function deleteRecipeStepPhoto(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('recipe_step_photos')
@@ -133,7 +133,7 @@ export async function reorderStepPhotos(
   photoIds: string[]
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Update each photo's sort_order based on position in the array

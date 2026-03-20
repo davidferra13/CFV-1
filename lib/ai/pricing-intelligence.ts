@@ -33,7 +33,7 @@ export type PricingIntelligenceResult = z.infer<typeof PricingIntelligenceSchema
 
 export async function getPricingIntelligence(eventId: string): Promise<PricingIntelligenceResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, historicalResult] = await Promise.all([
     supabase
@@ -65,7 +65,7 @@ export async function getPricingIntelligence(eventId: string): Promise<PricingIn
 
   // Compute comparable events (same occasion type, similar guest count ±50%)
   const guestCount = event.guest_count ?? 10
-  const comparables = historicalEvents.filter((h) => {
+  const comparables = historicalEvents.filter((h: any) => {
     const hGuests = h.guest_count ?? 0
     return hGuests >= guestCount * 0.5 && hGuests <= guestCount * 1.5
   })
@@ -89,14 +89,14 @@ ${
   historicalEvents
     .slice(0, 15)
     .map(
-      (h) =>
+      (h: any) =>
         `  - ${h.occasion ?? 'Event'}, ${h.guest_count ?? '?'} guests, $${((h.quoted_price_cents ?? 0) / 100).toFixed(0)} quoted, style: ${h.service_style ?? 'unknown'}`
     )
     .join('\n') || '  No historical data yet'
 }
 
 Comparable events (similar guest count): ${comparables.length}
-${comparables.length > 0 ? 'Avg comparable price: $' + Math.round(comparables.reduce((s, h) => s + (h.quoted_price_cents ?? 0), 0) / comparables.length / 100).toFixed(0) : ''}
+${comparables.length > 0 ? 'Avg comparable price: $' + Math.round(comparables.reduce((s: any, h: any) => s + (h.quoted_price_cents ?? 0), 0) / comparables.length / 100).toFixed(0) : ''}
 
 Return JSON: { "suggestedMinCents": number, "suggestedMaxCents": number, "suggestedPerHeadCents": number, "rationale": "...", "underbiddingRisk": bool, "underbiddingWarning": "...or null", "marketPosition": "below_average|at_average|above_average", "comparableEvents": number, "confidence": "high|medium|low" }`
 
@@ -112,7 +112,7 @@ Return JSON: { "suggestedMinCents": number, "suggestedMaxCents": number, "sugges
           dietary_restrictions: event.dietary_restrictions,
           quoted_price_cents: event.quoted_price_cents,
         },
-        historicalEvents.map((h) => ({
+        historicalEvents.map((h: any) => ({
           occasion: h.occasion,
           guest_count: h.guest_count,
           quoted_price_cents: h.quoted_price_cents,

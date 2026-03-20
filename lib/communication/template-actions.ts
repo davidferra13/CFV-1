@@ -48,7 +48,7 @@ export async function getTemplates(category?: TemplateCategory): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('response_templates')
@@ -83,7 +83,7 @@ export async function getTemplateById(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('response_templates')
@@ -114,7 +114,7 @@ export async function createTemplate(input: {
   is_default?: boolean
 }): Promise<{ data: ResponseTemplate | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('response_templates')
@@ -153,7 +153,7 @@ export async function updateTemplate(
   }
 ): Promise<{ data: ResponseTemplate | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (input.name !== undefined) updateData.name = input.name
@@ -183,7 +183,7 @@ export async function updateTemplate(
 
 export async function deleteTemplate(id: string): Promise<{ error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Don't allow deleting system templates
   const { data: template } = await supabase
@@ -214,7 +214,7 @@ export async function deleteTemplate(id: string): Promise<{ error: string | null
 
 export async function incrementTemplateUsage(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   try {
     await supabase.rpc('increment_template_usage', {

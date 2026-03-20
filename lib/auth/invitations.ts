@@ -26,7 +26,7 @@ function hashToken(raw: string): string {
  * for tokens generated before the hashing migration.
  */
 export async function getInvitationByToken(token: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const hashed = hashToken(token)
 
   // Try hashed match first (new tokens)
@@ -77,7 +77,7 @@ export async function markInvitationUsed(invitationId: string) {
  */
 export async function revokeInvitation(invitationId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('client_invitations')

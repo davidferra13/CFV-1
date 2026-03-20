@@ -30,7 +30,7 @@ const ChefBioDraftSchema = z.object({
 
 export async function generateChefBioDraft(): Promise<ChefBioDraft> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [chefResult, eventsResult, recipesResult] = await Promise.all([
     supabase
@@ -57,14 +57,14 @@ export async function generateChefBioDraft(): Promise<ChefBioDraft> {
   const recipes = recipesResult.data ?? []
 
   const totalEvents = events.length
-  const occasions = [...new Set(events.map((e) => e.occasion).filter(Boolean))]
+  const occasions = [...new Set(events.map((e: any) => e.occasion).filter(Boolean))]
   const avgGuests =
     events.length > 0
-      ? Math.round(events.reduce((s, e) => s + (e.guest_count ?? 0), 0) / events.length)
+      ? Math.round(events.reduce((s: any, e: any) => s + (e.guest_count ?? 0), 0) / events.length)
       : 0
 
-  const categories = [...new Set(recipes.map((r) => r.category).filter(Boolean))]
-  const dietaryTags = [...new Set(recipes.flatMap((r) => r.dietary_tags ?? []))]
+  const categories = [...new Set(recipes.map((r: any) => r.category).filter(Boolean))]
+  const dietaryTags = [...new Set(recipes.flatMap((r: any) => r.dietary_tags ?? []))]
 
   // Note: chefs table does not have years_experience, cuisine_specialties, or certifications columns
   const systemPrompt = `You are a brand copywriter specializing in personal chef businesses.

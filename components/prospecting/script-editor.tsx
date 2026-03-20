@@ -46,7 +46,7 @@ export function ScriptEditor({ script, onSaved }: ScriptEditorProps) {
       name,
       category,
       scriptBody,
-      isDefault: String(isDefault),
+      isDefault,
     }),
     [name, category, scriptBody, isDefault]
   )

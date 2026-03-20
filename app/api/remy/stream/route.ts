@@ -896,8 +896,7 @@ export async function POST(req: NextRequest) {
             } catch (primaryErr) {
               if (fullResponse.length > 0) throw primaryErr
 
-              const fallbackPref = mixedEndpoint.endpointName === 'pc' ? 'pi' : 'pc'
-              const fallback = await routeForRemy({ preferEndpoint: fallbackPref })
+              const fallback = await routeForRemy({ preferEndpoint: 'pc' })
               if (!fallback || fallback.endpointName === mixedEndpoint.endpointName)
                 throw primaryErr
 
@@ -1068,8 +1067,7 @@ export async function POST(req: NextRequest) {
             // Only failover if no tokens were sent (connection failure, not mid-stream)
             if (fullResponse.length > 0) throw primaryErr
 
-            const fallbackPref = endpoint.endpointName === 'pc' ? 'pi' : 'pc'
-            const fallback = await routeForRemy({ preferEndpoint: fallbackPref })
+            const fallback = await routeForRemy({ preferEndpoint: 'pc' })
             if (!fallback || fallback.endpointName === endpoint.endpointName) throw primaryErr
 
             console.log(

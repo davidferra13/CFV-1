@@ -120,7 +120,7 @@ export function RecipeLinkPicker({
               <div className="min-w-0">
                 <p className="text-sm font-medium text-stone-200 truncate">{r.name}</p>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <Badge variant="secondary" className="text-xs py-0 px-1.5">
+                  <Badge variant="default" className="text-xs py-0 px-1.5">
                     {r.category}
                   </Badge>
                   {r.totalCostCents != null && (

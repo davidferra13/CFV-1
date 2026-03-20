@@ -14,13 +14,22 @@ import { z } from 'zod'
 // ============================================
 
 const ShiftRoles = z.enum([
-  'assistant', 'sous_chef', 'server', 'bartender',
-  'prep_cook', 'cleanup', 'other',
+  'assistant',
+  'sous_chef',
+  'server',
+  'bartender',
+  'prep_cook',
+  'cleanup',
+  'other',
 ])
 
 const ShiftStatuses = z.enum([
-  'scheduled', 'confirmed', 'checked_in',
-  'checked_out', 'no_show', 'cancelled',
+  'scheduled',
+  'confirmed',
+  'checked_in',
+  'checked_out',
+  'no_show',
+  'cancelled',
 ])
 
 const CreateShiftSchema = z.object({
@@ -28,7 +37,7 @@ const CreateShiftSchema = z.object({
   event_id: z.string().uuid().nullable().optional(),
   shift_date: z.string(), // ISO date string
   start_time: z.string(), // HH:MM
-  end_time: z.string(),   // HH:MM
+  end_time: z.string(), // HH:MM
   role: ShiftRoles.default('assistant'),
   hourly_rate_cents: z.number().int().min(0).nullable().optional(),
   notes: z.string().optional(),
@@ -41,7 +50,7 @@ const AvailabilityEntrySchema = z.object({
   specific_date: z.string().nullable().optional(), // ISO date
   is_available: z.boolean(),
   start_time: z.string().nullable().optional(), // HH:MM
-  end_time: z.string().nullable().optional(),   // HH:MM
+  end_time: z.string().nullable().optional(), // HH:MM
   notes: z.string().optional(),
 })
 
@@ -63,16 +72,18 @@ export async function getStaffSchedules(filters?: {
   eventId?: string
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   let query = (supabase as any)
     .from('staff_schedules')
-    .select(`
+    .select(
+      `
       *,
       staff_members (id, name, role, hourly_rate_cents, phone),
       events (id, title)
-    `)
+    `
+    )
     .eq('chef_id', tenantId)
     .order('shift_date', { ascending: true })
     .order('start_time', { ascending: true })
@@ -104,7 +115,7 @@ export async function getStaffSchedules(filters?: {
 export async function createShift(input: CreateShiftInput) {
   const user = await requireChef()
   const validated = CreateShiftSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('staff_schedules')
@@ -119,11 +130,13 @@ export async function createShift(input: CreateShiftInput) {
       hourly_rate_cents: validated.hourly_rate_cents ?? null,
       notes: validated.notes ?? null,
     })
-    .select(`
+    .select(
+      `
       *,
       staff_members (id, name, role),
       events (id, title)
-    `)
+    `
+    )
     .single()
 
   if (error) {
@@ -141,17 +154,19 @@ export async function createShift(input: CreateShiftInput) {
 export async function updateShift(id: string, input: UpdateShiftInput) {
   const user = await requireChef()
   const validated = UpdateShiftSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Build update payload, only include provided fields
   const updateData: Record<string, any> = {}
-  if (validated.staff_member_id !== undefined) updateData.staff_member_id = validated.staff_member_id
+  if (validated.staff_member_id !== undefined)
+    updateData.staff_member_id = validated.staff_member_id
   if (validated.event_id !== undefined) updateData.event_id = validated.event_id ?? null
   if (validated.shift_date !== undefined) updateData.shift_date = validated.shift_date
   if (validated.start_time !== undefined) updateData.start_time = validated.start_time
   if (validated.end_time !== undefined) updateData.end_time = validated.end_time
   if (validated.role !== undefined) updateData.role = validated.role
-  if (validated.hourly_rate_cents !== undefined) updateData.hourly_rate_cents = validated.hourly_rate_cents ?? null
+  if (validated.hourly_rate_cents !== undefined)
+    updateData.hourly_rate_cents = validated.hourly_rate_cents ?? null
   if (validated.notes !== undefined) updateData.notes = validated.notes ?? null
 
   const { data, error } = await (supabase as any)
@@ -176,7 +191,7 @@ export async function updateShift(id: string, input: UpdateShiftInput) {
  */
 export async function deleteShift(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await (supabase as any)
     .from('staff_schedules')
@@ -199,7 +214,7 @@ export async function deleteShift(id: string) {
 export async function updateShiftStatus(id: string, status: string) {
   const user = await requireChef()
   const parsedStatus = ShiftStatuses.parse(status)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updateData: Record<string, any> = { status: parsedStatus }
 
@@ -238,12 +253,15 @@ export async function updateShiftStatus(id: string, status: string) {
  * Get availability for a staff member.
  * Returns both recurring (day_of_week) and date-specific entries.
  */
-export async function getStaffAvailability(staffId: string, dateRange?: {
-  from?: string
-  to?: string
-}) {
+export async function getStaffAvailability(
+  staffId: string,
+  dateRange?: {
+    from?: string
+    to?: string
+  }
+) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = (supabase as any)
     .from('staff_availability')
@@ -273,7 +291,7 @@ export async function getStaffAvailability(staffId: string, dateRange?: {
 export async function setStaffAvailability(staffId: string, entries: AvailabilityEntry[]) {
   const user = await requireChef()
   const validated = entries.map((e) => AvailabilityEntrySchema.parse(e))
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Delete existing recurring entries (day_of_week based)
@@ -311,9 +329,7 @@ export async function setStaffAvailability(staffId: string, entries: Availabilit
       notes: e.notes ?? null,
     }))
 
-    const { error } = await (supabase as any)
-      .from('staff_availability')
-      .insert(rows)
+    const { error } = await (supabase as any).from('staff_availability').insert(rows)
 
     if (error) {
       console.error('[setStaffAvailability] Error:', error)
@@ -334,15 +350,17 @@ export async function setStaffAvailability(staffId: string, entries: Availabilit
  */
 export async function getPayrollSummary(dateRange: { from: string; to: string }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: schedules, error } = await (supabase as any)
     .from('staff_schedules')
-    .select(`
+    .select(
+      `
       id, staff_member_id, shift_date, start_time, end_time,
       actual_start, actual_end, hourly_rate_cents, status, role,
       staff_members (id, name, role, hourly_rate_cents)
-    `)
+    `
+    )
     .eq('chef_id', user.tenantId!)
     .gte('shift_date', dateRange.from)
     .lte('shift_date', dateRange.to)
@@ -355,18 +373,21 @@ export async function getPayrollSummary(dateRange: { from: string; to: string })
   }
 
   // Aggregate by staff member
-  const staffMap = new Map<string, {
-    staffId: string
-    name: string
-    role: string
-    scheduledHours: number
-    actualHours: number
-    hourlyRateCents: number
-    totalEarningsCents: number
-    shiftCount: number
-  }>()
+  const staffMap = new Map<
+    string,
+    {
+      staffId: string
+      name: string
+      role: string
+      scheduledHours: number
+      actualHours: number
+      hourlyRateCents: number
+      totalEarningsCents: number
+      shiftCount: number
+    }
+  >()
 
-  for (const shift of (schedules ?? [])) {
+  for (const shift of schedules ?? []) {
     const member = (shift as any).staff_members
     if (!member) continue
 
@@ -393,9 +414,10 @@ export async function getPayrollSummary(dateRange: { from: string; to: string })
     }
 
     const effectiveRate = shift.hourly_rate_cents ?? member.hourly_rate_cents ?? 0
-    const hoursForPay = shift.actual_start && shift.actual_end
-      ? Math.max(0, timeToHours(shift.actual_end) - timeToHours(shift.actual_start))
-      : Math.max(0, scheduledH)
+    const hoursForPay =
+      shift.actual_start && shift.actual_end
+        ? Math.max(0, timeToHours(shift.actual_end) - timeToHours(shift.actual_start))
+        : Math.max(0, scheduledH)
 
     existing.totalEarningsCents += Math.round(hoursForPay * effectiveRate)
     existing.shiftCount += 1
@@ -410,14 +432,16 @@ export async function getPayrollSummary(dateRange: { from: string; to: string })
  */
 export async function getEventStaffing(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('staff_schedules')
-    .select(`
+    .select(
+      `
       *,
       staff_members (id, name, role, hourly_rate_cents, phone, email)
-    `)
+    `
+    )
     .eq('chef_id', user.tenantId!)
     .eq('event_id', eventId)
     .order('start_time')

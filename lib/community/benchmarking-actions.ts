@@ -80,7 +80,7 @@ const MIN_CHEFS_FOR_BENCHMARKS = 3
  */
 export async function getPeerBenchmarks(): Promise<BenchmarkReport> {
   const user = await requirePro('community')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const disclaimer =
     'All benchmarks are anonymous aggregates across participating chefs. ' +
@@ -256,7 +256,7 @@ export async function getPeerBenchmarks(): Promise<BenchmarkReport> {
  */
 export async function getEventTypeBenchmarks(): Promise<EventTypeBenchmark[]> {
   const user = await requirePro('community')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all completed events with quotes across all chefs
   const { data: events } = await (supabase as any)

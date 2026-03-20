@@ -24,7 +24,7 @@ export async function submitTestimonialByToken(input: {
 }): Promise<{ success: boolean; error?: string }> {
   const parsed = SubmitSchema.safeParse(input)
   if (!parsed.success) {
-    return { success: false, error: parsed.error.errors[0]?.message ?? 'Invalid input' }
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
   }
 
   const { token, rating, content, displayName, allowPublicDisplay } = parsed.data

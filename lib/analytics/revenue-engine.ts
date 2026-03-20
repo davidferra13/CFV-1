@@ -93,7 +93,7 @@ export function solveRevenueClosure(
 
 export async function computeDashboardKPIs(range: DateRange): Promise<DashboardKPIs> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = chef.tenantId!
 
   // Events in range
@@ -126,21 +126,21 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
 
   // Revenue from ledger
   const income = allLedger
-    .filter((l) => l.entry_type === 'payment')
-    .reduce((s, l) => s + l.amount_cents, 0)
+    .filter((l: any) => l.entry_type === 'payment')
+    .reduce((s: any, l: any) => s + l.amount_cents, 0)
   const refunds = allLedger
-    .filter((l) => l.entry_type === 'refund')
-    .reduce((s, l) => s + Math.abs(l.amount_cents), 0)
+    .filter((l: any) => l.entry_type === 'refund')
+    .reduce((s: any, l: any) => s + Math.abs(l.amount_cents), 0)
 
   // Booked value (using quoted_price_cents instead of total_price)
-  const nonCancelled = allEvents.filter((e) => e.status !== 'cancelled')
-  const bookedValue = nonCancelled.reduce((s, e) => s + (e.quoted_price_cents || 0), 0)
+  const nonCancelled = allEvents.filter((e: any) => e.status !== 'cancelled')
+  const bookedValue = nonCancelled.reduce((s: any, e: any) => s + (e.quoted_price_cents || 0), 0)
 
   // Completed
-  const completed = allEvents.filter((e) => e.status === 'completed')
+  const completed = allEvents.filter((e: any) => e.status === 'completed')
 
   // Conversion (inquiries that converted to events)
-  const converted = allInquiries.filter((i) => i.converted_to_event_id != null)
+  const converted = allInquiries.filter((i: any) => i.converted_to_event_id != null)
 
   // Average event value
   const avgValue = nonCancelled.length > 0 ? Math.round(bookedValue / nonCancelled.length) : 0
@@ -180,7 +180,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
 
 export async function computeRevenueByMonth(range: DateRange): Promise<RevenueByPeriod[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: ledger } = await supabase
     .from('ledger_entries')
@@ -208,7 +208,7 @@ export async function computeRevenueByMonth(range: DateRange): Promise<RevenueBy
 
 export async function computeTopClients(range: DateRange): Promise<TopClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -248,7 +248,7 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
 
 export async function computeSeasonalPerformance(range: DateRange): Promise<SeasonalMonth[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')

@@ -35,7 +35,7 @@ export async function getRevisions(eventId: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_revisions')
@@ -57,7 +57,7 @@ export async function getRevisionById(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_revisions')
@@ -87,7 +87,7 @@ export async function createRevision(input: {
   chef_notes?: string
 }): Promise<{ data: MenuRevision | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get the next version number
   const { data: latest } = await supabase
@@ -132,7 +132,7 @@ export async function approveRevision(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_revisions')
@@ -159,7 +159,7 @@ export async function rejectRevision(
   notes?: string
 ): Promise<{ data: MenuRevision | null; error: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updateData: Record<string, unknown> = { status: 'rejected' }
   if (notes) updateData.client_notes = notes

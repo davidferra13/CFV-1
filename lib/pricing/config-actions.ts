@@ -52,7 +52,7 @@ const pricingConfigSchema = z.object({
 export async function getPricingConfig(): Promise<PricingConfig> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Try to fetch existing config
   const { data, error } = await supabase
@@ -101,7 +101,7 @@ export async function updatePricingConfig(
   // Validate input
   const parsed = pricingConfigSchema.safeParse(updates)
   if (!parsed.success) {
-    return { success: false, error: parsed.error.errors.map((e) => e.message).join(', ') }
+    return { success: false, error: parsed.error.issues.map((e: any) => e.message).join(', ') }
   }
 
   const validUpdates = parsed.data
@@ -118,7 +118,7 @@ export async function updatePricingConfig(
     return { success: true } // Nothing to update
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Ensure config row exists (upsert pattern)
   await supabase

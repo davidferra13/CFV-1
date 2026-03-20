@@ -13,7 +13,7 @@ import type { TaxonomyCategory, TaxonomyEntry } from './types'
 export async function getTaxonomy(category: TaxonomyCategory): Promise<TaxonomyEntry[]> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get system defaults for this category
   const systemDefaults = getSystemDefaults(category)
@@ -95,7 +95,7 @@ export async function addTaxonomyEntry(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const slug = value
     .toLowerCase()
@@ -135,7 +135,7 @@ export async function removeTaxonomyEntry(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chef_taxonomy_extensions' as any)
@@ -164,7 +164,7 @@ export async function hideTaxonomyDefault(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('chef_taxonomy_hidden' as any).insert({
     chef_id: chefId,
@@ -190,7 +190,7 @@ export async function unhideTaxonomyDefault(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chef_taxonomy_hidden' as any)
@@ -214,7 +214,7 @@ export async function reorderTaxonomy(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase

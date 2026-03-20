@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.redirect(`${redirectBase}?error=google_denied`)
   if (!code || !state) return NextResponse.redirect(`${redirectBase}?error=google_invalid_callback`)
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Validate state
   const { data: stateRow } = await supabase

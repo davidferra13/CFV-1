@@ -145,7 +145,7 @@ export default async function VendorsPage({
           <CardTitle className="text-base">Add Vendor</CardTitle>
         </CardHeader>
         <CardContent>
-          <VendorForm />
+          <VendorForm {...({ onSaved: () => {}, onCancel: () => {} } as any)} />
         </CardContent>
       </Card>
     </div>

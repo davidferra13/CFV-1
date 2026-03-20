@@ -610,6 +610,19 @@ export class ThinkingBlockFilter {
     }
     return ''
   }
+
+  /** Flush any remaining buffered content that is not inside a think block. */
+  flush(): string {
+    if (this.inThinkBlock) {
+      // Discard incomplete think block content
+      this.buffer = ''
+      this.inThinkBlock = false
+      return ''
+    }
+    const remaining = this.buffer
+    this.buffer = ''
+    return remaining
+  }
 }
 
 export function extractNavSuggestions(

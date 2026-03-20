@@ -20,7 +20,7 @@ export async function sendMenuProposal(
   error?: string
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load event with client
   const { data: event } = await supabase
@@ -200,7 +200,7 @@ export async function submitDishFeedback(
   const parsed = DishFeedbackSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid feedback data.' }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get revision to find tenant_id
   const { data: revision } = await supabase
@@ -301,7 +301,7 @@ export async function submitDishFeedback(
 export async function approveEntireMenu(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -348,7 +348,7 @@ export async function approveEntireMenu(
 
 export async function getMenuRevisions(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_revisions')

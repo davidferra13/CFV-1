@@ -42,7 +42,7 @@ export async function requestGuestCountChange(
   const parsed = GuestCountChangeSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid input.' }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load event
   const { data: event } = await supabase
@@ -154,7 +154,7 @@ export async function requestGuestCountChange(
 
 export async function getGuestCountHistory(eventId: string): Promise<GuestCountChange[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('guest_count_changes')

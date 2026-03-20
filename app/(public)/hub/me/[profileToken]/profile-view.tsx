@@ -309,7 +309,7 @@ export function ProfileView({ profile: initialProfile, eventHistory, groups }: P
                     </p>
                     {(profile.known_allergies?.length ?? 0) > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {profile.known_allergies.map((a) => (
+                        {(profile.known_allergies ?? []).map((a) => (
                           <span
                             key={a}
                             className="rounded-full bg-red-500/10 px-3 py-1 text-xs text-red-400"
@@ -329,7 +329,7 @@ export function ProfileView({ profile: initialProfile, eventHistory, groups }: P
                     </p>
                     {(profile.known_dietary?.length ?? 0) > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {profile.known_dietary.map((d) => (
+                        {(profile.known_dietary ?? []).map((d) => (
                           <span
                             key={d}
                             className="rounded-full bg-amber-500/10 px-3 py-1 text-xs text-amber-400"

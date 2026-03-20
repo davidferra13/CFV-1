@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${redirectBase}?error=instagram_invalid_callback`)
   }
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Validate state
   const { data: stateRow } = await supabase

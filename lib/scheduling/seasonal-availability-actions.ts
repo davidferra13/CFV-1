@@ -64,7 +64,7 @@ function getLocationColor(location: string, allLocations: string[]): string {
 /** Get all seasonal periods for the current chef */
 export async function getSeasonalPeriods(): Promise<SeasonalPeriod[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('seasonal_availability_periods')
@@ -79,7 +79,7 @@ export async function getSeasonalPeriods(): Promise<SeasonalPeriod[]> {
 /** Get the active seasonal period based on today's date */
 export async function getActiveSeasonalPeriod(): Promise<SeasonalPeriod | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
 
   const { data, error } = await supabase
@@ -102,7 +102,7 @@ export async function getAvailabilityForDate(date: string): Promise<{
   location: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('seasonal_availability_periods')
@@ -130,7 +130,7 @@ export async function getAvailabilityForDate(date: string): Promise<{
 /** Get all periods for the current year, color-coded by location */
 export async function getYearOverview(): Promise<YearOverviewPeriod[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const year = new Date().getFullYear()
   const yearStart = `${year}-01-01`
@@ -163,7 +163,7 @@ export async function checkBookingConflict(date: string): Promise<{
   maxEventsPerWeek: number
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find the seasonal period covering this date
   const { data: periodData, error: periodError } = await supabase
@@ -247,7 +247,7 @@ export async function createSeasonalPeriod(
   input: SeasonalPeriodInput
 ): Promise<{ success: boolean; error?: string; period?: SeasonalPeriod }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Validate dates
   if (input.end_date <= input.start_date) {
@@ -298,7 +298,7 @@ export async function updateSeasonalPeriod(
   input: Partial<SeasonalPeriodInput>
 ): Promise<{ success: boolean; error?: string; period?: SeasonalPeriod }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Validate dates if both provided
   if (input.start_date && input.end_date && input.end_date <= input.start_date) {
@@ -360,7 +360,7 @@ export async function deleteSeasonalPeriod(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('seasonal_availability_periods')

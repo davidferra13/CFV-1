@@ -30,7 +30,7 @@ const TRANSITION_RULES: Record<string, string[]> = {
 
 const TransitionBody = z.object({
   to_status: z.enum(VALID_STATUSES),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const POST = withApiAuth(
@@ -96,7 +96,7 @@ export const POST = withApiAuth(
         to_status,
         transitioned_by: ctx.keyId,
         metadata: { ...(metadata ?? {}), source: 'api_v2' },
-      })
+      } as any)
     } catch {}
 
     return apiSuccess({

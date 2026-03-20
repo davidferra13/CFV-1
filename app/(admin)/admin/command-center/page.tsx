@@ -38,7 +38,7 @@ export default async function AdminCommandCenterPage() {
     )
   }
 
-  const { conversations, social, hubGroups, notifications } = result.data
+  const { conversations, social, hubGroups, notifications } = result.data!
 
   return (
     <div className="space-y-6">
@@ -93,7 +93,7 @@ export default async function AdminCommandCenterPage() {
             </Link>
           </div>
           <div className="mt-3 space-y-2">
-            {conversations.items.map((conversation) => (
+            {conversations.items.map((conversation: any) => (
               <Link
                 key={conversation.id}
                 href={`/admin/conversations/${conversation.id}`}
@@ -122,7 +122,7 @@ export default async function AdminCommandCenterPage() {
             </Link>
           </div>
           <div className="mt-3 space-y-2">
-            {notifications.items.slice(0, 10).map((notification) => (
+            {notifications.items.slice(0, 10).map((notification: any) => (
               <div key={notification.id} className="rounded-lg border border-stone-800 p-2">
                 <p className="text-xs text-stone-400">
                   {notification.tenantName ?? notification.tenantId} - {notification.category}/

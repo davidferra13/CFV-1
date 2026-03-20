@@ -43,7 +43,7 @@ export async function importTakeAChefBooking(
 ): Promise<TakeAChefImportResult> {
   const user = await requireChef()
   const validated = TakeAChefImportSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   try {
@@ -258,7 +258,7 @@ export async function importTakeAChefBooking(
 export async function getChefDirectBookingLink(): Promise<string | null> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const { data } = await supabase.from('chefs').select('slug').eq('id', user.tenantId!).single()
 

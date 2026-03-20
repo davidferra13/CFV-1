@@ -196,7 +196,7 @@ export async function getIntakeShares(formId: string) {
 // ============================================
 
 export async function getShareByToken(token: string) {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Load the share record
   const { data: share, error: shareError } = await (supabase as any)
@@ -232,7 +232,7 @@ export async function submitIntakeResponse(
   clientName: string,
   clientEmail: string
 ) {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Validate the share token
   const { data: share, error: shareError } = await (supabase as any)

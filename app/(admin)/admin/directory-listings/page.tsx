@@ -33,7 +33,7 @@ export default async function AdminDirectoryListingsPage() {
       ? outreachSettled.value
       : (() => {
           console.error('[admin-directory] Outreach stats failed:', outreachSettled.reason)
-          return { total: 0, sent: 0, opened: 0, clicked: 0, responded: 0 } as Awaited<
+          return { total: 0, sent: 0, opened: 0, clicked: 0, responded: 0 } as unknown as Awaited<
             ReturnType<typeof getOutreachStats>
           >
         })()
@@ -47,8 +47,9 @@ export default async function AdminDirectoryListingsPage() {
     verified: listings.filter((l) => l.status === 'verified').length,
     pendingSubmissions: listings.filter((l) => l.status === 'pending_submission').length,
     removed: listings.filter((l) => l.status === 'removed').length,
-    removalRequests: listings.filter((l) => l.removal_requested_at && l.status !== 'removed')
-      .length,
+    removalRequests: listings.filter(
+      (l) => (l as any).removal_requested_at && l.status !== 'removed'
+    ).length,
   }
 
   return (

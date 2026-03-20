@@ -39,7 +39,7 @@ function baseClients(chefId: string, supabase: ReturnType<typeof createServerCli
 /** Clients who have booked this exact occasion type before */
 export async function getClientsByOccasion(occasion: string): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -75,7 +75,7 @@ export async function getClientsByOccasion(occasion: string): Promise<TargetClie
 /** Clients who haven't booked in N+ days */
 export async function getDormantClients(dayThreshold = 90): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const cutoff = subDays(new Date(), dayThreshold).toISOString().slice(0, 10)
 
@@ -85,12 +85,12 @@ export async function getDormantClients(dayThreshold = 90): Promise<TargetClient
     .eq('tenant_id', chef.entityId)
     .gte('event_date', cutoff)
 
-  const activeIds = new Set((recentEvents ?? []).map((r) => r.client_id))
+  const activeIds = new Set((recentEvents ?? []).map((r: any) => r.client_id))
 
   const { data: clients } = await baseClients(chef.entityId, supabase)
   return (clients ?? [])
-    .filter((c) => !activeIds.has(c.id))
-    .map((c) => ({
+    .filter((c: any) => !activeIds.has(c.id))
+    .map((c: any) => ({
       id: c.id,
       full_name: c.full_name,
       email: c.email,
@@ -101,14 +101,14 @@ export async function getDormantClients(dayThreshold = 90): Promise<TargetClient
 /** VIP / high-tier clients */
 export async function getVIPClients(): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await baseClients(chef.entityId, supabase).in('loyalty_tier', [
     'gold',
     'platinum',
   ])
 
-  return (data ?? []).map((c) => ({
+  return (data ?? []).map((c: any) => ({
     id: c.id,
     full_name: c.full_name,
     email: c.email,
@@ -119,10 +119,10 @@ export async function getVIPClients(): Promise<TargetClient[]> {
 /** All active/subscribed clients */
 export async function getAllClients(): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await baseClients(chef.entityId, supabase).limit(200)
-  return (data ?? []).map((c) => ({
+  return (data ?? []).map((c: any) => ({
     id: c.id,
     full_name: c.full_name,
     email: c.email,
@@ -133,7 +133,7 @@ export async function getAllClients(): Promise<TargetClient[]> {
 /** Clients who booked events in a given calendar month across any year */
 export async function getSeasonalClients(month: number): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all events for this chef (limited), then filter by month in JS
   const { data: events } = await supabase
@@ -156,7 +156,7 @@ export async function getSeasonalClients(month: number): Promise<TargetClient[]>
   const ids = Array.from(matchingClients.keys())
   const { data: clients } = await baseClients(chef.entityId, supabase).in('id', ids)
 
-  return (clients ?? []).map((c) => ({
+  return (clients ?? []).map((c: any) => ({
     id: c.id,
     full_name: c.full_name,
     email: c.email,
@@ -169,7 +169,7 @@ export async function getSeasonalClients(month: number): Promise<TargetClient[]>
 /** Search clients by name or email for handpick mode */
 export async function searchClientsForCampaign(query: string): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const q = query.toLowerCase().trim()
   if (!q) return []
@@ -185,7 +185,7 @@ export async function searchClientsForCampaign(query: string): Promise<TargetCli
     )
     .limit(20)
 
-  return (data ?? []).map((c) => ({
+  return (data ?? []).map((c: any) => ({
     id: c.id,
     full_name: c.full_name,
     email: c.email,
@@ -201,7 +201,7 @@ export async function searchClientsForCampaign(query: string): Promise<TargetCli
 
 export async function getOpenDateSuggestions(): Promise<OpenDateSlot[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date()
   const endDate = addDays(today, 90)
@@ -215,7 +215,7 @@ export async function getOpenDateSuggestions(): Promise<OpenDateSlot[]> {
     .gte('event_date', today.toISOString().slice(0, 10))
     .lte('event_date', endDate.toISOString().slice(0, 10))
 
-  const bookedDates = new Set((events ?? []).map((e) => e.event_date))
+  const bookedDates = new Set((events ?? []).map((e: any) => e.event_date))
 
   // Walk the next 90 days, collect Fri/Sat/Sun that are free
   const slots: OpenDateSlot[] = []

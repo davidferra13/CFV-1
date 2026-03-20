@@ -45,7 +45,7 @@ if (sentryClientEnabled) {
     })
 
     captureRouterTransitionStart = (...args: unknown[]) => {
-      Sentry.captureRouterTransitionStart(...args)
+      ;(Sentry.captureRouterTransitionStart as any)(...args)
     }
   })
 }

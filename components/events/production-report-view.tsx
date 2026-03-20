@@ -43,7 +43,7 @@ export function ProductionReportView({ eventId, onClose }: ProductionReportViewP
     startPdf(async () => {
       try {
         const buffer = await generateProductionReportPdf(eventId)
-        const blob = new Blob([buffer], { type: 'application/pdf' })
+        const blob = new Blob([buffer as any], { type: 'application/pdf' })
         const url = URL.createObjectURL(blob)
         window.open(url, '_blank')
         setTimeout(() => URL.revokeObjectURL(url), 30000)

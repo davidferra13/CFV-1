@@ -133,7 +133,7 @@ export function OnboardingTourProvider({ config, initialProgress, children }: Pr
         s.autoComplete &&
         s.completionCheck?.type === 'route_visited' &&
         s.completionCheck.value &&
-        pathname.startsWith(s.completionCheck.value) &&
+        pathname?.startsWith(s.completionCheck.value) &&
         !completedSteps.has(s.id)
     )
 

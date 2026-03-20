@@ -29,9 +29,7 @@ export default async function OnboardingPage({
     const stepParam = parseInt(searchParams?.step ?? '1', 10)
     const initialStep = isNaN(stepParam) || stepParam < 1 ? 1 : Math.min(stepParam, 5)
 
-    return (
-      <OnboardingWizard profile={profile} connectStatus={connectStatus} initialStep={initialStep} />
-    )
+    return <OnboardingWizard {...({ profile, connectStatus, initialStep } as any)} />
   }
 
   // Wizard done - show migration hub

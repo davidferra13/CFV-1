@@ -84,8 +84,18 @@ export type GrowthMetricsResult = {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ]
 
 function calcChangePercent(prev: number, curr: number): number | null {
@@ -101,13 +111,10 @@ function emptyMonthlyMap(): Map<number, number> {
 
 // ─── Revenue Comparison ─────────────────────────────────────────────────────
 
-export async function getYoyRevenue(
-  year1: number,
-  year2: number,
-): Promise<YoyRevenueResult> {
+export async function getYoyRevenue(year1: number, year2: number): Promise<YoyRevenueResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch ledger entries for both years (revenue = payments received, not refunds)
   const { data: entries, error } = await supabase
@@ -161,13 +168,10 @@ export async function getYoyRevenue(
 
 // ─── Event Count Comparison ─────────────────────────────────────────────────
 
-export async function getYoyEventCount(
-  year1: number,
-  year2: number,
-): Promise<YoyEventCountResult> {
+export async function getYoyEventCount(year1: number, year2: number): Promise<YoyEventCountResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Count events by month for both years (exclude drafts and cancelled)
   const { data: events, error } = await supabase
@@ -223,11 +227,11 @@ export async function getYoyEventCount(
 
 export async function getYoyClientGrowth(
   year1: number,
-  year2: number,
+  year2: number
 ): Promise<YoyClientGrowthResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all events with client info for both years
   const { data: events, error } = await supabase
@@ -249,7 +253,7 @@ export async function getYoyClientGrowth(
     .not('status', 'in', '("draft","cancelled")')
     .lt('event_date', `${Math.min(year1, year2)}-01-01`)
 
-  const priorClients = new Set((priorEvents ?? []).map((e) => e.client_id))
+  const priorClients = new Set((priorEvents ?? []).map((e: any) => e.client_id))
 
   // Track which clients have been seen before in chronological order
   const seenClients = new Set(priorClients)
@@ -300,11 +304,11 @@ export async function getYoyClientGrowth(
 
 export async function getYoyAvgEventValue(
   year1: number,
-  year2: number,
+  year2: number
 ): Promise<YoyAvgEventValueResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch events with quoted prices
   const { data: events, error } = await supabase
@@ -377,12 +381,10 @@ export async function getYoyAvgEventValue(
 
 // ─── Seasonal Trends ────────────────────────────────────────────────────────
 
-export async function getSeasonalTrends(
-  yearsBack: number = 3,
-): Promise<SeasonalTrendsResult> {
+export async function getSeasonalTrends(yearsBack: number = 3): Promise<SeasonalTrendsResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const currentYear = new Date().getFullYear()
   const startYear = currentYear - yearsBack + 1
@@ -470,12 +472,10 @@ export async function getSeasonalTrends(
 
 // ─── Growth Metrics ─────────────────────────────────────────────────────────
 
-export async function getGrowthMetrics(
-  year: number,
-): Promise<GrowthMetricsResult> {
+export async function getGrowthMetrics(year: number): Promise<GrowthMetricsResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const previousYear = year - 1
 
   // Fetch revenue for both years

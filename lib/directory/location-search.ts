@@ -136,7 +136,7 @@ export async function filterChefsByResolvedLocation(
     )
   )
 
-  return chefs.flatMap((chef) => {
+  return chefs.flatMap((chef): any[] => {
     const points = buildResolvedCoveragePoints(chef, resolvedQueryMap)
     const radiusMiles = chef.discovery.service_area_radius_miles ?? 25
 

@@ -105,8 +105,9 @@ export function TemplatePicker() {
           description: template.description,
           trigger_event: template.trigger_event,
           action_type: template.action_type,
-          conditions: template.conditions,
+          conditions: template.conditions as any,
           action_config: template.action_config,
+          priority: 0,
         })
         router.refresh()
         // Brief feedback then clear

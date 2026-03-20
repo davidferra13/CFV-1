@@ -13,7 +13,7 @@ const sendPreEventBriefing: AgentActionDefinition = {
   taskType: 'send.pre_event_briefing',
   name: 'Send Pre-Event Briefing',
   tier: 2,
-  safety: 'safe',
+  safety: 'reversible',
   description:
     'Share the pre-event briefing with the client in the Dinner Circle. Includes timeline, menu highlights, dietary confirmation, and what to have ready. No LLM needed.',
   inputSchema: '{ eventId: string }',
@@ -103,8 +103,8 @@ const sendPreEventBriefing: AgentActionDefinition = {
     const preview: AgentActionPreview = {
       actionType: 'send.pre_event_briefing',
       summary: `Pre-event briefing for ${client?.full_name || 'client'} (${event.event_date})`,
-      details: body,
-      requiresApproval: true,
+      fields: [{ label: 'Briefing', value: body }],
+      safety: 'reversible',
     }
 
     return {
@@ -143,7 +143,7 @@ const sendArrivalNotification: AgentActionDefinition = {
   taskType: 'send.arrival_notification',
   name: 'Send Arrival Notification',
   tier: 2,
-  safety: 'safe',
+  safety: 'reversible',
   description:
     'Notify the client that the chef is on the way. Posts to the Dinner Circle. Chef can include a custom message or arrival time.',
   inputSchema: '{ eventId: string, arrivalTime?: string, message?: string }',
@@ -179,8 +179,8 @@ const sendArrivalNotification: AgentActionDefinition = {
     const preview: AgentActionPreview = {
       actionType: 'send.arrival_notification',
       summary: `Arrival notification for ${client?.full_name || 'client'}`,
-      details: body,
-      requiresApproval: true,
+      fields: [{ label: 'Message', value: body }],
+      safety: 'reversible',
     }
 
     return {

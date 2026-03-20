@@ -173,7 +173,7 @@ export default async function FoodCostPage({
       />
 
       {/* Price comparison */}
-      <PriceComparison data={priceComparison} />
+      <PriceComparison data={priceComparison as any} />
 
       {/* Daily revenue entry */}
       <DailyRevenueForm />

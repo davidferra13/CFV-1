@@ -27,7 +27,7 @@ const SendNotificationBody = z.object({
 
   // Optional linked entities
   event_id: z.string().uuid().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const POST = withApiAuth(

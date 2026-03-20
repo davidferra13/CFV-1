@@ -18,13 +18,13 @@ export async function executeCirclesList() {
       id: c.id,
       name: c.name,
       emoji: c.emoji,
-      memberCount: c.memberCount,
-      unreadCount: c.unreadCount,
-      lastActivity: c.lastActivity,
-      groupType: c.groupType,
+      memberCount: c.member_count,
+      unreadCount: c.unread_count,
+      lastActivity: c.last_message_at,
+      groupType: c.group_type,
     })),
     totalCircles: circles.length,
-    totalUnread: circles.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0),
+    totalUnread: circles.reduce((sum, c) => sum + (c.unread_count ?? 0), 0),
   }
 }
 
@@ -111,7 +111,7 @@ export async function executeRateCard() {
 
 export async function executeTasksList(inputs: Record<string, unknown>) {
   const { listTasks } = await import('@/lib/tasks/actions')
-  const status = inputs.status as string | undefined
+  const status = inputs.status as 'pending' | 'in_progress' | 'done' | undefined
   const tasks = await listTasks(status ? { status } : undefined)
   return {
     tasks: (tasks ?? []).slice(0, 20).map((t: any) => ({
@@ -130,17 +130,25 @@ export async function executeTasksList(inputs: Record<string, unknown>) {
 export async function executeTasksByDate(inputs: Record<string, unknown>) {
   const date = String(inputs.date ?? new Date().toISOString().split('T')[0])
   const { getTasksByDate } = await import('@/lib/tasks/actions')
-  const tasks = await getTasksByDate(date)
+  const result = await getTasksByDate(date)
+  // getTasksByDate returns { grouped, unassigned } - flatten into a list
+  const allTasks: any[] = []
+  if (result?.unassigned) allTasks.push(...result.unassigned)
+  if (result?.grouped) {
+    for (const group of Object.values(result.grouped) as any[]) {
+      allTasks.push(...(group.tasks ?? []))
+    }
+  }
   return {
     date,
-    tasks: (tasks ?? []).map((t: any) => ({
+    tasks: allTasks.map((t: any) => ({
       id: t.id,
       title: t.title,
       status: t.status,
       priority: t.priority,
       assignedTo: t.assigned_to,
     })),
-    totalCount: (tasks ?? []).length,
+    totalCount: allTasks.length,
   }
 }
 
@@ -174,7 +182,7 @@ export async function executeTravelPlan(inputs: Record<string, unknown>) {
 
 export async function executeTravelUpcoming() {
   const { getAllTravelLegs } = await import('@/lib/travel/actions')
-  const legs = await getAllTravelLegs({ upcoming: true })
+  const legs = await getAllTravelLegs({ fromDate: new Date().toISOString().split('T')[0] })
   return {
     upcomingLegs: (legs ?? []).slice(0, 15).map((l: any) => ({
       id: l.id,
@@ -193,9 +201,10 @@ export async function executeTravelUpcoming() {
 
 export async function executeCommerceProducts() {
   const { listProducts } = await import('@/lib/commerce/product-actions')
-  const products = await listProducts({ is_active: true })
+  const result = await listProducts({ activeOnly: true })
+  const items = result?.products ?? []
   return {
-    products: (products ?? []).slice(0, 25).map((p: any) => ({
+    products: items.slice(0, 25).map((p: any) => ({
       id: p.id,
       name: p.name,
       sku: p.sku,
@@ -205,15 +214,16 @@ export async function executeCommerceProducts() {
       isActive: p.is_active,
       category: p.category,
     })),
-    totalCount: (products ?? []).length,
+    totalCount: result?.total ?? items.length,
   }
 }
 
 export async function executeCommerceRecentSales() {
   const { listSales } = await import('@/lib/commerce/sale-actions')
-  const sales = await listSales({ limit: 15 })
+  const result = await listSales({ limit: 15 })
+  const items = result?.sales ?? []
   return {
-    sales: (sales ?? []).map((s: any) => ({
+    sales: items.map((s: any) => ({
       id: s.id,
       totalCents: s.total_cents,
       subtotalCents: s.subtotal_cents,
@@ -222,7 +232,7 @@ export async function executeCommerceRecentSales() {
       createdAt: s.created_at,
       itemCount: s.item_count ?? s.items?.length ?? 0,
     })),
-    totalCount: (sales ?? []).length,
+    totalCount: result?.total ?? items.length,
   }
 }
 
@@ -233,11 +243,11 @@ export async function executeCommerceDailyReport() {
   const day = report?.[0]
   return {
     date: today,
-    totalSales: day?.totalSales ?? 0,
-    totalRevenueCents: day?.totalRevenueCents ?? 0,
-    totalTaxCents: day?.totalTaxCents ?? 0,
-    averageSaleCents: day?.averageSaleCents ?? 0,
-    topProducts: day?.topProducts ?? [],
+    totalSales: day?.salesCount ?? 0,
+    totalRevenueCents: day?.revenueCents ?? 0,
+    totalTaxCents: day?.taxCents ?? 0,
+    averageSaleCents: day?.averageOrderCents ?? 0,
+    netRevenueCents: day?.netRevenueCents ?? 0,
   }
 }
 
@@ -260,8 +270,8 @@ export async function executeCommerceProductReport() {
 
 export async function executeCommerceInventoryLow() {
   const { listProducts } = await import('@/lib/commerce/product-actions')
-  const products = await listProducts({ is_active: true })
-  const lowStock = (products ?? []).filter(
+  const result = await listProducts({ activeOnly: true })
+  const lowStock = (result?.products ?? []).filter(
     (p: any) => p.inventory_count !== null && p.inventory_count <= (p.reorder_point ?? 5)
   )
   return {
@@ -340,9 +350,12 @@ export async function executeStationDetail(inputs: Record<string, unknown>) {
 export async function executeOpsLog(inputs: Record<string, unknown>) {
   const { getOpsLog } = await import('@/lib/stations/ops-log-actions')
   const stationId = inputs.stationId as string | undefined
-  const log = await getOpsLog(stationId ? { stationId } : undefined)
+  const log = await getOpsLog(
+    stationId ? { station_id: stationId, page: 1, per_page: 20 } : { page: 1, per_page: 20 }
+  )
+  const entries = log?.entries ?? []
   return {
-    entries: (log ?? []).slice(0, 20).map((entry: any) => ({
+    entries: entries.slice(0, 20).map((entry: any) => ({
       id: entry.id,
       actionType: entry.action_type,
       description: entry.description,
@@ -350,7 +363,7 @@ export async function executeOpsLog(inputs: Record<string, unknown>) {
       createdAt: entry.created_at,
       createdBy: entry.created_by_name,
     })),
-    totalCount: (log ?? []).length,
+    totalCount: log?.total ?? entries.length,
   }
 }
 

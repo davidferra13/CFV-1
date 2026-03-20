@@ -157,7 +157,7 @@ function computeChurnRisk(
  */
 export async function calculateClientLTV(clientId: string): Promise<ClientLTV> {
   const user = await requirePro('client-intelligence')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get client info
   const { data: client } = await supabase
@@ -177,7 +177,7 @@ export async function calculateClientLTV(clientId: string): Promise<ClientLTV> {
     .eq('client_id', clientId)
     .in('entry_type', ['payment', 'deposit', 'installment', 'final_payment', 'add_on', 'credit'])
 
-  const totalRevenueCents = (ledger ?? []).reduce((sum, e) => {
+  const totalRevenueCents = (ledger ?? []).reduce((sum: any, e: any) => {
     return sum + (e.is_refund ? -e.amount_cents : e.amount_cents)
   }, 0)
 
@@ -218,7 +218,7 @@ export async function calculateClientLTV(clientId: string): Promise<ClientLTV> {
  */
 export async function predictChurnRisk(clientId: string): Promise<ChurnPrediction> {
   const user = await requirePro('client-intelligence')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get client info
   const { data: client } = await supabase
@@ -239,7 +239,7 @@ export async function predictChurnRisk(clientId: string): Promise<ChurnPredictio
     .eq('status', 'completed')
     .order('event_date')
 
-  const eventDates = (events ?? []).map((e) => e.event_date).filter(Boolean) as string[]
+  const eventDates = (events ?? []).map((e: any) => e.event_date).filter(Boolean) as string[]
   const totalBookings = eventDates.length
   const lastEventDate = client.last_event_date
 
@@ -284,7 +284,7 @@ export async function predictChurnRisk(clientId: string): Promise<ChurnPredictio
  */
 export async function getAllChurnPredictions(): Promise<ChurnPrediction[]> {
   const user = await requirePro('client-intelligence')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clients } = await supabase
     .from('clients')
@@ -312,7 +312,7 @@ export async function getAllChurnPredictions(): Promise<ChurnPrediction[]> {
  */
 export async function getAllClientLTV(): Promise<ClientLTV[]> {
   const user = await requirePro('client-intelligence')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clients } = await supabase
     .from('clients')

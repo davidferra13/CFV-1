@@ -66,7 +66,11 @@ export async function POST(request: Request) {
     .select('id, name, city')
     .eq('chef_id', auth.tenantId)
 
-  const existingList = (existing ?? []) as { id: string; name: string; city: string | null }[]
+  const existingList = (existing ?? []) as unknown as {
+    id: string
+    name: string
+    city: string | null
+  }[]
 
   const toInsert: Record<string, unknown>[] = []
   let skipped = 0
@@ -164,33 +168,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Database insert failed' }, { status: 500 })
   }
 
-  const ids = ((inserted ?? []) as { id: string }[]).map((r) => r.id)
+  const ids = ((inserted ?? []) as unknown as { id: string }[]).map((r) => r.id)
 
   // Update campaign leads_count if campaign_id provided
   if (body.campaign_id && ids.length > 0) {
-    await supabase
-      .rpc('increment_field' as any, {
+    try {
+      await supabase.rpc('increment_field' as any, {
         table_name: 'outreach_campaigns',
         field_name: 'leads_count',
         row_id: body.campaign_id,
         amount: ids.length,
       })
-      .catch(() => {
-        // Non-blocking: RPC may not exist yet, update manually
-        supabase
+    } catch {
+      // Non-blocking: RPC may not exist yet, update manually
+      try {
+        const { data }: any = await supabase
           .from('outreach_campaigns' as any)
           .select('leads_count')
           .eq('id', body.campaign_id)
           .single()
-          .then(({ data }: any) => {
-            if (data) {
-              supabase
-                .from('outreach_campaigns' as any)
-                .update({ leads_count: (data.leads_count ?? 0) + ids.length })
-                .eq('id', body.campaign_id)
-            }
-          })
-      })
+        if (data) {
+          await supabase
+            .from('outreach_campaigns' as any)
+            .update({ leads_count: (data.leads_count ?? 0) + ids.length })
+            .eq('id', body.campaign_id)
+        }
+      } catch {
+        // non-blocking
+      }
+    }
   }
 
   return NextResponse.json({ imported: ids.length, skipped, ids })

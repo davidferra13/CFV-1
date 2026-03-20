@@ -40,7 +40,11 @@ export async function POST(request: Request) {
     .select('id, name, city')
     .eq('chef_id', auth.tenantId)
 
-  const existingList = (existing ?? []) as { id: string; name: string; city: string | null }[]
+  const existingList = (existing ?? []) as unknown as {
+    id: string
+    name: string
+    city: string | null
+  }[]
 
   const results = body.prospects.map((input) => {
     const match = existingList.find(

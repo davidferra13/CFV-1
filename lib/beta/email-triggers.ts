@@ -14,7 +14,7 @@ import { format } from 'date-fns'
  * Called by the daily ops scheduler or manually triggered.
  */
 export async function sendPreEventDietarySummary(eventId: string) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Get event details
   const { data: event } = await supabase
@@ -48,7 +48,7 @@ export async function sendPreEventDietarySummary(eventId: string) {
 
   // Send via the notification system
   try {
-    const { sendEmail } = await import('@/lib/email/notifications')
+    const { sendEmail } = (await import('@/lib/email/send')) as any
     const { PreEventDietarySummaryEmail } =
       await import('@/lib/email/templates/pre-event-dietary-summary')
     const { render } = await import('@react-email/render')
@@ -89,7 +89,7 @@ export async function sendPreEventDietarySummary(eventId: string) {
  * Called when event transitions to 'completed'.
  */
 export async function sendPostEventCircleThanks(eventId: string) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Get event + circle info
   const { data: event } = await supabase
@@ -125,7 +125,7 @@ export async function sendPostEventCircleThanks(eventId: string) {
     return { success: true, reason: 'no_circles_linked' }
   }
 
-  const groupIds = groupEvents.map((g) => g.group_id)
+  const groupIds = groupEvents.map((g: any) => g.group_id)
 
   // Get all members of these circles
   const { data: members } = await supabase
@@ -144,7 +144,7 @@ export async function sendPostEventCircleThanks(eventId: string) {
     .eq('event_id', eventId)
     .order('course', { ascending: true })
 
-  const menuHighlights = (menuItems ?? []).map((m) => m.name).slice(0, 5)
+  const menuHighlights = (menuItems ?? []).map((m: any) => m.name).slice(0, 5)
   const eventDate = format(new Date(event.event_date), 'MMMM d, yyyy')
 
   // Send to each member
@@ -162,7 +162,7 @@ export async function sendPostEventCircleThanks(eventId: string) {
     const isGuest = !profile.auth_user_id
 
     try {
-      const { sendEmail } = await import('@/lib/email/notifications')
+      const { sendEmail } = (await import('@/lib/email/send')) as any
       const { PostEventCircleThanksEmail } =
         await import('@/lib/email/templates/post-event-circle-thanks')
       const { render } = await import('@react-email/render')

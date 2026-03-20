@@ -3,7 +3,13 @@
 import { useEffect, useState, useTransition } from 'react'
 import { getClaimDocumentPackage } from '@/lib/compliance/claim-actions'
 
-type ClaimType = 'property_damage' | 'bodily_injury' | 'food_illness' | 'equipment_loss' | 'vehicle' | 'other'
+type ClaimType =
+  | 'property_damage'
+  | 'bodily_injury'
+  | 'food_illness'
+  | 'equipment_loss'
+  | 'vehicle'
+  | 'other'
 type ClaimStatus = 'documenting' | 'filed' | 'under_review' | 'approved' | 'denied' | 'settled'
 
 interface DocumentPackage {
@@ -34,7 +40,13 @@ interface DocumentPackage {
     company: string | null
   } | null
   menu: Record<string, unknown>[]
-  timeline: { id: string; from_status: string; to_status: string; created_at: string; note: string | null }[]
+  timeline: {
+    id: string
+    from_status: string
+    to_status: string
+    created_at: string
+    note: string | null
+  }[]
 }
 
 const TYPE_LABELS: Record<ClaimType, string> = {
@@ -87,7 +99,9 @@ export function ClaimDocumentViewer({ claimId, onClose }: ClaimDocumentViewerPro
   }
 
   if (isPending) {
-    return <div className="py-12 text-center text-sm text-gray-500">Loading document package...</div>
+    return (
+      <div className="py-12 text-center text-sm text-gray-500">Loading document package...</div>
+    )
   }
 
   if (error) {
@@ -105,7 +119,8 @@ export function ClaimDocumentViewer({ claimId, onClose }: ClaimDocumentViewerPro
         <div>
           <h2 className="text-xl font-semibold text-gray-900">Insurance Claim Document Package</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Claim ID: {claim.id.slice(0, 8)}... | Created: {new Date(claim.created_at).toLocaleDateString()}
+            Claim ID: {claim.id.slice(0, 8)}... | Created:{' '}
+            {new Date(claim.created_at).toLocaleDateString()}
           </p>
         </div>
         <div className="flex gap-2 print:hidden">
@@ -199,30 +214,36 @@ export function ClaimDocumentViewer({ claimId, onClose }: ClaimDocumentViewerPro
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div>
               <dt className="text-gray-500">Event</dt>
-              <dd className="font-medium">{(event as Record<string, unknown>).title as string || 'Untitled'}</dd>
+              <dd className="font-medium">
+                {String((event as Record<string, any>).title || 'Untitled')}
+              </dd>
             </div>
-            {(event as Record<string, unknown>).event_date && (
+            {(event as Record<string, any>).event_date && (
               <div>
                 <dt className="text-gray-500">Date</dt>
-                <dd className="font-medium">{new Date((event as Record<string, unknown>).event_date as string).toLocaleDateString()}</dd>
+                <dd className="font-medium">
+                  {new Date(String((event as Record<string, any>).event_date)).toLocaleDateString()}
+                </dd>
               </div>
             )}
-            {(event as Record<string, unknown>).status && (
+            {(event as Record<string, any>).status && (
               <div>
                 <dt className="text-gray-500">Event Status</dt>
-                <dd className="font-medium">{(event as Record<string, unknown>).status as string}</dd>
+                <dd className="font-medium">{String((event as Record<string, any>).status)}</dd>
               </div>
             )}
-            {(event as Record<string, unknown>).guest_count && (
+            {(event as Record<string, any>).guest_count && (
               <div>
                 <dt className="text-gray-500">Guest Count</dt>
-                <dd className="font-medium">{(event as Record<string, unknown>).guest_count as number}</dd>
+                <dd className="font-medium">
+                  {Number((event as Record<string, any>).guest_count)}
+                </dd>
               </div>
             )}
-            {(event as Record<string, unknown>).venue_name && (
+            {(event as Record<string, any>).venue_name && (
               <div className="col-span-2">
                 <dt className="text-gray-500">Venue</dt>
-                <dd className="font-medium">{(event as Record<string, unknown>).venue_name as string}</dd>
+                <dd className="font-medium">{String((event as Record<string, any>).venue_name)}</dd>
               </div>
             )}
           </dl>
@@ -236,7 +257,9 @@ export function ClaimDocumentViewer({ claimId, onClose }: ClaimDocumentViewerPro
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div>
               <dt className="text-gray-500">Name</dt>
-              <dd className="font-medium">{client.first_name} {client.last_name}</dd>
+              <dd className="font-medium">
+                {client.first_name} {client.last_name}
+              </dd>
             </div>
             {client.email && (
               <div>
@@ -267,9 +290,15 @@ export function ClaimDocumentViewer({ claimId, onClose }: ClaimDocumentViewerPro
           <ul className="space-y-1 text-sm">
             {menu.map((item, i) => (
               <li key={i} className="text-gray-700">
-                {(item as Record<string, unknown>).name as string || (item as Record<string, unknown>).recipe_name as string || `Item ${i + 1}`}
-                {(item as Record<string, unknown>).course && (
-                  <span className="ml-2 text-gray-400">({(item as Record<string, unknown>).course as string})</span>
+                {String(
+                  (item as Record<string, any>).name ||
+                    (item as Record<string, any>).recipe_name ||
+                    `Item ${i + 1}`
+                )}
+                {(item as Record<string, any>).course && (
+                  <span className="ml-2 text-gray-400">
+                    ({String((item as Record<string, any>).course)})
+                  </span>
                 )}
               </li>
             ))}
@@ -282,7 +311,7 @@ export function ClaimDocumentViewer({ claimId, onClose }: ClaimDocumentViewerPro
         <section className="rounded-lg border border-gray-200 p-4">
           <h3 className="mb-3 text-sm font-semibold uppercase text-gray-500">Event Timeline</h3>
           <ol className="space-y-2 text-sm">
-            {timeline.map(t => (
+            {timeline.map((t) => (
               <li key={t.id} className="flex items-start gap-3">
                 <span className="whitespace-nowrap text-gray-400">
                   {new Date(t.created_at).toLocaleString()}
@@ -300,7 +329,9 @@ export function ClaimDocumentViewer({ claimId, onClose }: ClaimDocumentViewerPro
       {/* Evidence */}
       {claim.evidence_urls.length > 0 && (
         <section className="rounded-lg border border-gray-200 p-4">
-          <h3 className="mb-3 text-sm font-semibold uppercase text-gray-500">Evidence / Attachments</h3>
+          <h3 className="mb-3 text-sm font-semibold uppercase text-gray-500">
+            Evidence / Attachments
+          </h3>
           <ul className="space-y-1 text-sm">
             {claim.evidence_urls.map((url, i) => (
               <li key={i}>
@@ -321,7 +352,9 @@ export function ClaimDocumentViewer({ claimId, onClose }: ClaimDocumentViewerPro
       {/* Witness Statements */}
       {claim.witness_info && (
         <section className="rounded-lg border border-gray-200 p-4">
-          <h3 className="mb-3 text-sm font-semibold uppercase text-gray-500">Witness Information</h3>
+          <h3 className="mb-3 text-sm font-semibold uppercase text-gray-500">
+            Witness Information
+          </h3>
           <p className="whitespace-pre-wrap text-sm">{claim.witness_info}</p>
         </section>
       )}
