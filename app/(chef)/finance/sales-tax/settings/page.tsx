@@ -8,6 +8,12 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { saveSalesTaxSettings, getSalesTaxSettings } from '@/lib/finance/sales-tax-actions'
 import {
+  getChefTaxRates,
+  updateChefTaxRate,
+  resolveEffectiveTaxRate,
+  type ChefTaxConfig,
+} from '@/lib/finance/chef-tax-config-actions'
+import {
   COMMON_STATE_RATES_BPS,
   FILING_FREQUENCY_LABELS,
   bpsToPercent,
@@ -19,6 +25,8 @@ export default function SalesTaxSettingsPage() {
   const [isPending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [overrides, setOverrides] = useState<ChefTaxConfig[]>([])
+  const [hasOverrideForState, setHasOverrideForState] = useState(false)
 
   const [form, setForm] = useState({
     enabled: false,
@@ -31,7 +39,8 @@ export default function SalesTaxSettingsPage() {
   })
 
   useEffect(() => {
-    getSalesTaxSettings().then((s) => {
+    Promise.all([getSalesTaxSettings(), getChefTaxRates()]).then(([s, rates]) => {
+      setOverrides(rates)
       if (s) {
         setForm({
           enabled: s.enabled,
@@ -42,23 +51,41 @@ export default function SalesTaxSettingsPage() {
           filingFrequency: s.filingFrequency,
           notes: s.notes ?? '',
         })
+        if (s.state) {
+          setHasOverrideForState(rates.some((r) => r.stateCode === s.state))
+        }
       }
       setLoading(false)
     })
   }, [])
 
   function handleStateSelect(stateCode: string) {
-    const rate = COMMON_STATE_RATES_BPS[stateCode]
-    setForm({
-      ...form,
-      state: stateCode,
-      stateRateBps: rate ? rate.rateBps : 0,
-    })
+    // Check for chef override first, then fall back to default constant
+    const override = overrides.find((o) => o.stateCode === stateCode)
+    if (override) {
+      setForm({
+        ...form,
+        state: stateCode,
+        stateRateBps: override.rateBps,
+        localRateBps: override.localRateBps,
+      })
+      setHasOverrideForState(true)
+    } else {
+      const rate = COMMON_STATE_RATES_BPS[stateCode]
+      setForm({
+        ...form,
+        state: stateCode,
+        stateRateBps: rate ? rate.rateBps : 0,
+        localRateBps: 0,
+      })
+      setHasOverrideForState(false)
+    }
   }
 
   function handleSave() {
     startTransition(async () => {
       try {
+        // Save the main settings
         await saveSalesTaxSettings({
           enabled: form.enabled,
           state: form.state || null,
@@ -68,6 +95,23 @@ export default function SalesTaxSettingsPage() {
           filingFrequency: form.filingFrequency,
           notes: form.notes || null,
         })
+
+        // Also save as a per-state override if a state is selected
+        // so the rate persists in chef_tax_config for resolution
+        if (form.state) {
+          try {
+            await updateChefTaxRate({
+              stateCode: form.state,
+              rateBps: form.stateRateBps,
+              localRateBps: form.localRateBps,
+            })
+            setHasOverrideForState(true)
+          } catch {
+            // Non-blocking: override save failure should not break main save
+            console.error('[settings] Failed to save tax rate override')
+          }
+        }
+
         setSaved(true)
       } catch (err) {
         toast.error('Failed to save sales tax settings')
@@ -135,7 +179,12 @@ export default function SalesTaxSettingsPage() {
                   ))}
                 </select>
                 <p className="text-xs text-stone-400 mt-1">
-                  Selecting a state pre-fills the standard state rate. You can override it below.
+                  Selecting a state pre-fills the rate.{' '}
+                  {hasOverrideForState ? (
+                    <Badge variant="info">Using your custom rate</Badge>
+                  ) : (
+                    'Default state rate shown. Edit below to set your own.'
+                  )}
                 </p>
               </div>
 
