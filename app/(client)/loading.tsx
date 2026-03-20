@@ -36,7 +36,7 @@ export default function ClientLoading() {
       </div>
 
       {/* Loading Text */}
-      <div className="text-center text-stone-500 text-sm">Loading your events...</div>
+      <ContextLoader contextId="nav-client-portal" size="sm" className="py-2" />
     </div>
   )
 }

@@ -1,12 +1,21 @@
 // Chef Portal Loading Page
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { RemyLoader } from '@/components/ui/remy-loader'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 export default function ChefLoading() {
   return (
     <div className="space-y-6">
-      {/* Page Title Skeleton */}
-      <div className="h-8 w-48 bg-stone-700 rounded animate-pulse" />
+      {/* Reassuring loading message */}
+      <ContextLoader
+        contextId="nav-dashboard"
+        messages={[
+          'Loading your workspace...',
+          'Preparing your dashboard...',
+          "Pulling today's schedule...",
+        ]}
+        size="sm"
+        className="py-2 items-start"
+      />
 
       {/* Stats Cards Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -41,8 +50,6 @@ export default function ChefLoading() {
           </div>
         </CardContent>
       </Card>
-
-      <RemyLoader />
     </div>
   )
 }

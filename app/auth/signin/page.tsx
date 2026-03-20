@@ -25,10 +25,19 @@ function safeRedirectPath(raw: string | null): string {
   }
 }
 
+// Rotating transition messages shown after successful sign-in
+const TRANSITION_MESSAGES = [
+  'Signing you in...',
+  'Loading your workspace...',
+  'Preparing your portal...',
+]
+
 function SignInForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
+  const [transitioning, setTransitioning] = useState(false)
+  const [transitionMsg, setTransitionMsg] = useState(TRANSITION_MESSAGES[0])
 
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
@@ -47,6 +56,17 @@ function SignInForm() {
     setMessage(callbackMessage || null)
   }, [callbackError, callbackMessage])
 
+  // Rotate transition messages while redirecting
+  useEffect(() => {
+    if (!transitioning) return
+    let idx = 0
+    const timer = setInterval(() => {
+      idx = (idx + 1) % TRANSITION_MESSAGES.length
+      setTransitionMsg(TRANSITION_MESSAGES[idx])
+    }, 2000)
+    return () => clearInterval(timer)
+  }, [transitioning])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -56,14 +76,55 @@ function SignInForm() {
     try {
       await signIn(formData)
       clearLastActivePath()
+      // Show full-screen transition overlay (never released, page navigates away)
+      setTransitioning(true)
       router.push(redirectPath)
       router.refresh()
     } catch (err) {
       const error = err as Error
       setError(error.message)
-    } finally {
       setLoading(false)
     }
+  }
+
+  // Full-screen transition overlay after successful sign-in
+  if (transitioning) {
+    return (
+      <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center px-4 gap-6">
+        <div className="relative">
+          <div className="absolute inset-0 -m-4 rounded-full bg-brand-500/10 blur-2xl" />
+          <div className="relative w-16 h-16 rounded-full bg-brand-600/20 flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-brand-400 animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10" strokeDasharray="60 15" strokeLinecap="round" />
+            </svg>
+          </div>
+        </div>
+        <div className="text-center space-y-2">
+          <p
+            key={transitionMsg}
+            className="text-lg font-medium text-stone-200 animate-fade-slide-up"
+          >
+            {transitionMsg}
+          </p>
+          <p className="text-sm text-stone-500">This will only take a moment</p>
+        </div>
+        {/* Animated progress bar */}
+        <div className="w-48">
+          <div className="h-1.5 rounded-full bg-stone-800 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-brand-500 animate-pulse"
+              style={{ width: '65%', transition: 'width 2s ease-out' }}
+            />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
