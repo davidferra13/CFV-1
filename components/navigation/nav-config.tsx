@@ -633,6 +633,9 @@ export const navGroups: NavGroup[] = [
         href: '/operations/equipment',
         label: 'Equipment',
         icon: Wrench,
+        children: [
+          { href: '/operations/equipment?tab=maintenance', label: 'Maintenance Schedule' },
+        ],
       },
     ],
   },
@@ -763,6 +766,7 @@ export const navGroups: NavGroup[] = [
           { href: '/expenses/new', label: 'Add Expense' },
           { href: '/receipts', label: 'Receipt Library' },
           { href: '/finance/expenses', label: 'By Category' },
+          { href: '/finance/plate-costs', label: 'Plate Costs' },
         ],
       },
       {

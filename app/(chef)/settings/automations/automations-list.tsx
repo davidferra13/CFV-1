@@ -12,6 +12,7 @@ import { useDeferredAction } from '@/hooks/use-deferred-action'
 import { RuleBuilder } from '@/components/automations/rule-builder'
 import { BuiltInSettings } from '@/components/automations/built-in-settings'
 import { ExecutionLog } from '@/components/automations/execution-log'
+import { TemplatePicker } from '@/components/automations/template-picker'
 import { toggleAutomationRule, deleteAutomationRule } from '@/lib/automations/actions'
 import { TRIGGER_LABELS, ACTION_LABELS } from '@/lib/automations/types'
 import type {
@@ -83,6 +84,9 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
 
   return (
     <div className="space-y-6">
+      {/* ── Start from Template ────────────────────────────────────────── */}
+      <TemplatePicker />
+
       {/* ── Built-in Automations ─────────────────────────────────────────── */}
       <BuiltInSettings settings={settings} />
 
