@@ -29,6 +29,7 @@ import {
   DollarSign,
   Exam,
   FileText,
+  Flame,
   FlagBanner,
   Flower,
   Funnel,
@@ -619,6 +620,11 @@ export const navGroups: NavGroup[] = [
         icon: Zap,
       },
       {
+        href: '/kitchen',
+        label: 'Kitchen Mode',
+        icon: Flame,
+      },
+      {
         href: '/meal-prep',
         label: 'Meal Prep',
         icon: RefreshCw,
@@ -871,6 +877,11 @@ export const navGroups: NavGroup[] = [
           { href: '/social/connections', label: 'Platform Connections' },
           { href: '/social/settings', label: 'Queue Settings' },
         ],
+      },
+      {
+        href: '/content',
+        label: 'Content Pipeline',
+        icon: Kanban,
       },
       {
         href: '/social/hub-overview',
@@ -1182,6 +1193,12 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     context: 'Settings',
   },
   { href: '/settings/automations', label: 'Automations', icon: Settings, context: 'Settings' },
+  {
+    href: '/settings/touchpoints',
+    label: 'Touchpoint Rules',
+    icon: BellRing,
+    context: 'Settings',
+  },
   {
     href: '/settings/contracts',
     label: 'Contract Templates',
