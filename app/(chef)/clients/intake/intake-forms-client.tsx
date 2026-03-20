@@ -226,7 +226,7 @@ export function IntakeFormsClient({ forms: initialForms }: { forms: IntakeForm[]
                       <Button variant="ghost" onClick={() => handleShare(form.id)}>
                         {copiedToken === form.id ? 'Copied!' : 'Copy Link'}
                       </Button>
-                      <Button variant="ghost" onClick={() => handleDelete(form.id)}>
+                      <Button variant="ghost" onClick={() => setDeleteConfirmId(form.id)}>
                         Delete
                       </Button>
                     </div>
@@ -237,6 +237,18 @@ export function IntakeFormsClient({ forms: initialForms }: { forms: IntakeForm[]
           </table>
         </div>
       )}
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onCancel={() => setDeleteConfirmId(null)}
+        title="Delete intake form?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteConfirmId) handleDelete(deleteConfirmId)
+          setDeleteConfirmId(null)
+        }}
+      />
     </div>
   )
 }

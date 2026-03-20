@@ -293,7 +293,7 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(rule.id)}
+                  onClick={() => setDeleteConfirmId(rule.id)}
                   disabled={isPending}
                   className="text-xs text-red-500 hover:text-red-700"
                 >
@@ -304,6 +304,18 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
           ))}
         </div>
       )}
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onCancel={() => setDeleteConfirmId(null)}
+        title="Delete follow-up rule?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteConfirmId) handleDelete(deleteConfirmId)
+          setDeleteConfirmId(null)
+        }}
+      />
     </div>
   )
 }

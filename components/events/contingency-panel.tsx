@@ -123,7 +123,7 @@ export function ContingencyPanel({
                       </p>
                     )}
                     <button
-                      onClick={() => handleDelete(existing.id)}
+                      onClick={() => setDeleteConfirmId(existing.id)}
                       className="text-xs text-stone-300 hover:text-red-500 mt-1"
                     >
                       Remove
@@ -183,6 +183,18 @@ export function ContingencyPanel({
           })}
         </div>
       )}
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onCancel={() => setDeleteConfirmId(null)}
+        title="Delete contingency plan?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteConfirmId) handleDelete(deleteConfirmId)
+          setDeleteConfirmId(null)
+        }}
+      />
     </div>
   )
 }

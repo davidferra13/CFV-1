@@ -128,11 +128,11 @@ export function TempLogPanel({
                 </p>
               </div>
               <button
-                onClick={() => handleDelete(log.id)}
+                onClick={() => setDeleteConfirmId(log.id)}
                 disabled={deleting === log.id}
                 className="text-xs text-stone-300 hover:text-red-500 mt-1"
               >
-                {deleting === log.id ? '…' : '✕'}
+                {deleting === log.id ? '...' : 'x'}
               </button>
             </div>
           ))}
@@ -220,6 +220,18 @@ export function TempLogPanel({
           </div>
         </form>
       )}
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onCancel={() => setDeleteConfirmId(null)}
+        title="Delete temperature log?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteConfirmId) handleDelete(deleteConfirmId)
+          setDeleteConfirmId(null)
+        }}
+      />
     </div>
   )
 }

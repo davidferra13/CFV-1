@@ -209,7 +209,7 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
                     Set Default
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(loc.id)}>
+                <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmId(loc.id)}>
                   Remove
                 </Button>
               </div>
@@ -217,6 +217,18 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
           ))
         )}
       </div>
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onCancel={() => setDeleteConfirmId(null)}
+        title="Delete storage location?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteConfirmId) handleDelete(deleteConfirmId)
+          setDeleteConfirmId(null)
+        }}
+      />
     </div>
   )
 }

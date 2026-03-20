@@ -1403,7 +1403,7 @@ export function CollabInboxPanel({
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => handleDeleteSignal(signal.id)}
+                    onClick={() => setDeleteSignalConfirmId(signal.id)}
                     disabled={isPending}
                   >
                     Delete
@@ -1414,6 +1414,18 @@ export function CollabInboxPanel({
           )}
         </div>
       </section>
+      <ConfirmModal
+        open={!!deleteSignalConfirmId}
+        onCancel={() => setDeleteSignalConfirmId(null)}
+        title="Delete availability signal?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteSignalConfirmId) handleDeleteSignal(deleteSignalConfirmId)
+          setDeleteSignalConfirmId(null)
+        }}
+      />
     </div>
   )
 }

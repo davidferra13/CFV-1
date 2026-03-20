@@ -144,7 +144,7 @@ export function ClassList({ classes }: ClassListProps) {
                     </Button>
                     <Button
                       variant="danger"
-                      onClick={() => handleDelete(cls.id)}
+                      onClick={() => setDeleteConfirmId(cls.id)}
                       disabled={isPending}
                     >
                       Delete
@@ -165,6 +165,18 @@ export function ClassList({ classes }: ClassListProps) {
           </Card>
         )
       })}
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onCancel={() => setDeleteConfirmId(null)}
+        title="Delete class?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteConfirmId) handleDelete(deleteConfirmId)
+          setDeleteConfirmId(null)
+        }}
+      />
     </div>
   )
 }

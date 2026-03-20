@@ -302,7 +302,7 @@ export function WasteLogPanel({
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => handleDelete(entry.id)}
+                  onClick={() => setDeleteConfirmId(entry.id)}
                   disabled={deleting === entry.id}
                   className="text-xs text-red-400"
                 >
@@ -320,6 +320,18 @@ export function WasteLogPanel({
           cost.
         </p>
       )}
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onCancel={() => setDeleteConfirmId(null)}
+        title="Delete waste entry?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteConfirmId) handleDelete(deleteConfirmId)
+          setDeleteConfirmId(null)
+        }}
+      />
     </div>
   )
 }

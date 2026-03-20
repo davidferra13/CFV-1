@@ -464,6 +464,18 @@ export default function KitchenInventoryPanel({ clientId }: KitchenInventoryPane
           </div>
         )}
       </CardContent>
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onCancel={() => setDeleteConfirmId(null)}
+        title="Delete inventory item?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteConfirmId) handleDelete(deleteConfirmId)
+          setDeleteConfirmId(null)
+        }}
+      />
     </Card>
   )
 }

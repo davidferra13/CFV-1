@@ -275,7 +275,7 @@ export default function GiftLogPanel({
                   </td>
                   <td className="py-2">
                     <button
-                      onClick={() => handleDelete(gift.id)}
+                      onClick={() => setDeleteConfirmId(gift.id)}
                       disabled={isPending}
                       className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
                     >
@@ -288,6 +288,18 @@ export default function GiftLogPanel({
           </table>
         </div>
       )}
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onCancel={() => setDeleteConfirmId(null)}
+        title="Delete gift?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteConfirmId) handleDelete(deleteConfirmId)
+          setDeleteConfirmId(null)
+        }}
+      />
     </div>
   )
 }
