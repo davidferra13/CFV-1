@@ -431,7 +431,7 @@ export function EquipmentInventoryClient({ inventory, overdueItems, recentRental
       )}
 
       {/* Maintenance Schedule */}
-      {tab === 'maintenance' && <MaintenanceSchedule equipment={inventory} />}
+      {tab === 'maintenance' && <MaintenanceSchedule initialSchedule={inventory as any} />}
     </div>
   )
 }

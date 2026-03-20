@@ -361,7 +361,7 @@ export default async function EventDetailPage({
       ? getAvailableCarryForwardItems(params.id).catch(() => [])
       : Promise.resolve([]),
     getPaymentPlan(params.id).catch(() => []),
-    getMileageLogs(params.id).catch(() => []),
+    getMileageLogs().catch(() => []),
     getEventTips(params.id).catch(() => []),
     getEventGuestLeadCount(params.id).catch(() => 0),
     getEventMessagesForChef(params.id).catch(() => []),

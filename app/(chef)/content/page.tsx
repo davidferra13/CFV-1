@@ -31,7 +31,7 @@ export default async function ContentPipelinePage() {
       </div>
 
       <Suspense fallback={<ContentLoading />}>
-        <ContentPipelinePanel />
+        <ContentPipelinePanel initialEvents={[]} />
       </Suspense>
     </div>
   )

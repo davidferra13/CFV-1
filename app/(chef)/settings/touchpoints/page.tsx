@@ -21,7 +21,7 @@ function TouchpointLoading() {
 
 async function TouchpointRulesContent() {
   const rules = await getTouchpointRules()
-  return <TouchpointRulesManager rules={rules} />
+  return <TouchpointRulesManager initialRules={rules} />
 }
 
 export default async function TouchpointRulesPage() {
