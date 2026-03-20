@@ -139,6 +139,16 @@ List endpoints support offset pagination:
 | PATCH  | `/api/v2/settings/automations/:id` | settings:write | Update rule            |
 | DELETE | `/api/v2/settings/automations/:id` | settings:write | Delete rule            |
 
+### Taxonomy
+
+| Method | Path                                       | Scope          | Description                                |
+| ------ | ------------------------------------------ | -------------- | ------------------------------------------ |
+| GET    | `/api/v2/taxonomy?category=cuisine`        | settings:read  | List merged taxonomy for a category        |
+| POST   | `/api/v2/taxonomy`                         | settings:write | Add a custom taxonomy entry                |
+| DELETE | `/api/v2/taxonomy/:id`                     | settings:write | Remove a custom taxonomy entry             |
+| POST   | `/api/v2/taxonomy/hidden`                  | settings:write | Hide a system default for the current chef |
+| DELETE | `/api/v2/taxonomy/hidden/:category/:value` | settings:write | Unhide (restore) a hidden system default   |
+
 ### Queue
 
 | Method | Path            | Scope      | Description             |

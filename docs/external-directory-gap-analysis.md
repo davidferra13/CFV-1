@@ -18,37 +18,37 @@ Simultaneously, several critical business parameters (pricing rates, holiday pre
 
 These parameters are baked into `constants.ts` files. Changing them requires a code deploy.
 
-| Parameter                        | Current Value                       | File                                 | Impact                               |
-| -------------------------------- | ----------------------------------- | ------------------------------------ | ------------------------------------ |
-| Base couples rate (1-2 guests)   | $200-$300/person                    | `lib/pricing/constants.ts`           | Every quote for small parties        |
-| Base group rate (3+)             | $155-$215/person                    | `lib/pricing/constants.ts`           | Every quote for groups               |
-| Weekly standard rate             | $400-$500/day                       | `lib/pricing/constants.ts`           | Weekly service pricing               |
-| Weekly commitment rate (5+ days) | $300-$350/day                       | `lib/pricing/constants.ts`           | Long-term client pricing             |
-| Pizza experience rate            | $150/person                         | `lib/pricing/constants.ts`           | Specialty event pricing              |
-| Global deposit percentage        | 50%                                 | `lib/pricing/constants.ts`           | Every quote deposit                  |
-| Minimum booking floor            | $300                                | `lib/pricing/constants.ts`           | Quote minimum enforcement            |
-| Balance due window               | 24 hours before                     | `lib/pricing/constants.ts`           | Payment deadline                     |
-| Holiday Tier 1 premium           | 45%                                 | `lib/pricing/constants.ts`           | Christmas, Thanksgiving, NYE pricing |
-| Holiday Tier 2 premium           | 30%                                 | `lib/pricing/constants.ts`           | Mother's Day, Easter, July 4 pricing |
-| Holiday Tier 3 premium           | 20%                                 | `lib/pricing/constants.ts`           | Memorial Day, Labor Day pricing      |
-| Weekend premium                  | 10%                                 | `lib/pricing/constants.ts`           | Fri/Sat pricing                      |
-| Holiday proximity window         | 2 days                              | `lib/pricing/constants.ts`           | Near-holiday half-premium trigger    |
-| IRS mileage rate                 | $0.70/mile                          | `lib/finance/mileage-constants.ts`   | Travel cost calculations             |
-| Add-on: wine pairing             | $35/person                          | `lib/pricing/constants.ts`           | Quote add-ons                        |
-| Add-on: charcuterie              | $150 flat                           | `lib/pricing/constants.ts`           | Quote add-ons                        |
-| Add-on: extra appetizer          | $25/person                          | `lib/pricing/constants.ts`           | Quote add-ons                        |
-| Add-on: birthday dessert         | $75 flat                            | `lib/pricing/constants.ts`           | Quote add-ons                        |
-| Notification tier mappings       | 120+ action-to-tier rules           | `lib/notifications/tier-config.ts`   | Which channel each alert uses        |
-| Email template HTML              | Hardcoded responsive layout         | `lib/email/templates.ts`             | All outbound emails                  |
-| LLM temperature per task         | 0.1 to 0.75                         | Various `lib/ai/*.ts`                | AI response quality/creativity       |
-| Remy personality prompt          | 40-year veteran chef persona        | `lib/ai/remy-personality.ts`         | All AI chat interactions             |
-| Course types                     | 10 fixed (amuse through petit four) | `lib/events/fire-order-constants.ts` | Fire order, kitchen timeline         |
-| Kitchen stations                 | 10 fixed (saucier through boucher)  | `lib/events/fire-order-constants.ts` | Prep assignment                      |
-| Recipe taxonomy (cuisine)        | 14 fixed options                    | `lib/recipes/recipe-constants.ts`    | Recipe organization                  |
-| Recipe taxonomy (occasion)       | 9 fixed options                     | `lib/recipes/recipe-constants.ts`    | Recipe tagging                       |
-| Recipe taxonomy (season)         | 5 fixed options                     | `lib/recipes/recipe-constants.ts`    | Seasonal filtering                   |
-| Sales tax rates by state         | All 50 states + DC                  | `lib/finance/sales-tax-constants.ts` | Tax calculations                     |
-| Large group threshold            | 15+ guests                          | `lib/pricing/constants.ts`           | Custom pricing trigger               |
+| Parameter                        | Current Value                                 | File                                 | Impact                               |
+| -------------------------------- | --------------------------------------------- | ------------------------------------ | ------------------------------------ |
+| Base couples rate (1-2 guests)   | $200-$300/person                              | `lib/pricing/constants.ts`           | Every quote for small parties        |
+| Base group rate (3+)             | $155-$215/person                              | `lib/pricing/constants.ts`           | Every quote for groups               |
+| Weekly standard rate             | $400-$500/day                                 | `lib/pricing/constants.ts`           | Weekly service pricing               |
+| Weekly commitment rate (5+ days) | $300-$350/day                                 | `lib/pricing/constants.ts`           | Long-term client pricing             |
+| Pizza experience rate            | $150/person                                   | `lib/pricing/constants.ts`           | Specialty event pricing              |
+| Global deposit percentage        | 50%                                           | `lib/pricing/constants.ts`           | Every quote deposit                  |
+| Minimum booking floor            | $300                                          | `lib/pricing/constants.ts`           | Quote minimum enforcement            |
+| Balance due window               | 24 hours before                               | `lib/pricing/constants.ts`           | Payment deadline                     |
+| Holiday Tier 1 premium           | 45%                                           | `lib/pricing/constants.ts`           | Christmas, Thanksgiving, NYE pricing |
+| Holiday Tier 2 premium           | 30%                                           | `lib/pricing/constants.ts`           | Mother's Day, Easter, July 4 pricing |
+| Holiday Tier 3 premium           | 20%                                           | `lib/pricing/constants.ts`           | Memorial Day, Labor Day pricing      |
+| Weekend premium                  | 10%                                           | `lib/pricing/constants.ts`           | Fri/Sat pricing                      |
+| Holiday proximity window         | 2 days                                        | `lib/pricing/constants.ts`           | Near-holiday half-premium trigger    |
+| IRS mileage rate                 | $0.70/mile                                    | `lib/finance/mileage-constants.ts`   | Travel cost calculations             |
+| Add-on: wine pairing             | $35/person                                    | `lib/pricing/constants.ts`           | Quote add-ons                        |
+| Add-on: charcuterie              | $150 flat                                     | `lib/pricing/constants.ts`           | Quote add-ons                        |
+| Add-on: extra appetizer          | $25/person                                    | `lib/pricing/constants.ts`           | Quote add-ons                        |
+| Add-on: birthday dessert         | $75 flat                                      | `lib/pricing/constants.ts`           | Quote add-ons                        |
+| Notification tier mappings       | 120+ action-to-tier rules                     | `lib/notifications/tier-config.ts`   | Which channel each alert uses        |
+| Email template HTML              | Hardcoded responsive layout                   | `lib/email/templates.ts`             | All outbound emails                  |
+| LLM temperature per task         | 0.1 to 0.75                                   | Various `lib/ai/*.ts`                | AI response quality/creativity       |
+| Remy personality prompt          | 40-year veteran chef persona                  | `lib/ai/remy-personality.ts`         | All AI chat interactions             |
+| ~~Course types~~                 | ~~10 fixed~~ RESOLVED via taxonomy extensions | `lib/events/fire-order-constants.ts` | Fire order, kitchen timeline         |
+| ~~Kitchen stations~~             | ~~10 fixed~~ RESOLVED via taxonomy extensions | `lib/events/fire-order-constants.ts` | Prep assignment                      |
+| ~~Recipe taxonomy (cuisine)~~    | ~~14 fixed~~ RESOLVED via taxonomy extensions | `lib/recipes/recipe-constants.ts`    | Recipe organization                  |
+| ~~Recipe taxonomy (occasion)~~   | ~~9 fixed~~ RESOLVED via taxonomy extensions  | `lib/recipes/recipe-constants.ts`    | Recipe tagging                       |
+| ~~Recipe taxonomy (season)~~     | ~~5 fixed~~ RESOLVED via taxonomy extensions  | `lib/recipes/recipe-constants.ts`    | Seasonal filtering                   |
+| Sales tax rates by state         | All 50 states + DC                            | `lib/finance/sales-tax-constants.ts` | Tax calculations                     |
+| Large group threshold            | 15+ guests                                    | `lib/pricing/constants.ts`           | Custom pricing trigger               |
 
 ---
 
@@ -125,6 +125,7 @@ These parameters are baked into `constants.ts` files. Changing them requires a c
 | Push notifications       | Notification preferences UI  | Push subscribe/unsubscribe API           |
 | Calendar feed            | Calendar sync settings       | Public iCal feed URL                     |
 | Stripe payments          | Payment UI                   | Stripe webhooks                          |
+| Taxonomy extensions      | `/settings/taxonomy` page    | CRUD `/api/v2/taxonomy` + hidden         |
 
 ---
 
