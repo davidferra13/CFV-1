@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import type { RecipeListItem } from '@/lib/recipes/actions'
-import { CUISINE_DISPLAY, MEAL_TYPE_DISPLAY } from '@/lib/recipes/recipe-constants'
+import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
   sauce: 'warning',
@@ -44,6 +44,12 @@ export function RecipeCoverFlow({ recipes }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
+
+  // Taxonomy-driven display labels
+  const { entries: cuisineEntries } = useTaxonomy('cuisine')
+  const { entries: mealTypeEntries } = useTaxonomy('meal_type')
+  const cuisineLabelMap = Object.fromEntries(cuisineEntries.map((e) => [e.value, e.displayLabel]))
+  const mealTypeLabelMap = Object.fromEntries(mealTypeEntries.map((e) => [e.value, e.displayLabel]))
 
   const goTo = useCallback(
     (index: number) => {
@@ -172,12 +178,12 @@ export function RecipeCoverFlow({ recipes }: Props) {
           <Badge variant={CATEGORY_COLORS[active.category] || 'default'}>{active.category}</Badge>
           {active.cuisine && (
             <span className="text-sm text-blue-400">
-              {CUISINE_DISPLAY[active.cuisine] || active.cuisine}
+              {cuisineLabelMap[active.cuisine] || active.cuisine}
             </span>
           )}
           {active.meal_type && active.meal_type !== 'any' && (
             <span className="text-sm text-purple-400">
-              {MEAL_TYPE_DISPLAY[active.meal_type] || active.meal_type}
+              {mealTypeLabelMap[active.meal_type] || active.meal_type}
             </span>
           )}
         </div>

@@ -15,7 +15,7 @@ import {
   addSubRecipe,
   removeSubRecipe,
 } from '@/lib/recipes/actions'
-import { CUISINE_DISPLAY, MEAL_TYPE_DISPLAY } from '@/lib/recipes/recipe-constants'
+import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { snapshotProductFromRecipe } from '@/lib/commerce/product-actions'
 import { shareRecipe, getConnectedChefsForCollaboration } from '@/lib/collaboration/actions'
 import { RecipeScalingCalculator } from '@/components/recipes/recipe-scaling-calculator'
@@ -58,6 +58,12 @@ export function RecipeDetailClient({ recipe }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Taxonomy-driven display labels
+  const { entries: cuisineEntries } = useTaxonomy('cuisine')
+  const { entries: mealTypeEntries } = useTaxonomy('meal_type')
+  const cuisineLabelMap = Object.fromEntries(cuisineEntries.map((e) => [e.value, e.displayLabel]))
+  const mealTypeLabelMap = Object.fromEntries(mealTypeEntries.map((e) => [e.value, e.displayLabel]))
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareSuccess, setShareSuccess] = useState<string | null>(null)
   const [showSubRecipeModal, setShowSubRecipeModal] = useState(false)
@@ -644,11 +650,11 @@ export function RecipeDetailClient({ recipe }: Props) {
               <p className="text-sm font-medium text-stone-500 mb-2">Organization</p>
               <div className="flex flex-wrap gap-2">
                 {recipe.cuisine && (
-                  <Badge variant="info">{CUISINE_DISPLAY[recipe.cuisine] || recipe.cuisine}</Badge>
+                  <Badge variant="info">{cuisineLabelMap[recipe.cuisine] || recipe.cuisine}</Badge>
                 )}
                 {recipe.meal_type && (
                   <Badge variant="default">
-                    {MEAL_TYPE_DISPLAY[recipe.meal_type] || recipe.meal_type}
+                    {mealTypeLabelMap[recipe.meal_type] || recipe.meal_type}
                   </Badge>
                 )}
               </div>

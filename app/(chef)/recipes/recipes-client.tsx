@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { RecipeImportDialog } from '@/components/recipes/recipe-import-dialog'
 import type { RecipeListItem } from '@/lib/recipes/actions'
-import { CUISINE_DISPLAY, MEAL_TYPE_DISPLAY } from '@/lib/recipes/recipe-constants'
+import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { RecipeCoverFlow } from '@/components/recipes/recipe-cover-flow'
 
 const CATEGORY_OPTIONS = [
@@ -31,15 +31,7 @@ const CATEGORY_OPTIONS = [
   { value: 'other', label: 'Other' },
 ]
 
-const CUISINE_OPTIONS = [
-  { value: '', label: 'All Cuisines' },
-  ...Object.entries(CUISINE_DISPLAY).map(([value, label]) => ({ value, label })),
-]
-
-const MEAL_TYPE_OPTIONS = [
-  { value: '', label: 'All Meal Types' },
-  ...Object.entries(MEAL_TYPE_DISPLAY).map(([value, label]) => ({ value, label })),
-]
+// CUISINE_OPTIONS and MEAL_TYPE_OPTIONS are now derived from taxonomy inside the component
 
 const SORT_OPTIONS = [
   { value: 'name', label: 'A-Z' },
@@ -86,6 +78,21 @@ export function RecipeLibraryClient({ recipes }: Props) {
   const [viewMode, setViewMode] = useState<'grid' | 'coverflow'>('grid')
   const [importOpen, setImportOpen] = useState(false)
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false)
+
+  // Taxonomy-driven filter options
+  const { entries: cuisineEntries } = useTaxonomy('cuisine')
+  const { entries: mealTypeEntries } = useTaxonomy('meal_type')
+  const CUISINE_OPTIONS = [
+    { value: '', label: 'All Cuisines' },
+    ...cuisineEntries.map((e) => ({ value: e.value, label: e.displayLabel })),
+  ]
+  const MEAL_TYPE_OPTIONS = [
+    { value: '', label: 'All Meal Types' },
+    ...mealTypeEntries.map((e) => ({ value: e.value, label: e.displayLabel })),
+  ]
+  // Build lookup maps for display labels
+  const cuisineLabelMap = Object.fromEntries(cuisineEntries.map((e) => [e.value, e.displayLabel]))
+  const mealTypeLabelMap = Object.fromEntries(mealTypeEntries.map((e) => [e.value, e.displayLabel]))
 
   const currentCategory = searchParams.get('category') || ''
   const currentCuisine = searchParams.get('cuisine') || ''
@@ -421,12 +428,12 @@ export function RecipeLibraryClient({ recipes }: Props) {
                       <div className="flex flex-wrap gap-1 mt-2">
                         {recipe.cuisine && (
                           <span className="text-xs px-1.5 py-0.5 bg-blue-950 text-blue-400 rounded">
-                            {CUISINE_DISPLAY[recipe.cuisine] || recipe.cuisine}
+                            {cuisineLabelMap[recipe.cuisine] || recipe.cuisine}
                           </span>
                         )}
                         {recipe.meal_type && recipe.meal_type !== 'any' && (
                           <span className="text-xs px-1.5 py-0.5 bg-purple-950 text-purple-400 rounded">
-                            {MEAL_TYPE_DISPLAY[recipe.meal_type] || recipe.meal_type}
+                            {mealTypeLabelMap[recipe.meal_type] || recipe.meal_type}
                           </span>
                         )}
                         {recipe.dietary_tags?.slice(0, 3).map((tag) => (

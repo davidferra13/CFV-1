@@ -14,12 +14,7 @@ import {
   removeIngredientFromRecipe,
   updateRecipeIngredient,
 } from '@/lib/recipes/actions'
-import {
-  SEASON_OPTIONS,
-  OCCASION_SUGGESTIONS,
-  CUISINE_DISPLAY,
-  MEAL_TYPE_DISPLAY,
-} from '@/lib/recipes/recipe-constants'
+import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { ProductLookupPanel } from '@/components/recipes/product-lookup-panel'
 import { NutritionalCalculator } from '@/components/recipes/NutritionalCalculator'
 import { recalculateAndSaveRecipeNutrition } from '@/lib/recipes/nutritional-calculator-actions'
@@ -81,6 +76,12 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Taxonomy-driven options (system defaults shown instantly, chef customizations merged async)
+  const { entries: cuisineEntries } = useTaxonomy('cuisine')
+  const { entries: occasionEntries } = useTaxonomy('occasion')
+  const { entries: seasonEntries } = useTaxonomy('season')
+  const { entries: mealTypeEntries } = useTaxonomy('meal_type')
 
   // Form state
   const [name, setName] = useState(recipe.name)
@@ -565,9 +566,9 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
                   className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
                 >
                   <option value="">Select cuisine...</option>
-                  {Object.entries(CUISINE_DISPLAY).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
+                  {cuisineEntries.map((e) => (
+                    <option key={e.value} value={e.value}>
+                      {e.displayLabel}
                     </option>
                   ))}
                 </select>
@@ -581,9 +582,9 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
                   className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
                 >
                   <option value="">Select meal type...</option>
-                  {Object.entries(MEAL_TYPE_DISPLAY).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
+                  {mealTypeEntries.map((e) => (
+                    <option key={e.value} value={e.value}>
+                      {e.displayLabel}
                     </option>
                   ))}
                 </select>
@@ -593,29 +594,30 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
             <div>
               <label className="block text-sm font-medium text-stone-300 mb-1">Season</label>
               <div className="flex flex-wrap gap-2">
-                {SEASON_OPTIONS.map((s) => (
+                {seasonEntries.map((entry) => (
                   <button
-                    key={s}
+                    key={entry.value}
                     type="button"
                     onClick={() => {
-                      if (s === 'Year-Round') {
-                        setSeason(season.includes(s) ? [] : [s])
+                      const label = entry.displayLabel
+                      if (label === 'Year-Round') {
+                        setSeason(season.includes(label) ? [] : [label])
                       } else {
                         setSeason((prev) => {
                           const without = prev.filter((x) => x !== 'Year-Round')
-                          return without.includes(s)
-                            ? without.filter((x) => x !== s)
-                            : [...without, s]
+                          return without.includes(label)
+                            ? without.filter((x) => x !== label)
+                            : [...without, label]
                         })
                       }
                     }}
                     className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
-                      season.includes(s)
+                      season.includes(entry.displayLabel)
                         ? 'border-brand-500 bg-brand-950 text-brand-400 font-medium'
                         : 'border-stone-600 text-stone-400 hover:bg-stone-800'
                     }`}
                   >
-                    {s}
+                    {entry.displayLabel}
                   </button>
                 ))}
               </div>
@@ -624,22 +626,24 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
             <div>
               <label className="block text-sm font-medium text-stone-300 mb-1">Occasion Tags</label>
               <div className="flex flex-wrap gap-1.5 mb-2">
-                {OCCASION_SUGGESTIONS.map((tag) => (
+                {occasionEntries.map((entry) => (
                   <button
-                    key={tag}
+                    key={entry.value}
                     type="button"
                     onClick={() =>
                       setOccasionTags((prev) =>
-                        prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+                        prev.includes(entry.displayLabel)
+                          ? prev.filter((t) => t !== entry.displayLabel)
+                          : [...prev, entry.displayLabel]
                       )
                     }
                     className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                      occasionTags.includes(tag)
+                      occasionTags.includes(entry.displayLabel)
                         ? 'border-brand-500 bg-brand-950 text-brand-400'
                         : 'border-stone-600 text-stone-400 hover:bg-stone-800'
                     }`}
                   >
-                    {tag}
+                    {entry.displayLabel}
                   </button>
                 ))}
               </div>
@@ -673,10 +677,11 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
                   Add
                 </Button>
               </div>
-              {occasionTags.filter((t) => !OCCASION_SUGGESTIONS.includes(t as any)).length > 0 && (
+              {occasionTags.filter((t) => !occasionEntries.some((e) => e.displayLabel === t))
+                .length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
                   {occasionTags
-                    .filter((t) => !OCCASION_SUGGESTIONS.includes(t as any))
+                    .filter((t) => !occasionEntries.some((e) => e.displayLabel === t))
                     .map((tag) => (
                       <span
                         key={tag}
