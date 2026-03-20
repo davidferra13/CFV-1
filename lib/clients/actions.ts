@@ -509,6 +509,19 @@ export async function createClient(input: CreateClientInput) {
     console.error('[createClient] Zapier dispatch failed (non-blocking):', err)
   }
 
+  // Outbound webhook dispatch (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(user.tenantId!, 'client.created', {
+      client_id: client.id,
+      full_name: validated.full_name,
+      email: validated.email || null,
+      phone: validated.phone || null,
+    })
+  } catch (err) {
+    console.error('[createClient] Webhook dispatch failed (non-blocking):', err)
+  }
+
   return result
 }
 
@@ -771,6 +784,18 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
     })
   } catch (err) {
     console.error('[updateClient] Activity log failed (non-blocking):', err)
+  }
+
+  // Outbound webhook dispatch (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(user.tenantId!, 'client.updated', {
+      client_id: clientId,
+      full_name: client.full_name,
+      changed_fields: Object.keys(updateFields),
+    })
+  } catch (err) {
+    console.error('[updateClient] Webhook dispatch failed (non-blocking):', err)
   }
 
   return result

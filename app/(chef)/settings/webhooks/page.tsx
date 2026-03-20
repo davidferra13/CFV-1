@@ -1,33 +1,23 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
-import { WebhookManager } from '@/components/settings/webhook-manager'
+import { listWebhookSubscriptions } from '@/lib/webhooks/actions'
+import { WebhookSettings } from '@/components/settings/webhook-settings'
 
 export const metadata: Metadata = { title: 'Webhooks - ChefFlow' }
 
-async function getWebhooks(tenantId: string) {
-  const supabase: any = createServerClient()
-  const { data } = await supabase
-    .from('webhook_endpoints' as any)
-    .select('*')
-    .eq('tenant_id', tenantId)
-    .order('created_at', { ascending: false })
-  return (data || []) as any[]
-}
-
 export default async function WebhooksPage() {
-  const user = await requireChef()
-  const endpoints = await getWebhooks(user.entityId)
+  await requireChef()
+  const endpoints = await listWebhookSubscriptions()
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Webhooks</h1>
         <p className="text-stone-400 mt-1">
-          Send real-time data to external services when events occur
+          Send real-time data to external services when events occur in ChefFlow
         </p>
       </div>
-      <WebhookManager endpoints={endpoints} />
+      <WebhookSettings initialEndpoints={endpoints} />
     </div>
   )
 }

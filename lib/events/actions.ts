@@ -226,6 +226,20 @@ export async function createEvent(input: CreateEventInput) {
     console.error('[createEvent] Activity log failed (non-blocking):', err)
   }
 
+  // Outbound webhook dispatch (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(user.tenantId!, 'event.created', {
+      event_id: result.event.id,
+      occasion: validated.occasion || null,
+      event_date: validated.event_date,
+      guest_count: validated.guest_count,
+      client_id: validated.client_id,
+    })
+  } catch (err) {
+    console.error('[createEvent] Webhook dispatch failed (non-blocking):', err)
+  }
+
   return result
 }
 
@@ -486,6 +500,17 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
       return { success: true, event }
     },
   })
+
+  // Outbound webhook dispatch (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(user.tenantId!, 'event.updated', {
+      event_id: eventId,
+      changed_fields: Object.keys(updateFields),
+    })
+  } catch (err) {
+    console.error('[updateEvent] Webhook dispatch failed (non-blocking):', err)
+  }
 
   return result
 }
