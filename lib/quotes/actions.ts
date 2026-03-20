@@ -752,7 +752,7 @@ export async function getClientPricingHistory(clientId: string) {
 
   if (error) {
     console.error('[getClientPricingHistory] Error:', error)
-    return []
+    throw new Error('Failed to load client pricing history')
   }
 
   return quotes || []
@@ -787,7 +787,7 @@ export async function getQuotesForInquiry(inquiryId: string) {
 
   if (error) {
     console.error('[getQuotesForInquiry] Error:', error)
-    return []
+    throw new Error('Failed to load quotes for inquiry')
   }
 
   return quotes || []

@@ -13,6 +13,7 @@
 
 'use server'
 
+import { requireChef } from '@/lib/auth/get-user'
 import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
 
@@ -119,6 +120,8 @@ export async function parseDocumentWithVision(
   mediaType: string,
   filename?: string
 ): Promise<VisionDetectionResult> {
+  await requireChef()
+
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY is not configured. File import requires a Gemini API key.')

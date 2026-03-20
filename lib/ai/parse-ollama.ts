@@ -42,6 +42,10 @@ export interface ParseOllamaOptions {
 /** Default max tokens for structured JSON responses - keeps Ollama from running away */
 const DEFAULT_MAX_TOKENS = 512
 
+/** Max input length in characters. Inputs beyond this are truncated with a warning.
+ *  100K chars is ~25K tokens, well within Ollama context windows. */
+const MAX_INPUT_LENGTH = 100_000
+
 /** Default hard timeout for any Ollama call - prevents infinite hangs.
  *  60s is generous for a 30b model on a laptop - normal calls finish in 10-30s.
  *  This only fires if Ollama is truly stuck, not just thinking. */
@@ -92,6 +96,14 @@ export async function parseWithOllama<T>(
 ): Promise<T> {
   if (!isOllamaEnabled()) {
     throw new OllamaOfflineError('OLLAMA_BASE_URL is not set in environment', 'not_configured')
+  }
+
+  // Truncate oversized input to prevent Ollama from hanging or OOM
+  if (userContent.length > MAX_INPUT_LENGTH) {
+    log.ai.warn('Input truncated for parseWithOllama', {
+      context: { originalLength: userContent.length, maxLength: MAX_INPUT_LENGTH },
+    })
+    userContent = userContent.slice(0, MAX_INPUT_LENGTH)
   }
 
   const config = getOllamaConfig()

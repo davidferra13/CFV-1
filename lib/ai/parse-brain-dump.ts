@@ -7,6 +7,7 @@
 import { z } from 'zod'
 import { type ParseResult } from './parse'
 import { parseWithOllama } from './parse-ollama'
+import { log } from '@/lib/logger'
 import { ParsedClientSchema, type ParsedClient } from './parse-client-schema'
 import { ParsedRecipeSchema, type ParsedRecipe } from './parse-recipe-schema'
 import {
@@ -14,6 +15,7 @@ import {
   parseRecipesHeuristically,
   toFallbackWarning,
 } from './fallback-parsers'
+import { OllamaOfflineError } from './ollama-errors'
 
 // ============================================
 // BRAIN DUMP RESPONSE SCHEMA
@@ -76,6 +78,13 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation).`
  * Parse a brain dump into categorized structured data
  */
 export async function parseBrainDump(rawText: string): Promise<ParseResult<BrainDumpResult>> {
+  if (!rawText || rawText.trim().length === 0) {
+    throw new Error('Cannot parse an empty brain dump. Please provide some text.')
+  }
+
+  const startTime = Date.now()
+  log.ai.info('parseBrainDump started', { context: { inputLength: rawText.length } })
+
   try {
     const result = await parseWithOllama(
       BRAIN_DUMP_SYSTEM_PROMPT,
@@ -86,8 +95,15 @@ export async function parseBrainDump(rawText: string): Promise<ParseResult<Brain
         maxTokens: 1536,
       }
     )
+    log.ai.info('parseBrainDump completed', { durationMs: Date.now() - startTime })
     return result
   } catch (error) {
+    if (error instanceof OllamaOfflineError) throw error
+    log.ai.warn('parseBrainDump fell back to heuristic parser', {
+      durationMs: Date.now() - startTime,
+      error,
+    })
+
     const clientFallback = parseClientsHeuristically(rawText, toFallbackWarning(error))
     const recipes = parseRecipesHeuristically(rawText)
     const hasStructuredData = clientFallback.parsed.length > 0 || recipes.length > 0

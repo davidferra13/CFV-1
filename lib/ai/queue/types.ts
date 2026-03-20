@@ -199,4 +199,6 @@ export const OLLAMA_GUARD = {
   MAX_QUEUE_DEPTH_PER_TENANT: 200,
   /** Max processing time before a task is considered hung and re-queued */
   HUNG_TASK_TIMEOUT_MS: 180_000,
+  /** Max payload size in bytes (100KB - prevents DB bloat and memory issues) */
+  MAX_PAYLOAD_BYTES: 100_000,
 } as const

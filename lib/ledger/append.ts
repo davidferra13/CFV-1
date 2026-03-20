@@ -1,12 +1,17 @@
 // Ledger System - Append-Only Financial Truth
 // Enforces System Law #3: All financial state derives from ledger
+//
+// SECURITY NOTE: This is a 'use server' file. Every export becomes a callable
+// server action. The appendLedgerEntryFromWebhook function has been moved to
+// append-internal.ts (NOT a server action) to prevent direct client invocation.
+// Import from '@/lib/ledger/append-internal' for webhook/internal server use.
 
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { log } from '@/lib/logger'
 import type { Database } from '@/types/database'
+import { appendLedgerEntryInternal } from './append-internal'
 
 export type LedgerEntryType = Database['public']['Enums']['ledger_entry_type']
 // 'payment' | 'deposit' | 'installment' | 'final_payment' | 'tip' | 'refund' | 'adjustment' | 'add_on' | 'credit'
@@ -46,86 +51,6 @@ export async function appendLedgerEntryForChef(
     tenant_id: user.tenantId!,
     created_by: user.id,
   })
-}
-
-/**
- * Internal ledger append - NOT exported as a server action.
- * Only callable from other server-side functions in this module or via
- * the explicit re-export in lib/ledger/internal.ts for webhook use.
- * CRITICAL: This is append-only. Entries are immutable (enforced by triggers)
- */
-async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
-  // Use service role for webhook calls (created_by === null), otherwise anon key
-  const useServiceRole = input.created_by === null
-  const supabase = createServerClient({ admin: useServiceRole })
-
-  // Validate amounts are integers (minor units only)
-  if (!Number.isInteger(input.amount_cents)) {
-    throw new Error('Amount must be in minor units (cents, integer only)')
-  }
-
-  const { data, error } = await supabase
-    .from('ledger_entries')
-    .insert({
-      tenant_id: input.tenant_id,
-      client_id: input.client_id,
-      entry_type: input.entry_type,
-      amount_cents: input.amount_cents,
-      payment_method: input.payment_method,
-      description: input.description,
-      event_id: input.event_id,
-      transaction_reference: input.transaction_reference,
-      payment_card_used: input.payment_card_used,
-      internal_notes: input.internal_notes,
-      is_refund: input.is_refund,
-      refund_reason: input.refund_reason,
-      refunded_entry_id: input.refunded_entry_id,
-      received_at: input.received_at,
-      created_by: input.created_by,
-    })
-    .select()
-    .single()
-
-  if (error) {
-    // Check if duplicate transaction_reference (idempotency)
-    if (error.code === '23505' && input.transaction_reference) {
-      log.ledger.info('Duplicate transaction (idempotent)', {
-        context: { transaction_reference: input.transaction_reference },
-      })
-      return { duplicate: true, entry: null }
-    }
-
-    log.ledger.error('Failed to append entry', { error, context: { entry_type: input.entry_type } })
-    throw new Error('Failed to append ledger entry')
-  }
-
-  // Outbound webhook (non-blocking)
-  try {
-    const { emitWebhook } = await import('@/lib/webhooks/emitter')
-    await emitWebhook(input.tenant_id, 'payment.received', {
-      ledger_entry_id: data.id,
-      entry_type: input.entry_type,
-      amount_cents: input.amount_cents,
-      event_id: input.event_id,
-    })
-  } catch (err) {
-    console.error('[non-blocking] payment.received webhook failed', err)
-  }
-
-  return { duplicate: false, entry: data }
-}
-
-/**
- * Webhook-safe ledger append - for use by the Stripe webhook handler only.
- * This is a named export but NOT directly callable by clients because
- * callers must provide valid tenant_id/client_id/event_id from verified webhook data.
- * The function itself validates nothing about the caller - the webhook handler
- * is responsible for signature verification before calling this.
- */
-export async function appendLedgerEntryFromWebhook(
-  input: AppendLedgerEntryInput & { created_by: null }
-) {
-  return appendLedgerEntryInternal(input)
 }
 
 /**
@@ -235,6 +160,7 @@ export async function getEventLedger(eventId: string) {
     .order('created_at', { ascending: false })
 
   if (error) {
+    const { log } = await import('@/lib/logger')
     log.ledger.error('Failed to fetch event ledger', { error, context: { eventId } })
     throw new Error('Failed to fetch ledger entries')
   }
@@ -262,6 +188,7 @@ export async function getTenantLedger(limit = 100) {
     .limit(limit)
 
   if (error) {
+    const { log } = await import('@/lib/logger')
     log.ledger.error('Failed to fetch tenant ledger', { error })
     throw new Error('Failed to fetch tenant ledger')
   }

@@ -7,6 +7,7 @@ import { type Confidence, type ParseResult } from './parse'
 import { parseWithOllama } from './parse-ollama'
 import { parseClientsHeuristically, toFallbackWarning } from './fallback-parsers'
 import { ParsedClientSchema, type ParsedClient } from './parse-client-schema'
+import { log } from '@/lib/logger'
 
 // ParsedClientSchema and ParsedClient are defined in ./parse-client-schema (no 'use server').
 // Re-export the TYPE only for consumers that import from this file.
@@ -72,10 +73,22 @@ RESPOND WITH ONLY valid JSON matching this structure (no markdown, no explanatio
  * Parse a single client from natural language text
  */
 export async function parseClientFromText(rawText: string): Promise<ParseResult<ParsedClient>> {
+  if (!rawText || rawText.trim().length === 0) {
+    throw new Error('Cannot parse empty client text. Please provide client information.')
+  }
+
+  const startTime = Date.now()
+  log.ai.info('parseClientFromText started', { context: { inputLength: rawText.length } })
+
   try {
     const result = await parseWithOllama(CLIENT_SYSTEM_PROMPT, rawText, ParsedClientSchema)
+    log.ai.info('parseClientFromText completed', { durationMs: Date.now() - startTime })
     return result
   } catch (error) {
+    log.ai.warn('parseClientFromText fell back to heuristic parser', {
+      durationMs: Date.now() - startTime,
+      error,
+    })
     const fallback = parseClientsHeuristically(rawText, toFallbackWarning(error))
     return {
       parsed: fallback.parsed[0],

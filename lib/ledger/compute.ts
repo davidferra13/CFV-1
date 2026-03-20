@@ -23,8 +23,10 @@ export async function getEventFinancialSummary(eventId: string) {
 
   if (error) {
     log.ledger.error('getEventFinancialSummary failed', { error })
-    return null
+    throw new Error('Failed to load event financial summary')
   }
+
+  if (!data) return null
 
   return {
     eventId: data.event_id,
@@ -107,7 +109,7 @@ export async function getYtdCarryForwardSavings() {
 
   if (error) {
     log.ledger.error('getYtdCarryForwardSavings failed', { error })
-    return 0
+    throw new Error('Failed to load carry-forward savings')
   }
 
   return (data || []).reduce((sum: any, e: any) => sum + (e.leftover_value_received_cents ?? 0), 0)
@@ -124,7 +126,7 @@ export async function computeProfitAndLoss(year: number) {
   const endDate = `${year}-12-31`
 
   // Revenue from ledger (capped at 50K entries per year - prevents memory exhaustion)
-  const { data: ledgerEntries } = await supabase
+  const { data: ledgerEntries, error: ledgerError } = await supabase
     .from('ledger_entries')
     .select('entry_type, amount_cents, created_at, is_refund')
     .eq('tenant_id', user.tenantId!)
@@ -132,14 +134,24 @@ export async function computeProfitAndLoss(year: number) {
     .lte('created_at', endDate + 'T23:59:59')
     .limit(50_000)
 
+  if (ledgerError) {
+    log.ledger.error('computeProfitAndLoss ledger query failed', { error: ledgerError })
+    throw new Error('Failed to load ledger entries for P&L')
+  }
+
   // Expenses (capped at 50K per year)
-  const { data: expenses } = await supabase
+  const { data: expenses, error: expenseError } = await supabase
     .from('expenses')
     .select('amount_cents, category, description, expense_date')
     .eq('tenant_id', user.tenantId!)
     .gte('expense_date', startDate)
     .lte('expense_date', endDate)
     .limit(50_000)
+
+  if (expenseError) {
+    log.ledger.error('computeProfitAndLoss expense query failed', { error: expenseError })
+    throw new Error('Failed to load expenses for P&L')
+  }
 
   const entries = ledgerEntries || []
   const allExpenses = expenses || []

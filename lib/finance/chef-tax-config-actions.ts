@@ -41,7 +41,7 @@ export async function getChefTaxRates(): Promise<ChefTaxConfig[]> {
 
   if (error) {
     console.error('[chef-tax-config] Failed to fetch:', error)
-    return []
+    throw new Error('Failed to load tax rate overrides')
   }
 
   return (data || []).map(mapConfig)

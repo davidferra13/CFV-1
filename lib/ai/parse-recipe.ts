@@ -6,6 +6,7 @@
 import { parseWithOllama } from './parse-ollama'
 import type { ParseResult } from './parse'
 import { ParsedRecipeSchema, type ParsedRecipe, type ParsedIngredient } from './parse-recipe-schema'
+import { log } from '@/lib/logger'
 
 // ParsedRecipeSchema, ParsedRecipe, and ParsedIngredient are defined in ./parse-recipe-schema (no 'use server').
 // Re-export the TYPES only for consumers that import from this file.
@@ -72,10 +73,19 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
  * Parse a single recipe from natural language text
  */
 export async function parseRecipeFromText(rawText: string): Promise<ParseResult<ParsedRecipe>> {
+  if (!rawText || rawText.trim().length === 0) {
+    throw new Error('Cannot parse an empty recipe. Please provide recipe text.')
+  }
+
+  const startTime = Date.now()
+  log.ai.info('parseRecipeFromText started', { context: { inputLength: rawText.length } })
+
   const result = await parseWithOllama(RECIPE_SYSTEM_PROMPT, rawText, ParsedRecipeSchema, {
     modelTier: 'standard',
     timeoutMs: 60_000,
   })
+
+  log.ai.info('parseRecipeFromText completed', { durationMs: Date.now() - startTime })
   // parseWithOllama returns T directly; wrap in ParseResult for callers
   return result as ParseResult<ParsedRecipe>
 }

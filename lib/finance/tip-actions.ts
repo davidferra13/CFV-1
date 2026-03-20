@@ -70,7 +70,7 @@ export async function getYtdTipSummary(): Promise<{
   return { totalCents, byMethod }
 }
 
-export async function addTip(formData: FormData): Promise<void> {
+export async function addTip(formData: FormData): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
@@ -79,9 +79,11 @@ export async function addTip(formData: FormData): Promise<void> {
   const method = (formData.get('method') as string) || 'cash'
   const notes = (formData.get('notes') as string) || null
 
-  if (!eventId || isNaN(amountDollars) || amountDollars <= 0) return
+  if (!eventId || isNaN(amountDollars) || amountDollars <= 0) {
+    return { success: false, error: 'Invalid input: event ID and positive amount are required' }
+  }
 
-  await supabase.from('event_tips' as any).insert({
+  const { error } = await supabase.from('event_tips' as any).insert({
     event_id: eventId,
     tenant_id: user.tenantId!,
     amount_cents: Math.round(amountDollars * 100),
@@ -89,20 +91,35 @@ export async function addTip(formData: FormData): Promise<void> {
     notes,
   })
 
+  if (error) {
+    log.error('Failed to add tip', { error })
+    return { success: false, error: 'Failed to save tip' }
+  }
+
   revalidatePath(`/events/${eventId}`)
+  return { success: true }
 }
 
-export async function deleteTip(id: string, eventId: string): Promise<void> {
+export async function deleteTip(
+  id: string,
+  eventId: string
+): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  await supabase
+  const { error } = await supabase
     .from('event_tips' as any)
     .delete()
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
 
+  if (error) {
+    log.error('Failed to delete tip', { error })
+    return { success: false, error: 'Failed to delete tip' }
+  }
+
   revalidatePath(`/events/${eventId}`)
+  return { success: true }
 }
 
 // ── Tip Request System (Uber-style post-service prompts) ─────────────────
@@ -329,8 +346,8 @@ export async function recordTip(
     return { success: false, error: 'This tip request was declined' }
   }
 
-  // Update the tip request
-  const { error: updateError } = await supabase
+  // Update the tip request (CAS guard: only if still pending/sent, prevents double-recording)
+  const { data: updated, error: updateError } = await supabase
     .from('tip_requests' as any)
     .update({
       tip_amount_cents: amountCents,
@@ -341,15 +358,18 @@ export async function recordTip(
       updated_at: new Date().toISOString(),
     })
     .eq('id', requestId)
+    .in('status', ['pending', 'sent'])
+    .select('id')
+    .single()
 
-  if (updateError) {
-    log.error('Failed to update tip request', { error: updateError })
-    return { success: false, error: 'Failed to record tip' }
+  if (updateError || !updated) {
+    log.error('Failed to update tip request (may already be completed)', { error: updateError })
+    return { success: false, error: 'Failed to record tip. It may have already been submitted.' }
   }
 
   // Append to ledger as tip income (using internal/admin since this is a public action)
   try {
-    const { appendLedgerEntryFromWebhook } = await import('@/lib/ledger/append')
+    const { appendLedgerEntryFromWebhook } = await import('@/lib/ledger/append-internal')
     const paymentMethod = method === 'venmo' ? 'venmo' : method === 'card' ? 'card' : 'cash'
     await appendLedgerEntryFromWebhook({
       tenant_id: request.tenant_id,

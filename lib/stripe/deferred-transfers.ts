@@ -5,6 +5,7 @@
 
 'use server'
 
+import { requireAdmin } from '@/lib/auth/admin'
 import { createServerClient } from '@/lib/supabase/server'
 import type Stripe from 'stripe'
 
@@ -30,6 +31,7 @@ export type DeferredTransferSummary = {
  * Admin only - no tenant scoping.
  */
 export async function listDeferredTransferChefs(): Promise<DeferredTransferSummary[]> {
+  await requireAdmin()
   const supabase = createServerClient({ admin: true })
 
   // Find ledger entries that are payments/deposits with Stripe references
@@ -104,6 +106,7 @@ export async function listDeferredTransferChefs(): Promise<DeferredTransferSumma
 export async function resolveDeferredTransfers(
   tenantId: string
 ): Promise<{ resolved: number; failed: number; errors: string[] }> {
+  await requireAdmin()
   const supabase = createServerClient({ admin: true })
 
   // Verify chef has completed Connect onboarding

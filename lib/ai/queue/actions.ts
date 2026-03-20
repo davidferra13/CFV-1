@@ -89,6 +89,16 @@ export async function enqueueTask(
     return { error: `Unknown task type: ${input.taskType}` }
   }
 
+  // Payload size guard - prevent oversized payloads from bloating the DB
+  if (input.payload) {
+    const payloadSize = new TextEncoder().encode(JSON.stringify(input.payload)).length
+    if (payloadSize > OLLAMA_GUARD.MAX_PAYLOAD_BYTES) {
+      return {
+        error: `Payload too large (${Math.round(payloadSize / 1024)}KB). Max: ${Math.round(OLLAMA_GUARD.MAX_PAYLOAD_BYTES / 1024)}KB.`,
+      }
+    }
+  }
+
   const supabase: any = createAdminClient()
 
   // Queue depth guard - prevent runaway enqueuing
@@ -494,7 +504,7 @@ export async function approveTask(taskId: string): Promise<void> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  await supabase
+  const { data, error } = await supabase
     .from('ai_task_queue')
     .update({
       status: 'approved' as AiTaskStatus,
@@ -502,7 +512,14 @@ export async function approveTask(taskId: string): Promise<void> {
       approved_by: user.id,
     })
     .eq('id', taskId)
+    .eq('tenant_id', user.tenantId!)
     .eq('status', 'awaiting_approval')
+    .select('id')
+    .single()
+
+  if (error || !data) {
+    throw new Error('Task not found, not awaiting approval, or access denied')
+  }
 }
 
 /**
@@ -512,7 +529,7 @@ export async function rejectTask(taskId: string, reason?: string): Promise<void>
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  await supabase
+  const { data, error } = await supabase
     .from('ai_task_queue')
     .update({
       status: 'rejected' as AiTaskStatus,
@@ -520,7 +537,14 @@ export async function rejectTask(taskId: string, reason?: string): Promise<void>
       completed_at: new Date().toISOString(),
     })
     .eq('id', taskId)
+    .eq('tenant_id', user.tenantId!)
     .eq('status', 'awaiting_approval')
+    .select('id')
+    .single()
+
+  if (error || !data) {
+    throw new Error('Task not found, not awaiting approval, or access denied')
+  }
 }
 
 // ============================================

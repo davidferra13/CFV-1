@@ -5,7 +5,7 @@
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import type Stripe from 'stripe'
-import { appendLedgerEntryFromWebhook } from '@/lib/ledger/append'
+import { appendLedgerEntryFromWebhook } from '@/lib/ledger/append-internal'
 import { transitionEvent } from '@/lib/events/transitions'
 import { createServerClient } from '@/lib/supabase/server'
 import { logWebhookEvent } from '@/lib/webhooks/audit-log'

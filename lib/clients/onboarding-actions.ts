@@ -15,14 +15,14 @@ export async function generateOnboardingLink(
     .from('clients')
     .select('id, full_name, email, onboarding_completed_at')
     .eq('id', clientId)
-    .eq('tenant_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!client) {
     return { success: false, error: 'Client not found.' }
   }
 
-  const token = generateOnboardingToken(clientId, user.entityId)
+  const token = generateOnboardingToken(clientId, user.tenantId!)
   await supabase
     .from('clients')
     .update({ onboarding_token: token } as any)

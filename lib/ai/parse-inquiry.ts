@@ -6,6 +6,7 @@
 import { z } from 'zod'
 import { type ParseResult } from './parse'
 import { parseWithOllama } from './parse-ollama'
+import { log } from '@/lib/logger'
 
 // ============================================
 // PARSED INQUIRY SCHEMA
@@ -69,6 +70,15 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation).`
  * Parse inquiry details from text (messages, emails, DMs, notes)
  */
 export async function parseInquiryFromText(rawText: string): Promise<ParseResult<ParsedInquiry>> {
+  if (!rawText || rawText.trim().length === 0) {
+    throw new Error('Cannot parse an empty inquiry. Please provide inquiry text.')
+  }
+
+  const startTime = Date.now()
+  log.ai.info('parseInquiryFromText started', { context: { inputLength: rawText.length } })
+
   const result = await parseWithOllama(INQUIRY_SYSTEM_PROMPT, rawText, ParsedInquirySchema)
+
+  log.ai.info('parseInquiryFromText completed', { durationMs: Date.now() - startTime })
   return result
 }

@@ -430,7 +430,12 @@ export async function getOverdueDeposits(): Promise<OverdueDepositEvent[]> {
     .gt('quoted_price_cents', 0)
     .order('event_date', { ascending: true })
 
-  if (error || !events) return []
+  if (error) {
+    log.ledger.error('getOverdueDeposits failed', { error })
+    throw new Error('Failed to load overdue deposits')
+  }
+
+  if (!events) return []
 
   // For each event, check ledger to determine payment state
   const now = new Date()

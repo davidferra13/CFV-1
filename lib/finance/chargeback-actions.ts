@@ -23,8 +23,8 @@ export async function getChargebackRate(): Promise<ChargebackRate | null> {
     .gte('opened_at', twelveMonthsAgo.toISOString())
 
   if (disputeError) {
-    console.warn('[chargeback] Could not fetch disputes:', disputeError.message)
-    return null
+    console.error('[chargeback] Could not fetch disputes:', disputeError.message)
+    throw new Error('Failed to load dispute data for chargeback rate')
   }
 
   // Count payment ledger entries in last 12 months
@@ -36,8 +36,8 @@ export async function getChargebackRate(): Promise<ChargebackRate | null> {
     .gte('created_at', twelveMonthsAgo.toISOString())
 
   if (ledgerError) {
-    console.warn('[chargeback] Could not fetch ledger entries:', ledgerError.message)
-    return null
+    console.error('[chargeback] Could not fetch ledger entries:', ledgerError.message)
+    throw new Error('Failed to load transaction data for chargeback rate')
   }
 
   return computeChargebackRate(disputeCount ?? 0, transactionCount ?? 0)

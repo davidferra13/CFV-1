@@ -47,7 +47,9 @@ export async function getPaymentPlan(eventId: string): Promise<PaymentPlanInstal
   )
 }
 
-export async function addInstallment(formData: FormData): Promise<void> {
+export async function addInstallment(
+  formData: FormData
+): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
@@ -57,7 +59,12 @@ export async function addInstallment(formData: FormData): Promise<void> {
   const dueDate = formData.get('dueDate') as string
   const notes = (formData.get('notes') as string) || null
 
-  if (!eventId || !label || isNaN(amountDollars) || !dueDate) return
+  if (!eventId || !label || isNaN(amountDollars) || !dueDate) {
+    return {
+      success: false,
+      error: 'Invalid input: event ID, label, amount, and due date are required',
+    }
+  }
 
   // Get next installment number
   const { count } = await supabase
@@ -69,7 +76,7 @@ export async function addInstallment(formData: FormData): Promise<void> {
   const installmentNum = (count ?? 0) + 1
   const amountCents = Math.round(amountDollars * 100)
 
-  await supabase.from('payment_plan_installments' as any).insert({
+  const { error } = await supabase.from('payment_plan_installments' as any).insert({
     event_id: eventId,
     tenant_id: user.tenantId!,
     installment_num: installmentNum,
@@ -79,18 +86,23 @@ export async function addInstallment(formData: FormData): Promise<void> {
     notes,
   })
 
+  if (error) {
+    throw new Error('Failed to add installment')
+  }
+
   revalidatePath(`/events/${eventId}`)
+  return { success: true }
 }
 
 export async function markInstallmentPaid(
   installmentId: string,
   eventId: string,
   paymentMethod?: string
-): Promise<void> {
+): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  await supabase
+  const { error } = await supabase
     .from('payment_plan_installments' as any)
     .update({
       paid_at: new Date().toISOString(),
@@ -99,18 +111,31 @@ export async function markInstallmentPaid(
     .eq('id', installmentId)
     .eq('tenant_id', user.tenantId!)
 
+  if (error) {
+    throw new Error('Failed to mark installment as paid')
+  }
+
   revalidatePath(`/events/${eventId}`)
+  return { success: true }
 }
 
-export async function deleteInstallment(installmentId: string, eventId: string): Promise<void> {
+export async function deleteInstallment(
+  installmentId: string,
+  eventId: string
+): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  await supabase
+  const { error } = await supabase
     .from('payment_plan_installments' as any)
     .delete()
     .eq('id', installmentId)
     .eq('tenant_id', user.tenantId!)
 
+  if (error) {
+    throw new Error('Failed to delete installment')
+  }
+
   revalidatePath(`/events/${eventId}`)
+  return { success: true }
 }

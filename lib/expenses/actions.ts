@@ -171,7 +171,7 @@ export async function getExpenses(filters: ExpenseFilters = {}) {
 
   if (error) {
     console.error('[getExpenses] Error:', error)
-    return []
+    throw new Error('Failed to load expenses')
   }
 
   return data
@@ -289,7 +289,7 @@ export async function getEventExpenses(eventId: string) {
 
   if (error) {
     console.error('[getEventExpenses] Error:', error)
-    return { expenses: [], subtotals: {}, totalBusinessCents: 0, totalPersonalCents: 0 }
+    throw new Error('Failed to load event expenses')
   }
 
   const expenses = data || []
