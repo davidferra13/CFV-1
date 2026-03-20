@@ -12,6 +12,7 @@ import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
+import { DishVariancePanel } from '@/components/events/dish-variance-panel'
 
 export default async function AARPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
@@ -63,6 +64,9 @@ export default async function AARPage({ params }: { params: { id: string } }) {
 
       {/* AAR Form */}
       <AARForm eventId={params.id} checklistItems={checklistItems} existingAAR={existingAAR} />
+
+      {/* Dish Variance: Planned vs. Served */}
+      <DishVariancePanel eventId={params.id} tenantId={user.tenantId!} />
     </div>
   )
 }
