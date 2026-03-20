@@ -17,6 +17,7 @@ import {
 } from '@/lib/equipment/actions'
 import { EQUIPMENT_CATEGORIES } from '@/lib/equipment/constants'
 import MaintenanceSchedule from '@/components/equipment/maintenance-schedule'
+import type { EquipmentMaintenanceStatus } from '@/lib/equipment/maintenance-actions'
 import { format, addDays, isBefore } from 'date-fns'
 
 type EquipmentItem = {
@@ -44,6 +45,7 @@ type Props = {
   inventory: EquipmentItem[]
   overdueItems: EquipmentItem[]
   recentRentals: Rental[]
+  maintenanceSchedule: EquipmentMaintenanceStatus[]
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -67,7 +69,12 @@ function getMaintenanceStatus(item: EquipmentItem): 'overdue' | 'due_soon' | 'ok
   return 'ok'
 }
 
-export function EquipmentInventoryClient({ inventory, overdueItems, recentRentals }: Props) {
+export function EquipmentInventoryClient({
+  inventory,
+  overdueItems,
+  recentRentals,
+  maintenanceSchedule,
+}: Props) {
   const router = useRouter()
   const [tab, setTab] = useState<'owned' | 'rentals' | 'maintenance'>('owned')
   const [showAddForm, setShowAddForm] = useState(false)
@@ -431,7 +438,7 @@ export function EquipmentInventoryClient({ inventory, overdueItems, recentRental
       )}
 
       {/* Maintenance Schedule */}
-      {tab === 'maintenance' && <MaintenanceSchedule initialSchedule={inventory as any} />}
+      {tab === 'maintenance' && <MaintenanceSchedule initialSchedule={maintenanceSchedule} />}
     </div>
   )
 }
