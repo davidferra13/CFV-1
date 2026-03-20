@@ -54,23 +54,13 @@ These parameters are baked into `constants.ts` files. Changing them requires a c
 
 ### Category B: Has Manual Control, No Programmatic Access (UPDATED 2026-03-20)
 
-> Many items originally in this category have been resolved by v2 API implementation.
-> Remaining gaps are features that still have UI only, no REST API.
+> **All Category B gaps have been resolved.** Every feature with UI now has a v2 API equivalent.
+> Two items remain that have no toggle/config server actions to wrap:
 
-| Feature                | Manual Control        | Missing Programmatic Access             |
-| ---------------------- | --------------------- | --------------------------------------- |
-| Send notification      | Automation rules only | No `POST /api/v2/notifications`         |
-| Menu engine toggles    | Settings page         | No `PATCH /api/v2/settings/menu-engine` |
-| Module toggles         | Settings page         | No `PATCH /api/v2/settings/modules`     |
-| Dashboard widgets      | Settings page         | No `PATCH /api/v2/settings/dashboard`   |
-| Booking page settings  | Settings page         | No `GET/PATCH /api/v2/booking`          |
-| Remy approval policies | Settings page         | No CRUD `/api/v2/remy/policies`         |
-| Commerce / POS         | Commerce pages        | No `/api/v2/commerce/*`                 |
-| Marketing campaigns    | Marketing pages       | No `/api/v2/marketing/*`                |
-| Loyalty program        | Loyalty pages         | No `/api/v2/loyalty/*`                  |
-| Goals                  | Goals pages           | No `/api/v2/goals`                      |
-| Partners               | Partners pages        | No `/api/v2/partners`                   |
-| Safety incidents       | Safety pages          | No `/api/v2/safety/incidents`           |
+| Feature             | Manual Control | Note                                                       |
+| ------------------- | -------------- | ---------------------------------------------------------- |
+| Menu engine toggles | Settings page  | Analysis-only module, no config toggles exist to expose    |
+| Dashboard widgets   | Settings page  | Data retrieval only, no widget visibility config to expose |
 
 ---
 
@@ -90,40 +80,61 @@ These parameters are baked into `constants.ts` files. Changing them requires a c
 
 ### Category D: Exists in Both (UPDATED 2026-03-20 with v2 API coverage)
 
-| Feature             | Manual                       | Programmatic                                    |
-| ------------------- | ---------------------------- | ----------------------------------------------- |
-| Events CRUD         | Events pages                 | `CRUD /api/v2/events` + transition              |
-| Event clone         | Button on event page         | `POST /api/v2/events/:id/clone`                 |
-| Event archive       | Button on event page         | `POST /api/v2/events/:id/archive`               |
-| Clients CRUD        | Client pages                 | `CRUD /api/v2/clients`                          |
-| Client merge        | `/clients/duplicates` page   | `POST /api/v2/clients/:id/merge`                |
-| Quotes CRUD + send  | Quote pages                  | `CRUD /api/v2/quotes` + send/accept + DELETE    |
-| Inquiries CRUD      | Inquiry pages                | `CRUD /api/v2/inquiries` + convert + DELETE     |
-| Menus CRUD          | Culinary menu pages          | `CRUD /api/v2/menus` + approve + DELETE         |
-| Recipes CRUD        | Recipe pages                 | `CRUD /api/v2/recipes` (GET/POST/PATCH)         |
-| Expenses CRUD       | Expense pages                | `CRUD /api/v2/expenses` (GET/POST/PATCH/DELETE) |
-| Payments            | Event payment buttons        | `POST /api/v2/payments`                         |
-| Ledger (read)       | Finance ledger page          | `GET /api/v2/ledger`                            |
-| Financial summary   | Dashboard widgets            | `GET /api/v2/financials/summary`                |
-| Documents           | Generate buttons per event   | `GET/POST /api/v2/documents`                    |
-| Universal search    | Cmd+K palette                | `GET /api/v2/search`                            |
-| Preferences         | Settings pages               | `GET/PATCH /api/v2/settings/preferences`        |
-| Pricing config      | Settings pricing page        | `GET/PATCH /api/v2/settings/pricing`            |
-| Automation rules    | `/settings/automations` page | `CRUD /api/v2/settings/automations`             |
-| Priority queue      | Dashboard                    | `GET /api/v2/queue`                             |
-| Booking page        | `/settings/booking` page     | Public booking URL serves dynamically           |
-| API key management  | `/settings/api-keys` page    | Keys used in API auth                           |
-| Embed widget        | `/settings/embed` page       | Public embed script + API                       |
-| Push notifications  | Notification preferences UI  | Push subscribe/unsubscribe API                  |
-| Calendar feed       | Calendar sync settings       | Public iCal feed URL                            |
-| Stripe payments     | Payment UI                   | Stripe webhooks                                 |
-| Taxonomy extensions | `/settings/taxonomy` page    | CRUD `/api/v2/taxonomy` + hidden                |
-| Staff CRUD          | Staff pages                  | `CRUD /api/v2/staff`                            |
-| Vendor CRUD         | Vendor pages                 | `CRUD /api/v2/vendors`                          |
-| Inventory CRUD      | Inventory pages              | `CRUD /api/v2/inventory`                        |
-| Calls/meetings      | Calls pages                  | `CRUD /api/v2/calls`                            |
-| Invoices            | Finance pages                | `CRUD /api/v2/invoices`                         |
-| Outbound webhooks   | Webhook settings page        | `CRUD /api/v2/webhooks` + test + logs           |
+| Feature             | Manual                       | Programmatic                                      |
+| ------------------- | ---------------------------- | ------------------------------------------------- |
+| Events CRUD         | Events pages                 | `CRUD /api/v2/events` + transition                |
+| Event clone         | Button on event page         | `POST /api/v2/events/:id/clone`                   |
+| Event archive       | Button on event page         | `POST /api/v2/events/:id/archive`                 |
+| Clients CRUD        | Client pages                 | `CRUD /api/v2/clients`                            |
+| Client merge        | `/clients/duplicates` page   | `POST /api/v2/clients/:id/merge`                  |
+| Quotes CRUD + send  | Quote pages                  | `CRUD /api/v2/quotes` + send/accept + DELETE      |
+| Inquiries CRUD      | Inquiry pages                | `CRUD /api/v2/inquiries` + convert + DELETE       |
+| Menus CRUD          | Culinary menu pages          | `CRUD /api/v2/menus` + approve + DELETE           |
+| Recipes CRUD        | Recipe pages                 | `CRUD /api/v2/recipes` (GET/POST/PATCH)           |
+| Expenses CRUD       | Expense pages                | `CRUD /api/v2/expenses` (GET/POST/PATCH/DELETE)   |
+| Payments            | Event payment buttons        | `POST /api/v2/payments`                           |
+| Ledger (read)       | Finance ledger page          | `GET /api/v2/ledger`                              |
+| Financial summary   | Dashboard widgets            | `GET /api/v2/financials/summary`                  |
+| Documents           | Generate buttons per event   | `GET/POST /api/v2/documents`                      |
+| Universal search    | Cmd+K palette                | `GET /api/v2/search`                              |
+| Preferences         | Settings pages               | `GET/PATCH /api/v2/settings/preferences`          |
+| Pricing config      | Settings pricing page        | `GET/PATCH /api/v2/settings/pricing`              |
+| Module toggles      | Settings modules page        | `GET/PATCH /api/v2/settings/modules`              |
+| Booking settings    | `/settings/booking` page     | `GET/PATCH /api/v2/settings/booking`              |
+| Automation rules    | `/settings/automations` page | `CRUD /api/v2/settings/automations`               |
+| Priority queue      | Dashboard                    | `GET /api/v2/queue`                               |
+| API key management  | `/settings/api-keys` page    | Keys used in API auth                             |
+| Embed widget        | `/settings/embed` page       | Public embed script + API                         |
+| Push notifications  | Notification preferences UI  | Push subscribe/unsubscribe API                    |
+| Notifications       | In-app notifications         | `CRUD /api/v2/notifications`                      |
+| Calendar feed       | Calendar sync settings       | Public iCal feed URL                              |
+| Stripe payments     | Payment UI                   | Stripe webhooks                                   |
+| Taxonomy extensions | `/settings/taxonomy` page    | CRUD `/api/v2/taxonomy` + hidden                  |
+| Staff CRUD          | Staff pages                  | `CRUD /api/v2/staff`                              |
+| Vendor CRUD         | Vendor pages                 | `CRUD /api/v2/vendors`                            |
+| Inventory CRUD      | Inventory pages              | `CRUD /api/v2/inventory`                          |
+| Calls/meetings      | Calls pages                  | `CRUD /api/v2/calls`                              |
+| Invoices            | Finance pages                | `CRUD /api/v2/invoices`                           |
+| Outbound webhooks   | Webhook settings page        | `CRUD /api/v2/webhooks` + test + logs             |
+| Remy policies       | Remy settings page           | `CRUD /api/v2/remy/policies`                      |
+| Commerce products   | Commerce pages               | `CRUD /api/v2/commerce/products`                  |
+| Commerce sales      | POS pages                    | `CRUD /api/v2/commerce/sales` + checkout          |
+| Commerce register   | POS register                 | `GET/POST /api/v2/commerce/register`              |
+| Commerce promotions | Promotions page              | `CRUD /api/v2/commerce/promotions`                |
+| Commerce reports    | Reports pages                | `GET /api/v2/commerce/reports`                    |
+| Marketing campaigns | Marketing pages              | `CRUD /api/v2/marketing/campaigns` + send + stats |
+| Marketing templates | Template pages               | `CRUD /api/v2/marketing/templates`                |
+| Marketing sequences | Sequence pages               | `CRUD /api/v2/marketing/sequences`                |
+| Marketing AB tests  | AB test pages                | `CRUD /api/v2/marketing/ab-tests`                 |
+| Loyalty config      | Loyalty settings             | `GET/PATCH /api/v2/loyalty/config`                |
+| Loyalty rewards     | Rewards page                 | `CRUD /api/v2/loyalty/rewards`                    |
+| Loyalty points      | Client profiles              | `POST /api/v2/loyalty/clients/:id/points`         |
+| Loyalty vouchers    | Voucher pages                | `CRUD /api/v2/loyalty/vouchers`                   |
+| Loyalty raffles     | Raffle pages                 | `CRUD /api/v2/loyalty/raffles`                    |
+| Goals CRUD          | Goals pages                  | `CRUD /api/v2/goals` + dashboard + check-ins      |
+| Partners CRUD       | Partners pages               | `CRUD /api/v2/partners` + locations + analytics   |
+| Safety incidents    | Safety pages                 | `CRUD /api/v2/safety/incidents`                   |
+| Safety backup chefs | Backup contacts page         | `CRUD /api/v2/safety/backup-contacts`             |
 
 ---
 
