@@ -682,7 +682,7 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 - **`/menus`** — Grid of menu cards with search + sort. Cards show Template and **Showcase** badges. "Create Menu" → `/menus/new`.
 - **`/menus/[id]`** — Menu detail with two-column layout (main + intelligence sidebar on lg+). Main: hero image, **assembly browser** (collapsible "Add from Sources" panel with 4 tabs: Templates, Past Menus, Recipes, Quick Add; click-to-add with course position selector, deep copy with auto-scale adjustment; hidden for locked menus), menu editor (draft-only edit), cost breakdown tree (collapsible Course > Dish > Component > Ingredient with scaled quantities and costs). Sidebar: live cost summary (food cost %, total cost, cost/guest, margin alerts), context sidebar (season/guest tier badges, client allergies in red, dietary restrictions in amber, previous menus for same client, matching templates). Top bar: scale dialog (guest count auto-scaling with adjustment preview), "View Event" link. Showcase toggle, duplicate/delete. "Open Editor" → `/menus/[id]/editor`.
-- **`/menus/[id]/editor`** — Full document editor with auto-save (1.5s debounce), structured mode (courses/dishes with dietary toggles, allergen flags, chef notes, dish photos, hover reorder/delete) or freeform mode. Right sidebar: event/client/season/pricing/previous menus panels.
+- **`/menus/[id]/editor`** — Full document editor with auto-save (1.5s debounce), structured mode (courses/dishes with dietary toggles, allergen flags, chef notes, dish photos, hover reorder/delete) or freeform mode. Right sidebar split into two sections: **MenuCostSidebar** (live cost summary: food cost %, total cost, cost/guest, margin alerts) and **MenuContextSidebar** (Intelligence panel). Intelligence header shows "Intelligence" title with "Configure" link to `/settings/menu-engine`. The context sidebar has 11 togglable feature sections: seasonal warnings, prep estimate, client taste profile, menu history, vendor hints, allergen validation, stock alerts, scale mismatch, inquiry link, budget compliance, dietary conflicts. Each section renders only if enabled in Menu Engine settings AND relevant data exists. Three empty states: all features disabled (directs to `/settings/menu-engine`), some features enabled but none have data, partial features disabled (shows count of disabled features with configure link).
 
 ### 6.2 Recipes
 
@@ -1207,7 +1207,7 @@ Each category has a unique lucide-react icon and animated chevron expand/collaps
 | #   | Category                          | Icon  | Sub-pages                                                                                                  |
 | --- | --------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------- |
 | 9   | Connected Accounts & Integrations | Plug  | Google (Gmail + Calendar), Wix, embed widget, integrations center, Calendar Sync (iCal), Zapier & Webhooks |
-| 10  | AI & Privacy                      | Brain | AI Trust Center (full privacy walkthrough), culinary profile for Remy                                      |
+| 10  | AI & Privacy                      | Brain | AI Trust Center (full privacy walkthrough), culinary profile for Remy, Menu Engine (intelligence toggles)  |
 | 11  | Client Reviews                    | Star  | Google review URL, view all, Yelp reviews sync                                                             |
 
 **Group: You & Your Career** — Branding, growth, network, and appearance
@@ -1266,6 +1266,16 @@ Components: `auto-response-settings.tsx`, `business-hours-editor.tsx`, `template
 | `/settings/yelp`            | Yelp business search/connect flow, review sync action, disconnect action, synced review count                      |
 | `/settings/calendar-sync`   | iCal feed enable/disable toggle, feed URL copy, feed token regeneration                                            |
 | `/settings/payment-methods` | Per-chef payment method toggles for Apple Pay and Google Pay in Stripe Checkout                                    |
+
+### 15.4 Menu Engine (`/settings/menu-engine`)
+
+Intelligence feature configuration for the menu editor's context sidebar. Controls which analytical sections appear in the MenuContextSidebar when editing menus.
+
+| Element              | Description                                                                                                                                                                                                                                  |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 11 feature toggles   | Each toggle has a label and description. Features: seasonal warnings, prep estimate, client taste profile, menu history, vendor hints, allergen validation, stock alerts, scale mismatch, inquiry link, budget compliance, dietary conflicts |
+| "Enable all" button  | One-click toggle to enable all 11 features at once                                                                                                                                                                                           |
+| "Disable all" button | Opens a confirmation modal (danger variant) warning that disabling all features will turn off allergen validation and other safety checks. Requires explicit confirmation before proceeding                                                  |
 
 ### 20.1 Delete Account (`/settings/delete-account`)
 

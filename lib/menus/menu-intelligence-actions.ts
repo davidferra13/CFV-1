@@ -1150,7 +1150,11 @@ export async function getMenuIngredientStock(menuId: string): Promise<MenuIngred
   const supabase: any = createServerClient()
 
   // Get all recipe ingredients for this menu's components
-  const { data: dishes } = await supabase.from('dishes').select('id').eq('menu_id', menuId)
+  const { data: dishes } = await supabase
+    .from('dishes')
+    .select('id')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
 
   if (!dishes?.length) return []
 
@@ -1317,6 +1321,7 @@ export async function validateMenuAllergens(menuId: string): Promise<{
     .from('dishes')
     .select('id, course_name')
     .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
 
   if (!dishes?.length) {
     const clientName = client
@@ -2435,6 +2440,7 @@ export async function getAssemblySources(filters?: {
       .from('events')
       .select('id, client_id, event_date')
       .in('id', eventIds)
+      .eq('tenant_id', user.tenantId!)
 
     if (events?.length) {
       for (const e of events) {
@@ -2447,6 +2453,7 @@ export async function getAssemblySources(filters?: {
           .from('clients')
           .select('id, first_name, last_name')
           .in('id', clientIds)
+          .eq('tenant_id', user.tenantId!)
 
         if (clients) {
           const clientMap = new Map<string, string>()
