@@ -11,6 +11,8 @@ import { QuoteVersionHistory } from '@/components/quotes/quote-version-history'
 import { QuoteTransitions } from '@/components/quotes/quote-transitions'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
+import { PricingInsightsSidebar } from '@/components/quotes/pricing-insights-sidebar'
+import { ClientSpendingBadge } from '@/components/quotes/client-spending-badge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,7 +20,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { format, formatDistanceToNow } from 'date-fns'
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
-  await requireChef()
+  const user = await requireChef()
 
   const result = await safeFetchAll({
     quote: () => getQuoteById(params.id),
@@ -54,10 +56,16 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
             </h1>
             <QuoteStatusBadge status={quote.status as any} />
           </div>
-          <p className="text-stone-300 mt-1">
-            {quote.client?.full_name || 'Unknown Client'}
-            {quote.client?.email && ` - ${quote.client.email}`}
-          </p>
+          <div className="flex items-center gap-3 mt-1 flex-wrap">
+            <p className="text-stone-300">
+              {quote.client?.full_name || 'Unknown Client'}
+              {quote.client?.email && ` - ${quote.client.email}`}
+            </p>
+            <ClientSpendingBadge
+              clientId={(quote as any).client_id ?? null}
+              tenantId={user.tenantId!}
+            />
+          </div>
         </div>
         <Link href="/quotes">
           <Button variant="ghost">Back to Quotes</Button>
@@ -81,44 +89,46 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
       />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Pricing */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Pricing</h2>
-          <dl className="space-y-3">
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Total Quoted</dt>
-              <dd className="text-2xl font-bold text-stone-100 mt-1">
-                {formatCurrency(quote.total_quoted_cents)}
-              </dd>
-            </div>
-            {quote.pricing_model && (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Pricing + Deposit (left two columns) */}
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Pricing */}
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Pricing</h2>
+            <dl className="space-y-3">
               <div>
-                <dt className="text-sm font-medium text-stone-500">Pricing Model</dt>
-                <dd className="mt-1">
-                  <PricingModelBadge model={quote.pricing_model as any} />
+                <dt className="text-sm font-medium text-stone-500">Total Quoted</dt>
+                <dd className="text-2xl font-bold text-stone-100 mt-1">
+                  {formatCurrency(quote.total_quoted_cents)}
                 </dd>
               </div>
-            )}
-            {quote.price_per_person_cents && (
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Per Person</dt>
-                <dd className="text-sm text-stone-100 mt-1">
-                  {formatCurrency(quote.price_per_person_cents)}
-                </dd>
-              </div>
-            )}
-            {quote.guest_count_estimated && (
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Estimated Guests</dt>
-                <dd className="text-sm text-stone-100 mt-1">{quote.guest_count_estimated}</dd>
-              </div>
-            )}
-          </dl>
-        </Card>
+              {quote.pricing_model && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Pricing Model</dt>
+                  <dd className="mt-1">
+                    <PricingModelBadge model={quote.pricing_model as any} />
+                  </dd>
+                </div>
+              )}
+              {quote.price_per_person_cents && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Per Person</dt>
+                  <dd className="text-sm text-stone-100 mt-1">
+                    {formatCurrency(quote.price_per_person_cents)}
+                  </dd>
+                </div>
+              )}
+              {quote.guest_count_estimated && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Estimated Guests</dt>
+                  <dd className="text-sm text-stone-100 mt-1">{quote.guest_count_estimated}</dd>
+                </div>
+              )}
+            </dl>
+          </Card>
 
-        {/* Deposit & Validity */}
-        <Card className="p-6">
+          {/* Deposit & Validity */}
+          <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Deposit & Validity</h2>
           <dl className="space-y-3">
             <div>
@@ -180,6 +190,19 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
             )}
           </dl>
         </Card>
+        </div>
+
+        {/* Pricing Insights Sidebar (right column) */}
+        <div className="lg:col-span-1">
+          <PricingInsightsSidebar
+            eventType={quote.event?.occasion || quote.inquiry?.confirmed_occasion || undefined}
+            guestCountRange={
+              quote.guest_count_estimated
+                ? [Math.max(1, quote.guest_count_estimated - 10), quote.guest_count_estimated + 10]
+                : undefined
+            }
+          />
+        </div>
       </div>
 
       {/* Linked Resources */}
