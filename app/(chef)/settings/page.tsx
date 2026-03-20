@@ -153,6 +153,16 @@ export default async function SettingsPage() {
               </p>
             </Link>
             <Link
+              href="/settings/menu-engine"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Menu Intelligence</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Enable or disable intelligence features in the menu editor sidebar (seasonal
+                warnings, prep estimates, vendor hints, and more).
+              </p>
+            </Link>
+            <Link
               href="/goals/setup"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >

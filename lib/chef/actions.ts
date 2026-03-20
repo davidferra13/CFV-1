@@ -13,12 +13,15 @@ import type {
   ChefPreferences,
   DashboardWidgetPreference,
   DefaultStore,
+  MenuEngineFeatures,
   RevenueGoalCustom,
 } from '@/lib/scheduling/types'
 import {
   DASHBOARD_WIDGET_IDS,
   DEFAULT_DASHBOARD_WIDGETS,
+  DEFAULT_MENU_ENGINE_FEATURES,
   DEFAULT_PREFERENCES,
+  MENU_ENGINE_FEATURE_KEYS,
 } from '@/lib/scheduling/types'
 
 // ============================================
@@ -53,6 +56,20 @@ const DashboardWidgetPreferenceSchema = z.object({
 const PrimaryNavHrefSchema = z.string().trim().min(1).max(160)
 const PrimaryNavHrefArraySchema = z.array(PrimaryNavHrefSchema).max(200)
 
+const MenuEngineFeaturesSchema = z
+  .object({
+    seasonal_warnings: z.boolean(),
+    prep_estimate: z.boolean(),
+    client_taste: z.boolean(),
+    menu_history: z.boolean(),
+    vendor_hints: z.boolean(),
+    allergen_validation: z.boolean(),
+    stock_alerts: z.boolean(),
+    scale_mismatch: z.boolean(),
+    inquiry_link: z.boolean(),
+  })
+  .partial()
+
 const UpdatePreferencesSchema = z.object({
   home_address: z.string().optional().nullable(),
   home_city: z.string().optional().nullable(),
@@ -83,6 +100,7 @@ const UpdatePreferencesSchema = z.object({
   dashboard_widgets: z.array(DashboardWidgetPreferenceSchema).optional(),
   primary_nav_hrefs: PrimaryNavHrefArraySchema.optional(),
   mobile_tab_hrefs: z.array(z.string().trim().min(1).max(160)).max(5).optional(),
+  menu_engine_features: MenuEngineFeaturesSchema.optional(),
 })
 
 export type UpdatePreferencesInput = z.infer<typeof UpdatePreferencesSchema>
@@ -241,6 +259,19 @@ function getPrimaryNavHrefsFromUnknown(value: unknown): string[] {
   return sanitizePrimaryNavHrefs(parsed.data)
 }
 
+function getMenuEngineFeaturesFromUnknown(value: unknown): MenuEngineFeatures {
+  if (!value || typeof value !== 'object') return { ...DEFAULT_MENU_ENGINE_FEATURES }
+
+  const result = { ...DEFAULT_MENU_ENGINE_FEATURES }
+  const obj = value as Record<string, unknown>
+  for (const key of MENU_ENGINE_FEATURE_KEYS) {
+    if (typeof obj[key] === 'boolean') {
+      result[key] = obj[key] as boolean
+    }
+  }
+  return result
+}
+
 // ============================================
 // QUERIES
 // ============================================
@@ -298,6 +329,7 @@ export async function getChefPreferences(): Promise<ChefPreferences> {
     shop_day_before: (row.shop_day_before as boolean) ?? true,
     dashboard_widgets: getDashboardWidgetsFromUnknown(row.dashboard_widgets),
     primary_nav_hrefs: getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs),
+    menu_engine_features: getMenuEngineFeaturesFromUnknown(row.menu_engine_features),
   }
 }
 
@@ -314,6 +346,24 @@ export async function getChefPrimaryNavHrefs(): Promise<string[]> {
 
   const row = data as Record<string, unknown>
   return getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs)
+}
+
+/**
+ * Get just the menu engine feature toggles (lightweight, for sidebar use).
+ */
+export async function getMenuEngineFeatures(): Promise<MenuEngineFeatures> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data, error } = await fromChefPreferences(supabase)
+    .select('menu_engine_features')
+    .eq('chef_id', user.entityId)
+    .single()
+
+  if (error || !data) return { ...DEFAULT_MENU_ENGINE_FEATURES }
+
+  const row = data as Record<string, unknown>
+  return getMenuEngineFeaturesFromUnknown(row.menu_engine_features)
 }
 
 // ============================================
@@ -357,9 +407,17 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
 
   // Check if preferences exist
   const { data: existing } = await fromChefPreferences(supabase)
-    .select('id')
+    .select('id, menu_engine_features')
     .eq('chef_id', user.entityId)
     .single()
+
+  // Merge menu_engine_features with existing values (partial update support)
+  if (validated.menu_engine_features) {
+    const current = existing
+      ? getMenuEngineFeaturesFromUnknown((existing as Record<string, unknown>).menu_engine_features)
+      : { ...DEFAULT_MENU_ENGINE_FEATURES }
+    payload.menu_engine_features = { ...current, ...validated.menu_engine_features }
+  }
 
   if (existing) {
     const { error } = await fromChefPreferences(supabase)
@@ -385,6 +443,7 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
 
   revalidatePath('/settings')
   revalidatePath('/settings/navigation')
+  revalidatePath('/settings/menu-engine')
   revalidatePath('/dashboard')
   revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }

@@ -634,6 +634,95 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
 // Legacy alias kept for compatibility with older code paths.
 export type SpecialtyStore = DefaultStore
 
+// Menu engine feature toggle keys
+export const MENU_ENGINE_FEATURE_KEYS = [
+  'seasonal_warnings',
+  'prep_estimate',
+  'client_taste',
+  'menu_history',
+  'vendor_hints',
+  'allergen_validation',
+  'stock_alerts',
+  'scale_mismatch',
+  'inquiry_link',
+] as const
+
+export type MenuEngineFeatureKey = (typeof MENU_ENGINE_FEATURE_KEYS)[number]
+
+export interface MenuEngineFeatures {
+  seasonal_warnings: boolean
+  prep_estimate: boolean
+  client_taste: boolean
+  menu_history: boolean
+  vendor_hints: boolean
+  allergen_validation: boolean
+  stock_alerts: boolean
+  scale_mismatch: boolean
+  inquiry_link: boolean
+}
+
+export const DEFAULT_MENU_ENGINE_FEATURES: MenuEngineFeatures = {
+  seasonal_warnings: true,
+  prep_estimate: true,
+  client_taste: true,
+  menu_history: true,
+  vendor_hints: true,
+  allergen_validation: true,
+  stock_alerts: true,
+  scale_mismatch: true,
+  inquiry_link: true,
+}
+
+/** Human-readable labels for menu engine features */
+export const MENU_ENGINE_FEATURE_LABELS: Record<
+  MenuEngineFeatureKey,
+  { label: string; description: string }
+> = {
+  seasonal_warnings: {
+    label: 'Seasonal Ingredient Warnings',
+    description: 'Flags out-of-season ingredients with expected cost impact based on event date.',
+  },
+  prep_estimate: {
+    label: 'Prep Time Estimate',
+    description:
+      'Shows estimated prep and service hours based on guest count and similar past events.',
+  },
+  client_taste: {
+    label: 'Client Taste Profile',
+    description:
+      'Surfaces linked client preferences (loved/disliked items, cuisine preferences) in the menu editor.',
+  },
+  menu_history: {
+    label: 'Menu Performance History',
+    description:
+      'Shows how many times this menu has been used, average margin, and last usage date.',
+  },
+  vendor_hints: {
+    label: 'Vendor Best-Price Hints',
+    description:
+      'Compares ingredient prices against vendor alternatives and highlights savings over 5%.',
+  },
+  allergen_validation: {
+    label: 'Allergen Conflict Validation',
+    description:
+      'Cross-checks menu ingredients against the linked client dietary restrictions and allergies.',
+  },
+  stock_alerts: {
+    label: 'Ingredient Stock Alerts',
+    description:
+      'Checks menu ingredients against current inventory levels and flags low or out-of-stock items.',
+  },
+  scale_mismatch: {
+    label: 'Guest Count Scale Mismatch',
+    description: 'Warns when menu guest count differs from the linked event guest count.',
+  },
+  inquiry_link: {
+    label: 'Inquiry Cross-Reference',
+    description:
+      'Shows a link to the originating inquiry when the menu is connected to one via events.',
+  },
+}
+
 export interface ChefPreferences {
   id: string
   chef_id: string
@@ -676,6 +765,9 @@ export interface ChefPreferences {
 
   // Navigation customization (empty = use platform default primary shortcuts)
   primary_nav_hrefs: string[]
+
+  // Menu engine feature toggles (all default true, operators opt out)
+  menu_engine_features: MenuEngineFeatures
 }
 
 export const DEFAULT_PREFERENCES: Omit<ChefPreferences, 'id' | 'chef_id'> = {
@@ -702,6 +794,7 @@ export const DEFAULT_PREFERENCES: Omit<ChefPreferences, 'id' | 'chef_id'> = {
   shop_day_before: true,
   dashboard_widgets: DEFAULT_DASHBOARD_WIDGETS.map((widget) => ({ ...widget })),
   primary_nav_hrefs: [],
+  menu_engine_features: { ...DEFAULT_MENU_ENGINE_FEATURES },
 }
 
 export interface RevenueGoalCustom {

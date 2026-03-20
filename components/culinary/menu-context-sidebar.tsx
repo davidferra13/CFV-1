@@ -3,6 +3,7 @@
 // MenuContextSidebar - Shows client dietary info, past menus, matching templates,
 // inventory stock levels, and allergen validation warnings.
 // Appears alongside the menu editor to give chefs context while building menus.
+// Respects per-operator menu_engine_features toggles from chef_preferences.
 
 import { useEffect, useState, useTransition } from 'react'
 import { Badge } from '@/components/ui/badge'
@@ -25,14 +26,21 @@ import type {
   MenuClientTasteSummary,
   MenuPrepEstimate,
 } from '@/lib/menus/menu-intelligence-actions'
+import type { MenuEngineFeatures } from '@/lib/scheduling/types'
+import { DEFAULT_MENU_ENGINE_FEATURES } from '@/lib/scheduling/types'
 import Link from 'next/link'
 
 interface MenuContextSidebarProps {
   menuId: string
   className?: string
+  features?: MenuEngineFeatures
 }
 
-export function MenuContextSidebar({ menuId, className = '' }: MenuContextSidebarProps) {
+export function MenuContextSidebar({
+  menuId,
+  className = '',
+  features = DEFAULT_MENU_ENGINE_FEATURES,
+}: MenuContextSidebarProps) {
   const [isPending, startTransition] = useTransition()
   const [context, setContext] = useState<Awaited<ReturnType<typeof getMenuContextData>> | null>(
     null
@@ -60,34 +68,78 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
   useEffect(() => {
     startTransition(async () => {
       try {
+        // Always fetch core context data (season, guest tier, client, previous menus, templates)
+        const fetches: Promise<unknown>[] = [getMenuContextData(menuId)]
+
+        // Conditionally fetch based on enabled features
+        fetches.push(
+          features.stock_alerts
+            ? getMenuIngredientStock(menuId).catch(() => [])
+            : Promise.resolve([])
+        )
+        fetches.push(
+          features.allergen_validation
+            ? validateMenuAllergens(menuId).catch(() => null)
+            : Promise.resolve(null)
+        )
+        fetches.push(
+          features.scale_mismatch
+            ? checkMenuScaleMismatch(menuId).catch(() => null)
+            : Promise.resolve(null)
+        )
+        fetches.push(
+          features.inquiry_link
+            ? getMenuInquiryLink(menuId).catch(() => null)
+            : Promise.resolve(null)
+        )
+        fetches.push(
+          features.seasonal_warnings
+            ? getMenuSeasonalWarnings(menuId).catch(() => [])
+            : Promise.resolve([])
+        )
+        fetches.push(
+          features.menu_history
+            ? getMenuPerformance(menuId).catch(() => null)
+            : Promise.resolve(null)
+        )
+        fetches.push(
+          features.client_taste
+            ? getMenuClientTaste(menuId).catch(() => null)
+            : Promise.resolve(null)
+        )
+        fetches.push(
+          features.prep_estimate
+            ? getMenuPrepEstimate(menuId).catch(() => null)
+            : Promise.resolve(null)
+        )
+
         const [data, stockData, allergens, mismatch, inquiry, seasonal, perf, taste, prep] =
-          await Promise.all([
-            getMenuContextData(menuId),
-            getMenuIngredientStock(menuId).catch(() => []),
-            validateMenuAllergens(menuId).catch(() => null),
-            checkMenuScaleMismatch(menuId).catch(() => null),
-            getMenuInquiryLink(menuId).catch(() => null),
-            getMenuSeasonalWarnings(menuId).catch(() => []),
-            getMenuPerformance(menuId).catch(() => null),
-            getMenuClientTaste(menuId).catch(() => null),
-            getMenuPrepEstimate(menuId).catch(() => null),
-          ])
-        setContext(data)
-        setStock(stockData)
-        setAllergenData(allergens)
-        setScaleMismatch(mismatch)
-        setInquiryLink(inquiry)
-        setSeasonalWarnings(seasonal)
-        setPerformance(perf)
-        setClientTaste(taste)
-        setPrepEstimate(prep)
+          await Promise.all(fetches)
+
+        setContext(data as Awaited<ReturnType<typeof getMenuContextData>>)
+        setStock(stockData as MenuIngredientStock[])
+        setAllergenData(
+          allergens as { warnings: MenuAllergenWarning[]; clientName: string | null } | null
+        )
+        setScaleMismatch(
+          mismatch as {
+            menuGuestCount: number
+            eventGuestCount: number
+            eventName: string | null
+          } | null
+        )
+        setInquiryLink(inquiry as { inquiryId: string; inquiryStatus: string | null } | null)
+        setSeasonalWarnings(seasonal as SeasonalIngredientWarning[])
+        setPerformance(perf as MenuPerformanceHistory | null)
+        setClientTaste(taste as MenuClientTasteSummary | null)
+        setPrepEstimate(prep as MenuPrepEstimate | null)
         setLoadError(null)
       } catch (err) {
         console.error('[MenuContextSidebar] Failed to load:', err)
         setLoadError('Could not load context')
       }
     })
-  }, [menuId])
+  }, [menuId, features])
 
   if (loadError) {
     return (
@@ -145,7 +197,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
       className={`rounded-lg border border-stone-700 bg-stone-800/50 divide-y divide-stone-700 ${className}`}
     >
       {/* Scale mismatch alert */}
-      {scaleMismatch && (
+      {features.scale_mismatch && scaleMismatch && (
         <div className="px-4 py-3 bg-amber-500/10">
           <p className="text-xs text-amber-400 font-medium mb-1">Guest Count Mismatch</p>
           <p className="text-xxs text-stone-400">
@@ -157,7 +209,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
       )}
 
       {/* Allergen validation warnings */}
-      {allergenWarnings.length > 0 && (
+      {features.allergen_validation && allergenWarnings.length > 0 && (
         <div className="px-4 py-3 bg-red-500/10">
           <h4 className="text-xs font-medium text-red-400 uppercase tracking-wider mb-2">
             Allergen Conflicts ({allergenWarnings.length})
@@ -182,7 +234,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
       )}
 
       {/* Seasonal ingredient warnings */}
-      {seasonalWarnings.length > 0 && (
+      {features.seasonal_warnings && seasonalWarnings.length > 0 && (
         <div className="px-4 py-3 bg-amber-500/10">
           <h4 className="text-xs font-medium text-amber-400 uppercase tracking-wider mb-2">
             Seasonal Alerts ({seasonalWarnings.length})
@@ -200,7 +252,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
       )}
 
       {/* Prep time estimate */}
-      {prepEstimate && (
+      {features.prep_estimate && prepEstimate && (
         <div className="px-4 py-3">
           <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-2">
             Prep Estimate
@@ -232,54 +284,56 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
       )}
 
       {/* Client taste profile */}
-      {clientTaste && (clientTaste.loved.length > 0 || clientTaste.disliked.length > 0) && (
-        <div className="px-4 py-3 space-y-2">
-          <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
-            {clientTaste.clientName}&apos;s Preferences
-          </h4>
-          {clientTaste.cuisinePreferences.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {clientTaste.cuisinePreferences.map((c) => (
-                <Badge key={c} variant="info">
-                  {c}
-                </Badge>
-              ))}
-            </div>
-          )}
-          {clientTaste.loved.length > 0 && (
-            <div>
-              <p className="text-xxs text-emerald-400 font-medium mb-1">Loved</p>
+      {features.client_taste &&
+        clientTaste &&
+        (clientTaste.loved.length > 0 || clientTaste.disliked.length > 0) && (
+          <div className="px-4 py-3 space-y-2">
+            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
+              {clientTaste.clientName}&apos;s Preferences
+            </h4>
+            {clientTaste.cuisinePreferences.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {clientTaste.loved.map((item) => (
-                  <Badge key={item} variant="success">
-                    {item}
+                {clientTaste.cuisinePreferences.map((c) => (
+                  <Badge key={c} variant="info">
+                    {c}
                   </Badge>
                 ))}
               </div>
-            </div>
-          )}
-          {clientTaste.disliked.length > 0 && (
-            <div>
-              <p className="text-xxs text-red-400 font-medium mb-1">Avoid</p>
-              <div className="flex flex-wrap gap-1">
-                {clientTaste.disliked.map((item) => (
-                  <Badge key={item} variant="error">
-                    {item}
-                  </Badge>
-                ))}
+            )}
+            {clientTaste.loved.length > 0 && (
+              <div>
+                <p className="text-xxs text-emerald-400 font-medium mb-1">Loved</p>
+                <div className="flex flex-wrap gap-1">
+                  {clientTaste.loved.map((item) => (
+                    <Badge key={item} variant="success">
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {clientTaste.pastEventCount > 0 && (
-            <p className="text-xxs text-stone-500">
-              {clientTaste.pastEventCount} past event{clientTaste.pastEventCount !== 1 ? 's' : ''}
-            </p>
-          )}
-        </div>
-      )}
+            )}
+            {clientTaste.disliked.length > 0 && (
+              <div>
+                <p className="text-xxs text-red-400 font-medium mb-1">Avoid</p>
+                <div className="flex flex-wrap gap-1">
+                  {clientTaste.disliked.map((item) => (
+                    <Badge key={item} variant="error">
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {clientTaste.pastEventCount > 0 && (
+              <p className="text-xxs text-stone-500">
+                {clientTaste.pastEventCount} past event{clientTaste.pastEventCount !== 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
+        )}
 
       {/* Menu performance history */}
-      {performance && (
+      {features.menu_history && performance && (
         <div className="px-4 py-3 space-y-1.5">
           <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
             Menu History
@@ -329,7 +383,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
       )}
 
       {/* Inquiry link */}
-      {inquiryLink && (
+      {features.inquiry_link && inquiryLink && (
         <div className="px-4 py-2">
           <Link
             href={`/inquiries/${inquiryLink.inquiryId}`}
@@ -343,7 +397,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
         </div>
       )}
 
-      {/* Season + guest tier */}
+      {/* Season + guest tier (always shown, core context) */}
       <div className="px-4 py-3 flex items-center gap-2">
         <Badge variant="info">{context.season}</Badge>
         <Badge variant="default">{context.guestTier}</Badge>
@@ -354,7 +408,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
         )}
       </div>
 
-      {/* Client dietary info */}
+      {/* Client dietary info (always shown, core safety data) */}
       {hasDietary && (
         <div className="px-4 py-3 space-y-2">
           <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
@@ -388,7 +442,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
       )}
 
       {/* Inventory stock check */}
-      {stockIssues.length > 0 && (
+      {features.stock_alerts && stockIssues.length > 0 && (
         <div className="px-4 py-3 space-y-2">
           <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
             Stock Alerts ({stockIssues.length})
@@ -427,7 +481,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
         </div>
       )}
 
-      {/* Previous menus for this client */}
+      {/* Previous menus for this client (always shown, core context) */}
       {hasPreviousMenus && (
         <div className="px-4 py-3 space-y-2">
           <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
@@ -458,7 +512,7 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
         </div>
       )}
 
-      {/* Matching templates */}
+      {/* Matching templates (always shown, core context) */}
       {hasTemplates && (
         <div className="px-4 py-3 space-y-2">
           <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">Templates</h4>

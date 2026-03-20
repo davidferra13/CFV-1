@@ -12,6 +12,7 @@ import type { MarginAlert, MenuVendorHint } from '@/lib/menus/menu-intelligence-
 interface MenuCostSidebarProps {
   menuId: string
   className?: string
+  vendorHintsEnabled?: boolean
 }
 
 function formatCents(cents: number | null): string {
@@ -33,7 +34,11 @@ function getFoodCostColor(pct: number | null): string {
   return 'text-emerald-400'
 }
 
-export function MenuCostSidebar({ menuId, className = '' }: MenuCostSidebarProps) {
+export function MenuCostSidebar({
+  menuId,
+  className = '',
+  vendorHintsEnabled = true,
+}: MenuCostSidebarProps) {
   const [isPending, startTransition] = useTransition()
   const [costData, setCostData] = useState<{
     totalCostCents: number | null
@@ -51,7 +56,7 @@ export function MenuCostSidebar({ menuId, className = '' }: MenuCostSidebarProps
       try {
         const [result, hints] = await Promise.all([
           checkMenuMargins(menuId),
-          getMenuVendorHints(menuId).catch(() => []),
+          vendorHintsEnabled ? getMenuVendorHints(menuId).catch(() => []) : Promise.resolve([]),
         ])
         setCostData(result.costBreakdown)
         setAlerts(result.alerts)
@@ -151,7 +156,7 @@ export function MenuCostSidebar({ menuId, className = '' }: MenuCostSidebarProps
       )}
 
       {/* Vendor best-price hints */}
-      {vendorHints.length > 0 && (
+      {vendorHintsEnabled && vendorHints.length > 0 && (
         <div className="space-y-2 border-t border-stone-700 pt-3">
           <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
             Vendor Savings

@@ -1,5 +1,6 @@
 import { getMenuById } from '@/lib/menus/actions'
 import { getPlaceholderImage } from '@/lib/images/placeholder-actions'
+import { getMenuEngineFeatures } from '@/lib/chef/actions'
 import { MenuEditorClient } from '@/components/culinary/MenuEditor'
 import { FoodPlaceholderImage } from '@/components/ui/food-placeholder-image'
 import { MenuCostSidebar } from '@/components/culinary/menu-cost-sidebar'
@@ -12,7 +13,10 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default async function MenuDetailPage({ params }: { params: { id: string } }) {
-  const menu = await getMenuById(params.id)
+  const [menu, engineFeatures] = await Promise.all([
+    getMenuById(params.id),
+    getMenuEngineFeatures(),
+  ])
   if (!menu) notFound()
 
   // Menus don't have their own photo - use a stock placeholder based on
@@ -70,8 +74,8 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
 
         {/* Intelligence sidebar */}
         <div className="hidden lg:block w-72 flex-shrink-0 space-y-4 sticky top-6 self-start">
-          <MenuCostSidebar menuId={menu.id} />
-          <MenuContextSidebar menuId={menu.id} />
+          <MenuCostSidebar menuId={menu.id} vendorHintsEnabled={engineFeatures.vendor_hints} />
+          <MenuContextSidebar menuId={menu.id} features={engineFeatures} />
         </div>
       </div>
     </div>
