@@ -140,6 +140,18 @@ export async function acceptQuote(quoteId: string) {
     }
   }
 
+  // Outbound webhook dispatch (non-blocking)
+  if (quote.tenant_id) {
+    try {
+      const { emitWebhook } = await import('@/lib/webhooks/emitter')
+      await emitWebhook(quote.tenant_id, 'quote.accepted', {
+        quote_id: quoteId,
+        client_id: user.entityId,
+        total_quoted_cents: quote.total_quoted_cents,
+      })
+    } catch {}
+  }
+
   // Notify chef that quote was accepted (non-blocking)
   if (quote.tenant_id) {
     notifyChefOfQuoteAccepted(quote.tenant_id, quoteId, quote, user.entityId).catch(async (err) => {
@@ -197,6 +209,18 @@ export async function rejectQuote(quoteId: string, reason?: string) {
   if (quote.inquiry_id) {
     revalidatePath(`/inquiries/${quote.inquiry_id}`)
     revalidatePath('/inquiries')
+  }
+
+  // Outbound webhook dispatch (non-blocking)
+  if (quote.tenant_id) {
+    try {
+      const { emitWebhook } = await import('@/lib/webhooks/emitter')
+      await emitWebhook(quote.tenant_id, 'quote.rejected', {
+        quote_id: quoteId,
+        client_id: user.entityId,
+        reason: reason || null,
+      })
+    } catch {}
   }
 
   // Notify chef that quote was rejected (non-blocking)

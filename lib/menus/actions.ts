@@ -257,6 +257,17 @@ export async function createMenu(input: CreateMenuInput) {
     console.error('[createMenu] Activity log failed (non-blocking):', err)
   }
 
+  // Outbound webhook dispatch (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(user.tenantId!, 'menu.created', {
+      menu_id: menu.id,
+      name: validated.name,
+      event_id: validated.event_id || null,
+      is_template: validated.is_template || false,
+    })
+  } catch {}
+
   return result
 }
 
@@ -490,6 +501,16 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
       } catch (err) {
         console.error('[updateMenu] Activity log failed (non-blocking):', err)
       }
+
+      // Outbound webhook dispatch (non-blocking)
+      try {
+        const { emitWebhook } = await import('@/lib/webhooks/emitter')
+        await emitWebhook(user.tenantId!, 'menu.updated', {
+          menu_id: menuId,
+          name: menu.name,
+          changed_fields: Object.keys(updateFields),
+        })
+      } catch {}
 
       return { success: true, menu }
     },

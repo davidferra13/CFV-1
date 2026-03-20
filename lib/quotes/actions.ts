@@ -169,6 +169,17 @@ export async function createQuote(input: CreateQuoteInput) {
     console.error('[createQuote] Activity log failed (non-blocking):', err)
   }
 
+  // Outbound webhook dispatch (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(user.tenantId!, 'quote.created', {
+      quote_id: quote.id,
+      client_id: validated.client_id,
+      total_quoted_cents: validated.total_quoted_cents,
+      pricing_model: validated.pricing_model,
+    })
+  } catch {}
+
   return result
 }
 
@@ -680,6 +691,20 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
   } catch (err) {
     console.error('[transitionQuote] Zapier dispatch failed (non-blocking):', err)
   }
+
+  // Outbound webhook dispatch (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    const webhookEvent = newStatus === 'sent' ? ('quote.sent' as const) : null
+    if (webhookEvent) {
+      await emitWebhook(user.tenantId!, webhookEvent, {
+        quote_id: id,
+        status: newStatus,
+        total_quoted_cents: updated.total_quoted_cents,
+        client_id: updated.client_id,
+      })
+    }
+  } catch {}
 
   return { success: true, quote: updated, warnings: warnings.length > 0 ? warnings : undefined }
 }

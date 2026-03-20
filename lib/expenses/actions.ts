@@ -120,6 +120,17 @@ export async function createExpense(input: CreateExpenseInput) {
     console.error('[createExpense] Activity log failed (non-blocking):', err)
   }
 
+  // Outbound webhook dispatch (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(user.tenantId!, 'expense.logged', {
+      expense_id: data.id,
+      amount_cents: validated.amount_cents,
+      category: validated.category,
+      event_id: validated.event_id || null,
+    })
+  } catch {}
+
   return { success: true, expense: data }
 }
 
