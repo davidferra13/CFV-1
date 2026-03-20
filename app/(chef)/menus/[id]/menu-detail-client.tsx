@@ -35,6 +35,8 @@ import { PrepTimelineView } from '@/components/menus/prep-timeline-view'
 import { MenuGeneratorUI } from '@/components/menus/menuGeneratorUI'
 import { CocktailBrowserPanel } from '@/components/menus/cocktail-browser-panel'
 import { MenuTranslateButton } from '@/components/menus/menu-translate-button'
+import { MenuSimulatorPanel, type MenuSimulatorPanelProps } from '@/components/menus/menu-simulator-panel'
+import type { SimulatorDish } from '@/lib/menus/menu-simulator'
 
 type RecipeInfo = {
   id: string
@@ -130,6 +132,9 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
   const [isShowcase, setIsShowcase] = useState(initialMenu.is_showcase)
   const undoStack = useUndoStack<string | null>(null)
 
+  // Simulator state
+  const [showSimulator, setShowSimulator] = useState(false)
+
   // Recipe link modal state
   const [linkingComponentId, setLinkingComponentId] = useState<string | null>(null)
   const [recipeSearch, setRecipeSearch] = useState('')
@@ -172,6 +177,23 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
       carbs: Math.round(carbs * 10) / 10,
     }
   }, [menu.dishes, recipeMap])
+
+  // Build SimulatorDish[] from menu dishes for the what-if simulator
+  const simulatorDishes: SimulatorDish[] = useMemo(() => {
+    return menu.dishes.map((dish) => ({
+      id: dish.id,
+      name: dish.course_name,
+      ingredients: dish.components.map((c) => ({ name: c.name })),
+      costPerServingCents: 0, // Will be populated from cost data when available
+      prepTimeMinutes: null,
+    }))
+  }, [menu.dishes])
+
+  const handleSimulatorApplySwap = (removeDishId: string, addDish: SimulatorDish) => {
+    // For now, close the simulator and refresh - the swap is informational
+    setShowSimulator(false)
+    router.refresh()
+  }
 
   const handleEdit = () => {
     setIsEditing(true)
@@ -490,6 +512,15 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
             Edit Menu
           </Button>
         </Link>
+        {menu.dishes.length >= 2 && (
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => setShowSimulator(!showSimulator)}
+          >
+            {showSimulator ? 'Close Simulator' : 'Simulate Swap'}
+          </Button>
+        )}
         {event && (
           <Link
             href={`/culinary/prep/shopping?startDate=${event.event_date.split('T')[0]}&endDate=${event.event_date.split('T')[0]}&eventIds=${event.id}`}
@@ -561,6 +592,23 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
           </CardContent>
         </Card>
       </div>
+
+      {/* What-If Simulator Panel */}
+      {showSimulator && simulatorDishes.length >= 2 && (
+        <Card>
+          <CardContent className="py-4">
+            <MenuSimulatorPanel
+              currentDishes={simulatorDishes}
+              guestCount={menu.target_guest_count ?? 1}
+              guestAllergens={[]}
+              menuRevenueCents={event?.quoted_price_cents ?? 0}
+              availableDishes={simulatorDishes}
+              onApplySwap={handleSimulatorApplySwap}
+              onCancel={() => setShowSimulator(false)}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {error && <Alert variant="error">{error}</Alert>}
 

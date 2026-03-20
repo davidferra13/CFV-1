@@ -37,6 +37,8 @@ import { ClientFinancialPanel } from '@/components/clients/client-financial-pane
 import { FunQADisplay } from '@/components/clients/fun-qa-display'
 import { getClientFunQA } from '@/lib/clients/client-profile-actions'
 import { getClientAllergyRecords } from '@/lib/events/readiness'
+import { getTasteProfile } from '@/lib/clients/taste-profile-actions'
+import { TasteProfileForm } from '@/components/clients/taste-profile-form'
 import { AllergyRecordsPanel } from '@/components/clients/allergy-records-panel'
 import { getClientOutreachHistory } from '@/lib/marketing/actions'
 import { DirectOutreachPanel } from '@/components/marketing/direct-outreach-panel'
@@ -126,6 +128,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     clientNBA,
     portalTokenData,
     clientPhotos,
+    tasteProfile,
   ] = await Promise.all([
     getClientWithStats(params.id),
     getMessageThread('client', params.id),
@@ -158,6 +161,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       hasActiveLink: false,
     })),
     getClientPhotos(params.id).catch(() => []),
+    getTasteProfile(params.id).catch(() => null),
   ])
 
   const clientReviews = allReviews.filter((r: any) => r.client?.id === params.id)
@@ -788,6 +792,18 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Allergy & Dietary Records */}
       <AllergyRecordsPanel clientId={client.id} initialRecords={allergyRecords as any} />
+
+      {/* Taste Profile */}
+      <WidgetErrorBoundary name="Taste Profile" compact>
+        <Card>
+          <CardHeader>
+            <CardTitle>Taste Profile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TasteProfileForm clientId={client.id} initial={tasteProfile} />
+          </CardContent>
+        </Card>
+      </WidgetErrorBoundary>
 
       {/* NDA & Photo Permissions */}
       <NDAPanel
