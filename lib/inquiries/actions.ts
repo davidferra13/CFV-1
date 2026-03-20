@@ -603,6 +603,22 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Circle creation failed (non-blocking):', err)
   }
 
+  // Outbound webhook dispatch (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(user.tenantId!, 'inquiry.received', {
+      inquiry_id: inquiry.id,
+      client_name: validated.client_name,
+      channel: validated.channel,
+      occasion: validated.confirmed_occasion ?? null,
+      date: validated.confirmed_date ?? null,
+      guest_count: validated.confirmed_guest_count ?? null,
+      budget_cents: validated.confirmed_budget_cents ?? null,
+    })
+  } catch (err) {
+    console.error('[non-blocking] Webhook dispatch failed', err)
+  }
+
   return { success: true, inquiry }
 }
 
@@ -880,6 +896,17 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
     })
   } catch (err) {
     console.error('[updateInquiry] Activity log failed (non-blocking):', err)
+  }
+
+  // Outbound webhook dispatch (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(user.tenantId!, 'inquiry.updated', {
+      inquiry_id: id,
+      updated_fields: Object.keys(dbFields),
+    })
+  } catch (err) {
+    console.error('[non-blocking] Webhook dispatch failed', err)
   }
 
   return result

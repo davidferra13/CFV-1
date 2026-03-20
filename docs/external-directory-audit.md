@@ -116,13 +116,13 @@ Status shorthand:
 
 ### Recipes
 
-| Action        | UI CTA                     | API Endpoint               | Remy Action     | Status   |
-| ------------- | -------------------------- | -------------------------- | --------------- | -------- |
-| Create recipe | "New Recipe" on `/recipes` | `POST /api/v2/recipes`     | Restricted      | UI+API   |
-| List recipes  | `/recipes` page            | `GET /api/v2/recipes`      | `recipe.search` | **FULL** |
-| View recipe   | `/recipes/[id]`            | `GET /api/v2/recipes/[id]` | `recipe.search` | **FULL** |
-| Update recipe | Edit form                  | None (PATCH missing)       | Restricted      | UI-ONLY  |
-| Import recipe | Button on recipes page     | None                       | None            | UI-ONLY  |
+| Action        | UI CTA                     | API Endpoint                 | Remy Action     | Status   |
+| ------------- | -------------------------- | ---------------------------- | --------------- | -------- |
+| Create recipe | "New Recipe" on `/recipes` | `POST /api/v2/recipes`       | Restricted      | UI+API   |
+| List recipes  | `/recipes` page            | `GET /api/v2/recipes`        | `recipe.search` | **FULL** |
+| View recipe   | `/recipes/[id]`            | `GET /api/v2/recipes/[id]`   | `recipe.search` | **FULL** |
+| Update recipe | Edit form                  | `PATCH /api/v2/recipes/[id]` | Restricted      | UI+API   |
+| Import recipe | Button on recipes page     | None                         | None            | UI-ONLY  |
 
 ---
 
@@ -130,12 +130,12 @@ Status shorthand:
 
 ### Expenses
 
-| Action         | UI CTA                       | API Endpoint                | Remy Action            | Status   |
-| -------------- | ---------------------------- | --------------------------- | ---------------------- | -------- |
-| Create expense | "New Expense" on `/expenses` | `POST /api/v2/expenses`     | `agent.log_expense`    | **FULL** |
-| List expenses  | `/expenses` page             | `GET /api/v2/expenses`      | (search)               | UI+API   |
-| View expense   | `/expenses/[id]`             | `GET /api/v2/expenses/[id]` | (search)               | UI+API   |
-| Update expense | Edit form                    | None (PATCH missing)        | `agent.update_expense` | UI+REMY  |
+| Action         | UI CTA                       | API Endpoint                  | Remy Action            | Status   |
+| -------------- | ---------------------------- | ----------------------------- | ---------------------- | -------- |
+| Create expense | "New Expense" on `/expenses` | `POST /api/v2/expenses`       | `agent.log_expense`    | **FULL** |
+| List expenses  | `/expenses` page             | `GET /api/v2/expenses`        | (search)               | UI+API   |
+| View expense   | `/expenses/[id]`             | `GET /api/v2/expenses/[id]`   | (search)               | UI+API   |
+| Update expense | Edit form                    | `PATCH /api/v2/expenses/[id]` | `agent.update_expense` | **FULL** |
 
 ### Payments + Ledger
 
@@ -207,7 +207,7 @@ Status shorthand:
 | Purchase orders       | "New PO" on `/inventory/purchase-orders`               | None         | None        | UI-ONLY  |
 | Ingredients           | "Add" on `/culinary/ingredients`                       | None         | None        | UI-ONLY  |
 | Seasonal availability | "Add" on `/culinary/ingredients/seasonal-availability` | None         | None        | UI-ONLY  |
-| Waste tracking        | `/inventory/waste`                                     | None         | None        | **DARK** |
+| Waste tracking        | "Log Waste Entry" on `/inventory/waste`                | None         | None        | UI-ONLY  |
 | Vendor management     | "Add" on `/vendors`                                    | None         | None        | UI-ONLY  |
 | Vendor invoices       | `/vendors/invoices`                                    | None         | None        | UI-ONLY  |
 | Price comparison      | `/vendors/price-comparison`                            | None         | None        | **DARK** |
@@ -236,8 +236,8 @@ Status shorthand:
 | ---------------------- | -------------------------------------- | ------------ | ----------- | --------- |
 | Circles (dinner clubs) | "+ Dinner Club" on `/circles`          | None         | None        | UI-ONLY   |
 | Chat conversations     | "New Conversation" on `/chat`          | None         | None        | UI-ONLY   |
-| Network connections    | **NONE** on `/network`                 | None         | None        | **DARK**  |
-| Network channels       | **NONE** on `/network`                 | None         | None        | **DARK**  |
+| Network connections    | "Connect" on `/network` (Discover tab) | None         | None        | UI-ONLY   |
+| Network channels       | Channels tab on `/network`             | None         | None        | UI-ONLY   |
 | Reviews                | "Log Feedback" on `/reviews`           | None         | None        | UI-ONLY   |
 | Testimonials           | None (auto from surveys)               | None         | None        | READ-ONLY |
 | Surveys                | None (auto from events)                | None         | None        | READ-ONLY |
@@ -299,7 +299,7 @@ Status shorthand:
 | Automation rules   | "Add" on `/settings/automations`           | `CRUD /api/v2/settings/automations`      | None        | UI+API  |
 | API keys           | `/settings/api-keys`                       | Used for auth (not CRUD via API)         | None        | PARTIAL |
 | Embed widget       | `/settings/embed`                          | Public embed routes                      | None        | UI+API  |
-| Webhook endpoints  | "+ New Endpoint" on `/settings/webhooks`   | None                                     | None        | UI-ONLY |
+| Webhook endpoints  | "+ New Endpoint" on `/settings/webhooks`   | `CRUD /api/v2/webhooks`                  | None        | UI+API  |
 | Module toggles     | `/settings/modules`                        | None                                     | None        | UI-ONLY |
 | Menu engine config | `/settings/menu-engine`                    | None                                     | None        | UI-ONLY |
 | Dashboard layout   | `/settings/dashboard`                      | None                                     | None        | UI-ONLY |
@@ -404,18 +404,18 @@ These actions are intentionally blocked from API and Remy for safety/compliance 
 
 | Category                             | Count       | % of Features |
 | ------------------------------------ | ----------- | ------------- |
-| **FULL** (UI + API + Remy)           | 12 actions  | 5%            |
-| **UI+API** (no Remy)                 | 33 actions  | 14%           |
+| **FULL** (UI + API + Remy)           | 13 actions  | 5%            |
+| **UI+API** (no Remy)                 | 35 actions  | 14%           |
 | **UI+REMY** (no API)                 | 42 actions  | 17%           |
 | **UI-ONLY** (no API, no Remy)        | ~95 actions | 39%           |
 | **REMY-ONLY** (no UI button, no API) | 6 actions   | 2%            |
-| **DARK** (no UI, no API, no Remy)    | 4 features  | 2%            |
+| **DARK** (no UI, no API, no Remy)    | 1 feature   | <1%           |
 | **READ-ONLY** (intentional)          | ~25 pages   | 10%           |
 | **RESTRICTED** (intentional)         | 8 actions   | 3%            |
 
 ### FULL Coverage (all three layers)
 
-These 12 features have complete access: UI button, REST API, and Remy conversational action.
+These 13 features have complete access: UI button, REST API, and Remy conversational action.
 
 1. Create event
 2. Update event
@@ -429,22 +429,25 @@ These 12 features have complete access: UI button, REST API, and Remy conversati
 10. Create menu
 11. Update menu
 12. Create expense
+13. Update expense
 
 ### Critical DARK Features (task completion blockers)
 
 No UI add button, no API endpoint, no Remy action. Users cannot perform these actions.
 
-1. **`/network` - Add Connection** - browse the chef network but can't initiate a connection
-2. **`/network` - Create Channel** - no CTA to create a network channel
-3. **`/inventory/waste` - Log Waste** - page shows waste data but no add button
-4. **`/vendors/price-comparison` - Add Comparison** - read-only view, no action path
+1. **`/vendors/price-comparison` - Add Item** - search-only view, no CTA to add new vendor items directly (resolved: "Add Vendor Item" button now links to vendor directory)
+
+> Previously listed as DARK but confirmed to have CTAs after code inspection:
+>
+> - `/network` has "Connect" button on Discover tab and "Accept"/"Decline" on pending requests
+> - `/inventory/waste` has "Log Waste Entry" button with full form
 
 ### Top Priority Gaps
 
-**Tier 1: Complete missing CRUD on existing v2 resources**
+**Tier 1: Complete missing CRUD on existing v2 resources (PARTIALLY RESOLVED)**
 
-- `PATCH /api/v2/recipes/[id]` (update recipe, create exists)
-- `PATCH /api/v2/expenses/[id]` (update expense, create exists)
+- ~~`PATCH /api/v2/recipes/[id]`~~ DONE
+- ~~`PATCH /api/v2/expenses/[id]`~~ DONE
 - `DELETE /api/v2/expenses/[id]`
 - `DELETE /api/v2/quotes/[id]`
 - `DELETE /api/v2/menus/[id]`
@@ -517,6 +520,7 @@ The scan is deterministic and repeatable. Run the same globs and greps to verify
 
 ## Update Log
 
-| Date       | What Changed                                                |
-| ---------- | ----------------------------------------------------------- |
-| 2026-03-20 | Initial comprehensive audit with three-layer coverage model |
+| Date       | What Changed                                                                                                                                                                                            |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-03-20 | Initial comprehensive audit with three-layer coverage model                                                                                                                                             |
+| 2026-03-20 | Added PATCH to recipes + expenses API; wired emitWebhook into inquiries; fixed price comparison UI; corrected DARK feature list (network + waste have CTAs); updated webhook endpoints status to UI+API |
