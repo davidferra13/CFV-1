@@ -29,6 +29,7 @@ import { CocktailBrowserPanel } from '@/components/menus/cocktail-browser-panel'
 import { RecipeLinkPicker } from '@/components/menus/recipe-link-picker'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
+import { AllergenConflictAlert } from '@/components/events/allergen-conflict-alert'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1000,6 +1001,9 @@ function ContextSidebar({
           )}
         </div>
       )}
+
+      {/* Allergen conflict check (deterministic, auto-runs when event is linked) */}
+      {event && <AllergenConflictAlert eventId={event.id} />}
 
       {/* Season panel */}
       {season && (

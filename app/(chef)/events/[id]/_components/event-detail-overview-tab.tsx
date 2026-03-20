@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { SendWorksheetButton } from '@/components/events/send-worksheet-button'
 import { RepeatMenuAlert } from '@/components/menus/repeat-menu-alert'
+import { AllergenConflictAlert } from '@/components/events/allergen-conflict-alert'
 
 type EventDetailOverviewTabProps = {
   activeTab: EventDetailTab
@@ -404,7 +405,12 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
       {/* Post-Event Guest Outreach (completed events only) */}
       {event.status === 'completed' && <PostEventOutreachPanel eventId={event.id} />}
 
-      {/* AI Allergen Risk Matrix */}
+      {/* Deterministic Allergen Conflict Check (instant, no AI) */}
+      {event.menu_id && event.status !== 'draft' && event.status !== 'cancelled' && (
+        <AllergenConflictAlert eventId={event.id} />
+      )}
+
+      {/* AI Allergen Risk Matrix (on-demand, deeper analysis) */}
       {event.status !== 'draft' && event.status !== 'cancelled' && (
         <AllergenRiskPanel eventId={event.id} />
       )}

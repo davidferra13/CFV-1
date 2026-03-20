@@ -35,7 +35,11 @@ import { PrepTimelineView } from '@/components/menus/prep-timeline-view'
 import { MenuGeneratorUI } from '@/components/menus/menuGeneratorUI'
 import { CocktailBrowserPanel } from '@/components/menus/cocktail-browser-panel'
 import { MenuTranslateButton } from '@/components/menus/menu-translate-button'
-import { MenuSimulatorPanel, type MenuSimulatorPanelProps } from '@/components/menus/menu-simulator-panel'
+import { AllergenMatrix } from '@/components/menus/allergen-matrix'
+import {
+  MenuSimulatorPanel,
+  type MenuSimulatorPanelProps,
+} from '@/components/menus/menu-simulator-panel'
 import type { SimulatorDish } from '@/lib/menus/menu-simulator'
 
 type RecipeInfo = {
@@ -513,11 +517,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
           </Button>
         </Link>
         {menu.dishes.length >= 2 && (
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setShowSimulator(!showSimulator)}
-          >
+          <Button size="sm" variant="secondary" onClick={() => setShowSimulator(!showSimulator)}>
             {showSimulator ? 'Close Simulator' : 'Simulate Swap'}
           </Button>
         )}
@@ -953,6 +953,13 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
 
           {/* Prep Timeline */}
           {menu.id && <PrepTimelineView menuId={menu.id} />}
+
+          {/* Allergen Matrix (allergen-vs-dish grid) */}
+          {menu.dishes.length > 0 && (
+            <Card className="p-6">
+              <AllergenMatrix menuId={menu.id} />
+            </Card>
+          )}
         </>
       ) : (
         <>
