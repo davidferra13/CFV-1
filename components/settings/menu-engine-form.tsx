@@ -7,6 +7,7 @@ import type { MenuEngineFeatures, MenuEngineFeatureKey } from '@/lib/scheduling/
 import { MENU_ENGINE_FEATURE_KEYS, MENU_ENGINE_FEATURE_LABELS } from '@/lib/scheduling/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 export function MenuEngineForm({ initialFeatures }: { initialFeatures: MenuEngineFeatures }) {
   const router = useRouter()
@@ -14,6 +15,7 @@ export function MenuEngineForm({ initialFeatures }: { initialFeatures: MenuEngin
   const [features, setFeatures] = useState<MenuEngineFeatures>({ ...initialFeatures })
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false)
 
   const toggle = (key: MenuEngineFeatureKey) => {
     setFeatures((prev) => ({ ...prev, [key]: !prev[key] }))
@@ -73,7 +75,7 @@ export function MenuEngineForm({ initialFeatures }: { initialFeatures: MenuEngin
           <span className="text-stone-600">|</span>
           <button
             type="button"
-            onClick={disableAll}
+            onClick={() => setShowDisableConfirm(true)}
             className="text-xs text-stone-500 hover:text-stone-400 transition-colors"
           >
             Disable all
@@ -140,6 +142,19 @@ export function MenuEngineForm({ initialFeatures }: { initialFeatures: MenuEngin
           {isPending ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>
+
+      <ConfirmModal
+        open={showDisableConfirm}
+        title="Disable all menu intelligence?"
+        description="This will turn off all features including allergen validation (food safety). You can re-enable them individually at any time."
+        confirmLabel="Disable All"
+        variant="danger"
+        onConfirm={() => {
+          disableAll()
+          setShowDisableConfirm(false)
+        }}
+        onCancel={() => setShowDisableConfirm(false)}
+      />
     </form>
   )
 }

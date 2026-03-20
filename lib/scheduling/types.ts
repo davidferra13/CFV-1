@@ -645,6 +645,8 @@ export const MENU_ENGINE_FEATURE_KEYS = [
   'stock_alerts',
   'scale_mismatch',
   'inquiry_link',
+  'budget_compliance',
+  'dietary_conflicts',
 ] as const
 
 export type MenuEngineFeatureKey = (typeof MENU_ENGINE_FEATURE_KEYS)[number]
@@ -659,6 +661,8 @@ export interface MenuEngineFeatures {
   stock_alerts: boolean
   scale_mismatch: boolean
   inquiry_link: boolean
+  budget_compliance: boolean
+  dietary_conflicts: boolean
 }
 
 export const DEFAULT_MENU_ENGINE_FEATURES: MenuEngineFeatures = {
@@ -671,6 +675,8 @@ export const DEFAULT_MENU_ENGINE_FEATURES: MenuEngineFeatures = {
   stock_alerts: true,
   scale_mismatch: true,
   inquiry_link: true,
+  budget_compliance: true,
+  dietary_conflicts: true,
 }
 
 /** Human-readable labels for menu engine features */
@@ -720,6 +726,16 @@ export const MENU_ENGINE_FEATURE_LABELS: Record<
     label: 'Inquiry Cross-Reference',
     description:
       'Shows a link to the originating inquiry when the menu is connected to one via events.',
+  },
+  budget_compliance: {
+    label: 'Budget Compliance Check',
+    description:
+      'Compares food cost against the quoted event price and warns when profit margin is too thin.',
+  },
+  dietary_conflicts: {
+    label: 'Active Dietary Conflict Detection',
+    description:
+      'Cross-checks menu ingredients against client disliked items and flags contradictions.',
   },
 }
 

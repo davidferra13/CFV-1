@@ -74,6 +74,16 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
 
         {/* Intelligence sidebar */}
         <div className="hidden lg:block w-72 flex-shrink-0 space-y-4 sticky top-6 self-start">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-medium text-stone-500 uppercase tracking-wider">
+              Intelligence
+            </span>
+            <Link href="/settings/menu-engine">
+              <Button variant="ghost" size="sm" className="text-xs text-stone-500 h-6 px-2">
+                Configure
+              </Button>
+            </Link>
+          </div>
           <MenuCostSidebar menuId={menu.id} vendorHintsEnabled={engineFeatures.vendor_hints} />
           <MenuContextSidebar menuId={menu.id} features={engineFeatures} />
         </div>

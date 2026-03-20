@@ -17,6 +17,9 @@ import {
   getMenuPerformance,
   getMenuClientTaste,
   getMenuPrepEstimate,
+  getMenuVendorHints,
+  checkMenuBudgetCompliance,
+  detectMenuDietaryConflicts,
 } from '@/lib/menus/menu-intelligence-actions'
 import type {
   MenuIngredientStock,
@@ -25,9 +28,12 @@ import type {
   MenuPerformanceHistory,
   MenuClientTasteSummary,
   MenuPrepEstimate,
+  MenuVendorHint,
+  BudgetComplianceResult,
+  DietaryConflict,
 } from '@/lib/menus/menu-intelligence-actions'
 import type { MenuEngineFeatures } from '@/lib/scheduling/types'
-import { DEFAULT_MENU_ENGINE_FEATURES } from '@/lib/scheduling/types'
+import { DEFAULT_MENU_ENGINE_FEATURES, MENU_ENGINE_FEATURE_KEYS } from '@/lib/scheduling/types'
 import Link from 'next/link'
 
 interface MenuContextSidebarProps {
@@ -63,6 +69,12 @@ export function MenuContextSidebar({
   const [performance, setPerformance] = useState<MenuPerformanceHistory | null>(null)
   const [clientTaste, setClientTaste] = useState<MenuClientTasteSummary | null>(null)
   const [prepEstimate, setPrepEstimate] = useState<MenuPrepEstimate | null>(null)
+  const [vendorHintCount, setVendorHintCount] = useState(0)
+  const [budgetCompliance, setBudgetCompliance] = useState<BudgetComplianceResult | null>(null)
+  const [dietaryConflicts, setDietaryConflicts] = useState<{
+    conflicts: DietaryConflict[]
+    clientName: string | null
+  } | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -112,9 +124,34 @@ export function MenuContextSidebar({
             ? getMenuPrepEstimate(menuId).catch(() => null)
             : Promise.resolve(null)
         )
+        fetches.push(
+          features.vendor_hints ? getMenuVendorHints(menuId).catch(() => []) : Promise.resolve([])
+        )
+        fetches.push(
+          features.budget_compliance
+            ? checkMenuBudgetCompliance(menuId).catch(() => null)
+            : Promise.resolve(null)
+        )
+        fetches.push(
+          features.dietary_conflicts
+            ? detectMenuDietaryConflicts(menuId).catch(() => null)
+            : Promise.resolve(null)
+        )
 
-        const [data, stockData, allergens, mismatch, inquiry, seasonal, perf, taste, prep] =
-          await Promise.all(fetches)
+        const [
+          data,
+          stockData,
+          allergens,
+          mismatch,
+          inquiry,
+          seasonal,
+          perf,
+          taste,
+          prep,
+          vendorHintsData,
+          budget,
+          dietaryConflictsData,
+        ] = await Promise.all(fetches)
 
         setContext(data as Awaited<ReturnType<typeof getMenuContextData>>)
         setStock(stockData as MenuIngredientStock[])
@@ -133,6 +170,14 @@ export function MenuContextSidebar({
         setPerformance(perf as MenuPerformanceHistory | null)
         setClientTaste(taste as MenuClientTasteSummary | null)
         setPrepEstimate(prep as MenuPrepEstimate | null)
+        setVendorHintCount((vendorHintsData as MenuVendorHint[]).length)
+        setBudgetCompliance(budget as BudgetComplianceResult | null)
+        setDietaryConflicts(
+          dietaryConflictsData as {
+            conflicts: DietaryConflict[]
+            clientName: string | null
+          } | null
+        )
         setLoadError(null)
       } catch (err) {
         console.error('[MenuContextSidebar] Failed to load:', err)
@@ -179,15 +224,43 @@ export function MenuContextSidebar({
     seasonalWarnings.length > 0 ||
     performance ||
     clientTaste ||
-    prepEstimate
+    prepEstimate ||
+    vendorHintCount > 0 ||
+    budgetCompliance ||
+    (dietaryConflicts && dietaryConflicts.conflicts.length > 0)
 
   if (!hasAnyContent) {
+    const disabledCount = MENU_ENGINE_FEATURE_KEYS.filter((k) => !features[k]).length
+    const allDisabled = disabledCount === MENU_ENGINE_FEATURE_KEYS.length
+
+    if (allDisabled) {
+      return (
+        <div className={`rounded-lg border border-stone-700 bg-stone-800/50 p-4 ${className}`}>
+          <p className="text-xs text-stone-500">All menu intelligence features are disabled.</p>
+          <Link
+            href="/settings/menu-engine"
+            className="text-xs text-brand-400 hover:text-brand-300 mt-1 inline-block"
+          >
+            Configure features
+          </Link>
+        </div>
+      )
+    }
+
     return (
       <div className={`rounded-lg border border-stone-700 bg-stone-800/50 p-4 ${className}`}>
         <p className="text-xs text-stone-500">
           No additional context available. Link this menu to an event with a client to see dietary
           preferences, past menus, and template suggestions.
         </p>
+        {disabledCount > 0 && (
+          <p className="text-xxs text-stone-600 mt-2">
+            {disabledCount} feature{disabledCount !== 1 ? 's' : ''} disabled.{' '}
+            <Link href="/settings/menu-engine" className="text-brand-400 hover:text-brand-300">
+              Configure
+            </Link>
+          </p>
+        )}
       </div>
     )
   }
@@ -226,6 +299,71 @@ export function MenuContextSidebar({
                 <p className="text-xxs text-stone-300">
                   <span className="font-medium">{w.ingredientName}</span> in {w.dishName} conflicts
                   with <span className="text-red-300">{w.allergen}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Budget compliance check */}
+      {features.budget_compliance && budgetCompliance && (
+        <div
+          className={`px-4 py-3 ${
+            budgetCompliance.status === 'critical'
+              ? 'bg-red-500/10'
+              : budgetCompliance.status === 'warning'
+                ? 'bg-amber-500/10'
+                : ''
+          }`}
+        >
+          <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
+            Budget Check
+          </h4>
+          <div className="flex items-baseline gap-2">
+            <span
+              className={`text-sm font-bold ${
+                budgetCompliance.status === 'critical'
+                  ? 'text-red-400'
+                  : budgetCompliance.status === 'warning'
+                    ? 'text-amber-400'
+                    : 'text-emerald-400'
+              }`}
+            >
+              {budgetCompliance.marginPercent.toFixed(1)}% food cost
+            </span>
+            <Badge
+              variant={
+                budgetCompliance.status === 'critical'
+                  ? 'error'
+                  : budgetCompliance.status === 'warning'
+                    ? 'warning'
+                    : 'success'
+              }
+            >
+              {budgetCompliance.status}
+            </Badge>
+          </div>
+          <p className="text-xxs text-stone-500 mt-1">
+            Cost: ${(budgetCompliance.totalCostCents / 100).toFixed(2)} / Quoted: $
+            {(budgetCompliance.quotedPriceCents / 100).toFixed(2)}
+          </p>
+        </div>
+      )}
+
+      {/* Active dietary conflict detection */}
+      {features.dietary_conflicts && dietaryConflicts && dietaryConflicts.conflicts.length > 0 && (
+        <div className="px-4 py-3 bg-amber-500/10">
+          <h4 className="text-xs font-medium text-amber-400 uppercase tracking-wider mb-2">
+            Taste Conflicts ({dietaryConflicts.conflicts.length})
+          </h4>
+          <div className="space-y-1.5 max-h-32 overflow-y-auto">
+            {dietaryConflicts.conflicts.map((c, i) => (
+              <div key={i} className="text-xxs text-stone-300">
+                <span className="font-medium text-amber-300">{c.ingredientName}</span> in{' '}
+                {c.dishName}
+                <p className="text-stone-500 mt-0.5">
+                  {dietaryConflicts.clientName} marked &quot;{c.clientPreference}&quot; as disliked
                 </p>
               </div>
             ))}
@@ -478,6 +616,17 @@ export function MenuContextSidebar({
           >
             View full inventory →
           </Link>
+        </div>
+      )}
+
+      {/* Vendor hints summary (full details in cost sidebar) */}
+      {features.vendor_hints && vendorHintCount > 0 && (
+        <div className="px-4 py-2">
+          <p className="text-xxs text-emerald-400">
+            {vendorHintCount} ingredient{vendorHintCount !== 1 ? 's' : ''} with cheaper vendor
+            options
+          </p>
+          <p className="text-xxs text-stone-500">See cost breakdown above for details.</p>
         </div>
       )}
 

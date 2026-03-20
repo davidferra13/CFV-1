@@ -7,8 +7,23 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { UnknownAppError } from '@/lib/errors/app-error'
+
+// Cache tag constants for menu intelligence
+export const MENU_CONTEXT_CACHE_TAG = 'menu-context'
+export const MENU_PERF_CACHE_TAG = 'menu-perf'
+export const MENU_SEASONAL_CACHE_TAG = 'menu-seasonal'
+export const MENU_TASTE_CACHE_TAG = 'menu-taste'
+
+/** Bust all menu intelligence caches for a given menu */
+export function revalidateMenuIntelligenceCache(menuId: string) {
+  revalidateTag(`${MENU_CONTEXT_CACHE_TAG}-${menuId}`)
+  revalidateTag(`${MENU_PERF_CACHE_TAG}-${menuId}`)
+  revalidateTag(`${MENU_SEASONAL_CACHE_TAG}-${menuId}`)
+  revalidateTag(`${MENU_TASTE_CACHE_TAG}-${menuId}`)
+}
 import { getDuplicateCourseError } from '@/lib/menus/course-utils'
 
 // ============================================
@@ -96,10 +111,25 @@ export interface ScalingAdjustment {
   note: string | null
 }
 
+export interface BudgetComplianceResult {
+  quotedPriceCents: number
+  totalCostCents: number
+  marginPercent: number
+  status: 'ok' | 'warning' | 'critical'
+}
+
+export interface DietaryConflict {
+  ingredientName: string
+  dishName: string
+  clientPreference: string
+}
+
 // Margin thresholds (deterministic, from design doc)
 const MARGIN_WARNING_THRESHOLD = 35
 const MARGIN_CRITICAL_THRESHOLD = 45
 const PRICE_SPIKE_THRESHOLD = 1.3 // 30% above average
+const BUDGET_WARNING_THRESHOLD = 40 // food cost > 40% of quoted price
+const BUDGET_CRITICAL_THRESHOLD = 50 // food cost > 50% of quoted price
 
 // Culinary scaling adjustments
 const SALT_SPICE_SCALE_FACTOR = 0.7
@@ -471,6 +501,7 @@ export async function scaleMenuToGuestCount(
       .eq('id', menuId)
 
     revalidatePath(`/culinary/menus/${menuId}`)
+    revalidateMenuIntelligenceCache(menuId)
     return {
       menuId,
       previousGuestCount,
@@ -497,6 +528,7 @@ export async function scaleMenuToGuestCount(
       .eq('id', menuId)
 
     revalidatePath(`/culinary/menus/${menuId}`)
+    revalidateMenuIntelligenceCache(menuId)
     return {
       menuId,
       previousGuestCount,
@@ -587,6 +619,7 @@ export async function scaleMenuToGuestCount(
   }
 
   revalidatePath(`/culinary/menus/${menuId}`)
+  revalidateMenuIntelligenceCache(menuId)
   if (menu.event_id) {
     revalidatePath(`/events/${menu.event_id}`)
   }
@@ -630,63 +663,118 @@ export async function getIngredientPriceAlerts(): Promise<PriceAlert[]> {
     throw new UnknownAppError('Failed to fetch price alerts')
   }
 
-  const alerts: PriceAlert[] = []
+  // Identify all spiked ingredients first
+  const spikedIngredients: Array<{
+    id: string
+    name: string
+    last_price_cents: number
+    average_price_cents: number
+    spikePercent: number
+  }> = []
 
   for (const ing of ingredients || []) {
     if (!ing.last_price_cents || !ing.average_price_cents || ing.average_price_cents === 0) continue
-
     const ratio = ing.last_price_cents / ing.average_price_cents
     if (ratio >= PRICE_SPIKE_THRESHOLD) {
-      const spikePercent = Math.round((ratio - 1) * 100)
-
-      // Find menus using this ingredient (via recipe_ingredients + components)
-      const { data: usage } = await supabase
-        .from('recipe_ingredients')
-        .select('recipe_id')
-        .eq('ingredient_id', ing.id)
-
-      const recipeIds = (usage || []).map((u: any) => u.recipe_id)
-      let affectedMenuNames: string[] = []
-
-      if (recipeIds.length > 0) {
-        const { data: comps } = await supabase
-          .from('components')
-          .select('dish_id')
-          .in('recipe_id', recipeIds)
-          .eq('tenant_id', user.tenantId!)
-
-        if (comps?.length) {
-          const dishIds = [...new Set(comps.map((c: any) => c.dish_id))]
-          const { data: dishMenus } = await supabase
-            .from('dishes')
-            .select('menu_id')
-            .in('id', dishIds)
-            .eq('tenant_id', user.tenantId!)
-
-          if (dishMenus?.length) {
-            const menuIds = [...new Set(dishMenus.map((d: any) => d.menu_id))]
-            const { data: menus } = await supabase
-              .from('menus')
-              .select('name')
-              .in('id', menuIds)
-              .eq('tenant_id', user.tenantId!)
-              .in('status', ['draft', 'shared'])
-
-            affectedMenuNames = (menus || []).map((m: any) => m.name)
-          }
-        }
-      }
-
-      alerts.push({
-        ingredientId: ing.id,
-        ingredientName: ing.name,
-        currentPriceCents: ing.last_price_cents,
-        averagePriceCents: ing.average_price_cents,
-        spikePercent,
-        affectedMenus: affectedMenuNames,
+      spikedIngredients.push({
+        ...ing,
+        spikePercent: Math.round((ratio - 1) * 100),
       })
     }
   }
+
+  if (!spikedIngredients.length) return []
+
+  const spikedIds = spikedIngredients.map((i) => i.id)
+
+  // Bulk query 1: recipe_ingredients for all spiked ingredients
+  const { data: allUsage } = await supabase
+    .from('recipe_ingredients')
+    .select('ingredient_id, recipe_id')
+    .in('ingredient_id', spikedIds)
+
+  // Build ingredient -> recipe IDs map
+  const ingToRecipes = new Map<string, Set<string>>()
+  const allRecipeIds = new Set<string>()
+  for (const u of allUsage || []) {
+    if (!ingToRecipes.has(u.ingredient_id)) ingToRecipes.set(u.ingredient_id, new Set())
+    ingToRecipes.get(u.ingredient_id)!.add(u.recipe_id)
+    allRecipeIds.add(u.recipe_id)
+  }
+
+  // Bulk query 2: components for all recipes
+  let recipeToDishIds = new Map<string, Set<string>>()
+  const allDishIds = new Set<string>()
+  if (allRecipeIds.size > 0) {
+    const { data: comps } = await supabase
+      .from('components')
+      .select('recipe_id, dish_id')
+      .in('recipe_id', [...allRecipeIds])
+      .eq('tenant_id', user.tenantId!)
+
+    for (const c of comps || []) {
+      if (!recipeToDishIds.has(c.recipe_id)) recipeToDishIds.set(c.recipe_id, new Set())
+      recipeToDishIds.get(c.recipe_id)!.add(c.dish_id)
+      allDishIds.add(c.dish_id)
+    }
+  }
+
+  // Bulk query 3: dishes -> menu IDs
+  let dishToMenuIds = new Map<string, string>()
+  const allMenuIds = new Set<string>()
+  if (allDishIds.size > 0) {
+    const { data: dishMenus } = await supabase
+      .from('dishes')
+      .select('id, menu_id')
+      .in('id', [...allDishIds])
+      .eq('tenant_id', user.tenantId!)
+
+    for (const d of dishMenus || []) {
+      dishToMenuIds.set(d.id, d.menu_id)
+      allMenuIds.add(d.menu_id)
+    }
+  }
+
+  // Bulk query 4: menu names
+  const menuNameMap = new Map<string, string>()
+  if (allMenuIds.size > 0) {
+    const { data: menus } = await supabase
+      .from('menus')
+      .select('id, name')
+      .in('id', [...allMenuIds])
+      .eq('tenant_id', user.tenantId!)
+      .in('status', ['draft', 'shared'])
+
+    for (const m of menus || []) {
+      menuNameMap.set(m.id, m.name)
+    }
+  }
+
+  // Assemble alerts using the maps
+  const alerts: PriceAlert[] = spikedIngredients.map((ing) => {
+    const recipeIdsForIng = ingToRecipes.get(ing.id) || new Set<string>()
+    const menuNamesForIng = new Set<string>()
+
+    for (const recipeId of recipeIdsForIng) {
+      const dishIdsForRecipe = recipeToDishIds.get(recipeId) || new Set<string>()
+      for (const dishId of dishIdsForRecipe) {
+        const menuId = dishToMenuIds.get(dishId)
+        if (menuId) {
+          const menuName = menuNameMap.get(menuId)
+          if (menuName) menuNamesForIng.add(menuName)
+        }
+      }
+    }
+
+    return {
+      ingredientId: ing.id,
+      ingredientName: ing.name,
+      currentPriceCents: ing.last_price_cents,
+      averagePriceCents: ing.average_price_cents,
+      spikePercent: ing.spikePercent,
+      affectedMenus: [...menuNamesForIng],
+    }
+  })
 
   // Sort by spike severity
   alerts.sort((a, b) => b.spikePercent - a.spikePercent)
@@ -838,6 +926,7 @@ export async function initializeMenuForEvent(eventId: string): Promise<{
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath('/culinary/menus')
+  revalidateMenuIntelligenceCache(menu.id)
 
   const contextTags = {
     season,
@@ -875,7 +964,7 @@ export async function initializeMenuForEvent(eventId: string): Promise<{
 // 6. CONTEXT DATA FOR MENU EDITOR
 // ============================================
 
-export async function getMenuContextData(menuId: string): Promise<{
+type MenuContextResult = {
   clientDietary: string[]
   clientAllergies: string[]
   clientName: string | null
@@ -888,16 +977,29 @@ export async function getMenuContextData(menuId: string): Promise<{
   matchingTemplates: Array<{ id: string; name: string; serviceStyle: string | null }>
   season: string
   guestTier: string
-}> {
-  const user = await requireChef()
-  const supabase: any = createServerClient()
+}
+
+const _getMenuContextDataCached = (menuId: string, tenantId: string) =>
+  unstable_cache(
+    async (): Promise<MenuContextResult> => {
+      return _getMenuContextDataInner(menuId, tenantId)
+    },
+    [`menu-context-${menuId}-${tenantId}`],
+    { revalidate: 60, tags: [`${MENU_CONTEXT_CACHE_TAG}-${menuId}`] }
+  )()
+
+async function _getMenuContextDataInner(
+  menuId: string,
+  tenantId: string
+): Promise<MenuContextResult> {
+  const supabase: any = createAdminClient()
 
   // Get menu with event context
   const { data: menu } = await supabase
     .from('menus')
     .select('id, event_id, target_guest_count, service_style')
     .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .single()
 
   if (!menu) throw new UnknownAppError('Menu not found')
@@ -948,7 +1050,7 @@ export async function getMenuContextData(menuId: string): Promise<{
       .from('events')
       .select('menu_id, event_date, guest_count')
       .eq('client_id', clientId)
-      .eq('tenant_id', user.tenantId!)
+      .eq('tenant_id', tenantId)
       .not('menu_id', 'is', null)
       .neq('menu_id', menuId)
       .order('event_date', { ascending: false })
@@ -985,7 +1087,7 @@ export async function getMenuContextData(menuId: string): Promise<{
   const { data: templates } = await supabase
     .from('menus')
     .select('id, name, service_style')
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .eq('is_template', true)
     .order('times_used', { ascending: false })
     .limit(10)
@@ -1018,6 +1120,11 @@ export async function getMenuContextData(menuId: string): Promise<{
     season: getSeason(eventDate),
     guestTier: getGuestTier(menu.target_guest_count || 4),
   }
+}
+
+export async function getMenuContextData(menuId: string): Promise<MenuContextResult> {
+  const user = await requireChef()
+  return _getMenuContextDataCached(menuId, user.tenantId!)
 }
 
 // ============================================
@@ -1504,22 +1611,26 @@ export interface SeasonalIngredientWarning {
   note: string
 }
 
-/**
- * Check menu ingredients against seasonal produce data for the event date.
- * Flags ingredients that are out of season, suggesting possible cost premiums.
- */
-export async function getMenuSeasonalWarnings(
-  menuId: string
-): Promise<SeasonalIngredientWarning[]> {
-  const user = await requireChef()
-  const supabase: any = createServerClient()
+const _getMenuSeasonalWarningsCached = (menuId: string, tenantId: string) =>
+  unstable_cache(
+    async (): Promise<SeasonalIngredientWarning[]> => {
+      return _getMenuSeasonalWarningsInner(menuId, tenantId)
+    },
+    [`menu-seasonal-${menuId}-${tenantId}`],
+    { revalidate: 60, tags: [`${MENU_SEASONAL_CACHE_TAG}-${menuId}`] }
+  )()
 
-  // Get menu + event date
+async function _getMenuSeasonalWarningsInner(
+  menuId: string,
+  tenantId: string
+): Promise<SeasonalIngredientWarning[]> {
+  const supabase: any = createAdminClient()
+
   const { data: menu } = await supabase
     .from('menus')
     .select('event_id')
     .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .single()
 
   if (!menu?.event_id) return []
@@ -1534,20 +1645,17 @@ export async function getMenuSeasonalWarnings(
 
   const eventMonth = new Date(event.event_date + 'T00:00:00').getMonth() + 1
 
-  // Get seasonal produce for the event month (imported dynamically to avoid
-  // pulling the full data module into the server action bundle at top level)
   const { getSeasonalProduceGrouped } = await import('@/lib/calendar/seasonal-produce')
   const seasonal = getSeasonalProduceGrouped(eventMonth)
   const seasonalNames = new Set(
     seasonal.groups.flatMap((g) => g.items.map((i) => i.name.toLowerCase()))
   )
 
-  // Get all dish ingredients for this menu
   const { data: dishes } = await supabase
     .from('dishes')
     .select('id, name')
     .eq('menu_id', menuId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
 
   if (!dishes?.length) return []
 
@@ -1558,7 +1666,7 @@ export async function getMenuSeasonalWarnings(
     .from('components')
     .select('dish_id, recipe_id')
     .in('dish_id', dishIds)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
 
   const recipeIds = (components || [])
     .map((c: any) => c.recipe_id)
@@ -1654,6 +1762,13 @@ export async function getMenuSeasonalWarnings(
   return warnings
 }
 
+export async function getMenuSeasonalWarnings(
+  menuId: string
+): Promise<SeasonalIngredientWarning[]> {
+  const user = await requireChef()
+  return _getMenuSeasonalWarningsCached(menuId, user.tenantId!)
+}
+
 // ============================================
 // CROSS-REFERENCING: MENU PERFORMANCE HISTORY
 // ============================================
@@ -1667,26 +1782,31 @@ export interface MenuPerformanceHistory {
   totalRevenueCents: number
 }
 
-/**
- * Get historical performance data for a menu's dishes.
- * Shows how many events used this menu, avg margins, and last usage.
- */
-export async function getMenuPerformance(menuId: string): Promise<MenuPerformanceHistory | null> {
-  const user = await requireChef()
-  const supabase: any = createServerClient()
+const _getMenuPerformanceCached = (menuId: string, tenantId: string) =>
+  unstable_cache(
+    async (): Promise<MenuPerformanceHistory | null> => {
+      return _getMenuPerformanceInner(menuId, tenantId)
+    },
+    [`menu-perf-${menuId}-${tenantId}`],
+    { revalidate: 60, tags: [`${MENU_PERF_CACHE_TAG}-${menuId}`] }
+  )()
 
-  // Find all events that reference this menu
+async function _getMenuPerformanceInner(
+  menuId: string,
+  tenantId: string
+): Promise<MenuPerformanceHistory | null> {
+  const supabase: any = createAdminClient()
+
   const { data: events } = await supabase
     .from('events')
     .select('id, event_date, client_id, quoted_price_cents, status')
     .eq('menu_id', menuId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .in('status', ['completed', 'confirmed', 'paid', 'in_progress'])
     .order('event_date', { ascending: false })
 
   if (!events?.length) return null
 
-  // Get client name for last event
   let lastClient: string | null = null
   if (events[0].client_id) {
     const { data: client } = await supabase
@@ -1697,12 +1817,10 @@ export async function getMenuPerformance(menuId: string): Promise<MenuPerformanc
     lastClient = client?.full_name || null
   }
 
-  // Get financial summary for completed events
   const completedIds = events.filter((e: any) => e.status === 'completed').map((e: any) => e.id)
 
   let totalRevenue = 0
   let totalCost = 0
-  let financialCount = 0
 
   if (completedIds.length > 0) {
     const { data: summaries } = await supabase
@@ -1713,16 +1831,14 @@ export async function getMenuPerformance(menuId: string): Promise<MenuPerformanc
     if (summaries) {
       for (const s of summaries) {
         totalRevenue += s.total_paid_cents || 0
-        financialCount++
       }
     }
 
-    // Get food costs from menu_cost_summary
     const { data: costData } = await supabase
       .from('menu_cost_summary')
       .select('menu_id, total_recipe_cost_cents')
       .eq('menu_id', menuId)
-      .eq('tenant_id', user.tenantId!)
+      .eq('tenant_id', tenantId)
       .maybeSingle()
 
     if (costData?.total_recipe_cost_cents) {
@@ -1743,6 +1859,11 @@ export async function getMenuPerformance(menuId: string): Promise<MenuPerformanc
   }
 }
 
+export async function getMenuPerformance(menuId: string): Promise<MenuPerformanceHistory | null> {
+  const user = await requireChef()
+  return _getMenuPerformanceCached(menuId, user.tenantId!)
+}
+
 // ============================================
 // CROSS-REFERENCING: CLIENT TASTE PROFILE (MENU CONTEXT)
 // ============================================
@@ -1756,20 +1877,26 @@ export interface MenuClientTasteSummary {
   pastEventCount: number
 }
 
-/**
- * Get a condensed taste profile for the client linked to this menu's event.
- * Surfaces loved/disliked items and cuisine preferences during menu building.
- */
-export async function getMenuClientTaste(menuId: string): Promise<MenuClientTasteSummary | null> {
-  const user = await requireChef()
-  const supabase: any = createServerClient()
+const _getMenuClientTasteCached = (menuId: string, tenantId: string) =>
+  unstable_cache(
+    async (): Promise<MenuClientTasteSummary | null> => {
+      return _getMenuClientTasteInner(menuId, tenantId)
+    },
+    [`menu-taste-${menuId}-${tenantId}`],
+    { revalidate: 60, tags: [`${MENU_TASTE_CACHE_TAG}-${menuId}`] }
+  )()
 
-  // Get menu -> event -> client chain
+async function _getMenuClientTasteInner(
+  menuId: string,
+  tenantId: string
+): Promise<MenuClientTasteSummary | null> {
+  const supabase: any = createAdminClient()
+
   const { data: menu } = await supabase
     .from('menus')
     .select('event_id')
     .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .single()
 
   if (!menu?.event_id) return null
@@ -1786,16 +1913,15 @@ export async function getMenuClientTaste(menuId: string): Promise<MenuClientTast
     .from('clients')
     .select('full_name')
     .eq('id', event.client_id)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .single()
 
   if (!client) return null
 
-  // Get preferences
   const { data: prefs } = await supabase
     .from('client_preferences')
     .select('item_type, item_name, rating')
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .eq('client_id', event.client_id)
     .order('observed_at', { ascending: false })
 
@@ -1812,11 +1938,10 @@ export async function getMenuClientTaste(menuId: string): Promise<MenuClientTast
     }
   }
 
-  // Count past events for this client
   const { count } = await supabase
     .from('events')
     .select('id', { count: 'exact', head: true })
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .eq('client_id', event.client_id)
     .in('status', ['completed', 'confirmed', 'paid', 'in_progress'])
 
@@ -1828,6 +1953,11 @@ export async function getMenuClientTaste(menuId: string): Promise<MenuClientTast
     cuisinePreferences: cuisines.slice(0, 5),
     pastEventCount: count || 0,
   }
+}
+
+export async function getMenuClientTaste(menuId: string): Promise<MenuClientTasteSummary | null> {
+  const user = await requireChef()
+  return _getMenuClientTasteCached(menuId, user.tenantId!)
 }
 
 // ============================================
@@ -2003,6 +2133,198 @@ export async function getMenuVendorHints(menuId: string): Promise<MenuVendorHint
   }
 
   return hints.sort((a, b) => b.savingsCents - a.savingsCents).slice(0, 10)
+}
+
+// ============================================
+// BUDGET COMPLIANCE CHECK
+// ============================================
+
+/**
+ * Compare food cost against the quoted event price.
+ * Returns null if no event is linked or no quoted price exists.
+ */
+export async function checkMenuBudgetCompliance(
+  menuId: string
+): Promise<BudgetComplianceResult | null> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Get menu -> event -> quoted price
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('event_id')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!menu?.event_id) return null
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('quoted_price_cents')
+    .eq('id', menu.event_id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!event?.quoted_price_cents) return null
+
+  // Get menu cost from the summary view
+  const { data: costData } = await supabase
+    .from('menu_cost_summary')
+    .select('total_recipe_cost_cents')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .maybeSingle()
+
+  const totalCostCents = costData?.total_recipe_cost_cents
+  if (totalCostCents === null || totalCostCents === undefined) return null
+
+  const marginPercent = (totalCostCents / event.quoted_price_cents) * 100
+
+  let status: 'ok' | 'warning' | 'critical' = 'ok'
+  if (marginPercent >= BUDGET_CRITICAL_THRESHOLD) {
+    status = 'critical'
+  } else if (marginPercent >= BUDGET_WARNING_THRESHOLD) {
+    status = 'warning'
+  }
+
+  return {
+    quotedPriceCents: event.quoted_price_cents,
+    totalCostCents,
+    marginPercent,
+    status,
+  }
+}
+
+// ============================================
+// ACTIVE DIETARY CONFLICT DETECTION
+// ============================================
+
+/**
+ * Cross-check menu ingredients against client disliked items from client_preferences.
+ * Returns conflicts where a disliked item appears in the menu.
+ */
+export async function detectMenuDietaryConflicts(
+  menuId: string
+): Promise<{ conflicts: DietaryConflict[]; clientName: string | null } | null> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Get menu -> event -> client chain
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('event_id')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!menu?.event_id) return null
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('client_id')
+    .eq('id', menu.event_id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!event?.client_id) return null
+
+  const { data: client } = await supabase
+    .from('clients')
+    .select('full_name')
+    .eq('id', event.client_id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  // Get disliked items from client preferences
+  const { data: prefs } = await supabase
+    .from('client_preferences')
+    .select('item_name')
+    .eq('tenant_id', user.tenantId!)
+    .eq('client_id', event.client_id)
+    .eq('rating', 'disliked')
+
+  if (!prefs?.length) return null
+
+  const dislikedSet = new Set(prefs.map((p: any) => p.item_name.toLowerCase()))
+
+  // Get all menu ingredients with dish attribution
+  const { data: dishes } = await supabase
+    .from('dishes')
+    .select('id, name')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (!dishes?.length) return null
+
+  const dishIds = dishes.map((d: any) => d.id)
+  const dishMap = new Map(dishes.map((d: any) => [d.id, d.name as string]))
+
+  const { data: components } = await supabase
+    .from('components')
+    .select('dish_id, recipe_id')
+    .in('dish_id', dishIds)
+    .eq('tenant_id', user.tenantId!)
+
+  const recipeToDish = new Map<string, string>()
+  const recipeIds: string[] = []
+  for (const c of components || []) {
+    if (c.recipe_id) {
+      recipeToDish.set(c.recipe_id, c.dish_id)
+      recipeIds.push(c.recipe_id)
+    }
+  }
+
+  if (!recipeIds.length) return null
+
+  const { data: recipeIngredients } = await supabase
+    .from('recipe_ingredients')
+    .select('recipe_id, ingredient_id')
+    .in('recipe_id', recipeIds)
+
+  if (!recipeIngredients?.length) return null
+
+  const ingredientIds = [...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id))]
+
+  const { data: ingredients } = await supabase
+    .from('ingredients')
+    .select('id, name')
+    .in('id', ingredientIds)
+
+  if (!ingredients?.length) return null
+
+  const ingredientMap = new Map(ingredients.map((i: any) => [i.id, i.name as string]))
+
+  // Cross-reference: find menu ingredients that match disliked items
+  const conflicts: DietaryConflict[] = []
+  const seen = new Set<string>()
+
+  for (const ri of recipeIngredients) {
+    const ingName = ingredientMap.get(ri.ingredient_id)
+    if (!ingName) continue
+
+    const ingLower = ingName.toLowerCase()
+
+    for (const disliked of dislikedSet) {
+      if (ingLower.includes(disliked) || disliked.includes(ingLower)) {
+        const dishId = recipeToDish.get(ri.recipe_id) || ''
+        const key = `${ingName}-${dishId}`
+        if (seen.has(key)) continue
+        seen.add(key)
+
+        conflicts.push({
+          ingredientName: ingName,
+          dishName: dishMap.get(dishId) || 'Unknown dish',
+          clientPreference: disliked,
+        })
+      }
+    }
+  }
+
+  return {
+    conflicts: conflicts.sort((a, b) => a.dishName.localeCompare(b.dishName)),
+    clientName: client?.full_name || null,
+  }
 }
 
 // ============================================
@@ -2349,6 +2671,7 @@ export async function addDishFromSource(
   }
 
   revalidatePath(`/culinary/menus/${targetMenuId}`)
+  revalidateMenuIntelligenceCache(targetMenuId)
 
   return {
     success: true,
@@ -2462,6 +2785,7 @@ export async function addRecipeAsComponent(
   }
 
   revalidatePath(`/culinary/menus/${targetMenuId}`)
+  revalidateMenuIntelligenceCache(targetMenuId)
 
   return {
     success: true,
@@ -2532,6 +2856,7 @@ export async function quickAddDish(
   }
 
   revalidatePath(`/culinary/menus/${targetMenuId}`)
+  revalidateMenuIntelligenceCache(targetMenuId)
 
   return { success: true, dishId: dish.id }
 }
