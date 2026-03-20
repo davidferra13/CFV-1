@@ -1,5 +1,5 @@
 // API v2: Inventory - Stock summary & Record transaction
-// GET  /api/v2/inventory?page=1&per_page=50
+// GET  /api/v2/inventory?type=receive&ingredient_name=flour&page=1&per_page=50
 // POST /api/v2/inventory (record a transaction)
 
 import { NextRequest } from 'next/server'
@@ -42,26 +42,60 @@ export const GET = withApiAuth(
   async (req, ctx) => {
     const url = new URL(req.url)
     const pagination = parsePagination(url)
+    const txType = url.searchParams.get('type')
+    const ingredientName = url.searchParams.get('ingredient_name')
+    const eventId = url.searchParams.get('event_id')
+    const view = url.searchParams.get('view') // 'transactions' to skip summary view
 
-    // Return stock summary (aggregated current quantities)
-    const { data, error, count } = await (ctx.supabase as any)
-      .from('inventory_stock_summary')
-      .select('*', { count: 'exact' })
-      .eq('chef_id', ctx.tenantId)
-      .order('ingredient_name', { ascending: true })
-      .range((pagination.page - 1) * pagination.per_page, pagination.page * pagination.per_page - 1)
+    const from = (pagination.page - 1) * pagination.per_page
+    const to = from + pagination.per_page - 1
 
-    if (error) {
-      // If the view doesn't exist, fall back to raw transaction query
-      const txResult = await (ctx.supabase as any)
+    // If view=transactions or filters are set, return raw transactions
+    if (view === 'transactions' || txType || eventId) {
+      let txQuery = (ctx.supabase as any)
         .from('inventory_transactions')
         .select('*', { count: 'exact' })
         .eq('chef_id', ctx.tenantId)
         .order('created_at', { ascending: false })
-        .range(
-          (pagination.page - 1) * pagination.per_page,
-          pagination.page * pagination.per_page - 1
-        )
+
+      if (txType) txQuery = txQuery.eq('transaction_type', txType)
+      if (ingredientName) txQuery = txQuery.ilike('ingredient_name', `%${ingredientName}%`)
+      if (eventId) txQuery = txQuery.eq('event_id', eventId)
+
+      txQuery = txQuery.range(from, to)
+
+      const { data: txData, error: txError, count: txCount } = await txQuery
+      if (txError) return apiError('database_error', 'Failed to fetch inventory transactions', 500)
+      return apiSuccess(txData ?? [], paginationMeta(pagination, txCount ?? 0))
+    }
+
+    // Default: return stock summary (aggregated current quantities)
+    let summaryQuery = (ctx.supabase as any)
+      .from('inventory_stock_summary')
+      .select('*', { count: 'exact' })
+      .eq('chef_id', ctx.tenantId)
+      .order('ingredient_name', { ascending: true })
+
+    if (ingredientName) summaryQuery = summaryQuery.ilike('ingredient_name', `%${ingredientName}%`)
+
+    summaryQuery = summaryQuery.range(from, to)
+
+    const { data, error, count } = await summaryQuery
+
+    if (error) {
+      // If the view doesn't exist, fall back to raw transaction query
+      let fallbackQuery = (ctx.supabase as any)
+        .from('inventory_transactions')
+        .select('*', { count: 'exact' })
+        .eq('chef_id', ctx.tenantId)
+        .order('created_at', { ascending: false })
+
+      if (ingredientName)
+        fallbackQuery = fallbackQuery.ilike('ingredient_name', `%${ingredientName}%`)
+
+      fallbackQuery = fallbackQuery.range(from, to)
+
+      const txResult = await fallbackQuery
 
       if (txResult.error) {
         return apiError('database_error', 'Failed to fetch inventory', 500)
