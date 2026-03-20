@@ -9,9 +9,12 @@ import { recordPayment, getPaymentsForSale } from '@/lib/commerce/payment-action
 
 const RecordPaymentBody = z.object({
   amountCents: z.number().int().positive(),
-  method: z.enum(['cash', 'card', 'other']),
-  reference: z.string().optional(),
-  notes: z.string().optional(),
+  paymentMethod: z.enum(['cash', 'card', 'stripe', 'square', 'other']),
+  idempotencyKey: z.string().min(1),
+  tipCents: z.number().int().nonnegative().optional(),
+  status: z.string().optional(),
+  processorType: z.string().optional(),
+  processorReferenceId: z.string().optional(),
 })
 
 export const GET = withApiAuth(
@@ -45,7 +48,7 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      const result = await recordPayment({ saleId, ...parsed.data })
+      const result = await recordPayment({ saleId, ...parsed.data } as any)
       return apiSuccess(result)
     } catch (err: any) {
       return apiError('payment_failed', err.message ?? 'Failed to record payment', 500)

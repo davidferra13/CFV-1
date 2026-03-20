@@ -7,15 +7,17 @@ import { getRegisterSessionHistory } from '@/lib/commerce/register-actions'
 
 export const GET = withApiAuth(
   async (req: NextRequest, _ctx) => {
-    const { searchParams } = new URL(req.url)
-    const { limit, offset } = parsePagination(searchParams)
-    const status = searchParams.get('status') ?? undefined
+    const url = new URL(req.url)
+    const pagination = parsePagination(url)
+    const status = url.searchParams.get('status') ?? undefined
+    const limit = pagination.per_page
+    const offset = (pagination.page - 1) * limit
 
     try {
       const result = await getRegisterSessionHistory({ limit, offset, status: status as any })
       return apiSuccess({
         sessions: result.sessions,
-        ...paginationMeta(result.total, limit, offset),
+        ...paginationMeta(pagination, result.total),
       })
     } catch (err: any) {
       return apiError('fetch_failed', err.message ?? 'Failed to fetch register history', 500)

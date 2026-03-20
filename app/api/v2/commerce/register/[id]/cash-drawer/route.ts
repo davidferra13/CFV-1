@@ -4,14 +4,7 @@
 
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
-import {
-  withApiAuth,
-  apiSuccess,
-  apiNotFound,
-  apiValidationError,
-  apiError,
-  parsePagination,
-} from '@/lib/api/v2'
+import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
 import {
   getCashDrawerSummary,
   listCashDrawerMovements,
@@ -53,7 +46,10 @@ export const GET = withApiAuth(
 
     try {
       if (view === 'movements') {
-        const { limit, offset } = parsePagination(searchParams)
+        const page = Number(searchParams.get('page') ?? 1)
+        const perPage = Number(searchParams.get('per_page') ?? 50)
+        const limit = Math.min(perPage, 200)
+        const offset = (Math.max(page, 1) - 1) * limit
         const result = await listCashDrawerMovements({
           registerSessionId: sessionId,
           limit,

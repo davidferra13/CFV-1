@@ -29,18 +29,7 @@ export const POST = withApiAuth(
     }
 
     try {
-      const contact = await addBackupContact(
-        body as {
-          name: string
-          phone?: string
-          email?: string
-          specialties?: string[]
-          max_guest_count?: number
-          relationship?: string
-          availability_notes?: string
-          is_active?: boolean
-        }
-      )
+      const contact = await addBackupContact(body as any)
       return apiCreated(contact)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to add backup contact'

@@ -8,9 +8,6 @@ import { awardEventPoints } from '@/lib/loyalty/actions'
 
 const AwardBody = z.object({
   eventId: z.string().uuid(),
-  clientId: z.string().uuid(),
-  guestCount: z.number().int().positive().optional(),
-  eventAmountCents: z.number().int().nonnegative().optional(),
 })
 
 export const POST = withApiAuth(
@@ -26,12 +23,7 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      await awardEventPoints(
-        parsed.data.eventId,
-        parsed.data.clientId,
-        parsed.data.guestCount,
-        parsed.data.eventAmountCents
-      )
+      await awardEventPoints(parsed.data.eventId)
       return apiSuccess({ awarded: true })
     } catch (err: any) {
       return apiError('award_failed', err.message ?? 'Failed to award event points', 500)

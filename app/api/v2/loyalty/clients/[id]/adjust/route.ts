@@ -7,8 +7,12 @@ import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } fr
 import { adjustClientLoyalty } from '@/lib/loyalty/actions'
 
 const AdjustBody = z.object({
-  adjustmentCents: z.number().int(),
-  reason: z.string().min(1, 'Reason is required'),
+  adjustmentPoints: z.number().int().optional(),
+  adjustmentReason: z.string().min(1).optional(),
+  overrideTier: z.enum(['bronze', 'silver', 'gold', 'platinum']).optional(),
+  overrideEventsCompleted: z.number().int().min(0).optional(),
+  overrideGuestsServed: z.number().int().min(0).optional(),
+  resetPoints: z.boolean().optional(),
 })
 
 export const POST = withApiAuth(
@@ -27,7 +31,7 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      await adjustClientLoyalty(clientId, parsed.data.adjustmentCents, parsed.data.reason)
+      await adjustClientLoyalty({ clientId, ...parsed.data })
       return apiSuccess({ adjusted: true })
     } catch (err: any) {
       return apiError('adjust_failed', err.message ?? 'Failed to adjust loyalty', 500)

@@ -30,8 +30,8 @@ const CreateSettlementBody = z.object({
 
 export const GET = withApiAuth(
   async (req: NextRequest, _ctx) => {
-    const { searchParams } = new URL(req.url)
-    const view = searchParams.get('view')
+    const url = new URL(req.url)
+    const view = url.searchParams.get('view')
 
     if (view === 'summary') {
       try {
@@ -42,14 +42,16 @@ export const GET = withApiAuth(
       }
     }
 
-    const { limit, offset } = parsePagination(searchParams)
-    const status = searchParams.get('status') ?? undefined
+    const pagination = parsePagination(url)
+    const limit = pagination.per_page
+    const offset = (pagination.page - 1) * limit
+    const status = url.searchParams.get('status') ?? undefined
 
     try {
       const result = await listSettlements({ limit, offset, status })
       return apiSuccess({
         settlements: result.settlements,
-        ...paginationMeta(result.total, limit, offset),
+        ...paginationMeta(pagination, result.total),
       })
     } catch (err: any) {
       return apiError('fetch_failed', err.message ?? 'Failed to fetch settlements', 500)

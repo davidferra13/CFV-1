@@ -15,10 +15,15 @@ import {
 import { addSaleItem, removeSaleItem, updateSaleItemQuantity } from '@/lib/commerce/sale-actions'
 
 const AddItemBody = z.object({
-  productId: z.string().uuid(),
+  name: z.string().min(1),
+  unitPriceCents: z.number().int().nonnegative(),
   quantity: z.number().int().positive(),
-  unitPriceCents: z.number().int().nonnegative().optional(),
-  notes: z.string().optional(),
+  productProjectionId: z.string().uuid().optional(),
+  description: z.string().optional(),
+  sku: z.string().optional(),
+  category: z.string().optional(),
+  discountCents: z.number().int().nonnegative().optional(),
+  taxClass: z.string().optional(),
 })
 
 export const POST = withApiAuth(
@@ -37,7 +42,7 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      const result = await addSaleItem({ saleId, ...parsed.data })
+      const result = await addSaleItem({ saleId, ...parsed.data } as any)
       return apiSuccess(result)
     } catch (err: any) {
       return apiError('add_item_failed', err.message ?? 'Failed to add item', 500)

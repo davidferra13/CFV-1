@@ -8,10 +8,11 @@ import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } fr
 import { createRefund, getRefundsForSale } from '@/lib/commerce/refund-actions'
 
 const CreateRefundBody = z.object({
+  paymentId: z.string().uuid(),
   amountCents: z.number().int().positive(),
   reason: z.string().min(1, 'Refund reason is required'),
-  method: z.enum(['cash', 'card', 'original_method']).optional(),
-  itemIds: z.array(z.string().uuid()).optional(),
+  idempotencyKey: z.string().min(1),
+  stripeRefundId: z.string().optional(),
 })
 
 export const GET = withApiAuth(
