@@ -32,6 +32,7 @@ import {
 } from '@/lib/pricing/compute'
 import { PricingSuggestionPanel } from '@/components/analytics/pricing-suggestion-panel'
 import { SmartPricingHint } from '@/components/intelligence/smart-pricing-hint'
+import { QuoteEventContext } from '@/components/intelligence/quote-event-context'
 import type { PricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
 import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
@@ -758,6 +759,17 @@ export function QuoteForm({
         guestCount={parseInt(guestCount) || 0}
         onSuggestedPrice={(totalCents) => setTotalAmount((totalCents / 100).toFixed(2))}
       />
+
+      {/* ── Event Profitability Context ────────────────────────────────── */}
+      {(existingQuote?.event_id || prefilledEventId) && (
+        <QuoteEventContext
+          eventId={(existingQuote?.event_id || prefilledEventId)!}
+          guestCount={parseInt(guestCount) || 0}
+          occasion={prefilledOccasion}
+          quotedPriceCents={totalAmount ? parseCurrencyToCents(totalAmount) : null}
+          eventDate={prefilledEventDate}
+        />
+      )}
 
       {/* ── Pricing Calculator Panel ─────────────────────────────────────── */}
       <Card className="overflow-hidden">

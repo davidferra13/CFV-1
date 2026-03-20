@@ -1493,6 +1493,519 @@ export async function getMenuInquiryLink(menuId: string): Promise<{
 }
 
 // ============================================
+// CROSS-REFERENCING: SEASONAL INGREDIENT WARNINGS
+// ============================================
+
+export interface SeasonalIngredientWarning {
+  ingredientName: string
+  dishName: string
+  eventMonth: number
+  seasonLabel: string
+  note: string
+}
+
+/**
+ * Check menu ingredients against seasonal produce data for the event date.
+ * Flags ingredients that are out of season, suggesting possible cost premiums.
+ */
+export async function getMenuSeasonalWarnings(
+  menuId: string
+): Promise<SeasonalIngredientWarning[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Get menu + event date
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('event_id')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!menu?.event_id) return []
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('event_date')
+    .eq('id', menu.event_id)
+    .single()
+
+  if (!event?.event_date) return []
+
+  const eventMonth = new Date(event.event_date + 'T00:00:00').getMonth() + 1
+
+  // Get seasonal produce for the event month (imported dynamically to avoid
+  // pulling the full data module into the server action bundle at top level)
+  const { getSeasonalProduceGrouped } = await import('@/lib/calendar/seasonal-produce')
+  const seasonal = getSeasonalProduceGrouped(eventMonth)
+  const seasonalNames = new Set(
+    seasonal.groups.flatMap((g) => g.items.map((i) => i.name.toLowerCase()))
+  )
+
+  // Get all dish ingredients for this menu
+  const { data: dishes } = await supabase
+    .from('dishes')
+    .select('id, name')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (!dishes?.length) return []
+
+  const dishIds = dishes.map((d: any) => d.id)
+  const dishMap = new Map(dishes.map((d: any) => [d.id, d.name]))
+
+  const { data: components } = await supabase
+    .from('components')
+    .select('dish_id, recipe_id')
+    .in('dish_id', dishIds)
+    .eq('tenant_id', user.tenantId!)
+
+  const recipeIds = (components || [])
+    .map((c: any) => c.recipe_id)
+    .filter((id: string | null) => id !== null)
+
+  if (!recipeIds.length) return []
+
+  // Map recipe -> dish for attribution
+  const recipeToDish = new Map<string, string>()
+  for (const c of components || []) {
+    if (c.recipe_id) recipeToDish.set(c.recipe_id, c.dish_id)
+  }
+
+  const { data: recipeIngredients } = await supabase
+    .from('recipe_ingredients')
+    .select('recipe_id, ingredient_id')
+    .in('recipe_id', recipeIds)
+
+  if (!recipeIngredients?.length) return []
+
+  const ingredientIds = [...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id))]
+
+  const { data: ingredients } = await supabase
+    .from('ingredients')
+    .select('id, name')
+    .in('id', ingredientIds)
+
+  if (!ingredients?.length) return []
+
+  const ingredientMap = new Map(ingredients.map((i: any) => [i.id, i.name as string]))
+
+  // Known seasonal produce terms (fruits, vegetables, proteins that have clear seasons)
+  // We flag an ingredient if its name partially matches a known seasonal item from a
+  // DIFFERENT season, meaning it's likely out of season for this event.
+  // We collect all seasonal items from ALL seasons to detect out-of-season usage.
+  const allSeasons = [1, 3, 5, 7, 9, 11] // one month per season period
+  const seasonalByItem = new Map<string, { months: number[]; label: string }>()
+
+  for (const m of allSeasons) {
+    const s = getSeasonalProduceGrouped(m)
+    for (const g of s.groups) {
+      for (const item of g.items) {
+        const key = item.name.toLowerCase()
+        if (!seasonalByItem.has(key)) {
+          seasonalByItem.set(key, { months: [], label: s.seasonLabel })
+        }
+        // Map to the two months of this season
+        const monthPairs: Record<number, number[]> = {
+          1: [1, 2],
+          3: [3, 4],
+          5: [5, 6],
+          7: [7, 8],
+          9: [9, 10],
+          11: [11, 12],
+        }
+        seasonalByItem.get(key)!.months.push(...(monthPairs[m] || []))
+      }
+    }
+  }
+
+  const warnings: SeasonalIngredientWarning[] = []
+  const seen = new Set<string>()
+
+  for (const ri of recipeIngredients) {
+    const ingName = ingredientMap.get(ri.ingredient_id)
+    if (!ingName) continue
+
+    const ingLower = ingName.toLowerCase()
+
+    // Check if this ingredient matches a known seasonal item
+    for (const [seasonalName, data] of seasonalByItem.entries()) {
+      if (ingLower.includes(seasonalName) || seasonalName.includes(ingLower)) {
+        // It's a seasonal item - check if it's in season for the event month
+        if (!data.months.includes(eventMonth)) {
+          const dishId = recipeToDish.get(ri.recipe_id) || ''
+          const key = `${ingName}-${dishId}`
+          if (seen.has(key)) continue
+          seen.add(key)
+
+          warnings.push({
+            ingredientName: ingName,
+            dishName: dishMap.get(dishId) || 'Unknown dish',
+            eventMonth,
+            seasonLabel: seasonal.seasonLabel,
+            note: `${ingName} is typically available in ${data.label}, not ${seasonal.seasonLabel}. Expect higher cost or limited availability.`,
+          })
+        }
+        break
+      }
+    }
+  }
+
+  return warnings
+}
+
+// ============================================
+// CROSS-REFERENCING: MENU PERFORMANCE HISTORY
+// ============================================
+
+export interface MenuPerformanceHistory {
+  timesUsed: number
+  lastUsedDate: string | null
+  lastUsedClient: string | null
+  lastUsedEventId: string | null
+  avgMarginPercent: number | null
+  totalRevenueCents: number
+}
+
+/**
+ * Get historical performance data for a menu's dishes.
+ * Shows how many events used this menu, avg margins, and last usage.
+ */
+export async function getMenuPerformance(menuId: string): Promise<MenuPerformanceHistory | null> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Find all events that reference this menu
+  const { data: events } = await supabase
+    .from('events')
+    .select('id, event_date, client_id, quoted_price_cents, status')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .in('status', ['completed', 'confirmed', 'paid', 'in_progress'])
+    .order('event_date', { ascending: false })
+
+  if (!events?.length) return null
+
+  // Get client name for last event
+  let lastClient: string | null = null
+  if (events[0].client_id) {
+    const { data: client } = await supabase
+      .from('clients')
+      .select('full_name')
+      .eq('id', events[0].client_id)
+      .single()
+    lastClient = client?.full_name || null
+  }
+
+  // Get financial summary for completed events
+  const completedIds = events.filter((e: any) => e.status === 'completed').map((e: any) => e.id)
+
+  let totalRevenue = 0
+  let totalCost = 0
+  let financialCount = 0
+
+  if (completedIds.length > 0) {
+    const { data: summaries } = await supabase
+      .from('event_financial_summary')
+      .select('event_id, total_paid_cents')
+      .in('event_id', completedIds)
+
+    if (summaries) {
+      for (const s of summaries) {
+        totalRevenue += s.total_paid_cents || 0
+        financialCount++
+      }
+    }
+
+    // Get food costs from menu_cost_summary
+    const { data: costData } = await supabase
+      .from('menu_cost_summary')
+      .select('menu_id, total_recipe_cost_cents')
+      .eq('menu_id', menuId)
+      .eq('tenant_id', user.tenantId!)
+      .maybeSingle()
+
+    if (costData?.total_recipe_cost_cents) {
+      totalCost = costData.total_recipe_cost_cents * completedIds.length
+    }
+  }
+
+  const avgMargin =
+    totalRevenue > 0 && totalCost > 0 ? ((totalRevenue - totalCost) / totalRevenue) * 100 : null
+
+  return {
+    timesUsed: events.length,
+    lastUsedDate: events[0].event_date,
+    lastUsedClient: lastClient,
+    lastUsedEventId: events[0].id,
+    avgMarginPercent: avgMargin !== null ? Math.round(avgMargin * 10) / 10 : null,
+    totalRevenueCents: totalRevenue,
+  }
+}
+
+// ============================================
+// CROSS-REFERENCING: CLIENT TASTE PROFILE (MENU CONTEXT)
+// ============================================
+
+export interface MenuClientTasteSummary {
+  clientId: string
+  clientName: string
+  loved: string[]
+  disliked: string[]
+  cuisinePreferences: string[]
+  pastEventCount: number
+}
+
+/**
+ * Get a condensed taste profile for the client linked to this menu's event.
+ * Surfaces loved/disliked items and cuisine preferences during menu building.
+ */
+export async function getMenuClientTaste(menuId: string): Promise<MenuClientTasteSummary | null> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Get menu -> event -> client chain
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('event_id')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!menu?.event_id) return null
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('client_id')
+    .eq('id', menu.event_id)
+    .single()
+
+  if (!event?.client_id) return null
+
+  const { data: client } = await supabase
+    .from('clients')
+    .select('full_name')
+    .eq('id', event.client_id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!client) return null
+
+  // Get preferences
+  const { data: prefs } = await supabase
+    .from('client_preferences')
+    .select('item_type, item_name, rating')
+    .eq('tenant_id', user.tenantId!)
+    .eq('client_id', event.client_id)
+    .order('observed_at', { ascending: false })
+
+  const loved: string[] = []
+  const disliked: string[] = []
+  const cuisines: string[] = []
+
+  for (const p of prefs || []) {
+    if (p.rating === 'loved' || p.rating === 'liked') {
+      if (p.item_type === 'cuisine') cuisines.push(p.item_name)
+      else loved.push(p.item_name)
+    } else if (p.rating === 'disliked') {
+      disliked.push(p.item_name)
+    }
+  }
+
+  // Count past events for this client
+  const { count } = await supabase
+    .from('events')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', user.tenantId!)
+    .eq('client_id', event.client_id)
+    .in('status', ['completed', 'confirmed', 'paid', 'in_progress'])
+
+  return {
+    clientId: event.client_id,
+    clientName: client.full_name,
+    loved: loved.slice(0, 8),
+    disliked: disliked.slice(0, 8),
+    cuisinePreferences: cuisines.slice(0, 5),
+    pastEventCount: count || 0,
+  }
+}
+
+// ============================================
+// CROSS-REFERENCING: PREP TIME ESTIMATE FOR MENU
+// ============================================
+
+export interface MenuPrepEstimate {
+  estimatedTotalMinutes: number
+  estimatedPrepMinutes: number
+  estimatedServiceMinutes: number
+  confidence: 'high' | 'medium' | 'low'
+  basedOnEvents: number
+}
+
+/**
+ * Get prep time estimate for the menu's event guest count and occasion.
+ * Wraps the existing estimatePrepTime with menu context resolution.
+ */
+export async function getMenuPrepEstimate(menuId: string): Promise<MenuPrepEstimate | null> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('event_id, target_guest_count')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!menu) return null
+
+  let guestCount = menu.target_guest_count || 0
+  let occasion: string | undefined
+
+  if (menu.event_id) {
+    const { data: event } = await supabase
+      .from('events')
+      .select('guest_count, occasion')
+      .eq('id', menu.event_id)
+      .single()
+
+    if (event) {
+      guestCount = event.guest_count || guestCount
+      occasion = event.occasion || undefined
+    }
+  }
+
+  if (guestCount < 1) return null
+
+  const { estimatePrepTime } = await import('@/lib/intelligence/prep-time-estimator')
+  const estimate = await estimatePrepTime(guestCount, occasion)
+  if (!estimate) return null
+
+  return {
+    estimatedTotalMinutes: estimate.estimatedTotalMinutes,
+    estimatedPrepMinutes: estimate.estimatedPrepMinutes,
+    estimatedServiceMinutes: estimate.estimatedServiceMinutes,
+    confidence: estimate.confidence,
+    basedOnEvents: estimate.basedOnEvents,
+  }
+}
+
+// ============================================
+// CROSS-REFERENCING: VENDOR BEST PRICES FOR MENU INGREDIENTS
+// ============================================
+
+export interface MenuVendorHint {
+  ingredientName: string
+  ingredientId: string
+  currentPriceCents: number
+  bestVendorName: string
+  bestPriceCents: number
+  savingsCents: number
+  savingsPercent: number
+}
+
+/**
+ * Find ingredients in this menu where a different vendor offers a lower price.
+ * Only returns hints where savings > 5%.
+ */
+export async function getMenuVendorHints(menuId: string): Promise<MenuVendorHint[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Get all ingredients in this menu
+  const { data: dishes } = await supabase
+    .from('dishes')
+    .select('id')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (!dishes?.length) return []
+
+  const dishIds = dishes.map((d: any) => d.id)
+
+  const { data: components } = await supabase
+    .from('components')
+    .select('recipe_id')
+    .in('dish_id', dishIds)
+    .eq('tenant_id', user.tenantId!)
+
+  const recipeIds = (components || [])
+    .map((c: any) => c.recipe_id)
+    .filter((id: string | null) => id !== null)
+
+  if (!recipeIds.length) return []
+
+  const { data: recipeIngredients } = await supabase
+    .from('recipe_ingredients')
+    .select('ingredient_id')
+    .in('recipe_id', recipeIds)
+
+  if (!recipeIngredients?.length) return []
+
+  const ingredientIds = [...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id))]
+
+  // Get current ingredient prices
+  const { data: ingredients } = await supabase
+    .from('ingredients')
+    .select('id, name, last_price_cents')
+    .in('id', ingredientIds)
+    .not('last_price_cents', 'is', null)
+
+  if (!ingredients?.length) return []
+
+  // Get vendor price points for these ingredients
+  const { data: vendorPrices } = await supabase
+    .from('vendor_price_points')
+    .select('ingredient_id, vendor_id, price_cents, vendors(name)')
+    .eq('tenant_id', user.tenantId!)
+    .in('ingredient_id', ingredientIds)
+    .eq('is_active', true)
+    .order('price_cents', { ascending: true })
+
+  if (!vendorPrices?.length) return []
+
+  const hints: MenuVendorHint[] = []
+  const ingredientMap = new Map(
+    ingredients.map((i: any) => [i.id, { name: i.name, price: i.last_price_cents }])
+  )
+
+  // Group vendor prices by ingredient
+  const pricesByIngredient = new Map<string, any[]>()
+  for (const vp of vendorPrices) {
+    const existing = pricesByIngredient.get(vp.ingredient_id) || []
+    existing.push(vp)
+    pricesByIngredient.set(vp.ingredient_id, existing)
+  }
+
+  for (const [ingId, prices] of pricesByIngredient.entries()) {
+    const ing = ingredientMap.get(ingId)
+    if (!ing || !ing.price || prices.length < 1) continue
+
+    const best = prices[0] // already sorted ascending
+    if (best.price_cents >= ing.price) continue
+
+    const savingsCents = ing.price - best.price_cents
+    const savingsPercent = (savingsCents / ing.price) * 100
+
+    if (savingsPercent < 5) continue // only show meaningful savings
+
+    const vendorName = (best.vendors as any)?.name || 'Unknown vendor'
+
+    hints.push({
+      ingredientName: ing.name,
+      ingredientId: ingId,
+      currentPriceCents: ing.price,
+      bestVendorName: vendorName,
+      bestPriceCents: best.price_cents,
+      savingsCents,
+      savingsPercent: Math.round(savingsPercent),
+    })
+  }
+
+  return hints.sort((a, b) => b.savingsCents - a.savingsCents).slice(0, 10)
+}
+
+// ============================================
 // PHASE 2: MENU ASSEMBLY
 // ============================================
 

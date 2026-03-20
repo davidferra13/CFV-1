@@ -6,8 +6,8 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { checkMenuMargins } from '@/lib/menus/menu-intelligence-actions'
-import type { MarginAlert } from '@/lib/menus/menu-intelligence-actions'
+import { checkMenuMargins, getMenuVendorHints } from '@/lib/menus/menu-intelligence-actions'
+import type { MarginAlert, MenuVendorHint } from '@/lib/menus/menu-intelligence-actions'
 
 interface MenuCostSidebarProps {
   menuId: string
@@ -43,14 +43,19 @@ export function MenuCostSidebar({ menuId, className = '' }: MenuCostSidebarProps
     componentCount: number
   } | null>(null)
   const [alerts, setAlerts] = useState<MarginAlert[]>([])
+  const [vendorHints, setVendorHints] = useState<MenuVendorHint[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     startTransition(async () => {
       try {
-        const result = await checkMenuMargins(menuId)
+        const [result, hints] = await Promise.all([
+          checkMenuMargins(menuId),
+          getMenuVendorHints(menuId).catch(() => []),
+        ])
         setCostData(result.costBreakdown)
         setAlerts(result.alerts)
+        setVendorHints(hints)
         setLoadError(null)
       } catch (err) {
         console.error('[MenuCostSidebar] Failed to load:', err)
@@ -142,6 +147,31 @@ export function MenuCostSidebar({ menuId, className = '' }: MenuCostSidebarProps
               {alert.message}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Vendor best-price hints */}
+      {vendorHints.length > 0 && (
+        <div className="space-y-2 border-t border-stone-700 pt-3">
+          <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
+            Vendor Savings
+          </h4>
+          <div className="space-y-1.5 max-h-36 overflow-y-auto">
+            {vendorHints.map((hint) => (
+              <div key={hint.ingredientId} className="text-xxs">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-stone-300 truncate">{hint.ingredientName}</span>
+                  <span className="text-emerald-400 font-medium shrink-0">
+                    -{hint.savingsPercent}%
+                  </span>
+                </div>
+                <p className="text-stone-500">
+                  {hint.bestVendorName}: ${(hint.bestPriceCents / 100).toFixed(2)} (vs $
+                  {(hint.currentPriceCents / 100).toFixed(2)})
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

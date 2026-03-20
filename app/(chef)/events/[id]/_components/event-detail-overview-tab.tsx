@@ -48,6 +48,7 @@ type EventDetailOverviewTabProps = {
   guestWallMessages: any[]
   messages: any[]
   templates: any[]
+  chatConversationId?: string | null
 }
 
 export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
@@ -71,6 +72,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     guestWallMessages,
     messages,
     templates,
+    chatConversationId,
   } = props
 
   return (
@@ -417,7 +419,16 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
 
       {/* Communication Log */}
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Communication</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Communication</h2>
+          {chatConversationId && (
+            <Link href={`/communication/chat/${chatConversationId}`}>
+              <Button variant="ghost" size="sm">
+                Open Chat →
+              </Button>
+            </Link>
+          )}
+        </div>
         {event.inquiry_id && messages.some((m: any) => m.inquiry_id) && (
           <p className="text-xs text-stone-300 mb-3">
             Includes messages from the original inquiry.

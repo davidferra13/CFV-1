@@ -12,10 +12,18 @@ import {
   validateMenuAllergens,
   checkMenuScaleMismatch,
   getMenuInquiryLink,
+  getMenuSeasonalWarnings,
+  getMenuPerformance,
+  getMenuClientTaste,
+  getMenuPrepEstimate,
 } from '@/lib/menus/menu-intelligence-actions'
 import type {
   MenuIngredientStock,
   MenuAllergenWarning,
+  SeasonalIngredientWarning,
+  MenuPerformanceHistory,
+  MenuClientTasteSummary,
+  MenuPrepEstimate,
 } from '@/lib/menus/menu-intelligence-actions'
 import Link from 'next/link'
 
@@ -43,23 +51,36 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
     inquiryId: string
     inquiryStatus: string | null
   } | null>(null)
+  const [seasonalWarnings, setSeasonalWarnings] = useState<SeasonalIngredientWarning[]>([])
+  const [performance, setPerformance] = useState<MenuPerformanceHistory | null>(null)
+  const [clientTaste, setClientTaste] = useState<MenuClientTasteSummary | null>(null)
+  const [prepEstimate, setPrepEstimate] = useState<MenuPrepEstimate | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     startTransition(async () => {
       try {
-        const [data, stockData, allergens, mismatch, inquiry] = await Promise.all([
-          getMenuContextData(menuId),
-          getMenuIngredientStock(menuId).catch(() => []),
-          validateMenuAllergens(menuId).catch(() => null),
-          checkMenuScaleMismatch(menuId).catch(() => null),
-          getMenuInquiryLink(menuId).catch(() => null),
-        ])
+        const [data, stockData, allergens, mismatch, inquiry, seasonal, perf, taste, prep] =
+          await Promise.all([
+            getMenuContextData(menuId),
+            getMenuIngredientStock(menuId).catch(() => []),
+            validateMenuAllergens(menuId).catch(() => null),
+            checkMenuScaleMismatch(menuId).catch(() => null),
+            getMenuInquiryLink(menuId).catch(() => null),
+            getMenuSeasonalWarnings(menuId).catch(() => []),
+            getMenuPerformance(menuId).catch(() => null),
+            getMenuClientTaste(menuId).catch(() => null),
+            getMenuPrepEstimate(menuId).catch(() => null),
+          ])
         setContext(data)
         setStock(stockData)
         setAllergenData(allergens)
         setScaleMismatch(mismatch)
         setInquiryLink(inquiry)
+        setSeasonalWarnings(seasonal)
+        setPerformance(perf)
+        setClientTaste(taste)
+        setPrepEstimate(prep)
         setLoadError(null)
       } catch (err) {
         console.error('[MenuContextSidebar] Failed to load:', err)
@@ -102,7 +123,11 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
     stockIssues.length > 0 ||
     allergenWarnings.length > 0 ||
     scaleMismatch ||
-    inquiryLink
+    inquiryLink ||
+    seasonalWarnings.length > 0 ||
+    performance ||
+    clientTaste ||
+    prepEstimate
 
   if (!hasAnyContent) {
     return (
@@ -153,6 +178,153 @@ export function MenuContextSidebar({ menuId, className = '' }: MenuContextSideba
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Seasonal ingredient warnings */}
+      {seasonalWarnings.length > 0 && (
+        <div className="px-4 py-3 bg-amber-500/10">
+          <h4 className="text-xs font-medium text-amber-400 uppercase tracking-wider mb-2">
+            Seasonal Alerts ({seasonalWarnings.length})
+          </h4>
+          <div className="space-y-1.5 max-h-32 overflow-y-auto">
+            {seasonalWarnings.map((w, i) => (
+              <div key={i} className="text-xxs text-stone-300">
+                <span className="font-medium text-amber-300">{w.ingredientName}</span> in{' '}
+                {w.dishName}
+                <p className="text-stone-500 mt-0.5">{w.note}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Prep time estimate */}
+      {prepEstimate && (
+        <div className="px-4 py-3">
+          <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-2">
+            Prep Estimate
+          </h4>
+          <div className="flex items-baseline gap-2">
+            <span className="text-lg font-bold text-stone-200">
+              {Math.round((prepEstimate.estimatedTotalMinutes / 60) * 10) / 10}h
+            </span>
+            <span className="text-xxs text-stone-500">total estimated</span>
+          </div>
+          <div className="flex gap-3 mt-1 text-xxs text-stone-500">
+            <span>Prep: {Math.round(prepEstimate.estimatedPrepMinutes)}m</span>
+            <span>Service: {Math.round(prepEstimate.estimatedServiceMinutes)}m</span>
+          </div>
+          <div className="mt-1">
+            <Badge
+              variant={
+                prepEstimate.confidence === 'high'
+                  ? 'success'
+                  : prepEstimate.confidence === 'medium'
+                    ? 'warning'
+                    : 'default'
+              }
+            >
+              {prepEstimate.confidence} confidence ({prepEstimate.basedOnEvents} events)
+            </Badge>
+          </div>
+        </div>
+      )}
+
+      {/* Client taste profile */}
+      {clientTaste && (clientTaste.loved.length > 0 || clientTaste.disliked.length > 0) && (
+        <div className="px-4 py-3 space-y-2">
+          <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
+            {clientTaste.clientName}&apos;s Preferences
+          </h4>
+          {clientTaste.cuisinePreferences.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {clientTaste.cuisinePreferences.map((c) => (
+                <Badge key={c} variant="info">
+                  {c}
+                </Badge>
+              ))}
+            </div>
+          )}
+          {clientTaste.loved.length > 0 && (
+            <div>
+              <p className="text-xxs text-emerald-400 font-medium mb-1">Loved</p>
+              <div className="flex flex-wrap gap-1">
+                {clientTaste.loved.map((item) => (
+                  <Badge key={item} variant="success">
+                    {item}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+          {clientTaste.disliked.length > 0 && (
+            <div>
+              <p className="text-xxs text-red-400 font-medium mb-1">Avoid</p>
+              <div className="flex flex-wrap gap-1">
+                {clientTaste.disliked.map((item) => (
+                  <Badge key={item} variant="error">
+                    {item}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+          {clientTaste.pastEventCount > 0 && (
+            <p className="text-xxs text-stone-500">
+              {clientTaste.pastEventCount} past event{clientTaste.pastEventCount !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Menu performance history */}
+      {performance && (
+        <div className="px-4 py-3 space-y-1.5">
+          <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
+            Menu History
+          </h4>
+          <div className="grid grid-cols-2 gap-2 text-xxs">
+            <div>
+              <span className="text-stone-500">Times used</span>
+              <p className="text-stone-200 font-medium">{performance.timesUsed}</p>
+            </div>
+            {performance.avgMarginPercent !== null && (
+              <div>
+                <span className="text-stone-500">Avg margin</span>
+                <p
+                  className={`font-medium ${
+                    performance.avgMarginPercent >= 60
+                      ? 'text-emerald-400'
+                      : performance.avgMarginPercent >= 40
+                        ? 'text-stone-200'
+                        : 'text-amber-400'
+                  }`}
+                >
+                  {performance.avgMarginPercent}%
+                </p>
+              </div>
+            )}
+          </div>
+          {performance.lastUsedDate && (
+            <p className="text-xxs text-stone-500">
+              Last:{' '}
+              {new Date(performance.lastUsedDate).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+              {performance.lastUsedClient && ` for ${performance.lastUsedClient}`}
+            </p>
+          )}
+          {performance.lastUsedEventId && (
+            <Link
+              href={`/events/${performance.lastUsedEventId}`}
+              className="text-xxs text-stone-500 hover:text-stone-300 transition-colors"
+            >
+              View last event →
+            </Link>
+          )}
         </div>
       )}
 

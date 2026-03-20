@@ -332,6 +332,7 @@ export default async function EventDetailPage({
     chefDisplayName,
     takeAChefFinance,
     eventHasAllergyData,
+    eventChatConversationId,
   ] = await Promise.all([
     // Refund recommendation â€” only for cancelled events with payments
     event.status === 'cancelled' && totalPaid > 0
@@ -405,6 +406,22 @@ export default async function EventDetailPage({
     })(),
     getTakeAChefEventFinance(params.id).catch(() => null),
     hasAllergyData(params.id).catch(() => false),
+    // Check for linked real-time chat conversation
+    (async () => {
+      try {
+        const sb = createServerClient()
+        const { data } = await sb
+          .from('conversations')
+          .select('id')
+          .eq('event_id', params.id)
+          .eq('tenant_id', user.tenantId!)
+          .limit(1)
+          .maybeSingle()
+        return (data?.id as string) || null
+      } catch {
+        return null
+      }
+    })(),
   ])
 
   // Compute share URL (shortenUrl depends on guestShares resolving)
@@ -656,6 +673,7 @@ export default async function EventDetailPage({
         guestWallMessages={guestWallMessages as any[]}
         messages={messages}
         templates={templates}
+        chatConversationId={eventChatConversationId as string | null}
       />
 
       {/* TAB: MONEY â€” Financials, payments, expenses  */}
