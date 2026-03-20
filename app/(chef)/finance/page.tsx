@@ -161,6 +161,12 @@ const SECTIONS = [
     description: 'Recurring service agreements - monthly billing, event tracking',
     icon: '🔁',
   },
+  {
+    href: '/finance/plate-costs',
+    label: 'Plate Costs',
+    description: 'True cost-per-plate across events with ingredient, labor, and overhead breakdown',
+    icon: '🍽️',
+  },
 ]
 
 export default async function FinancePage() {
