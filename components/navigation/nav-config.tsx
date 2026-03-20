@@ -44,6 +44,7 @@ import {
   Kanban,
   Landmark,
   LayoutDashboard,
+  List,
   ListChecks,
   MagnifyingGlassPlus,
   Mail,
@@ -1372,6 +1373,7 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     context: 'Settings',
   },
   { href: '/settings/custom-fields', label: 'Custom Fields', icon: Settings, context: 'Settings' },
+  { href: '/settings/taxonomy', label: 'Custom Lists', icon: List, context: 'Settings' },
   {
     href: '/settings/event-types',
     label: 'Event Type Labels',
