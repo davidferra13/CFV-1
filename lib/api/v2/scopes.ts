@@ -32,6 +32,9 @@ export const API_SCOPES = {
   'inventory:write': 'Create and update inventory items',
   'calls:read': 'List and view scheduled calls',
   'calls:write': 'Create and update calls',
+  'goals:read': 'List and view goals',
+  'goals:write': 'Create, update, and archive goals',
+  'notifications:write': 'Send notifications',
   'recipes:write': 'Create and update recipes',
 
   // Admin scopes
