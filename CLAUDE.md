@@ -278,6 +278,19 @@ When you find either during normal work, add it to your session report. Don't wa
 - When adding a new `unstable_cache`, document which mutations should bust it — don't leave it for "later."
 - When adding a new mutation on cached data, search for `unstable_cache` and `revalidateTag` in the codebase to find all caches that read the data you're writing. Bust every one.
 
+### Server Action Quality Checklist (Apply to All New Server Actions)
+
+Every new exported `async function` in a `'use server'` file must pass these checks before being committed. Reference: `docs/function-evaluation-surface.md`.
+
+1. **Auth** - Starts with `requireChef()`, `requireClient()`, `requireAdmin()`, or is intentionally public (document why)
+2. **Tenant scoping** - Every DB query includes `.eq('tenant_id', user.tenantId!)` or `.eq('chef_id', user.entityId)` as appropriate
+3. **Input validation** - Empty/invalid inputs rejected before any DB call (throw or return error, never silently return)
+4. **Error propagation** - DB errors throw or return `{ success: false, error }`. Never silently return empty/zero on failure.
+5. **Mutation feedback** - Mutations return `{ success, error? }` or the created/updated record. Never `Promise<void>` for mutations.
+6. **Idempotency** - State-changing updates use CAS guards (`.eq('status', expectedStatus)`) where double-execution would cause harm
+7. **Cache busting** - After mutating data, call `revalidatePath` or `revalidateTag` for every cache that reads the affected data
+8. **Non-server-action internals** - Functions called only by other server code (webhooks, workers) go in non-`'use server'` files to prevent direct client invocation
+
 ### `@ts-nocheck` Files Must Not Export Callable Actions
 
 Files with `// @ts-nocheck` reference nonexistent tables, use wrong column names, or have unresolved type errors. **They will crash at runtime.** These files must NOT export server actions or functions that other code can import and call.
@@ -463,10 +476,14 @@ Run these in order — stop and report any failure before continuing:
 
 - `npx tsc --noEmit --skipLibCheck` → must exit 0, zero errors
 - `npx next build --no-lint` → must exit 0
+- **Experiential verification** (if any auth, layout, loading, or navigation changes):
+  - `npm run test:experiential` → all 9 suites must pass
+  - Catches blank screens, missing loading states, broken cross-boundary transitions
+  - Full docs: `docs/experiential-verification.md`
 - **Stress test AI queue** (if any AI/queue changes):
-  - `npm run test:stress:ollama` — basic load → must show ✅ PRODUCTION READY
-  - `npm run test:stress:ollama:high` — high load → must show ✅ PRODUCTION READY
-  - `npm run test:stress:ollama:failure` — failure recovery → must show ✅ PRODUCTION READY
+  - `npm run test:stress:ollama` - basic load → must show PRODUCTION READY
+  - `npm run test:stress:ollama:high` - high load → must show PRODUCTION READY
+  - `npm run test:stress:ollama:failure` - failure recovery → must show PRODUCTION READY
   - Full docs: `docs/ollama-stress-testing.md`
 - All work committed and pushed to the feature branch on GitHub
 - `types/database.ts` current with remote schema
@@ -796,6 +813,10 @@ Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 | MC Manual panel      | `scripts/launcher/index.html` (panel-manual, live codebase scanner)                |
 | MC Codebase scanner  | `scripts/launcher/server.mjs` (`scanCodebase()`, `GET /api/manual/scan`)           |
 | MC File watcher      | `scripts/launcher/server.mjs` (`initFileWatcher()`, `GET /api/activity/summary`)   |
+| Experiential tests   | `tests/experiential/` (blank screen detection, cross-boundary UX verification)     |
+| Experiential config  | `playwright.experiential.config.ts`                                                |
+| Experiential docs    | `docs/experiential-verification.md`                                                |
+| System behavior map  | `docs/system-behavior-map.md` (full runtime behavior audit, March 2026)            |
 
 ---
 
