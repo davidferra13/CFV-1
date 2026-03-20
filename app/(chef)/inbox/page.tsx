@@ -5,7 +5,7 @@ import { getUnifiedInbox, getInboxStats } from '@/lib/inbox/actions'
 import { InboxFeed } from '@/components/inbox/inbox-feed'
 import { CommunicationInboxClient } from '@/components/communication/communication-inbox-client'
 import { InboxCalendarPeek } from '@/components/communication/inbox-calendar-peek'
-import { TriageSuggestionList } from '@/components/communication/triage-suggestion-card'
+import { TriageSuggestionsSection } from '@/components/communication/triage-suggestions-section'
 import {
   getCommunicationInbox,
   getCommunicationInboxStats,
@@ -68,8 +68,8 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
           </div>
         )}
 
-        {/* Triage suggestions (renders nothing when empty, data source TBD) */}
-        <TriageSuggestionList suggestions={[]} onApply={() => {}} onDismiss={() => {}} />
+        {/* Triage suggestions - fetches real data, hides when empty */}
+        <TriageSuggestionsSection />
 
         <CommunicationInboxClient
           items={items as any}
