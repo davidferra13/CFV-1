@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { showUndoToast } from '@/components/ui/undo-toast'
@@ -39,6 +40,7 @@ type Props = {
 
 export function LocationsClient({ initialLocations, initialStock }: Props) {
   const [locations, setLocations] = useState(initialLocations)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [isPending, startTransition] = useTransition()
   // deleteTargetId and showDeactivateConfirm removed - using optimistic undo toast

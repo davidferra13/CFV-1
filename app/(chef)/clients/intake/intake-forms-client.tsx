@@ -5,6 +5,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { showUndoToast } from '@/components/ui/undo-toast'
 import {
   createIntakeForm,
@@ -28,6 +29,7 @@ interface IntakeForm {
 
 export function IntakeFormsClient({ forms: initialForms }: { forms: IntakeForm[] }) {
   const [forms, setForms] = useState<IntakeForm[]>(initialForms)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [showCreate, setShowCreate] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)

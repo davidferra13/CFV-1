@@ -7,6 +7,7 @@
 import { useState, useTransition, useEffect } from 'react'
 import { Plus, Trash2, Loader2, CheckCircle2, Edit2, Package } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -60,6 +61,7 @@ const CONDITION_CONFIG: Record<
 
 export default function KitchenInventoryPanel({ clientId }: KitchenInventoryPanelProps) {
   const [items, setItems] = useState<KitchenItem[]>([])
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -430,7 +432,7 @@ export default function KitchenInventoryPanel({ clientId }: KitchenInventoryPane
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => setDeleteConfirmId(item.id)}
                         disabled={isPending}
                         className="h-7 w-7 p-0 text-destructive hover:text-destructive"
                       >

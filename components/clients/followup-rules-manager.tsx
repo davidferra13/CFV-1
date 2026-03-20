@@ -1,7 +1,12 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { getFollowUpRules, upsertFollowUpRule, deleteFollowUpRule } from '@/lib/clients/gifting-actions'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
+import {
+  getFollowUpRules,
+  upsertFollowUpRule,
+  deleteFollowUpRule,
+} from '@/lib/clients/gifting-actions'
 import type { FollowUpRule, TriggerType, RuleAction } from '@/lib/clients/gifting-actions'
 
 const TRIGGER_LABELS: Record<TriggerType, string> = {
@@ -22,16 +27,43 @@ const ACTION_LABELS: Record<RuleAction, string> = {
 }
 
 const PRESET_TEMPLATES: { trigger: TriggerType; action: RuleAction; template: string }[] = [
-  { trigger: 'post_event', action: 'reminder', template: 'Send a thank-you note within 48 hours of the event.' },
-  { trigger: 'birthday', action: 'gift_suggestion', template: 'Consider a personalized gift or handwritten card for their birthday.' },
-  { trigger: 'no_booking_30d', action: 'email_draft', template: 'Hi {client_name}, it has been a while! I would love to cook for you again. Any upcoming occasions?' },
-  { trigger: 'no_booking_60d', action: 'reminder', template: 'Client has not booked in 60 days. Consider reaching out with a special offer.' },
-  { trigger: 'no_booking_90d', action: 'email_draft', template: 'Hi {client_name}, I have been thinking about our past dinners together. I have some exciting new dishes I think you would love. Would you be interested in scheduling something?' },
-  { trigger: 'milestone_event_count', action: 'gift_suggestion', template: 'This client just hit a milestone number of events! Consider a loyalty gift.' },
+  {
+    trigger: 'post_event',
+    action: 'reminder',
+    template: 'Send a thank-you note within 48 hours of the event.',
+  },
+  {
+    trigger: 'birthday',
+    action: 'gift_suggestion',
+    template: 'Consider a personalized gift or handwritten card for their birthday.',
+  },
+  {
+    trigger: 'no_booking_30d',
+    action: 'email_draft',
+    template:
+      'Hi {client_name}, it has been a while! I would love to cook for you again. Any upcoming occasions?',
+  },
+  {
+    trigger: 'no_booking_60d',
+    action: 'reminder',
+    template: 'Client has not booked in 60 days. Consider reaching out with a special offer.',
+  },
+  {
+    trigger: 'no_booking_90d',
+    action: 'email_draft',
+    template:
+      'Hi {client_name}, I have been thinking about our past dinners together. I have some exciting new dishes I think you would love. Would you be interested in scheduling something?',
+  },
+  {
+    trigger: 'milestone_event_count',
+    action: 'gift_suggestion',
+    template: 'This client just hit a milestone number of events! Consider a loyalty gift.',
+  },
 ]
 
 export default function FollowUpRulesManager({ initialRules }: { initialRules: FollowUpRule[] }) {
   const [rules, setRules] = useState<FollowUpRule[]>(initialRules)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -58,7 +90,7 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
     setShowForm(true)
   }
 
-  function applyPreset(preset: typeof PRESET_TEMPLATES[0]) {
+  function applyPreset(preset: (typeof PRESET_TEMPLATES)[0]) {
     setTriggerType(preset.trigger)
     setAction(preset.action)
     setTemplateText(preset.template)
@@ -91,7 +123,7 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
   function handleToggle(rule: FollowUpRule) {
     setError(null)
     const previousRules = [...rules]
-    setRules(rules.map(r => r.id === rule.id ? { ...r, enabled: !r.enabled } : r))
+    setRules(rules.map((r) => (r.id === rule.id ? { ...r, enabled: !r.enabled } : r)))
 
     startTransition(async () => {
       try {
@@ -112,7 +144,7 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
   function handleDelete(id: string) {
     setError(null)
     const previousRules = [...rules]
-    setRules(rules.filter(r => r.id !== id))
+    setRules(rules.filter((r) => r.id !== id))
 
     startTransition(async () => {
       try {
@@ -129,19 +161,22 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Follow-Up Rules</h3>
-          <p className="text-sm text-gray-500">Automated reminders and suggestions for client follow-ups</p>
+          <p className="text-sm text-gray-500">
+            Automated reminders and suggestions for client follow-ups
+          </p>
         </div>
         <button
-          onClick={() => { resetForm(); setShowForm(!showForm) }}
+          onClick={() => {
+            resetForm()
+            setShowForm(!showForm)
+          }}
           className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
         >
           {showForm ? 'Cancel' : '+ Add Rule'}
         </button>
       </div>
 
-      {error && (
-        <div className="mb-3 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
-      )}
+      {error && <div className="mb-3 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       {/* Preset templates */}
       {showForm && !editingId && (
@@ -168,11 +203,13 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
               <label className="block text-xs font-medium text-gray-700 mb-1">Trigger</label>
               <select
                 value={triggerType}
-                onChange={e => setTriggerType(e.target.value as TriggerType)}
+                onChange={(e) => setTriggerType(e.target.value as TriggerType)}
                 className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
               >
                 {Object.entries(TRIGGER_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -180,20 +217,24 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
               <label className="block text-xs font-medium text-gray-700 mb-1">Action</label>
               <select
                 value={action}
-                onChange={e => setAction(e.target.value as RuleAction)}
+                onChange={(e) => setAction(e.target.value as RuleAction)}
                 className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
               >
                 {Object.entries(ACTION_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Template text (optional)</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Template text (optional)
+            </label>
             <textarea
               value={templateText}
-              onChange={e => setTemplateText(e.target.value)}
+              onChange={(e) => setTemplateText(e.target.value)}
               rows={3}
               placeholder="Template for the reminder or email draft. Use {client_name} as a placeholder."
               className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
@@ -210,15 +251,24 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
       )}
 
       {rules.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-6">No follow-up rules configured. Add one above or use a preset.</p>
+        <p className="text-sm text-gray-400 text-center py-6">
+          No follow-up rules configured. Add one above or use a preset.
+        </p>
       ) : (
         <div className="space-y-2">
-          {rules.map(rule => (
-            <div key={rule.id} className={`flex items-center justify-between rounded-md border p-3 ${rule.enabled ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50 opacity-60'}`}>
+          {rules.map((rule) => (
+            <div
+              key={rule.id}
+              className={`flex items-center justify-between rounded-md border p-3 ${rule.enabled ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50 opacity-60'}`}
+            >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-900">{TRIGGER_LABELS[rule.trigger_type] || rule.trigger_type}</span>
-                  <span className="rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 text-xs font-medium">{ACTION_LABELS[rule.action] || rule.action}</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {TRIGGER_LABELS[rule.trigger_type] || rule.trigger_type}
+                  </span>
+                  <span className="rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 text-xs font-medium">
+                    {ACTION_LABELS[rule.action] || rule.action}
+                  </span>
                 </div>
                 {rule.template_text && (
                   <p className="mt-1 text-xs text-gray-500 line-clamp-1">{rule.template_text}</p>
@@ -231,7 +281,9 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
                   className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${rule.enabled ? 'bg-indigo-600' : 'bg-gray-200'}`}
                   title={rule.enabled ? 'Disable' : 'Enable'}
                 >
-                  <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${rule.enabled ? 'translate-x-4' : 'translate-x-0'}`} />
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${rule.enabled ? 'translate-x-4' : 'translate-x-0'}`}
+                  />
                 </button>
                 <button
                   onClick={() => startEdit(rule)}

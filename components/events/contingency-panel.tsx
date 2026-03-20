@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Badge } from '@/components/ui/badge'
 import { upsertContingencyNote, deleteContingencyNote } from '@/lib/contingency/actions'
 import { SCENARIO_LABELS } from '@/lib/contingency/constants'
@@ -29,6 +30,7 @@ export function ContingencyPanel({
 }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null) // scenario_type being edited
   const [form, setForm] = useState({ mitigation_notes: '', backup_contact_id: '' })
   const [saving, setSaving] = useState(false)

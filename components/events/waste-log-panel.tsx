@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -63,6 +64,7 @@ export function WasteLogPanel({
 }) {
   const router = useRouter()
   const [entries, setEntries] = useState<WasteEntry[]>(initialEntries)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [form, setForm] = useState({
     item_name: '',
     category: 'protein' as WasteCategory,

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Lock, Plus, Trash2, Check, AlertTriangle } from 'lucide-react'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { NdaBadge, getNdaBadgeStatus } from './nda-badge'
 import type {
   NdaRow,
@@ -49,6 +50,7 @@ type Props = {
 
 export function NdaPanel({ clientId, initialNdas }: Props) {
   const [ndas, setNdas] = useState<NdaRow[]>(initialNdas)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [isPending, startTransition] = useTransition()
 
@@ -336,7 +338,7 @@ export function NdaPanel({ clientId, initialNdas }: Props) {
                     </button>
                   )}
                   <button
-                    onClick={() => handleDelete(nda.id)}
+                    onClick={() => setDeleteConfirmId(nda.id)}
                     disabled={isPending}
                     className="rounded p-1 text-red-500 hover:bg-red-900/30"
                     title="Delete NDA"
@@ -349,6 +351,18 @@ export function NdaPanel({ clientId, initialNdas }: Props) {
           })}
         </div>
       )}
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onCancel={() => setDeleteConfirmId(null)}
+        title="Delete NDA?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (deleteConfirmId) handleDelete(deleteConfirmId)
+          setDeleteConfirmId(null)
+        }}
+      />
     </div>
   )
 }

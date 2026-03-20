@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { logTemperature, deleteTempLog } from '@/lib/compliance/actions'
@@ -36,6 +37,7 @@ export function TempLogPanel({
 }) {
   const router = useRouter()
   const [logs, setLogs] = useState<TempLog[]>(initialLogs)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [form, setForm] = useState({
     item_description: '',
     temp_fahrenheit: '',

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { getGiftLog, addGiftEntry, deleteGiftEntry } from '@/lib/clients/gifting-actions'
 import type { GiftEntry, GiftType, DeliveryMethod } from '@/lib/clients/gifting-actions'
 
@@ -25,11 +26,22 @@ function formatCents(cents: number): string {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
-export default function GiftLogPanel({ clientId, initialGifts }: { clientId: string; initialGifts: GiftEntry[] }) {
+export default function GiftLogPanel({
+  clientId,
+  initialGifts,
+}: {
+  clientId: string
+  initialGifts: GiftEntry[]
+}) {
   const [gifts, setGifts] = useState<GiftEntry[]>(initialGifts)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -96,7 +108,7 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
   function handleDelete(id: string) {
     setError(null)
     const previousGifts = [...gifts]
-    setGifts(gifts.filter(g => g.id !== id))
+    setGifts(gifts.filter((g) => g.id !== id))
 
     startTransition(async () => {
       try {
@@ -114,7 +126,8 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Gift History</h3>
           <p className="text-sm text-gray-500">
-            {gifts.length} gift{gifts.length !== 1 ? 's' : ''} logged, {formatCents(totalSpentCents)} total
+            {gifts.length} gift{gifts.length !== 1 ? 's' : ''} logged,{' '}
+            {formatCents(totalSpentCents)} total
           </p>
         </div>
         <button
@@ -125,9 +138,7 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
         </button>
       </div>
 
-      {error && (
-        <div className="mb-3 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
-      )}
+      {error && <div className="mb-3 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       {showForm && (
         <div className="mb-4 rounded-md border border-gray-200 bg-gray-50 p-4 space-y-3">
@@ -136,11 +147,13 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
               <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
               <select
                 value={giftType}
-                onChange={e => setGiftType(e.target.value as GiftType)}
+                onChange={(e) => setGiftType(e.target.value as GiftType)}
                 className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
               >
                 {Object.entries(GIFT_TYPE_CONFIG).map(([key, { label }]) => (
-                  <option key={key} value={key}>{label}</option>
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -148,11 +161,13 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
               <label className="block text-xs font-medium text-gray-700 mb-1">Delivery</label>
               <select
                 value={deliveryMethod}
-                onChange={e => setDeliveryMethod(e.target.value as DeliveryMethod)}
+                onChange={(e) => setDeliveryMethod(e.target.value as DeliveryMethod)}
                 className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
               >
                 {Object.entries(DELIVERY_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -162,7 +177,7 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
             <input
               type="text"
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. Bottle of wine, handwritten card"
               className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
             />
@@ -173,7 +188,7 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
               <input
                 type="text"
                 value={occasion}
-                onChange={e => setOccasion(e.target.value)}
+                onChange={(e) => setOccasion(e.target.value)}
                 placeholder="e.g. 10th dinner"
                 className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
               />
@@ -185,7 +200,7 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
                 step="0.01"
                 min="0"
                 value={costDollars}
-                onChange={e => setCostDollars(e.target.value)}
+                onChange={(e) => setCostDollars(e.target.value)}
                 placeholder="0.00"
                 className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
               />
@@ -195,7 +210,7 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
               <input
                 type="date"
                 value={sentAt}
-                onChange={e => setSentAt(e.target.value)}
+                onChange={(e) => setSentAt(e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
               />
             </div>
@@ -205,7 +220,7 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
             <input
               type="text"
               value={notes}
-              onChange={e => setNotes(e.target.value)}
+              onChange={(e) => setNotes(e.target.value)}
               placeholder="Any additional details"
               className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
             />
@@ -236,11 +251,15 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
               </tr>
             </thead>
             <tbody>
-              {gifts.map(gift => (
+              {gifts.map((gift) => (
                 <tr key={gift.id} className="border-b border-gray-100">
-                  <td className="py-2 pr-3 text-gray-600 whitespace-nowrap">{formatDate(gift.sent_at)}</td>
+                  <td className="py-2 pr-3 text-gray-600 whitespace-nowrap">
+                    {formatDate(gift.sent_at)}
+                  </td>
                   <td className="py-2 pr-3">
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${GIFT_TYPE_CONFIG[gift.gift_type]?.color || 'bg-gray-100 text-gray-800'}`}>
+                    <span
+                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${GIFT_TYPE_CONFIG[gift.gift_type]?.color || 'bg-gray-100 text-gray-800'}`}
+                    >
                       {GIFT_TYPE_CONFIG[gift.gift_type]?.label || gift.gift_type}
                     </span>
                   </td>
@@ -248,8 +267,12 @@ export default function GiftLogPanel({ clientId, initialGifts }: { clientId: str
                     {gift.description}
                     {gift.occasion && <span className="ml-1 text-gray-400">({gift.occasion})</span>}
                   </td>
-                  <td className="py-2 pr-3 text-gray-700 whitespace-nowrap">{formatCents(gift.cost_cents)}</td>
-                  <td className="py-2 pr-3 text-gray-500 text-xs">{DELIVERY_LABELS[gift.delivery_method] || gift.delivery_method}</td>
+                  <td className="py-2 pr-3 text-gray-700 whitespace-nowrap">
+                    {formatCents(gift.cost_cents)}
+                  </td>
+                  <td className="py-2 pr-3 text-gray-500 text-xs">
+                    {DELIVERY_LABELS[gift.delivery_method] || gift.delivery_method}
+                  </td>
                   <td className="py-2">
                     <button
                       onClick={() => handleDelete(gift.id)}

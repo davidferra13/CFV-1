@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Badge } from '@/components/ui/badge'
 import { updateClass, deleteClass, type CookingClassRow } from '@/lib/classes/class-actions'
 
@@ -39,6 +40,7 @@ export function ClassList({ classes }: ClassListProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [actionError, setActionError] = useState<string | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
   function handlePublish(id: string) {
     setActionError(null)

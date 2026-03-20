@@ -11,6 +11,7 @@ import {
 } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { showUndoToast } from '@/components/ui/undo-toast'
 import {
   cancelCollabHandoff,
@@ -106,6 +107,7 @@ export function CollabInboxPanel({
 }: CollabInboxProps) {
   const [inbox, setInbox] = useState(initialInbox)
   const [signals, setSignals] = useState(initialSignals)
+  const [deleteSignalConfirmId, setDeleteSignalConfirmId] = useState<string | null>(null)
   const [metrics, setMetrics] = useState(initialMetrics)
   const [lastSyncedAt, setLastSyncedAt] = useState(() => new Date().toISOString())
   const [timelineByHandoff, setTimelineByHandoff] = useState<
