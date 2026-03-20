@@ -6,6 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getAutomationRules, getAutomationExecutions } from '@/lib/automations/actions'
 import { getAutomationSettings } from '@/lib/automations/settings-actions'
 import { AutomationsList } from './automations-list'
+import { TemplatePicker } from '@/components/automations/template-picker'
 
 export const metadata: Metadata = { title: 'Automations - ChefFlow' }
 
@@ -27,6 +28,8 @@ export default async function AutomationsPage() {
           your own custom triggers.
         </p>
       </div>
+
+      <TemplatePicker />
 
       <AutomationsList rules={rules} executions={executions} settings={settings} />
     </div>
