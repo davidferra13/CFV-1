@@ -12,6 +12,7 @@ import { useDeferredAction } from '@/hooks/use-deferred-action'
 import { RuleBuilder } from '@/components/automations/rule-builder'
 import { BuiltInSettings } from '@/components/automations/built-in-settings'
 import { ExecutionLog } from '@/components/automations/execution-log'
+import { TemplatePicker } from '@/components/automations/template-picker'
 import { toggleAutomationRule, deleteAutomationRule } from '@/lib/automations/actions'
 import { TRIGGER_LABELS, ACTION_LABELS } from '@/lib/automations/types'
 import type {
@@ -83,6 +84,9 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
 
   return (
     <div className="space-y-6">
+      {/* ── Start from Template ────────────────────────────────────────── */}
+      <TemplatePicker />
+
       {/* ── Built-in Automations ─────────────────────────────────────────── */}
       <BuiltInSettings settings={settings} />
 
@@ -146,7 +150,7 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
                   {rule.description && (
                     <p className="text-xs text-stone-500 mb-1">{rule.description}</p>
                   )}
-                  <div className="flex flex-wrap gap-1 text-xxs">
+                  <div className="flex flex-wrap gap-1 text-[10px]">
                     <span className="bg-blue-950 text-blue-700 px-1.5 py-0.5 rounded">
                       When:{' '}
                       {TRIGGER_LABELS[rule.trigger_event as TriggerEvent] || rule.trigger_event}

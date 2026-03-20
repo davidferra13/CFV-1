@@ -16,6 +16,7 @@ import {
   type RentalInput,
 } from '@/lib/equipment/actions'
 import { EQUIPMENT_CATEGORIES } from '@/lib/equipment/constants'
+import { MaintenanceSchedule } from '@/components/equipment/maintenance-schedule'
 import { format, addDays, isBefore } from 'date-fns'
 
 type EquipmentItem = {
@@ -68,7 +69,7 @@ function getMaintenanceStatus(item: EquipmentItem): 'overdue' | 'due_soon' | 'ok
 
 export function EquipmentInventoryClient({ inventory, overdueItems, recentRentals }: Props) {
   const router = useRouter()
-  const [tab, setTab] = useState<'owned' | 'rentals'>('owned')
+  const [tab, setTab] = useState<'owned' | 'rentals' | 'maintenance'>('owned')
   const [showAddForm, setShowAddForm] = useState(false)
   const [showRentalForm, setShowRentalForm] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -157,13 +158,17 @@ export function EquipmentInventoryClient({ inventory, overdueItems, recentRental
 
       {/* Tab switcher */}
       <div className="flex border-b border-stone-700">
-        {(['owned', 'rentals'] as const).map((t) => (
+        {(['owned', 'rentals', 'maintenance'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-medium capitalize ${tab === t ? 'border-b-2 border-amber-600 text-amber-700' : 'text-stone-500 hover:text-stone-300'}`}
           >
-            {t === 'owned' ? `Owned (${inventory.length})` : `Rentals (${recentRentals.length})`}
+            {t === 'owned'
+              ? `Owned (${inventory.length})`
+              : t === 'rentals'
+                ? `Rentals (${recentRentals.length})`
+                : `Maintenance${overdueItems.length > 0 ? ` (${overdueItems.length} overdue)` : ''}`}
           </button>
         ))}
       </div>
@@ -424,6 +429,9 @@ export function EquipmentInventoryClient({ inventory, overdueItems, recentRental
           )}
         </div>
       )}
+
+      {/* Maintenance Schedule */}
+      {tab === 'maintenance' && <MaintenanceSchedule equipment={inventory} />}
     </div>
   )
 }
