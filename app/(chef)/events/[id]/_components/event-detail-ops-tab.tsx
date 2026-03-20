@@ -7,6 +7,8 @@ import { StaffBriefingAIPanel } from '@/components/ai/staff-briefing-ai-panel'
 import { PrepTimelinePanel } from '@/components/ai/prep-timeline-panel'
 import { ServiceTimelinePanel } from '@/components/ai/service-timeline-panel'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
+import { CollaboratorPanel } from '@/components/events/collaborator-panel'
+import { TravelIngredientsPanel } from '@/components/events/travel-ingredients-panel'
 import { TempLogPanel } from '@/components/events/temp-log-panel'
 import { TempSafetyPanel } from '@/components/ai/temp-safety-panel'
 import { ShoppingSubstitutions } from '@/components/events/shopping-substitutions'
@@ -56,6 +58,8 @@ type EventDetailOpsTabProps = {
   unrecordedComponents: any[]
   aiConfigured: boolean
   hasAllergyData: boolean
+  revenueSplitCollaborators: any[]
+  eventTotalCents: number
 }
 
 export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
@@ -88,6 +92,8 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
     unrecordedComponents,
     aiConfigured,
     hasAllergyData,
+    revenueSplitCollaborators,
+    eventTotalCents,
   } = props
 
   return (
@@ -146,12 +152,21 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
         <ServiceTimelinePanel eventId={event.id} />
       )}
 
-      {/* Chef Collaboration â€” shown to event owner on any non-cancelled event */}
+      {/* Chef Collaboration (network) - shown to event owner on any non-cancelled event */}
       {event.status !== 'cancelled' && (
         <EventCollaboratorsPanel
           eventId={event.id}
           isOwner={isEventOwner}
           collaborators={eventCollaborators as any}
+        />
+      )}
+
+      {/* Revenue Split Collaborators - station assignments and split management */}
+      {event.status !== 'cancelled' && isEventOwner && (
+        <CollaboratorPanel
+          eventId={event.id}
+          initialCollaborators={revenueSplitCollaborators}
+          eventTotalCents={eventTotalCents}
         />
       )}
 
@@ -209,6 +224,11 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
 
       {/* AI Contingency Suggestions */}
       {event.status !== 'cancelled' && <ContingencyAIPanel eventId={event.id} />}
+
+      {/* Travel Ingredients - shows ingredients by travel leg/stop */}
+      {event.status !== 'cancelled' && (
+        <TravelIngredientsPanel eventId={event.id} />
+      )}
 
       {/* Printed Documents (8 Sheets) + Business Documents */}
       <DocumentSection eventId={event.id} readiness={docReadiness} businessDocs={businessDocs} />
