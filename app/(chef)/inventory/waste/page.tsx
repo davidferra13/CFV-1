@@ -57,18 +57,28 @@ export default async function WasteTrackingPage() {
         <Link href="/inventory" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Inventory
         </Link>
-        <h1 className="text-3xl font-bold text-stone-100 mt-1">Waste Tracking</h1>
-        <p className="text-stone-500 mt-1">
-          Log food waste after each event or prep session. Track cost by reason and identify
-          patterns to reduce waste.
-        </p>
+        <div className="flex items-start justify-between mt-1">
+          <div>
+            <h1 className="text-3xl font-bold text-stone-100">Waste Tracking</h1>
+            <p className="text-stone-500 mt-1">
+              Log food waste after each event or prep session. Track cost by reason and identify
+              patterns to reduce waste.
+            </p>
+          </div>
+          <a
+            href="#log-waste"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-stone-100 bg-amber-700 rounded-xl hover:bg-amber-600 transition-colors shadow-sm flex-shrink-0"
+          >
+            + Log Waste
+          </a>
+        </div>
       </div>
 
       {/* Analytics dashboard */}
       <WasteDashboard dashboard={dashboardData} trend={trendData} />
 
       {/* Log new waste entry */}
-      <div className="max-w-xl">
+      <div id="log-waste" className="max-w-xl scroll-mt-6">
         <h2 className="text-lg font-semibold text-stone-100 mb-3">Log Waste</h2>
         <WasteLogForm chefId={user.entityId} />
       </div>

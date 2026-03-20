@@ -142,6 +142,15 @@ export async function createExpense(input: CreateExpenseInput): Promise<Expense>
 
   revalidatePath('/finance')
   revalidatePath('/dashboard')
+
+  // Outbound webhook (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(tenantId, 'expense.created', { expense: data })
+  } catch (err) {
+    console.error('[non-blocking] expense.created webhook failed', err)
+  }
+
   return data as Expense
 }
 
@@ -161,7 +170,8 @@ export async function updateExpense(
   if (input.event_id !== undefined) updateData.event_id = input.event_id || null
   if (input.vendor !== undefined) updateData.vendor = input.vendor || null
   if (input.is_recurring !== undefined) updateData.is_recurring = input.is_recurring
-  if (input.recurrence_interval !== undefined) updateData.recurrence_interval = input.recurrence_interval || null
+  if (input.recurrence_interval !== undefined)
+    updateData.recurrence_interval = input.recurrence_interval || null
   if (input.receipt_url !== undefined) updateData.receipt_url = input.receipt_url || null
   if (input.tax_deductible !== undefined) updateData.tax_deductible = input.tax_deductible
   if (input.notes !== undefined) updateData.notes = input.notes || null
@@ -181,6 +191,15 @@ export async function updateExpense(
 
   revalidatePath('/finance')
   revalidatePath('/dashboard')
+
+  // Outbound webhook (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(tenantId, 'expense.updated', { expense: data })
+  } catch (err) {
+    console.error('[non-blocking] expense.updated webhook failed', err)
+  }
+
   return data as Expense
 }
 
@@ -189,11 +208,7 @@ export async function deleteExpense(id: string): Promise<void> {
   const tenantId = user.tenantId!
   const supabase = await createServerClient()
 
-  const { error } = await supabase
-    .from('expenses')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', tenantId)
+  const { error } = await supabase.from('expenses').delete().eq('id', id).eq('chef_id', tenantId)
 
   if (error) {
     console.error('[expense-actions] deleteExpense failed:', error)
@@ -202,17 +217,25 @@ export async function deleteExpense(id: string): Promise<void> {
 
   revalidatePath('/finance')
   revalidatePath('/dashboard')
+
+  // Outbound webhook (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(tenantId, 'expense.deleted', { expense_id: id })
+  } catch (err) {
+    console.error('[non-blocking] expense.deleted webhook failed', err)
+  }
 }
 
-export async function getExpenseSummary(dateFrom?: string, dateTo?: string): Promise<ExpenseSummary[]> {
+export async function getExpenseSummary(
+  dateFrom?: string,
+  dateTo?: string
+): Promise<ExpenseSummary[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const supabase = await createServerClient()
 
-  let query = supabase
-    .from('expenses')
-    .select('category, amount_cents')
-    .eq('chef_id', tenantId)
+  let query = supabase.from('expenses').select('category, amount_cents').eq('chef_id', tenantId)
 
   if (dateFrom) {
     query = query.gte('date', dateFrom)

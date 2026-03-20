@@ -39,11 +39,18 @@ export default async function PriceComparisonPage() {
             automatically, with best-value guidance generated when enough pricing data is available.
           </p>
         </div>
-        <Link href="/food-cost">
-          <Button variant="secondary" size="sm">
-            Food Cost Dashboard
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Link href="/vendors">
+            <Button variant="primary" size="sm">
+              + Add Vendor Items
+            </Button>
+          </Link>
+          <Link href="/food-cost">
+            <Button variant="secondary" size="sm">
+              Food Cost Dashboard
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <PriceComparison data={data} />

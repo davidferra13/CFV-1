@@ -99,6 +99,19 @@ async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
     throw new Error('Failed to append ledger entry')
   }
 
+  // Outbound webhook (non-blocking)
+  try {
+    const { emitWebhook } = await import('@/lib/webhooks/emitter')
+    await emitWebhook(input.tenant_id, 'payment.received', {
+      ledger_entry_id: data.id,
+      entry_type: input.entry_type,
+      amount_cents: input.amount_cents,
+      event_id: input.event_id,
+    })
+  } catch (err) {
+    console.error('[non-blocking] payment.received webhook failed', err)
+  }
+
   return { duplicate: false, entry: data }
 }
 

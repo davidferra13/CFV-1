@@ -251,7 +251,10 @@ async function FeedTab({
 
 // ── Channels Tab ─────────────────────────────────────────────
 async function ChannelsTab() {
-  const channels = await listChannels()
+  const [channels, myChannels] = await Promise.all([listChannels(), getMyChannels()])
+
+  const joinedSlugs = new Set(myChannels.map((c: any) => c.slug))
+  const unjoinedCount = channels.filter((c: any) => !joinedSlugs.has(c.slug)).length
 
   return (
     <div className="space-y-4">
@@ -259,6 +262,11 @@ async function ChannelsTab() {
         <p className="text-sm text-stone-500">
           Join channels to connect around specific culinary topics
         </p>
+        {unjoinedCount > 0 && (
+          <span className="text-xs text-amber-600 font-medium">
+            {unjoinedCount} channel{unjoinedCount !== 1 ? 's' : ''} available to join
+          </span>
+        )}
       </div>
       <SocialChannelGrid channels={channels} />
     </div>
@@ -352,8 +360,19 @@ async function ConnectionsTab({ chefId }: { chefId: string }) {
 
   return (
     <div className="space-y-6">
+      {/* Header with Add Connection CTA */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-stone-500">Find and connect with private chefs in your area</p>
+        <a
+          href="#find-chefs"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-stone-100 bg-amber-700 rounded-xl hover:bg-amber-600 transition-colors shadow-sm flex-shrink-0"
+        >
+          + Add Connection
+        </a>
+      </div>
+
       {/* Search */}
-      <Card>
+      <Card id="find-chefs" className="scroll-mt-6">
         <CardHeader>
           <CardTitle className="text-base">Find Chefs</CardTitle>
         </CardHeader>
