@@ -1,7 +1,7 @@
 // Deterministic Pricing Engine
 // Pure functions - no AI, no guessing, no estimation.
 // All amounts in cents (minor units).
-// Source of truth: lib/pricing/constants.ts
+// Source of truth: lib/pricing/constants.ts (defaults) or chef_pricing_config (per-chef overrides).
 
 import {
   COUPLES_RATES,
@@ -23,7 +23,129 @@ import {
   type HolidayTier,
   type AddOnInput,
   type ComputedAddOnLine,
+  type AddOnDefinition,
 } from './constants'
+
+import type { PricingConfig } from './config-types'
+
+// ---- Resolved runtime config (built from DB config or constants) ----
+
+interface ResolvedConfig {
+  couplesRates: Record<number, number>
+  groupRates: Record<number, number>
+  multiNightPackages: Record<string, number>
+  weeklyRates: {
+    standard_day: { min: number; max: number }
+    commitment_day: { min: number; max: number }
+    cook_and_leave: number
+  }
+  pizzaRate: number
+  depositPercentage: number // decimal, e.g. 0.5
+  mileageRateCents: number
+  holidayPremiums: Record<
+    HolidayTier,
+    { tier: HolidayTier; min: number; max: number; default: number }
+  >
+  holidayProximityDays: number
+  weekendPremiumPercent: number // decimal, e.g. 0.1
+  minimumBookingCents: number
+  balanceDueHours: number
+  largeGroupMin: number
+  largeGroupMax: number
+  weeklyCommitmentMinDays: number
+  addOnCatalog: Record<string, AddOnDefinition>
+}
+
+/**
+ * Build a ResolvedConfig from a PricingConfig (DB row) or fall back to constants.
+ */
+function resolveConfig(config?: PricingConfig): ResolvedConfig {
+  if (!config) {
+    return {
+      couplesRates: COUPLES_RATES,
+      groupRates: GROUP_RATES,
+      multiNightPackages: MULTI_NIGHT_PACKAGES,
+      weeklyRates: WEEKLY_RATES,
+      pizzaRate: PIZZA_RATE,
+      depositPercentage: DEPOSIT_PERCENTAGE,
+      mileageRateCents: IRS_MILEAGE_RATE_CENTS,
+      holidayPremiums: HOLIDAY_PREMIUMS,
+      holidayProximityDays: HOLIDAY_PROXIMITY_DAYS,
+      weekendPremiumPercent: WEEKEND_PREMIUM_PERCENT,
+      minimumBookingCents: MINIMUM_BOOKING_CENTS,
+      balanceDueHours: BALANCE_DUE_HOURS_BEFORE,
+      largeGroupMin: LARGE_GROUP_MIN_GUESTS,
+      largeGroupMax: LARGE_GROUP_MAX_GUESTS,
+      weeklyCommitmentMinDays: WEEKLY_COMMITMENT_MIN_DAYS,
+      addOnCatalog: ADD_ON_CATALOG,
+    }
+  }
+
+  // Build add-on catalog from DB JSONB array
+  const addOnCatalog: Record<string, AddOnDefinition> = {}
+  if (Array.isArray(config.add_on_catalog)) {
+    for (const entry of config.add_on_catalog) {
+      if (entry.key && entry.key !== 'custom') {
+        addOnCatalog[entry.key] = {
+          label: entry.label,
+          type: entry.type,
+          perPersonCents: entry.perPersonCents,
+          flatCents: entry.flatCents,
+        }
+      }
+    }
+  }
+
+  return {
+    couplesRates: {
+      3: config.couples_rate_3_course,
+      4: config.couples_rate_4_course,
+      5: config.couples_rate_5_course,
+    },
+    groupRates: {
+      3: config.group_rate_3_course,
+      4: config.group_rate_4_course,
+      5: config.group_rate_5_course,
+    },
+    multiNightPackages: (config.multi_night_packages ?? {}) as Record<string, number>,
+    weeklyRates: {
+      standard_day: { min: config.weekly_standard_min, max: config.weekly_standard_max },
+      commitment_day: { min: config.weekly_commit_min, max: config.weekly_commit_max },
+      cook_and_leave: config.cook_and_leave_rate,
+    },
+    pizzaRate: config.pizza_rate,
+    depositPercentage: config.deposit_percentage / 100, // DB stores whole number, engine uses decimal
+    mileageRateCents: config.mileage_rate_cents,
+    holidayPremiums: {
+      1: {
+        tier: 1,
+        min: (config.holiday_tier1_pct - 5) / 100,
+        max: (config.holiday_tier1_pct + 5) / 100,
+        default: config.holiday_tier1_pct / 100,
+      },
+      2: {
+        tier: 2,
+        min: (config.holiday_tier2_pct - 5) / 100,
+        max: (config.holiday_tier2_pct + 5) / 100,
+        default: config.holiday_tier2_pct / 100,
+      },
+      3: {
+        tier: 3,
+        min: (config.holiday_tier3_pct - 5) / 100,
+        max: (config.holiday_tier3_pct + 5) / 100,
+        default: config.holiday_tier3_pct / 100,
+      },
+    },
+    holidayProximityDays: config.holiday_proximity_days,
+    weekendPremiumPercent: config.weekend_premium_pct / 100, // DB stores whole number, engine uses decimal
+    minimumBookingCents: config.minimum_booking_cents,
+    balanceDueHours: config.balance_due_hours,
+    largeGroupMin: config.large_group_min,
+    largeGroupMax: config.large_group_max,
+    weeklyCommitmentMinDays: WEEKLY_COMMITMENT_MIN_DAYS, // Not stored in DB, kept as system constant
+    addOnCatalog: Object.keys(addOnCatalog).length > 0 ? addOnCatalog : ADD_ON_CATALOG,
+  }
+}
 
 import {
   warmHolidayCache,
@@ -256,7 +378,8 @@ export function validatePricingInput(input: PricingInput): { valid: boolean; err
 
 function computeAddOns(
   addOns: AddOnInput[] | undefined,
-  guestCount: number
+  guestCount: number,
+  catalog: Record<string, AddOnDefinition> = ADD_ON_CATALOG
 ): { lines: ComputedAddOnLine[]; totalCents: number } {
   if (!addOns || addOns.length === 0) {
     return { lines: [], totalCents: 0 }
@@ -282,7 +405,8 @@ function computeAddOns(
       })
       totalCents += lineTotalCents
     } else {
-      const def = ADD_ON_CATALOG[addOn.key]
+      const def = catalog[addOn.key]
+      if (!def) continue // Skip unknown add-on keys
       const unitCents = def.type === 'per_person' ? (def.perPersonCents ?? 0) : (def.flatCents ?? 0)
       const quantity =
         def.type === 'per_person' ? (addOn.quantity ?? guestCount) : (addOn.quantity ?? 1)
@@ -304,7 +428,13 @@ function computeAddOns(
 
 // ─── Core Pricing Function ───────────────────────────────────────────────────
 
-export async function computePricing(input: PricingInput): Promise<PricingBreakdown> {
+export async function computePricing(
+  input: PricingInput,
+  config?: PricingConfig
+): Promise<PricingBreakdown> {
+  // Resolve config: use provided PricingConfig or fall back to constants
+  const rc = resolveConfig(config)
+
   // ── Step 0: Validate input ────────────────────────────────────────────────
   const validation = validatePricingInput(input)
   const validationErrors = validation.errors
@@ -326,16 +456,16 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   let requiresCustomPricing = false
 
   // ── Step 1: Guest count classification ───────────────────────────────────
-  //   Solo (1):     → uses COUPLES_RATES with a note
-  //   Couple (2):   → uses COUPLES_RATES
-  //   Group (3–7):  → uses GROUP_RATES
-  //   Large (8–14): → uses GROUP_RATES + isLargeGroup flag + note
+  //   Solo (1):     → uses couples rates with a note
+  //   Couple (2):   → uses couples rates
+  //   Group (3-7):  → uses group rates
+  //   Large (8-14): → uses group rates + isLargeGroup flag + note
   //   Buyout (15+): → requiresCustomPricing = true immediately
 
   const isCouple = guestCount <= 2 && guestCount >= 1
   const isSolo = guestCount === 1
-  const isLargeGroup = guestCount >= LARGE_GROUP_MIN_GUESTS && guestCount <= LARGE_GROUP_MAX_GUESTS
-  const isBuyout = guestCount > LARGE_GROUP_MAX_GUESTS
+  const isLargeGroup = guestCount >= rc.largeGroupMin && guestCount <= rc.largeGroupMax
+  const isBuyout = guestCount > rc.largeGroupMax
 
   if (isSolo) {
     notes.push('Solo guest - priced at couples rate (1 person)')
@@ -363,8 +493,8 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   if (!isBuyout) {
     switch (serviceType) {
       case 'private_dinner': {
-        // Couples rates apply to 1–2 guests; group rates apply to 3+
-        const rateTable = isCouple ? COUPLES_RATES : GROUP_RATES
+        // Couples rates apply to 1-2 guests; group rates apply to 3+
+        const rateTable = isCouple ? rc.couplesRates : rc.groupRates
         perPersonCents = courseCount !== undefined ? (rateTable[courseCount] ?? 0) : 0
 
         if (perPersonCents === 0) {
@@ -386,15 +516,15 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
       }
 
       case 'pizza_experience': {
-        perPersonCents = PIZZA_RATE
-        serviceFeeCents = PIZZA_RATE * guestCount
+        perPersonCents = rc.pizzaRate
+        serviceFeeCents = rc.pizzaRate * guestCount
         pricingModel = 'per_person'
         break
       }
 
       case 'multi_night': {
         const packageKey = input.multiNightPackage ?? ''
-        const packageTotal = packageKey ? (MULTI_NIGHT_PACKAGES[packageKey] ?? -1) : -1
+        const packageTotal = packageKey ? (rc.multiNightPackages[packageKey] ?? -1) : -1
 
         if (!packageKey) {
           pricingModel = 'custom'
@@ -421,38 +551,38 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
       }
 
       case 'weekly_standard': {
-        serviceFeeCents = WEEKLY_RATES.standard_day.max * numberOfDays
+        serviceFeeCents = rc.weeklyRates.standard_day.max * numberOfDays
         pricingModel = 'flat_rate'
         perPersonCents = 0
         notes.push(
-          `Weekly standard: ${formatCentsAsDollars(WEEKLY_RATES.standard_day.min)}–${formatCentsAsDollars(WEEKLY_RATES.standard_day.max)}/day × ${numberOfDays} day(s) = ${formatCentsAsDollars(serviceFeeCents)}`
+          `Weekly standard: ${formatCentsAsDollars(rc.weeklyRates.standard_day.min)}-${formatCentsAsDollars(rc.weeklyRates.standard_day.max)}/day x ${numberOfDays} day(s) = ${formatCentsAsDollars(serviceFeeCents)}`
         )
         break
       }
 
       case 'weekly_commitment': {
-        serviceFeeCents = WEEKLY_RATES.commitment_day.max * numberOfDays
+        serviceFeeCents = rc.weeklyRates.commitment_day.max * numberOfDays
         pricingModel = 'flat_rate'
         perPersonCents = 0
-        if (numberOfDays < WEEKLY_COMMITMENT_MIN_DAYS) {
+        if (numberOfDays < rc.weeklyCommitmentMinDays) {
           notes.push(
-            `Warning: commitment rate requires ${WEEKLY_COMMITMENT_MIN_DAYS} consecutive days - only ${numberOfDays} provided. Consider weekly_standard.`
+            `Warning: commitment rate requires ${rc.weeklyCommitmentMinDays} consecutive days - only ${numberOfDays} provided. Consider weekly_standard.`
           )
         } else {
           notes.push(
-            `Commitment rate: ${formatCentsAsDollars(WEEKLY_RATES.commitment_day.min)}–${formatCentsAsDollars(WEEKLY_RATES.commitment_day.max)}/day × ${numberOfDays} day(s) = ${formatCentsAsDollars(serviceFeeCents)}`
+            `Commitment rate: ${formatCentsAsDollars(rc.weeklyRates.commitment_day.min)}-${formatCentsAsDollars(rc.weeklyRates.commitment_day.max)}/day x ${numberOfDays} day(s) = ${formatCentsAsDollars(serviceFeeCents)}`
           )
         }
         break
       }
 
       case 'cook_and_leave': {
-        serviceFeeCents = WEEKLY_RATES.cook_and_leave * numberOfDays
+        serviceFeeCents = rc.weeklyRates.cook_and_leave * numberOfDays
         pricingModel = 'flat_rate'
         perPersonCents = 0
         notes.push(
           numberOfDays > 1
-            ? `Cook & Leave: ${formatCentsAsDollars(WEEKLY_RATES.cook_and_leave)}/session × ${numberOfDays} sessions = ${formatCentsAsDollars(serviceFeeCents)}`
+            ? `Cook & Leave: ${formatCentsAsDollars(rc.weeklyRates.cook_and_leave)}/session x ${numberOfDays} sessions = ${formatCentsAsDollars(serviceFeeCents)}`
             : `Cook & Leave: ${formatCentsAsDollars(serviceFeeCents)}`
         )
         break
@@ -482,10 +612,10 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
       isWeekend = dayOfWeek === 5 || dayOfWeek === 6
 
       if (isWeekend && weekendPremiumEnabled && !requiresCustomPricing && serviceFeeCents > 0) {
-        weekendPremiumPercent = WEEKEND_PREMIUM_PERCENT
-        weekendPremiumCents = Math.round(serviceFeeCents * WEEKEND_PREMIUM_PERCENT)
+        weekendPremiumPercent = rc.weekendPremiumPercent
+        weekendPremiumCents = Math.round(serviceFeeCents * rc.weekendPremiumPercent)
         notes.push(
-          `Weekend premium (+${Math.round(WEEKEND_PREMIUM_PERCENT * 100)}%) - ${formatCentsAsDollars(weekendPremiumCents)}`
+          `Weekend premium (+${Math.round(rc.weekendPremiumPercent * 100)}%) - ${formatCentsAsDollars(weekendPremiumCents)}`
         )
       } else if (isWeekend && weekendPremiumEnabled === false) {
         notes.push('Friday/Saturday event - weekend premium available but not applied')
@@ -527,7 +657,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
       // Exact holiday match
       holidayName = holiday.name
       holidayTier = holiday.tier
-      const premium = HOLIDAY_PREMIUMS[holiday.tier]
+      const premium = rc.holidayPremiums[holiday.tier]
       holidayPremiumPercent = premium.default
       holidayPremiumCents = Math.round((serviceFeeCents + weekendPremiumCents) * premium.default)
       if (requiresCustomPricing) {
@@ -541,11 +671,11 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
       }
     } else {
       // No exact holiday - check proximity
-      const proximity = detectHolidayProximity(eventDate)
+      const proximity = detectHolidayProximity(eventDate, rc.holidayProximityDays)
       if (proximity) {
         isNearHoliday = true
         nearHolidayName = proximity.name
-        const premium = HOLIDAY_PREMIUMS[proximity.tier]
+        const premium = rc.holidayPremiums[proximity.tier]
         const halfRate = premium.default / 2
         nearHolidayPremiumCents = requiresCustomPricing
           ? 0
@@ -570,15 +700,19 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
     serviceFeeCents + weekendPremiumCents + holidayPremiumCents + nearHolidayPremiumCents
 
   // ── Step 7: Travel fee ────────────────────────────────────────────────────
-  const travelFeeCents = Math.round(distanceMiles * IRS_MILEAGE_RATE_CENTS)
+  const travelFeeCents = Math.round(distanceMiles * rc.mileageRateCents)
   if (distanceMiles > 0) {
     notes.push(
-      `Travel: ${distanceMiles} miles × $${(IRS_MILEAGE_RATE_CENTS / 100).toFixed(2)}/mile = ${formatCentsAsDollars(travelFeeCents)}`
+      `Travel: ${distanceMiles} miles x $${(rc.mileageRateCents / 100).toFixed(2)}/mile = ${formatCentsAsDollars(travelFeeCents)}`
     )
   }
 
   // ── Step 8: Add-ons ───────────────────────────────────────────────────────
-  const { lines: addOnLines, totalCents: addOnTotalCents } = computeAddOns(addOns, guestCount)
+  const { lines: addOnLines, totalCents: addOnTotalCents } = computeAddOns(
+    addOns,
+    guestCount,
+    rc.addOnCatalog
+  )
   if (addOnLines.length > 0) {
     for (const line of addOnLines) {
       notes.push(`Add-on: ${line.label} - ${formatCentsAsDollars(line.totalCents)}`)
@@ -596,17 +730,17 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   let minimumApplied = false
   let totalServiceCents = preTotalServiceCents
 
-  if (!requiresCustomPricing && subtotalCents > 0 && subtotalCents < MINIMUM_BOOKING_CENTS) {
-    const gap = MINIMUM_BOOKING_CENTS - subtotalCents
-    totalServiceCents = MINIMUM_BOOKING_CENTS + travelFeeCents + addOnTotalCents
+  if (!requiresCustomPricing && subtotalCents > 0 && subtotalCents < rc.minimumBookingCents) {
+    const gap = rc.minimumBookingCents - subtotalCents
+    totalServiceCents = rc.minimumBookingCents + travelFeeCents + addOnTotalCents
     minimumApplied = true
     notes.push(
-      `Minimum booking floor applied - service fee raised by ${formatCentsAsDollars(gap)} to ${formatCentsAsDollars(MINIMUM_BOOKING_CENTS)} minimum`
+      `Minimum booking floor applied - service fee raised by ${formatCentsAsDollars(gap)} to ${formatCentsAsDollars(rc.minimumBookingCents)} minimum`
     )
   }
 
   // ── Step 11: Deposit ──────────────────────────────────────────────────────
-  const depositCents = Math.round(totalServiceCents * DEPOSIT_PERCENTAGE)
+  const depositCents = Math.round(totalServiceCents * rc.depositPercentage)
 
   // ── Step 12: Grocery estimate (internal only - never shown to client) ─────
   // Rough estimate: $30–$50 per guest per session.
@@ -640,7 +774,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
     subtotalCents,
     totalServiceCents,
     depositCents,
-    depositPercent: DEPOSIT_PERCENTAGE * 100,
+    depositPercent: rc.depositPercentage * 100,
     minimumApplied,
     estimatedGroceryCents,
     pricingModel,
@@ -650,7 +784,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
     numberOfDays,
     notes,
     validationErrors,
-    balanceDueHours: BALANCE_DUE_HOURS_BEFORE,
+    balanceDueHours: rc.balanceDueHours,
   }
 }
 
@@ -832,9 +966,12 @@ interface HolidayProximityMatch {
  * then cross-references with our tier assignments. Falls back to hardcoded-only if cache
  * is not available.
  */
-function detectHolidayProximity(dateStr: string): HolidayProximityMatch | null {
+function detectHolidayProximity(
+  dateStr: string,
+  proximityDays: number = HOLIDAY_PROXIMITY_DAYS
+): HolidayProximityMatch | null {
   // Strategy: scan each day ahead using detectHoliday() (which already uses cache internally)
-  for (let offset = 1; offset <= HOLIDAY_PROXIMITY_DAYS; offset++) {
+  for (let offset = 1; offset <= proximityDays; offset++) {
     const futureDate = new Date(dateStr + 'T12:00:00')
     futureDate.setDate(futureDate.getDate() + offset)
 
@@ -856,7 +993,7 @@ function detectHolidayProximity(dateStr: string): HolidayProximityMatch | null {
   // Only applies if cache is warm and the above scan found nothing.
   const year = parseInt(dateStr.slice(0, 4), 10)
   if (!isNaN(year) && isCacheWarm(year)) {
-    const nearest = findNearestCachedHoliday(dateStr, HOLIDAY_PROXIMITY_DAYS)
+    const nearest = findNearestCachedHoliday(dateStr, proximityDays)
     if (nearest && nearest.daysAway > 0) {
       // Map the cached holiday name back to a tier - only Tier 1 and 2 get proximity premiums
       const tier = resolveCachedHolidayTier(nearest.holiday.name)
@@ -1045,4 +1182,80 @@ export function formatPricingForEmail(pricing: PricingBreakdown): string {
   }
 
   return lines.join(' ')
+}
+
+// ---- Config-Aware Rate Card ----
+
+/**
+ * Generate a rate card string using a chef's PricingConfig (or system defaults).
+ * This is the config-aware version of generateRateCardString() in constants.ts.
+ */
+export function generateRateCardFromConfig(config?: PricingConfig): string {
+  const rc = resolveConfig(config)
+
+  const centsToDisplay = (cents: number): string => `$${(cents / 100).toFixed(0)}`
+
+  const couplesLines = Object.entries(rc.couplesRates)
+    .map(
+      ([courses, cents]) =>
+        `${courses} courses: ${centsToDisplay(cents)}/person (${centsToDisplay(cents * 2)} total)`
+    )
+    .join('\n')
+
+  const groupLines = Object.entries(rc.groupRates)
+    .map(([courses, cents]) => `${courses} courses: ${centsToDisplay(cents)}/person`)
+    .join('\n')
+
+  const multiNightLines = Object.entries(rc.multiNightPackages)
+    .filter(([, cents]) => cents > 0)
+    .map(([key, cents]) => `${key.replace(/_/g, ' ')}: ${centsToDisplay(cents)}`)
+    .join('\n')
+
+  const addOnLines = Object.entries(rc.addOnCatalog)
+    .map(([, def]) => {
+      if (def.type === 'per_person' && def.perPersonCents) {
+        return `${def.label}: ${centsToDisplay(def.perPersonCents)}/person`
+      }
+      if (def.type === 'flat' && def.flatCents) {
+        return `${def.label}: ${centsToDisplay(def.flatCents)} flat`
+      }
+      return `${def.label}: custom`
+    })
+    .join('\n')
+
+  return `RATE CARD (for reference - AI formats only, never calculates):
+
+COUPLES (1-2 guests):
+${couplesLines}
+Large tasting (8-15+): Custom
+
+GROUPS (3+ guests):
+${groupLines}
+Large group (${rc.largeGroupMin}-${rc.largeGroupMax}): Standard group rates apply - confirm feasibility
+Large tasting (${rc.largeGroupMax + 1}+): Custom / Buyout required
+
+WEEKLY/ONGOING:
+Standard cooking day: ${centsToDisplay(rc.weeklyRates.standard_day.min)}-${centsToDisplay(rc.weeklyRates.standard_day.max)}/day
+Commitment rate (${rc.weeklyCommitmentMinDays}+ consecutive days, same home): ${centsToDisplay(rc.weeklyRates.commitment_day.min)}-${centsToDisplay(rc.weeklyRates.commitment_day.max)}/day
+Cook & Leave (2 meals, no service): ${centsToDisplay(rc.weeklyRates.cook_and_leave)}/session
+
+MULTI-DAY PACKAGES:
+${multiNightLines || '(none confirmed yet)'}
+
+SEASONAL:
+Summer Brick-Fired Pizza Experience: ${centsToDisplay(rc.pizzaRate)}/person
+
+WEEKEND PREMIUM (when enabled):
+Friday/Saturday events: +${Math.round(rc.weekendPremiumPercent * 100)}% on service fee
+
+ADD-ONS (when requested explicitly):
+${addOnLines}
+Additional add-ons quoted custom
+
+NOTES:
+- Groceries billed at actual receipt cost, no markup
+- Table setting and beverages not included
+- Deposit: ${Math.round(rc.depositPercentage * 100)}% non-refundable to lock date
+- Balance due ${rc.balanceDueHours} hours before service
+- Minimum booking: ${centsToDisplay(rc.minimumBookingCents)} (service fee floor)`
 }

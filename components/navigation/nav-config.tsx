@@ -1278,6 +1278,7 @@ export function resolveMobileTabs(preferredHrefs?: string[] | null): NavItem[] {
 }
 
 const settingsShortcutOptions: PrimaryShortcutOption[] = [
+  { href: '/settings/pricing', label: 'Pricing', icon: Settings, context: 'Settings' },
   { href: '/settings/modules', label: 'Modules', icon: Settings, context: 'Settings' },
   { href: '/settings/navigation', label: 'Navigation', icon: Settings, context: 'Settings' },
   { href: '/settings/dashboard', label: 'Dashboard Widgets', icon: Settings, context: 'Settings' },
