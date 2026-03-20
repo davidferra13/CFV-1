@@ -39,6 +39,10 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
     )
   }
 
+  if (!result.data) {
+    notFound()
+  }
+
   const { quote, versionHistory, timelineEntries } = result.data
 
   if (!quote) {
@@ -129,67 +133,67 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
 
           {/* Deposit & Validity */}
           <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Deposit & Validity</h2>
-          <dl className="space-y-3">
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Deposit Required</dt>
-              <dd className="text-sm mt-1">
-                {quote.deposit_required ? (
-                  <span className="text-stone-100">
-                    Yes -{' '}
-                    {quote.deposit_amount_cents
-                      ? formatCurrency(quote.deposit_amount_cents)
-                      : 'Amount TBD'}
-                    {quote.deposit_percentage && ` (${quote.deposit_percentage}%)`}
-                  </span>
-                ) : (
-                  <span className="text-stone-300">No deposit required</span>
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Valid Until</dt>
-              <dd className="text-sm mt-1">
-                {quote.valid_until ? (
-                  <span className="text-stone-100">
-                    {format(new Date(quote.valid_until), 'MMMM d, yyyy')}
-                    {new Date(quote.valid_until) < new Date() && (
-                      <Badge variant="warning" className="ml-2">
-                        Expired
-                      </Badge>
-                    )}
-                  </span>
-                ) : (
-                  <span className="text-stone-300">No expiration set</span>
-                )}
-              </dd>
-            </div>
-            {quote.sent_at && (
+            <h2 className="text-xl font-semibold mb-4">Deposit & Validity</h2>
+            <dl className="space-y-3">
               <div>
-                <dt className="text-sm font-medium text-stone-500">Sent At</dt>
-                <dd className="text-sm text-stone-100 mt-1">
-                  {format(new Date(quote.sent_at), "MMM d, yyyy 'at' h:mm a")}
+                <dt className="text-sm font-medium text-stone-500">Deposit Required</dt>
+                <dd className="text-sm mt-1">
+                  {quote.deposit_required ? (
+                    <span className="text-stone-100">
+                      Yes -{' '}
+                      {quote.deposit_amount_cents
+                        ? formatCurrency(quote.deposit_amount_cents)
+                        : 'Amount TBD'}
+                      {quote.deposit_percentage && ` (${quote.deposit_percentage}%)`}
+                    </span>
+                  ) : (
+                    <span className="text-stone-300">No deposit required</span>
+                  )}
                 </dd>
               </div>
-            )}
-            {quote.accepted_at && (
               <div>
-                <dt className="text-sm font-medium text-stone-500">Accepted At</dt>
-                <dd className="text-sm text-green-700 mt-1">
-                  {format(new Date(quote.accepted_at), "MMM d, yyyy 'at' h:mm a")}
+                <dt className="text-sm font-medium text-stone-500">Valid Until</dt>
+                <dd className="text-sm mt-1">
+                  {quote.valid_until ? (
+                    <span className="text-stone-100">
+                      {format(new Date(quote.valid_until), 'MMMM d, yyyy')}
+                      {new Date(quote.valid_until) < new Date() && (
+                        <Badge variant="warning" className="ml-2">
+                          Expired
+                        </Badge>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="text-stone-300">No expiration set</span>
+                  )}
                 </dd>
               </div>
-            )}
-            {quote.rejected_at && (
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Rejected At</dt>
-                <dd className="text-sm text-red-700 mt-1">
-                  {format(new Date(quote.rejected_at), "MMM d, yyyy 'at' h:mm a")}
-                </dd>
-              </div>
-            )}
-          </dl>
-        </Card>
+              {quote.sent_at && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Sent At</dt>
+                  <dd className="text-sm text-stone-100 mt-1">
+                    {format(new Date(quote.sent_at), "MMM d, yyyy 'at' h:mm a")}
+                  </dd>
+                </div>
+              )}
+              {quote.accepted_at && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Accepted At</dt>
+                  <dd className="text-sm text-green-700 mt-1">
+                    {format(new Date(quote.accepted_at), "MMM d, yyyy 'at' h:mm a")}
+                  </dd>
+                </div>
+              )}
+              {quote.rejected_at && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Rejected At</dt>
+                  <dd className="text-sm text-red-700 mt-1">
+                    {format(new Date(quote.rejected_at), "MMM d, yyyy 'at' h:mm a")}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </Card>
         </div>
 
         {/* Pricing Insights Sidebar (right column) */}

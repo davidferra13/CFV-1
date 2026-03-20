@@ -16,7 +16,7 @@ import {
   type RentalInput,
 } from '@/lib/equipment/actions'
 import { EQUIPMENT_CATEGORIES } from '@/lib/equipment/constants'
-import { MaintenanceSchedule } from '@/components/equipment/maintenance-schedule'
+import MaintenanceSchedule from '@/components/equipment/maintenance-schedule'
 import { format, addDays, isBefore } from 'date-fns'
 
 type EquipmentItem = {

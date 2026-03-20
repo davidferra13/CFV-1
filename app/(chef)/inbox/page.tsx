@@ -69,7 +69,7 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
         )}
 
         {/* Triage suggestions (renders nothing when empty, data source TBD) */}
-        <TriageSuggestionList suggestions={[]} />
+        <TriageSuggestionList suggestions={[]} onApply={() => {}} onDismiss={() => {}} />
 
         <CommunicationInboxClient
           items={items as any}

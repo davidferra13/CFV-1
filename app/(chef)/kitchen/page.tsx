@@ -5,7 +5,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
-import { KitchenMode } from '@/components/kitchen/kitchen-mode'
+import { KitchenModeLauncher } from './kitchen-mode-launcher'
 
 export const metadata: Metadata = { title: 'Kitchen Mode | ChefFlow' }
 
@@ -25,7 +25,7 @@ export default async function KitchenModePage() {
 
   return (
     <Suspense fallback={<KitchenLoading />}>
-      <KitchenMode />
+      <KitchenModeLauncher />
     </Suspense>
   )
 }

@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default async function ContractsPage() {
-  let contracts
+  let contracts: any[]
   let fetchError = false
 
   try {

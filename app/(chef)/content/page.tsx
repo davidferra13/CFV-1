@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
-import { ContentPipelinePanel } from '@/components/content/content-pipeline-panel'
+import ContentPipelinePanel from '@/components/content/content-pipeline-panel'
 
 export const metadata: Metadata = { title: 'Content Pipeline | ChefFlow' }
 

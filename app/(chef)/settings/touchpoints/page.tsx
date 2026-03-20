@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
-import { TouchpointRulesManager } from '@/components/clients/touchpoint-rules-manager'
+import TouchpointRulesManager from '@/components/clients/touchpoint-rules-manager'
 import { getTouchpointRules } from '@/lib/clients/touchpoint-actions'
 
 export const metadata: Metadata = { title: 'Touchpoint Rules | ChefFlow' }

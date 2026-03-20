@@ -300,43 +300,6 @@ export default async function EventDetailPage({
   )
   const isEventOwner = (event as any).tenant_id === user.entityId
 
-  // Compute dietary complexity from guest data
-  const guestProfiles = (guestList as any[]).map((g: any) => ({
-    dietaryRestrictions: g.dietary_restrictions ?? [],
-    allergies: g.allergies ?? [],
-  }))
-  const dietaryComplexity = calculateDietaryComplexity({
-    guests: guestProfiles,
-    totalGuestCount: event.guest_count || 1,
-  })
-
-  // Compute event risk score
-  const allGuestRestrictions = guestProfiles.flatMap((g) => g.dietaryRestrictions)
-  const allGuestAllergies = guestProfiles.flatMap((g) => g.allergies)
-  const eventTotalCents = (event as any).total_price_cents ?? (event as any).quoted_price_cents ?? 0
-  const eventRisk = calculateEventRisk({
-    eventDate: event.event_date,
-    status: event.status as any,
-    paymentStatus:
-      totalPaid >= eventTotalCents && eventTotalCents > 0
-        ? 'paid'
-        : totalPaid > 0
-          ? 'partial'
-          : 'unpaid',
-    guestCount: event.guest_count ?? 0,
-    dietaryRestrictions: allGuestRestrictions,
-    allergies: allGuestAllergies,
-    hasMenu: !!eventMenus,
-    hasSignedContract: false, // conservative default
-    isRepeatClient: false, // conservative default
-    serviceStyle: (event as any).service_style ?? undefined,
-    quotedPriceCents: (event as any).quoted_price_cents ?? null,
-    outstandingBalanceCents: outstandingBalance,
-    travelDistanceMiles: travelInfo?.distanceMiles ?? null,
-    guestCountConfirmed: (event as any).guest_count_confirmed ?? undefined,
-    occasion: event.occasion ?? null,
-  })
-
   const COLLAB_ROLE_LABELS: Record<string, string> = {
     primary: 'Primary Chef',
     co_host: 'Co-Host',
@@ -467,6 +430,43 @@ export default async function EventDetailPage({
     })(),
     getRevenueSplitCollaborators(params.id).catch(() => []),
   ])
+
+  // Compute dietary complexity from guest data
+  const guestProfiles = (guestList as any[]).map((g: any) => ({
+    dietaryRestrictions: g.dietary_restrictions ?? [],
+    allergies: g.allergies ?? [],
+  }))
+  const dietaryComplexity = calculateDietaryComplexity({
+    guests: guestProfiles,
+    totalGuestCount: event.guest_count || 1,
+  })
+
+  // Compute event risk score
+  const allGuestRestrictions = guestProfiles.flatMap((g) => g.dietaryRestrictions)
+  const allGuestAllergies = guestProfiles.flatMap((g) => g.allergies)
+  const eventTotalCents = (event as any).total_price_cents ?? (event as any).quoted_price_cents ?? 0
+  const eventRisk = calculateEventRisk({
+    eventDate: event.event_date,
+    status: event.status as any,
+    paymentStatus:
+      totalPaid >= eventTotalCents && eventTotalCents > 0
+        ? 'paid'
+        : totalPaid > 0
+          ? 'partial'
+          : 'unpaid',
+    guestCount: event.guest_count ?? 0,
+    dietaryRestrictions: allGuestRestrictions,
+    allergies: allGuestAllergies,
+    hasMenu: !!eventMenus,
+    hasSignedContract: false, // conservative default
+    isRepeatClient: false, // conservative default
+    serviceStyle: (event as any).service_style ?? undefined,
+    quotedPriceCents: (event as any).quoted_price_cents ?? null,
+    outstandingBalanceCents: outstandingBalance,
+    travelDistanceMiles: travelInfo?.distanceMiles ?? null,
+    guestCountConfirmed: (event as any).guest_count_confirmed ?? undefined,
+    occasion: event.occasion ?? null,
+  })
 
   // Compute share URL (shortenUrl depends on guestShares resolving)
   const activeShare = (guestShares as any[]).find((s) => s.is_active) || null
