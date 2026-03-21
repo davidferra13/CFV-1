@@ -7,6 +7,7 @@ import { MenuCostSidebar } from '@/components/culinary/menu-cost-sidebar'
 import { MenuBreakdownView } from '@/components/culinary/menu-breakdown-view'
 import { MenuScaleDialog } from '@/components/culinary/menu-scale-dialog'
 import { MenuContextSidebar } from '@/components/culinary/menu-context-sidebar'
+import { MenuWhatIfPanel } from '@/components/culinary/menu-whatif-panel'
 import { MenuAssemblyBrowser } from '@/components/culinary/menu-assembly-browser'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -85,6 +86,7 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
             </Link>
           </div>
           <MenuCostSidebar menuId={menu.id} vendorHintsEnabled={engineFeatures.vendor_hints} />
+          <MenuWhatIfPanel menuId={menu.id} />
           <MenuContextSidebar menuId={menu.id} features={engineFeatures} />
         </div>
       </div>

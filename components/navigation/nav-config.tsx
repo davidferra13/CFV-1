@@ -544,6 +544,7 @@ export const navGroups: NavGroup[] = [
           { href: '/menus/upload', label: 'Menu Upload', icon: Upload },
           { href: '/culinary/dish-index/insights', label: 'Dish Insights' },
           { href: '/nutrition', label: 'Nutritional Analysis' },
+          { href: '/culinary/menus/engineering', label: 'Menu Engineering' },
         ],
       },
       {

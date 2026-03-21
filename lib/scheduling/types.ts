@@ -647,6 +647,7 @@ export const MENU_ENGINE_FEATURE_KEYS = [
   'inquiry_link',
   'budget_compliance',
   'dietary_conflicts',
+  'quadrant_badges',
 ] as const
 
 export type MenuEngineFeatureKey = (typeof MENU_ENGINE_FEATURE_KEYS)[number]
@@ -663,6 +664,7 @@ export interface MenuEngineFeatures {
   inquiry_link: boolean
   budget_compliance: boolean
   dietary_conflicts: boolean
+  quadrant_badges: boolean
 }
 
 export const DEFAULT_MENU_ENGINE_FEATURES: MenuEngineFeatures = {
@@ -677,6 +679,7 @@ export const DEFAULT_MENU_ENGINE_FEATURES: MenuEngineFeatures = {
   inquiry_link: true,
   budget_compliance: true,
   dietary_conflicts: true,
+  quadrant_badges: true,
 }
 
 /** Human-readable labels for menu engine features */
@@ -736,6 +739,11 @@ export const MENU_ENGINE_FEATURE_LABELS: Record<
     label: 'Active Dietary Conflict Detection',
     description:
       'Cross-checks menu ingredients against client disliked items and flags contradictions.',
+  },
+  quadrant_badges: {
+    label: 'Menu Engineering Badges',
+    description:
+      'Shows Star/Plowhorse/Puzzle/Dog quadrant classification for each recipe in the menu sidebar.',
   },
 }
 

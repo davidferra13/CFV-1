@@ -32,6 +32,9 @@ import type {
   BudgetComplianceResult,
   DietaryConflict,
 } from '@/lib/menus/menu-intelligence-actions'
+import { getMenuMixAnalysis } from '@/lib/menus/menu-engineering-actions'
+import type { MenuMixResult, MenuQuadrant } from '@/lib/menus/menu-engineering-actions'
+import { QuadrantBadge } from '@/components/culinary/quadrant-badge'
 import type { MenuEngineFeatures } from '@/lib/scheduling/types'
 import { DEFAULT_MENU_ENGINE_FEATURES, MENU_ENGINE_FEATURE_KEYS } from '@/lib/scheduling/types'
 import Link from 'next/link'
@@ -75,6 +78,7 @@ export function MenuContextSidebar({
     conflicts: DietaryConflict[]
     clientName: string | null
   } | null>(null)
+  const [menuMix, setMenuMix] = useState<MenuMixResult | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -137,6 +141,11 @@ export function MenuContextSidebar({
             ? detectMenuDietaryConflicts(menuId).catch(() => null)
             : Promise.resolve(null)
         )
+        fetches.push(
+          features.quadrant_badges
+            ? getMenuMixAnalysis(menuId).catch(() => null)
+            : Promise.resolve(null)
+        )
 
         const [
           data,
@@ -151,6 +160,7 @@ export function MenuContextSidebar({
           vendorHintsData,
           budget,
           dietaryConflictsData,
+          menuMixData,
         ] = await Promise.all(fetches)
 
         setContext(data as Awaited<ReturnType<typeof getMenuContextData>>)
@@ -178,6 +188,7 @@ export function MenuContextSidebar({
             clientName: string | null
           } | null
         )
+        setMenuMix(menuMixData as MenuMixResult | null)
         setLoadError(null)
       } catch (err) {
         console.error('[MenuContextSidebar] Failed to load:', err)
@@ -227,7 +238,8 @@ export function MenuContextSidebar({
     prepEstimate ||
     vendorHintCount > 0 ||
     budgetCompliance ||
-    (dietaryConflicts && dietaryConflicts.conflicts.length > 0)
+    (dietaryConflicts && dietaryConflicts.conflicts.length > 0) ||
+    (menuMix && menuMix.recipes.length > 0)
 
   if (!hasAnyContent) {
     const disabledCount = MENU_ENGINE_FEATURE_KEYS.filter((k) => !features[k]).length
@@ -368,6 +380,91 @@ export function MenuContextSidebar({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Menu engineering quadrant analysis */}
+      {features.quadrant_badges && menuMix && menuMix.recipes.length > 0 && (
+        <div className="px-4 py-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
+              Menu Mix
+            </h4>
+            <Link
+              href="/culinary/menus/engineering"
+              className="text-xxs text-stone-500 hover:text-stone-300 transition-colors"
+            >
+              Full analysis →
+            </Link>
+          </div>
+
+          {/* Compact distribution bar */}
+          <div className="flex h-3 rounded overflow-hidden">
+            {(
+              [
+                { q: 'star' as MenuQuadrant, count: menuMix.summary.stars, color: 'bg-amber-500' },
+                {
+                  q: 'plowhorse' as MenuQuadrant,
+                  count: menuMix.summary.plowhorses,
+                  color: 'bg-blue-500',
+                },
+                {
+                  q: 'puzzle' as MenuQuadrant,
+                  count: menuMix.summary.puzzles,
+                  color: 'bg-purple-500',
+                },
+                { q: 'dog' as MenuQuadrant, count: menuMix.summary.dogs, color: 'bg-red-500' },
+              ] as const
+            ).map(({ q, count, color }) => {
+              const pct = (count / menuMix.recipes.length) * 100
+              if (pct === 0) return null
+              return (
+                <div
+                  key={q}
+                  className={`${color}`}
+                  style={{ width: `${Math.max(pct, 8)}%` }}
+                  title={`${q}: ${count}`}
+                />
+              )
+            })}
+          </div>
+
+          {/* Balance score */}
+          <div className="flex items-center gap-2">
+            <span className="text-xxs text-stone-500">Balance</span>
+            <span
+              className={`text-xs font-bold ${
+                menuMix.summary.balanceScore >= 70
+                  ? 'text-emerald-400'
+                  : menuMix.summary.balanceScore >= 40
+                    ? 'text-amber-400'
+                    : 'text-red-400'
+              }`}
+            >
+              {menuMix.summary.balanceScore}/100
+            </span>
+          </div>
+
+          {/* Per-recipe quadrant badges */}
+          <div className="space-y-1 max-h-32 overflow-y-auto">
+            {menuMix.recipes.map((r) => (
+              <div key={r.recipeId} className="flex items-center justify-between gap-2 text-xxs">
+                <span className="text-stone-300 truncate flex-1">{r.recipeName}</span>
+                <QuadrantBadge quadrant={r.quadrant} />
+              </div>
+            ))}
+          </div>
+
+          {/* Recommendations */}
+          {menuMix.recommendations.length > 0 && (
+            <div className="pt-1 border-t border-stone-700">
+              {menuMix.recommendations.slice(0, 2).map((rec, i) => (
+                <p key={i} className="text-xxs text-stone-500 mt-1">
+                  {rec}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

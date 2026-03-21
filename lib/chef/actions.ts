@@ -69,6 +69,7 @@ const MenuEngineFeaturesSchema = z
     inquiry_link: z.boolean(),
     budget_compliance: z.boolean(),
     dietary_conflicts: z.boolean(),
+    quadrant_badges: z.boolean(),
   })
   .partial()
 

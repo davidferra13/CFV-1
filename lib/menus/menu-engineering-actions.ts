@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import type { SimulatorDish } from './menu-simulator'
 
 // ============================================
 // TYPES
@@ -616,5 +617,224 @@ export async function getMenuMixAnalysis(menuId: string): Promise<MenuMixResult>
       balanceScore,
     },
     recommendations: recs,
+  }
+}
+
+// ============================================
+// SIMULATOR DATA BRIDGE
+// ============================================
+
+export interface MenuSimulatorData {
+  currentDishes: SimulatorDish[]
+  guestCount: number
+  menuRevenueCents: number
+  guestAllergens: { allergen: string; severity: string; confirmed_by_chef: boolean }[]
+  availableRecipes: SimulatorDish[]
+}
+
+/**
+ * Fetches all data needed for the What-If Simulator panel.
+ * Bridges DB schema into the SimulatorDish format the pure simulator expects.
+ */
+export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulatorData> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const supabase = await createServerClient()
+
+  // 1. Get menu with event link
+  const { data: menu, error: menuError } = await supabase
+    .from('menus')
+    .select('id, target_guest_count, event_id')
+    .eq('id', menuId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (menuError) throw new Error(`Menu not found: ${menuError.message}`)
+
+  const guestCount = menu.target_guest_count || 4
+
+  // 2. Get event revenue + client allergens
+  let menuRevenueCents = 0
+  let guestAllergens: { allergen: string; severity: string; confirmed_by_chef: boolean }[] = []
+
+  if (menu.event_id) {
+    const { data: event } = await supabase
+      .from('events')
+      .select('quoted_price_cents, client_id')
+      .eq('id', menu.event_id)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (event) {
+      menuRevenueCents = event.quoted_price_cents ?? 0
+
+      if (event.client_id) {
+        const { data: allergies } = await supabase
+          .from('client_allergies')
+          .select('allergen, severity, confirmed_by_chef')
+          .eq('client_id', event.client_id)
+
+        guestAllergens = allergies ?? []
+      }
+    }
+  }
+
+  // 3. Get current dishes with components, recipes, and ingredients
+  const { data: dishes } = await supabase
+    .from('dishes')
+    .select('id, name, course_name, prep_time_minutes')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', tenantId)
+
+  const currentDishes: SimulatorDish[] = []
+
+  if (dishes && dishes.length > 0) {
+    const dishIds = dishes.map((d) => d.id)
+
+    // Get components with recipe links
+    const { data: components } = await supabase
+      .from('components')
+      .select('dish_id, recipe_id')
+      .in('dish_id', dishIds)
+      .eq('tenant_id', tenantId)
+
+    // Get recipe costs
+    const recipeIds = [
+      ...new Set((components ?? []).filter((c) => c.recipe_id).map((c) => c.recipe_id!)),
+    ]
+
+    let recipeCostMap = new Map<string, number>()
+    let recipeIngredientMap = new Map<string, { name: string }[]>()
+
+    if (recipeIds.length > 0) {
+      const { data: costData } = await supabase
+        .from('recipe_cost_summary')
+        .select('recipe_id, cost_per_portion_cents, total_ingredient_cost_cents')
+        .in('recipe_id', recipeIds)
+        .eq('tenant_id', tenantId)
+
+      for (const c of costData ?? []) {
+        if (c.recipe_id) {
+          recipeCostMap.set(
+            c.recipe_id,
+            c.cost_per_portion_cents ?? c.total_ingredient_cost_cents ?? 0
+          )
+        }
+      }
+
+      // Get ingredients per recipe
+      const { data: recipeIngredients } = await supabase
+        .from('recipe_ingredients')
+        .select('recipe_id, ingredient_id')
+        .in('recipe_id', recipeIds)
+
+      const ingredientIds = [
+        ...new Set(
+          (recipeIngredients ?? []).filter((ri) => ri.ingredient_id).map((ri) => ri.ingredient_id!)
+        ),
+      ]
+
+      let ingredientNameMap = new Map<string, string>()
+      if (ingredientIds.length > 0) {
+        const { data: ingredients } = await supabase
+          .from('ingredients')
+          .select('id, name')
+          .in('id', ingredientIds)
+
+        for (const ing of ingredients ?? []) {
+          ingredientNameMap.set(ing.id, ing.name)
+        }
+      }
+
+      // Build recipe -> ingredients map
+      for (const ri of recipeIngredients ?? []) {
+        if (!ri.recipe_id || !ri.ingredient_id) continue
+        const existing = recipeIngredientMap.get(ri.recipe_id) ?? []
+        const name = ingredientNameMap.get(ri.ingredient_id)
+        if (name) existing.push({ name })
+        recipeIngredientMap.set(ri.recipe_id, existing)
+      }
+    }
+
+    // Build dish -> recipe mapping
+    const dishRecipeMap = new Map<string, string[]>()
+    for (const c of components ?? []) {
+      if (!c.recipe_id) continue
+      const existing = dishRecipeMap.get(c.dish_id) ?? []
+      existing.push(c.recipe_id)
+      dishRecipeMap.set(c.dish_id, existing)
+    }
+
+    // Assemble SimulatorDish objects
+    for (const dish of dishes) {
+      const rIds = dishRecipeMap.get(dish.id) ?? []
+      let costPerServingCents = 0
+      const ingredients: { name: string }[] = []
+      const seenIngredients = new Set<string>()
+
+      for (const rId of rIds) {
+        costPerServingCents += recipeCostMap.get(rId) ?? 0
+        for (const ing of recipeIngredientMap.get(rId) ?? []) {
+          const lower = ing.name.toLowerCase()
+          if (!seenIngredients.has(lower)) {
+            seenIngredients.add(lower)
+            ingredients.push(ing)
+          }
+        }
+      }
+
+      currentDishes.push({
+        id: dish.id,
+        name: dish.name,
+        ingredients,
+        costPerServingCents,
+        prepTimeMinutes: dish.prep_time_minutes ?? null,
+      })
+    }
+  }
+
+  // 4. Get available recipes (tenant recipes not currently on this menu) as swap candidates
+  const usedRecipeIds = new Set<string>()
+  for (const d of currentDishes) {
+    // We already tracked dish-recipe mapping above
+  }
+
+  // Get all tenant recipes with costs (limit to those with cost data for useful swaps)
+  const { data: allRecipes } = await supabase
+    .from('recipe_cost_summary')
+    .select('recipe_id, recipe_name, cost_per_portion_cents, total_ingredient_cost_cents')
+    .eq('tenant_id', tenantId)
+    .not('cost_per_portion_cents', 'is', null)
+    .limit(100)
+
+  const availableRecipes: SimulatorDish[] = []
+  for (const r of allRecipes ?? []) {
+    if (!r.recipe_id) continue
+    // Get ingredients for this recipe
+    const { data: recipeIngs } = await supabase
+      .from('recipe_ingredients')
+      .select('ingredient_id, ingredients(name)')
+      .eq('recipe_id', r.recipe_id)
+      .limit(30)
+
+    const ingredients = (recipeIngs ?? [])
+      .map((ri: any) => ({ name: ri.ingredients?.name }))
+      .filter((i: any) => i.name)
+
+    availableRecipes.push({
+      id: r.recipe_id,
+      name: r.recipe_name ?? 'Unnamed',
+      ingredients,
+      costPerServingCents: r.cost_per_portion_cents ?? r.total_ingredient_cost_cents ?? 0,
+      prepTimeMinutes: null,
+    })
+  }
+
+  return {
+    currentDishes,
+    guestCount,
+    menuRevenueCents,
+    guestAllergens,
+    availableRecipes,
   }
 }
