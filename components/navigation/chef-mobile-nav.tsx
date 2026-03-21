@@ -357,7 +357,14 @@ const MobileBottomTabBar = memo(function MobileBottomTabBar({
   }, [onMoreClick])
 
   return (
-    <nav className="lg:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 bg-stone-900 border-b border-stone-700">
+    <nav
+      className="lg:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 border-b border-white/[0.06]"
+      style={{
+        background: 'rgba(28, 25, 23, 0.85)',
+        WebkitBackdropFilter: 'blur(16px) saturate(1.2)',
+        backdropFilter: 'blur(16px) saturate(1.2)',
+      }}
+    >
       <div className="flex items-center justify-around h-11">
         {tabItems.map((item) => {
           const active = isItemActive(pathname, item.href)
@@ -373,7 +380,9 @@ const MobileBottomTabBar = memo(function MobileBottomTabBar({
                 window.location.href = item.href
               }}
               className={`group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xxs font-medium transition-colors no-underline ${
-                active ? 'text-brand-600' : 'text-stone-400'
+                active
+                  ? 'text-brand-600 drop-shadow-[0_0_6px_rgba(232,143,71,0.4)]'
+                  : 'text-stone-400'
               }`}
             >
               <Icon className="w-4 h-4 group-active:scale-110 transition-transform duration-100" />
@@ -604,7 +613,14 @@ export function ChefMobileNav({
   return (
     <>
       {/* Mobile top bar */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-stone-900 border-b border-stone-700 pt-safe">
+      <header
+        className="lg:hidden fixed top-0 left-0 right-0 z-40 border-b border-white/[0.06] pt-safe"
+        style={{
+          background: 'rgba(28, 25, 23, 0.85)',
+          WebkitBackdropFilter: 'blur(16px) saturate(1.2)',
+          backdropFilter: 'blur(16px) saturate(1.2)',
+        }}
+      >
         <div className="flex items-center justify-between h-14 px-3">
           <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0 min-w-0">
             <AppLogo size={28} className="rounded-md flex-shrink-0" />
@@ -642,8 +658,18 @@ export function ChefMobileNav({
       {/* Mobile slide-out menu */}
       {menuOpen && (
         <>
-          <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={closeMenu} />
-          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-stone-900 border-r border-stone-700 shadow-xl">
+          <div
+            className="lg:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+            onClick={closeMenu}
+          />
+          <div
+            className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 border-r border-white/[0.06] shadow-2xl"
+            style={{
+              background: 'rgba(28, 25, 23, 0.92)',
+              WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
+              backdropFilter: 'blur(20px) saturate(1.3)',
+            }}
+          >
             <div className="flex items-center justify-between h-14 px-4 border-b border-stone-800">
               <span className="font-semibold text-stone-100">Menu</span>
               <button

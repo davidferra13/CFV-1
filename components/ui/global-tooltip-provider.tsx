@@ -558,7 +558,7 @@ export function GlobalTooltipProvider({ children }: { children: React.ReactNode 
             id={TOOLTIP_ID}
             ref={tooltipRef}
             role="tooltip"
-            className="pointer-events-none fixed max-w-[calc(100vw-1.5rem)] rounded-xl border border-brand-500/20 bg-stone-950/95 px-3 py-2 text-xs-tight font-medium leading-4 text-stone-100 shadow-[0_18px_40px_rgba(0,0,0,0.4)] backdrop-blur-sm transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-none sm:max-w-72"
+            className="pointer-events-none fixed max-w-[calc(100vw-1.5rem)] rounded-xl border border-brand-500/15 px-3 py-2 text-xs-tight font-medium leading-4 text-stone-100 shadow-[0_18px_40px_rgba(0,0,0,0.5),0_0_16px_rgba(232,143,71,0.06)] transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-none sm:max-w-72"
             style={{
               top: position.top,
               left: position.left,
@@ -566,6 +566,9 @@ export function GlobalTooltipProvider({ children }: { children: React.ReactNode 
               transform: `translateY(${
                 isOpen ? '0px' : position.placement === 'top' ? '4px' : '-4px'
               }) scale(${isOpen ? 1 : 0.98})`,
+              background: 'rgba(12, 10, 9, 0.88)',
+              WebkitBackdropFilter: 'blur(16px) saturate(1.3)',
+              backdropFilter: 'blur(16px) saturate(1.3)',
             }}
           >
             {renderedTooltip.text}
