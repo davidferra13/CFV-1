@@ -9,13 +9,15 @@ export function ToastProvider() {
       toastOptions={{
         duration: 5000,
         style: {
-          background: 'white',
-          border: '1px solid #e7e5e4', // stone-200
+          background: 'rgba(28, 25, 23, 0.85)',
+          backdropFilter: 'blur(16px) saturate(1.4)',
+          WebkitBackdropFilter: 'blur(16px) saturate(1.4)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
           borderRadius: '0.75rem',
           padding: '0.75rem 1rem',
           fontSize: '0.875rem',
-          color: '#1c1917', // stone-900
-          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+          color: '#e7e5e4',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(232, 143, 71, 0.04)',
         },
       }}
       visibleToasts={3}

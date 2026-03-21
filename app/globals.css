@@ -249,7 +249,7 @@ html {
   }
 
   .loading-bone-muted {
-    background: rgba(87, 83, 78, 0.78);
+    background: rgba(92, 80, 68, 0.78);
   }
 
   .loading-spinner {
@@ -271,7 +271,7 @@ html {
 
   .skeleton {
     @apply rounded;
-    background: rgba(68, 64, 60, 0.9);
+    background: rgba(72, 65, 58, 0.9);
     position: relative;
     overflow: hidden;
   }
@@ -285,7 +285,7 @@ html {
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.14) 45%,
+      rgba(232, 143, 71, 0.12) 45%,
       transparent 100%
     );
   }
@@ -1988,4 +1988,89 @@ select:focus {
   .pulse-soft {
     animation: none;
   }
+}
+
+/* ============================================
+   VISUAL POLISH LAYER 2
+   Route progress, nav glow, input focus,
+   toast, empty states, skeleton tint
+   ============================================ */
+
+/* ── Sidebar active nav glow ── */
+.nav-active-glow {
+  position: relative;
+  box-shadow: inset 3px 0 0 rgb(var(--brand-500));
+}
+.nav-active-glow::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  bottom: 25%;
+  width: 3px;
+  background: rgb(var(--brand-500));
+  border-radius: 0 2px 2px 0;
+  box-shadow:
+    0 0 8px rgb(var(--brand-500) / 0.5),
+    0 0 16px rgb(var(--brand-500) / 0.2);
+}
+
+/* ── Input focus glow ── */
+input:focus,
+textarea:focus,
+select:focus {
+  box-shadow:
+    0 0 0 2px rgb(var(--brand-500) / 0.15),
+    0 0 12px rgb(var(--brand-500) / 0.08);
+}
+
+/* ── Brand-tinted skeleton shimmer (apply via loading-bone-brand) ── */
+.loading-bone-brand {
+  position: relative;
+  overflow: hidden;
+  background: rgba(68, 64, 60, 0.9);
+}
+.loading-bone-brand::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  animation: loading-shimmer 1.7s var(--ease-spring) infinite;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--brand-500) / 0.1) 45%,
+    transparent 100%
+  );
+}
+
+/* ── Empty state float (gentle hover for mascot/illustrations) ── */
+.empty-state-float {
+  animation: float-gentle 5s ease-in-out infinite;
+}
+
+/* ── Toast slide-in (sonner handles this but we enhance) ── */
+[data-sonner-toast] {
+  --shadow-toast: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+[data-sonner-toast][data-type='success'] {
+  border-left: 3px solid #10b981 !important;
+}
+[data-sonner-toast][data-type='error'] {
+  border-left: 3px solid #ef4444 !important;
+}
+[data-sonner-toast][data-type='warning'] {
+  border-left: 3px solid #f59e0b !important;
+}
+[data-sonner-toast][data-type='info'] {
+  border-left: 3px solid rgb(var(--brand-500)) !important;
+}
+
+/* ── Smooth scrollbar fade on sections ── */
+.scrollbar-fade::-webkit-scrollbar-thumb {
+  background: rgba(68, 64, 60, 0);
+  transition: background 0.3s;
+}
+.scrollbar-fade:hover::-webkit-scrollbar-thumb {
+  background: rgba(68, 64, 60, 0.8);
 }

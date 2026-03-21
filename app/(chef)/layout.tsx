@@ -74,6 +74,10 @@ const RouteTracker = dynamic(
   () => import('@/components/session/route-tracker').then((m) => m.RouteTracker),
   { ssr: false }
 )
+const RouteProgress = dynamic(
+  () => import('@/components/ui/route-progress').then((m) => m.RouteProgress),
+  { ssr: false }
+)
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   // Server-side role check - happens BEFORE any client code ships
@@ -155,6 +159,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
         <SidebarProvider>
           <NotificationProvider userId={user.id}>
             <ToastProvider />
+            <RouteProgress />
             <TestAccountBanner />
             <KeyboardShortcutsWrapper>
               <div

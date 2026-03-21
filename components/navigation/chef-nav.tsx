@@ -981,7 +981,7 @@ export function ChefSidebar({
                       href={item.href}
                       className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
                         active
-                          ? 'bg-brand-950 text-brand-400 border-brand-500'
+                          ? 'bg-brand-950 text-brand-400 border-brand-500 nav-active-glow'
                           : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
                       }`}
                     >
@@ -1130,7 +1130,7 @@ export function ChefSidebar({
                       href={item.href}
                       className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
                         active
-                          ? 'bg-brand-950 text-brand-400 border-brand-500'
+                          ? 'bg-brand-950 text-brand-400 border-brand-500 nav-active-glow'
                           : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
                       }`}
                     >
