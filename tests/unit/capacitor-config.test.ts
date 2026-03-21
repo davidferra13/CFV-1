@@ -1,43 +1,49 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  DEFAULT_CAPACITOR_SERVER_URL,
   buildCapacitorNavigationHosts,
   resolveCapacitorServerUrl,
   shouldUseCapacitorCleartext,
 } from '@/lib/mobile/capacitor-config'
 
 describe('capacitor config helpers', () => {
-  it('falls back to the production app host when NEXT_PUBLIC_APP_URL is local-only', () => {
-    assert.equal(
-      resolveCapacitorServerUrl({
-        NEXT_PUBLIC_APP_URL: 'http://localhost:3100',
-      } as NodeJS.ProcessEnv),
-      DEFAULT_CAPACITOR_SERVER_URL
-    )
+  it('falls back to localhost:3100 when CAPACITOR_SERVER_URL is not set', () => {
+    const original = process.env.CAPACITOR_SERVER_URL
+    delete process.env.CAPACITOR_SERVER_URL
+
+    assert.equal(resolveCapacitorServerUrl(), 'http://localhost:3100')
+
+    // Restore
+    if (original !== undefined) process.env.CAPACITOR_SERVER_URL = original
   })
 
-  it('uses an explicit Capacitor server override for device testing', () => {
-    assert.equal(
-      resolveCapacitorServerUrl({
-        CAPACITOR_SERVER_URL: 'http://192.168.1.77:3100',
-        NEXT_PUBLIC_APP_URL: 'http://localhost:3100',
-      } as NodeJS.ProcessEnv),
-      'http://192.168.1.77:3100'
-    )
+  it('uses CAPACITOR_SERVER_URL when set', () => {
+    const original = process.env.CAPACITOR_SERVER_URL
+    process.env.CAPACITOR_SERVER_URL = 'http://192.168.1.77:3100'
+
+    assert.equal(resolveCapacitorServerUrl(), 'http://192.168.1.77:3100')
+
+    // Restore
+    if (original !== undefined) {
+      process.env.CAPACITOR_SERVER_URL = original
+    } else {
+      delete process.env.CAPACITOR_SERVER_URL
+    }
   })
 
-  it('keeps public production hosts and computes navigation settings from them', () => {
-    const serverUrl = resolveCapacitorServerUrl({
-      NEXT_PUBLIC_APP_URL: 'https://beta.cheflowhq.com',
-    } as NodeJS.ProcessEnv)
+  it('detects cleartext for http URLs', () => {
+    assert.equal(shouldUseCapacitorCleartext('http://localhost:3100'), true)
+    assert.equal(shouldUseCapacitorCleartext('https://app.cheflowhq.com'), false)
+  })
 
-    assert.equal(serverUrl, 'https://beta.cheflowhq.com')
-    assert.equal(shouldUseCapacitorCleartext(serverUrl), false)
-    assert.deepEqual(buildCapacitorNavigationHosts(serverUrl), [
+  it('builds navigation hosts from a valid URL', () => {
+    assert.deepEqual(buildCapacitorNavigationHosts('https://beta.cheflowhq.com'), [
       'beta.cheflowhq.com',
-      'app.cheflowhq.com',
-      'cheflowhq.com',
+      '*.cheflowhq.com',
     ])
+  })
+
+  it('returns fallback hosts for an invalid URL', () => {
+    assert.deepEqual(buildCapacitorNavigationHosts('not-a-url'), ['localhost', '*.cheflowhq.com'])
   })
 })

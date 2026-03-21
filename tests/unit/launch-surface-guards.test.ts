@@ -13,7 +13,7 @@ test('public launch surfaces use launch-mode-aware signup helpers instead of har
   const workflow = read('components/public/workflow-steps.tsx')
   const remy = read('components/public/remy-concierge-section.tsx')
 
-  assert.match(home, /buildMarketingSignupHref/)
+  // Homepage is now a search-first directory page with no signup links
   assert.doesNotMatch(home, /href="\/auth\/signup"/)
   assert.match(pricing, /buildMarketingSignupHref/)
   assert.doesNotMatch(pricing, /href="\/auth\/signup"/)

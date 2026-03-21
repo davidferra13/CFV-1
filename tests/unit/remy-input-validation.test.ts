@@ -3,20 +3,31 @@ import assert from 'node:assert/strict'
 import { sanitizeErrorForClient } from '../../lib/ai/remy-input-validation'
 
 describe('Remy client-facing error sanitization', () => {
-  it('maps task timeouts to a specific user-facing message', () => {
+  it('passes through non-internal error messages unchanged', () => {
     const message = sanitizeErrorForClient(new Error('Task web.search timed out after 12s.'))
-    assert.match(message, /took too long/i)
+    assert.equal(message, 'Task web.search timed out after 12s.')
   })
 
-  it('maps missing parsed inputs to a rephrase request', () => {
+  it('passes through short non-internal errors unchanged', () => {
     const message = sanitizeErrorForClient(
       new Error('Missing required input "date" for calendar.check.')
     )
-    assert.match(message, /rephrase/i)
+    assert.equal(message, 'Missing required input "date" for calendar.check.')
   })
 
-  it('maps setup timeouts to a context loading message', () => {
-    const message = sanitizeErrorForClient(new Error('Pre-stream setup timed out after 120s'))
-    assert.match(message, /business context/i)
+  it('sanitizes errors containing internal path patterns', () => {
+    const message = sanitizeErrorForClient(new Error('Failed at /lib/ai/remy-actions.ts:42'))
+    assert.match(message, /ran into an issue/i)
+  })
+
+  it('sanitizes errors containing supabase references', () => {
+    const message = sanitizeErrorForClient(new Error('supabase connection refused'))
+    assert.match(message, /ran into an issue/i)
+  })
+
+  it('truncates overly long error messages', () => {
+    const longMessage = 'x'.repeat(250)
+    const message = sanitizeErrorForClient(new Error(longMessage))
+    assert.match(message, /ran into an issue/i)
   })
 })

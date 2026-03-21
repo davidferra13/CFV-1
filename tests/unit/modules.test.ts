@@ -72,9 +72,11 @@ describe('Module Definitions — tier assignment', () => {
     assert.ok(freeSlugs.includes('culinary'), 'Culinary must be free')
   })
 
-  it('pro modules exist', () => {
+  it('all modules are free tier (no Pro gating)', () => {
     const proModules = MODULES.filter((m) => m.tier === 'pro')
-    assert.ok(proModules.length > 0, 'Should have at least one Pro module')
+    assert.equal(proModules.length, 0, 'All modules should be free tier - no Pro gating')
+    const freeModules = MODULES.filter((m) => m.tier === 'free')
+    assert.equal(freeModules.length, MODULES.length, 'Every module should be free')
   })
 })
 
@@ -94,17 +96,11 @@ describe('DEFAULT_ENABLED_MODULES', () => {
     }
   })
 
-  it('does NOT include pro modules by default', () => {
-    const proSlugs = MODULES.filter((m) => m.tier === 'pro').map((m) => m.slug)
-    for (const slug of proSlugs) {
-      // Pro modules with defaultEnabled=true would be included; check consistency
+  it('all default-enabled modules are free tier', () => {
+    for (const slug of DEFAULT_ENABLED_MODULES) {
       const mod = getModule(slug)
-      if (!mod?.defaultEnabled) {
-        assert.ok(
-          !DEFAULT_ENABLED_MODULES.includes(slug),
-          `Pro module ${slug} should not be default-enabled`
-        )
-      }
+      assert.ok(mod, `Default-enabled module ${slug} must exist`)
+      assert.equal(mod!.tier, 'free', `Default-enabled module ${slug} should be free`)
     }
   })
 })
@@ -161,14 +157,14 @@ describe('getVisibleNavGroupIds', () => {
     assert.ok(!visible.includes('pipeline'))
   })
 
-  it('pro modules show for free users when enabled (they see upgrade prompts)', () => {
-    const proModule = MODULES.find((m) => m.tier === 'pro' && m.navGroupId)
-    if (proModule) {
-      const enabled = ['dashboard', proModule.slug]
+  it('all modules with navGroupId show when enabled (all free)', () => {
+    const moduleWithNav = MODULES.find((m) => m.navGroupId && m.slug !== 'dashboard')
+    if (moduleWithNav) {
+      const enabled = ['dashboard', moduleWithNav.slug]
       const visible = getVisibleNavGroupIds(enabled, 'free')
       assert.ok(
-        visible.includes(proModule.navGroupId!),
-        'Pro module should be visible when enabled (even for free users)'
+        visible.includes(moduleWithNav.navGroupId!),
+        `Module ${moduleWithNav.slug} should be visible when enabled`
       )
     }
   })

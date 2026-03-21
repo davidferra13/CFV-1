@@ -33,19 +33,6 @@ function buildContext(): EventContext {
         email: 'alex@example.com',
       },
     },
-    ops: {
-      groceryListReady: false,
-      prepListReady: false,
-      equipmentListReady: false,
-      packingListReady: false,
-      timelineReady: false,
-      executionSheetReady: false,
-      nonNegotiablesChecked: false,
-      shoppingCompletedAt: null,
-      prepCompletedAt: null,
-      carPacked: false,
-      carPackedAt: null,
-    },
     menus: [
       {
         id: 'menu-1',
@@ -54,18 +41,6 @@ function buildContext(): EventContext {
         dishCount: 4,
       },
     ],
-    shopping: {
-      activeListId: null,
-      hasActiveList: false,
-      completedListCount: 0,
-      lastCompletedAt: null,
-    },
-    packing: {
-      confirmedItemCount: 0,
-    },
-    travel: {
-      hasServiceTravelRoute: false,
-    },
     financial: {
       totalPaidCents: 50000,
       outstandingBalanceCents: 200000,
@@ -75,51 +50,44 @@ function buildContext(): EventContext {
 }
 
 describe('deriveConfirmedFacts', () => {
-  it('uses linked shopping lists to infer grocery readiness even when the event flag is stale', () => {
+  it('derives deposit and payment facts from financial payment status', () => {
     const ctx = buildContext()
-    ctx.shopping.activeListId = 'shopping-1'
-    ctx.shopping.hasActiveList = true
-
     const facts = deriveConfirmedFacts(ctx)
 
-    assert.equal(facts.groceryListReady, true)
-    assert.equal(facts.shoppingComplete, false)
-    assert.equal(facts.hasActiveShoppingList, true)
+    assert.equal(facts.depositReceived, true)
+    assert.equal(facts.fullyPaid, true)
+    assert.equal(facts.isLegallyActionable, true)
   })
 
-  it('treats a completed shopping list as shopping complete when no active list remains', () => {
+  it('treats unpaid status as no deposit received', () => {
     const ctx = buildContext()
-    ctx.shopping.completedListCount = 1
-    ctx.shopping.lastCompletedAt = new Date().toISOString()
+    ctx.financial = {
+      totalPaidCents: 0,
+      outstandingBalanceCents: 250000,
+      paymentStatus: 'unpaid',
+    }
 
     const facts = deriveConfirmedFacts(ctx)
 
-    assert.equal(facts.shoppingComplete, true)
-    assert.equal(facts.groceryListReady, true)
+    assert.equal(facts.depositReceived, false)
+    assert.equal(facts.fullyPaid, false)
+  })
+
+  it('derives menu and stage facts from event context', () => {
+    const ctx = buildContext()
+    const facts = deriveConfirmedFacts(ctx)
+
+    assert.equal(facts.hasMenuAttached, true)
+    assert.equal(facts.hasMenuWithDishes, true)
+    assert.equal(facts.eventConfirmed, true)
+    assert.equal(facts.guestCountStable, true)
   })
 })
 
 describe('getEventWorkSurface', () => {
-  it('blocks prep when the prep list exists but shopping is not done yet', () => {
-    const ctx = buildContext()
-    ctx.ops.prepListReady = true
-    ctx.shopping.activeListId = 'shopping-1'
-    ctx.shopping.hasActiveList = true
-
-    const surface = getEventWorkSurface(ctx)
-    const prepItem = surface.items.find((item) => item.stage === 'prep_list')
-
-    assert.ok(prepItem)
-    assert.equal(prepItem?.category, 'blocked')
-    assert.equal(prepItem?.title, 'Prep is blocked by shopping')
-    assert.equal(prepItem?.actionUrl, '/events/event-1/prep')
-  })
-
-  it('advances prep to actionable work once shopping is complete', () => {
+  it('returns prep items as preparable when event is legally actionable', () => {
     const ctx = buildContext()
     ctx.event.event_date = daysFromNow(5)
-    ctx.ops.prepListReady = true
-    ctx.ops.shoppingCompletedAt = new Date().toISOString()
 
     const surface = getEventWorkSurface(ctx)
     const prepItem = surface.items.find((item) => item.stage === 'prep_list')
@@ -129,29 +97,34 @@ describe('getEventWorkSurface', () => {
     assert.equal(prepItem?.title, 'Begin early prep items')
   })
 
-  it('requires the execution sheet before showing the start-event action on event day', () => {
+  it('surfaces travel confirmation for confirmed events within 3 days', () => {
     const ctx = buildContext()
-    ctx.event.event_date = daysFromNow(0)
-    ctx.ops.executionSheetReady = false
+    ctx.event.event_date = daysFromNow(2)
 
     const surface = getEventWorkSurface(ctx)
-    const executionItem = surface.items.find((item) => item.stage === 'execution')
+    const travelItem = surface.items.find((item) => item.stage === 'travel_arrival')
 
-    assert.ok(executionItem)
-    assert.equal(executionItem?.title, 'Finalize execution sheet')
-    assert.equal(executionItem?.actionUrl, '/events/event-1')
+    assert.ok(travelItem)
+    assert.equal(travelItem?.title, 'Confirm travel plan')
   })
 
-  it('sends shopping-stage work to the active shopping list', () => {
+  it('surfaces grocery phase C for confirmed events within 7 days', () => {
     const ctx = buildContext()
-    ctx.shopping.activeListId = 'shopping-1'
-    ctx.shopping.hasActiveList = true
+    ctx.event.event_date = daysFromNow(2)
 
     const surface = getEventWorkSurface(ctx)
     const groceryItem = surface.items.find((item) => item.stage === 'grocery_list')
 
     assert.ok(groceryItem)
-    assert.equal(groceryItem?.title, 'Complete shopping run')
-    assert.equal(groceryItem?.actionUrl, '/shopping/shopping-1')
+    assert.equal(groceryItem?.title, 'Finalize grocery list (Phase C)')
+  })
+
+  it('produces no work items for cancelled events', () => {
+    const ctx = buildContext()
+    ctx.event.status = 'cancelled'
+
+    const surface = getEventWorkSurface(ctx)
+
+    assert.equal(surface.items.length, 0)
   })
 })

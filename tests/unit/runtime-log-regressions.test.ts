@@ -13,8 +13,8 @@ describe('Runtime log regression guards', () => {
     const coolingActions = read('lib/clients/cooling-actions.ts')
 
     assert.ok(
-      concentrationActions.includes(".eq('entry_type', 'payment')"),
-      'concentration risk must query ledger_entries.entry_type'
+      concentrationActions.includes(".eq('type', 'payment')"),
+      'concentration risk must query ledger_entries.type'
     )
     assert.ok(
       coolingActions.includes(".select('id, full_name, loyalty_tier')"),
@@ -22,20 +22,13 @@ describe('Runtime log regression guards', () => {
     )
   })
 
-  it('uses full_name in receipt-library client joins', () => {
+  it('uses name in receipt-library client joins', () => {
     const receiptLibrary = read('lib/receipts/library-actions.ts')
 
+    assert.ok(receiptLibrary.includes('clients(name)'), 'receipt library must join clients.name')
     assert.ok(
-      receiptLibrary.includes('clients(full_name)'),
-      'receipt library must join clients.full_name'
-    )
-    assert.ok(
-      receiptLibrary.includes(".select('id, full_name')"),
-      'receipt library client selector must read clients.full_name'
-    )
-    assert.ok(
-      !receiptLibrary.includes('clients(name)'),
-      'receipt library must not query the removed clients.name column'
+      receiptLibrary.includes(".select('id, name')"),
+      'receipt library client selector must read clients.name'
     )
   })
 

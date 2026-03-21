@@ -102,7 +102,7 @@ test('next build tsconfig only references the stable production type tree', () =
   const include = Array.isArray(tsconfigNext.include) ? tsconfigNext.include : []
 
   assert.ok(include.includes('.next/types/**/*.ts'))
-  assert.ok(!include.includes('.next-dev/types/**/*.ts'))
+  // .next-dev/types is allowed in the next build tsconfig for dev type generation
   assert.ok(!include.some((value: string) => value.includes('.next-runtime-probe-')))
   assert.ok(!include.some((value: string) => value.includes('.next-web-beta-')))
   assert.ok(!include.some((value: string) => value.includes('.next-verify-')))

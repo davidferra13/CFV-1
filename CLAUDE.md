@@ -30,7 +30,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 - **Definition of done:** a feature is only done when it is verified in the real UI, honest about failure, and protected against drift. See `docs/definition-of-done.md`
 
-- **Stack:** Next.js · Supabase · Stripe — multi-tenant private chef platform
+- **Stack:** Next.js · Supabase · Stripe — multi-tenant chef operating platform
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
 - **End every session:** commit everything → push the feature branch → update this file if new rules were found
 - **Private AI:** client data stays local via Ollama only — never Gemini, never cloud LLMs

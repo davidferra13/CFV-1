@@ -199,9 +199,12 @@ test('raffle-actions uses requireChef for tenant scoping', () => {
 test('requirePro calls requireChef internally (session-based, not input-based)', () => {
   const source = read('lib/billing/require-pro.ts')
 
-  assert.match(source, /requireChef/, 'requirePro must call requireChef')
-  assert.match(source, /isAdmin/, 'requirePro must check admin bypass')
-  assert.match(source, /hasProAccess/, 'requirePro must check Pro tier')
+  assert.match(source, /requireChef/, 'requirePro must delegate to requireChef for auth')
+  assert.match(
+    source,
+    /return\s+await\s+requireChef\(\)/,
+    'requirePro must be a pass-through that returns requireChef() result'
+  )
   assert.doesNotMatch(
     source,
     /input\.chefId|body\.chefId|request\.chefId/,
