@@ -9,9 +9,8 @@ import { AppLogo } from '@/components/branding/app-logo'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const NAV_ITEMS = [
-  { href: '/chefs', label: 'Chefs' },
-  { href: '/discover', label: 'Discover' },
   { href: '/contact', label: 'Contact' },
+  { href: '/pricing', label: 'Pricing' },
 ]
 
 export function PublicHeader() {
@@ -75,24 +74,24 @@ export function PublicHeader() {
             Sign In
           </TrackedLink>
           <TrackedLink
-            href="/marketplace-chefs"
-            analyticsName="header_for_chefs"
+            href="/auth/signup"
+            analyticsName="header_signup"
             analyticsProps={{ section: 'public_header' }}
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
+            className="inline-flex h-10 items-center justify-center rounded-lg gradient-accent px-4 text-sm font-semibold text-white glow-hover"
           >
-            For food providers
+            Get Started
           </TrackedLink>
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
           <ThemeToggle className="h-11 w-11 min-h-0 rounded-lg border border-stone-600 bg-stone-900/80 p-0" />
           <TrackedLink
-            href="/chefs"
-            analyticsName="header_mobile_explore"
+            href="/auth/signin"
+            analyticsName="header_mobile_signin_quick"
             analyticsProps={{ section: 'public_header_mobile' }}
             className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-brand-700/50 bg-brand-950/50 px-3 text-xs-tight font-semibold uppercase tracking-[0.08em] text-brand-200 touch-manipulation"
           >
-            Explore
+            Sign In
           </TrackedLink>
           <button
             type="button"
@@ -138,13 +137,13 @@ export function PublicHeader() {
               Sign In
             </TrackedLink>
             <TrackedLink
-              href="/marketplace-chefs"
-              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800"
-              analyticsName="header_mobile_for_providers"
+              href="/auth/signup"
+              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg gradient-accent px-3 text-sm font-semibold text-white"
+              analyticsName="header_mobile_signup"
               analyticsProps={{ section: 'public_header_mobile' }}
               onClick={() => setMobileMenuOpen(false)}
             >
-              For food providers
+              Get Started
             </TrackedLink>
           </div>
         </div>
