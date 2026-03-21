@@ -99,8 +99,8 @@ export function DemandHeatmap({ data: heatmapData }: DemandHeatmapProps) {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 py-4">
-            <div className="w-5 h-5 rounded-full bg-blue-900 flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-bold text-blue-600">%</span>
+            <div className="w-5 h-5 rounded-full bg-brand-900 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-brand-600">%</span>
             </div>
             <div>
               <p className="text-2xl font-bold text-stone-100">{avgConfidence}%</p>

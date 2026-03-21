@@ -33,7 +33,7 @@ const CATEGORY_STYLES: Record<string, string> = {
   salad: 'bg-emerald-900 text-emerald-700',
   appetizer: 'bg-purple-900 text-purple-700',
   condiment: 'bg-stone-800 text-stone-300',
-  beverage: 'bg-sky-900 text-sky-700',
+  beverage: 'bg-brand-900 text-brand-700',
   other: 'bg-stone-800 text-stone-400',
 }
 

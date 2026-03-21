@@ -13,7 +13,7 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_CLASS: Record<string, string> = {
-  confirmed: 'bg-blue-950 text-blue-700',
+  confirmed: 'bg-brand-950 text-brand-700',
   in_progress: 'bg-amber-950 text-amber-700',
   completed: 'bg-green-950 text-green-700',
 }

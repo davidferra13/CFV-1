@@ -15,6 +15,7 @@ import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
 import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
 import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import {
   getStrictFocusGroupRank,
   isStrictFocusGroupVisible,
@@ -642,6 +643,7 @@ export function ChefMobileNav({
                 <Bot className="w-[18px] h-[18px]" />
               </button>
             )}
+            <ThemeToggle className="h-10 w-10 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0 text-stone-400 hover:bg-stone-800 hover:text-stone-100" />
             <NotificationBell />
             <button
               type="button"
@@ -816,10 +818,10 @@ export function ChefMobileNav({
                   onToggle={() => setCommunitySectionOpen((prev) => !prev)}
                   pathname={pathname}
                   searchParams={searchParams}
-                  headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
-                  headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
-                  dividerClass="border-indigo-800/30"
-                  itemActiveClass="text-indigo-400 bg-indigo-950/50"
+                  headerActiveClass={communitySectionActive ? 'text-brand-400' : 'text-brand-400'}
+                  headerInactiveClass="text-brand-400 hover:bg-brand-950/20 hover:text-brand-300"
+                  dividerClass="border-brand-800/30"
+                  itemActiveClass="text-brand-400 bg-brand-950/50"
                   itemInactiveClass="text-stone-500 hover:bg-stone-800"
                   iconActiveColor="#818cf8"
                   iconInactiveColor="rgba(99, 102, 241, 0.5)"

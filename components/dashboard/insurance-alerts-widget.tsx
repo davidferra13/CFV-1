@@ -62,7 +62,9 @@ export function InsuranceAlertsWidget() {
         {stats.nextExpiryDate && (
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Next Expiry</span>
-            <span className={`text-sm ${hasExpiring ? 'text-amber-600 font-medium' : 'text-gray-700'}`}>
+            <span
+              className={`text-sm ${hasExpiring ? 'text-amber-600 font-medium' : 'text-gray-700'}`}
+            >
               {formatDate(stats.nextExpiryDate)}
             </span>
           </div>
@@ -70,7 +72,7 @@ export function InsuranceAlertsWidget() {
 
         <a
           href="/compliance/insurance"
-          className="mt-2 block text-center text-xs text-blue-600 hover:underline"
+          className="mt-2 block text-center text-xs text-brand-600 hover:underline"
         >
           View all policies
         </a>

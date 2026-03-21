@@ -12,7 +12,7 @@ const ENV_LABEL: Record<string, string> = {
 const ENV_CLASS: Record<string, string> = {
   production: 'bg-red-950 text-red-200 border-red-700',
   staging: 'bg-amber-950 text-amber-200 border-amber-700',
-  development: 'bg-sky-950 text-sky-200 border-sky-700',
+  development: 'bg-brand-950 text-brand-200 border-brand-700',
 }
 
 export function EnvironmentBadge() {

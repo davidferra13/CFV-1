@@ -160,7 +160,7 @@ export function UnusedIngredients({
                           item.reason === 'wasted'
                             ? 'bg-red-900 text-red-700'
                             : item.reason === 'returned'
-                              ? 'bg-blue-900 text-blue-700'
+                              ? 'bg-brand-900 text-brand-700'
                               : 'bg-green-900 text-green-700'
                         }`}
                       >

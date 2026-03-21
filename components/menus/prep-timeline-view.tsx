@@ -114,7 +114,7 @@ function ComponentItem({ component }: { component: PrepTimelineSlot['components'
       </span>
 
       {component.station && (
-        <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
+        <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-700">
           {component.station}
         </span>
       )}

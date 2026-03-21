@@ -69,7 +69,7 @@ export function buildBusinessSectionMetrics({ data, now }: BuildBusinessSectionM
   const totalInquiryCount = Object.values(inquiryStats).reduce((sum, value) => sum + value, 0)
   const inquiryBudgetRows = [
     { key: 'exact', label: 'Exact', count: inquiryBudgetMix.exact, color: 'bg-emerald-500' },
-    { key: 'range', label: 'Range', count: inquiryBudgetMix.range, color: 'bg-sky-500' },
+    { key: 'range', label: 'Range', count: inquiryBudgetMix.range, color: 'bg-brand-500' },
     { key: 'not_sure', label: 'Not sure', count: inquiryBudgetMix.notSure, color: 'bg-amber-500' },
     { key: 'unset', label: 'Unset', count: inquiryBudgetMix.unset, color: 'bg-stone-500' },
   ]

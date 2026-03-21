@@ -136,11 +136,11 @@ export function RetirementHealthPanel({
   return (
     <div className="space-y-6">
       {/* Info Banner */}
-      <Card className="border-blue-200 bg-blue-950">
+      <Card className="border-brand-200 bg-brand-950">
         <CardContent className="py-3">
           <div className="flex items-start gap-2">
-            <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-            <p className="text-sm text-blue-800">
+            <Info className="h-4 w-4 text-brand-600 mt-0.5 shrink-0" />
+            <p className="text-sm text-brand-800">
               These are <strong>above-the-line deductions</strong> (Schedule 1) that reduce your
               Adjusted Gross Income - separate from Schedule C business expenses. Report them to
               your accountant alongside your Schedule C. They reduce your total tax bill beyond

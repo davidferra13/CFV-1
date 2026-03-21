@@ -6,8 +6,6 @@
    DESIGN TOKENS - CSS Custom Properties
    ============================================ */
 :root {
-  /* ── Brand color scale (RGB channels for Tailwind opacity support) ── */
-  /* Default palette: Copper and Cast Iron */
   --brand-50: 254 249 243;
   --brand-100: 252 240 224;
   --brand-200: 248 221 192;
@@ -20,25 +18,65 @@
   --brand-900: 116 64 33;
   --brand-950: 62 32 15;
 
-  /* Elevation surfaces - layered depth instead of flat void */
-  --surface-0: #0c0a09; /* body / deepest background (stone-950) */
-  --surface-1: #1c1917; /* recessed panels, sidebar */
-  --surface-2: #292524; /* cards - lifted from surface-1 */
-  --surface-3: #44403c; /* popovers, dropdowns, modals */
+  /* Light theme flips the stone scale so dark-first utility usage renders as light. */
+  --stone-50: 26 20 15;
+  --stone-100: 38 31 25;
+  --stone-200: 63 53 44;
+  --stone-300: 91 78 66;
+  --stone-400: 121 106 91;
+  --stone-500: 159 144 128;
+  --stone-600: 201 190 178;
+  --stone-700: 226 217 206;
+  --stone-800: 241 235 227;
+  --stone-900: 250 247 242;
+  --stone-950: 255 252 247;
 
-  /* Card gradient - barely-perceptible top-light simulating ambient light */
-  --card-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 40%);
+  --surface-0-rgb: var(--stone-950);
+  --surface-1-rgb: var(--stone-900);
+  --surface-2-rgb: var(--stone-800);
+  --surface-3-rgb: var(--stone-700);
+  --surface-4-rgb: var(--stone-600);
 
-  /* Warm borders - derived from brand-500 accent */
+  --surface-0: rgb(var(--surface-0-rgb));
+  --surface-1: rgb(var(--surface-1-rgb));
+  --surface-2: rgb(var(--surface-2-rgb));
+  --surface-3: rgb(var(--surface-3-rgb));
+  --surface-4: rgb(var(--surface-4-rgb));
+
+  --text-primary: rgb(var(--stone-100));
+  --text-secondary: rgb(var(--stone-200));
+  --text-muted: rgb(var(--stone-300));
+  --text-muted-soft: rgb(var(--stone-400));
+  --text-placeholder: rgb(var(--stone-500));
+  --text-inverse: rgb(var(--stone-950));
+
+  --border-subtle: rgb(var(--stone-700) / 0.9);
+  --border-default: rgb(var(--stone-600) / 0.9);
+  --border-strong: rgb(var(--stone-500) / 0.75);
+
+  --card-gradient: linear-gradient(180deg, rgb(255 255 255 / 0.6) 0%, transparent 42%);
+  --page-bg-gradient: linear-gradient(
+    180deg,
+    rgb(var(--brand-50) / 0.55) 0%,
+    rgb(var(--surface-0-rgb)) 38%,
+    rgb(var(--surface-1-rgb)) 100%
+  );
+
   --border-warm: rgb(var(--brand-500) / 0.12);
-  --border-warm-hover: rgb(var(--brand-500) / 0.25);
+  --border-warm-hover: rgb(var(--brand-500) / 0.24);
 
-  /* Shadows - accent-tinted for brand connection */
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.06);
-  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgb(var(--brand-500) / 0.06);
-  --shadow-overlay: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgb(var(--brand-500) / 0.08);
+  --shadow-card: 0 10px 30px rgba(36, 29, 23, 0.07), 0 0 0 1px rgb(36 29 23 / 0.04);
+  --shadow-card-hover: 0 18px 40px rgba(36, 29, 23, 0.12), 0 0 0 1px rgb(var(--brand-500) / 0.08);
+  --shadow-overlay: 0 24px 48px rgba(36, 29, 23, 0.18), 0 0 0 1px rgb(var(--brand-500) / 0.1);
 
-  /* Motion tokens */
+  --glass-bg: rgb(var(--stone-900) / 0.78);
+  --glass-subtle-bg: rgb(var(--stone-900) / 0.62);
+  --glass-heavy-bg: rgb(var(--stone-950) / 0.86);
+  --scrollbar-track: rgb(var(--stone-800));
+  --scrollbar-thumb: rgb(var(--stone-600));
+  --scrollbar-thumb-hover: rgb(var(--stone-500));
+  --ring-offset-surface: rgb(var(--surface-0-rgb));
+
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-fast: 100ms;
@@ -46,11 +84,58 @@
   --duration-slow: 350ms;
   --duration-enter: 220ms;
   --duration-exit: 150ms;
+}
 
-  /* Text tokens */
-  --text-muted: #d6d3d1;
-  --text-muted-soft: #b8b1ab;
-  --text-placeholder: #a8a29e;
+.dark {
+  color-scheme: dark;
+
+  --stone-50: 250 250 249;
+  --stone-100: 245 245 244;
+  --stone-200: 231 229 228;
+  --stone-300: 214 211 209;
+  --stone-400: 168 162 158;
+  --stone-500: 120 113 108;
+  --stone-600: 87 83 78;
+  --stone-700: 68 64 60;
+  --stone-800: 41 37 36;
+  --stone-900: 28 25 23;
+  --stone-950: 12 10 9;
+
+  --surface-0-rgb: var(--stone-950);
+  --surface-1-rgb: var(--stone-900);
+  --surface-2-rgb: var(--stone-800);
+  --surface-3-rgb: var(--stone-700);
+  --surface-4-rgb: var(--stone-600);
+
+  --text-primary: rgb(var(--stone-200));
+  --text-secondary: rgb(var(--stone-300));
+  --text-muted: rgb(var(--stone-400));
+  --text-muted-soft: rgb(184 177 171);
+  --text-placeholder: rgb(var(--stone-500));
+  --text-inverse: rgb(var(--stone-100));
+
+  --border-subtle: rgb(var(--stone-800) / 0.95);
+  --border-default: rgb(var(--stone-700) / 0.9);
+  --border-strong: rgb(var(--stone-600) / 0.85);
+
+  --card-gradient: linear-gradient(180deg, rgb(255 255 255 / 0.03) 0%, transparent 40%);
+  --page-bg-gradient: linear-gradient(
+    180deg,
+    rgb(var(--brand-950) / 0.2) 0%,
+    rgb(var(--surface-0-rgb)) 40%,
+    rgb(var(--surface-1-rgb)) 100%
+  );
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgb(var(--brand-500) / 0.06);
+  --shadow-overlay: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgb(var(--brand-500) / 0.08);
+
+  --glass-bg: rgb(var(--stone-900) / 0.72);
+  --glass-subtle-bg: rgb(var(--stone-900) / 0.58);
+  --glass-heavy-bg: rgb(var(--stone-950) / 0.84);
+  --scrollbar-track: rgb(var(--stone-900));
+  --scrollbar-thumb: rgb(var(--stone-700));
+  --scrollbar-thumb-hover: rgb(var(--stone-600));
 }
 
 /* ============================================
@@ -58,78 +143,45 @@
    ============================================ */
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
 }
 
-/* Brand-tinted text selection */
 ::selection {
   background-color: rgb(var(--brand-950));
-  color: #f5f5f4;
+  color: var(--text-inverse);
 }
 
-/* Global scrollbar - thin, refined */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #1c1917;
+  background: var(--scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
-  background: #44403c;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #57534e;
+  background: var(--scrollbar-thumb-hover);
 }
 
 @layer base {
-  /* Fix placeholder contrast - same issue, placeholders must pass 4.5:1 */
   ::placeholder {
-    color: var(
-      --text-placeholder
-    ) !important; /* stone-400 original = 3.85:1 on stone-950,
-                                  but 5.8:1 on stone-800 (input bg) - passes on input bg */
-  }
-
-  .text-stone-500 {
-    color: #a8a29e;
-  }
-  .text-red-600 {
-    color: #f87171;
-  }
-  .text-amber-900 {
-    color: #fde68a;
-  }
-  .text-amber-800 {
-    color: #fcd34d;
-  }
-  .text-amber-700 {
-    color: #fbbf24;
-  }
-  .text-green-900 {
-    color: #86efac;
-  }
-  .text-green-800 {
-    color: #4ade80;
-  }
-  .text-emerald-700 {
-    color: #34d399;
-  }
-  .text-emerald-800 {
-    color: #6ee7b7;
+    color: var(--text-placeholder) !important;
   }
 
   body {
     @apply bg-stone-950 text-stone-200 antialiased;
-    /* Faint noise texture - breaks up flat digital void, adds tactile feel */
+    background-color: var(--surface-0);
+    color: var(--text-primary);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   }
 
-  /* Dark theme: ring-offset matches dark background */
   *,
   *::before,
   *::after {
-    --tw-ring-offset-color: #0c0a09;
+    --tw-ring-offset-color: var(--ring-offset-surface);
   }
 
   /* Display typeface for page headings - editorial culinary feel */
@@ -241,15 +293,15 @@ html {
   }
 
   .loading-bone-dark {
-    background: rgba(68, 64, 60, 0.9);
+    background: rgb(var(--stone-700) / 0.9);
   }
 
   .loading-bone-light {
-    background: rgba(231, 229, 228, 0.92);
+    background: rgb(var(--stone-900) / 0.92);
   }
 
   .loading-bone-muted {
-    background: rgba(92, 80, 68, 0.78);
+    background: rgb(var(--stone-600) / 0.78);
   }
 
   .loading-spinner {
@@ -271,7 +323,7 @@ html {
 
   .skeleton {
     @apply rounded;
-    background: rgba(72, 65, 58, 0.9);
+    background: rgb(var(--stone-700) / 0.9);
     position: relative;
     overflow: hidden;
   }
@@ -296,7 +348,7 @@ html {
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #d6d3d1; /* stone-300 - WCAG AA compliant on dark bg */
+    color: var(--text-muted);
   }
   .fluid-display-xl {
     font-size: clamp(2rem, 6vw, 3.75rem);
@@ -369,13 +421,13 @@ html {
 /* Day headers (Mon, Tue, etc.) */
 .calendar-container .fc .fc-col-header-cell {
   padding: 10px 0;
-  background: #292524;
-  border-bottom: 1px solid #44403c;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-default);
 }
 .calendar-container .fc .fc-col-header-cell-cushion {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #d6d3d1; /* stone-300 - WCAG AA compliant */
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.025em;
   text-decoration: none;
@@ -386,14 +438,14 @@ html {
   transition: background-color 0.15s;
 }
 .calendar-container .fc .fc-daygrid-day:hover {
-  background-color: #292524;
+  background-color: var(--surface-2);
 }
 
 /* Day numbers */
 .calendar-container .fc .fc-daygrid-day-number {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #d6d3d1;
+  color: var(--text-secondary);
   padding: 6px 10px;
   text-decoration: none;
 }
@@ -413,7 +465,7 @@ html {
 
 /* Other month days */
 .calendar-container .fc .fc-day-other .fc-daygrid-day-number {
-  color: #57534e;
+  color: var(--text-muted-soft);
 }
 
 /* Event pill styling */
@@ -450,16 +502,16 @@ html {
 /* Time grid (Week / Day views) */
 .calendar-container .fc .fc-timegrid-slot {
   height: 48px;
-  border-bottom: 1px solid #292524;
+  border-bottom: 1px solid var(--border-subtle);
 }
 .calendar-container .fc .fc-timegrid-slot-label {
   font-size: 0.75rem;
-  color: #a8a29e; /* stone-400 - WCAG AA for large text on dark bg */
+  color: var(--text-muted);
   vertical-align: top;
   padding-top: 2px;
 }
 .calendar-container .fc .fc-timegrid-slot-lane {
-  border-bottom: 1px solid #292524;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 /* Now indicator (red line like Google Calendar) */
@@ -491,14 +543,14 @@ html {
   border: none;
 }
 .calendar-container .fc .fc-list-day-cushion {
-  background: #292524;
+  background: var(--surface-2);
   padding: 8px 14px;
 }
 .calendar-container .fc .fc-list-day-text,
 .calendar-container .fc .fc-list-day-side-text {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #d6d3d1;
+  color: var(--text-secondary);
   text-decoration: none;
 }
 .calendar-container .fc .fc-list-event {
@@ -506,13 +558,13 @@ html {
 }
 .calendar-container .fc .fc-list-event td {
   padding: 10px 14px;
-  border-color: #292524;
+  border-color: var(--border-subtle);
 }
 .calendar-container .fc .fc-list-event-dot {
   border-color: rgb(var(--brand-500));
 }
 .calendar-container .fc .fc-list-event-title a {
-  color: #e7e5e4;
+  color: var(--text-primary);
   text-decoration: none;
 }
 
@@ -520,16 +572,16 @@ html {
 .calendar-container .fc .fc-popover {
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-  border: 1px solid #44403c;
+  border: 1px solid var(--border-default);
   overflow: hidden;
-  background: #1c1917;
+  background: var(--surface-0);
 }
 .calendar-container .fc .fc-popover-header {
-  background: #292524;
+  background: var(--surface-2);
   padding: 8px 12px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #d6d3d1;
+  color: var(--text-secondary);
 }
 .calendar-container .fc .fc-popover-body {
   padding: 4px;
@@ -1308,30 +1360,30 @@ html {
 .blog-content h3 {
   font-size: 1.35rem;
   font-weight: 600;
-  color: #e7e5e4;
+  color: var(--text-primary);
   margin-top: 2rem;
   margin-bottom: 0.75rem;
 }
 
 .blog-content p {
-  color: #a8a29e;
+  color: var(--text-muted);
   line-height: 1.75;
   margin-bottom: 1.25rem;
 }
 
 .blog-content strong {
-  color: #e7e5e4;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 .blog-content em {
-  color: #d6d3d1;
+  color: var(--text-secondary);
 }
 
 .blog-content ul,
 .blog-content ol {
   margin: 1rem 0 1.5rem 1.5rem;
-  color: #a8a29e;
+  color: var(--text-muted);
 }
 
 .blog-content li {
@@ -1359,8 +1411,8 @@ html {
 }
 
 .blog-code-block {
-  background: #1c1917;
-  border: 1px solid #44403c;
+  background: var(--surface-1);
+  border: 1px solid var(--border-default);
   border-radius: 0.5rem;
   padding: 1rem 1.25rem;
   overflow-x: auto;
@@ -1370,7 +1422,7 @@ html {
 }
 
 .blog-code-block code {
-  color: #d6d3d1;
+  color: var(--text-secondary);
   font-family: 'Fira Code', 'JetBrains Mono', monospace;
 }
 
@@ -1391,27 +1443,27 @@ html {
 }
 
 .blog-table th {
-  background: #292524;
-  color: #e7e5e4;
+  background: var(--surface-2);
+  color: var(--text-primary);
   font-weight: 600;
   padding: 0.75rem 1rem;
   text-align: left;
-  border-bottom: 2px solid #44403c;
+  border-bottom: 2px solid var(--border-default);
 }
 
 .blog-table td {
-  color: #a8a29e;
+  color: var(--text-muted);
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #44403c;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .blog-table tr:hover td {
-  background: #1c1917;
+  background: var(--surface-1);
 }
 
 .blog-content hr {
   border: none;
-  border-top: 1px solid #44403c;
+  border-top: 1px solid var(--border-default);
   margin: 2.5rem 0;
 }
 
@@ -1756,24 +1808,24 @@ html {
 
 /* ── Glass Morphism Utilities ── */
 .glass {
-  background: rgba(28, 25, 23, 0.7);
+  background: var(--glass-bg);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
   backdrop-filter: blur(16px) saturate(1.4);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
 }
 
 .glass-subtle {
-  background: rgba(28, 25, 23, 0.55);
+  background: var(--glass-subtle-bg);
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
   backdrop-filter: blur(12px) saturate(1.2);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
 }
 
 .glass-heavy {
-  background: rgba(12, 10, 9, 0.8);
+  background: var(--glass-heavy-bg);
   -webkit-backdrop-filter: blur(24px) saturate(1.6);
   backdrop-filter: blur(24px) saturate(1.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-default);
 }
 
 /* ── Brand Glow Hover (for primary buttons) ── */
@@ -1819,7 +1871,12 @@ html {
 
 /* ── Gradient text for hero headlines ── */
 .text-gradient {
-  background: linear-gradient(135deg, rgb(var(--brand-300)), rgb(var(--brand-400)), #f5f5f4);
+  background: linear-gradient(
+    135deg,
+    rgb(var(--brand-300)),
+    rgb(var(--brand-400)),
+    var(--text-primary)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -2028,7 +2085,7 @@ select:focus {
 .loading-bone-brand {
   position: relative;
   overflow: hidden;
-  background: rgba(68, 64, 60, 0.9);
+  background: rgb(var(--stone-700) / 0.9);
 }
 .loading-bone-brand::after {
   content: '';
@@ -2068,11 +2125,11 @@ select:focus {
 
 /* ── Smooth scrollbar fade on sections ── */
 .scrollbar-fade::-webkit-scrollbar-thumb {
-  background: rgba(68, 64, 60, 0);
+  background: rgb(var(--stone-700) / 0);
   transition: background 0.3s;
 }
 .scrollbar-fade:hover::-webkit-scrollbar-thumb {
-  background: rgba(68, 64, 60, 0.8);
+  background: rgb(var(--stone-700) / 0.8);
 }
 
 /* ========================================

@@ -132,7 +132,7 @@ function MenuEditor({ section, onUpdate }: SectionEditorProps) {
           <button
             type="button"
             onClick={addCourse}
-            className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+            className="text-sm text-brand-600 hover:text-brand-700 font-medium"
           >
             + Add Course
           </button>
@@ -249,7 +249,7 @@ function PricingEditor({ section, onUpdate }: SectionEditorProps) {
           <button
             type="button"
             onClick={addLineItem}
-            className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+            className="text-sm text-brand-600 hover:text-brand-700 font-medium"
           >
             + Add Item
           </button>

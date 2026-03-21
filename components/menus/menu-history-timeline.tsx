@@ -105,7 +105,7 @@ export default function MenuHistoryTimeline({ clientId, initialEntries = [] }: P
           </button>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="px-3 py-1.5 text-sm bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors"
+            className="px-3 py-1.5 text-sm bg-brand-600 text-white hover:bg-brand-700 rounded-md transition-colors"
           >
             Log Menu
           </button>
@@ -137,8 +137,11 @@ export default function MenuHistoryTimeline({ clientId, initialEntries = [] }: P
         />
         {(dateFrom || dateTo) && (
           <button
-            onClick={() => { setDateFrom(''); setDateTo('') }}
-            className="text-blue-600 hover:underline text-sm"
+            onClick={() => {
+              setDateFrom('')
+              setDateTo('')
+            }}
+            className="text-brand-600 hover:underline text-sm"
           >
             Clear
           </button>
@@ -169,10 +172,7 @@ export default function MenuHistoryTimeline({ clientId, initialEntries = [] }: P
             const dishes = entry.dishes_served ?? []
 
             return (
-              <div
-                key={entry.id}
-                className="border rounded-lg overflow-hidden"
-              >
+              <div key={entry.id} className="border rounded-lg overflow-hidden">
                 {/* Summary row */}
                 <button
                   onClick={() => toggleExpanded(entry.id)}
@@ -247,11 +247,12 @@ export default function MenuHistoryTimeline({ clientId, initialEntries = [] }: P
                     )}
 
                     {/* Inline feedback edit */}
-                    <InlineFeedbackEdit entry={entry} onUpdated={(updated) => {
-                      setEntries((prev) =>
-                        prev.map((e) => (e.id === updated.id ? updated : e))
-                      )
-                    }} />
+                    <InlineFeedbackEdit
+                      entry={entry}
+                      onUpdated={(updated) => {
+                        setEntries((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
+                      }}
+                    />
                   </div>
                 )}
               </div>
@@ -323,12 +324,13 @@ function AddMenuForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+    <form
+      onSubmit={handleSubmit}
+      className="p-4 bg-brand-50 border border-brand-200 rounded-lg space-y-3"
+    >
       <h4 className="text-sm font-semibold">Log a Menu</h4>
 
-      {formError && (
-        <p className="text-red-600 text-sm">{formError}</p>
-      )}
+      {formError && <p className="text-red-600 text-sm">{formError}</p>}
 
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -354,9 +356,7 @@ function AddMenuForm({
       </div>
 
       <div>
-        <label className="text-xs text-gray-600 block mb-1">
-          Dishes (comma-separated)
-        </label>
+        <label className="text-xs text-gray-600 block mb-1">Dishes (comma-separated)</label>
         <textarea
           value={dishesText}
           onChange={(e) => setDishesText(e.target.value)}
@@ -405,7 +405,7 @@ function AddMenuForm({
         <button
           type="submit"
           disabled={isPending}
-          className="px-3 py-1.5 text-sm bg-blue-600 text-white hover:bg-blue-700 rounded-md disabled:opacity-50"
+          className="px-3 py-1.5 text-sm bg-brand-600 text-white hover:bg-brand-700 rounded-md disabled:opacity-50"
         >
           {isPending ? 'Saving...' : 'Save'}
         </button>
@@ -431,10 +431,7 @@ function InlineFeedbackEdit({
 
   if (!editing) {
     return (
-      <button
-        onClick={() => setEditing(true)}
-        className="text-blue-600 hover:underline text-sm"
-      >
+      <button onClick={() => setEditing(true)} className="text-brand-600 hover:underline text-sm">
         Edit feedback
       </button>
     )
@@ -512,7 +509,7 @@ function InlineFeedbackEdit({
         <button
           onClick={handleSave}
           disabled={isPending}
-          className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md disabled:opacity-50"
+          className="px-3 py-1 text-sm bg-brand-600 text-white rounded-md disabled:opacity-50"
         >
           {isPending ? 'Saving...' : 'Save'}
         </button>

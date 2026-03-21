@@ -478,7 +478,7 @@ export function AvailabilityCalendarClient({
                 {waitlistForSelected.map((entry) => (
                   <div
                     key={entry.id}
-                    className="rounded-lg border border-blue-100 bg-blue-950 px-3 py-2 text-sm"
+                    className="rounded-lg border border-brand-100 bg-brand-950 px-3 py-2 text-sm"
                   >
                     <p className="font-medium text-stone-100">
                       {entry.clients?.full_name ?? 'Unknown client'}

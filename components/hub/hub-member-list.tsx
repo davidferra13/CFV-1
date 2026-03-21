@@ -12,7 +12,7 @@ import {
 
 const ROLE_BADGES: Record<string, { label: string; color: string }> = {
   owner: { label: 'Host', color: 'bg-amber-500/20 text-amber-400' },
-  admin: { label: 'Admin', color: 'bg-blue-500/20 text-blue-400' },
+  admin: { label: 'Admin', color: 'bg-brand-500/20 text-brand-400' },
   chef: {
     label: 'Chef',
     color: 'bg-[var(--hub-primary,#e88f47)]/20 text-[var(--hub-primary,#e88f47)]',

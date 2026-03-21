@@ -158,7 +158,7 @@ export function ClassRegistrations({
           onClick={() => setActiveTab('registered')}
           className={`px-3 py-1 text-sm font-medium rounded-t ${
             activeTab === 'registered'
-              ? 'bg-white border border-b-white -mb-px text-blue-600'
+              ? 'bg-white border border-b-white -mb-px text-brand-600'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -168,7 +168,7 @@ export function ClassRegistrations({
           onClick={() => setActiveTab('waitlisted')}
           className={`px-3 py-1 text-sm font-medium rounded-t ${
             activeTab === 'waitlisted'
-              ? 'bg-white border border-b-white -mb-px text-blue-600'
+              ? 'bg-white border border-b-white -mb-px text-brand-600'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >

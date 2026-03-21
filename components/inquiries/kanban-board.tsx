@@ -76,8 +76,8 @@ const COLUMNS: ColumnDef[] = [
 const COLUMN_ACCENT: Record<string, string> = {
   new: 'border-t-amber-400',
   awaiting_chef: 'border-t-stone-400',
-  awaiting_client: 'border-t-sky-400',
-  quoted: 'border-t-sky-500',
+  awaiting_client: 'border-t-brand-400',
+  quoted: 'border-t-brand-500',
   confirmed: 'border-t-emerald-500',
   closed: 'border-t-red-400',
 }

@@ -2,6 +2,7 @@
 
 // SwRegister - Registers the ChefFlow service worker for offline caching.
 // On update, prompts the new SW to activate immediately via SKIP_WAITING.
+// Listens for NEW_VERSION_AVAILABLE from the SW and auto-reloads.
 
 import { useEffect } from 'react'
 
@@ -46,7 +47,24 @@ export function SwRegister() {
       window.location.reload()
     }
 
+    // Listen for version change messages from the service worker.
+    // When a new build is deployed, the SW detects it via /api/build-version
+    // and posts NEW_VERSION_AVAILABLE. We reload to pick up the new code.
+    const handleSwMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'NEW_VERSION_AVAILABLE' && !refreshing) {
+        console.info(
+          '[SW] New version available:',
+          event.data.newVersion,
+          '(was:',
+          event.data.currentVersion + ')'
+        )
+        refreshing = true
+        window.location.reload()
+      }
+    }
+
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange)
+    navigator.serviceWorker.addEventListener('message', handleSwMessage)
 
     navigator.serviceWorker
       .register('/sw.js', { scope: '/', updateViaCache: 'none' })
@@ -78,6 +96,7 @@ export function SwRegister() {
     return () => {
       isMounted = false
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange)
+      navigator.serviceWorker.removeEventListener('message', handleSwMessage)
     }
   }, [])
 

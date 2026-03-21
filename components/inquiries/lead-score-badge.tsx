@@ -6,7 +6,7 @@ import type { LeadScoreData } from '@/lib/gmail/extract-inquiry-fields'
 const LABEL_CONFIG = {
   hot: { className: 'bg-red-900 text-red-700', emoji: '🔥', label: 'Hot' },
   warm: { className: 'bg-amber-900 text-amber-700', emoji: '☀️', label: 'Warm' },
-  cold: { className: 'bg-sky-900 text-sky-700', emoji: '❄️', label: 'Cold' },
+  cold: { className: 'bg-brand-900 text-brand-700', emoji: '❄️', label: 'Cold' },
 }
 
 interface LeadScoreBadgeProps {

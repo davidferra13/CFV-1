@@ -61,20 +61,20 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
   }
 
   return (
-    <div className="rounded-lg border border-blue-200 bg-blue-950/50 px-3 py-2">
+    <div className="rounded-lg border border-brand-200 bg-brand-950/50 px-3 py-2">
       <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1.5 text-xs font-medium text-blue-700 hover:text-blue-900"
+          className="flex items-center gap-1.5 text-xs font-medium text-brand-700 hover:text-brand-900"
         >
-          <span className="text-blue-400">{expanded ? '▾' : '▸'}</span>
+          <span className="text-brand-400">{expanded ? '▾' : '▸'}</span>
           How TakeAChef inquiries work in ChefFlow
         </button>
         <button
           type="button"
           onClick={handleDismiss}
-          className="text-blue-400 hover:text-blue-600 text-sm leading-none"
+          className="text-brand-400 hover:text-brand-600 text-sm leading-none"
           aria-label="Dismiss"
         >
           &times;
@@ -89,26 +89,26 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
               <div
                 key={step.number}
                 className={`flex items-start gap-2 rounded px-2 py-1 ${
-                  isActive ? 'bg-blue-900/60' : ''
+                  isActive ? 'bg-brand-900/60' : ''
                 }`}
               >
                 <span
                   className={`shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-xxs font-bold ${
-                    isActive ? 'bg-blue-600 text-white' : 'bg-blue-200 text-blue-600'
+                    isActive ? 'bg-brand-600 text-white' : 'bg-brand-200 text-brand-600'
                   }`}
                 >
                   {step.number}
                 </span>
                 <div>
                   <p
-                    className={`text-xs font-medium ${isActive ? 'text-blue-900' : 'text-blue-700'}`}
+                    className={`text-xs font-medium ${isActive ? 'text-brand-900' : 'text-brand-700'}`}
                   >
                     {step.label}
                     {isActive && (
-                      <span className="ml-1 text-xxs text-blue-500">← you are here</span>
+                      <span className="ml-1 text-xxs text-brand-500">← you are here</span>
                     )}
                   </p>
-                  <p className="text-xs-tight text-blue-600/80">{step.detail}</p>
+                  <p className="text-xs-tight text-brand-600/80">{step.detail}</p>
                 </div>
               </div>
             )
@@ -116,7 +116,7 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
           <button
             type="button"
             onClick={handleDismiss}
-            className="text-xs-tight text-blue-500 hover:text-blue-700 underline underline-offset-2 ml-2 mt-1"
+            className="text-xs-tight text-brand-500 hover:text-brand-700 underline underline-offset-2 ml-2 mt-1"
           >
             Got it, don't show again
           </button>

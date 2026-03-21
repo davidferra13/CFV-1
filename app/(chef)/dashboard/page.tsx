@@ -114,7 +114,7 @@ async function PriorityQueueSection() {
         : item.urgency === 'high'
           ? ('amber' as const)
           : item.urgency === 'normal'
-            ? ('blue' as const)
+            ? ('brand' as const)
             : ('stone' as const),
   }))
 

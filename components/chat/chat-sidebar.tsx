@@ -21,7 +21,7 @@ import Link from 'next/link'
 const CATEGORY_STYLES: Record<NoteCategory, { bg: string; text: string }> = {
   general: { bg: 'bg-stone-800', text: 'text-stone-300' },
   dietary: { bg: 'bg-red-900', text: 'text-red-700' },
-  preference: { bg: 'bg-blue-900', text: 'text-blue-700' },
+  preference: { bg: 'bg-brand-900', text: 'text-brand-700' },
   logistics: { bg: 'bg-green-900', text: 'text-green-700' },
   relationship: { bg: 'bg-purple-900', text: 'text-purple-700' },
 }

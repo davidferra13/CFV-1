@@ -16,7 +16,7 @@ function StatusBadge({ status }: { status: string }) {
   }
   if (status === 'claimed') {
     return (
-      <span className="rounded-full bg-sky-900/85 px-2.5 py-0.5 text-xxs font-semibold text-sky-300 backdrop-blur-sm">
+      <span className="rounded-full bg-brand-900/85 px-2.5 py-0.5 text-xxs font-semibold text-brand-300 backdrop-blur-sm">
         Claimed
       </span>
     )

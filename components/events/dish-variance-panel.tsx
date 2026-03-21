@@ -2,7 +2,7 @@
 
 // Dish Variance Panel
 // Shows planned-vs-served comparison for an event on the AAR page.
-// Green for matches, yellow for substitutions, red for removals, blue for additions.
+// Green for matches, yellow for substitutions, red for removals, brand for additions.
 
 import { useEffect, useState, useTransition } from 'react'
 import {
@@ -16,26 +16,30 @@ interface Props {
   tenantId: string
 }
 
-function DishRow({ dish, color }: { dish: DishItem; color: 'green' | 'red' | 'blue' | 'yellow' }) {
+function DishRow({ dish, color }: { dish: DishItem; color: 'green' | 'red' | 'brand' | 'yellow' }) {
   const colorClasses = {
     green: 'bg-emerald-950/40 border-emerald-800 text-emerald-300',
     red: 'bg-red-950/40 border-red-800 text-red-300',
-    blue: 'bg-blue-950/40 border-blue-800 text-blue-300',
+    brand: 'bg-brand-950/40 border-brand-800 text-brand-300',
     yellow: 'bg-amber-950/40 border-amber-800 text-amber-300',
   }
 
   const labels = {
     green: 'Matched',
     red: 'Removed',
-    blue: 'Added',
+    brand: 'Added',
     yellow: 'Substituted',
   }
 
   return (
-    <div className={`flex items-center gap-2 rounded border px-3 py-1.5 text-sm ${colorClasses[color]}`}>
+    <div
+      className={`flex items-center gap-2 rounded border px-3 py-1.5 text-sm ${colorClasses[color]}`}
+    >
       <span className="flex-1 font-medium">{dish.name}</span>
       <span className="text-xs opacity-70">{labels[color]}</span>
-      {dish.notes && <span className="text-xs opacity-60 truncate max-w-[150px]">{dish.notes}</span>}
+      {dish.notes && (
+        <span className="text-xs opacity-60 truncate max-w-[150px]">{dish.notes}</span>
+      )}
     </div>
   )
 }
@@ -77,7 +81,9 @@ export function DishVariancePanel({ eventId, tenantId }: Props) {
   if (!data) {
     return (
       <div className="rounded-lg border border-zinc-700 bg-zinc-900 p-4">
-        <p className="text-sm text-zinc-500">No planned or served dish data available for comparison.</p>
+        <p className="text-sm text-zinc-500">
+          No planned or served dish data available for comparison.
+        </p>
       </div>
     )
   }
@@ -104,7 +110,9 @@ export function DishVariancePanel({ eventId, tenantId }: Props) {
       {/* Matches */}
       {matchedItems.length > 0 && (
         <div className="space-y-1">
-          <p className="text-xs font-medium text-emerald-400 uppercase tracking-wide">Served as planned</p>
+          <p className="text-xs font-medium text-emerald-400 uppercase tracking-wide">
+            Served as planned
+          </p>
           {matchedItems.map((d, i) => (
             <DishRow key={`match-${i}`} dish={d} color="green" />
           ))}
@@ -114,7 +122,9 @@ export function DishVariancePanel({ eventId, tenantId }: Props) {
       {/* Substitutions */}
       {substitutions.length > 0 && (
         <div className="space-y-1">
-          <p className="text-xs font-medium text-amber-400 uppercase tracking-wide">Substitutions</p>
+          <p className="text-xs font-medium text-amber-400 uppercase tracking-wide">
+            Substitutions
+          </p>
           {substitutions.map((sub, i) => (
             <div key={`sub-${i}`} className="flex items-center gap-2 text-sm">
               <div className="flex-1 rounded border bg-red-950/30 border-red-800 text-red-300 px-3 py-1.5 line-through opacity-70">
@@ -132,7 +142,9 @@ export function DishVariancePanel({ eventId, tenantId }: Props) {
       {/* Removals */}
       {removals.length > 0 && (
         <div className="space-y-1">
-          <p className="text-xs font-medium text-red-400 uppercase tracking-wide">Removed from plan</p>
+          <p className="text-xs font-medium text-red-400 uppercase tracking-wide">
+            Removed from plan
+          </p>
           {removals.map((d, i) => (
             <DishRow key={`rem-${i}`} dish={d} color="red" />
           ))}
@@ -142,9 +154,11 @@ export function DishVariancePanel({ eventId, tenantId }: Props) {
       {/* Additions */}
       {additions.length > 0 && (
         <div className="space-y-1">
-          <p className="text-xs font-medium text-blue-400 uppercase tracking-wide">Unplanned additions</p>
+          <p className="text-xs font-medium text-brand-400 uppercase tracking-wide">
+            Unplanned additions
+          </p>
           {additions.map((d, i) => (
-            <DishRow key={`add-${i}`} dish={d} color="blue" />
+            <DishRow key={`add-${i}`} dish={d} color="brand" />
           ))}
         </div>
       )}

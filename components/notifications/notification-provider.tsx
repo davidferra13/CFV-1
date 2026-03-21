@@ -84,7 +84,7 @@ function NotificationToast({
   const router = useRouter()
 
   const categoryColors: Record<string, string> = {
-    inquiry: 'bg-sky-500',
+    inquiry: 'bg-brand-500',
     quote: 'bg-amber-500',
     event: 'bg-brand-600',
     payment: 'bg-emerald-500',

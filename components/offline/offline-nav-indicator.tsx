@@ -14,11 +14,11 @@ export function OfflineNavIndicator() {
   if (syncProgress?.isSyncing) {
     return (
       <div
-        className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-950 border border-blue-200 flex-shrink-0"
+        className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-brand-950 border border-brand-200 flex-shrink-0"
         title={`Syncing ${syncProgress.completed}/${syncProgress.total} actions...`}
       >
-        <Loader2 className="h-3 w-3 text-blue-600 animate-spin" />
-        <span className="text-xs font-medium text-blue-700">Syncing</span>
+        <Loader2 className="h-3 w-3 text-brand-600 animate-spin" />
+        <span className="text-xs font-medium text-brand-700">Syncing</span>
       </div>
     )
   }

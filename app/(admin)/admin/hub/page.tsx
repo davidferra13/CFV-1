@@ -95,7 +95,7 @@ export default async function AdminHubPage({ searchParams = {} }: { searchParams
         />
         <button
           type="submit"
-          className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-600"
+          className="rounded-lg bg-brand-700 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-600"
         >
           Apply Filters
         </button>
@@ -112,7 +112,7 @@ export default async function AdminHubPage({ searchParams = {} }: { searchParams
                   {group.visibility}
                 </p>
               </div>
-              <Link href={`/admin/hub/groups/${group.id}`} className="text-sm text-blue-600">
+              <Link href={`/admin/hub/groups/${group.id}`} className="text-sm text-brand-600">
                 Open Transcript
               </Link>
             </div>

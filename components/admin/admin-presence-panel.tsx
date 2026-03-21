@@ -30,7 +30,7 @@ function RoleBadge({ role }: { role: 'authenticated' | 'anonymous' }) {
     )
   }
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-700">
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-brand-900 text-brand-700">
       Logged In
     </span>
   )
@@ -120,7 +120,7 @@ export function AdminPresencePanel() {
         </div>
         <div className="bg-stone-900 rounded-lg border border-slate-200 px-4 py-3">
           <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">Logged In</p>
-          <p className="text-2xl font-bold text-blue-600 mt-1">{authenticated}</p>
+          <p className="text-2xl font-bold text-brand-600 mt-1">{authenticated}</p>
         </div>
         <div className="bg-stone-900 rounded-lg border border-slate-200 px-4 py-3">
           <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">Anonymous</p>

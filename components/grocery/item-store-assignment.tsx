@@ -24,12 +24,8 @@ type ItemStoreAssignmentProps = {
   allStores: PreferredStore[]
 }
 
-export function ItemStoreAssignment({
-  initialAssignments,
-  allStores,
-}: ItemStoreAssignmentProps) {
-  const [assignments, setAssignments] =
-    useState<AssignmentWithStore[]>(initialAssignments)
+export function ItemStoreAssignment({ initialAssignments, allStores }: ItemStoreAssignmentProps) {
+  const [assignments, setAssignments] = useState<AssignmentWithStore[]>(initialAssignments)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStoreId, setFilterStoreId] = useState<string | ''>('')
   const [bulkMode, setBulkMode] = useState(false)
@@ -62,9 +58,7 @@ export function ItemStoreAssignment({
         await deleteStoreAssignment(id)
       } catch (err) {
         setAssignments(previous)
-        setError(
-          err instanceof Error ? err.message : 'Failed to delete assignment'
-        )
+        setError(err instanceof Error ? err.message : 'Failed to delete assignment')
       }
     })
   }
@@ -106,16 +100,10 @@ export function ItemStoreAssignment({
 
     startTransition(async () => {
       try {
-        await assignItemToStore(
-          assignment.ingredient_keyword,
-          editStoreId,
-          editReason || undefined
-        )
+        await assignItemToStore(assignment.ingredient_keyword, editStoreId, editReason || undefined)
       } catch (err) {
         setAssignments(previous)
-        setError(
-          err instanceof Error ? err.message : 'Failed to update assignment'
-        )
+        setError(err instanceof Error ? err.message : 'Failed to update assignment')
       }
     })
   }
@@ -148,9 +136,7 @@ export function ItemStoreAssignment({
     if (!targetStore) return
 
     // Build bulk payload
-    const selectedAssignments = assignments.filter((a) =>
-      bulkSelections.has(a.id)
-    )
+    const selectedAssignments = assignments.filter((a) => bulkSelections.has(a.id))
     const payload = selectedAssignments.map((a) => ({
       keyword: a.ingredient_keyword,
       storeId: bulkTargetStore,
@@ -159,9 +145,7 @@ export function ItemStoreAssignment({
     // Optimistic update
     setAssignments((prev) =>
       prev.map((a) =>
-        bulkSelections.has(a.id)
-          ? { ...a, store_id: bulkTargetStore, store: targetStore }
-          : a
+        bulkSelections.has(a.id) ? { ...a, store_id: bulkTargetStore, store: targetStore } : a
       )
     )
     setBulkSelections(new Set())
@@ -172,11 +156,7 @@ export function ItemStoreAssignment({
         await bulkAssignItems(payload)
       } catch (err) {
         setAssignments(previous)
-        setError(
-          err instanceof Error
-            ? err.message
-            : 'Failed to bulk assign items'
-        )
+        setError(err instanceof Error ? err.message : 'Failed to bulk assign items')
       }
     })
   }
@@ -196,11 +176,7 @@ export function ItemStoreAssignment({
         </button>
       </div>
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       {/* Filters */}
       <div className="flex gap-3">
@@ -228,19 +204,11 @@ export function ItemStoreAssignment({
       {/* Bulk actions */}
       {bulkMode && (
         <div className="flex items-center gap-3 rounded-md bg-orange-50 p-3">
-          <span className="text-sm text-orange-700">
-            {bulkSelections.size} selected
-          </span>
-          <button
-            onClick={selectAll}
-            className="text-xs text-orange-600 hover:underline"
-          >
+          <span className="text-sm text-orange-700">{bulkSelections.size} selected</span>
+          <button onClick={selectAll} className="text-xs text-orange-600 hover:underline">
             Select all
           </button>
-          <button
-            onClick={selectNone}
-            className="text-xs text-orange-600 hover:underline"
-          >
+          <button onClick={selectNone} className="text-xs text-orange-600 hover:underline">
             Clear
           </button>
           <select
@@ -276,10 +244,7 @@ export function ItemStoreAssignment({
         )}
 
         {filtered.map((assignment) => (
-          <div
-            key={assignment.id}
-            className="flex items-center gap-3 px-4 py-2"
-          >
+          <div key={assignment.id} className="flex items-center gap-3 px-4 py-2">
             {/* Bulk checkbox */}
             {bulkMode && (
               <input
@@ -309,9 +274,7 @@ export function ItemStoreAssignment({
                 </select>
                 <select
                   value={editReason}
-                  onChange={(e) =>
-                    setEditReason(e.target.value as AssignmentReason | '')
-                  }
+                  onChange={(e) => setEditReason(e.target.value as AssignmentReason | '')}
                   className="rounded-md border border-gray-300 px-2 py-1 text-sm"
                 >
                   <option value="">No reason</option>
@@ -339,17 +302,14 @@ export function ItemStoreAssignment({
               /* View mode */
               <>
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium">
-                    {assignment.ingredient_keyword}
-                  </span>
+                  <span className="text-sm font-medium">{assignment.ingredient_keyword}</span>
                 </div>
                 <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
                   {assignment.store.store_name}
                 </span>
                 {assignment.reason && (
-                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-600">
-                    {REASON_LABELS[assignment.reason as AssignmentReason] ??
-                      assignment.reason}
+                  <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-600">
+                    {REASON_LABELS[assignment.reason as AssignmentReason] ?? assignment.reason}
                   </span>
                 )}
                 <button

@@ -380,31 +380,31 @@ export function PackingListClient({
     <div className="space-y-4">
       {/* Weather banner - shown only when weather data is available */}
       {weather && (
-        <Card className="p-4 border-sky-800 bg-sky-950/50">
+        <Card className="p-4 border-brand-800 bg-brand-950/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-3xl" role="img" aria-label={weather.description}>
                 {weather.emoji}
               </span>
               <div>
-                <p className="text-sm font-semibold text-sky-100">{weather.description}</p>
-                <p className="text-xs text-sky-300">
+                <p className="text-sm font-semibold text-brand-100">{weather.description}</p>
+                <p className="text-xs text-brand-300">
                   {weather.tempMinF}° – {weather.tempMaxF}°F
                   {hasPrecip && <span className="ml-2">· {precipIn}&quot; precip</span>}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xxs text-sky-400 uppercase tracking-wide">
+              <p className="text-xxs text-brand-400 uppercase tracking-wide">
                 {weather.isHistorical ? 'Actual' : 'Forecast'}
               </p>
-              <p className="text-xxs text-sky-500">Open-Meteo</p>
+              <p className="text-xxs text-brand-500">Open-Meteo</p>
             </div>
           </div>
 
           {/* Weather-triggered packing suggestions */}
           {weatherSuggestions.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-sky-800/50 space-y-2">
+            <div className="mt-3 pt-3 border-t border-brand-800/50 space-y-2">
               <p className="text-xs font-semibold text-amber-400 uppercase tracking-wide">
                 Weather Alert - Pack These
               </p>
@@ -426,7 +426,7 @@ export function PackingListClient({
 
           {/* Clear/mild - no alerts needed */}
           {weatherSuggestions.length === 0 && (
-            <p className="mt-2 text-xs text-sky-400">
+            <p className="mt-2 text-xs text-brand-400">
               Great weather - standard packing should be fine.
             </p>
           )}

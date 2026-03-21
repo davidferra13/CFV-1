@@ -139,10 +139,10 @@ export const PIPELINE_STAGE_LABELS: Record<PipelineStage, string> = {
 }
 
 export const PIPELINE_STAGE_COLORS: Record<PipelineStage, string> = {
-  new: 'bg-blue-950 text-blue-400 border-blue-800',
-  researched: 'bg-indigo-950 text-indigo-400 border-indigo-800',
+  new: 'bg-brand-950 text-brand-400 border-brand-800',
+  researched: 'bg-brand-950 text-brand-400 border-brand-800',
   contacted: 'bg-amber-950 text-amber-400 border-amber-800',
-  responded: 'bg-cyan-950 text-cyan-400 border-cyan-800',
+  responded: 'bg-brand-950 text-brand-400 border-brand-800',
   meeting_set: 'bg-purple-950 text-purple-400 border-purple-800',
   converted: 'bg-green-950 text-green-400 border-green-800',
   lost: 'bg-stone-800 text-stone-400 border-stone-700',

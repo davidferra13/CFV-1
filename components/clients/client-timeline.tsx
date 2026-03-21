@@ -51,9 +51,9 @@ const TYPE_CONFIG: Record<
   email: {
     label: 'Email',
     icon: Mail,
-    dotColor: 'bg-sky-500',
-    badgeBg: 'bg-sky-100',
-    badgeText: 'text-sky-700',
+    dotColor: 'bg-brand-500',
+    badgeBg: 'bg-brand-100',
+    badgeText: 'text-brand-700',
   },
   note: {
     label: 'Note',

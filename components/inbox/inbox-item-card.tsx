@@ -73,7 +73,7 @@ function SourceIcon({ source }: { source: string }) {
 
 function SourceBadge({ source, contentType }: { source: string; contentType: string | null }) {
   const colors: Record<string, string> = {
-    chat: 'bg-blue-900 text-blue-700',
+    chat: 'bg-brand-900 text-brand-700',
     message: 'bg-emerald-900 text-emerald-700',
     wix: 'bg-purple-900 text-purple-700',
     notification: 'bg-amber-900 text-amber-700',

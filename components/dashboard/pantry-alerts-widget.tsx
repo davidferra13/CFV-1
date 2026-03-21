@@ -50,7 +50,7 @@ export function PantryAlertsWidget() {
         <p className="text-sm text-gray-500">No pantry locations set up yet.</p>
         <Link
           href="/inventory/pantry"
-          className="text-sm text-blue-600 hover:underline mt-1 inline-block"
+          className="text-sm text-brand-600 hover:underline mt-1 inline-block"
         >
           Set up pantry tracking
         </Link>
@@ -62,7 +62,7 @@ export function PantryAlertsWidget() {
     <div className="rounded-lg border p-4">
       <div className="flex justify-between items-center mb-3">
         <h3 className="font-semibold">Pantry</h3>
-        <Link href="/inventory/pantry" className="text-sm text-blue-600 hover:underline">
+        <Link href="/inventory/pantry" className="text-sm text-brand-600 hover:underline">
           View all
         </Link>
       </div>

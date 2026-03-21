@@ -35,7 +35,7 @@ type Shift = {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  assistant: 'bg-blue-100 border-blue-300 text-blue-800',
+  assistant: 'bg-brand-100 border-brand-300 text-brand-800',
   sous_chef: 'bg-purple-100 border-purple-300 text-purple-800',
   server: 'bg-green-100 border-green-300 text-green-800',
   bartender: 'bg-amber-100 border-amber-300 text-amber-800',
@@ -46,7 +46,7 @@ const ROLE_COLORS: Record<string, string> = {
 
 const STATUS_BADGES: Record<string, string> = {
   scheduled: 'bg-stone-200 text-stone-700',
-  confirmed: 'bg-blue-200 text-blue-700',
+  confirmed: 'bg-brand-200 text-brand-700',
   checked_in: 'bg-green-200 text-green-700',
   checked_out: 'bg-stone-300 text-stone-700',
   no_show: 'bg-red-200 text-red-700',

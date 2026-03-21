@@ -37,7 +37,7 @@ const MILESTONE_LABELS: Record<string, { icon: string; label: string; color: str
   quote_sent: { icon: '💰', label: 'Quote Sent', color: 'text-amber-300' },
   quote_accepted: { icon: '🎉', label: 'Quote Accepted', color: 'text-green-300' },
   payment_received: { icon: '✅', label: 'Payment', color: 'text-green-300' },
-  event_confirmed: { icon: '📅', label: 'Confirmed', color: 'text-blue-300' },
+  event_confirmed: { icon: '📅', label: 'Confirmed', color: 'text-brand-300' },
   event_completed: { icon: '🏁', label: 'Complete', color: 'text-purple-300' },
   photos_ready: { icon: '📸', label: 'Photos', color: 'text-pink-300' },
 }

@@ -165,7 +165,7 @@ export function ChefGuestPanel({
               <span className="text-stone-500 ml-1">Pending</span>
             </div>
             <div>
-              <span className="font-bold text-blue-300">{summary.waitlisted_count ?? 0}</span>
+              <span className="font-bold text-brand-300">{summary.waitlisted_count ?? 0}</span>
               <span className="text-stone-500 ml-1">Waitlisted</span>
             </div>
           </div>

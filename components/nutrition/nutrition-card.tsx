@@ -65,7 +65,7 @@ function CompactView({ nutrition }: { nutrition: MenuNutritionEntry }) {
         <span className="text-stone-400 tabular-nums">{nutrition.calories} cal</span>
       )}
       {nutrition.protein_g !== null && (
-        <span className="text-blue-400 tabular-nums">{nutrition.protein_g}g P</span>
+        <span className="text-brand-400 tabular-nums">{nutrition.protein_g}g P</span>
       )}
       {nutrition.carbs_g !== null && (
         <span className="text-amber-400 tabular-nums">{nutrition.carbs_g}g C</span>
@@ -118,7 +118,7 @@ function ExpandedView({ nutrition }: { nutrition: MenuNutritionEntry }) {
             label="Protein"
             value={nutrition.protein_g}
             unit="g"
-            color="bg-blue-500"
+            color="bg-brand-500"
             maxValue={80}
           />
           <MacroBar

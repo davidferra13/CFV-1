@@ -19,10 +19,10 @@ export const metadata: Metadata = { title: 'Event History - ChefFlow' }
 const STATUS_STYLES: Record<string, string> = {
   completed: 'bg-green-900 text-green-700',
   cancelled: 'bg-stone-700 text-stone-500',
-  in_progress: 'bg-blue-900 text-blue-700',
+  in_progress: 'bg-brand-900 text-brand-700',
   confirmed: 'bg-teal-900 text-teal-700',
   paid: 'bg-emerald-900 text-emerald-700',
-  accepted: 'bg-sky-900 text-sky-700',
+  accepted: 'bg-brand-900 text-brand-700',
   proposed: 'bg-amber-900 text-amber-700',
   draft: 'bg-stone-800 text-stone-400',
 }

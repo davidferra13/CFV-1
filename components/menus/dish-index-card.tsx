@@ -69,7 +69,7 @@ export function DishIndexCard({ dish }: DishIndexCardProps) {
                 </span>
               )}
               {dish.linked_recipe_id && (
-                <span className="text-xxs bg-blue-900/40 text-blue-400 px-2 py-0.5 rounded-full">
+                <span className="text-xxs bg-brand-900/40 text-brand-400 px-2 py-0.5 rounded-full">
                   Recipe linked
                 </span>
               )}

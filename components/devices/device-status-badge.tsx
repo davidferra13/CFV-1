@@ -10,7 +10,7 @@ interface DeviceStatusBadgeProps {
 const statusConfig: Record<DeviceStatus, { label: string; className: string }> = {
   pending_pair: {
     label: 'Pending',
-    className: 'bg-blue-950 text-blue-300 border-blue-800',
+    className: 'bg-brand-950 text-brand-300 border-brand-800',
   },
   active: {
     label: 'Active',

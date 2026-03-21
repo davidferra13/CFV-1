@@ -68,12 +68,12 @@ export function UploadReviewPanel({
       appetizer: 'bg-purple-900/50 text-purple-400',
       soup: 'bg-teal-900/50 text-teal-400',
       salad: 'bg-emerald-900/50 text-emerald-400',
-      fish: 'bg-cyan-900/50 text-cyan-400',
+      fish: 'bg-brand-900/50 text-brand-400',
       entrée: 'bg-red-900/50 text-red-400',
       cheese: 'bg-amber-900/50 text-amber-400',
       dessert: 'bg-pink-900/50 text-pink-400',
       side: 'bg-lime-900/50 text-lime-400',
-      beverage: 'bg-sky-900/50 text-sky-400',
+      beverage: 'bg-brand-900/50 text-brand-400',
       other: 'bg-stone-800 text-stone-400',
     }
     return colors[course] || colors.other

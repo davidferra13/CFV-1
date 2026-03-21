@@ -34,18 +34,18 @@ const CATEGORY_OPTIONS = [
 const STATUS_COLORS: Record<string, string> = {
   submitted: 'bg-gray-100 text-gray-700',
   under_review: 'bg-yellow-100 text-yellow-800',
-  planned: 'bg-blue-100 text-blue-800',
+  planned: 'bg-brand-100 text-brand-800',
   in_progress: 'bg-purple-100 text-purple-800',
   shipped: 'bg-green-100 text-green-800',
   declined: 'bg-red-100 text-red-700',
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  core_ops: 'bg-indigo-50 text-indigo-700',
+  core_ops: 'bg-brand-50 text-brand-700',
   clients: 'bg-pink-50 text-pink-700',
   finance: 'bg-emerald-50 text-emerald-700',
   scheduling: 'bg-orange-50 text-orange-700',
-  marketing: 'bg-cyan-50 text-cyan-700',
+  marketing: 'bg-brand-50 text-brand-700',
   recipes: 'bg-amber-50 text-amber-700',
   team: 'bg-violet-50 text-violet-700',
   integrations: 'bg-teal-50 text-teal-700',
@@ -86,8 +86,8 @@ function VoteButton({
       onClick={() => onVote(feature.id)}
       className={`flex flex-col items-center rounded-lg border px-3 py-2 transition-colors ${
         feature.has_voted
-          ? 'border-blue-300 bg-blue-50 text-blue-700'
-          : 'border-gray-200 bg-white text-gray-500 hover:border-blue-200 hover:bg-blue-50'
+          ? 'border-brand-300 bg-brand-50 text-brand-700'
+          : 'border-gray-200 bg-white text-gray-500 hover:border-brand-200 hover:bg-brand-50'
       }`}
       title={feature.has_voted ? 'Remove your vote' : 'Vote for this feature'}
     >
@@ -105,11 +105,7 @@ function VoteButton({
   )
 }
 
-export function FeatureBoard({
-  initialFeatures,
-}: {
-  initialFeatures: FeatureRequest[]
-}) {
+export function FeatureBoard({ initialFeatures }: { initialFeatures: FeatureRequest[] }) {
   const [features, setFeatures] = useState<FeatureRequest[]>(initialFeatures)
   const [statusFilter, setStatusFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
@@ -197,10 +193,7 @@ export function FeatureBoard({
 
     startTransition(async () => {
       try {
-        const updated = await getFeatureRequests(
-          newStatus || undefined,
-          newCategory || undefined
-        )
+        const updated = await getFeatureRequests(newStatus || undefined, newCategory || undefined)
         setFeatures(updated)
       } catch {
         setError('Failed to filter features. Please try again.')
@@ -220,7 +213,7 @@ export function FeatureBoard({
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors"
         >
           {showForm ? 'Cancel' : 'Submit Request'}
         </button>
@@ -255,7 +248,7 @@ export function FeatureBoard({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="What feature would you like to see?"
               required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -268,7 +261,7 @@ export function FeatureBoard({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the feature and why it would be helpful..."
               rows={3}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -279,7 +272,7 @@ export function FeatureBoard({
               id="fr-category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             >
               {CATEGORY_OPTIONS.filter((c) => c.value).map((c) => (
                 <option key={c.value} value={c.value}>
@@ -292,7 +285,7 @@ export function FeatureBoard({
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50 transition-colors"
             >
               {isPending ? 'Submitting...' : 'Submit'}
             </button>
@@ -305,7 +298,7 @@ export function FeatureBoard({
         <select
           value={statusFilter}
           onChange={(e) => handleFilterChange(e.target.value, categoryFilter)}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
           {STATUS_OPTIONS.map((s) => (
             <option key={s.value} value={s.value}>
@@ -316,7 +309,7 @@ export function FeatureBoard({
         <select
           value={categoryFilter}
           onChange={(e) => handleFilterChange(statusFilter, e.target.value)}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
           {CATEGORY_OPTIONS.map((c) => (
             <option key={c.value} value={c.value}>
@@ -327,9 +320,7 @@ export function FeatureBoard({
       </div>
 
       {/* Feature list */}
-      {isPending && features.length === 0 && (
-        <p className="text-sm text-gray-500">Loading...</p>
-      )}
+      {isPending && features.length === 0 && <p className="text-sm text-gray-500">Loading...</p>}
 
       {!isPending && features.length === 0 && (
         <div className="rounded-lg border border-gray-200 bg-gray-50 py-12 text-center">
@@ -352,12 +343,10 @@ export function FeatureBoard({
                 <CategoryBadge category={feature.category} />
               </div>
               {feature.description && (
-                <p className="mt-1 text-sm text-gray-600 line-clamp-2">
-                  {feature.description}
-                </p>
+                <p className="mt-1 text-sm text-gray-600 line-clamp-2">{feature.description}</p>
               )}
               {feature.admin_response && (
-                <div className="mt-2 rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                <div className="mt-2 rounded-md bg-brand-50 px-3 py-2 text-xs text-brand-700">
                   <span className="font-medium">Admin response:</span> {feature.admin_response}
                 </div>
               )}

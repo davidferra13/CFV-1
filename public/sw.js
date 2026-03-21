@@ -1,4 +1,8 @@
-const CACHE_NAME = 'chefflow-runtime-v2026-03-16'
+// Build version is stamped by the deploy script (scripts/deploy-beta.sh, scripts/deploy-prod.sh).
+// The placeholder __BUILD_VERSION__ is replaced with the actual BUILD_ID at deploy time.
+// If not stamped (e.g. dev), falls back to a static key.
+const BUILD_VERSION = '__BUILD_VERSION__'
+const CACHE_NAME = 'chefflow-v-' + BUILD_VERSION
 const OFFLINE_URL = '/offline.html'
 const CORE_ASSETS = [
   OFFLINE_URL,
@@ -7,6 +11,9 @@ const CORE_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
 ]
+
+// How often to poll for new build versions (5 minutes)
+const VERSION_CHECK_INTERVAL = 5 * 60 * 1000
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -24,13 +31,19 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
+      // Delete ALL caches that don't match the current build version.
+      // This is the key fix: every deploy rotates the cache name, so stale
+      // assets from previous builds are evicted immediately on activation.
       const cacheNames = await caches.keys()
       await Promise.all(
         cacheNames
-          .filter((cacheName) => cacheName !== CACHE_NAME)
-          .map((cacheName) => caches.delete(cacheName))
+          .filter((name) => name !== CACHE_NAME)
+          .map((name) => caches.delete(name))
       )
       await self.clients.claim()
+
+      // Start periodic version checking
+      startVersionPolling()
     })()
   )
 })
@@ -38,6 +51,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting()
+  }
+  if (event.data?.type === 'CHECK_VERSION') {
+    checkForNewVersion()
   }
 })
 
@@ -47,6 +63,11 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = new URL(event.request.url)
+
+  // Never cache the build-version endpoint or any API routes
+  if (url.pathname.startsWith('/api/')) {
+    return
+  }
 
   if (event.request.mode === 'navigate') {
     event.respondWith(handleNavigationRequest(event.request))
@@ -162,6 +183,47 @@ self.addEventListener('pushsubscriptionchange', (event) => {
     })()
   )
 })
+
+// ---- Version polling ----
+
+let versionPollTimer = null
+
+function startVersionPolling() {
+  if (versionPollTimer) return
+  // Check immediately on activation, then every 5 minutes
+  checkForNewVersion()
+  versionPollTimer = setInterval(checkForNewVersion, VERSION_CHECK_INTERVAL)
+}
+
+async function checkForNewVersion() {
+  // Don't poll if build version was never stamped
+  if (BUILD_VERSION === '__BUILD_VERSION__') return
+
+  try {
+    const response = await fetch('/api/build-version', { cache: 'no-store' })
+    if (!response.ok) return
+
+    const data = await response.json()
+    if (data.buildId && data.buildId !== 'unknown' && data.buildId !== BUILD_VERSION) {
+      console.info('[SW] New build detected:', data.buildId, '(current:', BUILD_VERSION + ')')
+      // Notify all clients to reload
+      const clients = await self.clients.matchAll({ type: 'window' })
+      clients.forEach((client) => {
+        client.postMessage({
+          type: 'NEW_VERSION_AVAILABLE',
+          currentVersion: BUILD_VERSION,
+          newVersion: data.buildId,
+        })
+      })
+      // Trigger SW update check (will fetch new sw.js with new BUILD_VERSION)
+      await self.registration.update()
+    }
+  } catch {
+    // Silently ignore - network may be offline
+  }
+}
+
+// ---- Request handlers ----
 
 async function handleNavigationRequest(request) {
   try {

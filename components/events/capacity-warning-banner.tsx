@@ -22,13 +22,13 @@ export function CapacityWarningBanner({ warnings }: Props) {
   return (
     <div
       className={`rounded-lg border px-4 py-3 ${
-        hasHardWarning ? 'bg-amber-950 border-amber-200' : 'bg-blue-950 border-blue-200'
+        hasHardWarning ? 'bg-amber-950 border-amber-200' : 'bg-brand-950 border-brand-200'
       }`}
     >
       <div className="flex items-start gap-2">
         <span
           className={`mt-0.5 text-lg leading-none ${
-            hasHardWarning ? 'text-amber-500' : 'text-blue-500'
+            hasHardWarning ? 'text-amber-500' : 'text-brand-500'
           }`}
           aria-hidden="true"
         >
@@ -37,7 +37,7 @@ export function CapacityWarningBanner({ warnings }: Props) {
         <div className="flex-1">
           <p
             className={`text-sm font-semibold mb-1 ${
-              hasHardWarning ? 'text-amber-800' : 'text-blue-800'
+              hasHardWarning ? 'text-amber-800' : 'text-brand-800'
             }`}
           >
             {hasHardWarning ? 'Workload limit reached' : 'Workload notice'}
@@ -46,7 +46,7 @@ export function CapacityWarningBanner({ warnings }: Props) {
             {warnings.map((w, i) => (
               <li
                 key={i}
-                className={`text-sm ${hasHardWarning ? 'text-amber-700' : 'text-blue-700'}`}
+                className={`text-sm ${hasHardWarning ? 'text-amber-700' : 'text-brand-700'}`}
               >
                 {w.message}
               </li>
@@ -60,7 +60,7 @@ export function CapacityWarningBanner({ warnings }: Props) {
         className={`mt-3 text-xs font-medium underline underline-offset-2 ${
           hasHardWarning
             ? 'text-amber-700 hover:text-amber-900'
-            : 'text-blue-700 hover:text-blue-900'
+            : 'text-brand-700 hover:text-brand-900'
         }`}
       >
         I understand, continue anyway

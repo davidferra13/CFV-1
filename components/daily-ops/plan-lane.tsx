@@ -35,10 +35,10 @@ const LANE_COLORS: Record<string, { border: string; bg: string; text: string; ba
     badge: 'bg-purple-900 text-purple-700',
   },
   relationship: {
-    border: 'border-sky-200',
-    bg: 'bg-sky-950/30',
-    text: 'text-sky-700',
-    badge: 'bg-sky-900 text-sky-700',
+    border: 'border-brand-200',
+    bg: 'bg-brand-950/30',
+    text: 'text-brand-700',
+    badge: 'bg-brand-900 text-brand-700',
   },
 }
 

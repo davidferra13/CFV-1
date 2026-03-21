@@ -35,7 +35,7 @@ function getContactLabel(call: Awaited<ReturnType<typeof getCall>>): string {
 }
 
 const STATUS_PILL: Record<string, string> = {
-  scheduled: 'bg-blue-900 text-blue-700',
+  scheduled: 'bg-brand-900 text-brand-700',
   confirmed: 'bg-green-900 text-green-700',
   completed: 'bg-stone-700 text-stone-400',
   no_show: 'bg-red-900 text-red-700',
@@ -124,7 +124,7 @@ export default async function CallDetailPage({ params }: Props) {
                 <dd>
                   <Link
                     href={`/inquiries/${call.inquiry.id}`}
-                    className="text-blue-600 hover:underline text-sm"
+                    className="text-brand-600 hover:underline text-sm"
                   >
                     Inquiry: {call.inquiry.confirmed_occasion ?? 'View →'}
                   </Link>
@@ -141,7 +141,7 @@ export default async function CallDetailPage({ params }: Props) {
                 <dd>
                   <Link
                     href={`/events/${call.event.id}`}
-                    className="text-blue-600 hover:underline text-sm"
+                    className="text-brand-600 hover:underline text-sm"
                   >
                     Event: {call.event.title}
                     {call.event.event_date &&

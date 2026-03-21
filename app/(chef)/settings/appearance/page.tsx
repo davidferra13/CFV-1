@@ -38,7 +38,7 @@ export default async function AppearancePage() {
               <p className="text-sm font-medium text-stone-300">Light / Dark</p>
               <p className="text-sm text-stone-500">Switch between light and dark mode</p>
             </div>
-            <ThemeToggle />
+            <ThemeToggle dataTestId="appearance-theme-toggle" />
           </div>
         </CardContent>
       </Card>

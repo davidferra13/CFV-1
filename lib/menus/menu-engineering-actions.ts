@@ -670,21 +670,25 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
 
       if (event.client_id) {
         const { data: allergies } = await supabase
-          .from('client_allergies')
+          .from('client_allergy_records')
           .select('allergen, severity, confirmed_by_chef')
           .eq('client_id', event.client_id)
 
-        guestAllergens = allergies ?? []
+        guestAllergens = (allergies ?? []).map((a) => ({
+          allergen: a.allergen,
+          severity: a.severity,
+          confirmed_by_chef: a.confirmed_by_chef,
+        }))
       }
     }
   }
 
-  // 3. Get current dishes with components, recipes, and ingredients
+  // 3. Get current dishes (menu_items) with components, recipes, and ingredients
   const { data: dishes } = await supabase
-    .from('dishes')
-    .select('id, name, course_name, prep_time_minutes')
+    .from('menu_items')
+    .select('id, name, category')
     .eq('menu_id', menuId)
-    .eq('tenant_id', tenantId)
+    .eq('chef_id', tenantId)
 
   const currentDishes: SimulatorDish[] = []
 
@@ -788,7 +792,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
         name: dish.name,
         ingredients,
         costPerServingCents,
-        prepTimeMinutes: dish.prep_time_minutes ?? null,
+        prepTimeMinutes: null,
       })
     }
   }

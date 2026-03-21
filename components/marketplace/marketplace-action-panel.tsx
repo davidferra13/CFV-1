@@ -20,16 +20,16 @@ import { toast } from 'sonner'
 const PLATFORM_DISPLAY: Record<string, { label: string; badge: string; color: string }> = {
   take_a_chef: { label: 'Take a Chef', badge: 'TAC', color: 'text-purple-300' },
   yhangry: { label: 'Yhangry', badge: 'Yhangry', color: 'text-pink-300' },
-  cozymeal: { label: 'Cozymeal', badge: 'Cozymeal', color: 'text-blue-300' },
+  cozymeal: { label: 'Cozymeal', badge: 'Cozymeal', color: 'text-brand-300' },
   bark: { label: 'Bark', badge: 'Bark', color: 'text-green-300' },
   thumbtack: { label: 'Thumbtack', badge: 'Thumbtack', color: 'text-yellow-300' },
   gigsalad: { label: 'GigSalad', badge: 'GigSalad', color: 'text-orange-300' },
   theknot: { label: 'The Knot', badge: 'The Knot', color: 'text-rose-300' },
-  privatechefmanager: { label: 'PCM', badge: 'PCM', color: 'text-indigo-300' },
+  privatechefmanager: { label: 'PCM', badge: 'PCM', color: 'text-brand-300' },
   hireachef: { label: 'HireAChef', badge: 'HireAChef', color: 'text-teal-300' },
-  cuisineistchef: { label: 'Cuisineist', badge: 'Cuisineist', color: 'text-cyan-300' },
+  cuisineistchef: { label: 'Cuisineist', badge: 'Cuisineist', color: 'text-brand-300' },
   google_business: { label: 'Google Business', badge: 'Google', color: 'text-red-300' },
-  wix_forms: { label: 'Wix', badge: 'Wix', color: 'text-sky-300' },
+  wix_forms: { label: 'Wix', badge: 'Wix', color: 'text-brand-300' },
 }
 
 const STATUS_BADGE: Record<

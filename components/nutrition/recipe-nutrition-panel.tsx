@@ -87,7 +87,7 @@ export function RecipeNutritionPanel({ recipeId, recipeName }: RecipeNutritionPa
         <button
           onClick={handleCalculate}
           disabled={isPending}
-          className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-md bg-brand-600 px-6 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {isPending ? 'Calculating...' : 'Calculate Nutrition'}
         </button>
@@ -121,7 +121,7 @@ export function RecipeNutritionPanel({ recipeId, recipeName }: RecipeNutritionPa
           <button
             onClick={handleCalculate}
             disabled={isPending}
-            className="text-xs text-blue-600 underline hover:text-blue-800"
+            className="text-xs text-brand-600 underline hover:text-brand-800"
           >
             Recalculate
           </button>
@@ -282,7 +282,7 @@ export function RecipeNutritionPanel({ recipeId, recipeName }: RecipeNutritionPa
               <button
                 onClick={handleSaveOverride}
                 disabled={isPending}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
               >
                 {isPending ? 'Saving...' : 'Save Override'}
               </button>
@@ -328,7 +328,7 @@ function OverrideField({
         onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
         step="0.1"
         min="0"
-        className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
       />
     </div>
   )

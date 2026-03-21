@@ -32,7 +32,7 @@ const SHIFT_LABELS: Record<string, string> = {
 }
 
 const SHIFT_COLORS: Record<string, string> = {
-  opening: 'bg-sky-950/30 border-sky-900/40 text-sky-400',
+  opening: 'bg-brand-950/30 border-brand-900/40 text-brand-400',
   mid: 'bg-amber-950/30 border-amber-900/40 text-amber-400',
   closing: 'bg-violet-950/30 border-violet-900/40 text-violet-400',
 }

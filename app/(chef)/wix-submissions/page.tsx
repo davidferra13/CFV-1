@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: 'Wix Submissions - ChefFlow' }
 
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-900 text-amber-300',
-  processing: 'bg-blue-900 text-blue-300',
+  processing: 'bg-brand-900 text-brand-300',
   completed: 'bg-emerald-900 text-emerald-300',
   failed: 'bg-red-900 text-red-300',
   duplicate: 'bg-stone-800 text-stone-300',

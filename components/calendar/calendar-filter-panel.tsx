@@ -44,7 +44,7 @@ const FILTER_DEFS: FilterDef[] = [
   {
     key: 'showCalls',
     label: 'Calls',
-    activeColor: 'bg-blue-900 text-blue-800 border-blue-300',
+    activeColor: 'bg-brand-900 text-brand-800 border-brand-300',
     dotColor: '#3B82F6',
   },
   {

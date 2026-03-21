@@ -139,9 +139,9 @@ export function JourneyDetail({
                 {reflectionCount} entries include mistakes, wins, or change notes.
               </p>
             </div>
-            <div className="rounded-lg border border-sky-200 bg-sky-950 px-3 py-2">
-              <p className="text-xs text-sky-700">Mapped Memories</p>
-              <p className="text-sm text-sky-900 mt-0.5">
+            <div className="rounded-lg border border-brand-200 bg-brand-950 px-3 py-2">
+              <p className="text-xs text-brand-700">Mapped Memories</p>
+              <p className="text-sm text-brand-900 mt-0.5">
                 {mappedCount} timeline items include precise map coordinates.
               </p>
             </div>

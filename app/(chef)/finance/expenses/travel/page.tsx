@@ -40,7 +40,7 @@ export default async function TravelExpensesPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Travel</h1>
-          <span className="bg-blue-900 text-blue-700 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-brand-900 text-brand-700 text-sm px-2 py-0.5 rounded-full">
             {expenses.length}
           </span>
         </div>

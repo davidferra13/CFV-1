@@ -11,7 +11,10 @@ export function getClientTier(eventCount: number): 'new' | 'regular' | 'vip' | '
 
 export const TIER_CONFIG = {
   new: { label: 'New', color: 'bg-stone-800 text-stone-300 ring-1 ring-inset ring-stone-600' },
-  regular: { label: 'Regular', color: 'bg-blue-950 text-blue-400 ring-1 ring-inset ring-blue-800' },
+  regular: {
+    label: 'Regular',
+    color: 'bg-brand-950 text-brand-400 ring-1 ring-inset ring-brand-800',
+  },
   vip: { label: 'VIP', color: 'bg-amber-950 text-amber-400 ring-1 ring-inset ring-amber-800' },
   champion: {
     label: 'Champion',

@@ -47,7 +47,7 @@ const CAPABILITIES: CapabilityCategory[] = [
     icon: <Plus className="h-4 w-4" />,
     title: 'Create & Build',
     subtitle: 'Shows preview - needs your approval',
-    color: 'text-blue-600 bg-blue-950 dark:bg-blue-950/50',
+    color: 'text-brand-600 bg-brand-950 dark:bg-brand-950/50',
     items: [
       'Create clients from a description',
       'Create events from natural language',
@@ -91,7 +91,7 @@ const CAPABILITIES: CapabilityCategory[] = [
     icon: <Mail className="h-4 w-4" />,
     title: 'Draft Communications',
     subtitle: 'Draft only - you copy & send manually',
-    color: 'text-sky-600 bg-sky-950 dark:bg-sky-950/50',
+    color: 'text-brand-600 bg-brand-950 dark:bg-brand-950/50',
     items: [
       'Follow-up emails & thank-you notes',
       'Referral & testimonial requests',

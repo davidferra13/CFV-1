@@ -146,9 +146,9 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
 
           {/* Approach Strategy */}
           {prospect.approach_strategy && (
-            <div className="bg-blue-950 border border-blue-200 rounded-lg p-3">
-              <p className="text-xs font-medium text-blue-800 mb-1">Approach Strategy</p>
-              <p className="text-sm text-blue-900">{prospect.approach_strategy}</p>
+            <div className="bg-brand-950 border border-brand-200 rounded-lg p-3">
+              <p className="text-xs font-medium text-brand-800 mb-1">Approach Strategy</p>
+              <p className="text-sm text-brand-900">{prospect.approach_strategy}</p>
             </div>
           )}
 

@@ -63,7 +63,7 @@ export function SocialMonthCell({ month, year, posts }: Props) {
             </span>
           )}
           {approved > 0 && (
-            <span className="text-xxs px-1.5 py-0.5 rounded bg-sky-950 text-sky-700 font-medium">
+            <span className="text-xxs px-1.5 py-0.5 rounded bg-brand-950 text-brand-700 font-medium">
               {approved} approved
             </span>
           )}

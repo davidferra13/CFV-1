@@ -40,9 +40,9 @@ const PHASE_LABELS: Record<string, string> = {
 
 const PHASE_COLORS: Record<string, string> = {
   pre_event: 'bg-stone-700 text-stone-200',
-  shopping: 'bg-blue-900 text-blue-200',
+  shopping: 'bg-brand-900 text-brand-200',
   prep: 'bg-purple-900 text-purple-200',
-  packing: 'bg-indigo-900 text-indigo-200',
+  packing: 'bg-brand-900 text-brand-200',
   travel: 'bg-amber-900 text-amber-200',
   service: 'bg-emerald-900 text-emerald-200',
   cleanup: 'bg-stone-700 text-stone-300',
@@ -89,7 +89,7 @@ export function TodaysScheduleWidget({ schedule, weather }: TodaysScheduleWidget
           {event.location_city && ` - ${event.location_city}`}
           {weather && (
             <span
-              className="ml-2 inline-flex items-center gap-1 text-sky-400"
+              className="ml-2 inline-flex items-center gap-1 text-brand-400"
               title={weather.description}
             >
               <span>{weather.emoji}</span>
@@ -228,7 +228,7 @@ function WeatherAlertBadge({ alert }: { alert: WeatherAlert }) {
   const styles = {
     critical: 'bg-red-950 border-red-800 text-red-300',
     warning: 'bg-amber-950 border-amber-800 text-amber-300',
-    info: 'bg-sky-950 border-sky-800 text-sky-300',
+    info: 'bg-brand-950 border-brand-800 text-brand-300',
   }
 
   return (

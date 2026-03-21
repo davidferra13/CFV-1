@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
 
-export const revalidate = 3600
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'ChefFlow | Discover Private Chefs, Caterers & Food Near You',

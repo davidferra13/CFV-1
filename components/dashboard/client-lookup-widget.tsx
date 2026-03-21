@@ -22,7 +22,7 @@ const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-800 text-amber-100',
   silver: 'bg-stone-500 text-stone-100',
   gold: 'bg-yellow-600 text-yellow-50',
-  platinum: 'bg-indigo-500 text-indigo-50',
+  platinum: 'bg-brand-500 text-brand-50',
 }
 
 export function ClientLookupWidget() {

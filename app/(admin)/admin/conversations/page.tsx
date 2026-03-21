@@ -99,7 +99,7 @@ export default async function AdminConversationsPage({
         />
         <button
           type="submit"
-          className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-600"
+          className="rounded-lg bg-brand-700 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-600"
         >
           Apply Filters
         </button>
@@ -130,7 +130,7 @@ export default async function AdminConversationsPage({
             {result.items.map((item) => (
               <tr key={item.id} className="border-b border-stone-800/70 hover:bg-stone-800/20">
                 <td className="px-3 py-2 text-stone-200">
-                  <Link href={`/admin/conversations/${item.id}`} className="text-blue-600">
+                  <Link href={`/admin/conversations/${item.id}`} className="text-brand-600">
                     {item.id}
                   </Link>
                 </td>

@@ -18,12 +18,12 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
     <div className="rounded-xl border bg-stone-900 shadow-sm">
       <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-stone-800">
         <div className="flex items-center gap-2">
-          <Phone className="w-4 h-4 text-blue-500" />
+          <Phone className="w-4 h-4 text-brand-500" />
           <h3 className="font-semibold text-sm text-stone-100">Upcoming Calls</h3>
         </div>
         <Link
           href="/calls/new"
-          className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
+          className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 font-medium"
         >
           <Plus className="w-3.5 h-3.5" />
           Schedule
@@ -35,7 +35,7 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
           <p className="text-sm text-stone-500">No upcoming calls</p>
           <Link
             href="/calls/new"
-            className="mt-2 inline-block text-sm text-blue-600 hover:underline"
+            className="mt-2 inline-block text-sm text-brand-600 hover:underline"
           >
             Schedule your first call
           </Link>
@@ -50,7 +50,7 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
               >
                 {/* Time bubble */}
                 <div className="flex-shrink-0 text-center min-w-[44px]">
-                  <p className="text-xs font-semibold text-blue-600">
+                  <p className="text-xs font-semibold text-brand-600">
                     {format(new Date(call.scheduled_at), 'MMM d')}
                   </p>
                   <p className="text-xs text-gray-500">
@@ -92,7 +92,7 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
         <div className="px-5 py-3 border-t border-stone-800">
           <Link
             href="/calls"
-            className="text-xs text-stone-400 hover:text-blue-500 font-medium flex items-center gap-1"
+            className="text-xs text-stone-400 hover:text-brand-500 font-medium flex items-center gap-1"
           >
             View all calls <ArrowRight className="w-3 h-3" />
           </Link>

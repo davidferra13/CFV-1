@@ -21,7 +21,7 @@ const CATEGORY_META: Record<InquiryNoteCategory, { bg: string; text: string; lab
   inspiration: { bg: 'bg-pink-900', text: 'text-pink-700', label: 'Inspiration' },
   menu_planning: { bg: 'bg-amber-900', text: 'text-amber-700', label: 'Menu Planning' },
   sourcing: { bg: 'bg-green-900', text: 'text-green-700', label: 'Sourcing' },
-  logistics: { bg: 'bg-blue-900', text: 'text-blue-700', label: 'Logistics' },
+  logistics: { bg: 'bg-brand-900', text: 'text-brand-700', label: 'Logistics' },
   staffing: { bg: 'bg-purple-900', text: 'text-purple-700', label: 'Staffing' },
   post_event: { bg: 'bg-teal-900', text: 'text-teal-700', label: 'Post-Event' },
 }

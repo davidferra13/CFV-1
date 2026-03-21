@@ -23,8 +23,8 @@ const ENTRY_TYPE_STYLES: Record<string, string> = {
   deposit: 'bg-emerald-900 text-emerald-700',
   installment: 'bg-teal-900 text-teal-700',
   final_payment: 'bg-green-900 text-green-800',
-  add_on: 'bg-blue-900 text-blue-700',
-  credit: 'bg-sky-900 text-sky-700',
+  add_on: 'bg-brand-900 text-brand-700',
+  credit: 'bg-brand-900 text-brand-700',
   tip: 'bg-amber-900 text-amber-700',
   refund: 'bg-red-900 text-red-700',
 }

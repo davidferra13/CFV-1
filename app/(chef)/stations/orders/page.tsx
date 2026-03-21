@@ -126,7 +126,7 @@ export default async function OrdersPage({
                               order.status === 'received'
                                 ? 'bg-emerald-950 text-emerald-400'
                                 : order.status === 'ordered'
-                                  ? 'bg-sky-950 text-sky-400'
+                                  ? 'bg-brand-950 text-brand-400'
                                   : 'bg-amber-950 text-amber-400'
                             }`}
                           >

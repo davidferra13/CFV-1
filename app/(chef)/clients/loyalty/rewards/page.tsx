@@ -19,7 +19,7 @@ export const metadata: Metadata = { title: 'Rewards - ChefFlow' }
 const TYPE_STYLES: Record<string, string> = {
   gift_card: 'bg-green-900 text-green-700',
   voucher: 'bg-purple-900 text-purple-700',
-  discount: 'bg-blue-900 text-blue-700',
+  discount: 'bg-brand-900 text-brand-700',
   complimentary: 'bg-amber-900 text-amber-700',
 }
 

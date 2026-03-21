@@ -119,7 +119,7 @@ export default async function AdminNotificationsPage({
         />
         <button
           type="submit"
-          className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-600"
+          className="rounded-lg bg-brand-700 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-600"
         >
           Apply
         </button>

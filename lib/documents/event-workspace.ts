@@ -51,8 +51,8 @@ const PHASE_BY_STATUS: Record<EventStatus, EventWorkspacePhaseKey> = {
 
 const STATUS_BADGE_CLASS: Record<EventStatus, string> = {
   draft: 'bg-stone-800 text-stone-300 border border-stone-700',
-  proposed: 'bg-blue-950 text-blue-300 border border-blue-800',
-  accepted: 'bg-indigo-950 text-indigo-300 border border-indigo-800',
+  proposed: 'bg-brand-950 text-brand-300 border border-brand-800',
+  accepted: 'bg-brand-950 text-brand-300 border border-brand-800',
   paid: 'bg-emerald-950 text-emerald-300 border border-emerald-800',
   confirmed: 'bg-green-950 text-green-300 border border-green-800',
   in_progress: 'bg-amber-950 text-amber-300 border border-amber-800',

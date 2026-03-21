@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { createCircleForEvent } from '@/lib/hub/chef-circle-actions'
+import { toast } from 'sonner'
 
 interface EventHubLinkPanelProps {
   groupToken: string | null
@@ -23,7 +24,7 @@ export function EventHubLinkPanel({ groupToken, eventId }: EventHubLinkPanelProp
         const result = await createCircleForEvent(eventId)
         setToken(result.groupToken)
       } catch {
-        // Ignore
+        toast.error('Failed to create dinner circle')
       }
     })
   }

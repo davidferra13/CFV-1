@@ -65,7 +65,7 @@ function ScoreRing({ score, color }: { score: number; color: string }) {
 
 function scoreColor(score: number): string {
   if (score >= 80) return '#10b981' // emerald
-  if (score >= 60) return '#3b82f6' // blue
+  if (score >= 60) return '#b15c26' // brand
   if (score >= 40) return '#f59e0b' // amber
   return '#ef4444' // red
 }

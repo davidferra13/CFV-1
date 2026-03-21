@@ -159,13 +159,13 @@ export default async function NetworkPage({
 
       {/* Pending connection requests badge */}
       {pending.length > 0 && (
-        <div className="bg-blue-950 border border-blue-200 rounded-xl p-3 flex items-center justify-between">
-          <p className="text-sm text-blue-800 font-medium">
+        <div className="bg-brand-950 border border-brand-200 rounded-xl p-3 flex items-center justify-between">
+          <p className="text-sm text-brand-800 font-medium">
             {pending.filter((p) => p.direction === 'received').length} pending connection request(s)
           </p>
           <Link
             href="?tab=connections"
-            className="text-sm text-blue-700 font-medium hover:underline"
+            className="text-sm text-brand-700 font-medium hover:underline"
           >
             View →
           </Link>

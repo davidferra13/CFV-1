@@ -1126,15 +1126,15 @@ export function QuoteForm({
 
             {/* Menu Food Cost hint - informational only, chef sets the price */}
             {menuCost && (
-              <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-800">
+              <Card className="border-brand-200 bg-brand-50/50 dark:bg-brand-950/20 dark:border-brand-800">
                 <div className="p-3 space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    <p className="text-sm font-medium text-brand-800 dark:text-brand-200">
                       Menu Food Cost
                     </p>
                     <a
                       href={`/menus/${menuCost.menuId}`}
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs text-brand-600 hover:underline"
                     >
                       {menuCost.menuName}
                     </a>

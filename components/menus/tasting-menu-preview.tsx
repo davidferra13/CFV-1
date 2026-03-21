@@ -24,11 +24,11 @@ const COURSE_TYPE_LABELS: Record<CourseType, string> = {
 
 const COURSE_TYPE_COLORS: Record<CourseType, string> = {
   amuse_bouche: 'bg-purple-100 text-purple-800 border-purple-200',
-  appetizer: 'bg-blue-100 text-blue-800 border-blue-200',
+  appetizer: 'bg-brand-100 text-brand-800 border-brand-200',
   soup: 'bg-amber-100 text-amber-800 border-amber-200',
   salad: 'bg-green-100 text-green-800 border-green-200',
-  fish: 'bg-cyan-100 text-cyan-800 border-cyan-200',
-  intermezzo: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+  fish: 'bg-brand-100 text-brand-800 border-brand-200',
+  intermezzo: 'bg-brand-100 text-brand-800 border-brand-200',
   main: 'bg-red-100 text-red-800 border-red-200',
   cheese: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   pre_dessert: 'bg-pink-100 text-pink-800 border-pink-200',

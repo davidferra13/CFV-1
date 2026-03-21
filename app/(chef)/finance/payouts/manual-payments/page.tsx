@@ -54,9 +54,9 @@ export default async function ManualPaymentsPage() {
         </p>
       </div>
 
-      <Card className="p-4 bg-sky-950 border-sky-200">
-        <p className="text-sm text-sky-800 font-medium">About this view</p>
-        <p className="text-sm text-sky-700 mt-1">
+      <Card className="p-4 bg-brand-950 border-brand-200">
+        <p className="text-sm text-brand-800 font-medium">About this view</p>
+        <p className="text-sm text-brand-700 mt-1">
           This shows all inbound payment ledger entries. Offline payments (cash, Venmo, Zelle)
           recorded via the &quot;Record Payment&quot; button on event pages appear here alongside
           Stripe-processed payments.

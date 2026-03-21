@@ -344,7 +344,7 @@ export function AdminCannabisClient({ users, pendingInvites, allInvites }: Props
                     inv.admin_approval_status === 'approved'
                       ? inv.claimed_at
                         ? 'bg-green-900/30 text-green-400'
-                        : 'bg-blue-900/30 text-blue-400'
+                        : 'bg-brand-900/30 text-brand-400'
                       : inv.admin_approval_status === 'rejected'
                         ? 'bg-red-900/30 text-red-400'
                         : 'bg-amber-900/30 text-amber-400'

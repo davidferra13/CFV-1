@@ -145,7 +145,7 @@ export function WeekStrip({ schedule, dayRevenueCents }: WeekStripProps) {
                 {/* Grocery window indicator */}
                 {groceryWindow && (
                   <div className="flex justify-center mt-0.5" title={groceryWindow.reason}>
-                    <ShoppingCart className="h-3 w-3 text-blue-400" />
+                    <ShoppingCart className="h-3 w-3 text-brand-400" />
                   </div>
                 )}
 
@@ -217,7 +217,7 @@ export function WeekStrip({ schedule, dayRevenueCents }: WeekStripProps) {
           </span>
           {groceryWindows.length > 0 && (
             <span className="flex items-center gap-1">
-              <ShoppingCart className="h-2.5 w-2.5 text-blue-400" /> Shop day
+              <ShoppingCart className="h-2.5 w-2.5 text-brand-400" /> Shop day
             </span>
           )}
         </div>

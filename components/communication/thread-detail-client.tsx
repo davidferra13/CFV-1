@@ -252,7 +252,7 @@ export function ThreadDetailClient({
                   se.type === 'inquiry_transition'
                     ? 'border-violet-700/40 text-violet-400'
                     : se.type === 'event_transition'
-                      ? 'border-blue-700/40 text-blue-400'
+                      ? 'border-brand-700/40 text-brand-400'
                       : 'border-stone-700/40 text-stone-500'
                 return (
                   <div key={se.id} className="flex justify-center">
@@ -281,10 +281,10 @@ export function ThreadDetailClient({
                   className={`flex ${isOutbound ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${isOutbound ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-stone-800 text-stone-100 rounded-bl-sm'}`}
+                    className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${isOutbound ? 'bg-brand-600 text-white rounded-br-sm' : 'bg-stone-800 text-stone-100 rounded-bl-sm'}`}
                   >
                     <div
-                      className={`mb-1 flex items-center gap-2 text-xs ${isOutbound ? 'text-indigo-200' : 'text-stone-500'}`}
+                      className={`mb-1 flex items-center gap-2 text-xs ${isOutbound ? 'text-brand-200' : 'text-stone-500'}`}
                     >
                       <span>{event.sender_identity}</span>
                       <span>·</span>
@@ -294,7 +294,7 @@ export function ThreadDetailClient({
                       {event.linked_entity_type && (
                         <>
                           <span>·</span>
-                          <span className={isOutbound ? 'text-indigo-300' : 'text-stone-400'}>
+                          <span className={isOutbound ? 'text-brand-300' : 'text-stone-400'}>
                             linked to {event.linked_entity_type}
                           </span>
                         </>
@@ -309,22 +309,22 @@ export function ThreadDetailClient({
                       }
                       linkClassName={
                         isOutbound
-                          ? 'underline underline-offset-2 text-indigo-100 hover:text-white'
+                          ? 'underline underline-offset-2 text-brand-100 hover:text-white'
                           : 'underline underline-offset-2 text-brand-400 hover:text-brand-300'
                       }
                       quotedContainerClassName={
                         isOutbound
-                          ? 'mt-2 rounded-md border border-white/20 bg-indigo-700/50'
+                          ? 'mt-2 rounded-md border border-white/20 bg-brand-700/50'
                           : 'mt-2 rounded-md border border-stone-700/70 bg-stone-900/70'
                       }
                       quotedSummaryClassName={
                         isOutbound
-                          ? 'cursor-pointer select-none px-2 py-1 text-xs text-indigo-100 hover:text-white'
+                          ? 'cursor-pointer select-none px-2 py-1 text-xs text-brand-100 hover:text-white'
                           : 'cursor-pointer select-none px-2 py-1 text-xs text-stone-400 hover:text-stone-300'
                       }
                       quotedContentClassName={
                         isOutbound
-                          ? 'px-2 pb-2 text-xs text-indigo-100 whitespace-pre-wrap break-words leading-relaxed'
+                          ? 'px-2 pb-2 text-xs text-brand-100 whitespace-pre-wrap break-words leading-relaxed'
                           : 'px-2 pb-2 text-xs text-stone-400 whitespace-pre-wrap break-words leading-relaxed'
                       }
                     />
@@ -396,7 +396,7 @@ export function ThreadDetailClient({
           <button
             type="button"
             onClick={() => setReplyDirection('outbound')}
-            className={`flex-shrink-0 rounded-full px-3 py-1.5 sm:py-1 text-xs font-medium ${replyDirection === 'outbound' ? 'bg-indigo-600 text-white' : 'bg-stone-800 text-stone-400'}`}
+            className={`flex-shrink-0 rounded-full px-3 py-1.5 sm:py-1 text-xs font-medium ${replyDirection === 'outbound' ? 'bg-brand-600 text-white' : 'bg-stone-800 text-stone-400'}`}
           >
             Your Reply
           </button>
@@ -437,7 +437,7 @@ export function ThreadDetailClient({
                 : 'Log their message...'
             }
             rows={2}
-            className="flex-1 resize-none rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="flex-1 resize-none rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                 handleSendReply()

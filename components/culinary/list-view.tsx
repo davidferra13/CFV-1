@@ -16,7 +16,7 @@ type ListViewProps = {
 
 const TIER_BADGE_COLORS: Record<WordTier, string> = {
   1: 'bg-amber-900 text-amber-800 border-amber-300',
-  2: 'bg-blue-900 text-blue-800 border-blue-300',
+  2: 'bg-brand-900 text-brand-800 border-brand-300',
   3: 'bg-stone-800 text-stone-300 border-stone-600',
   4: 'bg-purple-900 text-purple-800 border-purple-300',
 }

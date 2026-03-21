@@ -79,12 +79,8 @@ export function TastingMenuList({ menus, onEdit, onPreview, onRefresh }: Props) 
           className="group relative rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
           {/* Clickable card body */}
-          <button
-            type="button"
-            onClick={() => onEdit(menu.id)}
-            className="block w-full text-left"
-          >
-            <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600">
+          <button type="button" onClick={() => onEdit(menu.id)} className="block w-full text-left">
+            <h3 className="text-sm font-semibold text-gray-900 group-hover:text-brand-600">
               {menu.name}
             </h3>
             {menu.description && (

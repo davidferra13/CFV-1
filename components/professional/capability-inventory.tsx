@@ -91,7 +91,7 @@ const CONFIDENCE_OPTIONS = [
   {
     value: 'proficient',
     label: 'Proficient',
-    color: 'bg-blue-900 text-blue-800 border-blue-300 hover:bg-blue-200',
+    color: 'bg-brand-900 text-brand-800 border-brand-300 hover:bg-brand-200',
   },
   {
     value: 'learning',
@@ -110,7 +110,7 @@ function confidenceSelected(value: string): string {
     case 'expert':
       return 'bg-green-600 text-white border-green-700'
     case 'proficient':
-      return 'bg-blue-600 text-white border-blue-700'
+      return 'bg-brand-600 text-white border-brand-700'
     case 'learning':
       return 'bg-amber-500 text-white border-amber-600'
     case 'not_my_specialty':

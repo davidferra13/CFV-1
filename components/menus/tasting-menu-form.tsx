@@ -23,11 +23,11 @@ import {
 
 const COURSE_TYPES: { value: CourseType; label: string; color: string }[] = [
   { value: 'amuse_bouche', label: 'Amuse-Bouche', color: 'bg-purple-100 text-purple-800' },
-  { value: 'appetizer', label: 'Appetizer', color: 'bg-blue-100 text-blue-800' },
+  { value: 'appetizer', label: 'Appetizer', color: 'bg-brand-100 text-brand-800' },
   { value: 'soup', label: 'Soup', color: 'bg-amber-100 text-amber-800' },
   { value: 'salad', label: 'Salad', color: 'bg-green-100 text-green-800' },
-  { value: 'fish', label: 'Fish', color: 'bg-cyan-100 text-cyan-800' },
-  { value: 'intermezzo', label: 'Intermezzo', color: 'bg-indigo-100 text-indigo-800' },
+  { value: 'fish', label: 'Fish', color: 'bg-brand-100 text-brand-800' },
+  { value: 'intermezzo', label: 'Intermezzo', color: 'bg-brand-100 text-brand-800' },
   { value: 'main', label: 'Main', color: 'bg-red-100 text-red-800' },
   { value: 'cheese', label: 'Cheese', color: 'bg-yellow-100 text-yellow-800' },
   { value: 'pre_dessert', label: 'Pre-Dessert', color: 'bg-pink-100 text-pink-800' },
@@ -138,9 +138,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
   }
 
   function updateCourseLocal(localId: string, field: string, value: string | null) {
-    setCourses((prev) =>
-      prev.map((c) => (c._localId === localId ? { ...c, [field]: value } : c))
-    )
+    setCourses((prev) => prev.map((c) => (c._localId === localId ? { ...c, [field]: value } : c)))
   }
 
   function moveCourse(localId: string, direction: 'up' | 'down') {
@@ -257,9 +255,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
           {isEditing ? 'Edit Tasting Menu' : 'New Tasting Menu'}
         </h2>
 
-        {error && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
-        )}
+        {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
         {/* Name */}
         <div>
@@ -269,7 +265,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Spring Tasting Experience"
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
 
@@ -281,7 +277,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
             placeholder="A journey through seasonal flavors..."
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
 
@@ -295,7 +291,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
               max={20}
               value={courseCount}
               onChange={(e) => setCourseCount(parseInt(e.target.value) || 5)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -307,11 +303,13 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
               value={pricePerPerson}
               onChange={(e) => setPricePerPerson(e.target.value)}
               placeholder="0.00"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Wine Pairing Upcharge ($)</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Wine Pairing Upcharge ($)
+            </label>
             <input
               type="number"
               min={0}
@@ -319,7 +317,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
               value={wineUpcharge}
               onChange={(e) => setWineUpcharge(e.target.value)}
               placeholder="0.00"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -333,7 +331,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
               value={occasion}
               onChange={(e) => setOccasion(e.target.value)}
               placeholder="e.g. Anniversary, Birthday, Wine Dinner"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -341,11 +339,13 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
             <select
               value={season}
               onChange={(e) => setSeason(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             >
               <option value="">Select season...</option>
               {SEASONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
           </div>
@@ -355,13 +355,11 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
       {/* Courses */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-900">
-            Courses ({courses.length})
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-900">Courses ({courses.length})</h3>
           <button
             type="button"
             onClick={addNewCourse}
-            className="rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
+            className="rounded-md bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 hover:bg-brand-100"
           >
             + Add Course
           </button>
@@ -430,7 +428,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                     onChange={(e) =>
                       updateCourseLocal(course._localId, 'course_type', e.target.value)
                     }
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
                   >
                     {COURSE_TYPES.map((ct) => (
                       <option key={ct.value} value={ct.value}>
@@ -448,7 +446,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                       updateCourseLocal(course._localId, 'dish_name', e.target.value)
                     }
                     placeholder="e.g. Seared Scallop with Citrus Beurre Blanc"
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -457,14 +455,10 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                     type="text"
                     value={course.description ?? ''}
                     onChange={(e) =>
-                      updateCourseLocal(
-                        course._localId,
-                        'description',
-                        e.target.value || null
-                      )
+                      updateCourseLocal(course._localId, 'description', e.target.value || null)
                     }
                     placeholder="Brief description of the dish"
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -473,14 +467,10 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                     type="text"
                     value={course.wine_pairing ?? ''}
                     onChange={(e) =>
-                      updateCourseLocal(
-                        course._localId,
-                        'wine_pairing',
-                        e.target.value || null
-                      )
+                      updateCourseLocal(course._localId, 'wine_pairing', e.target.value || null)
                     }
                     placeholder="e.g. 2022 Sancerre, Loire Valley"
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -490,7 +480,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                     onChange={(e) =>
                       updateCourseLocal(course._localId, 'portion_size', e.target.value)
                     }
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
                   >
                     {PORTION_SIZES.map((ps) => (
                       <option key={ps.value} value={ps.value}>
@@ -505,14 +495,10 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                     type="text"
                     value={course.pairing_notes ?? ''}
                     onChange={(e) =>
-                      updateCourseLocal(
-                        course._localId,
-                        'pairing_notes',
-                        e.target.value || null
-                      )
+                      updateCourseLocal(course._localId, 'pairing_notes', e.target.value || null)
                     }
                     placeholder="Why this pairing works..."
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -521,14 +507,10 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                     type="text"
                     value={course.prep_notes ?? ''}
                     onChange={(e) =>
-                      updateCourseLocal(
-                        course._localId,
-                        'prep_notes',
-                        e.target.value || null
-                      )
+                      updateCourseLocal(course._localId, 'prep_notes', e.target.value || null)
                     }
                     placeholder="Timing, plating, temperature notes..."
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -543,7 +525,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
           type="button"
           onClick={handleSave}
           disabled={isPending || !name.trim()}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {isPending ? 'Saving...' : isEditing ? 'Update Menu' : 'Create Menu'}
         </button>

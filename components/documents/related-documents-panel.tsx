@@ -25,10 +25,10 @@ type Props = {
 function DocTypeBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {
     receipt: 'bg-emerald-900 text-emerald-400',
-    contract: 'bg-blue-900 text-blue-400',
+    contract: 'bg-brand-900 text-brand-400',
     policy: 'bg-purple-900 text-purple-400',
     checklist: 'bg-amber-900 text-amber-400',
-    template: 'bg-sky-900 text-sky-400',
+    template: 'bg-brand-900 text-brand-400',
     note: 'bg-stone-800 text-stone-400',
     general: 'bg-stone-800 text-stone-400',
   }

@@ -47,7 +47,7 @@ export const ROTATION_STATUS_COLORS: Record<RotationStatus, string> = {
   active: 'bg-green-900 text-green-400',
   resting: 'bg-amber-900 text-amber-400',
   retired: 'bg-stone-800 text-stone-500',
-  testing: 'bg-blue-900 text-blue-400',
+  testing: 'bg-brand-900 text-brand-400',
 }
 
 export const PREP_COMPLEXITIES = ['quick', 'moderate', 'intensive'] as const

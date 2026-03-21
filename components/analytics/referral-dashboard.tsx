@@ -14,7 +14,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 
 const STATUS_COLORS: Record<ReferralStatus, string> = {
   pending: 'bg-stone-700 text-stone-300',
-  contacted: 'bg-blue-900/40 text-blue-300',
+  contacted: 'bg-brand-900/40 text-brand-300',
   booked: 'bg-emerald-900/40 text-emerald-300',
   completed: 'bg-brand-900/40 text-brand-300',
 }
@@ -170,7 +170,7 @@ export function ReferralDashboardPage() {
                                 : status === 'booked'
                                   ? 'bg-emerald-500'
                                   : status === 'contacted'
-                                    ? 'bg-blue-500'
+                                    ? 'bg-brand-500'
                                     : 'bg-stone-600'
                             }`}
                             style={{ width: `${pct}%` }}

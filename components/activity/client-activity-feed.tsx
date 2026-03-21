@@ -131,7 +131,7 @@ function buildMetadataParts(event: ActivityEvent): string[] {
 
 function ActorBadge({ type }: { type: string }) {
   const config: Record<string, { bg: string; label: string }> = {
-    client: { bg: 'bg-blue-900 text-blue-700', label: 'Client' },
+    client: { bg: 'bg-brand-900 text-brand-700', label: 'Client' },
     chef: { bg: 'bg-emerald-900 text-emerald-700', label: 'Chef' },
     system: { bg: 'bg-stone-100 text-stone-600', label: 'System' },
   }

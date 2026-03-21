@@ -329,7 +329,7 @@ function BatchDismissButton({ onDone }: { onDone: () => void }) {
 function ClassificationBadge({ classification }: { classification: string }) {
   const styles: Record<string, string> = {
     inquiry: 'bg-emerald-900 text-emerald-700',
-    existing_thread: 'bg-blue-900 text-blue-700',
+    existing_thread: 'bg-brand-900 text-brand-700',
   }
   const labels: Record<string, string> = {
     inquiry: 'inquiry',

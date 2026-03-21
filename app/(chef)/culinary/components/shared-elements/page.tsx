@@ -41,7 +41,7 @@ export default async function SharedElementsPage() {
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-stone-100">Shared Elements</h1>
-            <span className="bg-sky-900 text-sky-700 text-sm px-2 py-0.5 rounded-full">
+            <span className="bg-brand-900 text-brand-700 text-sm px-2 py-0.5 rounded-full">
               {shared.length}
             </span>
           </div>
@@ -58,7 +58,7 @@ export default async function SharedElementsPage() {
           <p className="text-sm text-stone-500 mt-1">Recipe-linked components</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-sky-700">{multiUse.length}</p>
+          <p className="text-2xl font-bold text-brand-700">{multiUse.length}</p>
           <p className="text-sm text-stone-500 mt-1">Used in multiple places</p>
         </Card>
         <Card className="p-4">

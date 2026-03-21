@@ -96,7 +96,7 @@ export function MentorshipDashboard({ chefId }: { chefId: string }) {
   const statusColors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
     active: 'bg-green-100 text-green-800',
-    completed: 'bg-blue-100 text-blue-800',
+    completed: 'bg-brand-100 text-brand-800',
     declined: 'bg-gray-100 text-gray-600',
   }
 
@@ -123,21 +123,15 @@ export function MentorshipDashboard({ chefId }: { chefId: string }) {
             <p className="text-xs text-gray-500">Active</p>
           </div>
           <div className="rounded-xl border border-gray-200 bg-white p-3 text-center">
-            <p className="text-2xl font-bold text-yellow-600">
-              {stats.pending_incoming}
-            </p>
+            <p className="text-2xl font-bold text-yellow-600">{stats.pending_incoming}</p>
             <p className="text-xs text-gray-500">Incoming</p>
           </div>
           <div className="rounded-xl border border-gray-200 bg-white p-3 text-center">
-            <p className="text-2xl font-bold text-blue-600">
-              {stats.pending_outgoing}
-            </p>
+            <p className="text-2xl font-bold text-brand-600">{stats.pending_outgoing}</p>
             <p className="text-xs text-gray-500">Outgoing</p>
           </div>
           <div className="rounded-xl border border-gray-200 bg-white p-3 text-center">
-            <p className="text-2xl font-bold text-gray-600">
-              {stats.total_completed}
-            </p>
+            <p className="text-2xl font-bold text-gray-600">{stats.total_completed}</p>
             <p className="text-xs text-gray-500">Completed</p>
           </div>
         </div>
@@ -150,9 +144,7 @@ export function MentorshipDashboard({ chefId }: { chefId: string }) {
             key={f}
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 text-sm font-medium rounded-lg capitalize transition-colors ${
-              filter === f
-                ? 'bg-orange-100 text-orange-800'
-                : 'text-gray-600 hover:bg-gray-100'
+              filter === f ? 'bg-orange-100 text-orange-800' : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
             {f === 'all' ? 'All Connections' : `As ${f}`}
@@ -164,9 +156,7 @@ export function MentorshipDashboard({ chefId }: { chefId: string }) {
       {feedback && (
         <p
           className={`text-sm rounded-lg px-3 py-2 ${
-            feedback.type === 'success'
-              ? 'text-green-600 bg-green-50'
-              : 'text-red-600 bg-red-50'
+            feedback.type === 'success' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'
           }`}
         >
           {feedback.message}
@@ -181,19 +171,14 @@ export function MentorshipDashboard({ chefId }: { chefId: string }) {
           </h3>
           <div className="space-y-3">
             {pendingIncoming.map((conn) => (
-              <div
-                key={conn.id}
-                className="rounded-xl border border-yellow-200 bg-yellow-50 p-4"
-              >
+              <div key={conn.id} className="rounded-xl border border-yellow-200 bg-yellow-50 p-4">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-medium text-gray-900">
                       {conn.mentee_name || 'A chef'} wants your mentorship
                     </p>
                     {conn.message && (
-                      <p className="mt-1 text-sm text-gray-600">
-                        &ldquo;{conn.message}&rdquo;
-                      </p>
+                      <p className="mt-1 text-sm text-gray-600">&ldquo;{conn.message}&rdquo;</p>
                     )}
                     <p className="mt-1 text-xs text-gray-400">
                       {new Date(conn.created_at).toLocaleDateString()}
@@ -225,15 +210,10 @@ export function MentorshipDashboard({ chefId }: { chefId: string }) {
       {/* Pending Outgoing */}
       {pendingOutgoing.length > 0 && (
         <section>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">
-            Your Pending Requests
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Your Pending Requests</h3>
           <div className="space-y-3">
             {pendingOutgoing.map((conn) => (
-              <div
-                key={conn.id}
-                className="rounded-xl border border-gray-200 bg-white p-4"
-              >
+              <div key={conn.id} className="rounded-xl border border-gray-200 bg-white p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-gray-900">
@@ -256,17 +236,12 @@ export function MentorshipDashboard({ chefId }: { chefId: string }) {
       {/* Active Connections */}
       {activeConns.length > 0 && (
         <section>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">
-            Active Connections
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Active Connections</h3>
           <div className="space-y-3">
             {activeConns.map((conn) => {
               const isMentor = conn.mentor_id === chefId
               return (
-                <div
-                  key={conn.id}
-                  className="rounded-xl border border-green-200 bg-white p-4"
-                >
+                <div key={conn.id} className="rounded-xl border border-green-200 bg-white p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-gray-900">
@@ -311,10 +286,7 @@ export function MentorshipDashboard({ chefId }: { chefId: string }) {
             {historyConns.map((conn) => {
               const isMentor = conn.mentor_id === chefId
               return (
-                <div
-                  key={conn.id}
-                  className="rounded-xl border border-gray-100 bg-gray-50 p-3"
-                >
+                <div key={conn.id} className="rounded-xl border border-gray-100 bg-gray-50 p-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-700">
@@ -328,9 +300,7 @@ export function MentorshipDashboard({ chefId }: { chefId: string }) {
                           : new Date(conn.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${statusColors[conn.status]}`}
-                    >
+                    <span className={`text-xs px-2 py-1 rounded-full ${statusColors[conn.status]}`}>
                       {conn.status}
                     </span>
                   </div>
@@ -346,8 +316,7 @@ export function MentorshipDashboard({ chefId }: { chefId: string }) {
         <div className="text-center py-8 text-gray-500">
           <p className="text-sm">No mentorship connections yet.</p>
           <p className="text-xs mt-1">
-            Search for mentors to get started, or set up your profile to be
-            found.
+            Search for mentors to get started, or set up your profile to be found.
           </p>
         </div>
       )}

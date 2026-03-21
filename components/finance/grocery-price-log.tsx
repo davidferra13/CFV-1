@@ -11,7 +11,21 @@ import {
   type PriceEntryInput,
 } from '@/lib/finance/grocery-price-actions'
 
-const UNIT_OPTIONS = ['lb', 'oz', 'each', 'bunch', 'bag', 'can', 'bottle', 'gallon', 'quart', 'pint', 'dozen', 'kg', 'g']
+const UNIT_OPTIONS = [
+  'lb',
+  'oz',
+  'each',
+  'bunch',
+  'bag',
+  'can',
+  'bottle',
+  'gallon',
+  'quart',
+  'pint',
+  'dozen',
+  'kg',
+  'g',
+]
 
 type BulkRow = PriceEntryInput & { _key: number }
 
@@ -41,10 +55,7 @@ export function GroceryPriceLog() {
     startTransition(async () => {
       try {
         const [histResult, freqResult] = await Promise.all([
-          getPriceHistory(
-            filterIngredient || undefined,
-            filterStore || undefined
-          ),
+          getPriceHistory(filterIngredient || undefined, filterStore || undefined),
           getFrequentIngredients(),
         ])
         if (histResult.success && histResult.entries) {
@@ -125,9 +136,7 @@ export function GroceryPriceLog() {
   }
 
   function updateBulkRow(key: number, field: string, value: string | number) {
-    setBulkRows((prev) =>
-      prev.map((r) => (r._key === key ? { ...r, [field]: value } : r))
-    )
+    setBulkRows((prev) => prev.map((r) => (r._key === key ? { ...r, [field]: value } : r)))
   }
 
   function removeBulkRow(key: number) {
@@ -191,8 +200,8 @@ export function GroceryPriceLog() {
     return `$${(cents / 100).toFixed(2)}`
   }
 
-  const filteredAutocomplete = frequentIngredients.filter((i) =>
-    i.name.includes(ingredientName.toLowerCase()) && ingredientName.length > 0
+  const filteredAutocomplete = frequentIngredients.filter(
+    (i) => i.name.includes(ingredientName.toLowerCase()) && ingredientName.length > 0
   )
 
   return (
@@ -201,25 +210,19 @@ export function GroceryPriceLog() {
         <h2 className="text-lg font-semibold">Grocery Price Log</h2>
         <button
           onClick={() => setBulkMode(!bulkMode)}
-          className="text-sm text-blue-600 hover:text-blue-800"
+          className="text-sm text-brand-600 hover:text-brand-800"
         >
           {bulkMode ? 'Single entry' : 'Bulk entry'}
         </button>
       </div>
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       {/* Single entry form */}
       {!bulkMode && (
         <div className="grid grid-cols-2 gap-3 rounded-lg border p-4 sm:grid-cols-3 lg:grid-cols-7">
           <div className="relative col-span-2 sm:col-span-1">
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Ingredient
-            </label>
+            <label className="mb-1 block text-xs font-medium text-gray-600">Ingredient</label>
             <input
               type="text"
               value={ingredientName}
@@ -241,7 +244,7 @@ export function GroceryPriceLog() {
                       setUnit(i.unit)
                       setShowAutocomplete(false)
                     }}
-                    className="cursor-pointer px-2 py-1 text-sm hover:bg-blue-50"
+                    className="cursor-pointer px-2 py-1 text-sm hover:bg-brand-50"
                   >
                     {i.name} ({formatCents(i.latest_cents)}/{i.unit})
                   </li>
@@ -250,9 +253,7 @@ export function GroceryPriceLog() {
             )}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Unit
-            </label>
+            <label className="mb-1 block text-xs font-medium text-gray-600">Unit</label>
             <select
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
@@ -266,9 +267,7 @@ export function GroceryPriceLog() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Price ($)
-            </label>
+            <label className="mb-1 block text-xs font-medium text-gray-600">Price ($)</label>
             <input
               type="number"
               step="0.01"
@@ -280,9 +279,7 @@ export function GroceryPriceLog() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Qty
-            </label>
+            <label className="mb-1 block text-xs font-medium text-gray-600">Qty</label>
             <input
               type="number"
               step="0.01"
@@ -293,9 +290,7 @@ export function GroceryPriceLog() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Store
-            </label>
+            <label className="mb-1 block text-xs font-medium text-gray-600">Store</label>
             <input
               type="text"
               value={storeName}
@@ -305,9 +300,7 @@ export function GroceryPriceLog() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Date
-            </label>
+            <label className="mb-1 block text-xs font-medium text-gray-600">Date</label>
             <input
               type="date"
               value={receiptDate}
@@ -319,7 +312,7 @@ export function GroceryPriceLog() {
             <button
               onClick={handleAddEntry}
               disabled={isPending}
-              className="w-full rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="w-full rounded bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
             >
               {isPending ? 'Adding...' : 'Add'}
             </button>
@@ -340,9 +333,7 @@ export function GroceryPriceLog() {
                 value={storeName}
                 onChange={(e) => {
                   setStoreName(e.target.value)
-                  setBulkRows((prev) =>
-                    prev.map((r) => ({ ...r, store_name: e.target.value }))
-                  )
+                  setBulkRows((prev) => prev.map((r) => ({ ...r, store_name: e.target.value })))
                 }}
                 placeholder="Costco"
                 className="w-full rounded border px-2 py-1.5 text-sm"
@@ -357,9 +348,7 @@ export function GroceryPriceLog() {
                 value={receiptDate}
                 onChange={(e) => {
                   setReceiptDate(e.target.value)
-                  setBulkRows((prev) =>
-                    prev.map((r) => ({ ...r, receipt_date: e.target.value }))
-                  )
+                  setBulkRows((prev) => prev.map((r) => ({ ...r, receipt_date: e.target.value })))
                 }}
                 className="w-full rounded border px-2 py-1.5 text-sm"
               />
@@ -367,24 +356,17 @@ export function GroceryPriceLog() {
           </div>
 
           {bulkRows.map((row) => (
-            <div
-              key={row._key}
-              className="grid grid-cols-5 gap-2 items-end"
-            >
+            <div key={row._key} className="grid grid-cols-5 gap-2 items-end">
               <input
                 type="text"
                 value={row.ingredient_name}
-                onChange={(e) =>
-                  updateBulkRow(row._key, 'ingredient_name', e.target.value)
-                }
+                onChange={(e) => updateBulkRow(row._key, 'ingredient_name', e.target.value)}
                 placeholder="Ingredient"
                 className="rounded border px-2 py-1.5 text-sm"
               />
               <select
                 value={row.unit}
-                onChange={(e) =>
-                  updateBulkRow(row._key, 'unit', e.target.value)
-                }
+                onChange={(e) => updateBulkRow(row._key, 'unit', e.target.value)}
                 className="rounded border px-2 py-1.5 text-sm"
               >
                 {UNIT_OPTIONS.map((u) => (
@@ -435,7 +417,7 @@ export function GroceryPriceLog() {
               <button
                 onClick={handleBulkSave}
                 disabled={isPending}
-                className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                className="rounded bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
               >
                 {isPending ? 'Saving...' : `Save ${bulkRows.length} entries`}
               </button>
@@ -493,18 +475,12 @@ export function GroceryPriceLog() {
             )}
             {entries.map((entry) => (
               <tr key={entry.id} className="border-b last:border-0">
-                <td className="py-2 pr-3 font-medium capitalize">
-                  {entry.ingredient_name}
-                </td>
+                <td className="py-2 pr-3 font-medium capitalize">{entry.ingredient_name}</td>
                 <td className="py-2 pr-3">{formatCents(entry.price_cents)}</td>
                 <td className="py-2 pr-3">{entry.quantity}</td>
                 <td className="py-2 pr-3">{entry.unit}</td>
-                <td className="py-2 pr-3 text-gray-600">
-                  {entry.store_name || '-'}
-                </td>
-                <td className="py-2 pr-3 text-gray-600">
-                  {entry.receipt_date}
-                </td>
+                <td className="py-2 pr-3 text-gray-600">{entry.store_name || '-'}</td>
+                <td className="py-2 pr-3 text-gray-600">{entry.receipt_date}</td>
                 <td className="py-2">
                   <button
                     onClick={() => handleDelete(entry.id)}

@@ -8,10 +8,10 @@ const BADGE_CONFIG: Record<GoalType, { label: string; className: string }> = {
   profit_margin: { label: 'Profit Margin', className: 'bg-teal-900 text-teal-800' },
   expense_ratio: { label: 'Expense Ratio', className: 'bg-rose-900 text-rose-800' },
   // Business Growth
-  booking_count: { label: 'Bookings', className: 'bg-blue-900 text-blue-800' },
+  booking_count: { label: 'Bookings', className: 'bg-brand-900 text-brand-800' },
   new_clients: { label: 'New Clients', className: 'bg-violet-900 text-violet-800' },
-  repeat_booking_rate: { label: 'Repeat Rate', className: 'bg-blue-900 text-blue-800' },
-  referrals_received: { label: 'Referrals', className: 'bg-blue-900 text-blue-800' },
+  repeat_booking_rate: { label: 'Repeat Rate', className: 'bg-brand-900 text-brand-800' },
+  referrals_received: { label: 'Referrals', className: 'bg-brand-900 text-brand-800' },
   // Culinary Craft
   dishes_created: { label: 'New Dishes', className: 'bg-orange-900 text-orange-800' },
   cuisines_explored: { label: 'Cuisines', className: 'bg-orange-900 text-orange-800' },
@@ -24,8 +24,8 @@ const BADGE_CONFIG: Record<GoalType, { label: string; className: string }> = {
   staff_training_hours: { label: 'Training Hours', className: 'bg-purple-900 text-purple-800' },
   vendor_relationships: { label: 'Vendors', className: 'bg-purple-900 text-purple-800' },
   // Learning
-  books_read: { label: 'Books Read', className: 'bg-indigo-900 text-indigo-800' },
-  courses_completed: { label: 'Courses', className: 'bg-indigo-900 text-indigo-800' },
+  books_read: { label: 'Books Read', className: 'bg-brand-900 text-brand-800' },
+  courses_completed: { label: 'Courses', className: 'bg-brand-900 text-brand-800' },
   // Health & Wellbeing
   weekly_workouts: { label: 'Workouts', className: 'bg-rose-900 text-rose-800' },
   rest_days_taken: { label: 'Rest Days', className: 'bg-rose-900 text-rose-800' },

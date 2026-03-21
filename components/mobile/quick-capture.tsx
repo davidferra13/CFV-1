@@ -111,7 +111,7 @@ export function QuickCapture() {
               </span>
               <button
                 onClick={handleReceiptCapture}
-                className="w-12 h-12 bg-blue-600 text-white rounded-full shadow-md flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all"
+                className="w-12 h-12 bg-brand-600 text-white rounded-full shadow-md flex items-center justify-center hover:bg-brand-700 active:scale-95 transition-all"
                 aria-label="Capture receipt with camera"
               >
                 <Camera className="h-5 w-5" />

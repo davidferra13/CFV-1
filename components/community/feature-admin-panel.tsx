@@ -19,7 +19,7 @@ const STATUS_OPTIONS = [
 const STATUS_COLORS: Record<string, string> = {
   submitted: 'bg-gray-100 text-gray-700',
   under_review: 'bg-yellow-100 text-yellow-800',
-  planned: 'bg-blue-100 text-blue-800',
+  planned: 'bg-brand-100 text-brand-800',
   in_progress: 'bg-purple-100 text-purple-800',
   shipped: 'bg-green-100 text-green-800',
   declined: 'bg-red-100 text-red-700',
@@ -47,11 +47,7 @@ function AdminFeatureCard({
 
     startTransition(async () => {
       try {
-        const result = await updateFeatureStatus(
-          feature.id,
-          status,
-          adminResponse || undefined
-        )
+        const result = await updateFeatureStatus(feature.id, status, adminResponse || undefined)
         if (!result.success) {
           // Rollback
           setStatus(previousStatus)
@@ -101,7 +97,7 @@ function AdminFeatureCard({
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s.value} value={s.value}>
@@ -118,25 +114,21 @@ function AdminFeatureCard({
             onChange={(e) => setAdminResponse(e.target.value)}
             placeholder="Optional response visible to the submitter..."
             rows={2}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
 
-        {error && (
-          <p className="text-xs text-red-600">{error}</p>
-        )}
+        {error && <p className="text-xs text-red-600">{error}</p>}
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleSave}
             disabled={isPending}
-            className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50 transition-colors"
           >
             {isPending ? 'Saving...' : 'Save Changes'}
           </button>
-          {saved && (
-            <span className="text-xs text-green-600">Saved!</span>
-          )}
+          {saved && <span className="text-xs text-green-600">Saved!</span>}
         </div>
       </div>
     </div>

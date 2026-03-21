@@ -16,7 +16,7 @@ interface SearchResult {
 
 const TAG_COLORS: Record<string, string> = {
   gold: 'text-amber-400',
-  blue: 'text-sky-400',
+  brand: 'text-brand-400',
   green: 'text-emerald-400',
   red: 'text-red-400',
   purple: 'text-purple-400',

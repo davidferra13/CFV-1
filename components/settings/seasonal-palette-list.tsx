@@ -14,7 +14,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 const SEASON_COLORS: Record<string, string> = {
-  Winter: 'border-sky-200 bg-sky-950/50',
+  Winter: 'border-brand-200 bg-brand-950/50',
   Spring: 'border-emerald-200 bg-emerald-950/50',
   Summer: 'border-amber-200 bg-amber-950/50',
   Autumn: 'border-orange-200 bg-orange-950/50',

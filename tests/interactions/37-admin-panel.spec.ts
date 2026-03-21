@@ -24,6 +24,7 @@
 //
 // Uses admin storageState (interactions-admin project).
 
+import type { Locator, Page } from '@playwright/test'
 import { test, expect } from '../helpers/fixtures'
 import { readFileSync } from 'fs'
 
@@ -76,6 +77,30 @@ async function gotoAdminPage(page: Parameters<Parameters<typeof test>[1]>[0]['pa
   return lastResponse
 }
 
+async function clearStoredTheme(page: Page, route: string) {
+  await gotoAdminPage(page, route)
+  await page.waitForLoadState('domcontentloaded')
+  await page.evaluate(() => {
+    window.localStorage.removeItem('chefflow-theme')
+  })
+  await page.reload()
+  await page.waitForLoadState('networkidle')
+}
+
+async function getVisibleToggle(page: Page): Promise<Locator> {
+  const toggles = page.getByTestId('theme-toggle')
+  const count = await toggles.count()
+
+  for (let index = 0; index < count; index += 1) {
+    const toggle = toggles.nth(index)
+    if (await toggle.isVisible().catch(() => false)) {
+      return toggle
+    }
+  }
+
+  throw new Error('No visible theme toggle found')
+}
+
 // ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
 test.describe('Admin — Dashboard', () => {
@@ -109,6 +134,32 @@ test.describe('Admin — Dashboard', () => {
     await gotoAdminPage(page, '/admin')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
+  })
+
+  test('admin shell theme defaults to light and persists across navigation + reload', async ({
+    page,
+  }) => {
+    requireAdminAuth()
+    await clearStoredTheme(page, '/admin')
+
+    await expect(page.locator('html')).not.toHaveClass(/dark/)
+
+    const toggle = await getVisibleToggle(page)
+    await expect(toggle).toBeVisible()
+    await toggle.click()
+
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem('chefflow-theme')))
+      .toBe('dark')
+
+    await gotoAdminPage(page, '/admin/users')
+    await page.waitForLoadState('networkidle')
+    await expect(page.locator('html')).toHaveClass(/dark/)
+
+    await page.reload()
+    await page.waitForLoadState('networkidle')
+    await expect(page.locator('html')).toHaveClass(/dark/)
   })
 })
 

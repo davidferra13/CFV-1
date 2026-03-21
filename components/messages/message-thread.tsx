@@ -20,7 +20,7 @@ const CHANNEL_LABELS: Record<string, string> = {
 
 const CHANNEL_COLORS: Record<string, string> = {
   text: 'bg-green-900 text-green-800',
-  email: 'bg-blue-900 text-blue-800',
+  email: 'bg-brand-900 text-brand-800',
   instagram: 'bg-pink-900 text-pink-800',
   take_a_chef: 'bg-purple-900 text-purple-800',
   phone: 'bg-amber-900 text-amber-800',

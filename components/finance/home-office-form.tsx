@@ -89,11 +89,11 @@ export function HomeOfficeForm({
   return (
     <div className="space-y-6">
       {/* Info Banner */}
-      <Card className="border-blue-200 bg-blue-950">
+      <Card className="border-brand-200 bg-brand-950">
         <CardContent className="py-3">
           <div className="flex items-start gap-2">
-            <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-            <p className="text-sm text-blue-800">
+            <Info className="h-4 w-4 text-brand-600 mt-0.5 shrink-0" />
+            <p className="text-sm text-brand-800">
               The home office deduction is a <strong>Schedule C, Line 30</strong> deduction. Your
               home office must be used regularly and exclusively for business. Consult your
               accountant to confirm eligibility.

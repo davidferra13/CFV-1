@@ -136,7 +136,7 @@ export function RecurringSchedulesList({ clientId, onEdit }: RecurringSchedulesL
     <div className="space-y-3">
       {/* Action feedback */}
       {actionFeedback && (
-        <div className="rounded-md bg-blue-50 p-2 text-sm text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+        <div className="rounded-md bg-brand-50 p-2 text-sm text-brand-700 dark:bg-brand-900/20 dark:text-brand-400">
           {actionFeedback}
         </div>
       )}

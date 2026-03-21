@@ -46,20 +46,21 @@ export default async function EmbedInquiryPage({ params, searchParams }: Props) 
   const theme = searchParams.theme === 'dark' ? 'dark' : 'light'
 
   return (
-    <div
-      className="p-4 md:p-6"
-      style={{
-        backgroundColor: theme === 'dark' ? '#1c1917' : 'transparent',
-        minHeight: '100vh',
-      }}
-    >
-      <EmbedInquiryForm
-        chefId={chef.id as string}
-        chefName={chefName}
-        profileImageUrl={(chef.profile_image_url as string) || null}
-        accentColor={accentColor}
-        theme={theme}
-      />
+    <div className={theme === 'dark' ? 'dark' : undefined}>
+      <div
+        className="min-h-screen p-4 md:p-6"
+        style={{
+          backgroundColor: theme === 'dark' ? 'var(--surface-1)' : 'transparent',
+        }}
+      >
+        <EmbedInquiryForm
+          chefId={chef.id as string}
+          chefName={chefName}
+          profileImageUrl={(chef.profile_image_url as string) || null}
+          accentColor={accentColor}
+          theme={theme}
+        />
+      </div>
     </div>
   )
 }

@@ -35,7 +35,7 @@ const QUICK_ACTIONS = [
     label: 'Todo',
     href: '/todos',
     icon: ListChecks,
-    color: 'bg-sky-600 hover:bg-sky-700',
+    color: 'bg-brand-600 hover:bg-brand-700',
   },
 ] as const
 

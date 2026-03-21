@@ -27,7 +27,7 @@ const NDA_TYPES: { value: NdaType; label: string }[] = [
 
 const STATUS_STYLES: Record<NdaStatus, string> = {
   draft: 'bg-stone-700/50 text-stone-300',
-  sent: 'bg-blue-900/30 text-blue-400',
+  sent: 'bg-brand-900/30 text-brand-400',
   signed: 'bg-emerald-900/30 text-emerald-400',
   expired: 'bg-red-900/30 text-red-400',
   voided: 'bg-stone-800/50 text-stone-500',

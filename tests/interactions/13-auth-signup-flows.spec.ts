@@ -14,7 +14,32 @@
 //
 // Uses public storageState (interactions-public project — no auth).
 
+import type { Locator, Page } from '@playwright/test'
 import { test, expect } from '../helpers/fixtures'
+
+async function clearStoredTheme(page: Page, route = '/') {
+  await page.goto(route)
+  await page.waitForLoadState('domcontentloaded')
+  await page.evaluate(() => {
+    window.localStorage.removeItem('chefflow-theme')
+  })
+  await page.reload()
+  await page.waitForLoadState('networkidle')
+}
+
+async function getVisibleToggle(page: Page): Promise<Locator> {
+  const toggles = page.getByTestId('theme-toggle')
+  const count = await toggles.count()
+
+  for (let index = 0; index < count; index += 1) {
+    const toggle = toggles.nth(index)
+    if (await toggle.isVisible().catch(() => false)) {
+      return toggle
+    }
+  }
+
+  throw new Error('No visible theme toggle found')
+}
 
 // ─── Sign In Page ─────────────────────────────────────────────────────────────
 
@@ -109,6 +134,26 @@ test.describe('Auth — Sign In', () => {
     if (isVisible) {
       await expect(signUpLink).toBeVisible()
     }
+  })
+
+  test('public header toggle persists into auth shell', async ({ page }) => {
+    await clearStoredTheme(page)
+
+    await expect(page.locator('html')).not.toHaveClass(/dark/)
+
+    const publicToggle = await getVisibleToggle(page)
+    await publicToggle.click()
+
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem('chefflow-theme')))
+      .toBe('dark')
+
+    await page.goto('/auth/signin')
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    await expect(await getVisibleToggle(page)).toBeVisible()
   })
 })
 

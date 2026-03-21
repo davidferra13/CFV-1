@@ -35,11 +35,7 @@ type ProposalPreviewProps = {
   onClose?: () => void
 }
 
-export function ProposalPreview({
-  proposal,
-  onQuoteCreated,
-  onClose,
-}: ProposalPreviewProps) {
+export function ProposalPreview({ proposal, onQuoteCreated, onClose }: ProposalPreviewProps) {
   const [isPending, startTransition] = useTransition()
 
   // Editable fields
@@ -47,9 +43,7 @@ export function ProposalPreview({
     `Proposal for ${proposal.clientName} - ${proposal.occasion || 'Event'}`
   )
   const [totalCents, setTotalCents] = useState(proposal.quotedPriceCents || 0)
-  const [perPersonCents, setPerPersonCents] = useState(
-    proposal.pricePerPersonCents || 0
-  )
+  const [perPersonCents, setPerPersonCents] = useState(proposal.pricePerPersonCents || 0)
   const [pricingModel, setPricingModel] = useState(proposal.pricingModel)
   const [pricingNotes, setPricingNotes] = useState(proposal.pricingNotes || '')
   const [depositRequired, setDepositRequired] = useState(false)
@@ -119,39 +113,29 @@ export function ProposalPreview({
     <div className="space-y-6">
       {/* Header */}
       <div className="border-b pb-4">
-        <label className="block text-sm font-medium text-gray-500 mb-1">
-          Proposal Name
-        </label>
+        <label className="block text-sm font-medium text-gray-500 mb-1">Proposal Name</label>
         <input
           type="text"
           value={quoteName}
           onChange={(e) => setQuoteName(e.target.value)}
-          className="w-full text-lg font-semibold bg-transparent border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none pb-1"
+          className="w-full text-lg font-semibold bg-transparent border-b border-dashed border-gray-300 focus:border-brand-500 focus:outline-none pb-1"
         />
       </div>
 
       {/* Chef Info */}
       <section>
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">
-          From
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">From</h3>
         <p className="font-medium">{proposal.chefBusinessName}</p>
         <p className="text-sm text-gray-600">{proposal.chefEmail}</p>
-        {proposal.chefPhone && (
-          <p className="text-sm text-gray-600">{proposal.chefPhone}</p>
-        )}
+        {proposal.chefPhone && <p className="text-sm text-gray-600">{proposal.chefPhone}</p>}
       </section>
 
       {/* Client Info */}
       <section>
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">
-          To
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">To</h3>
         <p className="font-medium">{proposal.clientName}</p>
         <p className="text-sm text-gray-600">{proposal.clientEmail}</p>
-        {proposal.clientPhone && (
-          <p className="text-sm text-gray-600">{proposal.clientPhone}</p>
-        )}
+        {proposal.clientPhone && <p className="text-sm text-gray-600">{proposal.clientPhone}</p>}
       </section>
 
       {/* Event Details */}
@@ -176,9 +160,7 @@ export function ProposalPreview({
           </div>
           <div>
             <span className="text-gray-500">Service:</span>{' '}
-            <span className="font-medium">
-              {formatServiceStyle(proposal.serviceStyle)}
-            </span>
+            <span className="font-medium">{formatServiceStyle(proposal.serviceStyle)}</span>
           </div>
           <div>
             <span className="text-gray-500">Serve Time:</span>{' '}
@@ -200,8 +182,7 @@ export function ProposalPreview({
       </section>
 
       {/* Dietary */}
-      {(proposal.dietaryRestrictions.length > 0 ||
-        proposal.allergies.length > 0) && (
+      {(proposal.dietaryRestrictions.length > 0 || proposal.allergies.length > 0) && (
         <section>
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">
             Dietary Accommodations
@@ -227,18 +208,12 @@ export function ProposalPreview({
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">
             Menu
           </h3>
-          {proposal.menuName && (
-            <p className="font-medium">{proposal.menuName}</p>
-          )}
+          {proposal.menuName && <p className="font-medium">{proposal.menuName}</p>}
           {proposal.cuisineType && (
-            <p className="text-sm text-gray-500 italic">
-              {proposal.cuisineType}
-            </p>
+            <p className="text-sm text-gray-500 italic">{proposal.cuisineType}</p>
           )}
           {proposal.menuDescription && (
-            <p className="text-sm text-gray-600 mt-1">
-              {proposal.menuDescription}
-            </p>
+            <p className="text-sm text-gray-600 mt-1">{proposal.menuDescription}</p>
           )}
           {proposal.menuContent && (
             <div className="mt-2 text-sm whitespace-pre-wrap bg-gray-50 rounded-lg p-3 border">
@@ -249,7 +224,7 @@ export function ProposalPreview({
       )}
 
       {/* Pricing */}
-      <section className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+      <section className="bg-brand-50 rounded-lg p-4 border border-brand-100">
         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
           Pricing
         </h3>
@@ -257,15 +232,11 @@ export function ProposalPreview({
         <div className="space-y-3">
           {/* Pricing model */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">
-              Pricing Model
-            </label>
+            <label className="block text-sm text-gray-600 mb-1">Pricing Model</label>
             <select
               value={pricingModel}
               onChange={(e) =>
-                setPricingModel(
-                  e.target.value as 'per_person' | 'flat_rate' | 'custom'
-                )
+                setPricingModel(e.target.value as 'per_person' | 'flat_rate' | 'custom')
               }
               className="w-full border rounded-md px-3 py-1.5 text-sm bg-white"
             >
@@ -277,9 +248,7 @@ export function ProposalPreview({
 
           {/* Total */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">
-              Total Price
-            </label>
+            <label className="block text-sm text-gray-600 mb-1">Total Price</label>
             <div className="flex items-center gap-1">
               <span className="text-sm text-gray-500">$</span>
               <input
@@ -287,9 +256,7 @@ export function ProposalPreview({
                 step="0.01"
                 min="0"
                 value={(totalCents / 100).toFixed(2)}
-                onChange={(e) =>
-                  setTotalCents(Math.round(parseFloat(e.target.value || '0') * 100))
-                }
+                onChange={(e) => setTotalCents(Math.round(parseFloat(e.target.value || '0') * 100))}
                 className="w-full border rounded-md px-3 py-1.5 text-sm"
               />
             </div>
@@ -298,9 +265,7 @@ export function ProposalPreview({
           {/* Per person (if applicable) */}
           {pricingModel === 'per_person' && (
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
-                Price Per Person
-              </label>
+              <label className="block text-sm text-gray-600 mb-1">Price Per Person</label>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-gray-500">$</span>
                 <input
@@ -309,16 +274,13 @@ export function ProposalPreview({
                   min="0"
                   value={(perPersonCents / 100).toFixed(2)}
                   onChange={(e) =>
-                    setPerPersonCents(
-                      Math.round(parseFloat(e.target.value || '0') * 100)
-                    )
+                    setPerPersonCents(Math.round(parseFloat(e.target.value || '0') * 100))
                   }
                   className="w-full border rounded-md px-3 py-1.5 text-sm"
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                {proposal.guestCount} guests x{' '}
-                {formatCents(perPersonCents)} ={' '}
+                {proposal.guestCount} guests x {formatCents(perPersonCents)} ={' '}
                 {formatCents(perPersonCents * proposal.guestCount)}
               </p>
             </div>
@@ -341,18 +303,14 @@ export function ProposalPreview({
           {depositRequired && (
             <div className="pl-6 space-y-2">
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Deposit Percentage
-                </label>
+                <label className="block text-sm text-gray-600 mb-1">Deposit Percentage</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
                     min="1"
                     max="100"
                     value={depositPercentage}
-                    onChange={(e) =>
-                      setDepositPercentage(parseInt(e.target.value || '50'))
-                    }
+                    onChange={(e) => setDepositPercentage(parseInt(e.target.value || '50'))}
                     className="w-20 border rounded-md px-3 py-1.5 text-sm"
                   />
                   <span className="text-sm text-gray-500">%</span>
@@ -368,9 +326,7 @@ export function ProposalPreview({
 
           {/* Valid until */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">
-              Valid Until
-            </label>
+            <label className="block text-sm text-gray-600 mb-1">Valid Until</label>
             <input
               type="date"
               value={validUntil}
@@ -413,9 +369,7 @@ Example:
 - Cancellations with less than 72 hours notice forfeit deposit
 - Chef is not liable for undisclosed allergies`}
         />
-        <p className="text-xs text-gray-500 mt-1">
-          Terms are saved locally for future proposals
-        </p>
+        <p className="text-xs text-gray-500 mt-1">Terms are saved locally for future proposals</p>
       </section>
 
       {/* Internal notes */}
@@ -435,8 +389,8 @@ Example:
       {/* Warning if quote exists */}
       {proposal.hasExistingQuote && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
-          This event already has a quote (ID: {proposal.existingQuoteId}).
-          Creating a new quote is not allowed while one exists.
+          This event already has a quote (ID: {proposal.existingQuoteId}). Creating a new quote is
+          not allowed while one exists.
         </div>
       )}
 

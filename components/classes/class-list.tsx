@@ -110,7 +110,7 @@ export function ClassList({ classes }: ClassListProps) {
                 <div className="mt-3 w-full max-w-xs">
                   <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-blue-500 rounded-full transition-all"
+                      className="h-full bg-brand-500 rounded-full transition-all"
                       style={{ width: `${capacityPercent}%` }}
                     />
                   </div>

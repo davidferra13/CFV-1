@@ -28,8 +28,8 @@ export default async function InsurancePoliciesPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-blue-200 bg-blue-950 px-4 py-3">
-        <p className="text-sm text-blue-900">
+      <div className="rounded-lg border border-brand-200 bg-brand-950 px-4 py-3">
+        <p className="text-sm text-brand-900">
           Set expiry reminders so you never lapse on coverage. Clients increasingly ask for proof of
           insurance before booking - keep your certificates accessible here.
         </p>

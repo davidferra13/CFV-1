@@ -122,7 +122,7 @@ export default async function MealPrepProgramPage({ params }: Props) {
               <dd>
                 <Link
                   href={`/clients/${program.client_id}`}
-                  className="text-blue-600 hover:underline text-sm"
+                  className="text-brand-600 hover:underline text-sm"
                 >
                   View Client Profile
                 </Link>

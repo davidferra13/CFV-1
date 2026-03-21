@@ -37,7 +37,7 @@ export function ServiceTimelinePanel({ eventId }: { eventId: string }) {
 
   const whoIcon = (who: string) =>
     who === 'Staff' ? (
-      <Users className="w-3 h-3 text-blue-500" />
+      <Users className="w-3 h-3 text-brand-500" />
     ) : who === 'Chef' ? (
       <ChefHat className="w-3 h-3 text-amber-600" />
     ) : (

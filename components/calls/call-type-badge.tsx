@@ -3,7 +3,7 @@
 import type { CallType } from '@/lib/calls/actions'
 
 const TYPE_CONFIG: Record<CallType, { label: string; className: string }> = {
-  discovery: { label: 'Discovery', className: 'bg-blue-900 text-blue-800' },
+  discovery: { label: 'Discovery', className: 'bg-brand-900 text-brand-800' },
   follow_up: { label: 'Follow-up', className: 'bg-yellow-900 text-yellow-800' },
   proposal_walkthrough: {
     label: 'Proposal Walkthrough',
@@ -11,7 +11,7 @@ const TYPE_CONFIG: Record<CallType, { label: string; className: string }> = {
   },
   pre_event_logistics: { label: 'Pre-Event Logistics', className: 'bg-orange-900 text-orange-800' },
   vendor_supplier: { label: 'Vendor / Supplier', className: 'bg-teal-900 text-teal-800' },
-  partner: { label: 'Partner', className: 'bg-indigo-900 text-indigo-800' },
+  partner: { label: 'Partner', className: 'bg-brand-900 text-brand-800' },
   general: { label: 'General', className: 'bg-gray-100 text-gray-700' },
   prospecting: { label: 'Prospecting', className: 'bg-emerald-900 text-emerald-800' },
 }

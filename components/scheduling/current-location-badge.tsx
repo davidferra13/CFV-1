@@ -10,12 +10,12 @@ type CurrentLocationResult = {
 // Color mapping by common season keywords
 const SEASON_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
   summer: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' },
-  winter: { bg: 'bg-sky-50', text: 'text-sky-700', dot: 'bg-sky-500' },
+  winter: { bg: 'bg-brand-50', text: 'text-brand-700', dot: 'bg-brand-500' },
   spring: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
   fall: { bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-500' },
   autumn: { bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-500' },
-  ski: { bg: 'bg-sky-50', text: 'text-sky-700', dot: 'bg-sky-500' },
-  beach: { bg: 'bg-cyan-50', text: 'text-cyan-700', dot: 'bg-cyan-500' },
+  ski: { bg: 'bg-brand-50', text: 'text-brand-700', dot: 'bg-brand-500' },
+  beach: { bg: 'bg-brand-50', text: 'text-brand-700', dot: 'bg-brand-500' },
 }
 
 const DEFAULT_COLOR = { bg: 'bg-stone-50', text: 'text-stone-700', dot: 'bg-stone-500' }

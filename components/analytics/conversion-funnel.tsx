@@ -20,7 +20,7 @@ interface ConversionFunnelProps {
 
 const STAGE_COLORS: Record<string, string> = {
   Inquiry: 'bg-stone-8000',
-  Quote: 'bg-blue-500',
+  Quote: 'bg-brand-500',
   Booking: 'bg-brand-500',
   Completed: 'bg-emerald-500',
 }

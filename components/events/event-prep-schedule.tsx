@@ -38,13 +38,13 @@ const BLOCK_TYPE_COLORS: Record<PrepBlockType, string> = {
   grocery_run: 'bg-green-900 text-green-800',
   specialty_sourcing: 'bg-emerald-900 text-emerald-800',
   prep_session: 'bg-orange-900 text-orange-800',
-  packing: 'bg-blue-900 text-blue-800',
+  packing: 'bg-brand-900 text-brand-800',
   travel_to_event: 'bg-purple-900 text-purple-800',
   mental_prep: 'bg-pink-900 text-pink-800',
   equipment_prep: 'bg-yellow-900 text-yellow-800',
   admin: 'bg-stone-800 text-stone-300',
   cleanup: 'bg-stone-800 text-stone-300',
-  custom: 'bg-indigo-900 text-indigo-800',
+  custom: 'bg-brand-900 text-brand-800',
 }
 
 function formatBlockTime(block: PrepBlock): string {

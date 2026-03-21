@@ -54,7 +54,7 @@ function getStatusColor(status: string): string {
       return 'bg-green-500'
     case 'confirmed':
     case 'paid':
-      return 'bg-blue-500'
+      return 'bg-brand-500'
     case 'in_progress':
       return 'bg-yellow-500'
     case 'proposed':

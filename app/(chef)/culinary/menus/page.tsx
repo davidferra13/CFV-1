@@ -21,7 +21,7 @@ export const metadata: Metadata = { title: 'Menus - ChefFlow' }
 
 const STATUS_STYLES: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-400',
-  shared: 'bg-blue-900 text-blue-700',
+  shared: 'bg-brand-900 text-brand-700',
   locked: 'bg-green-900 text-green-700',
   archived: 'bg-stone-700 text-stone-500',
 }

@@ -10,17 +10,20 @@ export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
 
 export function Alert({ variant = 'info', title, children, className = '', ...props }: AlertProps) {
   const variants = {
-    info: 'bg-sky-950 border-sky-200 text-sky-800',
-    success: 'bg-emerald-950 border-emerald-200 text-emerald-800',
-    warning: 'bg-amber-950 border-amber-200 text-amber-800',
-    error: 'bg-red-950 border-red-200 text-red-800',
+    info: 'bg-brand-100 border-brand-200 text-brand-900 dark:bg-brand-950 dark:border-brand-800 dark:text-brand-100',
+    success:
+      'bg-emerald-100 border-emerald-200 text-emerald-900 dark:bg-emerald-950 dark:border-emerald-800 dark:text-emerald-100',
+    warning:
+      'bg-amber-100 border-amber-200 text-amber-900 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-100',
+    error:
+      'bg-red-100 border-red-200 text-red-900 dark:bg-red-950 dark:border-red-800 dark:text-red-100',
   }
 
   const iconColors = {
-    info: 'text-sky-500',
-    success: 'text-emerald-500',
-    warning: 'text-amber-500',
-    error: 'text-red-500',
+    info: 'text-brand-600 dark:text-brand-400',
+    success: 'text-emerald-600 dark:text-emerald-400',
+    warning: 'text-amber-600 dark:text-amber-400',
+    error: 'text-red-600 dark:text-red-400',
   }
 
   return (

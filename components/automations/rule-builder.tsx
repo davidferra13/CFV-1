@@ -532,7 +532,7 @@ function ActionConfigForm({
 
     case 'create_follow_up_task':
       return (
-        <div className="space-y-2 pl-3 border-l-2 border-blue-200">
+        <div className="space-y-2 pl-3 border-l-2 border-brand-200">
           <p className="text-xs-tight text-stone-500">{fieldHint}</p>
           <div>
             <label className="block text-xs text-stone-500 mb-0.5">Task description</label>

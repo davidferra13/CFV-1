@@ -63,9 +63,7 @@ export function GrocerySplitManager({
 
   function toggleClient(clientId: string) {
     setSelectedClientIds((prev) =>
-      prev.includes(clientId)
-        ? prev.filter((id) => id !== clientId)
-        : [...prev, clientId]
+      prev.includes(clientId) ? prev.filter((id) => id !== clientId) : [...prev, clientId]
     )
   }
 
@@ -128,9 +126,12 @@ export function GrocerySplitManager({
 
   function getPreview(): SplitSummaryClient[] {
     switch (splitMode) {
-      case 'equal': return computeEqualPreview()
-      case 'proportional': return computeProportionalPreview()
-      case 'per-item': return computePerItemPreview()
+      case 'equal':
+        return computeEqualPreview()
+      case 'proportional':
+        return computeProportionalPreview()
+      case 'per-item':
+        return computePerItemPreview()
     }
   }
 
@@ -175,25 +176,25 @@ export function GrocerySplitManager({
 
   return (
     <div className="space-y-6">
-      {error && (
-        <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>
-      )}
+      {error && <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>}
 
       {/* Split mode selector */}
       <div>
         <h3 className="text-sm font-semibold text-gray-900 mb-2">Split Method</h3>
         <div className="flex gap-2">
-          {([
-            { value: 'equal', label: 'Equal Split' },
-            { value: 'proportional', label: 'By Weight' },
-            { value: 'per-item', label: 'Per Item' },
-          ] as const).map((mode) => (
+          {(
+            [
+              { value: 'equal', label: 'Equal Split' },
+              { value: 'proportional', label: 'By Weight' },
+              { value: 'per-item', label: 'Per Item' },
+            ] as const
+          ).map((mode) => (
             <button
               key={mode.value}
               onClick={() => setSplitMode(mode.value)}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 splitMode === mode.value
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-brand-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -214,7 +215,7 @@ export function GrocerySplitManager({
                 onClick={() => toggleClient(client.id)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                   selectedClientIds.includes(client.id)
-                    ? 'bg-blue-100 border-blue-300 text-blue-800'
+                    ? 'bg-brand-100 border-brand-300 text-brand-800'
                     : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -270,7 +271,9 @@ export function GrocerySplitManager({
                 >
                   <option value="">Unassigned</option>
                   {availableClients.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -285,18 +288,14 @@ export function GrocerySplitManager({
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Split Preview</h3>
           <div className="space-y-2">
             {preview.map((client) => {
-              const pct = tripTotalCents > 0
-                ? ((client.totalCents / tripTotalCents) * 100).toFixed(1)
-                : '0'
+              const pct =
+                tripTotalCents > 0 ? ((client.totalCents / tripTotalCents) * 100).toFixed(1) : '0'
               return (
                 <div key={client.clientId} className="flex items-center justify-between">
                   <span className="text-sm text-gray-700">{client.clientName}</span>
                   <div className="flex items-center gap-3">
                     <div className="w-32 bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-500 rounded-full h-2"
-                        style={{ width: `${pct}%` }}
-                      />
+                      <div className="bg-brand-500 rounded-full h-2" style={{ width: `${pct}%` }} />
                     </div>
                     <span className="text-sm font-medium text-gray-900 w-20 text-right">
                       ${(client.totalCents / 100).toFixed(2)}

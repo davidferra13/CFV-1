@@ -17,7 +17,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }
 }
 
 const BLOCK_TYPE_COLORS: Record<string, string> = {
-  shopping: 'bg-blue-200 text-blue-800',
+  shopping: 'bg-brand-200 text-brand-800',
   prep: 'bg-amber-200 text-amber-800',
   travel: 'bg-purple-200 text-purple-800',
   service: 'bg-emerald-200 text-emerald-800',

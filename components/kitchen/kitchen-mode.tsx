@@ -64,9 +64,7 @@ export function KitchenMode({
     onStepComplete?.(currentStep.id)
     toast.success('Step marked complete')
     // Auto-advance to next incomplete step
-    const nextIncomplete = localSteps.findIndex(
-      (s, i) => i > currentIndex && !s.completed
-    )
+    const nextIncomplete = localSteps.findIndex((s, i) => i > currentIndex && !s.completed)
     if (nextIncomplete >= 0) {
       setCurrentIndex(nextIncomplete)
     }
@@ -116,13 +114,9 @@ export function KitchenMode({
     [goNext, goPrevious, markDone, addTimer, addNote]
   )
 
-  const {
-    isListening,
-    transcript,
-    supportsVoice,
-    startListening,
-    stopListening,
-  } = useKitchenVoice({ onCommand: handleCommand })
+  const { isListening, transcript, supportsVoice, startListening, stopListening } = useKitchenVoice(
+    { onCommand: handleCommand }
+  )
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -157,9 +151,10 @@ export function KitchenMode({
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-lg
                 transition-all
-                ${isListening
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                  : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300'
+                ${
+                  isListening
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300'
                 }
               `}
             >
@@ -201,9 +196,7 @@ export function KitchenMode({
                 }`}
                 style={{ fontSize: '48px', lineHeight: 1.2 }}
               >
-                {currentStep.completed && (
-                  <span className="mr-3">&#10003;</span>
-                )}
+                {currentStep.completed && <span className="mr-3">&#10003;</span>}
                 {currentStep.title}
               </h2>
 
@@ -267,13 +260,13 @@ export function KitchenMode({
             </button>
             <button
               onClick={() => addTimer(5)}
-              className="px-6 py-3 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-medium text-lg transition-colors"
+              className="px-6 py-3 rounded-xl bg-brand-700 hover:bg-brand-600 text-white font-medium text-lg transition-colors"
             >
               5 min Timer
             </button>
             <button
               onClick={() => addTimer(10)}
-              className="px-6 py-3 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-medium text-lg transition-colors"
+              className="px-6 py-3 rounded-xl bg-brand-700 hover:bg-brand-600 text-white font-medium text-lg transition-colors"
             >
               10 min Timer
             </button>

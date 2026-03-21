@@ -258,8 +258,8 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
           {step === 3 && (
             <div className="space-y-6">
               <div className="text-center">
-                <div className="mx-auto h-16 w-16 rounded-2xl bg-blue-900 flex items-center justify-center mb-4">
-                  <BookOpen className="h-8 w-8 text-blue-600" />
+                <div className="mx-auto h-16 w-16 rounded-2xl bg-brand-900 flex items-center justify-center mb-4">
+                  <BookOpen className="h-8 w-8 text-brand-600" />
                 </div>
                 <h2 className="text-2xl font-bold text-stone-100">Best Practices</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">Get the most out of Remy.</p>
@@ -283,7 +283,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                     number: '3',
                     title: 'Control what Remy remembers',
                     desc: "You can turn off Remy's memory from Settings. When memory is off, every conversation starts fresh.",
-                    color: 'blue',
+                    color: 'brand',
                   },
                   {
                     number: '4',

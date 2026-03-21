@@ -100,11 +100,11 @@ export function EventDetailWrapTab({
 
       {/* Client Satisfaction Survey */}
       {eventStatus === 'completed' && eventClientId && (
-        <Card className="p-6 border-blue-200 bg-blue-950">
+        <Card className="p-6 border-brand-200 bg-brand-950">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h3 className="font-semibold text-blue-900">Client Satisfaction Survey</h3>
-              <p className="text-sm text-blue-700 mt-1">
+              <h3 className="font-semibold text-brand-900">Client Satisfaction Survey</h3>
+              <p className="text-sm text-brand-700 mt-1">
                 Send a post-event survey to collect NPS score, ratings, and a testimonial.
               </p>
             </div>

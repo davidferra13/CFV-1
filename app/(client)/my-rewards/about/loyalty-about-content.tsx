@@ -123,10 +123,10 @@ export function LoyaltyAboutContent() {
               shows.
             </p>
           </div>
-          <div className="rounded-lg p-4 border border-indigo-700/30 bg-indigo-950/20">
+          <div className="rounded-lg p-4 border border-brand-700/30 bg-brand-950/20">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-base">💎</span>
-              <span className="text-sm font-semibold text-indigo-200">Platinum</span>
+              <span className="text-sm font-semibold text-brand-200">Platinum</span>
             </div>
             <p className="text-sm text-stone-400">
               The inner circle. You&rsquo;re among your chef&rsquo;s most valued clients - and

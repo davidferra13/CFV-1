@@ -9,7 +9,7 @@ import type { ScheduledCall } from '@/lib/calls/actions'
 import { CallTypeBadge } from './call-type-badge'
 
 const STATUS_COLORS: Record<string, string> = {
-  scheduled: 'text-blue-600',
+  scheduled: 'text-brand-600',
   confirmed: 'text-emerald-600',
   completed: 'text-gray-500',
   no_show: 'text-red-500',
@@ -40,9 +40,9 @@ export function CallCard({ call }: { call: ScheduledCall }) {
       <div className="flex items-center gap-4 p-4 rounded-lg border bg-stone-900 hover:bg-stone-800 transition-colors group">
         {/* Icon */}
         <div
-          className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${isTerminal ? 'bg-stone-800' : 'bg-blue-950'}`}
+          className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${isTerminal ? 'bg-stone-800' : 'bg-brand-950'}`}
         >
-          <Phone className={`w-4 h-4 ${isTerminal ? 'text-stone-500' : 'text-blue-500'}`} />
+          <Phone className={`w-4 h-4 ${isTerminal ? 'text-stone-500' : 'text-brand-500'}`} />
         </div>
 
         {/* Main content */}

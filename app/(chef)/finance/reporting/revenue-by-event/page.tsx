@@ -33,7 +33,7 @@ export default async function RevenueByEventPage() {
 
   const STATUS_COLORS: Record<string, string> = {
     completed: 'bg-stone-800 text-stone-400',
-    in_progress: 'bg-blue-900 text-blue-700',
+    in_progress: 'bg-brand-900 text-brand-700',
     confirmed: 'bg-emerald-900 text-emerald-700',
     paid: 'bg-green-900 text-green-700',
     accepted: 'bg-amber-900 text-amber-700',

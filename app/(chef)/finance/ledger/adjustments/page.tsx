@@ -48,11 +48,11 @@ export default async function LedgerAdjustmentsPage() {
 
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-sky-700">{formatCurrency(totalCredits)}</p>
+          <p className="text-2xl font-bold text-brand-700">{formatCurrency(totalCredits)}</p>
           <p className="text-sm text-stone-500 mt-1">Credits issued ({credits.length})</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-blue-700">{formatCurrency(totalAddOns)}</p>
+          <p className="text-2xl font-bold text-brand-700">{formatCurrency(totalAddOns)}</p>
           <p className="text-sm text-stone-500 mt-1">Add-ons charged ({addOns.length})</p>
         </Card>
       </div>
@@ -84,7 +84,7 @@ export default async function LedgerAdjustmentsPage() {
                   </TableCell>
                   <TableCell>
                     <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${entry.entry_type === 'credit' ? 'bg-sky-900 text-sky-700' : 'bg-blue-900 text-blue-700'}`}
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${entry.entry_type === 'credit' ? 'bg-brand-900 text-brand-700' : 'bg-brand-900 text-brand-700'}`}
                     >
                       {entry.entry_type.replace(/_/g, ' ')}
                     </span>

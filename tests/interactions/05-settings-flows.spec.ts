@@ -243,3 +243,66 @@ test.describe('Settings - Notifications (Client Visit Alerts)', () => {
     expect(errors).toHaveLength(0)
   })
 })
+
+test.describe('Settings - Appearance Theme', () => {
+  test('/settings/appearance - light mode is the default and theme persists across reloads', async ({
+    page,
+  }) => {
+    await page.goto('/settings/appearance')
+    await page.waitForLoadState('domcontentloaded')
+    await page.evaluate(() => {
+      window.localStorage.removeItem('chefflow-theme')
+    })
+    await page.reload()
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.locator('html')).not.toHaveClass(/dark/)
+
+    const toggle = page.getByTestId('appearance-theme-toggle')
+    await expect(toggle).toBeVisible()
+    await toggle.click()
+
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem('chefflow-theme')))
+      .toBe('dark')
+
+    await page.goto('/dashboard')
+    await page.waitForLoadState('networkidle')
+    await expect(page.locator('html')).toHaveClass(/dark/)
+
+    await page.reload()
+    await page.waitForLoadState('networkidle')
+    await expect(page.locator('html')).toHaveClass(/dark/)
+  })
+
+  test('/settings/appearance - changing palette does not reset the active theme', async ({
+    page,
+  }) => {
+    await page.goto('/settings/appearance')
+    await page.waitForLoadState('networkidle')
+
+    const toggle = page.getByTestId('appearance-theme-toggle')
+    await expect(toggle).toBeVisible()
+
+    if (!(await page.locator('html').evaluate((html) => html.classList.contains('dark')))) {
+      await toggle.click()
+      await expect(page.locator('html')).toHaveClass(/dark/)
+    }
+
+    const paletteCard = page.locator('div').filter({
+      has: page.getByText('Choose a color palette for your ChefFlow workspace.'),
+    })
+    const paletteButtons = paletteCard.locator('button')
+
+    if ((await paletteButtons.count()) > 1) {
+      await paletteButtons.nth(1).click()
+      await page.waitForTimeout(300)
+    }
+
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem('chefflow-theme')))
+      .toBe('dark')
+  })
+})

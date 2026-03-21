@@ -16,11 +16,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  core_ops: 'bg-indigo-50 text-indigo-700',
+  core_ops: 'bg-brand-50 text-brand-700',
   clients: 'bg-pink-50 text-pink-700',
   finance: 'bg-emerald-50 text-emerald-700',
   scheduling: 'bg-orange-50 text-orange-700',
-  marketing: 'bg-cyan-50 text-cyan-700',
+  marketing: 'bg-brand-50 text-brand-700',
   recipes: 'bg-amber-50 text-amber-700',
   team: 'bg-violet-50 text-violet-700',
   integrations: 'bg-teal-50 text-teal-700',
@@ -33,7 +33,13 @@ function RoadmapCard({ feature }: { feature: FeatureRequest }) {
       <div className="flex items-start justify-between">
         <h3 className="text-sm font-semibold text-gray-900">{feature.title}</h3>
         <span className="ml-2 flex items-center gap-1 text-xs text-gray-500">
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="h-3.5 w-3.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
           </svg>
           {feature.vote_count}
@@ -55,7 +61,7 @@ function RoadmapCard({ feature }: { feature: FeatureRequest }) {
         )}
       </div>
       {feature.admin_response && (
-        <div className="mt-2 rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-700">
+        <div className="mt-2 rounded-md bg-brand-50 px-3 py-2 text-xs text-brand-700">
           {feature.admin_response}
         </div>
       )}
@@ -148,10 +154,20 @@ export function RoadmapView({
         <RoadmapColumn
           title="Planned"
           features={data.planned}
-          accentColor="border-blue-500"
+          accentColor="border-brand-500"
           icon={
-            <svg className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            <svg
+              className="h-5 w-5 text-brand-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
             </svg>
           }
         />
@@ -160,7 +176,13 @@ export function RoadmapView({
           features={data.in_progress}
           accentColor="border-purple-500"
           icon={
-            <svg className="h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg
+              className="h-5 w-5 text-purple-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           }
@@ -170,7 +192,13 @@ export function RoadmapView({
           features={data.shipped}
           accentColor="border-green-500"
           icon={
-            <svg className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg
+              className="h-5 w-5 text-green-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           }

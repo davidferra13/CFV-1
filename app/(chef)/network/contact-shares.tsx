@@ -433,7 +433,7 @@ function StatusBadge({ status }: { status: 'open' | 'accepted' | 'passed' }) {
     )
   }
   return (
-    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-950 text-blue-700">
+    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-950 text-brand-700">
       Open
     </span>
   )

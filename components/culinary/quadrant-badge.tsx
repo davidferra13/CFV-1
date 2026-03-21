@@ -8,8 +8,8 @@ const STYLES: Record<MenuQuadrant, { bg: string; text: string; label: string; ti
     title: 'Star: high popularity, high margin. Protect and feature.',
   },
   plowhorse: {
-    bg: 'bg-blue-900/40',
-    text: 'text-blue-300',
+    bg: 'bg-brand-900/40',
+    text: 'text-brand-300',
     label: 'PH',
     title: 'Plowhorse: high popularity, low margin. Reduce costs or raise price.',
   },

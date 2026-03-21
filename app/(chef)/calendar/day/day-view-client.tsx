@@ -52,7 +52,7 @@ const CATEGORY_TEXT_COLORS: Record<string, string> = {
   events: 'text-amber-900',
   draft: 'text-yellow-900',
   prep: 'text-green-900',
-  calls: 'text-blue-900',
+  calls: 'text-brand-900',
   personal: 'text-purple-900',
   business: 'text-teal-900',
   intentions: 'text-green-700',

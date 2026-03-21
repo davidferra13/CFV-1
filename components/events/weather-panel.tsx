@@ -18,25 +18,25 @@ export async function WeatherPanel({ lat, lng, eventDate }: WeatherPanelProps) {
   const hasPrecip = weather.precipitationMm > 0.1
 
   return (
-    <div className="mt-3 rounded-lg border border-sky-200 bg-sky-950 p-3">
+    <div className="mt-3 rounded-lg border border-brand-200 bg-brand-950 p-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-2xl" role="img" aria-label={weather.description}>
             {weather.emoji}
           </span>
           <div>
-            <p className="text-sm font-medium text-sky-900">{weather.description}</p>
-            <p className="text-xs text-sky-700">
+            <p className="text-sm font-medium text-brand-900">{weather.description}</p>
+            <p className="text-xs text-brand-700">
               {weather.tempMinF}°–{weather.tempMaxF}°F
               {hasPrecip && <span className="ml-2">· {precipIn}" precip</span>}
             </p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs text-sky-500">
+          <p className="text-xs text-brand-500">
             {weather.isHistorical ? 'Actual weather' : 'Forecast'}
           </p>
-          <p className="text-xs text-sky-400">Open-Meteo</p>
+          <p className="text-xs text-brand-400">Open-Meteo</p>
         </div>
       </div>
     </div>

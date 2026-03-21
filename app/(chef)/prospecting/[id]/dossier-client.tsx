@@ -589,10 +589,10 @@ export function ProspectDossierClient({
 
           {/* Approach Strategy */}
           {prospect.approach_strategy && (
-            <Card className="border-blue-200 bg-blue-950/30">
+            <Card className="border-brand-200 bg-brand-950/30">
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Target className="h-4 w-4 text-blue-600" />
+                  <Target className="h-4 w-4 text-brand-600" />
                   Approach Strategy
                 </CardTitle>
               </CardHeader>
@@ -655,10 +655,10 @@ export function ProspectDossierClient({
 
           {/* News Intelligence */}
           {prospect.news_intel && (
-            <Card className="border-cyan-800 bg-cyan-950/20">
+            <Card className="border-brand-800 bg-brand-950/20">
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Newspaper className="h-4 w-4 text-cyan-400" />
+                  <Newspaper className="h-4 w-4 text-brand-400" />
                   Recent News & Press
                 </CardTitle>
               </CardHeader>
@@ -701,8 +701,8 @@ export function ProspectDossierClient({
               )}
               {prospect.scrub_type === 'lookalike' && (
                 <>
-                  <Target className="h-3.5 w-3.5 text-blue-400" />
-                  <span className="text-blue-400 font-medium">Found via lookalike search</span>
+                  <Target className="h-3.5 w-3.5 text-brand-400" />
+                  <span className="text-brand-400 font-medium">Found via lookalike search</span>
                 </>
               )}
             </div>
@@ -789,10 +789,10 @@ export function ProspectDossierClient({
 
           {/* Follow-Up Email Sequence (Wave 4) */}
           {prospect.follow_up_sequence?.emails ? (
-            <Card className="border-indigo-800 bg-indigo-950/20">
+            <Card className="border-brand-800 bg-brand-950/20">
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <MailPlus className="h-4 w-4 text-indigo-400" />
+                  <MailPlus className="h-4 w-4 text-brand-400" />
                   Follow-Up Email Sequence ({prospect.follow_up_sequence.emails.length} emails)
                 </CardTitle>
               </CardHeader>
@@ -800,7 +800,7 @@ export function ProspectDossierClient({
                 {prospect.follow_up_sequence.emails.map((email) => (
                   <div key={email.sequence} className="rounded-lg bg-stone-800 p-3 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-indigo-400">
+                      <span className="text-xs font-semibold text-brand-400">
                         Email {email.sequence} - Day {email.send_after_days}
                       </span>
                       <button

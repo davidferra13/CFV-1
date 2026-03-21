@@ -7,7 +7,7 @@ export function SocialQueueSummaryBar({ summary }: { summary: SocialQueueSummary
     { label: 'Total Posts', value: summary.totalPosts, color: 'text-stone-300' },
     { label: 'Ideas', value: summary.byStatus.idea ?? 0, color: 'text-stone-500' },
     { label: 'Drafts', value: summary.byStatus.draft ?? 0, color: 'text-amber-600' },
-    { label: 'Approved', value: summary.byStatus.approved ?? 0, color: 'text-sky-600' },
+    { label: 'Approved', value: summary.byStatus.approved ?? 0, color: 'text-brand-600' },
     { label: 'Queued', value: summary.byStatus.queued ?? 0, color: 'text-violet-600' },
     { label: 'Published', value: summary.byStatus.published ?? 0, color: 'text-emerald-600' },
     { label: 'Next 30 Days', value: summary.next30Days, color: 'text-brand-600' },

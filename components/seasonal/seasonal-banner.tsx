@@ -5,14 +5,14 @@
 import type { SeasonalPalette, MicroWindow } from '@/lib/seasonal/types'
 
 const SEASON_TINTS: Record<string, string> = {
-  Winter: 'bg-sky-950 border-sky-200',
+  Winter: 'bg-brand-950 border-brand-200',
   Spring: 'bg-emerald-950 border-emerald-200',
   Summer: 'bg-amber-950 border-amber-200',
   Autumn: 'bg-orange-950 border-orange-200',
 }
 
 const SEASON_TEXT: Record<string, string> = {
-  Winter: 'text-sky-800',
+  Winter: 'text-brand-800',
   Spring: 'text-emerald-800',
   Summer: 'text-amber-800',
   Autumn: 'text-orange-800',

@@ -31,9 +31,9 @@ const COLUMNS: KanbanColumn[] = [
     key: 'accepted',
     label: 'Accepted',
     statuses: ['accepted'],
-    headerClass: 'bg-blue-900 text-blue-700',
+    headerClass: 'bg-brand-900 text-brand-700',
   },
-  { key: 'paid', label: 'Paid', statuses: ['paid'], headerClass: 'bg-indigo-900 text-indigo-700' },
+  { key: 'paid', label: 'Paid', statuses: ['paid'], headerClass: 'bg-brand-900 text-brand-700' },
   {
     key: 'confirmed',
     label: 'Confirmed',

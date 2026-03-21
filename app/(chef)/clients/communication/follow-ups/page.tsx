@@ -25,7 +25,7 @@ function daysSince(dateStr: string): number {
 function urgencyLabel(days: number): { label: string; style: string } {
   if (days > 180) return { label: 'Overdue', style: 'bg-red-900 text-red-700' }
   if (days > 90) return { label: 'At Risk', style: 'bg-amber-900 text-amber-700' }
-  return { label: 'Check In', style: 'bg-sky-900 text-sky-700' }
+  return { label: 'Check In', style: 'bg-brand-900 text-brand-700' }
 }
 
 export default async function FollowUpsPage() {
@@ -81,7 +81,7 @@ export default async function FollowUpsPage() {
             <p className="text-sm text-stone-500 mt-1">At risk (90–180 days)</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-sky-700">
+            <p className="text-2xl font-bold text-brand-700">
               {followUpCandidates.length - overdue - atRisk}
             </p>
             <p className="text-sm text-stone-500 mt-1">Check in (30–90 days)</p>

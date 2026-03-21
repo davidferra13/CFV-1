@@ -5,7 +5,10 @@ import { PublicFooter } from '@/components/navigation/public-footer'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-clip bg-gradient-to-b from-[#1a1210] via-[#141110] to-stone-950">
+    <div
+      className="relative flex min-h-screen flex-col overflow-x-clip"
+      style={{ background: 'var(--page-bg-gradient)' }}
+    >
       {/* Skip link removed - root layout.tsx already provides one */}
       {/* Ambient glow - warm brand radiance behind the page */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">

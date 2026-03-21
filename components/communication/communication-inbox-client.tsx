@@ -497,7 +497,7 @@ export function CommunicationInboxClient({
   }, [selectedTab, activeSources, responseTurnFilter, followUpFilter])
 
   const tabColorClasses: Record<CommunicationTab, string> = {
-    unlinked: 'bg-blue-600 text-white border-blue-700',
+    unlinked: 'bg-brand-600 text-white border-brand-700',
     needs_attention: 'bg-orange-600 text-white border-orange-700',
     snoozed: 'bg-stone-700 text-white border-stone-800',
     resolved: 'bg-emerald-600 text-white border-emerald-700',
@@ -505,7 +505,7 @@ export function CommunicationInboxClient({
 
   const responseFilterActiveClass: Record<ResponseTurnFilter, string> = {
     all: 'bg-stone-800 text-white border-stone-900',
-    chef_to_respond: 'bg-indigo-600 text-white border-indigo-700',
+    chef_to_respond: 'bg-brand-600 text-white border-brand-700',
     waiting_on_client: 'bg-amber-900 text-amber-100 border-amber-700',
     no_action: 'bg-emerald-600 text-white border-emerald-700',
   }
@@ -654,7 +654,7 @@ export function CommunicationInboxClient({
                         {timeAgo(msg.timestamp)}
                       </span>
                       {msg.direction === 'outbound' && (
-                        <span className="text-xxs text-indigo-400 flex-shrink-0">You</span>
+                        <span className="text-xxs text-brand-400 flex-shrink-0">You</span>
                       )}
                     </div>
                     <p className="text-xs text-stone-400 truncate mt-0.5">
@@ -949,7 +949,7 @@ export function CommunicationInboxClient({
                           <div className="flex items-start gap-2 sm:gap-3 min-w-0">
                             <input
                               type="checkbox"
-                              className="mt-1 h-5 w-5 sm:h-4 sm:w-4 rounded border-stone-400 bg-stone-900 accent-indigo-500 flex-shrink-0"
+                              className="mt-1 h-5 w-5 sm:h-4 sm:w-4 rounded border-stone-400 bg-stone-900 accent-brand-500 flex-shrink-0"
                               checked={selectedEventIds.has(item.communication_event_id)}
                               onChange={(e) => {
                                 const checked = e.target.checked
@@ -991,7 +991,7 @@ export function CommunicationInboxClient({
                                 </span>
                                 <span className="sm:hidden">{timeAgo(item.event_timestamp)}</span>
                                 {item.tab === 'unlinked' && (
-                                  <Badge className="bg-blue-900 text-blue-800 ring-1 ring-inset ring-blue-300">
+                                  <Badge className="bg-brand-900 text-brand-800 ring-1 ring-inset ring-brand-300">
                                     Unassigned
                                   </Badge>
                                 )}
@@ -1006,7 +1006,7 @@ export function CommunicationInboxClient({
                                   </Badge>
                                 )}
                                 {responseTurn === 'chef_to_respond' && (
-                                  <Badge className="bg-indigo-900 text-indigo-800 ring-1 ring-inset ring-indigo-300">
+                                  <Badge className="bg-brand-900 text-brand-800 ring-1 ring-inset ring-brand-300">
                                     My Turn
                                   </Badge>
                                 )}

@@ -37,11 +37,11 @@ const CATEGORY_COLORS: Record<string, string> = {
   dessert: 'bg-pink-900 text-pink-800',
   bread: 'bg-amber-900 text-amber-800',
   pasta: 'bg-amber-900 text-amber-800',
-  soup: 'bg-cyan-900 text-cyan-800',
+  soup: 'bg-brand-900 text-brand-800',
   salad: 'bg-emerald-900 text-emerald-800',
   appetizer: 'bg-violet-900 text-violet-800',
   condiment: 'bg-stone-800 text-stone-200',
-  beverage: 'bg-blue-900 text-blue-800',
+  beverage: 'bg-brand-900 text-brand-800',
   other: 'bg-stone-800 text-stone-300',
 }
 

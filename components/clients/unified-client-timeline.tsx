@@ -78,7 +78,7 @@ const TimelineRow = memo(function TimelineRow({
             <span
               className={`text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 ${
                 item.actor === 'client'
-                  ? 'bg-blue-900 text-blue-700'
+                  ? 'bg-brand-900 text-brand-700'
                   : 'bg-emerald-900 text-emerald-700'
               }`}
             >

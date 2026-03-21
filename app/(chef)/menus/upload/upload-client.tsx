@@ -85,7 +85,7 @@ export function MenuUploadClient({ initialJobs }: MenuUploadClientProps) {
   const statusBadge = (status: string) => {
     const styles: Record<string, string> = {
       uploaded: 'bg-stone-800 text-stone-400',
-      extracting: 'bg-blue-900/50 text-blue-400',
+      extracting: 'bg-brand-900/50 text-brand-400',
       parsing: 'bg-brand-900/50 text-brand-400',
       review: 'bg-amber-900/50 text-amber-400',
       completed: 'bg-green-900/50 text-green-400',

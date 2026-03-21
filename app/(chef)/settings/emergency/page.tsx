@@ -23,8 +23,8 @@ export default async function EmergencyPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-blue-200 bg-blue-950 px-4 py-3">
-        <p className="text-sm text-blue-900">
+      <div className="rounded-lg border border-brand-200 bg-brand-950 px-4 py-3">
+        <p className="text-sm text-brand-900">
           These contacts are private and only visible to you. They appear as options when you add
           contingency plans to specific events.
         </p>

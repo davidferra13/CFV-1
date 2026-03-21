@@ -40,7 +40,7 @@ export default async function ClientRecurringPage({ params }: { params: { id: st
 
   const reactionColors: Record<string, string> = {
     loved: 'text-green-700',
-    liked: 'text-blue-700',
+    liked: 'text-brand-700',
     neutral: 'text-stone-500',
     disliked: 'text-red-600',
   }

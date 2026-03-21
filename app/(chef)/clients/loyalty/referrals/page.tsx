@@ -20,7 +20,7 @@ const SOURCE_LABELS: Record<string, string> = {
 const SOURCE_COLORS: Record<string, string> = {
   referral: 'bg-green-900 text-green-700',
   instagram: 'bg-pink-900 text-pink-700',
-  website: 'bg-blue-900 text-blue-700',
+  website: 'bg-brand-900 text-brand-700',
   take_a_chef: 'bg-amber-900 text-amber-700',
   phone: 'bg-stone-800 text-stone-400',
   email: 'bg-stone-800 text-stone-400',

@@ -341,7 +341,7 @@ export function ClipboardGrid({ stationId, stationName, date, entries }: Props) 
                           }
                           className={`w-16 mx-auto block text-center rounded border bg-stone-900 px-2 py-1 text-sm ${
                             local.need_to_order > 0
-                              ? 'border-sky-700 text-sky-400'
+                              ? 'border-brand-700 text-brand-400'
                               : 'border-stone-600 text-stone-200'
                           }`}
                         />

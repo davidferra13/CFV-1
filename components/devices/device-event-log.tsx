@@ -9,7 +9,7 @@ interface DeviceEventLogProps {
 }
 
 const eventTypeLabels: Record<string, { label: string; color: string }> = {
-  paired: { label: 'Paired', color: 'text-blue-400' },
+  paired: { label: 'Paired', color: 'text-brand-400' },
   pin_verified: { label: 'PIN Verified', color: 'text-green-400' },
   pin_failed: { label: 'PIN Failed', color: 'text-red-400' },
   submitted_inquiry: { label: 'Inquiry Submitted', color: 'text-brand-400' },

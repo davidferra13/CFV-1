@@ -78,7 +78,7 @@ export function ReconciliationActions({ reportId, reviewed, flags }: Props) {
                     ? 'bg-red-500/10'
                     : flag.severity === 'warning'
                       ? 'bg-amber-500/10'
-                      : 'bg-blue-500/10'
+                      : 'bg-brand-500/10'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -101,7 +101,7 @@ export function ReconciliationActions({ reportId, reviewed, flags }: Props) {
                         ? 'text-red-400'
                         : flag.severity === 'warning'
                           ? 'text-amber-400'
-                          : 'text-blue-400'
+                          : 'text-brand-400'
                     }`}
                   >
                     {flag.message}

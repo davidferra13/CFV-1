@@ -88,8 +88,8 @@ function StaffCard({ staff }: { staff: StaffActivity }) {
 
         {/* Current task */}
         {staff.currentTask && (
-          <div className="mt-3 rounded-md bg-sky-950/30 border border-sky-900/30 px-3 py-2">
-            <p className="text-xs-tight text-sky-400 font-medium">Working on</p>
+          <div className="mt-3 rounded-md bg-brand-950/30 border border-brand-900/30 px-3 py-2">
+            <p className="text-xs-tight text-brand-400 font-medium">Working on</p>
             <p className="text-sm text-stone-200 mt-0.5">{staff.currentTask}</p>
           </div>
         )}

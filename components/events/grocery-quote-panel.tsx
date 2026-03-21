@@ -239,7 +239,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                       <th className="text-left py-2 pr-4 font-medium text-stone-300 whitespace-nowrap">
                         Qty
                       </th>
-                      <th className="text-right py-2 pr-4 font-medium text-blue-700 whitespace-nowrap">
+                      <th className="text-right py-2 pr-4 font-medium text-brand-700 whitespace-nowrap">
                         USDA (NE)
                       </th>
                       <th className="text-right py-2 pr-4 font-medium text-stone-500 whitespace-nowrap">
@@ -281,7 +281,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                         <td className="py-2 pr-4 text-stone-500 whitespace-nowrap">
                           {formatQty(item.quantity, item.unit)}
                         </td>
-                        <td className="py-2 pr-4 text-right text-blue-700 font-medium">
+                        <td className="py-2 pr-4 text-right text-brand-700 font-medium">
                           <PriceCell cents={item.usdaCents} />
                         </td>
                         <td className="py-2 pr-4 text-right text-stone-500">
@@ -310,7 +310,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                       <td colSpan={2} className="py-3 font-semibold text-stone-100">
                         Total Estimate
                       </td>
-                      <td className="py-3 text-right font-semibold text-blue-700">
+                      <td className="py-3 text-right font-semibold text-brand-700">
                         <PriceCell cents={quote.usdaTotalCents} />
                       </td>
                       <td className="py-3 text-right text-stone-500">
@@ -339,7 +339,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               {/* Source legend */}
               <div className="mt-4 flex flex-wrap gap-4 text-xs text-stone-300 border-t border-stone-800 pt-4">
                 <span>
-                  <span className="font-medium text-blue-700">USDA (NE)</span> - USDA Northeast
+                  <span className="font-medium text-brand-700">USDA (NE)</span> - USDA Northeast
                   Urban average retail prices. Already NE-regional, no API key needed.
                 </span>
                 <span>
@@ -450,7 +450,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               )}
 
               {quote && !quote.isFromCache && (
-                <p className="mt-3 text-sm text-blue-700">
+                <p className="mt-3 text-sm text-brand-700">
                   Estimate saved to event - visible in Profit Summary.
                 </p>
               )}

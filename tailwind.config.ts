@@ -1,6 +1,22 @@
+import colors from 'tailwindcss/colors'
 import type { Config } from 'tailwindcss'
 
+const variableScale = (prefix: string) => ({
+  50: `rgb(var(--${prefix}-50) / <alpha-value>)`,
+  100: `rgb(var(--${prefix}-100) / <alpha-value>)`,
+  200: `rgb(var(--${prefix}-200) / <alpha-value>)`,
+  300: `rgb(var(--${prefix}-300) / <alpha-value>)`,
+  400: `rgb(var(--${prefix}-400) / <alpha-value>)`,
+  500: `rgb(var(--${prefix}-500) / <alpha-value>)`,
+  600: `rgb(var(--${prefix}-600) / <alpha-value>)`,
+  700: `rgb(var(--${prefix}-700) / <alpha-value>)`,
+  800: `rgb(var(--${prefix}-800) / <alpha-value>)`,
+  900: `rgb(var(--${prefix}-900) / <alpha-value>)`,
+  950: `rgb(var(--${prefix}-950) / <alpha-value>)`,
+})
+
 const config: Config = {
+  darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -9,28 +25,27 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#fef9f3',
-          100: '#fcf0e0',
-          200: '#f8ddc0',
-          300: '#f3c596',
-          400: '#eda86b',
-          500: '#e88f47',
-          // Contrast ratios against white (#fff):
-          //   brand-600: 3.29:1 (fails WCAG AA normal text, OK for large text/icons)
-          //   brand-700: 4.74:1 (passes WCAG AA normal text at 4.5:1)
-          //   brand-800: 6.66:1 (passes WCAG AAA)
-          // Use brand-700+ for body/link text on white/light backgrounds.
-          600: '#d47530',
-          700: '#b15c26',
-          800: '#8e4a24',
-          900: '#744021',
-          950: '#3e200f',
-        },
+        brand: variableScale('brand'),
+        stone: variableScale('stone'),
+        zinc: variableScale('stone'),
+        gray: variableScale('stone'),
+        neutral: variableScale('stone'),
+        slate: colors.slate,
+        red: colors.red,
+        amber: colors.amber,
+        emerald: colors.emerald,
+        green: colors.green,
+        orange: colors.orange,
+        teal: colors.teal,
+        pink: colors.pink,
+        purple: colors.purple,
+        rose: colors.rose,
+        yellow: colors.yellow,
+        lime: colors.lime,
         surface: {
-          DEFAULT: '#ffffff',
-          muted: '#faf9f7',
-          accent: '#f5f3ef',
+          DEFAULT: 'rgb(var(--surface-1-rgb) / <alpha-value>)',
+          muted: 'rgb(var(--surface-0-rgb) / <alpha-value>)',
+          accent: 'rgb(var(--surface-2-rgb) / <alpha-value>)',
         },
       },
       fontSize: {

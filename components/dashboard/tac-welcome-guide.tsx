@@ -30,19 +30,19 @@ export function TacWelcomeGuide() {
   }
 
   return (
-    <div className="rounded-md border border-blue-200 bg-blue-950/60 px-3 py-2.5 space-y-1.5">
+    <div className="rounded-md border border-brand-200 bg-brand-950/60 px-3 py-2.5 space-y-1.5">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-semibold text-blue-800">How TakeAChef Integration Works</p>
+        <p className="text-xs font-semibold text-brand-800">How TakeAChef Integration Works</p>
         <button
           type="button"
           onClick={handleDismiss}
-          className="text-blue-400 hover:text-blue-600 text-sm leading-none shrink-0"
+          className="text-brand-400 hover:text-brand-600 text-sm leading-none shrink-0"
           aria-label="Dismiss guide"
         >
           &times;
         </button>
       </div>
-      <ol className="text-xs-tight text-blue-700 space-y-0.5 list-decimal list-inside">
+      <ol className="text-xs-tight text-brand-700 space-y-0.5 list-decimal list-inside">
         <li>New leads from TakeAChef appear here automatically from your Gmail</li>
         <li>Address each lead - send a menu to start the conversation, or decline</li>
         <li>
@@ -54,7 +54,7 @@ export function TacWelcomeGuide() {
       <button
         type="button"
         onClick={handleDismiss}
-        className="text-xs-tight text-blue-500 hover:text-blue-700 underline underline-offset-2"
+        className="text-xs-tight text-brand-500 hover:text-brand-700 underline underline-offset-2"
       >
         Got it, don't show again
       </button>

@@ -18,8 +18,8 @@ export const metadata: Metadata = { title: 'Upcoming Touchpoints - ChefFlow' }
 const STATUS_STYLES: Record<string, string> = {
   confirmed: 'bg-teal-900 text-teal-700',
   paid: 'bg-emerald-900 text-emerald-700',
-  in_progress: 'bg-blue-900 text-blue-700',
-  accepted: 'bg-sky-900 text-sky-700',
+  in_progress: 'bg-brand-900 text-brand-700',
+  accepted: 'bg-brand-900 text-brand-700',
   proposed: 'bg-amber-900 text-amber-700',
   draft: 'bg-stone-800 text-stone-400',
 }

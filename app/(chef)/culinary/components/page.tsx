@@ -37,11 +37,11 @@ const TRANSPORT_LABELS: Record<string, string> = {
 }
 
 const TRANSPORT_STYLES: Record<string, string> = {
-  cold: 'bg-blue-900 text-blue-700',
-  frozen: 'bg-sky-900 text-sky-700',
+  cold: 'bg-brand-900 text-brand-700',
+  frozen: 'bg-brand-900 text-brand-700',
   room_temp: 'bg-stone-800 text-stone-400',
   fragile: 'bg-amber-900 text-amber-700',
-  liquid: 'bg-cyan-900 text-cyan-700',
+  liquid: 'bg-brand-900 text-brand-700',
 }
 
 export default async function ComponentsPage() {

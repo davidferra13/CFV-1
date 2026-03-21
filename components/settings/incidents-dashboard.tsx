@@ -19,14 +19,14 @@ const SEVERITY_COLORS: Record<Severity, string> = {
   critical: 'bg-red-900 text-red-800 border-red-200',
   error: 'bg-orange-900 text-orange-800 border-orange-200',
   warning: 'bg-yellow-900 text-yellow-800 border-yellow-200',
-  info: 'bg-blue-900 text-blue-800 border-blue-200',
+  info: 'bg-brand-900 text-brand-800 border-brand-200',
 }
 
 const SEVERITY_DOT: Record<Severity, string> = {
   critical: 'bg-red-500',
   error: 'bg-orange-500',
   warning: 'bg-yellow-500',
-  info: 'bg-blue-500',
+  info: 'bg-brand-500',
 }
 
 const SYSTEM_LABELS: Record<string, string> = {

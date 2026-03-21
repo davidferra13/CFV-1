@@ -34,8 +34,8 @@ const STATUS_BADGE: Record<string, 'default' | 'info' | 'warning' | 'success' | 
 
 const STATUS_DOT: Record<string, string> = {
   draft: 'bg-stone-400',
-  proposed: 'bg-blue-500',
-  accepted: 'bg-indigo-500',
+  proposed: 'bg-brand-500',
+  accepted: 'bg-brand-500',
   paid: 'bg-purple-500',
   confirmed: 'bg-emerald-500',
   in_progress: 'bg-amber-500',

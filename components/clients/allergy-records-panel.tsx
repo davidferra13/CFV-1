@@ -73,8 +73,8 @@ const SEVERITY_CONFIG = {
     label: 'Preference',
     badge: 'default' as const,
     icon: Info,
-    iconColor: 'text-blue-500',
-    bgColor: 'bg-blue-950 border-blue-200',
+    iconColor: 'text-brand-500',
+    bgColor: 'bg-brand-950 border-brand-200',
     description: 'Dislikes - accommodate if easy',
   },
 }

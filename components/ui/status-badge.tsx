@@ -6,13 +6,20 @@ import { HTMLAttributes } from 'react'
 type StatusTier = 'neutral' | 'pending' | 'active' | 'progress' | 'success' | 'danger' | 'muted'
 
 const TIER_STYLES: Record<StatusTier, string> = {
-  neutral: 'bg-stone-800 text-stone-400',
-  pending: 'bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800',
-  active: 'bg-emerald-950 text-emerald-700 ring-1 ring-inset ring-emerald-800',
-  progress: 'bg-sky-950 text-sky-700 ring-1 ring-inset ring-sky-800',
-  success: 'bg-emerald-900 text-emerald-800 ring-1 ring-inset ring-emerald-300',
-  danger: 'bg-red-950 text-red-700 ring-1 ring-inset ring-red-800',
-  muted: 'bg-stone-800 text-stone-400 ring-1 ring-inset ring-stone-700',
+  neutral:
+    'bg-stone-200 text-stone-700 ring-1 ring-inset ring-stone-300 dark:bg-stone-800 dark:text-stone-300 dark:ring-stone-700',
+  pending:
+    'bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:ring-amber-800',
+  active:
+    'bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:ring-emerald-800',
+  progress:
+    'bg-brand-100 text-brand-800 ring-1 ring-inset ring-brand-200 dark:bg-brand-950 dark:text-brand-400 dark:ring-brand-800',
+  success:
+    'bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:ring-emerald-700',
+  danger:
+    'bg-red-100 text-red-800 ring-1 ring-inset ring-red-200 dark:bg-red-950 dark:text-red-400 dark:ring-red-800',
+  muted:
+    'bg-stone-200 text-stone-600 ring-1 ring-inset ring-stone-300 dark:bg-stone-800 dark:text-stone-400 dark:ring-stone-700',
 }
 
 // Map every entity status to a visual tier

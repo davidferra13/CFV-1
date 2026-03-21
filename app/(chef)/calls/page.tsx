@@ -43,7 +43,7 @@ export default async function CallsPage({ searchParams }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-stone-100 flex items-center gap-2">
-            <Phone className="w-6 h-6 text-blue-500" />
+            <Phone className="w-6 h-6 text-brand-500" />
             Calls & Meetings
           </h1>
           <p className="text-sm text-stone-400 mt-1">
@@ -52,7 +52,7 @@ export default async function CallsPage({ searchParams }: Props) {
         </div>
         <Link
           href="/calls/new"
-          className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Schedule call
@@ -78,7 +78,7 @@ export default async function CallsPage({ searchParams }: Props) {
                 href={tab.href}
                 className={`whitespace-nowrap px-3 py-2 border-b-2 -mb-px transition-colors ${
                   isActive
-                    ? 'border-blue-600 text-blue-400 font-medium'
+                    ? 'border-brand-600 text-brand-400 font-medium'
                     : 'border-transparent text-stone-500 hover:text-stone-300'
                 }`}
               >
@@ -101,7 +101,7 @@ export default async function CallsPage({ searchParams }: Props) {
               <p className="text-sm text-stone-500">No upcoming calls scheduled</p>
               <Link
                 href="/calls/new"
-                className="mt-2 inline-block text-sm text-blue-600 hover:underline"
+                className="mt-2 inline-block text-sm text-brand-600 hover:underline"
               >
                 Schedule one now
               </Link>

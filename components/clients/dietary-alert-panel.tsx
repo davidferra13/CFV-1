@@ -20,7 +20,7 @@ type Props = {
 const severityConfig = {
   critical: { badge: 'error' as const, label: 'Critical', color: 'text-red-600' },
   warning: { badge: 'warning' as const, label: 'Warning', color: 'text-amber-600' },
-  info: { badge: 'info' as const, label: 'Info', color: 'text-blue-600' },
+  info: { badge: 'info' as const, label: 'Info', color: 'text-brand-600' },
 } as const
 
 function changeTypeLabel(changeType: string): string {

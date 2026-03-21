@@ -7,6 +7,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { resetTourProgress } from '@/lib/onboarding/tour-actions'
+import { toast } from 'sonner'
 
 export function ReplayTourButton() {
   const router = useRouter()
@@ -21,8 +22,7 @@ export function ReplayTourButton() {
         // Redirect to dashboard so the welcome modal shows again
         router.push('/dashboard')
       } catch {
-        // Non-critical, just log
-        console.error('[tour] Failed to reset tour progress')
+        toast.error('Failed to reset tour progress')
       }
     })
   }

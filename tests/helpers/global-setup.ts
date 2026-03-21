@@ -19,6 +19,7 @@ const PUBLIC_ONLY_PROJECTS = new Set([
 ])
 const CHEF_ONLY_PROJECTS = new Set(['chef', 'coverage-chef', 'interactions-chef', 'journey-chef'])
 const CLIENT_ONLY_PROJECTS = new Set(['client', 'coverage-client', 'interactions-client'])
+const STAFF_ONLY_PROJECTS = new Set(['interactions-staff'])
 const ADMIN_ONLY_PROJECTS = new Set(['coverage-admin', 'interactions-admin', 'launch-admin'])
 
 type RequiredAuthStates = {
@@ -76,6 +77,10 @@ function getRequiredAuthStates(config: FullConfig): RequiredAuthStates {
     }
     if (CLIENT_ONLY_PROJECTS.has(projectName)) {
       required.client = true
+      continue
+    }
+    if (STAFF_ONLY_PROJECTS.has(projectName)) {
+      required.staff = true
       continue
     }
     if (ADMIN_ONLY_PROJECTS.has(projectName)) {

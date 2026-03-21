@@ -89,8 +89,8 @@ export function ClientLTVChart({ clients }: ClientLTVChartProps) {
 
         <Card>
           <CardContent className="flex items-center gap-3 py-4">
-            <div className="w-10 h-10 rounded-lg bg-blue-950 flex items-center justify-center flex-shrink-0">
-              <Users className="h-5 w-5 text-blue-500" />
+            <div className="w-10 h-10 rounded-lg bg-brand-950 flex items-center justify-center flex-shrink-0">
+              <Users className="h-5 w-5 text-brand-500" />
             </div>
             <div>
               <p className="text-2xl font-bold text-stone-100">

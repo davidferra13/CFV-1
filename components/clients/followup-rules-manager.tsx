@@ -170,7 +170,7 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
             resetForm()
             setShowForm(!showForm)
           }}
-          className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700"
         >
           {showForm ? 'Cancel' : '+ Add Rule'}
         </button>
@@ -243,7 +243,7 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
           <button
             onClick={handleSave}
             disabled={isPending}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
           >
             {isPending ? 'Saving...' : editingId ? 'Update Rule' : 'Create Rule'}
           </button>
@@ -266,7 +266,7 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
                   <span className="text-sm font-medium text-gray-900">
                     {TRIGGER_LABELS[rule.trigger_type] || rule.trigger_type}
                   </span>
-                  <span className="rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 text-xs font-medium">
+                  <span className="rounded-full bg-brand-100 text-brand-700 px-2 py-0.5 text-xs font-medium">
                     {ACTION_LABELS[rule.action] || rule.action}
                   </span>
                 </div>
@@ -278,7 +278,7 @@ export default function FollowUpRulesManager({ initialRules }: { initialRules: F
                 <button
                   onClick={() => handleToggle(rule)}
                   disabled={isPending}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${rule.enabled ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${rule.enabled ? 'bg-brand-600' : 'bg-gray-200'}`}
                   title={rule.enabled ? 'Disable' : 'Enable'}
                 >
                   <span

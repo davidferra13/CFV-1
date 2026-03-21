@@ -75,7 +75,7 @@ function statusBadgeClass(status: string): string {
   if (status === 'partially_accepted' || status === 'viewed') {
     return 'bg-amber-950 text-amber-300 border-amber-700'
   }
-  return 'bg-blue-950 text-blue-300 border-blue-700'
+  return 'bg-brand-950 text-brand-300 border-brand-700'
 }
 
 function renderRecipientStatus(status: HandoffRecipientStatus): string {

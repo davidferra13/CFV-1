@@ -67,7 +67,7 @@ export function PreServiceSafetyChecklist({ eventId, checklist }: Props) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5 text-blue-600" />
+          <ShieldCheck className="h-5 w-5 text-brand-600" />
           <h3 className="font-semibold text-base">Pre-Service Safety Check</h3>
         </div>
         <div className="flex items-center gap-2">

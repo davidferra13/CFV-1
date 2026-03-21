@@ -36,8 +36,8 @@ export default async function AdminAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-indigo-950 rounded-lg">
-          <BarChart3 size={18} className="text-indigo-600" />
+        <div className="p-2 bg-brand-950 rounded-lg">
+          <BarChart3 size={18} className="text-brand-600" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Platform Analytics</h1>
@@ -132,10 +132,10 @@ export default async function AdminAnalyticsPage() {
               <div key={d.month} className="space-y-1">
                 <span className="text-xs text-stone-500">{d.month}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-blue-500 w-14 shrink-0">Chefs</span>
+                  <span className="text-xs text-brand-500 w-14 shrink-0">Chefs</span>
                   <div className="flex-1 bg-stone-800 rounded-full h-3 overflow-hidden">
                     <div
-                      className="h-full bg-blue-400 rounded-full"
+                      className="h-full bg-brand-400 rounded-full"
                       style={{ width: `${(d.newChefs / maxGrowth) * 100}%` }}
                     />
                   </div>

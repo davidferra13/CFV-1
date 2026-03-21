@@ -56,7 +56,7 @@ const ACTIVE_COLUMNS = [
 const COLUMN_COLORS: Record<string, string> = {
   draft: 'border-t-stone-400',
   proposed: 'border-t-amber-400',
-  accepted: 'border-t-blue-400',
+  accepted: 'border-t-brand-400',
   paid: 'border-t-green-400',
   confirmed: 'border-t-emerald-500',
   in_progress: 'border-t-brand-500',

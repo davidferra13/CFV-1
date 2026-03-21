@@ -10,7 +10,7 @@ import { updateClientStatus } from '@/lib/clients/actions'
 const STATUS_STYLES: Record<string, string> = {
   active: 'bg-emerald-900 text-emerald-800',
   dormant: 'bg-stone-700 text-stone-300',
-  repeat_ready: 'bg-blue-900 text-blue-800',
+  repeat_ready: 'bg-brand-900 text-brand-800',
   vip: 'bg-purple-900 text-purple-800',
 }
 
@@ -82,7 +82,7 @@ export function ClientStatusBadge({ clientId, initialStatus }: Props) {
                       : s === 'dormant'
                         ? 'bg-stone-400'
                         : s === 'repeat_ready'
-                          ? 'bg-blue-500'
+                          ? 'bg-brand-500'
                           : 'bg-purple-500'
                   }`}
                 />

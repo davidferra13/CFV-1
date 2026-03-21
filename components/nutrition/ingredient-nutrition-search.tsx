@@ -87,12 +87,12 @@ export function IngredientNutritionSearch({
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           placeholder="Search USDA food database..."
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
         <button
           onClick={handleSearch}
           disabled={isPending || !query.trim()}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {isPending ? 'Searching...' : 'Search'}
         </button>
@@ -117,7 +117,7 @@ export function IngredientNutritionSearch({
               key={food.fdcId}
               onClick={() => handleSelectFood(food)}
               className={`w-full text-left px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors ${
-                selectedFdcId === food.fdcId ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+                selectedFdcId === food.fdcId ? 'bg-brand-50 border-l-4 border-l-brand-500' : ''
               }`}
             >
               <div className="flex items-start justify-between gap-2">
@@ -142,7 +142,7 @@ export function IngredientNutritionSearch({
 
       {/* Selected food detail */}
       {selectedFdcId && selectedNutrients && (
-        <div className="rounded-md border border-blue-200 bg-blue-50 p-4">
+        <div className="rounded-md border border-brand-200 bg-brand-50 p-4">
           <div className="flex items-center justify-between mb-3">
             <div>
               <h4 className="text-sm font-semibold text-gray-900">Selected Food</h4>
@@ -152,7 +152,7 @@ export function IngredientNutritionSearch({
             <button
               onClick={() => handleLoadDetailed(selectedFdcId)}
               disabled={isPending}
-              className="text-xs text-blue-600 underline hover:text-blue-800"
+              className="text-xs text-brand-600 underline hover:text-brand-800"
             >
               Load detailed data
             </button>
@@ -177,7 +177,7 @@ export function IngredientNutritionSearch({
           <div className="flex justify-end mt-3">
             <button
               onClick={handleConfirm}
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
             >
               Link this food
             </button>

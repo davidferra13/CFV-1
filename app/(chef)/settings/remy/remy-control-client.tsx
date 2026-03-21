@@ -95,7 +95,7 @@ function statusBadgeClass(status: RemyActionAuditStatus): string {
     case 'error':
       return 'border-red-800 bg-red-950/40 text-red-300'
     case 'started':
-      return 'border-sky-800 bg-sky-950/40 text-sky-300'
+      return 'border-brand-800 bg-brand-950/40 text-brand-300'
     default:
       return 'border-stone-700 bg-stone-900 text-stone-300'
   }
@@ -232,7 +232,7 @@ export function RemyControlClient({
     return stats
   }, [initialAuditRows])
 
-  const riskyTargets = useMemo(() => {
+  const ribrandTargets = useMemo(() => {
     return targets
       .map((target) => {
         const stats = policyStatsByTaskType.get(target.taskType)
@@ -844,14 +844,14 @@ export function RemyControlClient({
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-800 bg-stone-900">
-              {riskyTargets.length === 0 ? (
+              {ribrandTargets.length === 0 ? (
                 <tr>
                   <td className="px-3 py-3 text-stone-400" colSpan={6}>
                     No high-risk actions detected in the current audit window.
                   </td>
                 </tr>
               ) : (
-                riskyTargets.map(({ target, stats, failureCount, failureRate }) => (
+                ribrandTargets.map(({ target, stats, failureCount, failureRate }) => (
                   <tr key={target.taskType}>
                     <td className="px-3 py-2 align-top">
                       <p className="font-medium text-stone-100">{target.name}</p>

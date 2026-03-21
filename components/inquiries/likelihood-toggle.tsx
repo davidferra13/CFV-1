@@ -39,8 +39,8 @@ const TAGS: {
     value: 'cold',
     label: 'Cold',
     tooltip: "Probably won't book - shopping around or poor fit",
-    color: 'text-blue-500 border-blue-200 hover:bg-blue-950',
-    activeColor: 'bg-blue-500 text-white border-blue-500',
+    color: 'text-brand-500 border-brand-200 hover:bg-brand-950',
+    activeColor: 'bg-brand-500 text-white border-brand-500',
   },
 ]
 

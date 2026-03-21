@@ -160,7 +160,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
                   </div>
                   <div className="flex items-center gap-2 text-xs text-stone-400 shrink-0">
                     {r.opened_at && <span className="text-emerald-600 font-medium">Opened</span>}
-                    {r.clicked_at && <span className="text-blue-600 font-medium">Clicked</span>}
+                    {r.clicked_at && <span className="text-brand-600 font-medium">Clicked</span>}
                     {r.unsubscribed_at && <span className="text-stone-400">Unsubscribed</span>}
                     {r.sent_at && !r.error_message && !r.opened_at && <span>Delivered</span>}
                     {r.error_message && <span className="text-red-500">Failed</span>}

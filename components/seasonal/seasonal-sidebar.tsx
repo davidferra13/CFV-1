@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 
 const SEASON_ACCENT: Record<string, string> = {
-  Winter: 'border-l-sky-400',
+  Winter: 'border-l-brand-400',
   Spring: 'border-l-emerald-400',
   Summer: 'border-l-amber-400',
   Autumn: 'border-l-orange-400',

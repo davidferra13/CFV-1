@@ -162,7 +162,7 @@ export function MileageTracker({ initialEntries, initialSummary, events = [] }: 
       <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Car className="h-5 w-5 text-blue-400" />
+            <Car className="h-5 w-5 text-brand-400" />
             <h3 className="text-sm font-semibold text-stone-200">{summary.year} Mileage Summary</h3>
           </div>
           <span className="text-xs text-stone-500">IRS rate: 72.5¢/mi</span>
@@ -337,7 +337,7 @@ export function MileageTracker({ initialEntries, initialSummary, events = [] }: 
             <button
               type="submit"
               disabled={isPending}
-              className="flex items-center gap-1.5 text-xs font-medium px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-medium px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
             >
               <Save className="h-3.5 w-3.5" />
               {isPending ? 'Saving...' : editingId ? 'Update' : 'Add Trip'}
@@ -354,7 +354,7 @@ export function MileageTracker({ initialEntries, initialSummary, events = [] }: 
       ) : (
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-1.5 text-sm text-blue-500 hover:text-blue-400 font-medium transition-colors"
+          className="flex items-center gap-1.5 text-sm text-brand-500 hover:text-brand-400 font-medium transition-colors"
         >
           <Plus className="h-4 w-4" />
           Log a trip

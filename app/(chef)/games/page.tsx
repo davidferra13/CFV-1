@@ -39,7 +39,7 @@ const games: {
     title: 'Food Galaga',
     description:
       'Defend your kitchen! Waves of rogue ingredients are attacking. Grab power-ups and blast them before they reach the pass.',
-    color: 'from-blue-500/20 to-purple-500/20',
+    color: 'from-brand-500/20 to-purple-500/20',
   },
   {
     href: '/games/trivia',

@@ -27,8 +27,8 @@ type Props = {
 const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   pending: { bg: 'bg-amber-50', text: 'text-amber-700', label: 'Scheduled' },
   sent: { bg: 'bg-green-50', text: 'text-green-700', label: 'Sent' },
-  opened: { bg: 'bg-blue-50', text: 'text-blue-700', label: 'Opened' },
-  clicked: { bg: 'bg-indigo-50', text: 'text-indigo-700', label: 'Clicked' },
+  opened: { bg: 'bg-brand-50', text: 'text-brand-700', label: 'Opened' },
+  clicked: { bg: 'bg-brand-50', text: 'text-brand-700', label: 'Clicked' },
   bounced: { bg: 'bg-red-50', text: 'text-red-700', label: 'Bounced' },
   skipped: { bg: 'bg-zinc-50', text: 'text-zinc-500', label: 'Cancelled' },
 }

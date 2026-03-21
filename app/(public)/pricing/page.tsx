@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
-export const revalidate = 3600 // ISR: revalidate every hour
+export const revalidate = 60
 const IS_PUBLIC_LAUNCH = LAUNCH_MODE === 'public'
 
 export const metadata: Metadata = {

@@ -91,11 +91,11 @@ export function ProcessRefundPanel({
 
   return (
     <>
-      <Card className="p-6 border-blue-200 bg-blue-950">
+      <Card className="p-6 border-brand-200 bg-brand-950">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h3 className="font-semibold text-blue-900">Refund Available</h3>
-            <p className="text-sm text-blue-700 mt-1">
+            <h3 className="font-semibold text-brand-900">Refund Available</h3>
+            <p className="text-sm text-brand-700 mt-1">
               {formatCurrency(netPaidCents)} was collected for this event.{' '}
               {recommendation.refundAmountCents > 0
                 ? `Policy recommends a ${formatCurrency(recommendation.refundAmountCents)} refund.`

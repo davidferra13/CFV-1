@@ -527,11 +527,11 @@ export function JourneyEntryPanel({
                     </div>
                   )}
                   {entry.favorite_experience && (
-                    <div className="rounded-md border border-sky-200 bg-sky-950 px-3 py-2">
-                      <p className="text-xs-tight uppercase tracking-wide text-sky-700">
+                    <div className="rounded-md border border-brand-200 bg-brand-950 px-3 py-2">
+                      <p className="text-xs-tight uppercase tracking-wide text-brand-700">
                         Favorite Experience
                       </p>
-                      <p className="text-sm text-sky-900 mt-1 whitespace-pre-wrap">
+                      <p className="text-sm text-brand-900 mt-1 whitespace-pre-wrap">
                         {entry.favorite_experience}
                       </p>
                     </div>
@@ -552,7 +552,7 @@ export function JourneyEntryPanel({
                 {entry.inspiration_taken.map((idea, index) => (
                   <span
                     key={`${entry.id}-idea-${index}`}
-                    className="inline-flex items-center gap-1 rounded-full bg-sky-950 text-sky-700 px-2 py-0.5 text-xs-tight"
+                    className="inline-flex items-center gap-1 rounded-full bg-brand-950 text-brand-700 px-2 py-0.5 text-xs-tight"
                   >
                     <Sparkles className="w-3 h-3" />
                     {idea}

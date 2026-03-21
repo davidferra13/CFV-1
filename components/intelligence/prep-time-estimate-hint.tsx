@@ -60,7 +60,7 @@ export function PrepTimeEstimateHint({ guestCount, occasion }: PrepTimeEstimateH
               <div
                 className={`h-2 rounded-full ${
                   phase.label === 'Shopping'
-                    ? 'bg-blue-600'
+                    ? 'bg-brand-600'
                     : phase.label === 'Prep'
                       ? 'bg-amber-600'
                       : phase.label === 'Service'

@@ -34,7 +34,9 @@ export default function YoyComparisonDashboard() {
           className="rounded border border-gray-300 px-3 py-1.5 text-sm"
         >
           {Array.from({ length: 10 }, (_, i) => currentYear - i).map((y) => (
-            <option key={y} value={y}>{y}</option>
+            <option key={y} value={y}>
+              {y}
+            </option>
           ))}
         </select>
       </div>
@@ -48,7 +50,7 @@ export default function YoyComparisonDashboard() {
               onClick={() => setActiveTab(tab.id)}
               className={`border-b-2 pb-2 text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'border-blue-600 text-blue-600'
+                  ? 'border-brand-600 text-brand-600'
                   : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
               }`}
             >

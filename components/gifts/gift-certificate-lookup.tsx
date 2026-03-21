@@ -12,7 +12,7 @@ function formatCents(cents: number): string {
 
 const STATUS_LABELS: Record<string, { label: string; style: string }> = {
   active: { label: 'Active', style: 'bg-emerald-900/30 text-emerald-400' },
-  redeemed: { label: 'Fully Redeemed', style: 'bg-blue-900/30 text-blue-400' },
+  redeemed: { label: 'Fully Redeemed', style: 'bg-brand-900/30 text-brand-400' },
   expired: { label: 'Expired', style: 'bg-red-900/30 text-red-400' },
   voided: { label: 'Voided', style: 'bg-stone-800/50 text-stone-500' },
 }

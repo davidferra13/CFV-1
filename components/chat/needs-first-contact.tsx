@@ -10,7 +10,7 @@ interface NeedsFirstContactProps {
 }
 
 const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
-  email: { label: 'Email', color: 'bg-blue-900 text-blue-300' },
+  email: { label: 'Email', color: 'bg-brand-900 text-brand-300' },
   website: { label: 'Website', color: 'bg-green-900 text-green-300' },
   take_a_chef: { label: 'TakeAChef', color: 'bg-purple-900 text-purple-300' },
   yhangry: { label: 'Yhangry', color: 'bg-amber-900 text-amber-300' },

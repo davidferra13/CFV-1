@@ -40,8 +40,8 @@ const NOTIFICATION_CONFIG: Record<
   event_confirmed: {
     icon: '📅',
     label: 'Confirmed',
-    color: 'text-blue-300',
-    bgColor: 'bg-blue-900/30 border-blue-700/50',
+    color: 'text-brand-300',
+    bgColor: 'bg-brand-900/30 border-brand-700/50',
     actionCategory: 'info',
   },
   event_completed: {
@@ -82,8 +82,8 @@ const NOTIFICATION_CONFIG: Record<
   guest_count_updated: {
     icon: '👥',
     label: 'Guest Update',
-    color: 'text-blue-300',
-    bgColor: 'bg-blue-900/30 border-blue-700/50',
+    color: 'text-brand-300',
+    bgColor: 'bg-brand-900/30 border-brand-700/50',
     actionCategory: 'info',
   },
   dietary_updated: {
@@ -103,8 +103,8 @@ const NOTIFICATION_CONFIG: Record<
   repeat_booking_request: {
     icon: '🔄',
     label: 'Booking Request',
-    color: 'text-blue-300',
-    bgColor: 'bg-blue-900/30 border-blue-700/50',
+    color: 'text-brand-300',
+    bgColor: 'bg-brand-900/30 border-brand-700/50',
     actionCategory: 'action',
   },
 }

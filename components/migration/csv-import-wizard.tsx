@@ -86,9 +86,7 @@ export default function CSVImportWizard() {
         setMappings([])
         setStep(2)
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to parse CSV.'
-        )
+        setError(err instanceof Error ? err.message : 'Failed to parse CSV.')
       }
     })
   }
@@ -96,9 +94,7 @@ export default function CSVImportWizard() {
   function goToStep3() {
     // Validate that required fields are mapped
     const mappedFields = new Set(
-      mappings
-        .filter((m) => m.targetField !== '__skip__')
-        .map((m) => m.targetField)
+      mappings.filter((m) => m.targetField !== '__skip__').map((m) => m.targetField)
     )
 
     const requiredMap: Record<TargetType, string[]> = {
@@ -154,9 +150,7 @@ export default function CSVImportWizard() {
         setResult(importResult)
         setStep(4)
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Import failed. Please try again.'
-        )
+        setError(err instanceof Error ? err.message : 'Import failed. Please try again.')
       }
     })
   }
@@ -196,7 +190,7 @@ export default function CSVImportWizard() {
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
                 s === step
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-brand-600 text-white'
                   : s < step
                     ? 'bg-green-100 text-green-700'
                     : 'bg-gray-100 text-gray-400'
@@ -204,11 +198,7 @@ export default function CSVImportWizard() {
             >
               {s < step ? '\u2713' : s}
             </div>
-            {s < 4 && (
-              <div
-                className={`w-8 h-px ${s < step ? 'bg-green-300' : 'bg-gray-200'}`}
-              />
-            )}
+            {s < 4 && <div className={`w-8 h-px ${s < step ? 'bg-green-300' : 'bg-gray-200'}`} />}
           </div>
         ))}
         <span className="ml-2 text-gray-500">
@@ -229,9 +219,7 @@ export default function CSVImportWizard() {
       {step === 1 && (
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">
-              What are you importing?
-            </label>
+            <label className="block text-sm font-medium mb-1">What are you importing?</label>
             <select
               value={targetType}
               onChange={(e) => setTargetType(e.target.value as TargetType)}
@@ -254,7 +242,7 @@ export default function CSVImportWizard() {
             onDragLeave={() => setDragOver(false)}
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               dragOver
-                ? 'border-blue-400 bg-blue-50'
+                ? 'border-brand-400 bg-brand-50'
                 : fileName
                   ? 'border-green-300 bg-green-50'
                   : 'border-gray-300'
@@ -262,12 +250,8 @@ export default function CSVImportWizard() {
           >
             {fileName ? (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-green-700">
-                  {fileName}
-                </p>
-                <p className="text-xs text-gray-500">
-                  File loaded. Click "Next" to continue.
-                </p>
+                <p className="text-sm font-medium text-green-700">{fileName}</p>
+                <p className="text-xs text-gray-500">File loaded. Click "Next" to continue.</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -288,7 +272,7 @@ export default function CSVImportWizard() {
             <button
               onClick={goToStep2}
               disabled={!csvText || isPending}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
             >
               {isPending ? 'Parsing...' : 'Next'}
             </button>
@@ -322,7 +306,7 @@ export default function CSVImportWizard() {
             </button>
             <button
               onClick={goToStep3}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
             >
               Next
             </button>
@@ -334,9 +318,8 @@ export default function CSVImportWizard() {
       {step === 3 && preview && (
         <div className="space-y-4">
           <div className="text-sm text-gray-600">
-            Importing <strong>{preview.totalRows}</strong>{' '}
-            {TARGET_LABELS[targetType].toLowerCase()} with the following
-            mapping:
+            Importing <strong>{preview.totalRows}</strong> {TARGET_LABELS[targetType].toLowerCase()}{' '}
+            with the following mapping:
           </div>
 
           <div className="overflow-x-auto">
@@ -358,10 +341,7 @@ export default function CSVImportWizard() {
                     {mappings
                       .filter((m) => m.targetField !== '__skip__')
                       .map((m) => (
-                        <td
-                          key={m.targetField}
-                          className="p-2 text-xs max-w-[150px] truncate"
-                        >
+                        <td key={m.targetField} className="p-2 text-xs max-w-[150px] truncate">
                           {row[m.targetField] || '(empty)'}
                         </td>
                       ))}
@@ -372,9 +352,7 @@ export default function CSVImportWizard() {
           </div>
 
           {preview.totalRows > 5 && (
-            <p className="text-xs text-gray-400">
-              Showing 5 of {preview.totalRows} rows
-            </p>
+            <p className="text-xs text-gray-400">Showing 5 of {preview.totalRows} rows</p>
           )}
 
           <div className="flex justify-between">
@@ -389,7 +367,9 @@ export default function CSVImportWizard() {
               disabled={isPending}
               className="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
             >
-              {isPending ? 'Importing...' : `Import ${preview.totalRows} ${TARGET_LABELS[targetType]}`}
+              {isPending
+                ? 'Importing...'
+                : `Import ${preview.totalRows} ${TARGET_LABELS[targetType]}`}
             </button>
           </div>
         </div>
@@ -402,21 +382,15 @@ export default function CSVImportWizard() {
             <h3 className="font-medium text-green-800 mb-2">Import Complete</h3>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-green-700">
-                  {result.imported}
-                </div>
+                <div className="text-2xl font-bold text-green-700">{result.imported}</div>
                 <div className="text-xs text-green-600">Imported</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-amber-600">
-                  {result.skipped}
-                </div>
+                <div className="text-2xl font-bold text-amber-600">{result.skipped}</div>
                 <div className="text-xs text-amber-500">Skipped</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-red-600">
-                  {result.errors.length}
-                </div>
+                <div className="text-2xl font-bold text-red-600">{result.errors.length}</div>
                 <div className="text-xs text-red-500">Errors</div>
               </div>
             </div>
@@ -436,7 +410,7 @@ export default function CSVImportWizard() {
           <div className="flex justify-end">
             <button
               onClick={reset}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
             >
               Import More
             </button>

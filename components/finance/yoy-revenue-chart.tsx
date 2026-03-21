@@ -12,8 +12,11 @@ function ChangeIndicator({ percent }: { percent: number | null }) {
   const isPositive = percent > 0
   const isZero = percent === 0
   return (
-    <span className={`text-sm font-medium ${isPositive ? 'text-green-600' : isZero ? 'text-gray-500' : 'text-red-600'}`}>
-      {isPositive ? '+' : ''}{percent}%
+    <span
+      className={`text-sm font-medium ${isPositive ? 'text-green-600' : isZero ? 'text-gray-500' : 'text-red-600'}`}
+    >
+      {isPositive ? '+' : ''}
+      {percent}%
     </span>
   )
 }
@@ -62,7 +65,9 @@ export default function YoyRevenueChart({ defaultYear1, defaultYear2 }: Props) {
             className="rounded border border-gray-300 px-2 py-1 text-sm"
           >
             {yearOptions.map((y) => (
-              <option key={y} value={y}>{y}</option>
+              <option key={y} value={y}>
+                {y}
+              </option>
             ))}
           </select>
           <span className="text-sm text-gray-500">vs</span>
@@ -72,18 +77,20 @@ export default function YoyRevenueChart({ defaultYear1, defaultYear2 }: Props) {
             className="rounded border border-gray-300 px-2 py-1 text-sm"
           >
             {yearOptions.map((y) => (
-              <option key={y} value={y}>{y}</option>
+              <option key={y} value={y}>
+                {y}
+              </option>
             ))}
           </select>
         </div>
       </div>
 
-      {error && (
-        <div className="rounded bg-red-50 p-3 text-sm text-red-700">{error}</div>
-      )}
+      {error && <div className="rounded bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       {isPending && !data && (
-        <div className="flex h-48 items-center justify-center text-sm text-gray-400">Loading...</div>
+        <div className="flex h-48 items-center justify-center text-sm text-gray-400">
+          Loading...
+        </div>
       )}
 
       {data && (
@@ -115,8 +122,11 @@ export default function YoyRevenueChart({ defaultYear1, defaultYear2 }: Props) {
                   {/* Year 1 bar */}
                   <div className="flex items-center gap-2">
                     <div
-                      className="h-3 rounded bg-blue-400 transition-all"
-                      style={{ width: `${(month.year1Value / maxValue) * 100}%`, minWidth: month.year1Value > 0 ? '4px' : '0' }}
+                      className="h-3 rounded bg-brand-400 transition-all"
+                      style={{
+                        width: `${(month.year1Value / maxValue) * 100}%`,
+                        minWidth: month.year1Value > 0 ? '4px' : '0',
+                      }}
                     />
                     <span className="text-xs text-gray-400">{formatCents(month.year1Value)}</span>
                   </div>
@@ -124,7 +134,10 @@ export default function YoyRevenueChart({ defaultYear1, defaultYear2 }: Props) {
                   <div className="flex items-center gap-2">
                     <div
                       className="h-3 rounded bg-emerald-500 transition-all"
-                      style={{ width: `${(month.year2Value / maxValue) * 100}%`, minWidth: month.year2Value > 0 ? '4px' : '0' }}
+                      style={{
+                        width: `${(month.year2Value / maxValue) * 100}%`,
+                        minWidth: month.year2Value > 0 ? '4px' : '0',
+                      }}
                     />
                     <span className="text-xs text-gray-400">{formatCents(month.year2Value)}</span>
                   </div>
@@ -139,7 +152,7 @@ export default function YoyRevenueChart({ defaultYear1, defaultYear2 }: Props) {
           {/* Legend */}
           <div className="mt-4 flex items-center gap-4 text-xs text-gray-500">
             <div className="flex items-center gap-1">
-              <div className="h-2 w-4 rounded bg-blue-400" />
+              <div className="h-2 w-4 rounded bg-brand-400" />
               <span>{data.year1}</span>
             </div>
             <div className="flex items-center gap-1">

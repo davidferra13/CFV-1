@@ -16,7 +16,6 @@ import { getAnnouncement } from '@/lib/admin/platform-actions'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
 import { TrialBanner } from '@/components/billing/trial-banner'
 import { OfflineProvider } from '@/components/offline/offline-provider'
-import { ThemeProvider } from '@/components/ui/theme-provider'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { DeletionPendingBanner } from '@/components/settings/deletion-pending-banner'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
@@ -154,119 +153,117 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const shouldRenderRemy = true
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-      <OfflineProvider>
-        <SidebarProvider>
-          <NotificationProvider userId={user.id}>
-            <ToastProvider />
-            <RouteProgress />
-            <TestAccountBanner />
-            <KeyboardShortcutsWrapper>
-              <div
-                data-cf-portal="chef"
-                className="min-h-screen"
-                style={{
-                  backgroundColor: profile.portal_background_color || '#0c0a09',
-                  backgroundImage: profile.portal_background_image_url
-                    ? `url(${profile.portal_background_image_url})`
-                    : undefined,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center center',
-                  backgroundRepeat: 'no-repeat',
-                }}
+    <OfflineProvider>
+      <SidebarProvider>
+        <NotificationProvider userId={user.id}>
+          <ToastProvider />
+          <RouteProgress />
+          <TestAccountBanner />
+          <KeyboardShortcutsWrapper>
+            <div
+              data-cf-portal="chef"
+              className="min-h-screen text-stone-100"
+              style={{
+                backgroundColor: profile.portal_background_color || 'var(--surface-0)',
+                backgroundImage: profile.portal_background_image_url
+                  ? `url(${profile.portal_background_image_url})`
+                  : undefined,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center center',
+                backgroundRepeat: 'no-repeat',
+              }}
+            >
+              {/* Skip navigation link for keyboard/screen reader users */}
+              <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-brand-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg"
               >
-                {/* Skip navigation link for keyboard/screen reader users */}
-                <a
-                  href="#main-content"
-                  className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-brand-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg"
-                >
-                  Skip to main content
-                </a>
-                {/* Platform announcement banner - shown when admin sets one */}
-                {announcement && (
-                  <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
+                Skip to main content
+              </a>
+              {/* Platform announcement banner - shown when admin sets one */}
+              {announcement && (
+                <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
+              )}
+              {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && <EnvironmentBadge />}
+              {/* Trial / subscription banner - shown when trial is expiring (≤3 days) or expired */}
+              <TrialBanner chefId={user.entityId} />
+              {/* Beta survey banner - non-blocking, shows when an active survey hasn't been submitted */}
+              <Suspense fallback={null}>
+                <BetaSurveyBannerWrapper href="/beta-survey" />
+              </Suspense>
+              {/* Account deletion pending banner - shown during 30-day grace period */}
+              {deletionStatus.isPending &&
+                deletionStatus.scheduledFor &&
+                deletionStatus.daysRemaining != null && (
+                  <DeletionPendingBanner
+                    scheduledFor={deletionStatus.scheduledFor}
+                    daysRemaining={deletionStatus.daysRemaining}
+                  />
                 )}
-                {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && <EnvironmentBadge />}
-                {/* Trial / subscription banner - shown when trial is expiring (≤3 days) or expired */}
-                <TrialBanner chefId={user.entityId} />
-                {/* Beta survey banner - non-blocking, shows when an active survey hasn't been submitted */}
-                <Suspense fallback={null}>
-                  <BetaSurveyBannerWrapper href="/beta-survey" />
-                </Suspense>
-                {/* Account deletion pending banner - shown during 30-day grace period */}
-                {deletionStatus.isPending &&
-                  deletionStatus.scheduledFor &&
-                  deletionStatus.daysRemaining != null && (
-                    <DeletionPendingBanner
-                      scheduledFor={deletionStatus.scheduledFor}
-                      daysRemaining={deletionStatus.daysRemaining}
-                    />
-                  )}
-                {/* Desktop sidebar */}
-                <ChefSidebar
-                  primaryNavHrefs={primaryNavHrefs}
-                  enabledModules={enabledModules}
-                  isAdmin={effectiveAdmin}
-                  focusMode={focusMode}
-                  userId={user.id}
-                  tenantId={user.tenantId ?? user.entityId}
-                />
-                {/* Mobile nav (top bar + bottom tabs) */}
-                <ChefMobileNav
-                  primaryNavHrefs={primaryNavHrefs}
-                  mobileTabHrefs={mobileTabHrefs}
-                  enabledModules={enabledModules}
-                  isAdmin={effectiveAdmin}
-                  focusMode={focusMode}
-                  userId={user.id}
-                  tenantId={user.tenantId ?? user.entityId}
-                />
+              {/* Desktop sidebar */}
+              <ChefSidebar
+                primaryNavHrefs={primaryNavHrefs}
+                enabledModules={enabledModules}
+                isAdmin={effectiveAdmin}
+                focusMode={focusMode}
+                userId={user.id}
+                tenantId={user.tenantId ?? user.entityId}
+              />
+              {/* Mobile nav (top bar + bottom tabs) */}
+              <ChefMobileNav
+                primaryNavHrefs={primaryNavHrefs}
+                mobileTabHrefs={mobileTabHrefs}
+                enabledModules={enabledModules}
+                isAdmin={effectiveAdmin}
+                focusMode={focusMode}
+                userId={user.id}
+                tenantId={user.tenantId ?? user.entityId}
+              />
 
-                {/* Main content - offset adjusts dynamically based on sidebar state */}
-                <ChefMainContent>
-                  <ChefTourWrapper>{children}</ChefTourWrapper>
-                </ChefMainContent>
+              {/* Main content - offset adjusts dynamically based on sidebar state */}
+              <ChefMainContent>
+                <ChefTourWrapper>{children}</ChefTourWrapper>
+              </ChefMainContent>
 
-                {/* Push notification permission prompt - appears after 5s if not subscribed */}
-                <PushPermissionPrompt />
+              {/* Push notification permission prompt - appears after 5s if not subscribed */}
+              <PushPermissionPrompt />
 
-                {showFeedbackNudge && <FeedbackNudgeModal />}
+              {showFeedbackNudge && <FeedbackNudgeModal />}
 
-                {/* Offline connectivity bar - shows status, queue count, sync progress */}
-                <OfflineStatusBar />
+              {/* Offline connectivity bar - shows status, queue count, sync progress */}
+              <OfflineStatusBar />
 
-                {/* Command Palette - Cmd+K universal search and navigation */}
-                <CommandPalette userId={user.id} tenantId={user.tenantId ?? user.entityId} />
+              {/* Command Palette - Cmd+K universal search and navigation */}
+              <CommandPalette userId={user.id} tenantId={user.tenantId ?? user.entityId} />
 
-                {/* Remy - AI companion chatbot, available to all chefs */}
-                {shouldRenderRemy && <RemyWrapper />}
+              {/* Remy - AI companion chatbot, available to all chefs */}
+              {shouldRenderRemy && <RemyWrapper />}
 
-                {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
-                <QuickCapture />
+              {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
+              <QuickCapture />
 
-                {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
-                <BreadcrumbTracker />
+              {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
+              <BreadcrumbTracker />
 
-                <MilestoneOverlay />
+              <MilestoneOverlay />
 
-                {/* Analytics identity -- associates events with logged-in user */}
-                <AnalyticsIdentify
-                  userId={user.id}
-                  email={user.email}
-                  role={user.role}
-                  traits={{ entity_id: user.entityId, tenant_id: user.tenantId ?? user.entityId }}
-                />
+              {/* Analytics identity -- associates events with logged-in user */}
+              <AnalyticsIdentify
+                userId={user.id}
+                email={user.email}
+                role={user.role}
+                traits={{ entity_id: user.entityId, tenant_id: user.tenantId ?? user.entityId }}
+              />
 
-                {/* Presence beacon -- authenticated user presence for live admin visibility */}
-                <PresenceBeacon />
+              {/* Presence beacon -- authenticated user presence for live admin visibility */}
+              <PresenceBeacon />
 
-                {/* Route tracker -- stores last active path for session recovery */}
-                <RouteTracker />
-              </div>
-            </KeyboardShortcutsWrapper>
-          </NotificationProvider>
-        </SidebarProvider>
-      </OfflineProvider>
-    </ThemeProvider>
+              {/* Route tracker -- stores last active path for session recovery */}
+              <RouteTracker />
+            </div>
+          </KeyboardShortcutsWrapper>
+        </NotificationProvider>
+      </SidebarProvider>
+    </OfflineProvider>
   )
 }

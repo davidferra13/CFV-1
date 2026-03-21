@@ -34,9 +34,9 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; ring: string; la
     label: 'Pending',
   },
   in_progress: {
-    bg: 'bg-sky-950',
-    text: 'text-sky-400',
-    ring: 'ring-sky-800',
+    bg: 'bg-brand-950',
+    text: 'text-brand-400',
+    ring: 'ring-brand-800',
     label: 'In Progress',
   },
   done: {
@@ -139,7 +139,7 @@ function TaskCard({
             task.status === 'done'
               ? 'bg-emerald-600 border-emerald-500 ring-emerald-400'
               : task.status === 'in_progress'
-                ? 'bg-sky-600 border-sky-500 ring-sky-400'
+                ? 'bg-brand-600 border-brand-500 ring-brand-400'
                 : 'bg-stone-800 border-stone-600 ring-stone-500 hover:bg-stone-700'
           }`}
           title={`Status: ${statusStyle.label}. Click to change.`}

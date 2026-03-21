@@ -220,7 +220,7 @@ function ComponentCard({ component }: { component: ReportComponent }) {
         <div className="mt-2">
           <button
             type="button"
-            className="text-xs font-medium text-blue-600 hover:text-blue-700 print:hidden"
+            className="text-xs font-medium text-brand-600 hover:text-brand-700 print:hidden"
             onClick={() => setShowMethod(!showMethod)}
           >
             {showMethod ? 'Hide method' : 'Show method'}
@@ -264,10 +264,10 @@ function SummaryCard({
   items: string[]
   variant: 'danger' | 'info'
 }) {
-  const bg = variant === 'danger' ? 'bg-red-50' : 'bg-blue-50'
-  const border = variant === 'danger' ? 'border-red-200' : 'border-blue-200'
-  const titleColor = variant === 'danger' ? 'text-red-700' : 'text-blue-700'
-  const textColor = variant === 'danger' ? 'text-red-600' : 'text-blue-600'
+  const bg = variant === 'danger' ? 'bg-red-50' : 'bg-brand-50'
+  const border = variant === 'danger' ? 'border-red-200' : 'border-brand-200'
+  const titleColor = variant === 'danger' ? 'text-red-700' : 'text-brand-700'
+  const textColor = variant === 'danger' ? 'text-red-600' : 'text-brand-600'
 
   return (
     <div className={`rounded-lg border ${border} ${bg} p-3`}>

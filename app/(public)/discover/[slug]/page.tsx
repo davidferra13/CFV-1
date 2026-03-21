@@ -60,7 +60,7 @@ export default async function ListingDetailPage({ params }: Props) {
                 </span>
               )}
               {listing.status === 'claimed' && (
-                <span className="rounded-full bg-sky-900/80 px-2.5 py-0.5 text-xxs font-semibold text-sky-300">
+                <span className="rounded-full bg-brand-900/80 px-2.5 py-0.5 text-xxs font-semibold text-brand-300">
                   Claimed
                 </span>
               )}

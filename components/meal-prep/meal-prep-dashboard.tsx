@@ -113,8 +113,8 @@ export function MealPrepDashboard({ programs: initialPrograms }: MealPrepDashboa
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-sky-950 rounded-lg">
-              <Truck className="w-5 h-5 text-sky-400" />
+            <div className="p-2 bg-brand-950 rounded-lg">
+              <Truck className="w-5 h-5 text-brand-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-stone-100">{deliveriesToday}</p>

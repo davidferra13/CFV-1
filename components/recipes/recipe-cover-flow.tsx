@@ -24,14 +24,14 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   starch: 'from-stone-700 to-stone-600',
   vegetable: 'from-emerald-900 to-green-800',
   fruit: 'from-pink-900 to-fuchsia-800',
-  dessert: 'from-indigo-900 to-violet-800',
+  dessert: 'from-brand-900 to-violet-800',
   bread: 'from-amber-800 to-yellow-700',
   pasta: 'from-yellow-900 to-amber-800',
-  soup: 'from-cyan-900 to-teal-800',
+  soup: 'from-brand-900 to-teal-800',
   salad: 'from-lime-900 to-emerald-800',
   appetizer: 'from-orange-900 to-red-800',
   condiment: 'from-yellow-800 to-lime-700',
-  beverage: 'from-sky-900 to-blue-800',
+  beverage: 'from-brand-900 to-brand-800',
   other: 'from-stone-800 to-stone-700',
 }
 
@@ -177,7 +177,7 @@ export function RecipeCoverFlow({ recipes }: Props) {
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Badge variant={CATEGORY_COLORS[active.category] || 'default'}>{active.category}</Badge>
           {active.cuisine && (
-            <span className="text-sm text-blue-400">
+            <span className="text-sm text-brand-400">
               {cuisineLabelMap[active.cuisine] || active.cuisine}
             </span>
           )}

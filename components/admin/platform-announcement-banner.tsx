@@ -14,16 +14,21 @@ type Props = {
 
 const STYLES: Record<AnnouncementType, { wrapper: string; icon: React.ReactNode }> = {
   info: {
-    wrapper: 'bg-blue-950 border-b border-blue-200 text-blue-800',
-    icon: <Info size={15} className="text-blue-500 shrink-0 mt-0.5" />,
+    wrapper:
+      'bg-brand-100 border-b border-brand-200 text-brand-900 dark:bg-brand-950 dark:border-brand-800 dark:text-brand-100',
+    icon: <Info size={15} className="text-brand-600 dark:text-brand-400 shrink-0 mt-0.5" />,
   },
   warning: {
-    wrapper: 'bg-amber-950 border-b border-amber-200 text-amber-800',
-    icon: <AlertTriangle size={15} className="text-amber-500 shrink-0 mt-0.5" />,
+    wrapper:
+      'bg-amber-100 border-b border-amber-200 text-amber-900 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-100',
+    icon: (
+      <AlertTriangle size={15} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+    ),
   },
   critical: {
-    wrapper: 'bg-red-950 border-b border-red-200 text-red-800',
-    icon: <AlertOctagon size={15} className="text-red-500 shrink-0 mt-0.5" />,
+    wrapper:
+      'bg-red-100 border-b border-red-200 text-red-900 dark:bg-red-950 dark:border-red-800 dark:text-red-100',
+    icon: <AlertOctagon size={15} className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" />,
   },
 }
 

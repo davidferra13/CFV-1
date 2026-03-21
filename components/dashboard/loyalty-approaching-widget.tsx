@@ -24,7 +24,7 @@ const TIER_COLORS: Record<string, string> = {
   bronze: 'text-amber-600',
   silver: 'text-stone-400',
   gold: 'text-yellow-400',
-  platinum: 'text-cyan-300',
+  platinum: 'text-brand-300',
 }
 
 export function LoyaltyApproachingWidget({ clients }: Props) {

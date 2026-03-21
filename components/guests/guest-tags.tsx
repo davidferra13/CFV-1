@@ -9,21 +9,21 @@ import { addTag, removeTag } from '@/lib/guests/tag-actions'
 
 const PRESET_TAGS = [
   { tag: 'VIP', color: 'gold' },
-  { tag: 'Regular', color: 'blue' },
+  { tag: 'Regular', color: 'brand' },
   { tag: 'New', color: 'green' },
   { tag: 'Problem', color: 'red' },
 ] as const
 
 const TAG_COLORS: Record<string, { bg: string; text: string; ring: string }> = {
   gold: { bg: 'bg-amber-950', text: 'text-amber-400', ring: 'ring-amber-800' },
-  blue: { bg: 'bg-sky-950', text: 'text-sky-400', ring: 'ring-sky-800' },
+  brand: { bg: 'bg-brand-950', text: 'text-brand-400', ring: 'ring-brand-800' },
   green: { bg: 'bg-emerald-950', text: 'text-emerald-400', ring: 'ring-emerald-800' },
   red: { bg: 'bg-red-950', text: 'text-red-400', ring: 'ring-red-800' },
   purple: { bg: 'bg-purple-950', text: 'text-purple-400', ring: 'ring-purple-800' },
 }
 
 function getTagStyle(color?: string | null) {
-  const c = TAG_COLORS[color || ''] || TAG_COLORS.blue
+  const c = TAG_COLORS[color || ''] || TAG_COLORS.brand
   return `${c.bg} ${c.text} ring-1 ring-inset ${c.ring}`
 }
 
@@ -63,7 +63,7 @@ export function GuestTags({ guestId, tags }: GuestTagsProps) {
     if (!customTag.trim()) return
     setLoading(true)
     try {
-      await addTag(guestId, customTag.trim(), 'blue')
+      await addTag(guestId, customTag.trim(), 'brand')
       setCustomTag('')
       setShowAdd(false)
       router.refresh()

@@ -9,7 +9,7 @@ const GIFT_TYPE_CONFIG: Record<GiftType, { label: string; color: string }> = {
   thank_you: { label: 'Thank You', color: 'bg-green-100 text-green-800' },
   birthday: { label: 'Birthday', color: 'bg-purple-100 text-purple-800' },
   holiday: { label: 'Holiday', color: 'bg-red-100 text-red-800' },
-  milestone: { label: 'Milestone', color: 'bg-blue-100 text-blue-800' },
+  milestone: { label: 'Milestone', color: 'bg-brand-100 text-brand-800' },
   apology: { label: 'Apology', color: 'bg-yellow-100 text-yellow-800' },
   custom: { label: 'Custom', color: 'bg-gray-100 text-gray-800' },
 }
@@ -132,7 +132,7 @@ export default function GiftLogPanel({
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700"
         >
           {showForm ? 'Cancel' : '+ Log Gift'}
         </button>
@@ -228,7 +228,7 @@ export default function GiftLogPanel({
           <button
             onClick={handleAdd}
             disabled={isPending}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
           >
             {isPending ? 'Saving...' : 'Save Gift'}
           </button>

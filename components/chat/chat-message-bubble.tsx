@@ -194,7 +194,7 @@ function getDocIcon(contentType: string | null) {
     return <FileSpreadsheet className="w-8 h-8 text-emerald-600" />
   }
   if (contentType?.includes('word') || contentType === 'application/msword') {
-    return <FileText className="w-8 h-8 text-blue-600" />
+    return <FileText className="w-8 h-8 text-brand-600" />
   }
   return <FileIcon className="w-8 h-8 text-stone-500" />
 }

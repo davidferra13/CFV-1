@@ -17,7 +17,7 @@ const HEALTH_COLORS: Record<
   { badge: 'success' | 'info' | 'warning' | 'error'; bg: string }
 > = {
   thriving: { badge: 'success', bg: 'bg-green-950 border-green-200' },
-  healthy: { badge: 'info', bg: 'bg-blue-950 border-blue-200' },
+  healthy: { badge: 'info', bg: 'bg-brand-950 border-brand-200' },
   needs_attention: { badge: 'warning', bg: 'bg-amber-950 border-amber-200' },
   at_risk: { badge: 'error', bg: 'bg-red-950 border-red-200' },
 }

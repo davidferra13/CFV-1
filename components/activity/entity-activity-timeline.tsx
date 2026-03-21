@@ -65,7 +65,7 @@ export function EntityActivityTimeline({
                   <span
                     className={`rounded px-2 py-0.5 text-xs font-medium ${
                       entry.source === 'transition'
-                        ? 'bg-blue-950 text-blue-300'
+                        ? 'bg-brand-950 text-brand-300'
                         : 'bg-stone-800 text-stone-300'
                     }`}
                   >

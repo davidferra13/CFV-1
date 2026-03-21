@@ -16,7 +16,7 @@ function formatDollars(cents: number) {
 
 const MATCH_COLORS: Record<string, string> = {
   exact: 'bg-green-950 border-green-200',
-  partial: 'bg-blue-950 border-blue-200',
+  partial: 'bg-brand-950 border-brand-200',
   substitution: 'bg-amber-950 border-amber-200',
 }
 
@@ -103,7 +103,7 @@ export function CarryForwardMatchPanel({ eventId }: { eventId: string }) {
                 <span className="text-stone-400">→</span>
                 <span className="text-stone-400">{match.neededIngredient}</span>
                 <span
-                  className={`text-xxs px-1 rounded ml-auto ${match.matchType === 'exact' ? 'bg-green-900 text-green-700' : match.matchType === 'partial' ? 'bg-blue-900 text-blue-700' : 'bg-amber-900 text-amber-700'}`}
+                  className={`text-xxs px-1 rounded ml-auto ${match.matchType === 'exact' ? 'bg-green-900 text-green-700' : match.matchType === 'partial' ? 'bg-brand-900 text-brand-700' : 'bg-amber-900 text-amber-700'}`}
                 >
                   {match.matchType}
                 </span>

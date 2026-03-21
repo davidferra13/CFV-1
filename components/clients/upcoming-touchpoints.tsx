@@ -29,8 +29,7 @@ export default function UpcomingTouchpoints({
 }: {
   initialTouchpoints: UpcomingTouchpoint[]
 }) {
-  const [touchpoints, setTouchpoints] =
-    useState<UpcomingTouchpoint[]>(initialTouchpoints)
+  const [touchpoints, setTouchpoints] = useState<UpcomingTouchpoint[]>(initialTouchpoints)
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
   const [done, setDone] = useState<Set<string>>(new Set())
 
@@ -48,18 +47,15 @@ export default function UpcomingTouchpoints({
   }
 
   const visible = touchpoints.filter(
-    (t) => !dismissed.has(touchpointKey(t)) && !done.has(touchpointKey(t)),
+    (t) => !dismissed.has(touchpointKey(t)) && !done.has(touchpointKey(t))
   )
 
   if (visible.length === 0) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-          Upcoming Touchpoints
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">Upcoming Touchpoints</h3>
         <p className="text-sm text-gray-400 text-center py-4">
-          No upcoming touchpoints right now. Configure rules to start getting
-          reminders.
+          No upcoming touchpoints right now. Configure rules to start getting reminders.
         </p>
         {done.size > 0 && (
           <p className="text-xs text-green-600 text-center">
@@ -73,10 +69,8 @@ export default function UpcomingTouchpoints({
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Upcoming Touchpoints
-        </h3>
-        <span className="rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 text-xs font-medium">
+        <h3 className="text-lg font-semibold text-gray-900">Upcoming Touchpoints</h3>
+        <span className="rounded-full bg-brand-100 text-brand-700 px-2 py-0.5 text-xs font-medium">
           {visible.length}
         </span>
       </div>
@@ -88,10 +82,7 @@ export default function UpcomingTouchpoints({
           const icon = RULE_TYPE_ICONS[t.rule_type] || '📋'
 
           return (
-            <div
-              key={key}
-              className={`rounded-md border p-3 ${URGENCY_STYLES[t.urgency]}`}
-            >
+            <div key={key} className={`rounded-md border p-3 ${URGENCY_STYLES[t.urgency]}`}>
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -136,8 +127,7 @@ export default function UpcomingTouchpoints({
 
       {done.size > 0 && (
         <p className="mt-3 text-xs text-green-600 text-center">
-          {done.size} touchpoint{done.size === 1 ? '' : 's'} completed this
-          session
+          {done.size} touchpoint{done.size === 1 ? '' : 's'} completed this session
         </p>
       )}
     </div>

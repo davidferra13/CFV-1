@@ -180,7 +180,7 @@ export function MealPrepMenuManager() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setEditingItem(item)}
-                    className="text-sm text-blue-600 hover:underline"
+                    className="text-sm text-brand-600 hover:underline"
                   >
                     Edit
                   </button>

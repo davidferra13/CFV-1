@@ -146,7 +146,7 @@ export default async function ReconciliationPage() {
                                 ? 'bg-red-500/10 text-red-400'
                                 : flag.severity === 'warning'
                                   ? 'bg-amber-500/10 text-amber-400'
-                                  : 'bg-blue-500/10 text-blue-400'
+                                  : 'bg-brand-500/10 text-brand-400'
                             }`}
                           >
                             {flag.message}

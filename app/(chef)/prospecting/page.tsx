@@ -105,7 +105,7 @@ export default async function ProspectingPage({
         <StatCard
           label="New / Queued"
           value={stats.new + stats.queued}
-          icon={<Search className="h-5 w-5 text-blue-400" />}
+          icon={<Search className="h-5 w-5 text-brand-400" />}
         />
         <StatCard
           label="Follow-ups Due"
@@ -253,7 +253,7 @@ export default async function ProspectingPage({
             <div className="rounded-lg bg-amber-950 border border-amber-200 p-4">
               <h4 className="font-medium text-amber-900 text-sm mb-2">How the Pipeline Works</h4>
               <div className="flex flex-wrap items-center gap-2 text-xs text-amber-800">
-                <span className="rounded-full bg-blue-900 px-2.5 py-1 font-medium">New</span>
+                <span className="rounded-full bg-brand-900 px-2.5 py-1 font-medium">New</span>
                 <ArrowRight className="h-3 w-3" />
                 <span className="rounded-full bg-amber-900 px-2.5 py-1 font-medium">Queued</span>
                 <ArrowRight className="h-3 w-3" />
@@ -272,9 +272,9 @@ export default async function ProspectingPage({
               </p>
             </div>
 
-            <div className="rounded-lg bg-blue-950 border border-blue-200 p-4">
-              <h4 className="font-medium text-blue-900 text-sm mb-2">Requires Ollama</h4>
-              <p className="text-xs text-blue-700">
+            <div className="rounded-lg bg-brand-950 border border-brand-200 p-4">
+              <h4 className="font-medium text-brand-900 text-sm mb-2">Requires Ollama</h4>
+              <p className="text-xs text-brand-700">
                 AI Scrub uses your local Ollama installation to research prospects. Make sure Ollama
                 is running before starting a scrub. Your data never leaves your machine.
               </p>

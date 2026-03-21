@@ -316,7 +316,7 @@ export function DeviceList({ initialDevices }: DeviceListProps) {
                               type="button"
                               onClick={() => handleRegenerate(device.id)}
                               disabled={isLoading}
-                              className="rounded px-2 py-1 text-xs font-medium text-blue-400 transition-colors hover:bg-blue-950 disabled:opacity-50"
+                              className="rounded px-2 py-1 text-xs font-medium text-brand-400 transition-colors hover:bg-brand-950 disabled:opacity-50"
                             >
                               Show Code
                             </button>

@@ -8,6 +8,7 @@ import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { PerformanceTelemetry } from '@/components/analytics/performance-telemetry'
 import { ColorPaletteProvider, PaletteScript } from '@/components/ui/color-palette-provider'
 import { GlobalTooltipProvider } from '@/components/ui/global-tooltip-provider'
+import { AppThemeProvider } from '@/components/ui/app-theme-provider'
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -107,28 +108,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PaletteScript />
       </head>
       <body className="font-sans">
-        {/* Skip to main content link - WCAG 2.1 Level AAA requirement */}
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-50 focus:bg-stone-950 focus:text-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
-        >
-          Skip to main content
-        </a>
+        <AppThemeProvider>
+          {/* Skip to main content link - WCAG 2.1 Level AAA requirement */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-50 focus:bg-brand-700 focus:text-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
+          >
+            Skip to main content
+          </a>
 
-        <IconProvider>
-          <ColorPaletteProvider>
-            <PostHogProvider>
-              <GlobalTooltipProvider>
-                <Suspense fallback={null}>
-                  <PerformanceTelemetry />
-                </Suspense>
-                {children}
-              </GlobalTooltipProvider>
-            </PostHogProvider>
-          </ColorPaletteProvider>
-        </IconProvider>
-        <CookieConsent />
-        <SwRegister />
+          <IconProvider>
+            <ColorPaletteProvider>
+              <PostHogProvider>
+                <GlobalTooltipProvider>
+                  <Suspense fallback={null}>
+                    <PerformanceTelemetry />
+                  </Suspense>
+                  {children}
+                </GlobalTooltipProvider>
+              </PostHogProvider>
+            </ColorPaletteProvider>
+          </IconProvider>
+          <CookieConsent />
+          <SwRegister />
+        </AppThemeProvider>
       </body>
     </html>
   )

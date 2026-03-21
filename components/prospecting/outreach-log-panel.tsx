@@ -20,12 +20,13 @@ import {
 } from '@/components/ui/icons'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 const OUTREACH_ICONS: Record<string, React.ReactNode> = {
   email: <Mail className="h-3.5 w-3.5 text-purple-400" />,
   call: <Phone className="h-3.5 w-3.5 text-green-400" />,
-  follow_up_email: <MailPlus className="h-3.5 w-3.5 text-indigo-400" />,
-  response_received: <Inbox className="h-3.5 w-3.5 text-cyan-400" />,
+  follow_up_email: <MailPlus className="h-3.5 w-3.5 text-brand-400" />,
+  response_received: <Inbox className="h-3.5 w-3.5 text-brand-400" />,
   meeting_scheduled: <CalendarCheck className="h-3.5 w-3.5 text-amber-400" />,
   note: <MessageSquare className="h-3.5 w-3.5 text-stone-400" />,
 }
@@ -69,7 +70,7 @@ export function OutreachLogPanel({ prospectId, log }: OutreachLogPanelProps) {
         setOutreachType('email')
         router.refresh()
       } catch {
-        // silently fail - user can retry
+        toast.error('Failed to log outreach activity')
       }
     })
   }

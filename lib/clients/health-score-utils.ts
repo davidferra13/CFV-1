@@ -16,5 +16,5 @@ export const TIER_COLORS: Record<ClientHealthTier, string> = {
   loyal: 'bg-brand-100 text-brand-800',
   at_risk: 'bg-amber-100 text-amber-800',
   dormant: 'bg-stone-800 text-stone-400',
-  new: 'bg-blue-100 text-blue-800',
+  new: 'bg-brand-100 text-brand-800',
 }

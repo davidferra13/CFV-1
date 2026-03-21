@@ -359,7 +359,7 @@ export function OllamaStatusBadge() {
                       icon={<Wifi className="h-3 w-3" />}
                       loading={!!actionLoading[pingKey]}
                       onClick={() => runAction('ping', ep.name)}
-                      color="blue"
+                      color="brand"
                     />
                     {ep.online && !ep.modelReady && (
                       <ActionButton
@@ -375,7 +375,7 @@ export function OllamaStatusBadge() {
                       icon={<Stethoscope className="h-3 w-3" />}
                       loading={!!actionLoading[diagnoseKey]}
                       onClick={() => runAction('diagnose', ep.name)}
-                      color="blue"
+                      color="brand"
                     />
                   </div>
 
@@ -411,12 +411,13 @@ function ActionButton({
   icon: React.ReactNode
   loading: boolean
   onClick: () => void
-  color: 'emerald' | 'amber' | 'blue' | 'purple' | 'red'
+  color: 'emerald' | 'amber' | 'blue' | 'brand' | 'purple' | 'red'
 }) {
   const colors = {
     emerald: 'bg-emerald-950 border-emerald-800 text-emerald-400 hover:bg-emerald-900',
     amber: 'bg-amber-950 border-amber-800 text-amber-400 hover:bg-amber-900',
-    blue: 'bg-blue-950 border-blue-800 text-blue-400 hover:bg-blue-900',
+    blue: 'bg-brand-950 border-brand-800 text-brand-400 hover:bg-brand-900',
+    brand: 'bg-brand-950 border-brand-800 text-brand-400 hover:bg-brand-900',
     purple: 'bg-purple-950 border-purple-800 text-purple-400 hover:bg-purple-900',
     red: 'bg-red-950 border-red-800 text-red-400 hover:bg-red-900',
   }

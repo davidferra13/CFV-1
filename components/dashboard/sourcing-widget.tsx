@@ -10,7 +10,7 @@ import {
 
 const GRADE_BG: Record<string, string> = {
   A: 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400',
-  B: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400',
+  B: 'bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400',
   C: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400',
   D: 'bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400',
   F: 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400',
@@ -45,9 +45,7 @@ export function SourcingWidget() {
   }
 
   if (isPending || !scorecard) {
-    return (
-      <div className="h-28 animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" />
-    )
+    return <div className="h-28 animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" />
   }
 
   if (totalEntries === 0) {
@@ -56,9 +54,7 @@ export function SourcingWidget() {
         href="/culinary/sourcing"
         className="block rounded-lg border border-dashed border-zinc-300 bg-white p-4 text-center transition hover:border-green-400 dark:border-zinc-600 dark:bg-zinc-800"
       >
-        <div className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-          Quality Sourcing
-        </div>
+        <div className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Quality Sourcing</div>
         <div className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
           Start tracking where your ingredients come from
         </div>
@@ -80,9 +76,7 @@ export function SourcingWidget() {
             <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {localPercent}% Local
             </span>
-            <span className="text-xs text-zinc-500">
-              {totalEntries} entries
-            </span>
+            <span className="text-xs text-zinc-500">{totalEntries} entries</span>
           </div>
         </div>
         <div

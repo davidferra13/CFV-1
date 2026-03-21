@@ -23,7 +23,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_STYLES: Record<string, string> = {
   new: 'bg-amber-900 text-amber-700',
-  awaiting_client: 'bg-sky-900 text-sky-700',
+  awaiting_client: 'bg-brand-900 text-brand-700',
   awaiting_chef: 'bg-green-900 text-green-700',
 }
 

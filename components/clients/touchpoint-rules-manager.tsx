@@ -99,11 +99,7 @@ export default function TouchpointRulesManager({
   function handleToggle(rule: TouchpointRule) {
     setError(null)
     const previousRules = [...rules]
-    setRules(
-      rules.map((r) =>
-        r.id === rule.id ? { ...r, is_active: !r.is_active } : r,
-      ),
-    )
+    setRules(rules.map((r) => (r.id === rule.id ? { ...r, is_active: !r.is_active } : r)))
 
     startTransition(async () => {
       try {
@@ -139,9 +135,7 @@ export default function TouchpointRulesManager({
     <div className="rounded-lg border border-gray-200 bg-white p-4">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
-            Touchpoint Rules
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900">Touchpoint Rules</h3>
           <p className="text-sm text-gray-500">
             Configure when to surface client touchpoint reminders
           </p>
@@ -151,29 +145,21 @@ export default function TouchpointRulesManager({
             resetForm()
             setShowForm(!showForm)
           }}
-          className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700"
         >
           {showForm ? 'Cancel' : '+ Add Rule'}
         </button>
       </div>
 
-      {error && (
-        <div className="mb-3 rounded-md bg-red-50 p-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-3 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       {showForm && (
         <div className="mb-4 rounded-md border border-gray-200 bg-gray-50 p-4 space-y-3">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Rule Type
-            </label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Rule Type</label>
             <select
               value={ruleType}
-              onChange={(e) =>
-                setRuleType(e.target.value as TouchpointRuleType)
-              }
+              onChange={(e) => setRuleType(e.target.value as TouchpointRuleType)}
               className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
             >
               {Object.entries(RULE_TYPE_LABELS).map(([key, label]) => (
@@ -182,9 +168,7 @@ export default function TouchpointRulesManager({
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-gray-400">
-              {RULE_TYPE_DESCRIPTIONS[ruleType]}
-            </p>
+            <p className="mt-1 text-xs text-gray-400">{RULE_TYPE_DESCRIPTIONS[ruleType]}</p>
           </div>
 
           {ruleType !== 'custom' && (
@@ -213,9 +197,7 @@ export default function TouchpointRulesManager({
           )}
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Suggested Action
-            </label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Suggested Action</label>
             <textarea
               value={actionSuggestion}
               onChange={(e) => setActionSuggestion(e.target.value)}
@@ -228,21 +210,16 @@ export default function TouchpointRulesManager({
           <button
             onClick={handleSave}
             disabled={isPending}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
           >
-            {isPending
-              ? 'Saving...'
-              : editingId
-                ? 'Update Rule'
-                : 'Create Rule'}
+            {isPending ? 'Saving...' : editingId ? 'Update Rule' : 'Create Rule'}
           </button>
         </div>
       )}
 
       {activeRules.length === 0 && inactiveRules.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-6">
-          No touchpoint rules configured yet. Add one above to start getting
-          client reminders.
+          No touchpoint rules configured yet. Add one above to start getting client reminders.
         </p>
       ) : (
         <>
@@ -259,7 +236,7 @@ export default function TouchpointRulesManager({
                         {RULE_TYPE_LABELS[rule.rule_type] || rule.rule_type}
                       </span>
                       {rule.trigger_value && (
-                        <span className="rounded-full bg-blue-100 text-blue-700 px-2 py-0.5 text-xs font-medium">
+                        <span className="rounded-full bg-brand-100 text-brand-700 px-2 py-0.5 text-xs font-medium">
                           {rule.trigger_value}
                         </span>
                       )}
@@ -275,7 +252,7 @@ export default function TouchpointRulesManager({
                       onClick={() => handleToggle(rule)}
                       disabled={isPending}
                       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-                        rule.is_active ? 'bg-indigo-600' : 'bg-gray-200'
+                        rule.is_active ? 'bg-brand-600' : 'bg-gray-200'
                       }`}
                       title={rule.is_active ? 'Disable' : 'Enable'}
                     >
@@ -307,9 +284,7 @@ export default function TouchpointRulesManager({
 
           {inactiveRules.length > 0 && (
             <div className="mt-4">
-              <p className="text-xs font-medium text-gray-400 uppercase mb-2">
-                Inactive Rules
-              </p>
+              <p className="text-xs font-medium text-gray-400 uppercase mb-2">Inactive Rules</p>
               <div className="space-y-2">
                 {inactiveRules.map((rule) => (
                   <div
@@ -324,7 +299,7 @@ export default function TouchpointRulesManager({
                     <button
                       onClick={() => handleToggle(rule)}
                       disabled={isPending}
-                      className="text-xs text-indigo-500 hover:text-indigo-700"
+                      className="text-xs text-brand-500 hover:text-brand-700"
                     >
                       Re-activate
                     </button>

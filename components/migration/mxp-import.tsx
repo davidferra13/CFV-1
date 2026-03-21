@@ -42,9 +42,7 @@ export default function MXPImport() {
             )
           }
         } catch (err) {
-          setError(
-            err instanceof Error ? err.message : 'Failed to parse MXP file.'
-          )
+          setError(err instanceof Error ? err.message : 'Failed to parse MXP file.')
         }
       })
     }
@@ -109,9 +107,7 @@ export default function MXPImport() {
           method: recipe.instructions || 'Imported from MasterCook',
           notes: [
             recipe.servings ? `Servings: ${recipe.servings}` : '',
-            recipe.ingredients.length > 0
-              ? `Ingredients:\n${recipe.ingredients.join('\n')}`
-              : '',
+            recipe.ingredients.length > 0 ? `Ingredients:\n${recipe.ingredients.join('\n')}` : '',
             recipe.notes || '',
           ]
             .filter(Boolean)
@@ -121,9 +117,7 @@ export default function MXPImport() {
         const importResult = await importRecipes(mappedRows)
         setResult(importResult)
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Import failed.'
-        )
+        setError(err instanceof Error ? err.message : 'Import failed.')
       }
     })
   }
@@ -154,21 +148,14 @@ export default function MXPImport() {
           }}
           onDragLeave={() => setDragOver(false)}
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-            dragOver
-              ? 'border-blue-400 bg-blue-50'
-              : 'border-gray-300'
+            dragOver ? 'border-brand-400 bg-brand-50' : 'border-gray-300'
           }`}
         >
           <div className="space-y-2">
             <p className="text-sm text-gray-600">
               Drag and drop a MasterCook .mxp file here, or click to browse
             </p>
-            <input
-              type="file"
-              accept=".mxp,.txt"
-              onChange={handleFileInput}
-              className="text-sm"
-            />
+            <input type="file" accept=".mxp,.txt" onChange={handleFileInput} className="text-sm" />
           </div>
         </div>
       )}
@@ -181,10 +168,7 @@ export default function MXPImport() {
               Found <strong>{recipes.length}</strong> recipes in{' '}
               <span className="font-mono text-xs">{fileName}</span>
             </p>
-            <button
-              onClick={toggleAll}
-              className="text-xs text-blue-600 hover:underline"
-            >
+            <button onClick={toggleAll} className="text-xs text-brand-600 hover:underline">
               {selected.size === recipes.length ? 'Deselect All' : 'Select All'}
             </button>
           </div>
@@ -194,9 +178,7 @@ export default function MXPImport() {
               <label
                 key={idx}
                 className={`flex items-start gap-3 rounded border p-3 cursor-pointer transition-colors ${
-                  selected.has(idx)
-                    ? 'border-blue-300 bg-blue-50'
-                    : 'border-gray-200'
+                  selected.has(idx) ? 'border-brand-300 bg-brand-50' : 'border-gray-200'
                 }`}
               >
                 <input
@@ -215,9 +197,7 @@ export default function MXPImport() {
                     )}
                     {recipe.servings && <span>Serves {recipe.servings}</span>}
                     {recipe.ingredients.length > 0 && (
-                      <span className="ml-2">
-                        {recipe.ingredients.length} ingredients
-                      </span>
+                      <span className="ml-2">{recipe.ingredients.length} ingredients</span>
                     )}
                   </div>
                 </div>
@@ -249,26 +229,18 @@ export default function MXPImport() {
       {result && (
         <div className="space-y-4">
           <div className="rounded-md bg-green-50 border border-green-200 p-4">
-            <h3 className="font-medium text-green-800 mb-2">
-              MXP Import Complete
-            </h3>
+            <h3 className="font-medium text-green-800 mb-2">MXP Import Complete</h3>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-green-700">
-                  {result.imported}
-                </div>
+                <div className="text-2xl font-bold text-green-700">{result.imported}</div>
                 <div className="text-xs text-green-600">Imported</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-amber-600">
-                  {result.skipped}
-                </div>
+                <div className="text-2xl font-bold text-amber-600">{result.skipped}</div>
                 <div className="text-xs text-amber-500">Skipped</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-red-600">
-                  {result.errors.length}
-                </div>
+                <div className="text-2xl font-bold text-red-600">{result.errors.length}</div>
                 <div className="text-xs text-red-500">Errors</div>
               </div>
             </div>
@@ -288,7 +260,7 @@ export default function MXPImport() {
           <div className="flex justify-end">
             <button
               onClick={reset}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
             >
               Import More
             </button>

@@ -22,9 +22,13 @@ import { Button } from '@/components/ui/button'
 const AISLE_CONFIG: Record<AisleSection, { label: string; color: string; bg: string }> = {
   produce: { label: 'Produce', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
   meat_seafood: { label: 'Meat & Seafood', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
-  dairy_eggs: { label: 'Dairy & Eggs', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+  dairy_eggs: {
+    label: 'Dairy & Eggs',
+    color: 'text-brand-700',
+    bg: 'bg-brand-50 border-brand-200',
+  },
   bakery: { label: 'Bakery', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
-  frozen: { label: 'Frozen', color: 'text-cyan-700', bg: 'bg-cyan-50 border-cyan-200' },
+  frozen: { label: 'Frozen', color: 'text-brand-700', bg: 'bg-brand-50 border-brand-200' },
   pantry_dry: {
     label: 'Pantry / Dry Goods',
     color: 'text-orange-700',

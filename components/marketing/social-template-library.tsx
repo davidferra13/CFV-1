@@ -35,13 +35,13 @@ function platformColor(p: SocialPlatform): string {
     case 'instagram':
       return 'bg-pink-100 text-pink-800 border-pink-200'
     case 'facebook':
-      return 'bg-blue-100 text-blue-800 border-blue-200'
+      return 'bg-brand-100 text-brand-800 border-brand-200'
     case 'tiktok':
       return 'bg-gray-100 text-gray-800 border-gray-200'
     case 'twitter':
-      return 'bg-sky-100 text-sky-800 border-sky-200'
+      return 'bg-brand-100 text-brand-800 border-brand-200'
     case 'linkedin':
-      return 'bg-indigo-100 text-indigo-800 border-indigo-200'
+      return 'bg-brand-100 text-brand-800 border-brand-200'
   }
 }
 
@@ -303,7 +303,7 @@ export function SocialTemplateLibrary() {
                   {template.hashtags.slice(0, 4).map((tag, i) => (
                     <span
                       key={i}
-                      className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"
+                      className="text-xs text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded"
                     >
                       {tag}
                     </span>

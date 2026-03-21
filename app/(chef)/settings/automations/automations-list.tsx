@@ -151,7 +151,7 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
                     <p className="text-xs text-stone-500 mb-1">{rule.description}</p>
                   )}
                   <div className="flex flex-wrap gap-1 text-[10px]">
-                    <span className="bg-blue-950 text-blue-700 px-1.5 py-0.5 rounded">
+                    <span className="bg-brand-950 text-brand-700 px-1.5 py-0.5 rounded">
                       When:{' '}
                       {TRIGGER_LABELS[rule.trigger_event as TriggerEvent] || rule.trigger_event}
                     </span>

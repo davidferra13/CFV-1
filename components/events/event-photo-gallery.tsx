@@ -32,11 +32,11 @@ const PHOTO_TYPE_LABELS: Record<string, string> = {
 
 const PHOTO_TYPE_COLORS: Record<string, string> = {
   plating: 'bg-amber-600/80',
-  setup: 'bg-blue-600/80',
+  setup: 'bg-brand-600/80',
   process: 'bg-purple-600/80',
   ingredients: 'bg-green-600/80',
   ambiance: 'bg-pink-600/80',
-  team: 'bg-cyan-600/80',
+  team: 'bg-brand-600/80',
   other: 'bg-stone-600/80',
 }
 

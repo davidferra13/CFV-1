@@ -58,8 +58,8 @@ export default async function AdminChefListPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-blue-950 rounded-lg">
-          <Users size={18} className="text-blue-600" />
+        <div className="p-2 bg-brand-950 rounded-lg">
+          <Users size={18} className="text-brand-600" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Chefs</h1>
@@ -149,7 +149,7 @@ export default async function AdminChefListPage() {
                     <td className="px-4 py-3">
                       <Link
                         href={`/admin/users/${chef.id}`}
-                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                        className="text-xs text-brand-600 hover:text-brand-800 font-medium"
                       >
                         View →
                       </Link>

@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: 'Guests | ChefFlow' }
 
 const TAG_STYLES: Record<string, string> = {
   gold: 'bg-amber-950 text-amber-400 ring-1 ring-inset ring-amber-800',
-  blue: 'bg-sky-950 text-sky-400 ring-1 ring-inset ring-sky-800',
+  brand: 'bg-brand-950 text-brand-400 ring-1 ring-inset ring-brand-800',
   green: 'bg-emerald-950 text-emerald-400 ring-1 ring-inset ring-emerald-800',
   red: 'bg-red-950 text-red-400 ring-1 ring-inset ring-red-800',
   purple: 'bg-purple-950 text-purple-400 ring-1 ring-inset ring-purple-800',
@@ -98,7 +98,7 @@ export default async function GuestsPage({ searchParams }: { searchParams: { q?:
                           <span
                             key={t.tag}
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                              TAG_STYLES[t.color || ''] || TAG_STYLES.blue
+                              TAG_STYLES[t.color || ''] || TAG_STYLES.brand
                             }`}
                           >
                             {t.tag}

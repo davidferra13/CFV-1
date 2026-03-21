@@ -21,8 +21,8 @@ export interface ListCardItem {
   label: string
   sublabel?: string
   href?: string
-  /** Dot color: red, amber, green, blue, stone (default) */
-  status?: 'red' | 'amber' | 'green' | 'blue' | 'stone'
+  /** Dot color: red, amber, green, brand, stone (default) */
+  status?: 'red' | 'amber' | 'green' | 'blue' | 'brand' | 'stone'
 }
 
 export interface ListCardProps {
@@ -46,7 +46,8 @@ const STATUS_COLORS: Record<string, string> = {
   red: 'bg-red-400',
   amber: 'bg-amber-400',
   green: 'bg-green-400',
-  blue: 'bg-blue-400',
+  blue: 'bg-brand-400',
+  brand: 'bg-brand-400',
   stone: 'bg-stone-600',
 }
 

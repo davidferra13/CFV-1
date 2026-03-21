@@ -69,12 +69,12 @@ const CATEGORY_EMOJI: Record<string, string> = {
 const WORD_CATEGORY_COLORS: Record<string, string> = {
   texture: 'bg-amber-900 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
   flavor: 'bg-red-900 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-  temperature: 'bg-blue-900 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  temperature: 'bg-brand-900 text-brand-800 dark:bg-brand-900/30 dark:text-brand-300',
   mouthfeel: 'bg-purple-900 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
   aroma: 'bg-green-900 text-green-800 dark:bg-green-900/30 dark:text-green-300',
   technique: 'bg-stone-800 text-stone-200 dark:bg-stone-900/30 dark:text-stone-300',
   visual: 'bg-pink-900 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
-  composition: 'bg-indigo-900 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+  composition: 'bg-brand-900 text-brand-800 dark:bg-brand-900/30 dark:text-brand-300',
   emotion: 'bg-rose-900 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
   sauce: 'bg-orange-900 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
   action: 'bg-teal-900 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
@@ -103,28 +103,24 @@ function Panel({
   empty?: string
   emptyLink?: string
   emptyLinkLabel?: string
-  accent?: 'brand' | 'green' | 'blue' | 'purple' | 'rose' | 'amber' | 'indigo'
+  accent?: 'brand' | 'green' | 'purple' | 'rose' | 'amber'
 }) {
   const [open, setOpen] = useState(defaultOpen)
 
   const accentClasses: Record<string, string> = {
     brand: 'border-brand-500/30 bg-brand-500/5',
     green: 'border-green-500/30 bg-green-500/5',
-    blue: 'border-blue-500/30 bg-blue-500/5',
     purple: 'border-purple-500/30 bg-purple-500/5',
     rose: 'border-rose-500/30 bg-rose-500/5',
     amber: 'border-amber-500/30 bg-amber-500/5',
-    indigo: 'border-indigo-500/30 bg-indigo-500/5',
   }
 
   const iconAccent: Record<string, string> = {
     brand: 'text-brand-500',
     green: 'text-green-600',
-    blue: 'text-blue-600',
     purple: 'text-purple-600',
     rose: 'text-rose-600',
     amber: 'text-amber-600',
-    indigo: 'text-indigo-600',
   }
 
   const showEmpty = empty && (!children || (Array.isArray(children) && children.length === 0))
@@ -567,7 +563,7 @@ export default function MenuMusePage() {
 
         {/* Panel 4: Client Intelligence (event-contextual) */}
         {data.clientContext && (
-          <Panel title={`Client: ${data.clientContext.client_name}`} icon={ChefHat} accent="blue">
+          <Panel title={`Client: ${data.clientContext.client_name}`} icon={ChefHat} accent="brand">
             <div className="space-y-4">
               {/* Safety: allergies first */}
               {data.clientContext.allergies.length > 0 && (
@@ -629,7 +625,7 @@ export default function MenuMusePage() {
                     {data.clientContext.favorite_cuisines.map((c, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-700"
+                        className="rounded-full bg-brand-500/10 px-2.5 py-0.5 text-xs font-medium text-brand-700"
                       >
                         {c}
                       </span>
@@ -808,7 +804,7 @@ export default function MenuMusePage() {
         <Panel
           title="Menu Patterns & Templates"
           icon={LayoutGrid}
-          accent="indigo"
+          accent="brand"
           empty={!hasMenus ? 'No menus created yet.' : undefined}
           emptyLink="/menus/new"
           emptyLinkLabel="Create your first menu"

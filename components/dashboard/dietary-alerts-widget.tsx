@@ -79,7 +79,7 @@ export function DietaryAlertsWidget() {
           <div className="flex gap-3 mb-3 text-xs text-stone-500">
             {stats.critical > 0 && <span className="text-red-600">{stats.critical} critical</span>}
             {stats.warning > 0 && <span className="text-amber-600">{stats.warning} warning</span>}
-            {stats.info > 0 && <span className="text-blue-600">{stats.info} info</span>}
+            {stats.info > 0 && <span className="text-brand-600">{stats.info} info</span>}
           </div>
 
           {/* Latest critical alerts */}

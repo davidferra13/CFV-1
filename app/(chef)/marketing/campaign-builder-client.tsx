@@ -183,7 +183,7 @@ export function CampaignBuilderClient() {
               icon="✉"
               count={emailCount}
               label="will receive this by email automatically"
-              color="text-blue-600"
+              color="text-brand-600"
             />
           )}
           {smsCount > 0 && (

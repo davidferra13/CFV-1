@@ -14,8 +14,8 @@ import {
 
 const STAGE_COLORS: Record<string, string> = {
   draft: 'bg-stone-600',
-  proposed: 'bg-blue-600',
-  accepted: 'bg-blue-500',
+  proposed: 'bg-brand-600',
+  accepted: 'bg-brand-500',
   paid: 'bg-brand-600',
   confirmed: 'bg-brand-500',
   in_progress: 'bg-emerald-600',
@@ -152,8 +152,8 @@ export function BookingConversionFunnel() {
 
         <Card>
           <CardContent className="flex items-center gap-3 py-4">
-            <div className="w-10 h-10 rounded-lg bg-blue-950 flex items-center justify-center">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
+            <div className="w-10 h-10 rounded-lg bg-brand-950 flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-brand-500" />
             </div>
             <div>
               <p className="text-xs text-stone-500">Completed</p>

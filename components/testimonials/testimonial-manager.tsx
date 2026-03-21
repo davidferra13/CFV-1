@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { setTestimonialApproval, setTestimonialFeatured } from '@/lib/testimonials/actions'
+import { toast } from 'sonner'
 
 type Testimonial = {
   id: string
@@ -67,27 +68,27 @@ export function TestimonialManager({ initialTestimonials, events }: Props) {
   }
 
   function handleApproval(id: string, approved: boolean) {
+    const previous = testimonials
+    setTestimonials((prev) => prev.map((t) => (t.id === id ? { ...t, is_approved: approved } : t)))
     startTransition(async () => {
       try {
         await setTestimonialApproval(id, approved)
-        setTestimonials((prev) =>
-          prev.map((t) => (t.id === id ? { ...t, is_approved: approved } : t))
-        )
       } catch {
-        // silently fail - user can retry
+        setTestimonials(previous)
+        toast.error(`Failed to ${approved ? 'approve' : 'unapprove'} testimonial`)
       }
     })
   }
 
   function handleFeatured(id: string, featured: boolean) {
+    const previous = testimonials
+    setTestimonials((prev) => prev.map((t) => (t.id === id ? { ...t, is_featured: featured } : t)))
     startTransition(async () => {
       try {
         await setTestimonialFeatured(id, featured)
-        setTestimonials((prev) =>
-          prev.map((t) => (t.id === id ? { ...t, is_featured: featured } : t))
-        )
       } catch {
-        // silently fail
+        setTestimonials(previous)
+        toast.error(`Failed to ${featured ? 'feature' : 'unfeature'} testimonial`)
       }
     })
   }

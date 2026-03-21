@@ -31,9 +31,9 @@ export default async function SeasonalNotesPage() {
         </p>
       </div>
 
-      <Card className="p-4 bg-sky-950 border-sky-200">
-        <p className="text-sm font-medium text-sky-800">Seasonal notes in ChefFlow</p>
-        <p className="text-sm text-sky-700 mt-1">
+      <Card className="p-4 bg-brand-950 border-brand-200">
+        <p className="text-sm font-medium text-brand-800">Seasonal notes in ChefFlow</p>
+        <p className="text-sm text-brand-700 mt-1">
           Seasonal guidance lives in each recipe&apos;s <strong>Notes</strong> and{' '}
           <strong>Adaptations</strong> fields. Edit any recipe to add seasonal variations,
           peak-season ingredient swaps, or weather-dependent techniques.

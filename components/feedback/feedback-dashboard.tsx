@@ -184,7 +184,7 @@ export function FeedbackDashboard() {
             <div className="mt-1 text-xs text-gray-500">NPS Score</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">{stats.responseRate}%</div>
+            <div className="text-3xl font-bold text-brand-600">{stats.responseRate}%</div>
             <div className="mt-1 text-xs text-gray-500">Response Rate</div>
           </div>
           <div className="text-center">

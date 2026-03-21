@@ -37,7 +37,7 @@ function ConfidenceBadge({ score }: { score: number | null }) {
 function StatusBadge({ status }: { status: AllReceiptPhoto['uploadStatus'] }) {
   const map: Record<string, string> = {
     approved: 'bg-green-900 text-green-700',
-    extracted: 'bg-sky-900 text-sky-700',
+    extracted: 'bg-brand-900 text-brand-700',
     needs_review: 'bg-orange-900 text-orange-400',
     processing: 'bg-amber-900 text-amber-700',
     pending: 'bg-stone-800 text-stone-500',

@@ -27,7 +27,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_BADGE_COLORS: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-300',
-  proposed: 'bg-blue-900 text-blue-700',
+  proposed: 'bg-brand-900 text-brand-700',
   accepted: 'bg-yellow-900 text-yellow-700',
   paid: 'bg-emerald-900 text-emerald-700',
   confirmed: 'bg-brand-900 text-brand-400',

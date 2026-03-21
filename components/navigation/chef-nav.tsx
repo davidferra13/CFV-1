@@ -26,6 +26,7 @@ import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
 import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import {
   getStrictFocusGroupRank,
   isStrictFocusGroupVisible,
@@ -802,6 +803,7 @@ export function ChefSidebar({
                 <Bot className="w-[18px] h-[18px]" />
               </button>
             )}
+            <ThemeToggle className="h-8 w-8 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0 text-stone-400 hover:bg-stone-800 hover:text-stone-100" />
             <NotificationBell />
             <button
               type="button"
@@ -835,6 +837,7 @@ export function ChefSidebar({
             {/* Notification bell */}
             <NotificationBell collapsed />
             <GlobalSearch userId={userId} tenantId={tenantId} />
+            <ThemeToggle className="h-10 w-10 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0 text-stone-400 hover:bg-stone-800 hover:text-stone-100" />
             {isAdmin && (
               <button
                 type="button"
@@ -900,7 +903,7 @@ export function ChefSidebar({
               aria-label="Community"
               className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
                 pathname.startsWith('/network')
-                  ? 'text-indigo-400'
+                  ? 'text-brand-400'
                   : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
               }`}
               style={
@@ -1092,10 +1095,10 @@ export function ChefSidebar({
                 onToggle={() => setCommunitySectionOpen((prev) => !prev)}
                 pathname={pathname}
                 searchParams={searchParams}
-                headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
-                headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
-                dividerClass="border-indigo-800/30"
-                itemActiveClass="text-indigo-400"
+                headerActiveClass={communitySectionActive ? 'text-brand-400' : 'text-brand-400'}
+                headerInactiveClass="text-brand-400 hover:bg-brand-950/20 hover:text-brand-300"
+                dividerClass="border-brand-800/30"
+                itemActiveClass="text-brand-400"
                 itemInactiveClass="text-stone-500 hover:text-stone-300"
                 activeBgStyle={{ background: 'rgba(79, 70, 229, 0.08)' }}
                 iconActiveColor="#818cf8"

@@ -45,7 +45,7 @@ const STATUS_VARIANTS: Record<
 
 const REACTION_COLORS: Record<string, string> = {
   loved: 'text-emerald-400',
-  liked: 'text-sky-400',
+  liked: 'text-brand-400',
   neutral: 'text-stone-400',
   disliked: 'text-red-400',
 }

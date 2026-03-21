@@ -59,7 +59,7 @@ export function CampaignPerformance({ campaigns }: CampaignPerformanceProps) {
           value={totalSent.toLocaleString()}
         />
         <SummaryCard
-          icon={<Mail className="h-5 w-5 text-blue-500" />}
+          icon={<Mail className="h-5 w-5 text-brand-500" />}
           label="Avg Open Rate"
           value={`${avgOpenRate}%`}
         />

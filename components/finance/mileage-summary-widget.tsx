@@ -48,7 +48,7 @@ export function MileageSummaryWidget({ summary }: Props) {
   return (
     <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-4">
       <div className="flex items-center gap-2 mb-3">
-        <Car className="h-4 w-4 text-blue-400" />
+        <Car className="h-4 w-4 text-brand-400" />
         <span className="text-xs font-semibold text-stone-300 uppercase tracking-wider">
           Mileage
         </span>

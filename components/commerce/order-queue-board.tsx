@@ -16,7 +16,7 @@ type Props = {
 }
 
 const COLUMNS: { status: OrderQueueStatus; label: string; color: string }[] = [
-  { status: 'received', label: 'Received', color: 'border-blue-600' },
+  { status: 'received', label: 'Received', color: 'border-brand-600' },
   { status: 'preparing', label: 'Preparing', color: 'border-amber-600' },
   { status: 'ready', label: 'Ready', color: 'border-emerald-600' },
 ]

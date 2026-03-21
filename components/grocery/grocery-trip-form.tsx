@@ -16,17 +16,17 @@ import {
 } from '@/lib/grocery/grocery-splitting-actions'
 
 const CATEGORIES = [
-  { value: 'produce',  label: 'Produce',  color: 'bg-green-100 text-green-800' },
-  { value: 'protein',  label: 'Protein',  color: 'bg-red-100 text-red-800' },
-  { value: 'dairy',    label: 'Dairy',    color: 'bg-blue-100 text-blue-800' },
-  { value: 'pantry',   label: 'Pantry',   color: 'bg-amber-100 text-amber-800' },
-  { value: 'frozen',   label: 'Frozen',   color: 'bg-cyan-100 text-cyan-800' },
-  { value: 'bakery',   label: 'Bakery',   color: 'bg-orange-100 text-orange-800' },
+  { value: 'produce', label: 'Produce', color: 'bg-green-100 text-green-800' },
+  { value: 'protein', label: 'Protein', color: 'bg-red-100 text-red-800' },
+  { value: 'dairy', label: 'Dairy', color: 'bg-brand-100 text-brand-800' },
+  { value: 'pantry', label: 'Pantry', color: 'bg-amber-100 text-amber-800' },
+  { value: 'frozen', label: 'Frozen', color: 'bg-brand-100 text-brand-800' },
+  { value: 'bakery', label: 'Bakery', color: 'bg-orange-100 text-orange-800' },
   { value: 'beverage', label: 'Beverage', color: 'bg-purple-100 text-purple-800' },
-  { value: 'other',    label: 'Other',    color: 'bg-gray-100 text-gray-800' },
+  { value: 'other', label: 'Other', color: 'bg-gray-100 text-gray-800' },
 ] as const
 
-type CategoryValue = typeof CATEGORIES[number]['value']
+type CategoryValue = (typeof CATEGORIES)[number]['value']
 
 type TripItem = {
   id: string
@@ -58,9 +58,7 @@ export function GroceryTripForm({
   const [isPending, startTransition] = useTransition()
 
   const [storeName, setStoreName] = useState(initialStoreName)
-  const [tripDate, setTripDate] = useState(
-    initialDate || new Date().toISOString().split('T')[0]
-  )
+  const [tripDate, setTripDate] = useState(initialDate || new Date().toISOString().split('T')[0])
   const [notes, setNotes] = useState(initialNotes)
   const [items, setItems] = useState<TripItem[]>(initialItems)
   const [tripId, setTripId] = useState<string | null>(existingTripId ?? null)
@@ -153,9 +151,7 @@ export function GroceryTripForm({
 
   return (
     <div className="space-y-6">
-      {error && (
-        <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>
-      )}
+      {error && <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>}
 
       {/* Trip details */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -225,16 +221,24 @@ export function GroceryTripForm({
           />
           <select
             value={newItem.category}
-            onChange={(e) => setNewItem((p) => ({ ...p, category: e.target.value as CategoryValue }))}
+            onChange={(e) =>
+              setNewItem((p) => ({ ...p, category: e.target.value as CategoryValue }))
+            }
             disabled={isPending}
             className="rounded-md border border-gray-300 px-3 py-2 text-sm"
           >
             {CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
             ))}
           </select>
         </div>
-        <Button type="submit" variant="secondary" disabled={isPending || !newItem.name || !newItem.priceDollars}>
+        <Button
+          type="submit"
+          variant="secondary"
+          disabled={isPending || !newItem.name || !newItem.priceDollars}
+        >
           Add Item
         </Button>
       </form>
@@ -257,7 +261,8 @@ export function GroceryTripForm({
                 <tr key={item.id}>
                   <td className="px-4 py-2 text-sm text-gray-900">{item.item_name}</td>
                   <td className="px-4 py-2 text-sm text-gray-600">
-                    {item.quantity}{item.unit ? ` ${item.unit}` : ''}
+                    {item.quantity}
+                    {item.unit ? ` ${item.unit}` : ''}
                   </td>
                   <td className="px-4 py-2">{getCategoryBadge(item.category)}</td>
                   <td className="px-4 py-2 text-sm text-gray-900 text-right">

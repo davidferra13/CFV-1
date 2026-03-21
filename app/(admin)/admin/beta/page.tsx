@@ -44,7 +44,7 @@ export default async function AdminBetaPage() {
         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-amber-900 text-amber-300">
           Pending - {statusCounts['pending'] ?? 0}
         </span>
-        <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-sky-900 text-sky-300">
+        <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-brand-900 text-brand-300">
           Invited - {statusCounts['invited'] ?? 0}
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-emerald-900 text-emerald-300">

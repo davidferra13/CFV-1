@@ -88,7 +88,7 @@ export default async function AdminCommandCenterPage() {
         <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-stone-200">Recent Conversations</h2>
-            <Link href="/admin/conversations" className="text-xs text-blue-600">
+            <Link href="/admin/conversations" className="text-xs text-brand-600">
               View all
             </Link>
           </div>
@@ -117,7 +117,7 @@ export default async function AdminCommandCenterPage() {
         <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-stone-200">Recent Notifications</h2>
-            <Link href="/admin/notifications" className="text-xs text-blue-600">
+            <Link href="/admin/notifications" className="text-xs text-brand-600">
               View all
             </Link>
           </div>

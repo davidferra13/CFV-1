@@ -282,13 +282,13 @@ export function PackageForm({ existingPackage, menus, onSuccess }: PackageFormPr
             {includes.map((item, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800"
+                className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-3 py-1 text-sm text-brand-800"
               >
                 {item}
                 <button
                   type="button"
                   onClick={() => removeInclude(idx)}
-                  className="text-blue-600 hover:text-blue-900 font-bold"
+                  className="text-brand-600 hover:text-brand-900 font-bold"
                 >
                   x
                 </button>

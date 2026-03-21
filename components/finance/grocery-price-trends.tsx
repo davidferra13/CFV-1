@@ -12,9 +12,23 @@ import {
 } from '@/lib/finance/grocery-price-actions'
 
 function TrendArrow({ trend }: { trend: PriceTrend }) {
-  if (trend === 'up') return <span className="text-red-500" title="Price increasing">&#9650;</span>
-  if (trend === 'down') return <span className="text-green-500" title="Price decreasing">&#9660;</span>
-  return <span className="text-gray-400" title="Price stable">&#9644;</span>
+  if (trend === 'up')
+    return (
+      <span className="text-red-500" title="Price increasing">
+        &#9650;
+      </span>
+    )
+  if (trend === 'down')
+    return (
+      <span className="text-green-500" title="Price decreasing">
+        &#9660;
+      </span>
+    )
+  return (
+    <span className="text-gray-400" title="Price stable">
+      &#9644;
+    </span>
+  )
 }
 
 function formatCents(cents: number): string {
@@ -40,7 +54,7 @@ function PriceSparkline({ entries }: { entries: PriceEntry[] }) {
         return (
           <div
             key={i}
-            className={`w-2 rounded-t ${isLatest ? 'bg-blue-500' : 'bg-blue-200'}`}
+            className={`w-2 rounded-t ${isLatest ? 'bg-brand-500' : 'bg-brand-200'}`}
             style={{ height: `${Math.max(height, 10)}%` }}
             title={`${formatCents(Math.round(price))} - ${recent[i].receipt_date}`}
           />
@@ -122,11 +136,7 @@ export function GroceryPriceTrends() {
     <div className="space-y-6">
       <h2 className="text-lg font-semibold">Price Trends</h2>
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       {stats.length === 0 && !isPending && !error && (
         <p className="text-sm text-gray-400">
@@ -137,9 +147,7 @@ export function GroceryPriceTrends() {
       {/* Per-ingredient stats table */}
       {stats.length > 0 && (
         <div className="overflow-x-auto">
-          <h3 className="mb-2 text-sm font-medium text-gray-700">
-            Ingredient Price History
-          </h3>
+          <h3 className="mb-2 text-sm font-medium text-gray-700">Ingredient Price History</h3>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-xs text-gray-500">
@@ -158,28 +166,20 @@ export function GroceryPriceTrends() {
                 <tr
                   key={s.ingredient_name}
                   className={`border-b last:border-0 cursor-pointer hover:bg-gray-50 ${
-                    selectedIngredient === s.ingredient_name ? 'bg-blue-50' : ''
+                    selectedIngredient === s.ingredient_name ? 'bg-brand-50' : ''
                   }`}
                   onClick={() => handleSelectIngredient(s.ingredient_name)}
                 >
-                  <td className="py-2 pr-3 font-medium capitalize">
-                    {s.ingredient_name}
-                  </td>
+                  <td className="py-2 pr-3 font-medium capitalize">{s.ingredient_name}</td>
                   <td className="py-2 pr-3">{formatCents(s.avg_cents)}</td>
-                  <td className="py-2 pr-3 text-green-600">
-                    {formatCents(s.min_cents)}
-                  </td>
-                  <td className="py-2 pr-3 text-red-600">
-                    {formatCents(s.max_cents)}
-                  </td>
+                  <td className="py-2 pr-3 text-green-600">{formatCents(s.min_cents)}</td>
+                  <td className="py-2 pr-3 text-red-600">{formatCents(s.max_cents)}</td>
                   <td className="py-2 pr-3">{formatCents(s.latest_cents)}</td>
                   <td className="py-2 pr-3">
                     <TrendArrow trend={s.trend} />
                   </td>
                   <td className="py-2 pr-3">
-                    <PriceSparkline
-                      entries={sparklineData.get(s.ingredient_name) ?? []}
-                    />
+                    <PriceSparkline entries={sparklineData.get(s.ingredient_name) ?? []} />
                   </td>
                   <td className="py-2 pr-3 text-gray-500">{s.entry_count}</td>
                 </tr>
@@ -237,9 +237,7 @@ export function GroceryPriceTrends() {
               return (
                 <div key={s.ingredient_name} className="flex items-center gap-2">
                   <span className="w-5 text-xs text-gray-400">{i + 1}</span>
-                  <span className="w-32 truncate text-sm capitalize">
-                    {s.ingredient_name}
-                  </span>
+                  <span className="w-32 truncate text-sm capitalize">{s.ingredient_name}</span>
                   <div className="flex-1">
                     <div
                       className="h-4 rounded bg-orange-200"

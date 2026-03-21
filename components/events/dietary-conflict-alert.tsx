@@ -3,7 +3,7 @@
 // DietaryConflictAlert - Warning banner for dietary conflicts on an event.
 // Displays guest-allergy-dish conflicts grouped by severity.
 // Chef can acknowledge each conflict to indicate awareness.
-// Critical = red, Warning = amber, Info = blue.
+// Critical = red, Warning = amber, Info = brand.
 // Calls acknowledgeDietaryConflict(alertId) from dietary-conflict-actions.
 
 import { useState, useTransition } from 'react'
@@ -46,11 +46,11 @@ const SEVERITY_CONFIG = {
     label: 'Warning',
   },
   info: {
-    banner: 'border-sky-300 bg-sky-950',
+    banner: 'border-brand-300 bg-brand-950',
     icon: Info,
-    iconColor: 'text-sky-600',
-    textColor: 'text-sky-900',
-    subtextColor: 'text-sky-700',
+    iconColor: 'text-brand-600',
+    textColor: 'text-brand-900',
+    subtextColor: 'text-brand-700',
     badgeVariant: 'info' as const,
     label: 'Info',
   },

@@ -57,12 +57,12 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   vegetable: 'from-emerald-900/60 to-green-950/40',
   dessert: 'from-pink-900/60 to-fuchsia-950/40',
   pasta: 'from-amber-900/60 to-yellow-950/40',
-  soup: 'from-sky-900/60 to-blue-950/40',
+  soup: 'from-brand-900/60 to-brand-950/40',
   salad: 'from-lime-900/60 to-green-950/40',
   fruit: 'from-orange-900/60 to-amber-950/40',
   bread: 'from-amber-800/60 to-yellow-950/40',
   appetizer: 'from-violet-900/60 to-purple-950/40',
-  beverage: 'from-cyan-900/60 to-teal-950/40',
+  beverage: 'from-brand-900/60 to-teal-950/40',
   condiment: 'from-yellow-900/60 to-amber-950/40',
   other: 'from-stone-800/60 to-stone-900/40',
 }
@@ -427,7 +427,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
                       (recipe.meal_type && recipe.meal_type !== 'any')) && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {recipe.cuisine && (
-                          <span className="text-xs px-1.5 py-0.5 bg-blue-950 text-blue-400 rounded">
+                          <span className="text-xs px-1.5 py-0.5 bg-brand-950 text-brand-400 rounded">
                             {cuisineLabelMap[recipe.cuisine] || recipe.cuisine}
                           </span>
                         )}

@@ -8,6 +8,7 @@ import {
   closeAvailability,
   getAvailabilityWithResponses,
 } from '@/lib/hub/availability-actions'
+import { toast } from 'sonner'
 
 // Best dates summary: shows top 1-3 dates where most people are available
 function BestDatesSummary({
@@ -200,8 +201,8 @@ function CreateAvailabilityForm({
           dateRangeEnd: endDate,
         })
         onCreated(avail)
-      } catch (err) {
-        console.error('Failed to create availability:', err)
+      } catch {
+        toast.error('Failed to create schedule')
       }
     })
   }
@@ -282,7 +283,7 @@ function AvailabilityCard({
             setLoaded(true)
           }
         } catch {
-          // Ignore
+          toast.error('Failed to load responses')
         }
       })
     }
@@ -302,7 +303,7 @@ function AvailabilityCard({
         const full = await getAvailabilityWithResponses(poll.id)
         if (full?.responses) setResponses(full.responses)
       } catch {
-        // Ignore
+        toast.error('Failed to save response')
       }
     })
   }
@@ -314,7 +315,7 @@ function AvailabilityCard({
         await closeAvailability({ availabilityId: poll.id, profileToken })
         onClose()
       } catch {
-        // Ignore
+        toast.error('Failed to close poll')
       }
     })
   }

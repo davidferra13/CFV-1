@@ -13,7 +13,7 @@ type Props = {
 const STATUS_COLORS: Record<string, string> = {
   discovered: 'bg-stone-800 text-stone-400',
   pending_submission: 'bg-amber-900/60 text-amber-300',
-  claimed: 'bg-sky-900/60 text-sky-300',
+  claimed: 'bg-brand-900/60 text-brand-300',
   verified: 'bg-emerald-900/60 text-emerald-300',
   removed: 'bg-red-900/60 text-red-300',
 }

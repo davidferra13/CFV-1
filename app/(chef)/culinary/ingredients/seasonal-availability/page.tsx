@@ -35,7 +35,7 @@ const SEASONS = [
       'zucchini',
       'basil',
       'peach',
-      'blueberr',
+      'brandberr',
       'cucumber',
       'pepper',
       'eggplant',
@@ -62,7 +62,7 @@ const SEASONS = [
   {
     name: 'Winter',
     months: 'Dec – Feb',
-    color: 'bg-blue-900 text-blue-800 border-blue-200',
+    color: 'bg-brand-900 text-brand-800 border-brand-200',
     keywords: [
       'winter',
       'citrus',

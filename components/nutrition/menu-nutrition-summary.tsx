@@ -48,7 +48,7 @@ export function MenuNutritionSummary({ menuId, menuName }: MenuNutritionSummaryP
         <button
           onClick={handleLoad}
           disabled={isPending}
-          className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-md bg-brand-600 px-6 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {isPending ? 'Loading...' : 'Analyze Menu Nutrition'}
         </button>
@@ -82,7 +82,7 @@ export function MenuNutritionSummary({ menuId, menuName }: MenuNutritionSummaryP
         <button
           onClick={handleLoad}
           disabled={isPending}
-          className="text-xs text-blue-600 underline hover:text-blue-800"
+          className="text-xs text-brand-600 underline hover:text-brand-800"
         >
           Refresh
         </button>
@@ -222,7 +222,7 @@ function MacroRatioBar({
     <div>
       <div className="flex gap-1 h-3 rounded-full overflow-hidden">
         <div
-          className="bg-blue-500 transition-all"
+          className="bg-brand-500 transition-all"
           style={{ width: `${proteinPct}%` }}
           title={`Protein: ${proteinPct}%`}
         />
@@ -239,7 +239,7 @@ function MacroRatioBar({
       </div>
       <div className="flex justify-between mt-1 text-xxs text-gray-500">
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
+          <span className="w-2 h-2 rounded-full bg-brand-500 inline-block" />
           Protein {proteinPct}%
         </span>
         <span className="flex items-center gap-1">

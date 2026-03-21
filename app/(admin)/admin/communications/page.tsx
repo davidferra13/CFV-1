@@ -68,7 +68,7 @@ export default async function AdminCommunicationsPage() {
       {/* Direct Email */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Mail size={16} className="text-blue-500" />
+          <Mail size={16} className="text-brand-500" />
           <h2 className="text-sm font-semibold text-slate-700">Direct Email</h2>
         </div>
         <p className="text-sm text-slate-500 mb-4">

@@ -32,7 +32,7 @@ export default async function GuestLeadsPage() {
           <p className="text-sm text-stone-500">Total Leads</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-blue-600">{stats.new}</p>
+          <p className="text-2xl font-bold text-brand-600">{stats.new}</p>
           <p className="text-sm text-stone-500">New</p>
         </Card>
         <Card className="p-4 text-center">

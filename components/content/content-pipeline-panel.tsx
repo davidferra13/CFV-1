@@ -35,7 +35,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-yellow-100 text-yellow-800',
-  approved: 'bg-blue-100 text-blue-800',
+  approved: 'bg-brand-100 text-brand-800',
   posted: 'bg-green-100 text-green-800',
 }
 
@@ -208,15 +208,15 @@ export default function ContentPipelinePanel({
         </p>
       </div>
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       {/* Event List */}
       {events.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           <p>No completed events with photos found.</p>
-          <p className="text-sm mt-1">Complete an event and upload photos to start creating content.</p>
+          <p className="text-sm mt-1">
+            Complete an event and upload photos to start creating content.
+          </p>
         </div>
       ) : (
         <div className="grid gap-3">
@@ -226,15 +226,13 @@ export default function ContentPipelinePanel({
               onClick={() => handleSelectEvent(event.id)}
               className={`w-full text-left p-4 rounded-lg border transition-colors ${
                 selectedEventId === event.id
-                  ? 'border-indigo-500 bg-indigo-50'
+                  ? 'border-brand-500 bg-brand-50'
                   : 'border-gray-200 hover:border-gray-300 bg-white'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-medium text-gray-900">
-                    {event.occasion ?? 'Event'}
-                  </span>
+                  <span className="font-medium text-gray-900">{event.occasion ?? 'Event'}</span>
                   <span className="text-sm text-gray-500 ml-2">
                     {new Date(event.event_date).toLocaleDateString()}
                   </span>
@@ -242,7 +240,7 @@ export default function ContentPipelinePanel({
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <span>{event.photo_count} photos</span>
                   {event.draft_count > 0 && (
-                    <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-xs">
+                    <span className="bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full text-xs">
                       {event.draft_count} draft{event.draft_count !== 1 ? 's' : ''}
                     </span>
                   )}
@@ -288,7 +286,7 @@ export default function ContentPipelinePanel({
                 onClick={() => setSelectedPlatform(p.value)}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   selectedPlatform === p.value
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -301,7 +299,7 @@ export default function ContentPipelinePanel({
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className="w-full py-2 px-4 rounded-md bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2 px-4 rounded-md bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {generating ? 'Generating draft...' : `Generate ${selectedPlatform} Draft`}
           </button>
@@ -316,7 +314,7 @@ export default function ContentPipelinePanel({
                 value={draftText}
                 onChange={(e) => setDraftText(e.target.value)}
                 rows={selectedPlatform === 'blog' ? 8 : 4}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm"
               />
               <div className="flex gap-2">
                 <button
@@ -347,10 +345,7 @@ export default function ContentPipelinePanel({
             <div className="space-y-3 border-t pt-4">
               <h4 className="text-sm font-medium text-gray-700">Saved Drafts</h4>
               {drafts.map((draft) => (
-                <div
-                  key={draft.id}
-                  className="border border-gray-200 rounded-md p-3 space-y-2"
-                >
+                <div key={draft.id} className="border border-gray-200 rounded-md p-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-gray-500 uppercase">
@@ -378,13 +373,13 @@ export default function ContentPipelinePanel({
                         value={editText}
                         onChange={(e) => setEditText(e.target.value)}
                         rows={4}
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm"
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleUpdateDraft(draft.id)}
                           disabled={saving}
-                          className="py-1 px-3 rounded-md bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                          className="py-1 px-3 rounded-md bg-brand-600 text-white text-xs font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
                         >
                           Save Changes
                         </button>
@@ -424,7 +419,7 @@ export default function ContentPipelinePanel({
                           <button
                             onClick={() => handleStatusChange(draft.id, 'approved')}
                             disabled={saving}
-                            className="py-1 px-3 rounded-md bg-blue-100 text-blue-700 text-xs font-medium hover:bg-blue-200 disabled:opacity-50 transition-colors"
+                            className="py-1 px-3 rounded-md bg-brand-100 text-brand-700 text-xs font-medium hover:bg-brand-200 disabled:opacity-50 transition-colors"
                           >
                             Approve
                           </button>

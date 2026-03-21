@@ -622,7 +622,7 @@ function CelebrationAndFollowUp({
           <>
             <span className="absolute top-0 left-4 w-2 h-2 bg-yellow-400 rounded-full animate-bounce" />
             <span className="absolute top-2 left-12 w-1.5 h-1.5 bg-red-400 rounded-full animate-ping" />
-            <span className="absolute top-0 left-1/4 w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
+            <span className="absolute top-0 left-1/4 w-2 h-2 bg-brand-400 rounded-full animate-bounce" />
             <span className="absolute top-1 left-1/3 w-1.5 h-1.5 bg-purple-400 rounded-full animate-ping" />
             <span className="absolute top-0 right-4 w-2 h-2 bg-emerald-400 rounded-full animate-bounce" />
             <span className="absolute top-2 right-12 w-1.5 h-1.5 bg-pink-400 rounded-full animate-ping" />

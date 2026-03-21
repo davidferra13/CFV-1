@@ -8,7 +8,32 @@
 // seedIds.eventIds.confirmed — a confirmed event
 // seedIds.quoteIds.sent  — a quote the client can accept/reject
 
+import type { Locator, Page } from '@playwright/test'
 import { test, expect } from '../helpers/fixtures'
+
+async function clearStoredTheme(page: Page, route: string) {
+  await page.goto(route)
+  await page.waitForLoadState('domcontentloaded')
+  await page.evaluate(() => {
+    window.localStorage.removeItem('chefflow-theme')
+  })
+  await page.reload()
+  await page.waitForLoadState('networkidle')
+}
+
+async function getVisibleToggle(page: Page): Promise<Locator> {
+  const toggles = page.getByTestId('theme-toggle')
+  const count = await toggles.count()
+
+  for (let index = 0; index < count; index += 1) {
+    const toggle = toggles.nth(index)
+    if (await toggle.isVisible().catch(() => false)) {
+      return toggle
+    }
+  }
+
+  throw new Error('No visible theme toggle found')
+}
 
 // ─── Client Portal — Main Pages ───────────────────────────────────────────────
 
@@ -89,6 +114,31 @@ test.describe('Client Portal — Core Pages', () => {
     expect(page.url()).not.toMatch(/auth\/signin/)
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
+  })
+
+  test('client shell theme defaults to light and persists across navigation + reload', async ({
+    page,
+  }) => {
+    await clearStoredTheme(page, '/my-events')
+
+    await expect(page.locator('html')).not.toHaveClass(/dark/)
+
+    const toggle = await getVisibleToggle(page)
+    await expect(toggle).toBeVisible()
+    await toggle.click()
+
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem('chefflow-theme')))
+      .toBe('dark')
+
+    await page.goto('/my-quotes')
+    await page.waitForLoadState('networkidle')
+    await expect(page.locator('html')).toHaveClass(/dark/)
+
+    await page.reload()
+    await page.waitForLoadState('networkidle')
+    await expect(page.locator('html')).toHaveClass(/dark/)
   })
 })
 

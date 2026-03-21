@@ -6,10 +6,7 @@
 // Dismissed state is local only (per-session, not persisted).
 
 import { useEffect, useState, useTransition } from 'react'
-import {
-  getEventsNeedingAAR,
-  type EventNeedingAAR,
-} from '@/lib/events/aar-prompt-actions'
+import { getEventsNeedingAAR, type EventNeedingAAR } from '@/lib/events/aar-prompt-actions'
 
 interface Props {
   tenantId: string
@@ -45,10 +42,11 @@ export function AARPromptBanner({ tenantId }: Props) {
   return (
     <div className="space-y-2">
       {visibleEvents.map((event) => {
-        const formattedDate = new Date(event.eventDate + 'T00:00:00').toLocaleDateString(
-          'en-US',
-          { weekday: 'short', month: 'short', day: 'numeric' }
-        )
+        const formattedDate = new Date(event.eventDate + 'T00:00:00').toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+        })
 
         const eventLabel = event.occasion
           ? `${event.occasion} for ${event.clientName}`
@@ -57,7 +55,7 @@ export function AARPromptBanner({ tenantId }: Props) {
         const urgency =
           event.daysSinceEvent >= 5
             ? 'border-amber-700 bg-amber-950/30'
-            : 'border-blue-700 bg-blue-950/30'
+            : 'border-brand-700 bg-brand-950/30'
 
         return (
           <div
@@ -66,9 +64,8 @@ export function AARPromptBanner({ tenantId }: Props) {
           >
             <div className="flex-1 min-w-0">
               <p className="text-sm text-zinc-200">
-                You completed{' '}
-                <span className="font-semibold text-zinc-100">{eventLabel}</span>{' '}
-                on {formattedDate}.{' '}
+                You completed <span className="font-semibold text-zinc-100">{eventLabel}</span> on{' '}
+                {formattedDate}.{' '}
                 {event.daysSinceEvent <= 2
                   ? 'Capture your thoughts while they are fresh.'
                   : `It has been ${event.daysSinceEvent} days. Don't let the details fade.`}

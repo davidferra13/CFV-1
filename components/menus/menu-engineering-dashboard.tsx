@@ -24,10 +24,10 @@ const QUADRANT_STYLES: Record<
     icon: '\u2605', // filled star
   },
   plowhorse: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-300',
-    text: 'text-blue-800',
-    badge: 'bg-blue-100 text-blue-800',
+    bg: 'bg-brand-50',
+    border: 'border-brand-300',
+    text: 'text-brand-800',
+    badge: 'bg-brand-100 text-brand-800',
     icon: '\u{1F4AA}', // flexed biceps
   },
   puzzle: {
@@ -196,7 +196,7 @@ function SummaryBar({ result }: { result: MenuEngineeringResult }) {
           if (pct === 0) return null
           const colors: Record<MenuQuadrant, string> = {
             star: 'bg-amber-400',
-            plowhorse: 'bg-blue-400',
+            plowhorse: 'bg-brand-400',
             puzzle: 'bg-purple-400',
             dog: 'bg-red-400',
           }

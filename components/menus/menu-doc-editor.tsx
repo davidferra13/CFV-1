@@ -640,7 +640,7 @@ function CourseBlock({
       {/* Plating Instructions */}
       {!locked ? (
         <div className="mt-4">
-          <p className="text-xxs font-semibold uppercase tracking-widest text-sky-400 mb-1 px-3">
+          <p className="text-xxs font-semibold uppercase tracking-widest text-brand-400 mb-1 px-3">
             Plating
           </p>
           <AutoTextarea
@@ -651,16 +651,16 @@ function CourseBlock({
             }}
             placeholder="Describe the plate: smear, stack, dot, garnish..."
             minRows={1}
-            className="w-full text-xs text-sky-300 bg-sky-950/40 border-none outline-none placeholder:text-sky-400/40 rounded-lg px-3 py-2 leading-relaxed block"
+            className="w-full text-xs text-brand-300 bg-brand-950/40 border-none outline-none placeholder:text-brand-400/40 rounded-lg px-3 py-2 leading-relaxed block"
           />
         </div>
       ) : (
         platingInstructions && (
           <div className="mt-4">
-            <p className="text-xxs font-semibold uppercase tracking-widest text-sky-400 mb-1">
+            <p className="text-xxs font-semibold uppercase tracking-widest text-brand-400 mb-1">
               Plating
             </p>
-            <p className="text-xs text-sky-300 bg-sky-950/40 rounded-lg px-3 py-2 leading-relaxed">
+            <p className="text-xs text-brand-300 bg-brand-950/40 rounded-lg px-3 py-2 leading-relaxed">
               {platingInstructions}
             </p>
           </div>
@@ -1376,7 +1376,7 @@ export function MenuDocEditor({
               locked
                 ? 'border-amber-300 bg-amber-950 text-amber-700'
                 : initialMenu.status === 'shared'
-                  ? 'border-blue-300 bg-blue-950 text-blue-700'
+                  ? 'border-brand-300 bg-brand-950 text-brand-700'
                   : initialMenu.status === 'archived'
                     ? 'border-stone-600 bg-stone-800 text-stone-500'
                     : 'border-stone-700 bg-stone-900 text-stone-400'
@@ -1514,11 +1514,11 @@ export function MenuDocEditor({
               {/* ── Simple mode ── */}
               {simpleMode ? (
                 <div className="space-y-4">
-                  <div className="bg-blue-950 border border-blue-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                    <span className="text-blue-500 text-lg leading-none">✎</span>
+                  <div className="bg-brand-950 border border-brand-200 rounded-lg px-4 py-3 flex items-start gap-3">
+                    <span className="text-brand-500 text-lg leading-none">✎</span>
                     <div>
-                      <p className="text-sm font-medium text-blue-800">Freeform text mode</p>
-                      <p className="text-xs text-blue-600 mt-0.5">
+                      <p className="text-sm font-medium text-brand-800">Freeform text mode</p>
+                      <p className="text-xs text-brand-600 mt-0.5">
                         Write your menu as freeform text or paste it in directly. Switch back
                         anytime - your structured courses will still be there.
                       </p>

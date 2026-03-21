@@ -142,7 +142,7 @@ function NutritionSummary({ entries }: { entries: MenuNutritionEntry[] }) {
           <div className="text-xs text-stone-400">Calories</div>
         </div>
         <div>
-          <div className="text-2xl font-bold text-blue-400 tabular-nums">
+          <div className="text-2xl font-bold text-brand-400 tabular-nums">
             {Math.round(totals.protein * 10) / 10}g
           </div>
           <div className="text-xs text-stone-400">Protein</div>

@@ -589,7 +589,7 @@ function AllTimelineRow({
     if (event.event_type === 'session_heartbeat') return null
     return (
       <div className="flex items-start gap-2.5 py-2 px-2 rounded-md hover:bg-stone-800 transition-colors">
-        <span className="text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 bg-blue-900 text-blue-700">
+        <span className="text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 bg-brand-900 text-brand-700">
           Client
         </span>
         <div className="min-w-0 flex-1">

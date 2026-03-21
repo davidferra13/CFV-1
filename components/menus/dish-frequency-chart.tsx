@@ -91,7 +91,7 @@ export default function DishFrequencyChart({ clientId }: Props) {
             onClick={() => setSortMode('frequency')}
             className={`px-2 py-1 rounded ${
               sortMode === 'frequency'
-                ? 'bg-blue-100 text-blue-700'
+                ? 'bg-brand-100 text-brand-700'
                 : 'text-gray-500 hover:bg-gray-100'
             }`}
           >
@@ -101,7 +101,7 @@ export default function DishFrequencyChart({ clientId }: Props) {
             onClick={() => setSortMode('alphabetical')}
             className={`px-2 py-1 rounded ${
               sortMode === 'alphabetical'
-                ? 'bg-blue-100 text-blue-700'
+                ? 'bg-brand-100 text-brand-700'
                 : 'text-gray-500 hover:bg-gray-100'
             }`}
           >
@@ -110,9 +110,7 @@ export default function DishFrequencyChart({ clientId }: Props) {
         </div>
       </div>
 
-      {isPending && (
-        <p className="text-gray-500 text-sm">Loading...</p>
-      )}
+      {isPending && <p className="text-gray-500 text-sm">Loading...</p>}
 
       {/* Bar chart */}
       {sortedDishes.length === 0 && !isPending ? (
@@ -137,7 +135,8 @@ export default function DishFrequencyChart({ clientId }: Props) {
                     )}
                   </span>
                   <span className="text-gray-400 text-xs">
-                    Last: {new Date(dish.lastServed).toLocaleDateString('en-US', {
+                    Last:{' '}
+                    {new Date(dish.lastServed).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                     })}
@@ -146,7 +145,7 @@ export default function DishFrequencyChart({ clientId }: Props) {
                 <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
-                      isRepetitionRisk ? 'bg-amber-400' : 'bg-blue-400'
+                      isRepetitionRisk ? 'bg-amber-400' : 'bg-brand-400'
                     }`}
                     style={{ width: `${pct}%`, minWidth: '8px' }}
                   />

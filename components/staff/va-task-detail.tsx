@@ -5,12 +5,19 @@ import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
-  ArrowLeft, ArrowRight, CheckCircle2, Clock,
-  Pencil as Edit, Trash2, X,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Pencil as Edit,
+  Trash2,
+  X,
 } from '@/components/ui/icons'
 import {
-  updateVaTaskStatus, deleteVaTask,
-  type VaTask, type VaTaskStatus,
+  updateVaTaskStatus,
+  deleteVaTask,
+  type VaTask,
+  type VaTaskStatus,
 } from '@/lib/staff/va-task-actions'
 import { VaTaskForm } from './va-task-form'
 
@@ -20,7 +27,7 @@ import { VaTaskForm } from './va-task-form'
 
 const STATUS_CONFIG: Record<VaTaskStatus, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'bg-stone-500/20 text-stone-300' },
-  in_progress: { label: 'In Progress', color: 'bg-blue-500/20 text-blue-300' },
+  in_progress: { label: 'In Progress', color: 'bg-brand-500/20 text-brand-300' },
   review: { label: 'Review', color: 'bg-amber-500/20 text-amber-300' },
   completed: { label: 'Completed', color: 'bg-green-500/20 text-green-300' },
   cancelled: { label: 'Cancelled', color: 'bg-red-500/20 text-red-300' },
@@ -41,12 +48,8 @@ const NEXT_ACTIONS: Record<VaTaskStatus, { status: VaTaskStatus; label: string }
     { status: 'completed', label: 'Approve & Complete' },
     { status: 'cancelled', label: 'Cancel' },
   ],
-  completed: [
-    { status: 'pending', label: 'Reopen' },
-  ],
-  cancelled: [
-    { status: 'pending', label: 'Reopen' },
-  ],
+  completed: [{ status: 'pending', label: 'Reopen' }],
+  cancelled: [{ status: 'pending', label: 'Reopen' }],
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -60,7 +63,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const PRIORITY_LABELS: Record<string, { label: string; color: string }> = {
   low: { label: 'Low', color: 'text-stone-400' },
-  medium: { label: 'Medium', color: 'text-blue-400' },
+  medium: { label: 'Medium', color: 'text-brand-400' },
   high: { label: 'High', color: 'text-amber-400' },
   urgent: { label: 'Urgent', color: 'text-red-400' },
 }
@@ -94,7 +97,7 @@ export function VaTaskDetail({
 
   const handleStatusChange = (newStatus: VaTaskStatus) => {
     const previous = task
-    setTask(prev => ({ ...prev, status: newStatus, updated_at: new Date().toISOString() }))
+    setTask((prev) => ({ ...prev, status: newStatus, updated_at: new Date().toISOString() }))
 
     startTransition(async () => {
       try {
@@ -123,7 +126,10 @@ export function VaTaskDetail({
     return (
       <VaTaskForm
         task={task}
-        onSaved={() => { setIsEditing(false); onBack() }}
+        onSaved={() => {
+          setIsEditing(false)
+          onBack()
+        }}
         onCancel={() => setIsEditing(false)}
       />
     )
@@ -134,7 +140,10 @@ export function VaTaskDetail({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={onBack} className="text-stone-400 hover:text-stone-200 transition-colors">
+            <button
+              onClick={onBack}
+              className="text-stone-400 hover:text-stone-200 transition-colors"
+            >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <CardTitle className="text-stone-200">{task.title}</CardTitle>
@@ -160,7 +169,9 @@ export function VaTaskDetail({
       <CardContent className="space-y-5">
         {/* Status + Meta */}
         <div className="flex items-center gap-3 flex-wrap">
-          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${statusConfig.color}`}>
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${statusConfig.color}`}
+          >
             {statusConfig.label}
           </span>
           <span className={`text-sm font-medium ${priorityConfig.color}`}>
@@ -174,7 +185,9 @@ export function VaTaskDetail({
         {/* Description */}
         {task.description && (
           <div>
-            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">Description</h4>
+            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
+              Description
+            </h4>
             <p className="text-sm text-stone-300 whitespace-pre-wrap">{task.description}</p>
           </div>
         )}
@@ -183,14 +196,20 @@ export function VaTaskDetail({
         <div className="grid grid-cols-2 gap-4">
           {task.assigned_to && (
             <div>
-              <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">Assigned To</h4>
+              <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
+                Assigned To
+              </h4>
               <p className="text-sm text-stone-200">{task.assigned_to}</p>
             </div>
           )}
           {task.due_date && (
             <div>
-              <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">Due Date</h4>
-              <p className={`text-sm flex items-center gap-1 ${isOverdue ? 'text-red-400' : 'text-stone-200'}`}>
+              <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
+                Due Date
+              </h4>
+              <p
+                className={`text-sm flex items-center gap-1 ${isOverdue ? 'text-red-400' : 'text-stone-200'}`}
+              >
                 <Clock className="h-3.5 w-3.5" />
                 {new Date(task.due_date + 'T00:00:00').toLocaleDateString()}
                 {isOverdue && <span className="text-xs font-medium">(Overdue)</span>}
@@ -199,7 +218,9 @@ export function VaTaskDetail({
           )}
           {task.completed_at && (
             <div>
-              <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">Completed</h4>
+              <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
+                Completed
+              </h4>
               <p className="text-sm text-stone-200 flex items-center gap-1">
                 <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
                 {new Date(task.completed_at).toLocaleDateString()}
@@ -207,15 +228,21 @@ export function VaTaskDetail({
             </div>
           )}
           <div>
-            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">Created</h4>
-            <p className="text-sm text-stone-300">{new Date(task.created_at).toLocaleDateString()}</p>
+            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
+              Created
+            </h4>
+            <p className="text-sm text-stone-300">
+              {new Date(task.created_at).toLocaleDateString()}
+            </p>
           </div>
         </div>
 
         {/* Notes */}
         {task.notes && (
           <div>
-            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">Notes</h4>
+            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
+              Notes
+            </h4>
             <p className="text-sm text-stone-300 whitespace-pre-wrap rounded-lg bg-stone-900/50 p-3">
               {task.notes}
             </p>
@@ -225,9 +252,11 @@ export function VaTaskDetail({
         {/* Status transitions */}
         {actions.length > 0 && (
           <div>
-            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-2">Actions</h4>
+            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-2">
+              Actions
+            </h4>
             <div className="flex items-center gap-2 flex-wrap">
-              {actions.map(action => (
+              {actions.map((action) => (
                 <button
                   key={action.status}
                   onClick={() => handleStatusChange(action.status)}

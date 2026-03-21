@@ -406,7 +406,7 @@ export function MenuContextSidebar({
                 {
                   q: 'plowhorse' as MenuQuadrant,
                   count: menuMix.summary.plowhorses,
-                  color: 'bg-blue-500',
+                  color: 'bg-brand-500',
                 },
                 {
                   q: 'puzzle' as MenuQuadrant,

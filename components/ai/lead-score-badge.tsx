@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 const TIER_COLORS: Record<string, string> = {
   hot: 'text-red-700 bg-red-950 border border-red-200',
   warm: 'text-amber-700 bg-amber-950 border border-amber-200',
-  cold: 'text-blue-700 bg-blue-950 border border-blue-200',
+  cold: 'text-brand-700 bg-brand-950 border border-brand-200',
 }
 
 export function LeadScoreBadge({

@@ -107,7 +107,7 @@ export function DailyRevenueForm({ existingRevenue }: DailyRevenueFormProps) {
           )}
 
           {existingEntry && (
-            <div className="rounded-lg bg-sky-950 border border-sky-800 px-4 py-3 text-sm text-sky-400">
+            <div className="rounded-lg bg-brand-950 border border-brand-800 px-4 py-3 text-sm text-brand-400">
               An entry already exists for this date. Saving will update it.
             </div>
           )}

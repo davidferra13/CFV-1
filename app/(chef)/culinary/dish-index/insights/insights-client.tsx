@@ -151,8 +151,8 @@ export function DishInsightsClient({ stats, seasonal, duplicates }: DishInsights
               <p className="text-xl font-bold text-green-400">{stats.byRotation.active ?? 0}</p>
               <p className="text-xs text-stone-500">Active</p>
             </div>
-            <div className="bg-blue-900/20 rounded-lg p-3 text-center">
-              <p className="text-xl font-bold text-blue-400">{stats.byRotation.testing ?? 0}</p>
+            <div className="bg-brand-900/20 rounded-lg p-3 text-center">
+              <p className="text-xl font-bold text-brand-400">{stats.byRotation.testing ?? 0}</p>
               <p className="text-xs text-stone-500">Testing</p>
             </div>
             <div className="bg-amber-900/20 rounded-lg p-3 text-center">

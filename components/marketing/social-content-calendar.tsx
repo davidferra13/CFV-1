@@ -18,11 +18,16 @@ const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 function platformDot(p: SocialPlatform): string {
   switch (p) {
-    case 'instagram': return 'bg-pink-500'
-    case 'facebook': return 'bg-blue-500'
-    case 'tiktok': return 'bg-gray-700'
-    case 'twitter': return 'bg-sky-500'
-    case 'linkedin': return 'bg-indigo-500'
+    case 'instagram':
+      return 'bg-pink-500'
+    case 'facebook':
+      return 'bg-brand-500'
+    case 'tiktok':
+      return 'bg-gray-700'
+    case 'twitter':
+      return 'bg-brand-500'
+    case 'linkedin':
+      return 'bg-brand-500'
   }
 }
 
@@ -102,8 +107,7 @@ export function SocialContentCalendar() {
     setPlannedPosts((prev) => prev.filter((p) => p.id !== postId))
   }
 
-  const postsForDay = (dayIndex: number) =>
-    plannedPosts.filter((p) => p.dayIndex === dayIndex)
+  const postsForDay = (dayIndex: number) => plannedPosts.filter((p) => p.dayIndex === dayIndex)
 
   return (
     <div className="space-y-6">
@@ -163,7 +167,9 @@ export function SocialContentCalendar() {
                   onDragStart={() => handleDragStart(t)}
                   className="flex items-center gap-2 p-2 text-xs border border-gray-200 rounded-lg cursor-grab active:cursor-grabbing hover:bg-gray-50 bg-white"
                 >
-                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${platformDot(t.platform)}`} />
+                  <span
+                    className={`w-2 h-2 rounded-full flex-shrink-0 ${platformDot(t.platform)}`}
+                  />
                   <span className="truncate">{t.title}</span>
                 </div>
               ))}
@@ -175,8 +181,7 @@ export function SocialContentCalendar() {
         <div className="grid grid-cols-7 gap-2">
           {DAY_NAMES.map((day, i) => {
             const date = weekDates[i]
-            const isToday =
-              date.toDateString() === new Date().toDateString()
+            const isToday = date.toDateString() === new Date().toDateString()
             const posts = postsForDay(i)
 
             return (
@@ -185,14 +190,14 @@ export function SocialContentCalendar() {
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, i)}
                 className={`min-h-[200px] border rounded-lg p-2 transition-colors ${
-                  isToday
-                    ? 'border-orange-300 bg-orange-50/50'
-                    : 'border-gray-200 bg-white'
+                  isToday ? 'border-orange-300 bg-orange-50/50' : 'border-gray-200 bg-white'
                 }`}
               >
                 {/* Day header */}
                 <div className="text-center mb-2 pb-1 border-b border-gray-100">
-                  <p className={`text-xs font-medium ${isToday ? 'text-orange-600' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-xs font-medium ${isToday ? 'text-orange-600' : 'text-gray-600'}`}
+                  >
                     {day}
                   </p>
                   <p className={`text-xs ${isToday ? 'text-orange-500' : 'text-gray-400'}`}>
@@ -228,9 +233,7 @@ export function SocialContentCalendar() {
 
                 {/* Drop zone hint */}
                 {posts.length === 0 && (
-                  <p className="text-center text-xs text-gray-300 mt-4">
-                    Drop here
-                  </p>
+                  <p className="text-center text-xs text-gray-300 mt-4">Drop here</p>
                 )}
               </div>
             )
@@ -241,20 +244,23 @@ export function SocialContentCalendar() {
       {/* Legend */}
       <div className="flex items-center gap-4 text-xs text-gray-500">
         <span className="font-medium">Platforms:</span>
-        {(['instagram', 'facebook', 'tiktok', 'twitter', 'linkedin'] as SocialPlatform[]).map((p) => (
-          <span key={p} className="flex items-center gap-1">
-            <span className={`w-2 h-2 rounded-full ${platformDot(p)}`} />
-            {p}
-          </span>
-        ))}
+        {(['instagram', 'facebook', 'tiktok', 'twitter', 'linkedin'] as SocialPlatform[]).map(
+          (p) => (
+            <span key={p} className="flex items-center gap-1">
+              <span className={`w-2 h-2 rounded-full ${platformDot(p)}`} />
+              {p}
+            </span>
+          )
+        )}
       </div>
 
       {/* Summary */}
       {plannedPosts.length > 0 && (
         <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
           <p className="text-sm text-gray-700">
-            <span className="font-medium">{plannedPosts.length}</span> post{plannedPosts.length !== 1 ? 's' : ''} planned this week.
-            {' '}This is a planning tool only; posts are not published automatically.
+            <span className="font-medium">{plannedPosts.length}</span> post
+            {plannedPosts.length !== 1 ? 's' : ''} planned this week. This is a planning tool only;
+            posts are not published automatically.
           </p>
         </div>
       )}

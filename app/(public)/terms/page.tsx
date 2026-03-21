@@ -3,7 +3,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 
-export const revalidate = 3600 // ISR: revalidate every hour
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Terms of Service | ChefFlow',

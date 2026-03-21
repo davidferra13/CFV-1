@@ -109,14 +109,12 @@ export default function MenuHistoryWidget({ initialEntries }: Props) {
                 </div>
                 <div className="flex items-center gap-2">
                   {entry.overall_rating !== null ? (
-                    <span className="text-xs text-amber-600">
-                      {entry.overall_rating}/5
-                    </span>
+                    <span className="text-xs text-amber-600">{entry.overall_rating}/5</span>
                   ) : (
                     <span className="text-xs text-gray-400">No rating</span>
                   )}
                   {entry.event_id && !entry.client_feedback && (
-                    <span className="text-xs text-blue-600">Add feedback</span>
+                    <span className="text-xs text-brand-600">Add feedback</span>
                   )}
                 </div>
               </div>

@@ -269,7 +269,7 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
                       <span
                         className={`text-xs font-semibold ${
                           run.status === 'running'
-                            ? 'text-blue-600'
+                            ? 'text-brand-600'
                             : run.status === 'failed'
                               ? 'text-red-600'
                               : pct >= 80

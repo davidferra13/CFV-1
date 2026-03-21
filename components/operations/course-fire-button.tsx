@@ -38,9 +38,9 @@ const NEXT_ACTION: Record<
     label: 'Mark Plated',
     nextStatus: 'plated',
     icon: ChefHat,
-    bgClass: 'bg-sky-500',
-    hoverClass: 'hover:bg-sky-600',
-    activeClass: 'active:bg-sky-700',
+    bgClass: 'bg-brand-500',
+    hoverClass: 'hover:bg-brand-600',
+    activeClass: 'active:bg-brand-700',
   },
   plated: {
     label: 'Mark Served',

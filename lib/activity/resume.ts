@@ -155,7 +155,7 @@ async function getActiveMenus(supabase: SupabaseClient, tenantId: string): Promi
       title: m.name || 'Untitled menu',
       subtitle: parts.join(' | '),
       status: m.status,
-      statusColor: m.status === 'draft' ? 'amber' : 'blue',
+      statusColor: m.status === 'draft' ? 'amber' : 'brand',
       lastActionAt: m.updated_at,
       href: `/culinary/menus/${m.id}`,
       context: { event_name: eventName, client_name: clientName, dish_count: count },
@@ -194,7 +194,7 @@ async function getActiveInquiries(
       title: inq.confirmed_occasion || `Inquiry from ${clientName}`,
       subtitle: parts.join(' | '),
       status: inq.status,
-      statusColor: inq.status === 'new' ? 'red' : inq.next_action_by === 'chef' ? 'amber' : 'blue',
+      statusColor: inq.status === 'new' ? 'red' : inq.next_action_by === 'chef' ? 'amber' : 'brand',
       lastActionAt: inq.follow_up_due_at || inq.updated_at,
       href: `/pipeline/inquiries/${inq.id}`,
       context: {
@@ -282,7 +282,7 @@ async function getRecentPinnedNotes(
 
 const EVENT_STATUS_COLORS: Record<string, ResumeItem['statusColor']> = {
   draft: 'amber',
-  proposed: 'blue',
+  proposed: 'brand',
   accepted: 'green',
   paid: 'green',
   confirmed: 'green',
@@ -292,7 +292,7 @@ const EVENT_STATUS_COLORS: Record<string, ResumeItem['statusColor']> = {
 const NOTE_CATEGORY_COLORS: Record<string, ResumeItem['statusColor']> = {
   general: 'stone',
   dietary: 'green',
-  preference: 'blue',
+  preference: 'brand',
   logistics: 'amber',
   relationship: 'purple',
 }

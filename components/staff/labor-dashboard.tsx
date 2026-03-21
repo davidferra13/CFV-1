@@ -232,7 +232,7 @@ export function LaborDashboard({ laborByMonth, currentMonthDetail }: LaborDashbo
               <span>
                 Target labor ratio: {TARGET_MIN}\u2013{TARGET_MAX}% of revenue
               </span>
-              <span className="inline-block w-3 h-0.5 bg-blue-500" />
+              <span className="inline-block w-3 h-0.5 bg-brand-500" />
               <span>Blue line = actual ratio</span>
             </div>
           )}

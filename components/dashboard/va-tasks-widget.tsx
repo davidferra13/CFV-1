@@ -84,8 +84,8 @@ export function VaTasksWidget() {
             )}
             {stats.in_progress > 0 && (
               <div className="flex items-center justify-between text-sm">
-                <span className="text-blue-400">In Progress</span>
-                <span className="font-medium text-blue-300">{stats.in_progress}</span>
+                <span className="text-brand-400">In Progress</span>
+                <span className="font-medium text-brand-300">{stats.in_progress}</span>
               </div>
             )}
             {stats.review > 0 && (

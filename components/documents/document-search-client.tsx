@@ -22,7 +22,7 @@ type Props = {
 function SourceBadge({ source }: { source: UnifiedSearchResult['source'] }) {
   const styles: Record<string, string> = {
     receipt: 'bg-emerald-900 text-emerald-400',
-    document: 'bg-blue-900 text-blue-400',
+    document: 'bg-brand-900 text-brand-400',
     expense: 'bg-purple-900 text-purple-400',
   }
   return (

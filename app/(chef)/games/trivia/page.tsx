@@ -98,7 +98,7 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
     confidence >= 5
       ? 'bg-green-500/10 text-green-700 border-green-500/30'
       : confidence >= 4
-        ? 'bg-blue-500/10 text-blue-700 border-blue-500/30'
+        ? 'bg-brand-500/10 text-brand-700 border-brand-500/30'
         : 'bg-yellow-500/10 text-yellow-700 border-yellow-500/30'
   const label = confidence >= 5 ? 'Verified' : confidence >= 4 ? 'High confidence' : 'Moderate'
 

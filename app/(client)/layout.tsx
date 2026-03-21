@@ -32,7 +32,7 @@ export default async function ClientLayout({ children }: { children: React.React
       <NotificationProvider userId={user.id}>
         <ToastProvider />
         <TestAccountBanner />
-        <div className="min-h-screen bg-stone-800" data-cf-portal="client">
+        <div className="min-h-screen bg-stone-900 text-stone-100" data-cf-portal="client">
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white"

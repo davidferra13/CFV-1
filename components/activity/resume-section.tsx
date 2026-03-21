@@ -9,7 +9,8 @@ interface ResumeSectionProps {
 
 const STATUS_STYLES: Record<string, string> = {
   amber: 'bg-amber-900 text-amber-700 border-amber-200',
-  blue: 'bg-blue-900 text-blue-700 border-blue-200',
+  blue: 'bg-brand-900 text-brand-700 border-brand-200',
+  brand: 'bg-brand-900 text-brand-700 border-brand-200',
   green: 'bg-green-900 text-green-700 border-green-200',
   red: 'bg-red-900 text-red-700 border-red-200',
   purple: 'bg-purple-900 text-purple-700 border-purple-200',

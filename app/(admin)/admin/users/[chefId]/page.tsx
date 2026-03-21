@@ -20,8 +20,8 @@ function formatCents(cents: number): string {
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-400',
   proposed: 'bg-yellow-900 text-yellow-700',
-  accepted: 'bg-blue-900 text-blue-700',
-  paid: 'bg-indigo-900 text-indigo-700',
+  accepted: 'bg-brand-900 text-brand-700',
+  paid: 'bg-brand-900 text-brand-700',
   confirmed: 'bg-purple-900 text-purple-700',
   in_progress: 'bg-orange-900 text-orange-700',
   completed: 'bg-green-900 text-green-700',
@@ -176,7 +176,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
-            <CalendarRange size={14} className="text-blue-500" />
+            <CalendarRange size={14} className="text-brand-500" />
             <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">Events</p>
           </div>
           <p className="text-xl font-bold text-slate-900">{events.length}</p>

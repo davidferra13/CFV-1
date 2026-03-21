@@ -41,7 +41,7 @@ export default async function InstallmentsPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Installments</h1>
-          <span className="bg-blue-900 text-blue-700 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-brand-900 text-brand-700 text-sm px-2 py-0.5 rounded-full">
             {allEntries.length}
           </span>
         </div>
@@ -56,7 +56,7 @@ export default async function InstallmentsPage() {
           <p className="text-sm text-stone-500 mt-1">Total received</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-blue-700">{formatCurrency(totalInstallments)}</p>
+          <p className="text-2xl font-bold text-brand-700">{formatCurrency(totalInstallments)}</p>
           <p className="text-sm text-stone-500 mt-1">Installments ({installments.length})</p>
         </Card>
         <Card className="p-4">
@@ -92,7 +92,7 @@ export default async function InstallmentsPage() {
                   </TableCell>
                   <TableCell>
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full capitalize ${entry.entry_type === 'final_payment' ? 'bg-emerald-900 text-emerald-700' : 'bg-blue-900 text-blue-700'}`}
+                      className={`text-xs px-2 py-0.5 rounded-full capitalize ${entry.entry_type === 'final_payment' ? 'bg-emerald-900 text-emerald-700' : 'bg-brand-900 text-brand-700'}`}
                     >
                       {entry.entry_type.replace(/_/g, ' ')}
                     </span>

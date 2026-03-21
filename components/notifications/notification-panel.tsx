@@ -65,7 +65,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 import { NOTIFICATION_CONFIG } from '@/lib/notifications/types'
 
 const categoryColors: Record<string, string> = {
-  inquiry: 'text-sky-500',
+  inquiry: 'text-brand-500',
   quote: 'text-amber-500',
   event: 'text-brand-600',
   payment: 'text-emerald-500',

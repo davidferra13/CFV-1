@@ -206,6 +206,12 @@ export default defineConfig({
       testMatch: ['**/interactions/12-client-portal-deep.spec.ts'],
       use: { storageState: '.auth/client.json' },
     },
+    // Staff-role interaction tests
+    {
+      name: 'interactions-staff',
+      testMatch: ['**/interactions/50-staff-portal-theme.spec.ts'],
+      use: { storageState: '.auth/staff.json' },
+    },
     // Unauthenticated interaction tests (auth signup pages, public flows)
     {
       name: 'interactions-public',

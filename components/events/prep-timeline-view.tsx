@@ -26,10 +26,10 @@ const CATEGORY_COLORS: Record<
     text: 'text-purple-900',
   },
   morning: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    badge: 'bg-blue-100 text-blue-800',
-    text: 'text-blue-900',
+    bg: 'bg-brand-50',
+    border: 'border-brand-200',
+    badge: 'bg-brand-100 text-brand-800',
+    text: 'text-brand-900',
   },
   afternoon: {
     bg: 'bg-amber-50',

@@ -71,7 +71,7 @@ export default async function AdminHubGroupTranscriptPage({
             {transcript.group.tenantName ?? transcript.group.tenantId ?? 'No tenant'}
           </p>
         </div>
-        <Link href="/admin/hub" className="text-sm text-blue-600">
+        <Link href="/admin/hub" className="text-sm text-brand-600">
           Back to groups
         </Link>
       </div>
@@ -116,7 +116,7 @@ export default async function AdminHubGroupTranscriptPage({
         </label>
         <button
           type="submit"
-          className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-600"
+          className="rounded-lg bg-brand-700 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-600"
         >
           Apply
         </button>

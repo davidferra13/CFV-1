@@ -36,13 +36,13 @@ const SECTION_TYPE_LABELS: Record<ProposalSectionType, string> = {
 }
 
 const SECTION_TYPE_ICONS: Record<ProposalSectionType, string> = {
-  cover: '\u25A0',   // square
-  menu: '\u2630',    // trigram
+  cover: '\u25A0', // square
+  menu: '\u2630', // trigram
   pricing: '$',
-  terms: '\u00A7',   // section sign
-  photos: '\u25A3',  // square with fill
-  bio: '\u263A',     // smiley
-  custom: '\u270E',  // pencil
+  terms: '\u00A7', // section sign
+  photos: '\u25A3', // square with fill
+  bio: '\u263A', // smiley
+  custom: '\u270E', // pencil
 }
 
 // ============================================
@@ -123,9 +123,7 @@ function SectionCard({
       onDragEnd={dragHandlers.handleDragEnd}
       onDragOver={(e) => e.preventDefault()}
       className={`border rounded-lg transition-all ${
-        section.visible
-          ? 'border-gray-200 bg-white'
-          : 'border-gray-100 bg-gray-50 opacity-60'
+        section.visible ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50 opacity-60'
       }`}
     >
       {/* Section header */}
@@ -151,7 +149,7 @@ function SectionCard({
         </span>
         <button
           onClick={onToggleExpand}
-          className="flex-1 text-left text-sm font-medium text-gray-900 hover:text-indigo-600"
+          className="flex-1 text-left text-sm font-medium text-gray-900 hover:text-brand-600"
         >
           {section.title || SECTION_TYPE_LABELS[section.type]}
         </button>
@@ -170,10 +168,7 @@ function SectionCard({
         </button>
 
         {/* Expand/collapse */}
-        <button
-          onClick={onToggleExpand}
-          className="text-gray-400 hover:text-gray-600 px-1"
-        >
+        <button onClick={onToggleExpand} className="text-gray-400 hover:text-gray-600 px-1">
           {isExpanded ? '\u25B2' : '\u25BC'}
         </button>
 
@@ -218,11 +213,7 @@ function AddSectionPicker({ onAdd }: { onAdd: (type: ProposalSectionType) => voi
 
   return (
     <div className="relative">
-      <Button
-        variant="secondary"
-        onClick={() => setOpen(!open)}
-        className="w-full"
-      >
+      <Button variant="secondary" onClick={() => setOpen(!open)} className="w-full">
         + Add Section
       </Button>
 
@@ -237,9 +228,7 @@ function AddSectionPicker({ onAdd }: { onAdd: (type: ProposalSectionType) => voi
               }}
               className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
             >
-              <span className="text-gray-400 w-5 text-center">
-                {SECTION_TYPE_ICONS[type]}
-              </span>
+              <span className="text-gray-400 w-5 text-center">{SECTION_TYPE_ICONS[type]}</span>
               {SECTION_TYPE_LABELS[type]}
             </button>
           ))}
@@ -283,9 +272,7 @@ export function ProposalBuilder({
   // Toggle section visibility
   const handleToggleVisibility = useCallback(
     (id: string) => {
-      updateSections(
-        sections.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s))
-      )
+      updateSections(sections.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s)))
     },
     [sections, updateSections]
   )
@@ -336,25 +323,14 @@ export function ProposalBuilder({
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
-            onClick={() =>
-              setPreviewMode(
-                previewMode === 'side-by-side' ? 'none' : 'side-by-side'
-              )
-            }
+            onClick={() => setPreviewMode(previewMode === 'side-by-side' ? 'none' : 'side-by-side')}
           >
             {showSideBySide ? 'Hide Preview' : 'Side-by-Side'}
           </Button>
-          <Button
-            variant="ghost"
-            onClick={() => setPreviewMode('fullscreen')}
-          >
+          <Button variant="ghost" onClick={() => setPreviewMode('fullscreen')}>
             Full Preview
           </Button>
-          <Button
-            variant="secondary"
-            onClick={handleSave}
-            disabled={saving || !dirty}
-          >
+          <Button variant="secondary" onClick={handleSave} disabled={saving || !dirty}>
             {saving ? 'Saving...' : dirty ? 'Save Draft' : 'Saved'}
           </Button>
           {onPublish && (
@@ -377,9 +353,7 @@ export function ProposalBuilder({
                 section={section}
                 index={index}
                 isExpanded={expandedId === section.id}
-                onToggleExpand={() =>
-                  setExpandedId(expandedId === section.id ? null : section.id)
-                }
+                onToggleExpand={() => setExpandedId(expandedId === section.id ? null : section.id)}
                 onToggleVisibility={() => handleToggleVisibility(section.id)}
                 onUpdate={handleUpdateSection}
                 onRemove={() => handleRemoveSection(section.id)}
@@ -392,11 +366,7 @@ export function ProposalBuilder({
 
         {/* Side-by-side preview */}
         {showSideBySide && (
-          <ProposalLivePreview
-            sections={sections}
-            branding={branding}
-            mode="side-by-side"
-          />
+          <ProposalLivePreview sections={sections} branding={branding} mode="side-by-side" />
         )}
       </div>
 

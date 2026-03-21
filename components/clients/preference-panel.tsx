@@ -40,7 +40,7 @@ const RATING_COLORS: Record<PreferenceRating, string> = {
 }
 
 const TYPE_COLORS: Record<PreferenceItemType, string> = {
-  dish: 'bg-blue-900/40 text-blue-300',
+  dish: 'bg-brand-900/40 text-brand-300',
   ingredient: 'bg-purple-900/40 text-purple-300',
   cuisine: 'bg-teal-900/40 text-teal-300',
   technique: 'bg-orange-900/40 text-orange-300',

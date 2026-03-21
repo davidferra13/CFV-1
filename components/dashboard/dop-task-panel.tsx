@@ -151,7 +151,7 @@ export function DOPTaskPanel({ digest, weatherByEventId }: Props) {
                         const w = weatherByEventId[eventId]
                         return (
                           <span
-                            className="inline-flex items-center gap-0.5 text-sky-400 font-normal"
+                            className="inline-flex items-center gap-0.5 text-brand-400 font-normal"
                             title={w.description}
                           >
                             <span>{w.emoji}</span>

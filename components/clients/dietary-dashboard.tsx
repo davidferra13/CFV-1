@@ -270,9 +270,9 @@ export function DietaryDashboard({ clientId, profile, matrixData }: DietaryDashb
 
       {/* Edit Mode: Add items */}
       {isEditing && (
-        <Card className="border-blue-500/30 print:hidden">
+        <Card className="border-brand-500/30 print:hidden">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-blue-400">
+            <CardTitle className="text-sm font-semibold text-brand-400">
               Edit Client Dietary Info
             </CardTitle>
           </CardHeader>
@@ -523,13 +523,13 @@ function PersonBreakdown({
           {restrictions.map((r, i) => (
             <span
               key={r}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-brand-500/10 text-brand-400 border border-brand-500/20"
             >
               {r}
               {isEditing && onRemoveRestriction && (
                 <button
                   onClick={() => onRemoveRestriction(i)}
-                  className="text-blue-400/60 hover:text-blue-300"
+                  className="text-brand-400/60 hover:text-brand-300"
                 >
                   <X size={12} />
                 </button>

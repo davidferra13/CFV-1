@@ -464,7 +464,7 @@ export default async function DailyOpsPage() {
                         ? 'bg-red-950/30 border border-red-900/40'
                         : alert.type === 'expiring'
                           ? 'bg-amber-950/30 border border-amber-900/40'
-                          : 'bg-sky-950/20 border border-sky-900/30'
+                          : 'bg-brand-950/20 border border-brand-900/30'
                     }`}
                   >
                     <div className="flex items-center gap-3">

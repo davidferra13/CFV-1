@@ -111,6 +111,15 @@ fi
 echo "$BRANCH" > .next-staging/cache/.branch 2>/dev/null || true
 echo "  Build succeeded (staged in .next-staging)"
 
+# Stamp the service worker with the build version so its cache key rotates on every deploy.
+# This replaces the __BUILD_VERSION__ placeholder in public/sw.js with the actual BUILD_ID.
+BUILT_ID=$(cat .next-staging/BUILD_ID)
+SW_FILE="public/sw.js"
+if [ -f "$SW_FILE" ]; then
+  sed -i "s/__BUILD_VERSION__/${BUILT_ID}/g" "$SW_FILE"
+  echo "  Service worker stamped with BUILD_ID: $BUILT_ID"
+fi
+
 BUILD_END=$(date +%s)
 BUILD_DURATION=$((BUILD_END - BUILD_START))
 BUILD_MIN=$((BUILD_DURATION / 60))

@@ -117,13 +117,13 @@ const ACTION_LABELS: Record<string, string> = {
 const TIER_COLORS: Record<NotificationTier, string> = {
   critical: 'bg-red-500/20 text-red-400 border-red-500/30',
   alert: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  info: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  info: 'bg-brand-500/20 text-brand-400 border-brand-500/30',
 }
 
 const TIER_DOT_COLORS: Record<NotificationTier, string> = {
   critical: 'bg-red-400',
   alert: 'bg-amber-400',
-  info: 'bg-blue-400',
+  info: 'bg-brand-400',
 }
 
 // Group order for display

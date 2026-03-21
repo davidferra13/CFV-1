@@ -424,7 +424,7 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
                             : item.icon === '◆'
                               ? 'bg-amber-500/20 text-amber-400'
                               : item.icon === '↻'
-                                ? 'bg-sky-500/20 text-sky-400'
+                                ? 'bg-brand-500/20 text-brand-400'
                                 : 'bg-stone-800 text-stone-400'
                       }`}
                     >

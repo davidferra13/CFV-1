@@ -101,7 +101,7 @@ export function PrepTimelinePanel({ eventId }: { eventId: string }) {
               {task.notes && <div className="text-xs-tight text-amber-600">{task.notes}</div>}
             </div>
             {task.canParallelize && (
-              <div className="flex-shrink-0 text-xxs text-blue-500 bg-blue-950 px-1 rounded">
+              <div className="flex-shrink-0 text-xxs text-brand-500 bg-brand-950 px-1 rounded">
                 parallel
               </div>
             )}

@@ -29,7 +29,7 @@ const FILTER_TABS: { value: FilterTab; label: string }[] = [
 
 const STATUS_STYLES: Record<GiftCertificateStatus, string> = {
   active: 'bg-emerald-900/30 text-emerald-400',
-  redeemed: 'bg-blue-900/30 text-blue-400',
+  redeemed: 'bg-brand-900/30 text-brand-400',
   expired: 'bg-red-900/30 text-red-400',
   voided: 'bg-stone-800/50 text-stone-500',
 }

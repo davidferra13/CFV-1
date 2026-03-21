@@ -31,7 +31,7 @@ export function PhotoPermissionIndicator({
           ? 'bg-red-900 text-red-700'
           : level === 'portfolio_only'
             ? 'bg-amber-900 text-amber-700'
-            : 'bg-blue-900 text-blue-700'
+            : 'bg-brand-900 text-brand-700'
       }`}
       title={LABELS[level]}
     >

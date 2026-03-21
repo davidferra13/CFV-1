@@ -24,7 +24,7 @@ interface BetaSignup {
 
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-900 text-amber-300',
-  invited: 'bg-sky-900 text-sky-300',
+  invited: 'bg-brand-900 text-brand-300',
   onboarded: 'bg-emerald-900 text-emerald-300',
   declined: 'bg-red-900 text-red-300',
 }

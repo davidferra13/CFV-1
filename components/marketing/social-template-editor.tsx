@@ -149,7 +149,7 @@ export function SocialTemplateEditor({ template, onClose }: Props) {
           <p className="text-sm text-gray-800 whitespace-pre-wrap mb-2">{previewContent}</p>
 
           {/* Hashtags */}
-          {hashtagString && <p className="text-sm text-blue-600">{hashtagString}</p>}
+          {hashtagString && <p className="text-sm text-brand-600">{hashtagString}</p>}
 
           {/* Mock engagement bar */}
           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
@@ -289,12 +289,12 @@ export function SocialTemplateEditor({ template, onClose }: Props) {
                 {hashtags.map((tag, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded-full"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-brand-50 text-brand-700 rounded-full"
                   >
                     {tag}
                     <button
                       onClick={() => handleRemoveHashtag(i)}
-                      className="text-blue-400 hover:text-blue-600"
+                      className="text-brand-400 hover:text-brand-600"
                     >
                       x
                     </button>

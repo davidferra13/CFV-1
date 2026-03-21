@@ -102,31 +102,29 @@ export default function MaintenanceSchedule({ initialSchedule }: MaintenanceSche
         </div>
       </div>
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       {schedule.length === 0 && (
         <p className="text-sm text-gray-500 py-8 text-center">
-          No equipment with maintenance schedules. Set a maintenance interval on your equipment to start tracking.
+          No equipment with maintenance schedules. Set a maintenance interval on your equipment to
+          start tracking.
         </p>
       )}
 
       <div className="space-y-2">
         {schedule.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-md border border-gray-200 bg-white p-3"
-          >
+          <div key={item.id} className="rounded-md border border-gray-200 bg-white p-3">
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-gray-900">{item.name}</span>
-                  <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[item.status]}`}>
+                  <span
+                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[item.status]}`}
+                  >
                     {STATUS_LABELS[item.status]}
                   </span>
                   {item.calibrationRequired && (
-                    <span className="inline-flex items-center rounded-full bg-blue-100 border border-blue-200 px-2 py-0.5 text-xs font-medium text-blue-800">
+                    <span className="inline-flex items-center rounded-full bg-brand-100 border border-brand-200 px-2 py-0.5 text-xs font-medium text-brand-800">
                       Calibration
                     </span>
                   )}
@@ -143,9 +141,14 @@ export default function MaintenanceSchedule({ initialSchedule }: MaintenanceSche
                     <span>
                       Next: {new Date(item.nextMaintenanceDue).toLocaleDateString()}
                       {item.daysUntilDue !== null && (
-                        <> ({item.daysUntilDue <= 0
-                          ? `${Math.abs(item.daysUntilDue)} days overdue`
-                          : `in ${item.daysUntilDue} days`})</>
+                        <>
+                          {' '}
+                          (
+                          {item.daysUntilDue <= 0
+                            ? `${Math.abs(item.daysUntilDue)} days overdue`
+                            : `in ${item.daysUntilDue} days`}
+                          )
+                        </>
                       )}
                     </span>
                   )}
@@ -184,7 +187,9 @@ export default function MaintenanceSchedule({ initialSchedule }: MaintenanceSche
                       className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
                     >
                       {MAINTENANCE_TYPES.map((t) => (
-                        <option key={t.value} value={t.value}>{t.label}</option>
+                        <option key={t.value} value={t.value}>
+                          {t.label}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -210,7 +215,9 @@ export default function MaintenanceSchedule({ initialSchedule }: MaintenanceSche
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Performed By</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Performed By
+                    </label>
                     <input
                       type="text"
                       placeholder="Name or vendor"

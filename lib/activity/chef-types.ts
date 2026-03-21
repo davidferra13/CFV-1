@@ -349,7 +349,7 @@ export type ResumeItem = {
   title: string
   subtitle: string
   status: string
-  statusColor: 'amber' | 'blue' | 'green' | 'red' | 'purple' | 'stone'
+  statusColor: 'amber' | 'brand' | 'green' | 'red' | 'purple' | 'stone'
   lastAction?: string
   lastActionAt?: string
   href: string
@@ -364,14 +364,30 @@ export const DOMAIN_CONFIG: Record<
   event: { label: 'Event', color: 'text-emerald-700', bgColor: 'bg-emerald-100' },
   inquiry: { label: 'Inquiry', color: 'text-amber-700', bgColor: 'bg-amber-100' },
   quote: { label: 'Quote', color: 'text-purple-700', bgColor: 'bg-purple-100' },
-  menu: { label: 'Menu', color: 'text-blue-700', bgColor: 'bg-blue-100' },
+  menu: {
+    label: 'Menu',
+    color: 'text-brand-800 dark:text-brand-400',
+    bgColor: 'bg-brand-100 dark:bg-brand-950',
+  },
   recipe: { label: 'Recipe', color: 'text-teal-700', bgColor: 'bg-teal-100' },
-  client: { label: 'Client', color: 'text-indigo-700', bgColor: 'bg-indigo-100' },
+  client: {
+    label: 'Client',
+    color: 'text-brand-800 dark:text-brand-400',
+    bgColor: 'bg-brand-100 dark:bg-brand-950',
+  },
   financial: { label: 'Financial', color: 'text-green-700', bgColor: 'bg-green-100' },
-  communication: { label: 'Comms', color: 'text-sky-700', bgColor: 'bg-sky-100' },
+  communication: {
+    label: 'Comms',
+    color: 'text-brand-800 dark:text-brand-400',
+    bgColor: 'bg-brand-100 dark:bg-brand-950',
+  },
   operational: { label: 'Ops', color: 'text-stone-400', bgColor: 'bg-stone-800' },
   staff: { label: 'Staff', color: 'text-orange-700', bgColor: 'bg-orange-100' },
-  scheduling: { label: 'Schedule', color: 'text-cyan-700', bgColor: 'bg-cyan-100' },
+  scheduling: {
+    label: 'Schedule',
+    color: 'text-brand-800 dark:text-brand-400',
+    bgColor: 'bg-brand-100 dark:bg-brand-950',
+  },
   document: { label: 'Document', color: 'text-rose-700', bgColor: 'bg-rose-100' },
   marketing: { label: 'Marketing', color: 'text-fuchsia-700', bgColor: 'bg-fuchsia-100' },
   ai: { label: 'AI', color: 'text-violet-700', bgColor: 'bg-violet-100' },

@@ -95,7 +95,7 @@ export default async function AdminReferralPartnersPage() {
           <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">
             In Showcase
           </p>
-          <p className="text-2xl font-bold text-blue-700">{showcaseCount}</p>
+          <p className="text-2xl font-bold text-brand-700">{showcaseCount}</p>
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
           <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">
@@ -185,7 +185,7 @@ export default async function AdminReferralPartnersPage() {
                     <td className="px-4 py-2.5 text-xs text-stone-500">
                       <Link
                         href={`/admin/users/${partner.tenant_id}`}
-                        className="hover:text-blue-600 hover:underline"
+                        className="hover:text-brand-600 hover:underline"
                       >
                         {chefMap[partner.tenant_id] ?? '-'}
                       </Link>
@@ -204,7 +204,7 @@ export default async function AdminReferralPartnersPage() {
                     <td className="px-4 py-2.5 text-center">
                       {partner.is_showcase_visible ? (
                         <span title="Visible in showcase">
-                          <Globe size={14} className="text-blue-500 mx-auto" />
+                          <Globe size={14} className="text-brand-500 mx-auto" />
                         </span>
                       ) : (
                         <span className="text-slate-200">-</span>

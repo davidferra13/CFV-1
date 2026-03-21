@@ -19,7 +19,7 @@ export const metadata: Metadata = { title: 'Paid Invoices - ChefFlow' }
 const STATUS_STYLES: Record<string, string> = {
   paid: 'bg-green-900 text-green-700',
   confirmed: 'bg-emerald-900 text-emerald-700',
-  in_progress: 'bg-blue-900 text-blue-700',
+  in_progress: 'bg-brand-900 text-brand-700',
   completed: 'bg-stone-800 text-stone-400',
 }
 

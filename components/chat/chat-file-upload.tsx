@@ -35,7 +35,7 @@ function getFileIcon(type: string) {
     return <FileSpreadsheet className="w-10 h-10 text-emerald-600" />
   }
   if (type.includes('word') || type === 'application/msword') {
-    return <FileText className="w-10 h-10 text-blue-600" />
+    return <FileText className="w-10 h-10 text-brand-600" />
   }
   return <File className="w-10 h-10 text-stone-500" />
 }

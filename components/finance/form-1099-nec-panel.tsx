@@ -45,10 +45,10 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
   return (
     <div className="space-y-6">
       {/* Disclaimer */}
-      <Card className="border-blue-200 bg-blue-950">
+      <Card className="border-brand-200 bg-brand-950">
         <CardContent className="py-3">
-          <p className="text-sm text-blue-800 font-medium">Reference Report Only</p>
-          <p className="text-xs text-blue-700 mt-1">
+          <p className="text-sm text-brand-800 font-medium">Reference Report Only</p>
+          <p className="text-xs text-brand-700 mt-1">
             This report is for tracking and accountant reference only. 1099-NEC forms must be filed
             with the IRS using IRS-approved software or through your accountant. Recipient copies
             are due by January 31; IRS filing deadline varies.

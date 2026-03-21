@@ -1,4 +1,4 @@
-000000Flow V1 — Project Rules
+                                                                000000Flow V1 — Project Rules
 
 This file is read by Claude Code at the start of every conversation. These rules are mandatory.
 

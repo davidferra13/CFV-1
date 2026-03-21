@@ -43,7 +43,7 @@ export function GuestCodePanel({ eventId, guestCode, guestLeadCount }: Props) {
         {guestLeadCount > 0 && (
           <a
             href="/guest-leads"
-            className="text-sm font-medium text-blue-600 hover:text-blue-700 whitespace-nowrap"
+            className="text-sm font-medium text-brand-600 hover:text-brand-700 whitespace-nowrap"
           >
             {guestLeadCount} lead{guestLeadCount !== 1 ? 's' : ''}
           </a>

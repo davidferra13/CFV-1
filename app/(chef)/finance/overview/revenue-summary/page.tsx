@@ -22,7 +22,7 @@ const STATUS_STYLES: Record<string, string> = {
   completed: 'bg-green-900 text-green-700',
   confirmed: 'bg-teal-900 text-teal-700',
   paid: 'bg-emerald-900 text-emerald-700',
-  in_progress: 'bg-blue-900 text-blue-700',
+  in_progress: 'bg-brand-900 text-brand-700',
 }
 
 export default async function RevenueSummaryPage() {

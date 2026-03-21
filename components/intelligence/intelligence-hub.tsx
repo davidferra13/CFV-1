@@ -552,7 +552,7 @@ export async function IntelligenceHubContent() {
                 </div>
               </div>
               {dietary.risingRestrictions.length > 0 && (
-                <div className="rounded-md bg-blue-50 dark:bg-blue-950/20 p-2 text-sm">
+                <div className="rounded-md bg-brand-50 dark:bg-brand-950/20 p-2 text-sm">
                   <p className="font-medium">
                     Rising demand: {dietary.risingRestrictions.join(', ')}
                   </p>
@@ -1196,7 +1196,7 @@ export async function IntelligenceHubContent() {
                 </div>
               ))}
               {seasonalMenu.currentSeasonRecommendations.slice(0, 2).map((r, i) => (
-                <div key={i} className="rounded-md bg-blue-50 dark:bg-blue-950/20 p-2 text-sm">
+                <div key={i} className="rounded-md bg-brand-50 dark:bg-brand-950/20 p-2 text-sm">
                   <p className="text-muted-foreground text-xs">{r}</p>
                 </div>
               ))}
@@ -1319,7 +1319,7 @@ export async function IntelligenceHubContent() {
                 </div>
               ))}
               {churnPrevention.topPreventionAction && (
-                <div className="rounded-md bg-blue-50 dark:bg-blue-950/20 p-2 text-sm">
+                <div className="rounded-md bg-brand-50 dark:bg-brand-950/20 p-2 text-sm">
                   <p className="font-medium">Top action: {churnPrevention.topPreventionAction}</p>
                 </div>
               )}

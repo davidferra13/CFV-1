@@ -239,7 +239,7 @@ export function GroceryListView({ data, eventId }: GroceryListViewProps) {
               if (e.key === 'Enter') addCustomItem()
             }}
             placeholder="Paper towels, ice, etc."
-            className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
           <select
             value={newItemSection}
@@ -261,7 +261,7 @@ export function GroceryListView({ data, eventId }: GroceryListViewProps) {
           <button
             onClick={addCustomItem}
             disabled={!newItemName.trim()}
-            className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
           >
             Add
           </button>

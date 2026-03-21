@@ -17,16 +17,16 @@ function timeAgo(dateStr: string): string {
 
 const PLATFORM_COLORS: Record<string, string> = {
   Thumbtack: 'bg-green-900/50 text-green-300',
-  TakeAChef: 'bg-blue-900/50 text-blue-300',
+  TakeAChef: 'bg-brand-900/50 text-brand-300',
   Yhangry: 'bg-purple-900/50 text-purple-300',
   Bark: 'bg-orange-900/50 text-orange-300',
   'The Knot': 'bg-pink-900/50 text-pink-300',
   Cozymeal: 'bg-amber-900/50 text-amber-300',
   GigSalad: 'bg-teal-900/50 text-teal-300',
-  PrivateChefManager: 'bg-indigo-900/50 text-indigo-300',
-  HireAChef: 'bg-cyan-900/50 text-cyan-300',
+  PrivateChefManager: 'bg-brand-900/50 text-brand-300',
+  HireAChef: 'bg-brand-900/50 text-brand-300',
   CuisineistChef: 'bg-rose-900/50 text-rose-300',
-  Wix: 'bg-sky-900/50 text-sky-300',
+  Wix: 'bg-brand-900/50 text-brand-300',
 }
 
 function PlatformBadge({ platform }: { platform: string }) {

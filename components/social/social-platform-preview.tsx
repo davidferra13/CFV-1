@@ -95,7 +95,7 @@ export function SocialPlatformPreview({
           <p className="text-xs text-stone-400 italic">No caption yet</p>
         )}
         {visibleHashtags.length > 0 && (
-          <p className="text-xs text-sky-600">
+          <p className="text-xs text-brand-600">
             {visibleHashtags.map((h) => `#${h.replace(/^#/, '')}`).join(' ')}
             {hashtagLimit > 0 && hashtags.length > hashtagLimit && (
               <span className="text-stone-400"> (+{hashtags.length - hashtagLimit} more)</span>

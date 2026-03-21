@@ -24,7 +24,7 @@ export function OfflineStatusBar() {
       <div
         role="status"
         aria-live="polite"
-        className="fixed top-0 left-0 right-0 z-[60] bg-blue-500/40 backdrop-blur-md text-blue-100"
+        className="fixed top-0 left-0 right-0 z-[60] bg-brand-500/40 backdrop-blur-md text-brand-100"
       >
         <div className="py-2 px-4 text-center text-sm font-medium">
           <span className="flex items-center justify-center gap-2">
@@ -33,9 +33,9 @@ export function OfflineStatusBar() {
           </span>
         </div>
         {/* Progress bar */}
-        <div className="h-0.5 bg-blue-700/50">
+        <div className="h-0.5 bg-brand-700/50">
           <div
-            className="h-full bg-blue-200 transition-all duration-300"
+            className="h-full bg-brand-200 transition-all duration-300"
             style={{ width: `${pct}%` }}
           />
         </div>

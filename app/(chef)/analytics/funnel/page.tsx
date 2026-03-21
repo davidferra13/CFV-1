@@ -143,8 +143,8 @@ export default async function FunnelPage() {
         <Card>
           <CardContent className="py-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-blue-950 flex items-center justify-center">
-                <Clock className="h-4 w-4 text-blue-400" />
+              <div className="w-9 h-9 rounded-lg bg-brand-950 flex items-center justify-center">
+                <Clock className="h-4 w-4 text-brand-400" />
               </div>
               <div>
                 <p className="text-xs text-stone-500">Avg Response Time</p>

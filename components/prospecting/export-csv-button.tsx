@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { exportProspectsToCSV } from '@/lib/prospecting/pipeline-actions'
 import { Download, Loader2 } from '@/components/ui/icons'
+import { toast } from 'sonner'
 
 export function ExportCSVButton() {
   const [isPending, startTransition] = useTransition()
@@ -24,7 +25,7 @@ export function ExportCSVButton() {
         document.body.removeChild(link)
         URL.revokeObjectURL(url)
       } catch {
-        // silently fail - user can retry
+        toast.error('Failed to export CSV')
       }
     })
   }

@@ -10,7 +10,7 @@ const TIER_STYLES: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',
   silver: 'bg-stone-700 text-stone-300',
   gold: 'bg-yellow-900 text-yellow-800',
-  platinum: 'bg-sky-900 text-sky-800',
+  platinum: 'bg-brand-900 text-brand-800',
 }
 
 const VIEWS = [

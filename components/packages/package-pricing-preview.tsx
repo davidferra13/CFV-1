@@ -103,7 +103,7 @@ export function PackagePricingPreview({
           max={effectiveMax}
           value={guestCount}
           onChange={(e) => setGuestCount(parseInt(e.target.value))}
-          className="w-full accent-blue-600"
+          className="w-full accent-brand-600"
         />
         <div className="flex justify-between text-xs text-gray-400 mt-1">
           <span>{minGuests}</span>
@@ -123,7 +123,7 @@ export function PackagePricingPreview({
                 onClick={() => setSeasonKey(opt.value)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                   seasonKey === opt.value
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >

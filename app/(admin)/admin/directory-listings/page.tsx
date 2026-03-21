@@ -76,7 +76,7 @@ export default async function AdminDirectoryListingsPage() {
           { label: 'Total', value: stats.total, color: 'text-stone-100' },
           { label: 'Discovered', value: stats.discovered, color: 'text-stone-300' },
           { label: 'Pending', value: stats.pendingSubmissions, color: 'text-amber-300' },
-          { label: 'Claimed', value: stats.claimed, color: 'text-sky-300' },
+          { label: 'Claimed', value: stats.claimed, color: 'text-brand-300' },
           { label: 'Verified', value: stats.verified, color: 'text-emerald-300' },
           { label: 'Removed', value: stats.removed, color: 'text-red-300' },
           {

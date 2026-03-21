@@ -81,7 +81,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 }
 
 const categoryColors: Record<string, string> = {
-  inquiry: 'text-sky-500',
+  inquiry: 'text-brand-500',
   quote: 'text-amber-500',
   event: 'text-brand-600',
   payment: 'text-emerald-500',
@@ -90,7 +90,7 @@ const categoryColors: Record<string, string> = {
   ops: 'text-orange-500',
   loyalty: 'text-pink-500',
   goals: 'text-teal-500',
-  lead: 'text-cyan-500',
+  lead: 'text-brand-500',
   protection: 'text-red-500',
   wellbeing: 'text-lime-500',
   review: 'text-yellow-500',
@@ -98,7 +98,7 @@ const categoryColors: Record<string, string> = {
 }
 
 const categoryBadgeColors: Record<string, string> = {
-  inquiry: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+  inquiry: 'bg-brand-500/10 text-brand-400 border-brand-500/20',
   quote: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   event: 'bg-brand-500/10 text-brand-400 border-brand-500/20',
   payment: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -107,7 +107,7 @@ const categoryBadgeColors: Record<string, string> = {
   ops: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
   loyalty: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
   goals: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
-  lead: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+  lead: 'bg-brand-500/10 text-brand-400 border-brand-500/20',
   protection: 'bg-red-500/10 text-red-400 border-red-500/20',
   wellbeing: 'bg-lime-500/10 text-lime-400 border-lime-500/20',
   review: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',

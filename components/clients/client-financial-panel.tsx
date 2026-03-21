@@ -52,7 +52,7 @@ type Props = {
 
 const PAYMENT_STATUS_STYLES: Record<string, { label: string; className: string }> = {
   paid: { label: 'Paid in Full', className: 'bg-green-900 text-green-800' },
-  deposit_paid: { label: 'Deposit Paid', className: 'bg-blue-900 text-blue-800' },
+  deposit_paid: { label: 'Deposit Paid', className: 'bg-brand-900 text-brand-800' },
   partial: { label: 'Partial', className: 'bg-amber-900 text-amber-800' },
   unpaid: { label: 'Unpaid', className: 'bg-red-900 text-red-800' },
   refunded: { label: 'Refunded', className: 'bg-stone-800 text-stone-400' },
@@ -60,8 +60,8 @@ const PAYMENT_STATUS_STYLES: Record<string, { label: string; className: string }
 
 const EVENT_STATUS_STYLES: Record<string, string> = {
   completed: 'text-green-700',
-  confirmed: 'text-blue-700',
-  paid: 'text-blue-700',
+  confirmed: 'text-brand-700',
+  paid: 'text-brand-700',
   accepted: 'text-brand-400',
   proposed: 'text-amber-700',
   draft: 'text-stone-500',
@@ -72,7 +72,7 @@ const EVENT_STATUS_STYLES: Record<string, string> = {
 const ENTRY_TYPE_STYLES: Record<string, { label: string; className: string }> = {
   payment: { label: 'Payment', className: 'bg-green-900 text-green-800' },
   deposit: { label: 'Deposit', className: 'bg-brand-900 text-brand-300' },
-  installment: { label: 'Installment', className: 'bg-blue-900 text-blue-800' },
+  installment: { label: 'Installment', className: 'bg-brand-900 text-brand-800' },
   final_payment: { label: 'Final Payment', className: 'bg-green-900 text-green-800' },
   tip: { label: 'Tip', className: 'bg-purple-900 text-purple-800' },
   refund: { label: 'Refund', className: 'bg-red-900 text-red-800' },
@@ -145,11 +145,11 @@ export function ClientFinancialPanel({ eventBreakdown, ledgerEntries, summary }:
               </div>
             )}
 
-            <div className="p-4 rounded-lg bg-blue-950 border border-blue-100">
-              <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">
+            <div className="p-4 rounded-lg bg-brand-950 border border-brand-100">
+              <p className="text-xs font-medium text-brand-600 uppercase tracking-wide">
                 Collection Rate
               </p>
-              <p className="text-xl font-bold text-blue-900 mt-1">
+              <p className="text-xl font-bold text-brand-900 mt-1">
                 {summary.collectionRatePercent}%
               </p>
             </div>

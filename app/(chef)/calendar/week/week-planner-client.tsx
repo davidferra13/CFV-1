@@ -38,13 +38,13 @@ const BLOCK_COLORS: Record<PrepBlockType, string> = {
   grocery_run: 'bg-green-900 text-green-800 border-green-200',
   specialty_sourcing: 'bg-emerald-900 text-emerald-800 border-emerald-200',
   prep_session: 'bg-orange-900 text-orange-800 border-orange-200',
-  packing: 'bg-blue-900 text-blue-800 border-blue-200',
+  packing: 'bg-brand-900 text-brand-800 border-brand-200',
   travel_to_event: 'bg-purple-900 text-purple-800 border-purple-200',
   mental_prep: 'bg-pink-900 text-pink-800 border-pink-200',
   equipment_prep: 'bg-yellow-900 text-yellow-800 border-yellow-200',
   admin: 'bg-stone-800 text-stone-300 border-stone-700',
   cleanup: 'bg-stone-800 text-stone-300 border-stone-700',
-  custom: 'bg-indigo-900 text-indigo-800 border-indigo-200',
+  custom: 'bg-brand-900 text-brand-800 border-brand-200',
 }
 
 function fmtTime(block: PrepBlock): string {
@@ -684,7 +684,7 @@ export function WeekPlannerClient({
           { color: 'bg-amber-900 border-amber-300', label: 'Event (anchor)' },
           { color: 'bg-orange-900 border-orange-200', label: 'Prep session' },
           { color: 'bg-green-900 border-green-200', label: 'Grocery / Sourcing' },
-          { color: 'bg-blue-900 border-blue-200', label: 'Packing' },
+          { color: 'bg-brand-900 border-brand-200', label: 'Packing' },
           { color: 'bg-green-950 border-green-200', label: 'Completed' },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">

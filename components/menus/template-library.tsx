@@ -25,7 +25,7 @@ const SEASON_COLORS: Record<TemplateSeason, string> = {
   spring: 'bg-green-100 text-green-800',
   summer: 'bg-yellow-100 text-yellow-800',
   fall: 'bg-orange-100 text-orange-800',
-  winter: 'bg-blue-100 text-blue-800',
+  winter: 'bg-brand-100 text-brand-800',
   all_season: 'bg-gray-100 text-gray-800',
 }
 

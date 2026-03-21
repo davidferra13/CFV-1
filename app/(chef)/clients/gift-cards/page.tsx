@@ -152,7 +152,7 @@ export default async function GiftCardsPage() {
                           <div className="text-xs text-stone-400 mt-0.5 capitalize">
                             {isGiftCard ? 'gift card' : 'voucher'}
                             {incentive.purchase_status === 'paid' && (
-                              <span className="ml-1.5 text-blue-500">• purchased</span>
+                              <span className="ml-1.5 text-brand-500">• purchased</span>
                             )}
                           </div>
                         </td>

@@ -277,7 +277,7 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
                   <span className="rounded-full border border-amber-700 bg-amber-950 px-2 py-0.5 text-amber-300">
                     Open requests: {recurringCommandCenter.openMealRequestCount}
                   </span>
-                  <span className="rounded-full border border-sky-700 bg-sky-950 px-2 py-0.5 text-sky-300">
+                  <span className="rounded-full border border-brand-700 bg-brand-950 px-2 py-0.5 text-brand-300">
                     Pending approvals: {recurringCommandCenter.pendingRecommendationResponseCount}
                   </span>
                 </div>

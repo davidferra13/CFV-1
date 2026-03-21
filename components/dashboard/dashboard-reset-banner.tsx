@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { updateChefPreferences } from '@/lib/chef/actions'
 import { DEFAULT_DASHBOARD_WIDGETS } from '@/lib/scheduling/types'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 /**
  * Shows once for existing users who have all 107 widgets enabled.
@@ -36,7 +37,7 @@ export function DashboardResetBanner({
         setDismissed(true)
         router.refresh()
       } catch {
-        // silently fail - not critical
+        toast.error('Failed to reset dashboard layout')
       }
     })
   }
