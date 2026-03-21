@@ -45,3 +45,8 @@ This is a **Pro** feature (menu engineering / optimization tools). Gating should
 
 Passing: client_parse, allergen_risk, correspondence, menu_suggestions, quote_draft
 Failing: inquiry_parse (0%)
+
+## 2026-03-21 02:35 UTC - 0% pass rate - Run 197bbed6
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)

@@ -21,13 +21,7 @@ function safeRedirectPath(raw: string | null): string {
     // Parse as if relative to localhost - rejects anything with an external host
     const url = new URL(raw, 'http://localhost')
     if (url.origin !== 'http://localhost') return '/'
-
-    const pathname = url.pathname
-    if (pathname.startsWith('/api') || pathname.startsWith('/_next')) return '/'
-    if (pathname.startsWith('/auth') && pathname !== '/auth/role-selection') return '/'
-    if (pathname === '/unauthorized') return '/'
-
-    return pathname + url.search
+    return url.pathname + url.search
   } catch {
     return '/'
   }
@@ -221,12 +215,6 @@ function SignInForm() {
       })
       router.push(redirectPath)
       router.refresh()
-
-      window.setTimeout(() => {
-        if (window.location.pathname === '/auth/signin') {
-          window.location.assign(redirectPath)
-        }
-      }, 1500)
     } catch (err) {
       const error = err as Error
       setError(normalizeAuthErrorMessage(error.message))
