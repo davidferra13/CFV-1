@@ -80,10 +80,11 @@ export function filterNavGroup(group: NavGroup, filter: string): NavGroup | null
 
   const groupMatch = group.label.toLowerCase().includes(q)
   const items = group.items
+    .filter((item) => !item.hidden)
     .map((item) => {
       const itemMatch = item.label.toLowerCase().includes(q)
-      const children = (item.children ?? []).filter((child) =>
-        child.label.toLowerCase().includes(q)
+      const children = (item.children ?? []).filter(
+        (child) => !child.hidden && child.label.toLowerCase().includes(q)
       )
 
       if (groupMatch || itemMatch || children.length > 0) {

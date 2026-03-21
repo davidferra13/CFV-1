@@ -463,10 +463,10 @@ export function ChefMobileNav({
       resolveStandaloneTop(focusMode ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS] : primaryNavHrefs),
     [focusMode, primaryNavHrefs]
   )
-  const visiblePrimaryItems = useMemo(
-    () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
-    [isAdmin, primaryItems]
-  )
+  const visiblePrimaryItems = useMemo(() => {
+    const items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
+    return items.filter((item) => !item.hidden)
+  }, [isAdmin, primaryItems])
   const tabItems = useMemo(
     () =>
       focusMode
@@ -488,7 +488,13 @@ export function ChefMobileNav({
     const baseGroups = navGroups
       .map((group) => ({
         ...group,
-        items: isAdmin ? group.items : group.items.filter((item) => !item.adminOnly),
+        items: (isAdmin ? group.items : group.items.filter((item) => !item.adminOnly))
+          .filter((item) => !item.hidden)
+          .map((item) =>
+            item.children
+              ? { ...item, children: item.children.filter((child) => !child.hidden) }
+              : item
+          ),
       }))
       .filter((group) => group.items.length > 0)
 

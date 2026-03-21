@@ -504,8 +504,9 @@ export async function importProspectsFromCSV(csvText: string) {
   let skipped = 0
   const importedNames: string[] = [] // track names added in this batch too
 
+  // Fuzzy dedup: filter out duplicates against existing DB records AND this batch
+  const rowsToInsert: typeof rows = []
   for (const row of rows) {
-    // Fuzzy dedup: check against existing DB records AND this batch
     const isDuplicate =
       existingNames.some((existing: any) => isSimilarName(row.name, existing)) ||
       importedNames.some((added) => isSimilarName(row.name, added))
@@ -515,33 +516,41 @@ export async function importProspectsFromCSV(csvText: string) {
       continue
     }
 
-    const { error } = await supabase.from('prospects').insert({
-      chef_id: user.tenantId!,
-      name: row.name,
-      prospect_type: row.prospect_type === 'individual' ? 'individual' : 'organization',
-      category: row.category || 'other',
-      description: row.description || null,
-      phone: row.phone || null,
-      email: row.email || null,
-      website: row.website || null,
-      address: row.address || null,
-      city: row.city || null,
-      state: row.state || null,
-      zip: row.zip || null,
-      region: row.region || null,
-      contact_person: row.contact_person || null,
-      contact_title: row.contact_title || null,
-      notes: row.notes || null,
-      source: 'csv_import',
-      status: 'new',
-      pipeline_stage: 'new',
-    })
+    rowsToInsert.push(row)
+    importedNames.push(row.name)
+  }
+
+  // Batch insert all non-duplicate rows in one query
+  if (rowsToInsert.length > 0) {
+    const { error } = await supabase.from('prospects').insert(
+      rowsToInsert.map((row) => ({
+        chef_id: user.tenantId!,
+        name: row.name,
+        prospect_type: row.prospect_type === 'individual' ? 'individual' : 'organization',
+        category: row.category || 'other',
+        description: row.description || null,
+        phone: row.phone || null,
+        email: row.email || null,
+        website: row.website || null,
+        address: row.address || null,
+        city: row.city || null,
+        state: row.state || null,
+        zip: row.zip || null,
+        region: row.region || null,
+        contact_person: row.contact_person || null,
+        contact_title: row.contact_title || null,
+        notes: row.notes || null,
+        source: 'csv_import',
+        status: 'new',
+        pipeline_stage: 'new',
+      }))
+    )
 
     if (!error) {
-      imported++
-      importedNames.push(row.name)
+      imported = rowsToInsert.length
     } else {
-      skipped++
+      skipped += rowsToInsert.length
+      imported = 0
     }
   }
 
@@ -822,33 +831,38 @@ export async function runAutoPipelineRules(): Promise<{
     .lt('updated_at', fourteenDaysAgo.toISOString())
 
   if (staleContacted && staleContacted.length > 0) {
-    // Check each for recent outreach before marking lost
+    // Batch fetch recent outreach for ALL stale prospects in one query
+    const staleIds = staleContacted.map((p: any) => p.id)
+    const { data: recentOutreachLogs } = await supabase
+      .from('prospect_outreach_log')
+      .select('prospect_id')
+      .in('prospect_id', staleIds)
+      .eq('chef_id', user.tenantId!)
+      .gte('created_at', fourteenDaysAgo.toISOString())
+
+    const hasRecentOutreach = new Set(
+      (recentOutreachLogs ?? []).map((log: any) => log.prospect_id as string)
+    )
+
+    // Update and log only those without recent outreach
     for (const prospect of staleContacted) {
-      const { data: recentOutreach } = await supabase
-        .from('prospect_outreach_log')
-        .select('id')
-        .eq('prospect_id', prospect.id)
+      if (hasRecentOutreach.has(prospect.id)) continue
+
+      await supabase
+        .from('prospects')
+        .update({ pipeline_stage: 'lost' })
+        .eq('id', prospect.id)
         .eq('chef_id', user.tenantId!)
-        .gte('created_at', fourteenDaysAgo.toISOString())
-        .limit(1)
 
-      if (!recentOutreach || recentOutreach.length === 0) {
-        await supabase
-          .from('prospects')
-          .update({ pipeline_stage: 'lost' })
-          .eq('id', prospect.id)
-          .eq('chef_id', user.tenantId!)
+      // Log the auto-change
+      await supabase.from('prospect_outreach_log').insert({
+        prospect_id: prospect.id,
+        chef_id: user.tenantId!,
+        outreach_type: 'note',
+        notes: 'Auto-moved to Lost - no outreach activity for 14+ days',
+      })
 
-        // Log the auto-change
-        await supabase.from('prospect_outreach_log').insert({
-          prospect_id: prospect.id,
-          chef_id: user.tenantId!,
-          outreach_type: 'note',
-          notes: 'Auto-moved to Lost - no outreach activity for 14+ days',
-        })
-
-        staleToLost++
-      }
+      staleToLost++
     }
   }
 
@@ -1313,20 +1327,24 @@ export async function createFollowUpReminders(): Promise<{ created: number }> {
 
   const existingTexts = new Set((existingTodos ?? []).map((t: any) => t.text.toLowerCase()))
 
+  // Filter out duplicates, then batch insert
+  const todosToInsert = dueProspects
+    .map((p: any) => ({ text: `Follow up with prospect: ${p.name}` }))
+    .filter((todo: any) => !existingTexts.has(todo.text.toLowerCase()))
+
   let created = 0
-  for (const p of dueProspects) {
-    const todoText = `Follow up with prospect: ${p.name}`
-    if (existingTexts.has(todoText.toLowerCase())) continue
+  if (todosToInsert.length > 0) {
+    const { error: insertError } = await supabase.from('chef_todos').insert(
+      todosToInsert.map((todo: any) => ({
+        chef_id: user.tenantId!,
+        text: todo.text,
+        completed: false,
+        sort_order: 0,
+        created_by: user.id,
+      }))
+    )
 
-    const { error: insertError } = await supabase.from('chef_todos').insert({
-      chef_id: user.tenantId!,
-      text: todoText,
-      completed: false,
-      sort_order: 0,
-      created_by: user.id,
-    })
-
-    if (!insertError) created++
+    if (!insertError) created = todosToInsert.length
   }
 
   return { created }

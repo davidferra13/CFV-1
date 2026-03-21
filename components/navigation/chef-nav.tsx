@@ -639,10 +639,10 @@ export function ChefSidebar({
       resolveStandaloneTop(focusMode ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS] : primaryNavHrefs),
     [focusMode, primaryNavHrefs]
   )
-  const visiblePrimaryItems = useMemo(
-    () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
-    [isAdmin, primaryItems]
-  )
+  const visiblePrimaryItems = useMemo(() => {
+    const items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
+    return items.filter((item) => !item.hidden)
+  }, [isAdmin, primaryItems])
 
   // Filter nav groups by role + focus mode.
   // Focus Mode should simplify nav for everyone, including admins.
@@ -654,7 +654,13 @@ export function ChefSidebar({
     const baseGroups = navGroups
       .map((group) => ({
         ...group,
-        items: isAdmin ? group.items : group.items.filter((item) => !item.adminOnly),
+        items: (isAdmin ? group.items : group.items.filter((item) => !item.adminOnly))
+          .filter((item) => !item.hidden)
+          .map((item) =>
+            item.children
+              ? { ...item, children: item.children.filter((child) => !child.hidden) }
+              : item
+          ),
       }))
       .filter((group) => group.items.length > 0)
 

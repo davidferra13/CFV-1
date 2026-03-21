@@ -119,19 +119,21 @@ export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
     const confirmDrafts = await generateConfirmationDrafts(supabase, user.tenantId!)
     drafts.push(...confirmDrafts)
 
-    // Save all drafts to DB
-    for (const draft of drafts) {
-      await supabase.from('daily_plan_drafts').insert({
-        chef_id: user.tenantId!,
-        plan_date: todayStr,
-        draft_type: draft.draftType,
-        source_entity_type: draft.sourceEntityType,
-        source_entity_id: draft.sourceEntityId,
-        recipient_client_id: null, // Set below if available
-        subject: draft.subject,
-        body: draft.body,
-        status: 'pending_review',
-      })
+    // Save all drafts to DB in a single batch insert
+    if (drafts.length > 0) {
+      await supabase.from('daily_plan_drafts').insert(
+        drafts.map((draft) => ({
+          chef_id: user.tenantId!,
+          plan_date: todayStr,
+          draft_type: draft.draftType,
+          source_entity_type: draft.sourceEntityType,
+          source_entity_id: draft.sourceEntityId,
+          recipient_client_id: null,
+          subject: draft.subject,
+          body: draft.body,
+          status: 'pending_review',
+        }))
+      )
     }
 
     return drafts
