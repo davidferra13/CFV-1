@@ -362,6 +362,6 @@ export function getWordAnimation(word: string): CulinaryAnimation {
 /**
  * CSS class name for an animation - add this class on click, remove on animationend.
  */
-export function getAnimationClass(anim: CulinaryAnimation): string {
-  return 'culinary-anim-' + anim
+export function getAnimationClass(_anim: CulinaryAnimation): string {
+  return ''
 }

@@ -60,7 +60,7 @@ export function EmptyState({
           <div className="relative text-stone-400 [&>svg]:h-12 [&>svg]:w-12">{icon}</div>
         </div>
       ) : showRemy ? (
-        <div className="relative mb-6 empty-state-float">
+        <div className="relative mb-6">
           <div className="absolute inset-0 -m-6 rounded-full bg-brand-500/8 blur-2xl" />
           <Image
             src={remyImages[remyMood]}

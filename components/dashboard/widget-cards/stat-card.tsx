@@ -118,7 +118,7 @@ function MiniSparkline({
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="sparkline-draw"
+        className=""
       />
     </svg>
   )

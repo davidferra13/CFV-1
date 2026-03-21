@@ -6,7 +6,6 @@ import { getPlatformOverviewStats } from '@/lib/admin/platform-stats'
 import { getAdminDebugState } from '@/lib/admin/debug-state'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import {
   Radio,
   Users,
@@ -20,12 +19,6 @@ import {
   TrendingDown,
   Globe,
 } from '@/components/ui/icons'
-
-const SystemArchitecturePlayer = dynamic(
-  () =>
-    import('@/components/admin/system-architecture-player').then((m) => m.SystemArchitecturePlayer),
-  { ssr: false }
-)
 
 function StatCard({
   label,
@@ -303,14 +296,6 @@ export default async function AdminOverviewPage() {
             Debug state unavailable.
           </div>
         )}
-      </div>
-
-      {/* System Architecture */}
-      <div>
-        <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-3">
-          System Architecture
-        </h2>
-        <SystemArchitecturePlayer />
       </div>
     </div>
   )

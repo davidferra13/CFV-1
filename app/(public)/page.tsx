@@ -70,7 +70,7 @@ export default function Home() {
       {/* Hero */}
       <section className="relative overflow-hidden hero-glow">
         <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-4 pb-10 pt-20 text-center sm:px-6 md:pb-16 md:pt-28 lg:px-8">
-          <p className="mb-5 rounded-full border border-brand-700/40 bg-brand-950/50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300 animate-float">
+          <p className="mb-5 rounded-full border border-brand-700/40 bg-brand-950/50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
             Ops for Artists
           </p>
           <h1 className="max-w-4xl text-4xl font-bold tracking-tight md:text-6xl text-gradient">

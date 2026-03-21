@@ -1132,7 +1132,6 @@ export const navGroups: NavGroup[] = [
         adminOnly: true,
       },
       { href: '/admin/feedback', label: 'Feedback', icon: Star, adminOnly: true },
-      { href: '/admin/animations', label: 'Animations', icon: Activity, adminOnly: true },
       { href: '/admin/cannabis', label: 'Cannabis Tier', icon: SealCheck, adminOnly: true },
       { href: '/admin/beta', label: 'Beta Signups', icon: Star, adminOnly: true },
       {

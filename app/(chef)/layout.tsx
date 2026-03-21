@@ -61,10 +61,6 @@ const BreadcrumbTracker = dynamic(
   () => import('@/components/activity/breadcrumb-tracker').then((m) => m.BreadcrumbTracker),
   { ssr: false }
 )
-const MilestoneOverlay = dynamic(
-  () => import('@/components/ui/milestone-overlay').then((m) => m.MilestoneOverlay),
-  { ssr: false }
-)
 const PresenceBeacon = dynamic(
   () => import('@/components/admin/presence-beacon').then((m) => m.PresenceBeacon),
   { ssr: false }
@@ -244,8 +240,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
               {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
               <BreadcrumbTracker />
-
-              <MilestoneOverlay />
 
               {/* Analytics identity -- associates events with logged-in user */}
               <AnalyticsIdentify

@@ -1,32 +1,5 @@
-'use client'
-
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
 import { MapPin, Utensils, ArrowRight, Globe, ShieldCheck, Zap } from 'lucide-react'
-
-/** Observe sections and add .revealed class when they scroll into view */
-function useScrollReveal() {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const container = ref.current
-    if (!container) return
-    const targets = container.querySelectorAll('.reveal-on-scroll')
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('revealed')
-            observer.unobserve(e.target)
-          }
-        })
-      },
-      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
-    )
-    targets.forEach((t) => observer.observe(t))
-    return () => observer.disconnect()
-  }, [])
-  return ref
-}
 
 const VALUE_PROPS = [
   {
@@ -71,12 +44,10 @@ const PROVIDER_BENEFITS = [
 ] as const
 
 export default function LandingBelowFold() {
-  const scrollRef = useScrollReveal()
-
   return (
-    <div ref={scrollRef}>
+    <div>
       {/* Value propositions */}
-      <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8 reveal-on-scroll">
+      <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
         <div className="grid gap-6 md:grid-cols-3">
           {VALUE_PROPS.map((prop, i) => {
             const Icon = prop.icon
@@ -98,7 +69,7 @@ export default function LandingBelowFold() {
       </section>
 
       {/* How it works */}
-      <section className="border-y border-stone-800/50 reveal-on-scroll">
+      <section className="border-y border-stone-800/50">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 md:py-20 lg:px-8">
           <div>
             <h2 className="text-3xl font-bold tracking-tight text-stone-100 md:text-4xl">
@@ -123,7 +94,7 @@ export default function LandingBelowFold() {
       </section>
 
       {/* For operators (subtle, secondary) */}
-      <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8 reveal-on-scroll">
+      <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-stone-500">
           For Food Providers
         </p>
@@ -164,7 +135,7 @@ export default function LandingBelowFold() {
       </section>
 
       {/* Final CTA */}
-      <section className="border-t border-stone-800/50 reveal-on-scroll">
+      <section className="border-t border-stone-800/50">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-gradient">
             Discover what to eat next.

@@ -13,7 +13,6 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import dynamic from 'next/dynamic'
 import {
   Shield,
   Bot,
@@ -30,20 +29,6 @@ import { RemyOnboardingWizard } from '@/components/ai-privacy/remy-onboarding-wi
 import { DataFlowAnimated } from '@/components/ai-privacy/data-flow-animated'
 import { DataControls } from '@/components/ai-privacy/data-controls'
 
-const PrivacySchematicPlayer = dynamic(
-  () =>
-    import('@/components/ai-privacy/privacy-schematic-player').then(
-      (m) => m.PrivacySchematicPlayer
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex min-h-[200px] items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-      </div>
-    ),
-  }
-)
 import { RemyArchetypeSelector } from '@/components/ai-privacy/remy-archetype-selector'
 import {
   getAiPreferences,
@@ -297,22 +282,6 @@ export default function AiPrivacyPage() {
           These services have their own privacy policies. We send them the minimum data necessary
           and never include personal information.
         </p>
-      </div>
-
-      {/* ─── How It Works - animated schematic ──── */}
-      <div className="rounded-xl border border-stone-700 bg-stone-900 overflow-hidden">
-        <div className="px-5 py-4">
-          <div className="flex items-center gap-2">
-            <Bot className="h-4 w-4 text-brand-500" />
-            <h2 className="text-lg font-semibold text-stone-100">See how it works</h2>
-          </div>
-          <p className="mt-1 text-sm text-stone-500">
-            55-second animated walkthrough of where your data goes (and doesn&apos;t go).
-          </p>
-        </div>
-        <div className="border-t border-stone-700 p-5">
-          <PrivacySchematicPlayer />
-        </div>
       </div>
 
       {/* ─── Static data flow diagram (collapsible) ──── */}

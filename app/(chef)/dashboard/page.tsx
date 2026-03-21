@@ -135,7 +135,7 @@ async function PriorityQueueSection() {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0 pulse-soft"
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
                   style={{
                     backgroundColor:
                       queue.nextAction.urgency === 'critical'
