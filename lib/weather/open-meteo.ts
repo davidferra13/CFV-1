@@ -2,6 +2,103 @@
 // Forecast: https://api.open-meteo.com (up to 16 days ahead)
 // Historical: https://archive-api.open-meteo.com (past dates)
 
+// ── DailyForecast (used by weather-risk scoring) ────────────────────────────
+
+export interface DailyForecast {
+  date: string
+  tempHighF: number
+  tempLowF: number
+  precipProbability: number
+  windSpeedMph: number
+  weatherCode: number
+  condition: string
+}
+
+const WEATHER_CODE_CONDITIONS: Record<number, string> = {
+  0: 'Clear',
+  1: 'Clear',
+  2: 'Partly Cloudy',
+  3: 'Overcast',
+  45: 'Fog',
+  48: 'Fog',
+  51: 'Drizzle',
+  53: 'Drizzle',
+  55: 'Drizzle',
+  56: 'Freezing Drizzle',
+  57: 'Freezing Drizzle',
+  61: 'Rain',
+  63: 'Rain',
+  65: 'Rain',
+  66: 'Freezing Rain',
+  67: 'Freezing Rain',
+  71: 'Snow',
+  73: 'Snow',
+  75: 'Snow',
+  77: 'Snow',
+  80: 'Rain Showers',
+  81: 'Rain Showers',
+  82: 'Rain Showers',
+  85: 'Snow Showers',
+  86: 'Snow Showers',
+  95: 'Thunderstorm',
+  96: 'Thunderstorm',
+  99: 'Thunderstorm',
+}
+
+function weatherCodeToCondition(code: number): string {
+  return WEATHER_CODE_CONDITIONS[code] ?? 'Variable'
+}
+
+/**
+ * Fetch a 7-day daily forecast from Open-Meteo.
+ * Returns Fahrenheit temps and mph wind speeds directly from the API.
+ * On any failure, returns an empty array (never throws).
+ */
+export async function fetchForecast(lat: number, lng: number): Promise<DailyForecast[]> {
+  try {
+    const params = new URLSearchParams({
+      latitude: String(lat),
+      longitude: String(lng),
+      daily:
+        'temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,weather_code',
+      timezone: 'America/New_York',
+      forecast_days: '7',
+      temperature_unit: 'fahrenheit',
+      wind_speed_unit: 'mph',
+    })
+
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, {
+      next: { revalidate: 3600 },
+    })
+
+    if (!res.ok) return []
+
+    const data = await res.json()
+    const daily = data.daily
+    if (!daily?.time?.length) return []
+
+    const forecasts: DailyForecast[] = []
+    for (let i = 0; i < daily.time.length; i++) {
+      const code = daily.weather_code?.[i] ?? 0
+      forecasts.push({
+        date: daily.time[i],
+        tempHighF: Math.round(daily.temperature_2m_max[i] ?? 0),
+        tempLowF: Math.round(daily.temperature_2m_min[i] ?? 0),
+        precipProbability: daily.precipitation_probability_max[i] ?? 0,
+        windSpeedMph: Math.round(daily.wind_speed_10m_max[i] ?? 0),
+        weatherCode: code,
+        condition: weatherCodeToCondition(code),
+      })
+    }
+
+    return forecasts
+  } catch {
+    return []
+  }
+}
+
+// ── EventWeather (used by calendar/list views) ──────────────────────────────
+
 export interface EventWeather {
   date: string
   tempMaxF: number

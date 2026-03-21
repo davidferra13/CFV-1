@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useCallback, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CourseFireButton } from './course-fire-button'
@@ -31,7 +31,7 @@ const STATUS_STYLES: Record<
 > = {
   pending: { bg: 'bg-stone-800', border: 'border-stone-600', badge: 'default' },
   fired: { bg: 'bg-amber-950', border: 'border-amber-400', badge: 'warning' },
-  plated: { bg: 'bg-sky-950', border: 'border-sky-400', badge: 'info' },
+  plated: { bg: 'bg-brand-950', border: 'border-brand-400', badge: 'info' },
   served: { bg: 'bg-emerald-950', border: 'border-emerald-400', badge: 'success' },
   eighty_sixed: { bg: 'bg-red-950', border: 'border-red-400', badge: 'error' },
 }
@@ -51,6 +51,27 @@ export function KDSView({ courses: initialCourses, eventId }: KDSViewProps) {
     [...initialCourses].sort((a, b) => a.courseNumber - b.courseNumber)
   )
   const [eightySixTarget, setEightySixTarget] = useState<KDSCourse | null>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Fullscreen toggle
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen?.().catch(() => {
+        // Fallback: just toggle a CSS class
+        setIsFullscreen(true)
+      })
+    } else {
+      document.exitFullscreen?.()
+    }
+  }, [])
+
+  // Listen for fullscreen change
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', handler)
+    return () => document.removeEventListener('fullscreenchange', handler)
+  }, [])
 
   function handleStatusUpdate(courseId: string, newStatus: string) {
     setCourses((prev) =>
@@ -78,14 +99,26 @@ export function KDSView({ courses: initialCourses, eventId }: KDSViewProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div
+      ref={containerRef}
+      className={`space-y-4 ${isFullscreen ? 'fixed inset-0 z-50 bg-stone-950 p-4 overflow-auto' : ''}`}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <Utensils className="h-5 w-5 text-brand-600" />
           <h2 className="text-lg font-semibold text-stone-100">Kitchen Display</h2>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Fullscreen toggle */}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="px-3 py-1.5 rounded-md bg-stone-700 text-stone-300 text-xs hover:bg-stone-600 active:bg-stone-500 transition-colors"
+            title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          >
+            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+          </button>
           {Object.entries(STATUS_LABELS).map(([status, label]) => {
             const count = courses.filter((c) => c.status === status).length
             if (count === 0) return null
@@ -143,8 +176,9 @@ export function KDSView({ courses: initialCourses, eventId }: KDSViewProps) {
                       onStatusChange={(newStatus) => handleStatusUpdate(course.id, newStatus)}
                     />
                     <button
+                      type="button"
                       onClick={() => setEightySixTarget(course)}
-                      className="px-4 py-3 rounded-lg bg-red-600 text-white font-bold text-base hover:bg-red-700 active:bg-red-800 transition-colors"
+                      className="px-5 py-4 min-h-[48px] min-w-[48px] rounded-lg bg-red-600 text-white font-bold text-lg hover:bg-red-700 active:bg-red-800 transition-colors touch-manipulation"
                     >
                       86
                     </button>

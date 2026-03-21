@@ -1,13 +1,22 @@
 // Kitchen Display System - Live service course tracker
-// Shows courses and their status during active service for the event
+// Shows courses and their status during active service for the event.
+// Mobile-optimized: large touch targets, fullscreen toggle, voice commands.
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getServiceCourses } from '@/lib/operations/kds-actions'
 import { KDSView } from '@/components/operations/kds-view'
 
 export const metadata: Metadata = { title: 'Kitchen Display - ChefFlow' }
+
+// Mobile standalone viewport for KDS (prevents accidental zoom while cooking)
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
 
 export default async function KDSPage({ params }: { params: { id: string } }) {
   const user = await requireChef()

@@ -4,7 +4,8 @@
 // Batch-fetches weather data for multiple events using the Open-Meteo API.
 // Used by calendar views and event list to show compact weather indicators.
 
-import { getEventWeather, type EventWeather } from './open-meteo'
+import { getEventWeather, fetchForecast, type EventWeather, type DailyForecast } from './open-meteo'
+import { assessWeatherRisk, type WeatherRiskResult } from '@/lib/formulas/weather-risk'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 
@@ -163,5 +164,70 @@ export async function getWeatherForEvents(
     return result
   } catch {
     return {}
+  }
+}
+
+// ── Event Weather Forecast with Risk Assessment ─────────────────────────────
+
+export interface EventWeatherForecastResult {
+  forecast: DailyForecast
+  risk: WeatherRiskResult
+  eventDate: string
+}
+
+/**
+ * Fetch weather forecast and risk assessment for a single event.
+ * Returns null if: no coordinates, event too far out (>7 days), or event in the past.
+ * Auth: requireChef(), scoped by tenant_id.
+ */
+export async function getEventWeatherForecast(
+  eventId: string
+): Promise<EventWeatherForecastResult | null> {
+  try {
+    const user = await requireChef()
+    const supabase: any = createServerClient()
+
+    const { data: event, error } = await supabase
+      .from('events')
+      .select('event_date, location_lat, location_lng, weather_exposure')
+      .eq('id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (error || !event) return null
+
+    // Need coordinates to fetch weather
+    if (event.location_lat == null || event.location_lng == null) return null
+
+    const eventDate = new Date(event.event_date + 'T00:00:00')
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+
+    // Event is in the past
+    if (eventDate < now) return null
+
+    // Forecast only available for 7 days
+    const diffDays = Math.ceil((eventDate.getTime() - now.getTime()) / 86_400_000)
+    if (diffDays > 7) return null
+
+    // Fetch the 7-day forecast
+    const forecasts = await fetchForecast(event.location_lat, event.location_lng)
+    if (forecasts.length === 0) return null
+
+    // Find the day matching the event date
+    const dateStr = event.event_date
+    const dayForecast = forecasts.find((f) => f.date === dateStr)
+    if (!dayForecast) return null
+
+    // Score the weather risk
+    const risk = assessWeatherRisk(dayForecast)
+
+    return {
+      forecast: dayForecast,
+      risk,
+      eventDate: dateStr,
+    }
+  } catch {
+    return null
   }
 }
