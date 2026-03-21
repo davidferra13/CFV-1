@@ -233,7 +233,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 {/* Command Palette - Cmd+K universal search and navigation */}
                 <CommandPalette userId={user.id} tenantId={user.tenantId ?? user.entityId} />
 
-                {/* Remy - AI companion chatbot, Pro tier + admins */}
+                {/* Remy - AI companion chatbot, available to all chefs */}
                 {shouldRenderRemy && <RemyWrapper />}
 
                 {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}

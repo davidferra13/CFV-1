@@ -54,11 +54,10 @@ export function SoftwareApplicationJsonLd() {
           'Private chef business operating system - manage events, clients, menus, quotes, payments, and kitchen ops from one platform.',
         offers: {
           '@type': 'Offer',
-          price: '29.00',
+          price: '0',
           priceCurrency: 'USD',
-          priceValidUntil: '2027-12-31',
           availability: 'https://schema.org/InStock',
-          description: 'Everything You Need - 14-day free trial included',
+          description: 'Every feature included, free for all chefs',
         },
         featureList: [
           'Unlimited events & clients',

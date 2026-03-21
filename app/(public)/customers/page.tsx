@@ -80,7 +80,7 @@ export default function CustomersPage() {
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">
             {isBeta
               ? 'Join the closed beta and help shape the product with direct feedback loops.'
-              : 'Start with a free trial and implement one consistent workflow from inquiry to payout.'}
+              : 'Sign up free and implement one consistent workflow from inquiry to payout.'}
           </p>
           <TrackedLink
             href={buildMarketingSignupHref({

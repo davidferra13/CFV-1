@@ -1,33 +1,34 @@
-// ChefFlow Subscription & Billing Settings Page
-// Shows current subscription status (grandfathered / trialing / active / expired),
-// plan features, and upgrade / manage CTAs.
-//
-// This page is the canonical place for chefs to understand and manage their
-// ChefFlow subscription - distinct from Stripe Connect (client payment routing).
+// ChefFlow Support Page
+// All features are free. This page lets chefs who love ChefFlow
+// voluntarily contribute to support ongoing development.
+// Distinct from Stripe Connect (client payment routing).
 
 import { requireChef } from '@/lib/auth/get-user'
 import { getSubscriptionStatus } from '@/lib/stripe/subscription'
-import { BillingClient } from './billing-client'
+import { SupportClient } from './billing-client'
 
-export const metadata = { title: 'Subscription & Billing | ChefFlow' }
+export const metadata = { title: 'Support ChefFlow | ChefFlow' }
 
-export default async function BillingPage({
+export default async function SupportPage({
   searchParams,
 }: {
   searchParams: { upgraded?: string }
 }) {
   const user = await requireChef()
   const status = await getSubscriptionStatus(user.entityId)
-  const upgraded = searchParams.upgraded === '1'
+  const thankYou = searchParams.upgraded === '1'
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-stone-100">Subscription & Billing</h1>
-        <p className="mt-1 text-sm text-stone-500">Manage your ChefFlow Professional plan.</p>
+        <h1 className="text-2xl font-bold text-stone-100">Support ChefFlow</h1>
+        <p className="mt-1 text-sm text-stone-500">
+          Every feature is free. If ChefFlow helps your business, consider supporting its
+          development.
+        </p>
       </div>
 
-      <BillingClient status={status} upgraded={upgraded} />
+      <SupportClient status={status} thankYou={thankYou} />
     </div>
   )
 }

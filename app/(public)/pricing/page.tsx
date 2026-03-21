@@ -3,7 +3,6 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PRO_PRICE_MONTHLY, PRO_TRIAL_DAYS } from '@/lib/billing/constants'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
@@ -13,7 +12,7 @@ const IS_PUBLIC_LAUNCH = LAUNCH_MODE === 'public'
 export const metadata: Metadata = {
   title: 'Pricing | ChefFlow',
   description: IS_PUBLIC_LAUNCH
-    ? 'Simple pricing for private chefs. No hidden fees. Cancel anytime.'
+    ? 'ChefFlow is free for every chef. No tiers, no limits, no locked features.'
     : 'ChefFlow is in invite-only beta. Request early access and we will onboard you directly.',
 }
 
@@ -37,16 +36,19 @@ const PricingFaq = dynamic(() => import('./_components/pricing-faq'), {
   ),
 })
 
-// Pre-computed static feature list (no per-render computation)
 const FEATURES = [
-  'Unlimited events',
-  'Unlimited clients',
-  'Client portal access',
+  'Unlimited events and clients',
+  'AI assistant (Remy)',
+  'Client portal and booking pages',
   'Stripe payment processing',
-  'Financial reporting',
-  'Email support',
-  'Menu management',
-  'Client communication tools',
+  'Financial reporting and ledger',
+  'Commerce and POS engine',
+  'Marketing and campaign tools',
+  'Menu and recipe management',
+  'Chef community and networking',
+  'Analytics and custom reports',
+  'Integrations and automations',
+  'Professional development tools',
 ] as const
 
 const CheckIcon = () => (
@@ -69,10 +71,12 @@ export default function PricingPage() {
       {/* Page Header */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-900 mb-4">Simple Pricing</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-stone-900 mb-4">
+            Free for Every Chef
+          </h1>
           <p className="text-lg md:text-xl text-stone-600">
             {IS_PUBLIC_LAUNCH
-              ? 'No hidden fees. Cancel anytime.'
+              ? 'No tiers, no limits, no locked features. The full platform, free.'
               : 'Invite-only beta with direct onboarding for early operators.'}
           </p>
         </div>
@@ -83,17 +87,12 @@ export default function PricingPage() {
         <div className="max-w-md mx-auto">
           <Card className="border-2 border-brand-500 shadow-xl">
             <CardHeader className="text-center pb-8 pt-8">
-              <div className="mb-4">
-                <span className="inline-block px-4 py-1 bg-brand-100 text-brand-700 text-sm font-semibold rounded-full">
-                  MOST POPULAR
-                </span>
-              </div>
-              <CardTitle className="text-2xl mb-4">Professional Chef</CardTitle>
+              <CardTitle className="text-2xl mb-4">ChefFlow</CardTitle>
               <div className="mb-2">
                 {IS_PUBLIC_LAUNCH ? (
                   <>
-                    <span className="text-5xl font-bold text-stone-900">${PRO_PRICE_MONTHLY}</span>
-                    <span className="text-stone-600 text-lg">/month</span>
+                    <span className="text-5xl font-bold text-stone-900">$0</span>
+                    <span className="text-stone-600 text-lg">/forever</span>
                   </>
                 ) : (
                   <span className="text-5xl font-bold text-stone-900">Beta</span>
@@ -101,8 +100,8 @@ export default function PricingPage() {
               </div>
               <p className="text-sm text-stone-600">
                 {IS_PUBLIC_LAUNCH
-                  ? `${PRO_TRIAL_DAYS}-day free trial included`
-                  : 'Founding operators are onboarded directly while pricing is finalized.'}
+                  ? 'Every feature included. No credit card needed.'
+                  : 'Founding operators are onboarded directly.'}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -125,7 +124,7 @@ export default function PricingPage() {
               </Link>
               <p className="text-xs text-stone-500 text-center">
                 {IS_PUBLIC_LAUNCH
-                  ? 'No credit card required for trial'
+                  ? 'No credit card required. No trial. Just start.'
                   : 'We will follow up personally to confirm beta fit and onboarding.'}
               </p>
             </CardContent>

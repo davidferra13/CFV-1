@@ -161,7 +161,7 @@ export default function TrustPage() {
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">
             {isBeta
               ? 'Join the beta waitlist and work directly with product during onboarding.'
-              : 'Start a trial and validate inquiry, event, and payout workflows end-to-end.'}
+              : 'Sign up free and validate inquiry, event, and payout workflows end-to-end.'}
           </p>
           <TrackedLink
             href={buildMarketingSignupHref({

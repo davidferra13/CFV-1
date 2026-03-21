@@ -354,7 +354,7 @@ export default async function SettingsPage() {
         {/* ── 6. Payments & Billing ────────────────────────────── */}
         <SettingsCategory
           title="Payments & Billing"
-          description="Stripe payouts, your ChefFlow subscription, and feature module toggles."
+          description="Stripe payouts, support contributions, and feature module toggles."
           icon="CreditCard"
           primary
         >
@@ -373,9 +373,10 @@ export default async function SettingsPage() {
               href="/settings/billing"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >
-              <p className="font-medium text-stone-100">Subscription & Billing</p>
+              <p className="font-medium text-stone-100">Support ChefFlow</p>
               <p className="text-sm text-stone-500 mt-1">
-                Manage your ChefFlow Professional plan, view invoices, and upgrade or downgrade.
+                Every feature is free. Optionally support ongoing development with a voluntary
+                contribution.
               </p>
             </Link>
             <Link

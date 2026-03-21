@@ -232,25 +232,10 @@ export function ModulesClient({
                         <h3 className="text-sm font-semibold text-stone-100 dark:text-stone-100">
                           {mod.label}
                         </h3>
-                        {isProModule && (
-                          <span className="inline-flex items-center gap-1 text-xxs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-brand-900 text-brand-400 dark:bg-brand-900 dark:text-brand-300">
-                            <Sparkles size={10} />
-                            Pro
-                          </span>
-                        )}
-                        {isLocked && <Lock size={12} className="text-stone-400" />}
                       </div>
                       <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                         {mod.description}
                       </p>
-                      {isLocked && (
-                        <Link
-                          href="/settings/billing"
-                          className="text-xs text-brand-500 hover:text-brand-400 dark:text-brand-400 mt-1 inline-block"
-                        >
-                          Upgrade to unlock
-                        </Link>
-                      )}
                     </div>
                     {!mod.alwaysVisible && (
                       <button

@@ -6,14 +6,14 @@ import { LAUNCH_MODE } from '@/lib/marketing/launch-mode'
 
 const PUBLIC_FAQS = [
   {
-    question: 'What payment methods do you accept?',
+    question: 'Is ChefFlow really free?',
     answer:
-      'We accept all major credit cards via Stripe. Payment is processed securely and you can cancel your subscription at any time.',
+      'Yes. Every feature is included at no cost. No credit card, no trial period, no locked features.',
   },
   {
-    question: 'Can I cancel anytime?',
+    question: 'How does ChefFlow make money?',
     answer:
-      'Yes. You can cancel anytime with no penalties, and your subscription remains active until the end of the current billing period.',
+      'We offer an optional voluntary supporter contribution for chefs who want to help fund ongoing development. It is entirely optional and does not unlock any additional features.',
   },
   {
     question: 'Do you charge transaction fees?',
@@ -21,19 +21,14 @@ const PUBLIC_FAQS = [
       'No additional platform fees. Standard Stripe payment processing rates apply to client payments.',
   },
   {
-    question: 'Is there a setup fee?',
+    question: 'Will features ever become paid?',
     answer:
-      'No setup fees. Start with the trial and only pay if you decide to continue after the trial ends.',
+      'We have no plans to lock existing features behind a paywall. Our goal is to keep the full platform free for every chef.',
   },
   {
-    question: 'What happens after my free trial?',
+    question: 'What if I need help migrating from another tool?',
     answer:
-      'After the trial ends, the plan converts to the monthly subscription unless you cancel first.',
-  },
-  {
-    question: 'Can I switch plans later?',
-    answer:
-      'Yes. Additional plan options can be introduced later without requiring a full account migration.',
+      'Contact us about the Scale package for hands-on implementation support, migration planning, and team onboarding.',
   },
 ] as const
 
@@ -46,7 +41,7 @@ const BETA_FAQS = [
   {
     question: 'Is pricing finalized?',
     answer:
-      'No. Beta pricing is intentionally not locked yet. Early operators are admitted first so onboarding and retention can be validated before broad self-serve release.',
+      'ChefFlow is free for all chefs. We may introduce optional paid services in the future, but the core platform stays free.',
   },
   {
     question: 'Will beta participants get support?',

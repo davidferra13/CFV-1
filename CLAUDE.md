@@ -672,18 +672,26 @@ Only use variants that actually exist — wrong variants fail silently or throw.
 - **Never** let edge handles extend into the corner zone.
 - If refactoring the widget, preserve this resize architecture exactly.
 
-### 6. Tier Assignment (New Features)
+### 6. Monetization Model (UPDATED March 2026)
 
-Every new feature **MUST** be assigned to a tier and module. This ensures the freemium system stays consistent.
+**All features are free.** There is no Pro tier, no paywalls, no locked features.
 
-1. **Determine the tier**: Is it part of the irreducible core (inquiries, events, clients, quotes, payments, basic calendar, basic finance, recipes, documents)? → **Free**. Everything else → **Pro**.
-2. **Assign a module**: Which module from `lib/billing/modules.ts` does this belong to? If none fits, discuss with the developer first.
-3. **Add gating** (Pro features only):
-   - Server actions: add `await requirePro('module-slug')` at the top
-   - Pages: wrap content in `<UpgradeGate chefId={user.entityId} featureSlug="slug">`
-   - Nav items: set `module: 'module-slug'` on the nav config entry
-4. **Update the registry**: Add the feature to `lib/billing/pro-features.ts` if it's Pro.
-5. **Admin bypass**: Admins (`isAdmin()`) always have full Pro access. `requirePro()` and `<UpgradeGate>` handle this automatically.
+Revenue comes from **voluntary supporter contributions** (Stripe checkout, cancel anytime). The billing page (`/settings/billing`) is now a "Support ChefFlow" page.
+
+**For new features:**
+
+1. **Assign a module** in `lib/billing/modules.ts` (all modules are `tier: 'free'`).
+2. **Do NOT add `requirePro()` gating.** The function still exists (as a pass-through for auth) but should not be added to new code.
+3. **Do NOT wrap content in `<UpgradeGate>`.** The component still exists (as a pass-through) but should not be added to new code.
+4. **Do NOT add Pro badges, lock icons, or "upgrade to unlock" messaging anywhere in the UI.**
+5. Community features are always free and ungated. Community growth is the priority.
+
+**What still exists (for legacy compatibility):**
+
+- `requirePro()` in `lib/billing/require-pro.ts` - now just calls `requireChef()`, never blocks
+- `<UpgradeGate>` in `components/billing/upgrade-gate.tsx` - now just renders children
+- `PRO_FEATURES` registry in `lib/billing/pro-features.ts` - retained for reference only
+- Stripe subscription flow - used for voluntary supporter contributions
 
 ---
 

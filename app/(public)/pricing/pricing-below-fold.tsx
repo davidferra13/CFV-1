@@ -132,12 +132,10 @@ export function ProFeatureMap() {
   return (
     <section className="container mx-auto px-4 pb-14 md:pb-20">
       <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
-        <h2 className="text-2xl font-display text-stone-100 md:text-3xl">
-          Pro function map by domain
-        </h2>
+        <h2 className="text-2xl font-display text-stone-100 md:text-3xl">Feature map by domain</h2>
         <p className="mt-3 text-sm leading-relaxed text-stone-300 md:text-base">
-          This is the current catalog of Pro domains, grouped so teams can quickly decide where new
-          features should live.
+          This is the current catalog of ChefFlow capabilities, grouped by domain. Every feature
+          listed here is included free for all chefs.
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {PRO_FEATURE_AREAS.map((area) => (

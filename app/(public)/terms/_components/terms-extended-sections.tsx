@@ -4,24 +4,26 @@ export default function TermsExtendedSections() {
   return (
     <>
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">4. Subscription and Billing</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-900">
+          4. Pricing and Voluntary Contributions
+        </h2>
         <p className="mb-4 leading-relaxed">
-          Chef accounts are offered on a subscription basis. Where applicable:
+          ChefFlow is free for all chef accounts. All features are included at no cost. Where
+          applicable:
         </p>
         <ul className="list-disc space-y-2 pl-5 leading-relaxed">
           <li>
-            <strong>Free trial</strong> - new chef accounts may include a 14-day free trial. No
-            payment is required to start the trial. At the end of the trial, a subscription fee will
-            be charged unless you cancel beforehand.
+            <strong>Voluntary contributions</strong> - chefs may optionally make a recurring monthly
+            contribution to support ongoing development. Contributions do not unlock additional
+            features and can be cancelled at any time.
           </li>
           <li>
-            <strong>Billing</strong> - subscriptions are billed monthly in advance. Payment is
-            processed securely by Stripe.
+            <strong>Billing</strong> - voluntary contributions are billed monthly in advance.
+            Payment is processed securely by Stripe.
           </li>
           <li>
-            <strong>Cancellation</strong> - you may cancel your subscription at any time from your
-            account settings. Access continues until the end of the current billing period; no
-            partial refunds are issued for unused time.
+            <strong>Cancellation</strong> - you may cancel your contribution at any time from your
+            account settings. No partial refunds are issued for unused time.
           </li>
           <li>
             <strong>Price changes</strong> - we will give at least 30 days&apos; notice before

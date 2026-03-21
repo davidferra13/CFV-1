@@ -41,10 +41,7 @@ export async function authenticateOrderKioskRequest(request: Request): Promise<D
     throw new KioskApiError('This device is not configured for order mode', 403)
   }
 
-  const proAccess = await hasProAccess(device.tenantId)
-  if (!proAccess) {
-    throw new KioskApiError('Commerce requires Pro access', 402)
-  }
+  // All features are free - no tier check needed
 
   return {
     supabase: createAdminClient(),

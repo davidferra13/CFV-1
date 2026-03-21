@@ -161,7 +161,7 @@ export default function CustomerStoryPage({ params }: Props) {
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
             {isBeta
               ? 'Join the beta waitlist and help prioritize the next operating workflows.'
-              : 'Start your trial and run the same inquiry-to-payout discipline in your business.'}
+              : 'Sign up free and run the same inquiry-to-payout discipline in your business.'}
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <TrackedLink

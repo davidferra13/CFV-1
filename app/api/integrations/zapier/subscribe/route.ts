@@ -58,9 +58,6 @@ async function authorizeRequest(req: NextRequest, body?: Record<string, unknown>
       await requirePro('integrations')
       return { tenantId: user.entityId }
     } catch (err) {
-      if (err instanceof ProFeatureRequiredError) {
-        throw new HttpError(403, 'Pro plan required for Zapier subscriptions')
-      }
       throw err
     }
   }
@@ -77,10 +74,7 @@ async function authorizeRequest(req: NextRequest, body?: Record<string, unknown>
     throw new HttpError(400, 'Missing tenant_id for API key request')
   }
 
-  const hasPro = await hasProAccess(tenantId)
-  if (!hasPro) {
-    throw new HttpError(403, 'Pro plan required for Zapier subscriptions')
-  }
+  // All features are free - no tier check needed
 
   return { tenantId }
 }

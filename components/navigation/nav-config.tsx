@@ -1245,7 +1245,7 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
   { href: '/settings/highlights', label: 'Profile Highlights', icon: Image, context: 'Settings' },
   {
     href: '/settings/billing',
-    label: 'Subscription & Billing',
+    label: 'Support ChefFlow',
     icon: Settings,
     context: 'Settings',
   },
