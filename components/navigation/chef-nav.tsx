@@ -775,10 +775,14 @@ export function ChefSidebar({
       <div
         className={`flex items-center h-16 border-b border-stone-800/60 shadow-[0_1px_8px_rgba(0,0,0,0.2)] ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
       >
-        <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
-          <AppLogo />
+        <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0 group/logo">
+          <span className="transition-transform duration-200 group-hover/logo:scale-110">
+            <AppLogo />
+          </span>
           {!collapsed && (
-            <span className="text-lg font-display text-stone-100 whitespace-nowrap">ChefFlow</span>
+            <span className="text-lg font-display text-stone-100 whitespace-nowrap transition-colors duration-200 group-hover/logo:text-brand-400">
+              ChefFlow
+            </span>
           )}
         </Link>
         {!collapsed ? (
@@ -1040,7 +1044,7 @@ export function ChefSidebar({
 
             <RecentPagesSection />
 
-            <div className="border-t border-stone-800 my-2" />
+            <div className="divider-brand h-px my-2 mx-3 opacity-40" />
 
             {/* Grouped nav */}
             {filteredGroupEntries.map(({ group, isLocked }) => (
@@ -1057,7 +1061,7 @@ export function ChefSidebar({
               />
             ))}
 
-            <div className="border-t border-stone-800 my-2" />
+            <div className="divider-brand h-px my-2 mx-3 opacity-40" />
 
             {isAdmin && !focusMode && (
               <SectionAccordion
@@ -1099,7 +1103,7 @@ export function ChefSidebar({
               />
             )}
 
-            <div className="border-t border-stone-800 my-2" />
+            <div className="divider-brand h-px my-2 mx-3 opacity-40" />
 
             {/* Settings */}
             <button

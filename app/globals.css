@@ -2074,3 +2074,107 @@ select:focus {
 .scrollbar-fade:hover::-webkit-scrollbar-thumb {
   background: rgba(68, 64, 60, 0.8);
 }
+
+/* ========================================
+   VISUAL POLISH — TIER 3
+   Sparkline draw, widget entrance, focus rings
+   ======================================== */
+
+/* Sparkline SVG draw animation */
+.sparkline-draw {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: sparkline-draw 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: 0.3s;
+}
+
+@keyframes sparkline-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Widget card entrance - staggered fade-up when streaming in */
+[data-widget-id] {
+  animation: widget-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes widget-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Button press effect */
+.btn-press:active {
+  transform: scale(0.97);
+  transition: transform 0.1s;
+}
+
+/* Subtle border shimmer for featured cards */
+.border-shimmer {
+  position: relative;
+}
+.border-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(232, 143, 71, 0.3) 0%,
+    transparent 40%,
+    transparent 60%,
+    rgba(232, 143, 71, 0.15) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Dialog entrance animations */
+@keyframes dialog-backdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .sparkline-draw {
+    stroke-dasharray: unset;
+    stroke-dashoffset: unset;
+    animation: none;
+  }
+  [data-widget-id] {
+    animation: none;
+  }
+  [class*='animate-[dialog'] {
+    animation: none;
+  }
+}
