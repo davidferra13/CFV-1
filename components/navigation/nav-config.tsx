@@ -536,13 +536,24 @@ export const navGroups: NavGroup[] = [
     module: 'culinary',
     items: [
       {
+        href: '/culinary',
+        label: 'Culinary Hub',
+        icon: ChefHat,
+      },
+      {
         href: '/menus',
         label: 'Menus',
         icon: UtensilsCrossed,
         children: [
+          { href: '/menus/new', label: 'New Menu' },
+          { href: '/culinary/menus/drafts', label: 'Drafts' },
+          { href: '/culinary/menus/approved', label: 'Approved' },
+          { href: '/culinary/menus/templates', label: 'Templates' },
+          { href: '/culinary/menus/scaling', label: 'Scaling' },
+          { href: '/culinary/menus/substitutions', label: 'Substitutions' },
           { href: '/culinary/dish-index', label: 'Dish Index' },
-          { href: '/menus/upload', label: 'Menu Upload', icon: Upload },
           { href: '/culinary/dish-index/insights', label: 'Dish Insights' },
+          { href: '/menus/upload', label: 'Menu Upload', icon: Upload },
           { href: '/nutrition', label: 'Nutritional Analysis' },
           { href: '/culinary/menus/engineering', label: 'Menu Engineering' },
         ],
@@ -554,25 +565,59 @@ export const navGroups: NavGroup[] = [
         children: [
           { href: '/recipes/new', label: 'New Recipe' },
           { href: '/culinary/recipes', label: 'Recipe Library' },
-          { href: '/culinary/components', label: 'Components' },
+          { href: '/culinary/recipes/drafts', label: 'Drafts' },
+          { href: '/culinary/recipes/dietary-flags', label: 'By Dietary Flags' },
+          { href: '/culinary/recipes/seasonal-notes', label: 'Seasonal Notes' },
+          { href: '/culinary/recipes/tags', label: 'Tags' },
           { href: '/recipes/photos', label: 'Step Photos' },
+          { href: '/recipes/production-log', label: 'Production Log' },
+        ],
+      },
+      {
+        href: '/culinary/components',
+        label: 'Components',
+        icon: Package,
+        children: [
+          { href: '/culinary/components/sauces', label: 'Sauces' },
+          { href: '/culinary/components/stocks', label: 'Stocks' },
+          { href: '/culinary/components/garnishes', label: 'Garnishes' },
+          { href: '/culinary/components/ferments', label: 'Ferments' },
+          { href: '/culinary/components/shared-elements', label: 'Shared Elements' },
         ],
       },
       {
         href: '/recipes/ingredients',
         label: 'Ingredients',
         icon: Package,
-        children: [{ href: '/culinary/ingredients', label: 'Ingredients Database' }],
+        children: [
+          { href: '/culinary/ingredients', label: 'Ingredients Database' },
+          { href: '/culinary/ingredients/seasonal-availability', label: 'Seasonal Availability' },
+          { href: '/culinary/ingredients/vendor-notes', label: 'Vendor Notes' },
+        ],
       },
       {
         href: '/culinary/costing',
         label: 'Costing',
         icon: Calculator,
+        children: [
+          { href: '/culinary/costing/menu', label: 'Menu Costs' },
+          { href: '/culinary/costing/recipe', label: 'Recipe Costs' },
+          { href: '/culinary/costing/food-cost', label: 'Food Cost Analysis' },
+        ],
       },
       {
         href: '/culinary/prep',
         label: 'Prep Workspace',
         icon: Timer,
+        children: [
+          { href: '/culinary/prep/shopping', label: 'Shopping Lists' },
+          { href: '/culinary/prep/timeline', label: 'Prep Timeline' },
+        ],
+      },
+      {
+        href: '/culinary/my-kitchen',
+        label: 'My Kitchen',
+        icon: Flame,
       },
       {
         href: '/culinary-board',
@@ -580,9 +625,19 @@ export const navGroups: NavGroup[] = [
         icon: Chalkboard,
       },
       {
+        href: '/culinary/substitutions',
+        label: 'Substitutions',
+        icon: RefreshCw,
+      },
+      {
         href: '/settings/repertoire',
         label: 'Seasonal Palettes',
         icon: Flower,
+      },
+      {
+        href: '/settings/menu-engine',
+        label: 'Menu Engine Settings',
+        icon: Sliders,
       },
     ],
   },
