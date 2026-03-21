@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS scheduled_messages (
 
 ALTER TABLE scheduled_messages ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_scheduled_message_access" ON scheduled_messages;
 CREATE POLICY "chef_scheduled_message_access" ON scheduled_messages
   FOR ALL USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));

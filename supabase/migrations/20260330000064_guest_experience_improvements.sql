@@ -77,6 +77,10 @@ CREATE TABLE IF NOT EXISTS guest_messages (
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Add columns that may be missing if table already existed from an earlier migration
+ALTER TABLE guest_messages ADD COLUMN IF NOT EXISTS guest_token TEXT;
+ALTER TABLE guest_messages ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
+
 COMMENT ON TABLE guest_messages IS
   'One-way messages from event guests to the chef, sent via the RSVP portal. '
   'Chef sees in event detail. Max 2000 chars per message.';

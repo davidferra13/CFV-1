@@ -58,13 +58,13 @@ CREATE TABLE IF NOT EXISTS directory_listings (
 );
 
 -- Indexes for search and filtering
-CREATE INDEX idx_directory_listings_status ON directory_listings(status) WHERE status != 'removed';
-CREATE INDEX idx_directory_listings_business_type ON directory_listings(business_type);
-CREATE INDEX idx_directory_listings_city ON directory_listings(city);
-CREATE INDEX idx_directory_listings_state ON directory_listings(state);
-CREATE INDEX idx_directory_listings_slug ON directory_listings(slug);
-CREATE INDEX idx_directory_listings_cuisine_types ON directory_listings USING gin(cuisine_types);
-CREATE INDEX idx_directory_listings_featured ON directory_listings(featured, feature_order) WHERE featured = true;
+CREATE INDEX IF NOT EXISTS idx_directory_listings_status ON directory_listings(status) WHERE status != 'removed';
+CREATE INDEX IF NOT EXISTS idx_directory_listings_business_type ON directory_listings(business_type);
+CREATE INDEX IF NOT EXISTS idx_directory_listings_city ON directory_listings(city);
+CREATE INDEX IF NOT EXISTS idx_directory_listings_state ON directory_listings(state);
+CREATE INDEX IF NOT EXISTS idx_directory_listings_slug ON directory_listings(slug);
+CREATE INDEX IF NOT EXISTS idx_directory_listings_cuisine_types ON directory_listings USING gin(cuisine_types);
+CREATE INDEX IF NOT EXISTS idx_directory_listings_featured ON directory_listings(featured, feature_order) WHERE featured = true;
 
 -- Nominations table for community suggestions
 CREATE TABLE IF NOT EXISTS directory_nominations (
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS directory_nominations (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_directory_nominations_status ON directory_nominations(status);
+CREATE INDEX IF NOT EXISTS idx_directory_nominations_status ON directory_nominations(status);
 
 -- Updated_at trigger
 CREATE OR REPLACE FUNCTION update_directory_listing_updated_at()
@@ -95,6 +95,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_directory_listings_updated_at ON directory_listings;
 CREATE TRIGGER trg_directory_listings_updated_at
   BEFORE UPDATE ON directory_listings
   FOR EACH ROW
@@ -105,17 +106,21 @@ ALTER TABLE directory_listings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE directory_nominations ENABLE ROW LEVEL SECURITY;
 
 -- Anyone can read active listings (public directory)
+DROP POLICY IF EXISTS "directory_listings_public_read" ON directory_listings;
 CREATE POLICY "directory_listings_public_read" ON directory_listings
   FOR SELECT USING (status != 'removed');
 
 -- Only service_role can insert/update/delete (admin actions via server)
+DROP POLICY IF EXISTS "directory_listings_admin_write" ON directory_listings;
 CREATE POLICY "directory_listings_admin_write" ON directory_listings
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Anyone can submit nominations
+DROP POLICY IF EXISTS "directory_nominations_public_insert" ON directory_nominations;
 CREATE POLICY "directory_nominations_public_insert" ON directory_nominations
   FOR INSERT WITH CHECK (true);
 
 -- Only service_role can read/update nominations
+DROP POLICY IF EXISTS "directory_nominations_admin_manage" ON directory_nominations;
 CREATE POLICY "directory_nominations_admin_manage" ON directory_nominations
   FOR ALL USING (auth.role() = 'service_role');

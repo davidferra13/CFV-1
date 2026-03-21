@@ -39,8 +39,8 @@ CREATE TABLE equipment_maintenance_log (
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_maint_log_equipment ON equipment_maintenance_log(equipment_id, performed_at DESC);
-CREATE INDEX idx_maint_log_chef      ON equipment_maintenance_log(chef_id);
+CREATE INDEX IF NOT EXISTS idx_maint_log_equipment ON equipment_maintenance_log(equipment_id, performed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_maint_log_chef      ON equipment_maintenance_log(chef_id);
 
 COMMENT ON TABLE equipment_maintenance_log
   IS 'Detailed log of all maintenance, calibration, repair, and inspection events for equipment.';

@@ -18,11 +18,12 @@ CREATE TABLE IF NOT EXISTS event_contacts (
 
 ALTER TABLE event_contacts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_event_contacts_access" ON event_contacts;
 CREATE POLICY "chef_event_contacts_access" ON event_contacts
   FOR ALL USING (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 
-CREATE INDEX idx_event_contacts_event ON event_contacts(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_contacts_event ON event_contacts(event_id);
 
 -- Kitchen assessments (per venue/client)
 CREATE TABLE IF NOT EXISTS kitchen_assessments (
@@ -59,9 +60,10 @@ CREATE TABLE IF NOT EXISTS kitchen_assessments (
 
 ALTER TABLE kitchen_assessments ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_kitchen_assessment_access" ON kitchen_assessments;
 CREATE POLICY "chef_kitchen_assessment_access" ON kitchen_assessments
   FOR ALL USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 
-CREATE INDEX idx_kitchen_assessments_client ON kitchen_assessments(client_id) WHERE client_id IS NOT NULL;
-CREATE INDEX idx_kitchen_assessments_chef ON kitchen_assessments(chef_id);
+CREATE INDEX IF NOT EXISTS idx_kitchen_assessments_client ON kitchen_assessments(client_id) WHERE client_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_kitchen_assessments_chef ON kitchen_assessments(chef_id);

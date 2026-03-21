@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS auto_response_config (
 
 ALTER TABLE auto_response_config ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_auto_response_access" ON auto_response_config;
 CREATE POLICY "chef_auto_response_access" ON auto_response_config
   FOR ALL USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
@@ -44,11 +45,34 @@ CREATE TABLE IF NOT EXISTS response_templates (
 
 ALTER TABLE response_templates ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "chef_template_access" ON response_templates
-  FOR ALL USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
-  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+-- Add columns that may be missing if table existed from an earlier migration
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS chef_id UUID REFERENCES chefs(id) ON DELETE CASCADE;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS subject TEXT;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS body TEXT;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS channel_filter TEXT;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS occasion_filter TEXT;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS is_default BOOLEAN DEFAULT false;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS is_system BOOLEAN DEFAULT false;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS last_used_at TIMESTAMPTZ;
+ALTER TABLE response_templates ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
 
-CREATE INDEX idx_response_templates_chef_category ON response_templates(chef_id, category) WHERE deleted_at IS NULL;
+-- Backfill chef_id from tenant_id if needed
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='response_templates' AND column_name='tenant_id') THEN
+    UPDATE response_templates SET chef_id = tenant_id WHERE chef_id IS NULL AND tenant_id IS NOT NULL;
+  END IF;
+END $$;
+
+DROP POLICY IF EXISTS "chef_template_access" ON response_templates;
+CREATE POLICY "chef_template_access" ON response_templates
+  FOR ALL USING (
+    COALESCE(chef_id, tenant_id) IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
+  )
+  WITH CHECK (
+    COALESCE(chef_id, tenant_id) IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
+  );
+
+CREATE INDEX IF NOT EXISTS idx_response_templates_chef_category ON response_templates(chef_id, category) WHERE deleted_at IS NULL;
 
 -- Business hours configuration
 CREATE TABLE IF NOT EXISTS business_hours_config (
@@ -74,6 +98,7 @@ CREATE TABLE IF NOT EXISTS business_hours_config (
 
 ALTER TABLE business_hours_config ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_business_hours_access" ON business_hours_config;
 CREATE POLICY "chef_business_hours_access" ON business_hours_config
   FOR ALL USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));

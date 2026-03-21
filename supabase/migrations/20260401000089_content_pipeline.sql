@@ -47,6 +47,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_content_drafts_updated_at ON event_content_drafts;
 CREATE TRIGGER trg_content_drafts_updated_at
   BEFORE UPDATE ON event_content_drafts
   FOR EACH ROW EXECUTE FUNCTION update_content_drafts_updated_at();

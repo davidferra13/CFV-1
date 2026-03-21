@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS platform_api_connections (
 
 CREATE INDEX IF NOT EXISTS idx_pac_chef ON platform_api_connections(chef_id);
 
+DROP TRIGGER IF EXISTS pac_updated_at ON platform_api_connections;
 CREATE TRIGGER pac_updated_at
   BEFORE UPDATE ON platform_api_connections
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

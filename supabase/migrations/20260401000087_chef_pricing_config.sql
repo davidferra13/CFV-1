@@ -93,10 +93,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_chef_pricing_config_updated_at ON chef_pricing_config;
 CREATE TRIGGER trg_chef_pricing_config_updated_at
   BEFORE UPDATE ON chef_pricing_config
   FOR EACH ROW
   EXECUTE FUNCTION update_chef_pricing_config_updated_at();
 
 -- Index for fast lookups
-CREATE INDEX idx_chef_pricing_config_chef_id ON chef_pricing_config(chef_id);
+CREATE INDEX IF NOT EXISTS idx_chef_pricing_config_chef_id ON chef_pricing_config(chef_id);

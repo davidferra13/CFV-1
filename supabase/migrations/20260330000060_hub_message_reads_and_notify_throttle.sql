@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS hub_message_reads (
   UNIQUE(message_id, profile_id)
 );
 
-CREATE INDEX idx_hub_message_reads_message ON hub_message_reads(message_id);
-CREATE INDEX idx_hub_message_reads_profile ON hub_message_reads(profile_id);
+CREATE INDEX IF NOT EXISTS idx_hub_message_reads_message ON hub_message_reads(message_id);
+CREATE INDEX IF NOT EXISTS idx_hub_message_reads_profile ON hub_message_reads(profile_id);
 
 -- RLS
 ALTER TABLE hub_message_reads ENABLE ROW LEVEL SECURITY;

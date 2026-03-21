@@ -25,6 +25,7 @@ CREATE INDEX IF NOT EXISTS idx_event_collaborators_chef_id ON event_collaborator
 ALTER TABLE event_collaborators ENABLE ROW LEVEL SECURITY;
 
 -- Host chef full access (chef_id = the host chef / tenant)
+DROP POLICY IF EXISTS "chef_event_collaborator_access" ON event_collaborators;
 CREATE POLICY "chef_event_collaborator_access" ON event_collaborators
   FOR ALL USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
@@ -38,6 +39,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_event_collaborators_updated_at ON event_collaborators;
 CREATE TRIGGER trg_event_collaborators_updated_at
   BEFORE UPDATE ON event_collaborators
   FOR EACH ROW

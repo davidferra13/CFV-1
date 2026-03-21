@@ -45,10 +45,11 @@ CREATE TABLE IF NOT EXISTS client_proposals (
   CONSTRAINT client_proposals_unique_token UNIQUE (share_token)
 );
 
-CREATE INDEX idx_client_proposals_tenant ON client_proposals(tenant_id, status);
-CREATE INDEX idx_client_proposals_event ON client_proposals(event_id) WHERE event_id IS NOT NULL;
-CREATE INDEX idx_client_proposals_token ON client_proposals(share_token);
+CREATE INDEX IF NOT EXISTS idx_client_proposals_tenant ON client_proposals(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_client_proposals_event ON client_proposals(event_id) WHERE event_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_client_proposals_token ON client_proposals(share_token);
 
+DROP TRIGGER IF EXISTS trg_client_proposals_updated_at ON client_proposals;
 CREATE TRIGGER trg_client_proposals_updated_at
   BEFORE UPDATE ON client_proposals
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -87,9 +88,10 @@ CREATE TABLE IF NOT EXISTS staff_event_tokens (
   CONSTRAINT staff_event_tokens_unique_per_event UNIQUE (tenant_id, event_id, staff_member_id)
 );
 
-CREATE INDEX idx_staff_event_tokens_token ON staff_event_tokens(token);
-CREATE INDEX idx_staff_event_tokens_event ON staff_event_tokens(event_id);
+CREATE INDEX IF NOT EXISTS idx_staff_event_tokens_token ON staff_event_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_staff_event_tokens_event ON staff_event_tokens(event_id);
 
+DROP TRIGGER IF EXISTS trg_staff_event_tokens_updated_at ON staff_event_tokens;
 CREATE TRIGGER trg_staff_event_tokens_updated_at
   BEFORE UPDATE ON staff_event_tokens
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -133,9 +135,10 @@ CREATE TABLE IF NOT EXISTS meal_prep_programs (
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_meal_prep_programs_tenant ON meal_prep_programs(tenant_id, status);
-CREATE INDEX idx_meal_prep_programs_client ON meal_prep_programs(tenant_id, client_id);
+CREATE INDEX IF NOT EXISTS idx_meal_prep_programs_tenant ON meal_prep_programs(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_meal_prep_programs_client ON meal_prep_programs(tenant_id, client_id);
 
+DROP TRIGGER IF EXISTS trg_meal_prep_programs_updated_at ON meal_prep_programs;
 CREATE TRIGGER trg_meal_prep_programs_updated_at
   BEFORE UPDATE ON meal_prep_programs
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -166,8 +169,9 @@ CREATE TABLE IF NOT EXISTS meal_prep_weeks (
   CONSTRAINT meal_prep_weeks_unique UNIQUE (program_id, rotation_week)
 );
 
-CREATE INDEX idx_meal_prep_weeks_program ON meal_prep_weeks(program_id, rotation_week);
+CREATE INDEX IF NOT EXISTS idx_meal_prep_weeks_program ON meal_prep_weeks(program_id, rotation_week);
 
+DROP TRIGGER IF EXISTS trg_meal_prep_weeks_updated_at ON meal_prep_weeks;
 CREATE TRIGGER trg_meal_prep_weeks_updated_at
   BEFORE UPDATE ON meal_prep_weeks
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -216,9 +220,10 @@ CREATE TABLE IF NOT EXISTS menu_nutrition (
   CONSTRAINT menu_nutrition_unique_dish UNIQUE (menu_id, recipe_id, dish_name)
 );
 
-CREATE INDEX idx_menu_nutrition_menu ON menu_nutrition(menu_id);
-CREATE INDEX idx_menu_nutrition_recipe ON menu_nutrition(recipe_id) WHERE recipe_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_menu_nutrition_menu ON menu_nutrition(menu_id);
+CREATE INDEX IF NOT EXISTS idx_menu_nutrition_recipe ON menu_nutrition(recipe_id) WHERE recipe_id IS NOT NULL;
 
+DROP TRIGGER IF EXISTS trg_menu_nutrition_updated_at ON menu_nutrition;
 CREATE TRIGGER trg_menu_nutrition_updated_at
   BEFORE UPDATE ON menu_nutrition
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -268,10 +273,11 @@ CREATE TABLE IF NOT EXISTS follow_up_sends (
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_follow_up_sends_tenant ON follow_up_sends(tenant_id, status);
-CREATE INDEX idx_follow_up_sends_event ON follow_up_sends(event_id);
-CREATE INDEX idx_follow_up_sends_scheduled ON follow_up_sends(scheduled_for) WHERE status = 'pending';
+CREATE INDEX IF NOT EXISTS idx_follow_up_sends_tenant ON follow_up_sends(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_follow_up_sends_event ON follow_up_sends(event_id);
+CREATE INDEX IF NOT EXISTS idx_follow_up_sends_scheduled ON follow_up_sends(scheduled_for) WHERE status = 'pending';
 
+DROP TRIGGER IF EXISTS trg_follow_up_sends_updated_at ON follow_up_sends;
 CREATE TRIGGER trg_follow_up_sends_updated_at
   BEFORE UPDATE ON follow_up_sends
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
