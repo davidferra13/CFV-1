@@ -3,7 +3,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import Link from 'next/link'
+import { HeroMetricsClient } from './hero-metrics-client'
 
 type HeroMetric = {
   label: string
@@ -105,20 +105,5 @@ export async function HeroMetrics() {
     return null
   }
 
-  return (
-    <div className="col-span-1 sm:col-span-2 lg:col-span-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {metrics.map((metric) => (
-        <Link
-          key={metric.label}
-          href={metric.href}
-          className="group rounded-xl border border-stone-800 bg-stone-900/60 px-4 py-3 hover:border-stone-700 hover:bg-stone-800/60 transition-colors"
-        >
-          <p className="text-xs text-stone-500 font-medium">{metric.label}</p>
-          <p className="text-xl font-display text-stone-100 mt-0.5 group-hover:text-brand-400 transition-colors">
-            {metric.value}
-          </p>
-        </Link>
-      ))}
-    </div>
-  )
+  return <HeroMetricsClient metrics={metrics} />
 }

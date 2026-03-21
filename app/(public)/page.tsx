@@ -57,12 +57,12 @@ export default function Home() {
   return (
     <main>
       {/* Hero: search-first, consumer-focused */}
-      <section className="relative overflow-hidden">
-        <div className="relative mx-auto flex w-full max-w-5xl flex-col items-center px-4 pb-10 pt-20 text-center sm:px-6 md:pb-16 md:pt-28 lg:px-8">
-          <p className="mb-5 rounded-full border border-brand-700/40 bg-brand-950/50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
+      <section className="relative overflow-hidden hero-glow">
+        <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-4 pb-10 pt-20 text-center sm:px-6 md:pb-16 md:pt-28 lg:px-8">
+          <p className="mb-5 rounded-full border border-brand-700/40 bg-brand-950/50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300 animate-float">
             Food Directory
           </p>
-          <h1 className="max-w-4xl text-4xl font-bold tracking-tight text-stone-100 md:text-6xl">
+          <h1 className="max-w-4xl text-4xl font-bold tracking-tight md:text-6xl text-gradient">
             Find exactly what you want to eat.
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-400 md:text-lg">
@@ -78,12 +78,12 @@ export default function Home() {
                   type="text"
                   name="q"
                   placeholder="What are you looking for?"
-                  className="h-14 w-full rounded-xl border border-stone-700 bg-stone-900/80 px-4 text-base text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                  className="h-14 w-full rounded-xl border border-stone-700 bg-stone-900/80 px-4 text-base text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 glass-subtle"
                 />
               </div>
               <button
                 type="submit"
-                className="h-14 rounded-xl bg-brand-600 px-8 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+                className="h-14 rounded-xl gradient-accent px-8 text-sm font-semibold text-white glow-hover"
               >
                 Search
               </button>
@@ -96,7 +96,7 @@ export default function Home() {
               <Link
                 key={cat.label}
                 href={cat.href}
-                className="inline-flex items-center gap-2 rounded-full border border-stone-700/60 bg-stone-900/60 px-4 py-2 text-sm text-stone-300 transition-colors hover:border-brand-600/50 hover:bg-stone-800 hover:text-stone-100"
+                className="inline-flex items-center gap-2 rounded-full border border-stone-700/60 bg-stone-900/60 px-4 py-2 text-sm text-stone-300 transition-all duration-200 hover:border-brand-600/50 hover:bg-stone-800 hover:text-stone-100 hover:-translate-y-0.5"
               >
                 <span>{cat.emoji}</span>
                 {cat.label}
@@ -110,13 +110,13 @@ export default function Home() {
       <section className="border-t border-stone-800/50">
         <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center justify-center gap-x-10 gap-y-3 px-4 py-6 text-sm text-stone-500">
           <span>Free to browse</span>
-          <span className="hidden sm:inline text-stone-700">|</span>
+          <span className="hidden sm:inline text-stone-700 divider-brand w-px h-4" />
           <span>No middleman</span>
-          <span className="hidden sm:inline text-stone-700">|</span>
+          <span className="hidden sm:inline text-stone-700 divider-brand w-px h-4" />
           <span>Connect directly</span>
-          <span className="hidden sm:inline text-stone-700">|</span>
+          <span className="hidden sm:inline text-stone-700 divider-brand w-px h-4" />
           <span>Real menus</span>
-          <span className="hidden sm:inline text-stone-700">|</span>
+          <span className="hidden sm:inline text-stone-700 divider-brand w-px h-4" />
           <span>No commission</span>
         </div>
       </section>

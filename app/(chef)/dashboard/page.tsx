@@ -135,7 +135,7 @@ async function PriorityQueueSection() {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  className="w-2.5 h-2.5 rounded-full shrink-0 pulse-soft"
                   style={{
                     backgroundColor:
                       queue.nextAction.urgency === 'critical'
@@ -269,7 +269,7 @@ export default async function ChefDashboard() {
           <Link
             href={primaryAction.href}
             data-tour="chef-dashboard-home"
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors font-medium text-sm"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 gradient-accent text-white rounded-lg font-medium text-sm glow-hover"
           >
             <Plus className="h-4 w-4" />
             {primaryAction.label}

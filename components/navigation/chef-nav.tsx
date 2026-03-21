@@ -767,7 +767,7 @@ export function ChefSidebar({
 
   return (
     <aside
-      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-[var(--surface-1)] sidebar-gradient border-r border-stone-800/60 transition-all duration-200 z-30 ${
+      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 glass-subtle sidebar-gradient border-r border-stone-800/60 transition-all duration-200 z-30 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
