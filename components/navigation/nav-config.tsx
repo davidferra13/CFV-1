@@ -152,13 +152,13 @@ export const standaloneTop: NavItem[] = [
   { href: '/commerce/virtual-terminal', label: 'Virtual Terminal', icon: CreditCard },
   { href: '/commerce/table-service', label: 'Table Service', icon: UtensilsCrossed },
   { href: '/commerce/promotions', label: 'Promotions', icon: Percent },
-  { href: '/commerce/observability', label: 'Observability', icon: AlertTriangle },
-  { href: '/commerce/parity', label: 'Clover Parity', icon: BarChart3 },
+  { href: '/commerce/observability', label: 'Observability', icon: AlertTriangle, adminOnly: true },
+  { href: '/commerce/parity', label: 'Clover Parity', icon: BarChart3, adminOnly: true },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
-// Organized by chef workflow: AI → Sell → Plan → Cook → Stock → Money → Grow → Protect
-// Each group targets 3-5 items max for clear differentiation between related concepts.
+// Organized by chef workflow: AI → Sell → Clients → Events → Cook → Operate → Supply → Money → Grow → Protect
+// Consolidated from 28 groups to 14 for a cleaner, less cluttered navigation.
 export const navGroups: NavGroup[] = [
   // ─── REMY (AI Assistant) ───
   {
@@ -182,7 +182,8 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── PIPELINE (active deal flow) ───
+  // ─── PIPELINE (active deal flow + outreach) ───
+  // Merges: pipeline + outreach + consulting
   {
     id: 'pipeline',
     label: 'Pipeline',
@@ -244,16 +245,6 @@ export const navGroups: NavGroup[] = [
           { href: '/proposals/addons', label: 'Add-Ons' },
         ],
       },
-    ],
-  },
-
-  // ─── OUTREACH (finding and nurturing business) ───
-  {
-    id: 'outreach',
-    label: 'Outreach',
-    icon: Megaphone,
-    module: 'pipeline',
-    items: [
       {
         href: '/rate-card',
         label: 'Rate Card',
@@ -290,15 +281,6 @@ export const navGroups: NavGroup[] = [
         label: 'Testimonials',
         icon: Star,
       },
-    ],
-  },
-
-  // ─── CONSULTING (pricing, positioning, and offer design) ───
-  {
-    id: 'consulting',
-    label: 'Consulting',
-    icon: Compass,
-    items: [
       {
         href: '/consulting',
         label: 'Consulting Hub',
@@ -307,7 +289,8 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── CLIENTS (managing client relationships) ───
+  // ─── CLIENTS (relationships, intelligence, guests, partners) ───
+  // Merges: clients + client-intelligence + guests-partners
   {
     id: 'clients',
     label: 'Clients',
@@ -359,16 +342,6 @@ export const navGroups: NavGroup[] = [
           { href: '/clients/preferences/dislikes', label: 'Dislikes' },
         ],
       },
-    ],
-  },
-
-  // ─── CLIENT INTELLIGENCE (insights and retention) ───
-  {
-    id: 'client-intelligence',
-    label: 'Client Intelligence',
-    icon: ChartLineUp,
-    module: 'clients',
-    items: [
       {
         href: '/clients/insights',
         label: 'Client Insights',
@@ -392,16 +365,6 @@ export const navGroups: NavGroup[] = [
           { href: '/clients/loyalty/referrals', label: 'Referrals' },
         ],
       },
-    ],
-  },
-
-  // ─── GUESTS & PARTNERS (external relationships) ───
-  {
-    id: 'guests-partners',
-    label: 'Guests & Partners',
-    icon: Handshake,
-    module: 'clients',
-    items: [
       {
         href: '/guests',
         label: 'Guest Directory',
@@ -427,7 +390,7 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── EVENTS (planning and executing) ───
+  // ─── EVENTS (planning, scheduling, reviewing) ───
   {
     id: 'events',
     label: 'Events',
@@ -471,22 +434,27 @@ export const navGroups: NavGroup[] = [
         href: '/feedback',
         label: 'Client Feedback',
         icon: Star,
-        hidden: true,
         children: [
-          { href: '/feedback/dashboard', label: 'Feedback Dashboard', hidden: true },
-          { href: '/feedback/requests', label: 'Send Requests', hidden: true },
+          { href: '/feedback/dashboard', label: 'Feedback Dashboard' },
+          { href: '/feedback/requests', label: 'Send Requests' },
         ],
       },
     ],
   },
 
-  // ─── POS (point-of-sale transactions) ───
+  // ─── COMMERCE (POS, storefront, reconciliation) ───
+  // Merges: pos + commerce + commerce-ops
   {
-    id: 'pos',
-    label: 'POS',
-    icon: ShoppingCart,
+    id: 'commerce',
+    label: 'Commerce',
+    icon: Store,
     module: 'commerce',
     items: [
+      {
+        href: '/commerce',
+        label: 'Commerce Hub',
+        icon: Store,
+      },
       {
         href: '/commerce/register',
         label: 'POS Register',
@@ -513,21 +481,6 @@ export const navGroups: NavGroup[] = [
         icon: Package,
         children: [{ href: '/commerce/products/new', label: 'New Product' }],
       },
-    ],
-  },
-
-  // ─── COMMERCE (storefront and promotions) ───
-  {
-    id: 'commerce',
-    label: 'Commerce',
-    icon: Store,
-    module: 'commerce',
-    items: [
-      {
-        href: '/commerce',
-        label: 'Commerce Hub',
-        icon: Store,
-      },
       {
         href: '/commerce/sales',
         label: 'Sales History',
@@ -538,16 +491,6 @@ export const navGroups: NavGroup[] = [
         label: 'Promotions',
         icon: Percent,
       },
-    ],
-  },
-
-  // ─── COMMERCE OPS (reconciliation and reporting) ───
-  {
-    id: 'commerce-ops',
-    label: 'Commerce Ops',
-    icon: Scales,
-    module: 'commerce',
-    items: [
       {
         href: '/commerce/reconciliation',
         label: 'Reconciliation',
@@ -573,19 +516,22 @@ export const navGroups: NavGroup[] = [
         href: '/commerce/observability',
         label: 'Observability',
         icon: AlertTriangle,
+        adminOnly: true,
       },
       {
         href: '/commerce/parity',
         label: 'Clover Parity',
         icon: BarChart3,
+        adminOnly: true,
       },
     ],
   },
 
-  // ─── MENU ENGINE (parse, price, organize) ───
+  // ─── CULINARY (menus, recipes, prep, creative work) ───
+  // Merges: menu-engine + culinary-studio
   {
-    id: 'menu-engine',
-    label: 'Menu Engine',
+    id: 'culinary',
+    label: 'Culinary',
     icon: ChefHat,
     module: 'culinary',
     items: [
@@ -597,7 +543,7 @@ export const navGroups: NavGroup[] = [
           { href: '/culinary/dish-index', label: 'Dish Index' },
           { href: '/menus/upload', label: 'Menu Upload', icon: Upload },
           { href: '/culinary/dish-index/insights', label: 'Dish Insights' },
-          { href: '/nutrition', label: 'Nutritional Analysis', hidden: true },
+          { href: '/nutrition', label: 'Nutritional Analysis' },
         ],
       },
       {
@@ -608,7 +554,7 @@ export const navGroups: NavGroup[] = [
           { href: '/recipes/new', label: 'New Recipe' },
           { href: '/culinary/recipes', label: 'Recipe Library' },
           { href: '/culinary/components', label: 'Components' },
-          { href: '/recipes/photos', label: 'Step Photos', hidden: true },
+          { href: '/recipes/photos', label: 'Step Photos' },
         ],
       },
       {
@@ -622,16 +568,6 @@ export const navGroups: NavGroup[] = [
         label: 'Costing',
         icon: Calculator,
       },
-    ],
-  },
-
-  // ─── CULINARY STUDIO (creative planning) ───
-  {
-    id: 'culinary-studio',
-    label: 'Culinary Studio',
-    icon: Chalkboard,
-    module: 'culinary',
-    items: [
       {
         href: '/culinary/prep',
         label: 'Prep Workspace',
@@ -650,10 +586,11 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── KITCHEN OPS (day-to-day workflow) ───
+  // ─── OPERATIONS (kitchen day-to-day + workforce + equipment) ───
+  // Merges: kitchen-ops + workforce
   {
-    id: 'kitchen-ops',
-    label: 'Kitchen Ops',
+    id: 'operations',
+    label: 'Operations',
     icon: Activity,
     module: 'station-ops',
     items: [
@@ -692,16 +629,6 @@ export const navGroups: NavGroup[] = [
         icon: RefreshCw,
         children: [{ href: '/meal-prep', label: 'Dashboard' }],
       },
-    ],
-  },
-
-  // ─── WORKFORCE & ASSETS (people and equipment) ───
-  {
-    id: 'workforce',
-    label: 'Workforce & Assets',
-    icon: IdentificationBadge,
-    module: 'station-ops',
-    items: [
       {
         href: '/staff',
         label: 'Staff',
@@ -710,7 +637,7 @@ export const navGroups: NavGroup[] = [
           { href: '/staff/schedule', label: 'Schedule' },
           { href: '/staff/availability', label: 'Availability' },
           { href: '/staff/clock', label: 'Clock In/Out' },
-          { href: '/staff/payroll', label: 'Payroll Summary', hidden: true },
+          { href: '/staff/payroll', label: 'Payroll Summary' },
           { href: '/staff/performance', label: 'Performance' },
           { href: '/staff/labor', label: 'Labor Dashboard' },
           { href: '/staff/live', label: 'Live Activity' },
@@ -737,12 +664,13 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── VENDORS (buying) ───
+  // ─── SUPPLY CHAIN (vendors, inventory, procurement, cost control) ───
+  // Merges: vendors + inventory + procurement + cost-control
   {
-    id: 'vendors',
-    label: 'Vendors',
+    id: 'supply-chain',
+    label: 'Supply Chain',
     icon: Truck,
-    module: 'vendor-management',
+    module: 'operations',
     items: [
       {
         href: '/vendors',
@@ -759,16 +687,6 @@ export const navGroups: NavGroup[] = [
         icon: Calculator,
         children: [{ href: '/food-cost/revenue', label: 'Daily Revenue' }],
       },
-    ],
-  },
-
-  // ─── INVENTORY (physical stock tracking) ───
-  {
-    id: 'inventory',
-    label: 'Inventory',
-    icon: Warehouse,
-    module: 'operations',
-    items: [
       {
         href: '/inventory',
         label: 'Inventory Hub',
@@ -794,16 +712,6 @@ export const navGroups: NavGroup[] = [
         label: 'Staff Meals',
         icon: UtensilsCrossed,
       },
-    ],
-  },
-
-  // ─── PROCUREMENT (purchasing and vendors) ───
-  {
-    id: 'procurement',
-    label: 'Procurement',
-    icon: HandArrowDown,
-    module: 'operations',
-    items: [
       {
         href: '/inventory/procurement',
         label: 'Procurement Hub',
@@ -820,16 +728,6 @@ export const navGroups: NavGroup[] = [
         label: 'Vendor Invoices',
         icon: Invoice,
       },
-    ],
-  },
-
-  // ─── COST CONTROL (waste, audits, and analysis) ───
-  {
-    id: 'cost-control',
-    label: 'Cost Control',
-    icon: Calculator,
-    module: 'operations',
-    items: [
       {
         href: '/inventory/transactions',
         label: 'Transaction Ledger',
@@ -859,10 +757,11 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── MONEY IN (revenue and collections) ───
+  // ─── FINANCE (money in, money out, accounting) ───
+  // Merges: money-in + money-out + accounting
   {
-    id: 'money-in',
-    label: 'Money In',
+    id: 'finance',
+    label: 'Finance',
     icon: CurrencyCircleDollar,
     module: 'finance',
     items: [
@@ -898,16 +797,6 @@ export const navGroups: NavGroup[] = [
           { href: '/finance/bank-feed', label: 'Bank Feed' },
         ],
       },
-    ],
-  },
-
-  // ─── MONEY OUT (expenses and contractors) ───
-  {
-    id: 'money-out',
-    label: 'Money Out',
-    icon: Coins,
-    module: 'finance',
-    items: [
       {
         href: '/expenses',
         label: 'Expenses',
@@ -924,16 +813,6 @@ export const navGroups: NavGroup[] = [
         label: '1099 Contractors',
         icon: IdentificationBadge,
       },
-    ],
-  },
-
-  // ─── ACCOUNTING (ledger, reports, tax, forecasting) ───
-  {
-    id: 'accounting',
-    label: 'Accounting',
-    icon: NotebookIcon,
-    module: 'finance',
-    items: [
       {
         href: '/financials',
         label: 'Financial Hub',
@@ -961,7 +840,7 @@ export const navGroups: NavGroup[] = [
           { href: '/finance/reporting/profit-by-event', label: 'Profit by Event' },
           { href: '/finance/reporting/profit-loss', label: 'Profit & Loss' },
           { href: '/finance/reporting/year-to-date-summary', label: 'Year-to-Date Summary' },
-          { href: '/finance/reporting/yoy-comparison', label: 'Year-over-Year', hidden: true },
+          { href: '/finance/reporting/yoy-comparison', label: 'Year-over-Year' },
         ],
       },
       {
@@ -983,7 +862,7 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── MARKETING & GROWTH (getting the word out) ───
+  // ─── MARKETING (campaigns, content, reputation) ───
   {
     id: 'marketing',
     label: 'Marketing',
@@ -1006,9 +885,9 @@ export const navGroups: NavGroup[] = [
         icon: PenNib,
         children: [
           { href: '/social/vault', label: 'Media Vault' },
-          { href: '/social/compose', label: 'Post from Event', hidden: true },
-          { href: '/social/templates', label: 'Social Templates', hidden: true },
-          { href: '/social/calendar', label: 'Content Calendar', hidden: true },
+          { href: '/social/compose', label: 'Post from Event' },
+          { href: '/social/templates', label: 'Social Templates' },
+          { href: '/social/calendar', label: 'Content Calendar' },
           { href: '/social/connections', label: 'Platform Connections' },
           { href: '/social/settings', label: 'Queue Settings' },
         ],
@@ -1032,7 +911,7 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── ANALYTICS (understanding the business) ───
+  // ─── ANALYTICS (business intelligence) ───
   {
     id: 'analytics',
     label: 'Analytics',
@@ -1075,7 +954,7 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── PROTECTION (safety & compliance) ───
+  // ─── PROTECTION (safety, compliance, continuity) ───
   {
     id: 'protection',
     label: 'Protection',
@@ -1104,10 +983,9 @@ export const navGroups: NavGroup[] = [
         href: '/safety/claims',
         label: 'Insurance Claims',
         icon: ShieldAlert,
-        hidden: true,
         children: [
-          { href: '/safety/claims/new', label: 'New Claim', hidden: true },
-          { href: '/safety/claims/documents', label: 'Claim Documents', hidden: true },
+          { href: '/safety/claims/new', label: 'New Claim' },
+          { href: '/safety/claims/documents', label: 'Claim Documents' },
         ],
       },
       {
@@ -1118,54 +996,7 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── COMMUNITY (chef-to-chef) ───
-  {
-    id: 'community',
-    label: 'Community',
-    icon: Users,
-    module: 'more',
-    items: [
-      {
-        href: '/community',
-        label: 'Community Hub',
-        icon: Users,
-        hidden: true,
-        children: [
-          { href: '/community/benchmarks', label: 'Benchmarks', hidden: true },
-          { href: '/community/messages', label: 'Peer Messages', hidden: true },
-        ],
-      },
-      {
-        href: '/community/directory',
-        label: 'Chef Directory',
-        icon: TreeStructure,
-        hidden: true,
-        children: [{ href: '/community/directory/my-listing', label: 'My Listing', hidden: true }],
-      },
-      {
-        href: '/community/mentorship',
-        label: 'Mentorship',
-        icon: HeartHandshake,
-        hidden: true,
-        children: [
-          { href: '/community/mentorship/find', label: 'Find a Mentor', hidden: true },
-          { href: '/community/mentorship/dashboard', label: 'My Connections', hidden: true },
-        ],
-      },
-      {
-        href: '/community/subcontracting',
-        label: 'Subcontracting',
-        icon: Handshake,
-        hidden: true,
-        children: [
-          { href: '/community/subcontracting/roster', label: 'Subcontractor Roster', hidden: true },
-          { href: '/community/subcontracting/new', label: 'New Agreement', hidden: true },
-        ],
-      },
-    ],
-  },
-
-  // Tools (utilities)
+  // ─── TOOLS (utilities, imports, help) ───
   {
     id: 'tools',
     label: 'Tools',
@@ -1183,9 +1014,9 @@ export const navGroups: NavGroup[] = [
         label: 'Data Import',
         icon: Upload,
         children: [
-          { href: '/import/csv', label: 'CSV Import', hidden: true },
-          { href: '/import/mxp', label: 'MasterCook Import', hidden: true },
-          { href: '/import/history', label: 'Import History', hidden: true },
+          { href: '/import/csv', label: 'CSV Import' },
+          { href: '/import/mxp', label: 'MasterCook Import' },
+          { href: '/import/history', label: 'Import History' },
         ],
       },
       {
@@ -1195,7 +1026,8 @@ export const navGroups: NavGroup[] = [
       },
     ],
   },
-  // Admin (platform controls)
+
+  // ─── ADMIN (platform controls, admin-only) ───
   {
     id: 'admin',
     label: 'Admin',
@@ -1261,7 +1093,7 @@ export const navGroups: NavGroup[] = [
 
 export const standaloneBottom: NavItem[] = [
   { href: '/settings', label: 'Settings', icon: Settings },
-  { href: '/games', label: 'Games', icon: Gamepad2 },
+  { href: '/games', label: 'Games', icon: Gamepad2, adminOnly: true },
 ]
 
 export const mobileTabItems: NavItem[] = [

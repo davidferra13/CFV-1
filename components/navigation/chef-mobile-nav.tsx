@@ -535,11 +535,15 @@ export function ChefMobileNav({
     if (!q) return QUICK_CREATE_ITEMS
     return QUICK_CREATE_ITEMS.filter((item) => item.label.toLowerCase().includes(q))
   }, [navFilter])
+  const visibleBottomItems = useMemo(
+    () => (isAdmin ? standaloneBottom : standaloneBottom.filter((item) => !item.adminOnly)),
+    [isAdmin]
+  )
   const filteredSettingsItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
-    if (!q) return standaloneBottom
-    return standaloneBottom.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter])
+    if (!q) return visibleBottomItems
+    return visibleBottomItems.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter, visibleBottomItems])
   const filteredCannabisItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     if (!q) return cannabisSectionItems
