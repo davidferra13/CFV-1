@@ -113,7 +113,7 @@ export function ListCard({
             <Link
               key={item.id}
               href={item.href}
-              className="block rounded-lg px-2 -mx-2 hover:bg-white/5 transition-colors"
+              className="block rounded-lg px-2 -mx-2 hover:bg-white/[0.07] transition-all duration-200 hover:translate-x-0.5"
             >
               {content}
             </Link>

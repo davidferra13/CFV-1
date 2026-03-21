@@ -31,9 +31,6 @@ CREATE POLICY vas_chef_update ON variance_alert_settings
   ));
 
 -- Auto-set updated_at on update
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_vas_updated_at') THEN
-    CREATE TRIGGER trg_vas_updated_at BEFORE UPDATE ON variance_alert_settings
-      FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-  END IF;
-END $$;
+DROP TRIGGER IF EXISTS trg_vas_updated_at ON variance_alert_settings;
+CREATE TRIGGER trg_vas_updated_at BEFORE UPDATE ON variance_alert_settings
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

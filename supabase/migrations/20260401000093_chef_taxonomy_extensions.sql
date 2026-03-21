@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS chef_taxonomy_hidden (
 );
 
 -- Indexes
-CREATE INDEX idx_taxonomy_ext_chef_cat ON chef_taxonomy_extensions(chef_id, category);
-CREATE INDEX idx_taxonomy_hidden_chef_cat ON chef_taxonomy_hidden(chef_id, category);
+CREATE INDEX IF NOT EXISTS idx_taxonomy_ext_chef_cat ON chef_taxonomy_extensions(chef_id, category);
+CREATE INDEX IF NOT EXISTS idx_taxonomy_hidden_chef_cat ON chef_taxonomy_hidden(chef_id, category);
 
 -- RLS
 ALTER TABLE chef_taxonomy_extensions ENABLE ROW LEVEL SECURITY;

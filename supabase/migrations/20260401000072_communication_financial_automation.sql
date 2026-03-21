@@ -16,12 +16,13 @@ CREATE TABLE IF NOT EXISTS follow_up_sequences (
 
 ALTER TABLE follow_up_sequences ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_sequence_access" ON follow_up_sequences;
 CREATE POLICY "chef_sequence_access" ON follow_up_sequences
   FOR ALL USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 
-CREATE INDEX idx_follow_up_sequences_chef ON follow_up_sequences(chef_id);
-CREATE INDEX idx_follow_up_sequences_active ON follow_up_sequences(chef_id, is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_follow_up_sequences_chef ON follow_up_sequences(chef_id);
+CREATE INDEX IF NOT EXISTS idx_follow_up_sequences_active ON follow_up_sequences(chef_id, is_active) WHERE is_active = true;
 
 -- Post-event surveys (structured feedback collection)
 CREATE TABLE IF NOT EXISTS post_event_surveys (
@@ -59,9 +60,10 @@ CREATE TABLE IF NOT EXISTS post_event_surveys (
 
 ALTER TABLE post_event_surveys ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_survey_access" ON post_event_surveys;
 CREATE POLICY "chef_survey_access" ON post_event_surveys
   FOR ALL USING (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 
-CREATE INDEX idx_post_event_surveys_token ON post_event_surveys(survey_token);
-CREATE INDEX idx_post_event_surveys_tenant ON post_event_surveys(tenant_id, completed_at);
+CREATE INDEX IF NOT EXISTS idx_post_event_surveys_token ON post_event_surveys(survey_token);
+CREATE INDEX IF NOT EXISTS idx_post_event_surveys_tenant ON post_event_surveys(tenant_id, completed_at);

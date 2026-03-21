@@ -51,7 +51,7 @@ END $$;
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'guest_feedback') THEN
     CREATE INDEX IF NOT EXISTS idx_guest_feedback_event_guest
-      ON guest_feedback(event_guest_id);
+      ON guest_feedback(guest_id);
   END IF;
 END $$;
 -- ==============================================

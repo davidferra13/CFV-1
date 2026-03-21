@@ -11,11 +11,15 @@ const REQUIRED_PRODUCTION_ENV_VARS = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   'SUPABASE_SERVICE_ROLE_KEY',
+  'RESEND_API_KEY',
+  'CRON_SECRET',
+] as const
+
+// Stripe keys are optional until payments are configured
+const OPTIONAL_PRODUCTION_ENV_VARS = [
   'STRIPE_SECRET_KEY',
   'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
   'STRIPE_WEBHOOK_SECRET',
-  'RESEND_API_KEY',
-  'CRON_SECRET',
 ] as const
 
 function isLocalhostUrl(value: string): boolean {
@@ -51,6 +55,11 @@ export function evaluateProductionSafetyEnv(
   const missing = REQUIRED_PRODUCTION_ENV_VARS.filter((key) => !env[key])
   if (missing.length > 0) {
     errors.push(`Missing required env vars for production: ${missing.join(', ')}`)
+  }
+
+  const missingOptional = OPTIONAL_PRODUCTION_ENV_VARS.filter((key) => !env[key])
+  if (missingOptional.length > 0) {
+    warnings.push(`Missing optional env vars (payments disabled): ${missingOptional.join(', ')}`)
   }
 
   if (env.DEMO_MODE_ENABLED === 'true') {
@@ -94,7 +103,7 @@ export function evaluateProductionSafetyEnv(
   }
 
   if (!env.STRIPE_WEBHOOK_SECRET) {
-    errors.push('STRIPE_WEBHOOK_SECRET is missing')
+    // Already warned via OPTIONAL_PRODUCTION_ENV_VARS above
   } else if (!env.STRIPE_WEBHOOK_SECRET.startsWith('whsec_')) {
     warnings.push('STRIPE_WEBHOOK_SECRET does not match expected whsec_ prefix')
   }

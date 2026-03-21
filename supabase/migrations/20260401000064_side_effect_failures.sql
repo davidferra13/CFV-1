@@ -20,12 +20,12 @@ CREATE TABLE IF NOT EXISTS side_effect_failures (
 );
 
 -- Index for admin dashboard queries (recent, undismissed first)
-CREATE INDEX idx_side_effect_failures_recent
+CREATE INDEX IF NOT EXISTS idx_side_effect_failures_recent
   ON side_effect_failures (created_at DESC)
   WHERE dismissed_at IS NULL;
 
 -- Index for per-tenant lookups
-CREATE INDEX idx_side_effect_failures_tenant
+CREATE INDEX IF NOT EXISTS idx_side_effect_failures_tenant
   ON side_effect_failures (tenant_id, created_at DESC)
   WHERE tenant_id IS NOT NULL;
 

@@ -25,6 +25,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 -- Fire on INSERT and UPDATE (role or entity_id change)
+DROP TRIGGER IF EXISTS trg_validate_user_role_entity_id ON user_roles;
 CREATE TRIGGER trg_validate_user_role_entity_id
   BEFORE INSERT OR UPDATE OF role, entity_id ON user_roles
   FOR EACH ROW
@@ -39,10 +40,12 @@ BEGIN
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS trg_cleanup_user_roles_on_chef_delete ON chefs;
 CREATE TRIGGER trg_cleanup_user_roles_on_chef_delete
   AFTER DELETE ON chefs
   FOR EACH ROW
   EXECUTE FUNCTION cleanup_user_roles_on_entity_delete();
+DROP TRIGGER IF EXISTS trg_cleanup_user_roles_on_client_delete ON clients;
 CREATE TRIGGER trg_cleanup_user_roles_on_client_delete
   AFTER DELETE ON clients
   FOR EACH ROW

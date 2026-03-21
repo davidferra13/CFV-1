@@ -15,9 +15,9 @@ CREATE TABLE vendor_event_assignments (
   UNIQUE (vendor_id, event_id)
 );
 -- Indexes
-CREATE INDEX idx_vendor_event_assignments_tenant ON vendor_event_assignments(tenant_id);
-CREATE INDEX idx_vendor_event_assignments_event ON vendor_event_assignments(event_id);
-CREATE INDEX idx_vendor_event_assignments_vendor ON vendor_event_assignments(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_event_assignments_tenant ON vendor_event_assignments(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_event_assignments_event ON vendor_event_assignments(event_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_event_assignments_vendor ON vendor_event_assignments(vendor_id);
 -- RLS
 ALTER TABLE vendor_event_assignments ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS vea_chef_all ON vendor_event_assignments;
@@ -26,6 +26,7 @@ CREATE POLICY vea_chef_all ON vendor_event_assignments
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
 -- Updated_at trigger
+DROP TRIGGER IF EXISTS trg_vendor_event_assignments_updated_at ON vendor_event_assignments;
 CREATE TRIGGER trg_vendor_event_assignments_updated_at
   BEFORE UPDATE ON vendor_event_assignments
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

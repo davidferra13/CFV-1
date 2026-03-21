@@ -45,7 +45,7 @@ export function WidgetCardShell({
   return (
     <div
       data-widget-id={widgetId}
-      className={`${sizeClass} rounded-2xl overflow-hidden transition-all duration-200 hover:brightness-110 ${className ?? ''}`}
+      className={`${sizeClass} rounded-2xl overflow-hidden card-lift hover:brightness-[1.06] ${className ?? ''}`}
       style={{
         border: '1px solid rgba(255,255,255,0.07)',
         borderLeft: `4px solid ${catStyle.border}`,
@@ -95,21 +95,21 @@ export function WidgetCardSkeleton({ size = 'sm' }: { size?: WidgetSize }) {
       }}
     >
       <div className="px-4 pt-3.5 pb-1 flex items-center gap-2.5">
-        <div className="w-4 h-4 rounded bg-stone-800" />
-        <div className="h-3 w-24 rounded bg-stone-800" />
+        <div className="w-4 h-4 skeleton" />
+        <div className="h-3 w-24 skeleton" />
       </div>
       <div className="px-4 pb-4 pt-2 space-y-2.5">
         {size === 'sm' ? (
           <>
-            <div className="h-8 w-28 rounded bg-stone-800" />
-            <div className="h-3 w-20 rounded bg-stone-800" />
+            <div className="h-8 w-28 skeleton" />
+            <div className="h-3 w-20 skeleton" />
           </>
         ) : (
           <>
-            <div className="h-6 w-20 rounded bg-stone-800" />
-            <div className="h-4 w-full rounded bg-stone-800" />
-            <div className="h-4 w-full rounded bg-stone-800" />
-            <div className="h-4 w-3/4 rounded bg-stone-800" />
+            <div className="h-6 w-20 skeleton" />
+            <div className="h-4 w-full skeleton" />
+            <div className="h-4 w-full skeleton" />
+            <div className="h-4 w-3/4 skeleton" />
           </>
         )}
       </div>

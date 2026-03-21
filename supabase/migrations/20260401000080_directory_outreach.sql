@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS directory_outreach_log (
   error text
 );
 
-CREATE INDEX idx_directory_outreach_listing ON directory_outreach_log(listing_id);
-CREATE INDEX idx_directory_outreach_type ON directory_outreach_log(email_type);
-CREATE INDEX idx_directory_outreach_resend ON directory_outreach_log(resend_message_id) WHERE resend_message_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_directory_outreach_listing ON directory_outreach_log(listing_id);
+CREATE INDEX IF NOT EXISTS idx_directory_outreach_type ON directory_outreach_log(email_type);
+CREATE INDEX IF NOT EXISTS idx_directory_outreach_resend ON directory_outreach_log(resend_message_id) WHERE resend_message_id IS NOT NULL;
 
 -- Email preferences: opt-out tracking per email address
 CREATE TABLE IF NOT EXISTS directory_email_preferences (
@@ -31,16 +31,18 @@ CREATE TABLE IF NOT EXISTS directory_email_preferences (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_directory_email_prefs_email ON directory_email_preferences(email);
+CREATE INDEX IF NOT EXISTS idx_directory_email_prefs_email ON directory_email_preferences(email);
 
 -- RLS
 ALTER TABLE directory_outreach_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE directory_email_preferences ENABLE ROW LEVEL SECURITY;
 
 -- Only service_role can read/write outreach log
+DROP POLICY IF EXISTS "directory_outreach_admin" ON directory_outreach_log;
 CREATE POLICY "directory_outreach_admin" ON directory_outreach_log
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Only service_role can manage preferences
+DROP POLICY IF EXISTS "directory_email_prefs_admin" ON directory_email_preferences;
 CREATE POLICY "directory_email_prefs_admin" ON directory_email_preferences
   FOR ALL USING (auth.role() = 'service_role');

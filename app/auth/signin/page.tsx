@@ -224,11 +224,11 @@ function SignInForm() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4 hero-glow">
+      <div className="max-w-md w-full relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-          <p className="text-stone-600 mt-2">Sign in to your account</p>
+          <h1 className="text-3xl font-bold text-gradient">ChefFlow</h1>
+          <p className="text-stone-400 mt-2">Sign in to your account</p>
         </div>
 
         <Card>
@@ -269,14 +269,14 @@ function SignInForm() {
                     checked={formData.rememberMe}
                     onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
                     disabled={isWorking}
-                    className="h-4 w-4 rounded border-stone-300 text-brand-700 focus:ring-brand-500"
+                    className="h-4 w-4 rounded border-stone-600 bg-stone-800 text-brand-500 focus:ring-brand-500"
                   />
-                  <span className="text-sm text-stone-600">Stay signed in</span>
+                  <span className="text-sm text-stone-400">Stay signed in</span>
                 </label>
 
                 <Link
                   href="/auth/forgot-password"
-                  className={`text-sm font-medium text-brand-700 hover:text-brand-700 ${
+                  className={`text-sm font-medium text-brand-400 hover:text-brand-300 ${
                     isWorking ? 'pointer-events-none opacity-60' : ''
                   }`}
                   aria-disabled={isWorking}
@@ -300,11 +300,11 @@ function SignInForm() {
                 <SignInProgress stage={progressStage} elapsedMs={elapsedMs} />
               ) : null}
 
-              <div className="text-sm text-center text-stone-600">
+              <div className="text-sm text-center text-stone-400">
                 Don&apos;t have an account?{' '}
                 <Link
                   href="/auth/signup"
-                  className={`font-medium text-brand-700 hover:text-brand-700 ${
+                  className={`font-medium text-brand-400 hover:text-brand-300 ${
                     isWorking ? 'pointer-events-none opacity-60' : ''
                   }`}
                   aria-disabled={isWorking}
@@ -315,7 +315,7 @@ function SignInForm() {
                 or{' '}
                 <Link
                   href="/auth/client-signup"
-                  className={`font-medium text-brand-700 hover:text-brand-700 ${
+                  className={`font-medium text-brand-400 hover:text-brand-300 ${
                     isWorking ? 'pointer-events-none opacity-60' : ''
                   }`}
                   aria-disabled={isWorking}
@@ -339,7 +339,7 @@ export default function SignInPage() {
         <CenteredLoadingState
           contextId="auth-sign-in"
           minHeightClassName="min-h-screen"
-          className="bg-surface-muted"
+          className="bg-stone-950"
         />
       }
     >

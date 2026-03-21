@@ -347,13 +347,13 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-md"
         onClick={() => setOpen(false)}
       />
 
       {/* Panel */}
       <div
-        className="relative w-full max-w-lg bg-stone-900 border border-stone-700 rounded-xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-lg glass-heavy border border-stone-700 rounded-xl shadow-2xl overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-label="Command palette"

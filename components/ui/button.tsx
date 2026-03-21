@@ -48,7 +48,7 @@ export const Button = forwardRef<any, ButtonProps>(
 
     const variants = {
       primary:
-        'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 active:shadow-[0_0_0_2px_rgba(232,143,71,0.3)] focus-visible:ring-brand-500 shadow-sm hover:shadow-md',
+        'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 active:shadow-[0_0_0_2px_rgba(232,143,71,0.3)] focus-visible:ring-brand-500 shadow-sm glow-hover',
       secondary:
         'bg-stone-800/80 text-stone-300 border border-stone-600/80 hover:bg-stone-700/80 hover:text-stone-100 hover:border-stone-500 active:bg-stone-600 focus-visible:ring-stone-400 shadow-sm',
       danger:

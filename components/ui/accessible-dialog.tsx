@@ -105,7 +105,7 @@ export function AccessibleDialog({
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center px-4">
       <div
-        className="absolute inset-0 bg-black/60"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-[dialog-backdrop_0.2s_ease-out]"
         aria-hidden="true"
         onClick={closeOnBackdrop ? onClose : undefined}
       />
@@ -116,7 +116,12 @@ export function AccessibleDialog({
         aria-labelledby={labeledBy}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={`relative w-full ${widthClassName} rounded-lg border border-stone-700 bg-stone-900 p-5 shadow-xl outline-none`}
+        className={`relative w-full ${widthClassName} rounded-xl border border-white/[0.08] p-5 shadow-2xl outline-none animate-[dialog-enter_0.25s_cubic-bezier(0.22,1,0.36,1)]`}
+        style={{
+          background: 'rgba(28, 25, 23, 0.85)',
+          WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
+          backdropFilter: 'blur(20px) saturate(1.3)',
+        }}
       >
         <h2 id={titleId} className="text-lg font-semibold text-stone-100">
           {title}

@@ -33,10 +33,12 @@ CREATE TABLE IF NOT EXISTS menu_revisions (
 
 ALTER TABLE menu_revisions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_menu_revision_access" ON menu_revisions;
 CREATE POLICY "chef_menu_revision_access" ON menu_revisions
   FOR ALL USING (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "client_menu_revision_read" ON menu_revisions;
 CREATE POLICY "client_menu_revision_read" ON menu_revisions
   FOR SELECT USING (event_id IN (
     SELECT e.id FROM events e
@@ -64,10 +66,12 @@ CREATE TABLE IF NOT EXISTS menu_dish_feedback (
 
 ALTER TABLE menu_dish_feedback ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_dish_feedback_access" ON menu_dish_feedback;
 CREATE POLICY "chef_dish_feedback_access" ON menu_dish_feedback
   FOR ALL USING (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "client_dish_feedback_access" ON menu_dish_feedback;
 CREATE POLICY "client_dish_feedback_access" ON menu_dish_feedback
   FOR ALL USING (client_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'client'
@@ -101,10 +105,12 @@ CREATE TABLE IF NOT EXISTS guest_count_changes (
 
 ALTER TABLE guest_count_changes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_guest_count_access" ON guest_count_changes;
 CREATE POLICY "chef_guest_count_access" ON guest_count_changes
   FOR ALL USING (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "client_guest_count_read" ON guest_count_changes;
 CREATE POLICY "client_guest_count_read" ON guest_count_changes
   FOR SELECT USING (event_id IN (
     SELECT e.id FROM events e
@@ -134,10 +140,12 @@ CREATE TABLE IF NOT EXISTS payment_milestones (
 
 ALTER TABLE payment_milestones ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_milestone_access" ON payment_milestones;
 CREATE POLICY "chef_milestone_access" ON payment_milestones
   FOR ALL USING (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "client_milestone_read" ON payment_milestones;
 CREATE POLICY "client_milestone_read" ON payment_milestones
   FOR SELECT USING (event_id IN (
     SELECT e.id FROM events e
