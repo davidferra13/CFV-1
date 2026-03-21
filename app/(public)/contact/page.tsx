@@ -14,7 +14,7 @@ const ContactForm = dynamic(() => import('./_components/contact-form'), {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
       <div className="lg:col-span-2">
         <div className="border border-stone-200 rounded-lg p-6 space-y-6">
-          <div className="h-6 w-48 bg-stone-200 rounded animate-pulse" />
+          <div className="h-6 w-48 loading-bone loading-bone-light" />
           {[1, 2, 3, 4].map((i) => (
             <div key={i}>
               <div className="h-4 w-20 bg-stone-100 rounded animate-pulse mb-2" />
@@ -26,13 +26,13 @@ const ContactForm = dynamic(() => import('./_components/contact-form'), {
       </div>
       <div className="lg:col-span-1">
         <div className="border border-stone-200 rounded-lg p-6">
-          <div className="h-6 w-40 bg-stone-200 rounded animate-pulse mb-6" />
+          <div className="h-6 w-40 loading-bone loading-bone-light mb-6" />
           <div className="space-y-6">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="w-10 h-10 bg-stone-100 rounded-lg animate-pulse flex-shrink-0" />
                 <div className="space-y-2 flex-1">
-                  <div className="h-4 w-24 bg-stone-200 rounded animate-pulse" />
+                  <div className="h-4 w-24 loading-bone loading-bone-light" />
                   <div className="h-3 w-full bg-stone-100 rounded animate-pulse" />
                 </div>
               </div>

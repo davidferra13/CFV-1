@@ -14,9 +14,9 @@ export default function FinanceLoading() {
           <Card key={i}>
             <CardContent className="p-6">
               <div className="space-y-3">
-                <div className="h-4 w-28 bg-stone-700 rounded animate-pulse" />
-                <div className="h-8 w-24 bg-stone-700 rounded animate-pulse" />
-                <div className="h-3 w-16 bg-stone-700 rounded animate-pulse" />
+                <div className="h-4 w-28 loading-bone loading-bone-dark" />
+                <div className="h-8 w-24 loading-bone loading-bone-dark" />
+                <div className="h-3 w-16 loading-bone loading-bone-dark" />
               </div>
             </CardContent>
           </Card>
@@ -26,17 +26,17 @@ export default function FinanceLoading() {
       {/* Table skeleton */}
       <Card>
         <CardHeader>
-          <div className="h-6 w-40 bg-stone-700 rounded animate-pulse" />
+          <div className="h-6 w-40 loading-bone loading-bone-dark" />
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-3">
-                  <div className="h-4 w-24 bg-stone-700 rounded animate-pulse" />
-                  <div className="h-4 w-40 bg-stone-700 rounded animate-pulse" />
+                  <div className="h-4 w-24 loading-bone loading-bone-dark" />
+                  <div className="h-4 w-40 loading-bone loading-bone-dark" />
                 </div>
-                <div className="h-4 w-20 bg-stone-700 rounded animate-pulse" />
+                <div className="h-4 w-20 loading-bone loading-bone-dark" />
               </div>
             ))}
           </div>

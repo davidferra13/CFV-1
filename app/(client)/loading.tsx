@@ -15,28 +15,25 @@ export default function ClientLoading() {
             <CardContent className="p-6">
               <div className="space-y-4">
                 {/* Event Title */}
-                <div className="h-6 w-3/4 bg-stone-200 rounded animate-pulse" />
+                <div className="h-6 w-3/4 loading-bone loading-bone-light" />
 
                 {/* Event Details */}
                 <div className="space-y-2">
-                  <div className="h-4 w-full bg-stone-200 rounded animate-pulse" />
-                  <div className="h-4 w-5/6 bg-stone-200 rounded animate-pulse" />
-                  <div className="h-4 w-2/3 bg-stone-200 rounded animate-pulse" />
+                  <div className="h-4 w-full loading-bone loading-bone-light" />
+                  <div className="h-4 w-5/6 loading-bone loading-bone-light" />
+                  <div className="h-4 w-2/3 loading-bone loading-bone-light" />
                 </div>
 
                 {/* Status Badge */}
-                <div className="h-6 w-20 bg-stone-200 rounded-full animate-pulse" />
+                <div className="h-6 w-20 rounded-full loading-bone loading-bone-light" />
 
                 {/* Action Button */}
-                <div className="h-10 w-full bg-stone-200 rounded-md animate-pulse" />
+                <div className="h-10 w-full rounded-md loading-bone loading-bone-light" />
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
-
-      {/* Loading Text */}
-      <ContextLoader contextId="nav-client-portal" size="sm" className="py-2" />
     </div>
   )
 }

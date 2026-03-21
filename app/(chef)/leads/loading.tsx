@@ -2,7 +2,7 @@ import { ContextLoader } from '@/components/ui/context-loader'
 
 export default function LeadsLoading() {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 animate-pulse">
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-2">

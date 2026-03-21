@@ -4,7 +4,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-200 rounded animate-pulse ${className}`} />
+  return <div className={`loading-bone loading-bone-light ${className}`} />
 }
 
 export default function SurveyLoading() {
@@ -25,7 +25,10 @@ export default function SurveyLoading() {
           {/* Answer options */}
           <div className="space-y-3">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex items-center gap-3 p-4 border border-stone-100 rounded-lg">
+              <div
+                key={i}
+                className="flex items-center gap-3 p-4 border border-stone-100 rounded-lg"
+              >
                 <Bone className="h-5 w-5 rounded-full shrink-0" />
                 <Bone className="h-4 w-48" />
               </div>

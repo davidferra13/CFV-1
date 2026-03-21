@@ -1,5 +1,5 @@
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
+  return <div className={`loading-bone loading-bone-dark ${className}`} />
 }
 
 export default function CompareLoading() {

@@ -34,8 +34,8 @@ const LandingBelowFold = dynamic(() => import('./_components/landing-below-fold'
       <div className="grid gap-6 md:grid-cols-3">
         {[1, 2, 3].map((i) => (
           <div key={i} className="rounded-xl border border-stone-800 bg-stone-900/50 p-6">
-            <div className="h-10 w-10 bg-stone-800 rounded-lg animate-pulse mb-4" />
-            <div className="h-6 w-40 bg-stone-800 rounded animate-pulse mb-2" />
+            <div className="h-10 w-10 rounded-lg loading-bone loading-bone-muted mb-4" />
+            <div className="h-6 w-40 loading-bone loading-bone-muted mb-2" />
             <div className="h-4 w-full bg-stone-800/50 rounded animate-pulse" />
           </div>
         ))}

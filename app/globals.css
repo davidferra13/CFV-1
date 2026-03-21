@@ -221,8 +221,73 @@ html {
       flex items-center gap-2 shadow-sm;
   }
 
+  .loading-bone {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .loading-bone::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    animation: loading-shimmer 1.7s var(--ease-spring) infinite;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.14) 45%,
+      transparent 100%
+    );
+  }
+
+  .loading-bone-dark {
+    background: rgba(68, 64, 60, 0.9);
+  }
+
+  .loading-bone-light {
+    background: rgba(231, 229, 228, 0.92);
+  }
+
+  .loading-bone-muted {
+    background: rgba(87, 83, 78, 0.78);
+  }
+
+  .loading-spinner {
+    animation: spin 0.9s linear infinite;
+  }
+
+  .animate-spin {
+    animation-duration: 0.9s;
+  }
+
+  .loading-progress-indeterminate {
+    width: 38%;
+    animation: loading-progress-shift 1.35s var(--ease-spring) infinite;
+  }
+
+  .loading-pulse-ring {
+    animation: loading-pulse-ring 1.8s var(--ease-spring) infinite;
+  }
+
   .skeleton {
-    @apply bg-stone-700 rounded animate-pulse;
+    @apply rounded;
+    background: rgba(68, 64, 60, 0.9);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    animation: loading-shimmer 1.7s var(--ease-spring) infinite;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.14) 45%,
+      transparent 100%
+    );
   }
 
   /* Architectural section labels - small uppercase headers used throughout the app */
@@ -1079,6 +1144,32 @@ html {
   animation-delay: calc(var(--stagger-index, 0) * 60ms);
 }
 
+@keyframes loading-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes loading-progress-shift {
+  0% {
+    transform: translateX(-115%);
+  }
+  100% {
+    transform: translateX(280%);
+  }
+}
+
+@keyframes loading-pulse-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.65);
+  }
+}
+
 /* Slide up + fade - for overlays entering from bottom */
 @keyframes slide-up-fade {
   from {
@@ -1163,6 +1254,14 @@ html {
   .remy-line-boil {
     animation: none !important;
     filter: none !important;
+  }
+
+  .loading-spinner,
+  .loading-bone::after,
+  .skeleton::after,
+  .loading-progress-indeterminate,
+  .loading-pulse-ring {
+    animation: none !important;
   }
 }
 

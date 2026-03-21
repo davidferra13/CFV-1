@@ -1,19 +1,14 @@
 'use client'
 
 // ContextLoader - Dynamic, context-aware loading component.
-// Shows task-specific messages, a 0-100% determinate progress bar, and
-// category-specific visuals instead of generic spinners.
-//
-// The progress bar uses simulated progress by default: it advances based
-// on expected duration, never overshoots 92%, and the caller snaps it to
-// 100% via the isComplete prop. Users always know approximately how far
-// along the operation is.
+// Uses the registry for real loading copy and visual treatment without
+// inventing determinate percentages when no real progress exists.
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { type LoadingCategory, getLoadingContext } from '@/lib/loading/loading-registry'
-import { useSimulatedProgress } from '@/lib/loading/use-simulated-progress'
+import { LoadingBone, LoadingSpinner } from '@/components/ui/loading-state'
 
 // ─── Icons per category (inline SVG to avoid Lucide dependency in loading states) ───
 
@@ -154,7 +149,7 @@ function ThinkingDots() {
 
 // ─── Message Rotator Hook ────────────────────────────────────────
 
-function useRotatingMessage(messages: string[], intervalMs = 3000): string {
+function useRotatingMessage(messages: string[], intervalMs = 4500): string {
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
@@ -177,9 +172,9 @@ interface ContextLoaderProps {
   messages?: string[]
   /** Show elapsed time counter for long operations */
   showElapsed?: boolean
-  /** Real progress value (0-100). Disables simulated progress. */
+  /** Real progress value (0-100). When omitted, progress stays indeterminate. */
   progress?: number
-  /** Signal that operation completed (snaps simulated progress to 100%) */
+  /** Signal that operation completed when no real progress value is available. */
   isComplete?: boolean
   /** Size variant */
   size?: 'sm' | 'md' | 'lg'
@@ -201,25 +196,32 @@ export function ContextLoader({
   const message = useRotatingMessage(resolvedMessages)
   const category = ctx?.category ?? 'navigation'
   const visual = ctx?.visual ?? 'spinner'
-
-  // Simulated progress (used when no real progress value is provided)
-  const sim = useSimulatedProgress({
-    contextId,
-    active: realProgress === undefined && !isComplete,
-  })
-
-  // Snap to 100% when isComplete changes
-  useEffect(() => {
-    if (isComplete && realProgress === undefined) sim.complete()
-  }, [isComplete, realProgress, sim])
-
-  const progress = realProgress ?? sim.progress
-  const displayPercent = Math.round(progress)
+  const progress = realProgress === undefined ? undefined : Math.min(100, Math.max(0, realProgress))
+  const displayPercent = progress === undefined ? undefined : Math.round(progress)
+  const showProgressTrack = progress !== undefined || visual === 'progress' || isComplete
 
   const sizeClasses = {
-    sm: { icon: 'w-4 h-4', text: 'text-xs', container: 'gap-2 py-4', bar: 'w-36' },
-    md: { icon: 'w-5 h-5', text: 'text-sm', container: 'gap-3 py-8', bar: 'w-48' },
-    lg: { icon: 'w-6 h-6', text: 'text-base', container: 'gap-4 py-12', bar: 'w-56' },
+    sm: {
+      icon: 'w-4 h-4',
+      text: 'text-xs',
+      container: 'gap-2 py-4',
+      bar: 'w-36',
+      spinner: 'sm' as const,
+    },
+    md: {
+      icon: 'w-5 h-5',
+      text: 'text-sm',
+      container: 'gap-3 py-8',
+      bar: 'w-48',
+      spinner: 'md' as const,
+    },
+    lg: {
+      icon: 'w-6 h-6',
+      text: 'text-base',
+      container: 'gap-4 py-12',
+      bar: 'w-56',
+      spinner: 'lg' as const,
+    },
   }
 
   const s = sizeClasses[size]
@@ -238,6 +240,13 @@ export function ContextLoader({
       {/* Visual indicator above progress bar */}
       {visual === 'remy' ? (
         <RemyVisual size={size} />
+      ) : visual === 'spinner' ? (
+        <LoadingSpinner size={s.spinner} className="text-brand-400" />
+      ) : visual === 'skeleton' ? (
+        <div className="flex w-16 flex-col gap-1.5">
+          <LoadingBone tone="dark" className="h-2.5 w-full" />
+          <LoadingBone tone="dark" className="h-2.5 w-3/4" />
+        </div>
       ) : visual === 'dots' ? (
         <div className="flex items-center">
           <CategoryIcon category={category} className={cn(s.icon, 'text-stone-400')} />
@@ -245,8 +254,8 @@ export function ContextLoader({
         </div>
       ) : visual === 'pulse' ? (
         <div className="relative">
-          <div className="w-3 h-3 rounded-full bg-brand-400 animate-pulse" />
-          <div className="absolute inset-0 w-3 h-3 rounded-full bg-brand-400/40 animate-ping" />
+          <div className="h-3 w-3 rounded-full bg-brand-400" />
+          <div className="loading-pulse-ring absolute inset-0 rounded-full border border-brand-400/35" />
         </div>
       ) : (
         <CategoryIcon category={category} className={cn(s.icon, 'text-brand-400')} />
@@ -260,21 +269,43 @@ export function ContextLoader({
         {message}
       </p>
 
-      {/* Determinate progress bar */}
-      <div className={cn(s.bar, 'max-w-full')}>
-        <div className="h-1.5 rounded-full bg-stone-700 overflow-hidden">
-          <div
-            className={cn(
-              'h-full rounded-full transition-all ease-out',
-              displayPercent >= 100 ? 'bg-emerald-500 duration-300' : 'bg-brand-500 duration-150'
-            )}
-            style={{ width: `${Math.min(100, progress)}%` }}
-          />
+      {showProgressTrack ? (
+        <div className={cn(s.bar, 'max-w-full')}>
+          {progress !== undefined ? (
+            <>
+              <div className="h-1.5 overflow-hidden rounded-full bg-stone-700">
+                <div
+                  className={cn(
+                    'h-full rounded-full transition-all ease-out',
+                    displayPercent === 100
+                      ? 'bg-emerald-500 duration-300'
+                      : 'bg-brand-500 duration-150'
+                  )}
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="mt-1 text-xxs tabular-nums text-stone-500">
+                {displayPercent === 100 ? 'Complete' : `${displayPercent}%`}
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="h-1.5 overflow-hidden rounded-full bg-stone-700">
+                <div
+                  className={cn(
+                    isComplete
+                      ? 'h-full w-full rounded-full bg-emerald-500'
+                      : 'loading-progress-indeterminate h-full rounded-full bg-brand-500/90'
+                  )}
+                />
+              </div>
+              <p className="mt-1 text-xxs text-stone-500">
+                {isComplete ? 'Complete' : 'In progress'}
+              </p>
+            </>
+          )}
         </div>
-        <p className="text-xxs text-stone-500 mt-1 tabular-nums">
-          {displayPercent >= 100 ? 'Complete' : `${displayPercent}%`}
-        </p>
-      </div>
+      ) : null}
 
       {/* Elapsed timer (for long operations) */}
       {showElapsed && <ElapsedDisplay />}
@@ -327,15 +358,7 @@ export function InlineLoader({ contextId, className }: InlineLoaderProps) {
 
   return (
     <span className={cn('inline-flex items-center gap-1.5', className)}>
-      <svg
-        className="w-3 h-3 animate-spin text-current"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-      >
-        <circle cx="12" cy="12" r="10" strokeDasharray="60 15" strokeLinecap="round" />
-      </svg>
+      <LoadingSpinner size="xs" className="text-current" />
       <span className="text-xs">{message}</span>
     </span>
   )

@@ -2,9 +2,10 @@
 // Variants match the most common page layouts in ChefFlow.
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { LoadingBone } from '@/components/ui/loading-state'
 
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
+  return <LoadingBone tone="dark" className={className} />
 }
 
 /** Simple list page: header + action button + table rows */

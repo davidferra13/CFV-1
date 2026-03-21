@@ -233,7 +233,7 @@ export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: s
             <div className="p-2 space-y-2">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex gap-3 p-2 items-center">
-                  <div className="w-10 h-10 bg-stone-800 rounded-md animate-pulse" />
+                  <div className="w-10 h-10 rounded-md loading-bone loading-bone-muted" />
                   <div className="flex-1 space-y-1">
                     <div className="h-3 bg-stone-800 rounded w-1/2 animate-pulse" />
                     <div className="h-2 bg-stone-800 rounded w-1/3 animate-pulse" />

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
+import { CenteredLoadingState } from '@/components/ui/loading-state'
 
 function ClientSignUpForm() {
   const router = useRouter()
@@ -69,12 +70,12 @@ function ClientSignUpForm() {
 
   if (invitationLoading) {
     return (
-      <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto" />
-          <p className="mt-4 text-stone-600">Loading invitation...</p>
-        </div>
-      </div>
+      <CenteredLoadingState
+        contextId="auth-sign-up"
+        message="Loading invitation..."
+        minHeightClassName="min-h-screen"
+        className="bg-surface-muted"
+      />
     )
   }
 
@@ -159,9 +160,11 @@ export default function ClientSignUpPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-surface-muted flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
-        </div>
+        <CenteredLoadingState
+          contextId="auth-sign-up"
+          minHeightClassName="min-h-screen"
+          className="bg-surface-muted"
+        />
       }
     >
       <ClientSignUpForm />

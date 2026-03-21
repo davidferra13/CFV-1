@@ -23,8 +23,8 @@ export default function ChefLoading() {
           <Card key={i}>
             <CardContent className="p-6">
               <div className="space-y-3">
-                <div className="h-4 w-24 bg-stone-700 rounded animate-pulse" />
-                <div className="h-8 w-16 bg-stone-700 rounded animate-pulse" />
+                <div className="h-4 w-24 loading-bone loading-bone-dark" />
+                <div className="h-8 w-16 loading-bone loading-bone-dark" />
               </div>
             </CardContent>
           </Card>
@@ -34,16 +34,16 @@ export default function ChefLoading() {
       {/* Main Content Card Skeleton */}
       <Card>
         <CardHeader>
-          <div className="h-6 w-32 bg-stone-700 rounded animate-pulse" />
+          <div className="h-6 w-32 loading-bone loading-bone-dark" />
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center space-x-4">
-                <div className="h-12 w-12 bg-stone-700 rounded animate-pulse" />
+                <div className="h-12 w-12 loading-bone loading-bone-dark" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-3/4 bg-stone-700 rounded animate-pulse" />
-                  <div className="h-3 w-1/2 bg-stone-700 rounded animate-pulse" />
+                  <div className="h-4 w-3/4 loading-bone loading-bone-dark" />
+                  <div className="h-3 w-1/2 loading-bone loading-bone-dark" />
                 </div>
               </div>
             ))}

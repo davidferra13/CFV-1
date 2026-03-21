@@ -15,7 +15,7 @@ const TermsExtendedSections = dynamic(() => import('./_components/terms-extended
     <div className="space-y-10">
       {[1, 2, 3, 4].map((i) => (
         <div key={i}>
-          <div className="h-6 w-48 bg-stone-200 rounded animate-pulse mb-4" />
+          <div className="h-6 w-48 loading-bone loading-bone-light mb-4" />
           <div className="space-y-2">
             <div className="h-4 w-full bg-stone-100 rounded animate-pulse" />
             <div className="h-4 w-5/6 bg-stone-100 rounded animate-pulse" />

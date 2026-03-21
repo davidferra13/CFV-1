@@ -7,7 +7,7 @@ export default function ProspectingLoading() {
       <ContextLoader contextId="nav-leads" size="sm" className="py-0 items-start" />
       <div className="grid grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-24 bg-stone-800 rounded-lg animate-pulse" />
+          <div key={i} className="h-24 rounded-lg loading-bone loading-bone-muted" />
         ))}
       </div>
       <SkeletonTable rows={8} />

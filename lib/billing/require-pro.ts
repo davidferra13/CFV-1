@@ -1,38 +1,19 @@
 'use server'
 
-// Server action wrapper that enforces Pro access.
-// Throws ProFeatureRequiredError (from lib/billing/errors.ts) that UI catches
-// and displays as an upgrade prompt instead of a generic error.
+// Server action wrapper - previously enforced Pro access.
+// Now a pass-through: all features are free. Retained so 83+ call sites
+// continue to compile without changes. The function still authenticates
+// the chef (requireChef) so auth is preserved.
 //
-// Usage in any Pro-only server action:
-//   import { requirePro } from '@/lib/billing/require-pro'
-//   export async function someAction() {
-//     await requirePro('marketing')
-//     // ... rest of action
-//   }
+// Monetization has moved to voluntary patronage. See docs/monetization-shift.md.
 
-import { hasProAccess } from '@/lib/billing/tier'
 import { requireChef, type AuthUser } from '@/lib/auth/get-user'
-import { ProFeatureRequiredError } from '@/lib/billing/errors'
-import { isAdmin } from '@/lib/auth/admin'
 
 /**
- * Enforce Pro tier for the current chef session.
- * Throws ProFeatureRequiredError if the chef is on the Free tier.
- * Admins always bypass - they have full Pro access regardless of subscription.
- * @param featureSlug - identifies which Pro feature was attempted (for analytics/UI)
+ * Authenticate the current chef session.
+ * Previously enforced Pro tier gating; now all features are accessible to everyone.
+ * @param _featureSlug - retained for call-site compatibility (unused)
  */
-export async function requirePro(featureSlug: string): Promise<AuthUser> {
-  const user = await requireChef()
-
-  // Admins always have full Pro access
-  const adminCheck = await isAdmin().catch(() => false)
-  if (adminCheck) return user
-
-  const hasPro = await hasProAccess(user.entityId)
-  if (!hasPro) {
-    throw new ProFeatureRequiredError(featureSlug)
-  }
-
-  return user
+export async function requirePro(_featureSlug: string): Promise<AuthUser> {
+  return await requireChef()
 }

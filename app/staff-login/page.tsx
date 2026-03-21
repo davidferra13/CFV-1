@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
+import { CenteredLoadingState } from '@/components/ui/loading-state'
 
 function normalizeAuthErrorMessage(message: string): string {
   const normalized = message.toLowerCase()
@@ -120,11 +121,7 @@ function StaffLoginForm() {
 export default function StaffLoginPage() {
   return (
     <Suspense
-      fallback={
-        <div className="min-h-screen bg-stone-800 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
-        </div>
-      }
+      fallback={<CenteredLoadingState contextId="auth-sign-in" minHeightClassName="min-h-screen" />}
     >
       <StaffLoginForm />
     </Suspense>

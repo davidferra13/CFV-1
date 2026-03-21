@@ -14,6 +14,7 @@
 
 import { cn } from '@/lib/utils'
 import { getLoadingContext } from '@/lib/loading/loading-registry'
+import { LoadingSpinner } from '@/components/ui/loading-state'
 
 interface TaskLoaderProps {
   /** Loading context ID from the registry */
@@ -37,18 +38,10 @@ export function TaskLoader({
 
   return (
     <span className={cn('inline-flex items-center gap-1.5', className)}>
-      <svg
-        className="animate-spin shrink-0"
-        width={iconSize}
-        height={iconSize}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      >
-        <circle cx="12" cy="12" r="10" strokeDasharray="60 15" />
-      </svg>
+      <LoadingSpinner
+        size={iconSize <= 12 ? 'xs' : iconSize <= 14 ? 'sm' : 'md'}
+        className="shrink-0"
+      />
       <span>{text}</span>
     </span>
   )

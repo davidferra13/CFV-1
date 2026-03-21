@@ -22,7 +22,7 @@ const PricingFaq = dynamic(() => import('./_components/pricing-faq'), {
     <section className="bg-stone-50 py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
-          <div className="h-8 w-64 mx-auto bg-stone-200 rounded animate-pulse mb-8" />
+          <div className="h-8 w-64 mx-auto loading-bone loading-bone-light mb-8" />
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
               <div

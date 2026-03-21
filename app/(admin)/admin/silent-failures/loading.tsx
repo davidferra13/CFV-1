@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="space-y-6 animate-pulse">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-slate-200 rounded-lg" />
         <div className="space-y-2">

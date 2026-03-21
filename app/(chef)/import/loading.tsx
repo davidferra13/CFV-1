@@ -2,7 +2,7 @@ import { ContextLoader } from '@/components/ui/context-loader'
 
 export default function ImportLoading() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 space-y-6 animate-pulse">
+    <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="space-y-2">
         <ContextLoader contextId="nav-recipes" size="sm" className="py-0 items-start" />

@@ -1,19 +1,6 @@
 // Public Pages Loading Page
-import { ContextLoader } from '@/components/ui/context-loader'
+import { CenteredLoadingState } from '@/components/ui/loading-state'
 
 export default function PublicLoading() {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <ContextLoader contextId="nav-public-booking" size="sm" className="py-0 items-start" />
-        {/* Spinner */}
-        <div className="flex justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
-        </div>
-
-        {/* Loading Text */}
-        <p className="text-stone-300 text-sm">Loading...</p>
-      </div>
-    </div>
-  )
+  return <CenteredLoadingState contextId="nav-public-booking" minHeightClassName="min-h-screen" />
 }

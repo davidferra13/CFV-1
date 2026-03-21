@@ -1,21 +1,9 @@
-// Upgrade Gate - Server Component
-// Wraps Pro-only page content. If the chef is on the Free tier, shows an upgrade
-// prompt instead of (or overlaid on) the children.
+// Upgrade Gate - Server Component (NEUTRALIZED)
+// Previously gated Pro-only content behind upgrade prompts.
+// Now a pass-through: all features are accessible to everyone.
+// Retained so 16+ call sites continue to compile without changes.
 //
-// Modes:
-//   'block' (default) - Shows upgrade prompt card instead of content
-//   'blur'            - Shows content blurred with upgrade prompt overlay
-//   'hide'            - Renders nothing (use for optional nav sections)
-//
-// Usage:
-//   <UpgradeGate chefId={user.entityId} featureSlug="advanced-analytics">
-//     <BenchmarksPage />
-//   </UpgradeGate>
-
-import { getTierForChef } from '@/lib/billing/tier'
-import { getProFeature } from '@/lib/billing/pro-features'
-import { isAdmin } from '@/lib/auth/admin'
-import { UpgradePrompt } from './upgrade-prompt'
+// Monetization has moved to voluntary patronage. See docs/monetization-shift.md.
 
 type Props = {
   chefId: string
@@ -24,34 +12,6 @@ type Props = {
   mode?: 'block' | 'blur' | 'hide'
 }
 
-export async function UpgradeGate({ chefId, featureSlug, children, mode = 'block' }: Props) {
-  // Admins always bypass - full Pro access regardless of subscription
-  const adminCheck = await isAdmin().catch(() => false)
-  if (adminCheck) return <>{children}</>
-
-  const { tier } = await getTierForChef(chefId)
-
-  // Pro users (including grandfathered and trialing) - render content as-is
-  if (tier === 'pro') return <>{children}</>
-
-  // Free user - apply gating based on mode
-  if (mode === 'hide') return null
-
-  const feature = getProFeature(featureSlug)
-
-  if (mode === 'blur') {
-    return (
-      <div className="relative">
-        <div className="pointer-events-none select-none blur-sm opacity-60" aria-hidden="true">
-          {children}
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center bg-stone-900/30">
-          <UpgradePrompt label={feature?.label} description={feature?.description} />
-        </div>
-      </div>
-    )
-  }
-
-  // mode === 'block' (default)
-  return <UpgradePrompt label={feature?.label} description={feature?.description} />
+export async function UpgradeGate({ children }: Props) {
+  return <>{children}</>
 }

@@ -38,29 +38,11 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 ---
 
-## VOICE-TO-TEXT INPUT (READ THIS — IT AFFECTS EVERY MESSAGE)
+## PROMPT PIPELINE
 
-The developer uses **voice-to-text for almost all input** — on phone, on desktop, even while at the computer. This means:
+The developer sends prompts through a refinement pipeline before they reach Claude Code. Prompts are well-formulated and intentional. Treat them at face value. Never second-guess the developer's intent or assume the prompt means something other than what it says.
 
-- **Messages will have weird formatting.** Run-on sentences, missing periods, random punctuation in wrong places, repeated phrases ("and how the and how everything"), sentence fragments — this is all normal.
-- **Words may be wrong but sound right.** Voice-to-text mishears things. "cloud MD" = `CLAUDE.md`. "cloud folder" = `.claude/` folder. Read phonetically when something doesn't make sense.
-- **Capitalization, grammar, and structure will be inconsistent.** Don't assume the developer is being vague or unclear — the intent is usually obvious if you read for meaning instead of literal words.
-- **Never ask for clarification on formatting.** If the message is a messy run-on but the intent is clear, just do the thing. Only ask for clarification when you genuinely cannot determine what they want.
-- **Never correct the developer's grammar or spelling.** Just understand it and move on.
-
-### Common Voice-to-Text Mishearings
-
-The app name **"ChefFlow"** is constantly misheard by voice-to-text. If any of these words appear and don't make sense in context, the developer is saying **ChefFlow**:
-
-`shuffle`, `shovel`, `shove`, `Lowe's`, `Chevelle`, `chef flow`, `Chef Flo`, `chef low`, `sheflo`, `cheflo`
-
-This list is not exhaustive — voice-to-text invents new mishearings regularly. If a word appears that makes no sense but sounds vaguely like "ChefFlow," it's ChefFlow.
-
-Similarly, `CLAUDE.md` gets misheard as `cloud MD`, `cloud folder`, `clawed`, etc.
-
-**Rule: Parse for intent, not for grammar. The meaning is always there — the punctuation isn't.**
-
-### NO EM DASHES (ABSOLUTE RULE — ZERO TOLERANCE)
+### NO EM DASHES (ABSOLUTE RULE - ZERO TOLERANCE)
 
 **Never use em dashes (—) anywhere. Not in code, not in UI text, not in emails, not in AI responses, not in comments, not in docs that users see. NOWHERE.**
 

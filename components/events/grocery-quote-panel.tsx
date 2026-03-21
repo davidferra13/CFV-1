@@ -190,9 +190,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
 
           {isPending && (
             <div className="mt-6 space-y-2">
-              <div className="h-4 bg-stone-800 rounded animate-pulse" />
-              <div className="h-4 bg-stone-800 rounded animate-pulse w-4/5" />
-              <div className="h-4 bg-stone-800 rounded animate-pulse w-3/5" />
+              <div className="h-4 loading-bone loading-bone-muted" />
+              <div className="h-4 loading-bone loading-bone-muted w-4/5" />
+              <div className="h-4 loading-bone loading-bone-muted w-3/5" />
               <p className="text-xs text-stone-300 mt-3">
                 Checking USDA NE data, Spoonacular, and Kroger for each ingredient - this may take
                 10–30s...

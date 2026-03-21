@@ -61,20 +61,21 @@ test.describe('Chef Sign-In Flow', () => {
     // with "Signing you in..." / "Loading your workspace..." messages.
     // This is the CRITICAL checkpoint - previously this was a blank screen.
     try {
-      await freshPage.waitForSelector('text=/signing you in|loading your workspace|preparing/i', {
-        timeout: 10_000,
-      })
-      const cp5 = await captureCheckpoint(freshPage, '4-transition-overlay-visible', testInfo)
+      await freshPage.waitForSelector(
+        'text=/submitting sign-in request|session established|opening your workspace/i',
+        { timeout: 10_000 }
+      )
+      const cp5 = await captureCheckpoint(freshPage, '4-live-progress-visible', testInfo)
       expect(cp5.hasContent).toBe(true)
     } catch {
-      // If we don't see the transition overlay, capture what IS visible
-      const cp5 = await captureCheckpoint(freshPage, '4-transition-overlay-MISSING', testInfo)
+      // If we don't see the live progress surface, capture what IS visible
+      const cp5 = await captureCheckpoint(freshPage, '4-live-progress-missing', testInfo)
 
       // This is only a failure if the page is blank (no loading, no content)
       if (!cp5.hasContent && !cp5.hasLoadingIndicator) {
         throw new Error(
           'EXPERIENTIAL FAILURE: After successful sign-in, user sees a blank screen.\n' +
-            'Expected: transition overlay with "Signing you in..." message.\n' +
+            'Expected: live sign-in progress that reflects actual milestones.\n' +
             `Actual visible text: "${cp5.visibleText}"\n` +
             'This is the exact regression this suite was built to catch.'
         )
@@ -93,9 +94,8 @@ test.describe('Chef Sign-In Flow', () => {
 
     // The destination should show meaningful content (dashboard, onboarding, or loading)
     const hasDestinationContent =
-      cp7.visibleText.match(
-        /dashboard|loading your workspace|preparing|welcome|onboarding|chef|portal/i
-      ) || cp7.hasLoadingIndicator
+      cp7.visibleText.match(/dashboard|opening your workspace|welcome|onboarding|chef|portal/i) ||
+      cp7.hasLoadingIndicator
     expect(
       hasDestinationContent,
       `Post-signin destination should show content, got: "${cp7.visibleText.slice(0, 100)}"`

@@ -3,7 +3,7 @@ import { ContextLoader } from '@/components/ui/context-loader'
 import { Card } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
+  return <div className={`loading-bone loading-bone-dark ${className}`} />
 }
 
 export default function CharityLoading() {

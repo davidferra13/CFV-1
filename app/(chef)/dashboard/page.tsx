@@ -215,8 +215,8 @@ function PriorityQueueSkeleton() {
           <div className="flex items-center gap-3">
             <div className="w-2.5 h-2.5 rounded-full bg-stone-700 animate-pulse" />
             <div className="flex-1">
-              <div className="h-4 w-48 bg-stone-800 rounded animate-pulse" />
-              <div className="h-3 w-32 bg-stone-800 rounded animate-pulse mt-1.5" />
+              <div className="h-4 w-48 loading-bone loading-bone-muted" />
+              <div className="h-3 w-32 loading-bone loading-bone-muted mt-1.5" />
             </div>
           </div>
         </div>
@@ -289,8 +289,8 @@ export default async function ChefDashboard() {
                   key={i}
                   className="rounded-xl border border-stone-800 bg-stone-900/60 px-4 py-3"
                 >
-                  <div className="h-3 w-16 bg-stone-800 rounded animate-pulse" />
-                  <div className="h-6 w-12 bg-stone-800 rounded animate-pulse mt-2" />
+                  <div className="h-3 w-16 loading-bone loading-bone-muted" />
+                  <div className="h-6 w-12 loading-bone loading-bone-muted mt-2" />
                 </div>
               ))}
             </div>

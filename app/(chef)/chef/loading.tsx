@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-200 rounded animate-pulse ${className}`} />
+  return <div className={`loading-bone loading-bone-light ${className}`} />
 }
 
 export default function ChefLoading() {

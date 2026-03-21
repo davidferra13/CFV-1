@@ -79,12 +79,12 @@ export const MODULES: ModuleDefinition[] = [
     navGroupId: 'finance',
   },
 
-  // ─── Pro modules (default OFF for new signups) ────────────────────────────
+  // ─── Extended modules (all free, opt-in) ──────────────────────────────────
   {
     slug: 'protection',
     label: 'Protection',
     description: 'Insurance, certifications, safety, and crisis response',
-    tier: 'pro',
+    tier: 'free',
     defaultEnabled: false,
     alwaysVisible: false,
     navGroupId: 'protection',
@@ -93,7 +93,7 @@ export const MODULES: ModuleDefinition[] = [
     slug: 'more',
     label: 'More Tools',
     description: 'Analytics, marketing, community, professional development, and more',
-    tier: 'pro',
+    tier: 'free',
     defaultEnabled: false,
     alwaysVisible: false,
     navGroupId: 'more',
@@ -102,7 +102,7 @@ export const MODULES: ModuleDefinition[] = [
     slug: 'commerce',
     label: 'Commerce',
     description: 'POS register, counter sales, product catalog, and payment processing',
-    tier: 'pro',
+    tier: 'free',
     defaultEnabled: false,
     alwaysVisible: false,
     navGroupId: 'commerce',
@@ -111,7 +111,7 @@ export const MODULES: ModuleDefinition[] = [
     slug: 'social-hub',
     label: 'Social Event Hub',
     description: 'Group chat, themes, guest profiles, collaborative event planning, and polls',
-    tier: 'pro',
+    tier: 'free',
     defaultEnabled: false,
     alwaysVisible: false,
   },

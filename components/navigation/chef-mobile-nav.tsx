@@ -119,7 +119,6 @@ const SectionAccordion = memo(function SectionAccordion({
       >
         <div className={`flex-1 border-t ${dividerClass}`} />
         <span className="text-2xs font-semibold uppercase tracking-widest">{title}</span>
-        {locked ? <Lock className="w-3.5 h-3.5" /> : null}
         <ChevronDown
           className={`w-3.5 h-3.5 transition-transform duration-200 ${
             isOpen ? 'rotate-0' : '-rotate-90'
@@ -132,41 +131,28 @@ const SectionAccordion = memo(function SectionAccordion({
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        {locked ? (
-          <div className="px-3 py-1.5">
-            <Link
-              href="/settings/billing"
-              onClick={onNavigate}
-              className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-950/60 transition-colors"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Upgrade to unlock
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-0.5">
-            {items.map((item) => {
-              const itemActive = isItemActive(pathname, item.href, searchParams)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onNavigate}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    itemActive ? itemActiveClass : itemInactiveClass
-                  }`}
-                  style={itemActive ? activeBgStyle : undefined}
-                >
-                  <Icon
-                    className="w-[18px] h-[18px] flex-shrink-0"
-                    style={{ color: itemActive ? iconActiveColor : iconInactiveColor }}
-                  />
-                  {item.label}
-                </Link>
-              )
-            })}
-          </div>
-        )}
+        <div className="space-y-0.5">
+          {items.map((item) => {
+            const itemActive = isItemActive(pathname, item.href, searchParams)
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  itemActive ? itemActiveClass : itemInactiveClass
+                }`}
+                style={itemActive ? activeBgStyle : undefined}
+              >
+                <Icon
+                  className="w-[18px] h-[18px] flex-shrink-0"
+                  style={{ color: itemActive ? iconActiveColor : iconInactiveColor }}
+                />
+                {item.label}
+              </Link>
+            )
+          })}
+        </div>
       </div>
     </>
   )
@@ -220,12 +206,6 @@ const MobileGroupSection = memo(function MobileGroupSection({
             {badgeCount > 99 ? '99+' : badgeCount}
           </span>
         ) : null}
-        {isLocked ? (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xxs font-semibold uppercase tracking-wide bg-amber-900/40 text-amber-300">
-            <Lock className="w-3 h-3" />
-            Pro
-          </span>
-        ) : null}
         <ChevronDown
           className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
             isOpen ? 'rotate-0' : '-rotate-90'
@@ -238,126 +218,112 @@ const MobileGroupSection = memo(function MobileGroupSection({
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        {isLocked ? (
-          <div className="ml-3 pl-3 border-l border-stone-800 mt-1 mb-2">
-            <Link
-              href="/settings/billing"
-              onClick={onNavigate}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-950/40"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Upgrade to unlock
-            </Link>
-          </div>
-        ) : null}
-        {!isLocked ? (
-          <div className="ml-3 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
-            {group.items.map((item) => {
-              const Icon = item.icon
-              const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
+        <div className="ml-3 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
+          {group.items.map((item) => {
+            const Icon = item.icon
+            const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
 
-              if (item.children?.length) {
-                const itemOpen = openItems.has(item.href)
-                const { secondary, advanced } = partitionChildren(item.children)
-                return (
-                  <div key={item.href}>
-                    <button
-                      type="button"
-                      onClick={() => onToggleItem(item.href)}
-                      aria-expanded={itemOpen}
-                      className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        itemActive
-                          ? 'text-brand-400'
-                          : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+            if (item.children?.length) {
+              const itemOpen = openItems.has(item.href)
+              const { secondary, advanced } = partitionChildren(item.children)
+              return (
+                <div key={item.href}>
+                  <button
+                    type="button"
+                    onClick={() => onToggleItem(item.href)}
+                    aria-expanded={itemOpen}
+                    className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      itemActive
+                        ? 'text-brand-400'
+                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+                    }`}
+                  >
+                    <Icon
+                      className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
+                    />
+                    <span className="flex-1 text-left">{item.label}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                        itemOpen ? 'rotate-0' : '-rotate-90'
                       }`}
-                    >
-                      <Icon
-                        className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
-                      />
-                      <span className="flex-1 text-left">{item.label}</span>
-                      <ChevronDown
-                        className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                          itemOpen ? 'rotate-0' : '-rotate-90'
-                        }`}
-                      />
-                    </button>
-                    <div
-                      className={`overflow-hidden transition-all duration-200 ${
-                        itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                      }`}
-                    >
-                      <div className="ml-5 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
-                        {secondary.map((child) => {
-                          const childActive = isItemActive(pathname, child.href, searchParams)
-                          return (
-                            <Link
-                              key={child.href}
-                              href={child.href}
-                              onClick={onNavigate}
-                              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                                childActive
-                                  ? 'bg-brand-950 text-brand-400'
-                                  : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
-                              }`}
-                            >
-                              <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
-                              {child.label}
-                            </Link>
-                          )
-                        })}
-                        {advanced.length > 0 && (
-                          <details className="pt-1">
-                            <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
-                              Advanced
-                            </summary>
-                            <div className="space-y-0.5">
-                              {advanced.map((child) => {
-                                const childActive = isItemActive(pathname, child.href, searchParams)
-                                return (
-                                  <Link
-                                    key={child.href}
-                                    href={child.href}
-                                    onClick={onNavigate}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                                      childActive
-                                        ? 'bg-brand-950 text-brand-400'
-                                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
-                                    }`}
-                                  >
-                                    <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
-                                    {child.label}
-                                  </Link>
-                                )
-                              })}
-                            </div>
-                          </details>
-                        )}
-                      </div>
+                    />
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-200 ${
+                      itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="ml-5 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
+                      {secondary.map((child) => {
+                        const childActive = isItemActive(pathname, child.href, searchParams)
+                        return (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            onClick={onNavigate}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                              childActive
+                                ? 'bg-brand-950 text-brand-400'
+                                : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+                            }`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                            {child.label}
+                          </Link>
+                        )
+                      })}
+                      {advanced.length > 0 && (
+                        <details className="pt-1">
+                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
+                            Advanced
+                          </summary>
+                          <div className="space-y-0.5">
+                            {advanced.map((child) => {
+                              const childActive = isItemActive(pathname, child.href, searchParams)
+                              return (
+                                <Link
+                                  key={child.href}
+                                  href={child.href}
+                                  onClick={onNavigate}
+                                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                                    childActive
+                                      ? 'bg-brand-950 text-brand-400'
+                                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+                                  }`}
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                                  {child.label}
+                                </Link>
+                              )
+                            })}
+                          </div>
+                        </details>
+                      )}
                     </div>
                   </div>
-                )
-              }
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onNavigate}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    itemActive
-                      ? 'bg-brand-950 text-brand-400'
-                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
-                  }`}
-                >
-                  <Icon
-                    className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
-                  />
-                  {item.label}
-                </Link>
+                </div>
               )
-            })}
-          </div>
-        ) : null}
+            }
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  itemActive
+                    ? 'bg-brand-950 text-brand-400'
+                    : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+                }`}
+              >
+                <Icon
+                  className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
+                />
+                {item.label}
+              </Link>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
