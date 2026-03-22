@@ -122,39 +122,41 @@ type PrimaryShortcutOption = NavItem & { context: string }
 // Primary always-visible shortcuts (top of sidebar)
 // coreFeature: true = shown in Focus Mode. false/undefined = hidden in Focus Mode, shown when OFF.
 // adminOnly items are always hidden for non-admins regardless of Focus Mode.
+// Users can customize this list via Settings > Navigation. Default shows first 8.
 export const standaloneTop: NavItem[] = [
+  // ─── Daily essentials ───
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, coreFeature: true },
-  { href: '/briefing', label: 'Briefing', icon: ClipboardCheck, coreFeature: true },
-  { href: '/commands', label: 'Remy', icon: Bot, coreFeature: true, adminOnly: true },
-  { href: '/daily', label: 'Daily Ops', icon: ListChecks, coreFeature: true },
   { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true },
+  { href: '/daily', label: 'Daily Ops', icon: ListChecks, coreFeature: true },
+  { href: '/schedule', label: 'Calendar', icon: CalendarDays, coreFeature: true },
+  { href: '/events', label: 'All Events', icon: CalendarCheck, coreFeature: true },
   { href: '/clients', label: 'Clients', icon: Users, coreFeature: true },
   { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText, coreFeature: true },
   { href: '/chat', label: 'Messaging', icon: MessageCircle, coreFeature: true },
-  { href: '/circles', label: 'Circles', icon: MessagesSquare, coreFeature: true },
-  { href: '/schedule', label: 'Calendar', icon: CalendarDays, coreFeature: true },
-  { href: '/events', label: 'All Events', icon: CalendarCheck, coreFeature: true },
-  { href: '/documents', label: 'Documents', icon: FileText, coreFeature: true },
+  // ─── Several times a week ───
+  { href: '/briefing', label: 'Briefing', icon: ClipboardCheck },
+  { href: '/tasks', label: 'Tasks', icon: Kanban },
+  { href: '/quotes', label: 'Quotes', icon: Invoice },
+  { href: '/staff', label: 'Staff', icon: IdentificationBadge },
+  { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
+  { href: '/recipes', label: 'Recipes', icon: BookOpen },
+  { href: '/expenses', label: 'Expenses', icon: Coins },
+  { href: '/finance/invoices', label: 'Invoices', icon: CurrencyCircleDollar },
   { href: '/contracts', label: 'Contracts', icon: ScrollText },
-  { href: '/menus', label: 'Menus', icon: UtensilsCrossed, coreFeature: true },
-  { href: '/culinary/costing', label: 'Costing', icon: Calculator, coreFeature: true },
+  { href: '/documents', label: 'Documents', icon: FileText },
+  { href: '/goals', label: 'Goals', icon: Target },
+  // ─── Weekly ───
+  { href: '/culinary/costing', label: 'Costing', icon: Calculator },
   { href: '/rate-card', label: 'Rate Card', icon: Coins },
   { href: '/travel', label: 'Travel', icon: MapPin },
-  { href: '/staff', label: 'Staff', icon: IdentificationBadge },
-  { href: '/tasks', label: 'Tasks', icon: Kanban },
   { href: '/stations', label: 'Stations', icon: Notepad },
-  { href: '/activity', label: 'Activity', icon: Activity, coreFeature: true },
-  { href: '/goals', label: 'Goals', icon: Target, coreFeature: true },
-  { href: '/prospecting', label: 'Prospecting', icon: Crosshair, adminOnly: true },
-  { href: '/charity', label: 'Charity Hub', icon: HeartHandshake, adminOnly: true },
+  { href: '/activity', label: 'Activity', icon: Activity },
+  { href: '/circles', label: 'Circles', icon: MessagesSquare },
   { href: '/portfolio', label: 'Portfolio', icon: Image },
-  { href: '/commerce', label: 'Commerce', icon: Store },
-  { href: '/commerce/register', label: 'POS Register', icon: ShoppingCart },
-  { href: '/commerce/virtual-terminal', label: 'Virtual Terminal', icon: CreditCard },
-  { href: '/commerce/table-service', label: 'Table Service', icon: UtensilsCrossed },
-  { href: '/commerce/promotions', label: 'Promotions', icon: Percent },
-  { href: '/commerce/observability', label: 'Observability', icon: AlertTriangle, adminOnly: true },
-  { href: '/commerce/parity', label: 'Clover Parity', icon: BarChart3, adminOnly: true },
+  { href: '/queue', label: 'Priority Queue', icon: Zap },
+  // ─── Admin only ───
+  { href: '/commands', label: 'Ask Remy', icon: Bot, adminOnly: true },
+  { href: '/prospecting', label: 'Prospecting', icon: Crosshair, adminOnly: true },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
