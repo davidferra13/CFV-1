@@ -115,6 +115,24 @@ export const MODULES: ModuleDefinition[] = [
     defaultEnabled: false,
     alwaysVisible: false,
   },
+  {
+    slug: 'station-ops',
+    label: 'Operations',
+    description: 'Kitchen day-to-day, staff, equipment, meal prep, and station clipboards',
+    tier: 'free',
+    defaultEnabled: false,
+    alwaysVisible: false,
+    navGroupId: 'operations',
+  },
+  {
+    slug: 'operations',
+    label: 'Supply Chain',
+    description: 'Vendors, inventory, procurement, demand forecasting, and cost control',
+    tier: 'free',
+    defaultEnabled: false,
+    alwaysVisible: false,
+    navGroupId: 'supply-chain',
+  },
 ]
 
 /** Default enabled modules for new signups. */
