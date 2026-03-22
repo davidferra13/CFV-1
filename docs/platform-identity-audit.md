@@ -15,7 +15,7 @@ The platform serves private chefs, catering operators, meal prep services, and f
 
 **Live domains:**
 
-- `app.cheflowhq.com` (production, port 3300)
+- `cheflowhq.com` (production, port 3300; also accessible via `app.cheflowhq.com` and `www.cheflowhq.com`)
 - `beta.cheflowhq.com` (beta, port 3200)
 - `localhost:3100` (development)
 
@@ -30,7 +30,7 @@ The platform serves private chefs, catering operators, meal prep services, and f
 | **Staff**   | Staff portal   | Kitchen ops, scheduling, task execution               |
 | **Partner** | Partner portal | Track referrals, view performance reports             |
 | **Admin**   | Admin panel    | Platform management, analytics, prospecting           |
-| **Public**  | Public pages   | Discover chefs, submit inquiries, view portfolios     |
+| **Public**  | Public pages   | Landing page, submit inquiries, view portfolios       |
 
 ---
 

@@ -144,14 +144,18 @@ export default async function CommerceDashboardPage() {
             </CardContent>
           </Card>
         </Link>
-        <Link href="/commerce/orders">
-          <Card interactive>
+        <div
+          className="opacity-50 cursor-not-allowed"
+          title="Coming soon - requires database migration"
+        >
+          <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <ClipboardCheck className="w-5 h-5 text-brand-500" />
-              <span className="text-stone-200 font-medium">Order Queue</span>
+              <ClipboardCheck className="w-5 h-5 text-stone-600" />
+              <span className="text-stone-500 font-medium">Order Queue</span>
+              <Badge variant="default">Soon</Badge>
             </CardContent>
           </Card>
-        </Link>
+        </div>
         <Link href="/commerce/sales">
           <Card interactive>
             <CardContent className="p-4 flex items-center gap-3">
