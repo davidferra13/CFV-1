@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Spending History - ChefFlow' }
+export const metadata: Metadata = { title: 'Payment History - ChefFlow' }
 
 export default async function SpendingHistoryPage() {
   await requireChef()
@@ -34,7 +34,7 @@ export default async function SpendingHistoryPage() {
           ← Client History
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-100">Spending History</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Payment History</h1>
           <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {withSpend.length} clients
           </span>

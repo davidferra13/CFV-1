@@ -22,8 +22,8 @@ const VIEWS = [
   },
   {
     href: '/clients/history/spending-history',
-    label: 'Spending History',
-    description: 'Lifetime spend per client with trend data',
+    label: 'Payment History',
+    description: 'Lifetime payments per client with trend data',
     icon: '💰',
   },
 ]

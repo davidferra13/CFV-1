@@ -297,7 +297,7 @@ export const navGroups: NavGroup[] = [
         children: [
           { href: '/clients/history/event-history', label: 'Event History' },
           { href: '/clients/history/past-menus', label: 'Past Menus' },
-          { href: '/clients/history/spending-history', label: 'Spending History' },
+          { href: '/clients/history/spending-history', label: 'Payment History' },
         ],
       },
       {

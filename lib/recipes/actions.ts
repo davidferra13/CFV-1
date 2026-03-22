@@ -1227,14 +1227,24 @@ export async function searchRecipes(query: string) {
 
   const { data: recipes } = await supabase
     .from('recipes')
-    .select('id, name, category')
+    .select(
+      'id, name, category, total_cost_cents, cost_per_serving_cents, yield_quantity, yield_unit'
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('archived', false)
     .ilike('name', `%${query}%`)
     .order('name', { ascending: true })
     .limit(20)
 
-  return recipes || []
+  return (recipes || []) as {
+    id: string
+    name: string
+    category: string
+    total_cost_cents: number | null
+    cost_per_serving_cents: number | null
+    yield_quantity: number | null
+    yield_unit: string | null
+  }[]
 }
 
 // ============================================

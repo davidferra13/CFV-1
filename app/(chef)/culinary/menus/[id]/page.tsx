@@ -9,6 +9,7 @@ import { MenuScaleDialog } from '@/components/culinary/menu-scale-dialog'
 import { MenuContextSidebar } from '@/components/culinary/menu-context-sidebar'
 import { MenuWhatIfPanel } from '@/components/culinary/menu-whatif-panel'
 import { MenuAssemblyBrowser } from '@/components/culinary/menu-assembly-browser'
+import { MenuShoppingList } from '@/components/culinary/menu-shopping-list'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -71,6 +72,7 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
           />
           <MenuEditorClient menu={menu} />
           <MenuBreakdownView menuId={menu.id} className="mt-4" />
+          <MenuShoppingList menuId={menu.id} />
         </div>
 
         {/* Intelligence sidebar */}

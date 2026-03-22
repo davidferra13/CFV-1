@@ -1744,3 +1744,194 @@ export async function getDishIndex(): Promise<DishIndexEntry[]> {
     createdAt: d.created_at,
   }))
 }
+
+// ============================================
+// MENU SHOPPING LIST
+// ============================================
+
+export type ShoppingListItem = {
+  ingredientId: string
+  ingredientName: string
+  category: string
+  totalQuantity: number
+  unit: string
+  estimatedCostCents: number
+  isOptional: boolean
+  hasPricing: boolean
+  sources: { componentName: string; recipeName: string; dish: string; scaledQty: number }[]
+}
+
+export type MenuShoppingListResult = {
+  menuName: string
+  guestCount: number
+  items: ShoppingListItem[]
+  grouped: Record<string, ShoppingListItem[]>
+  totalEstimatedCostCents: number
+  linkedRecipeCount: number
+  unlinkedComponentCount: number
+}
+
+export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingListResult> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('id, name, target_guest_count')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!menu) throw new Error('Menu not found')
+
+  const guestCount = menu.target_guest_count || 1
+
+  const { data: dishes } = await supabase
+    .from('dishes')
+    .select('id, course_name, course_number')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .order('course_number', { ascending: true })
+
+  if (!dishes || dishes.length === 0) {
+    return {
+      menuName: menu.name,
+      guestCount,
+      items: [],
+      grouped: {},
+      totalEstimatedCostCents: 0,
+      linkedRecipeCount: 0,
+      unlinkedComponentCount: 0,
+    }
+  }
+
+  const dishIds = dishes.map((d: any) => d.id)
+
+  const { data: components } = await supabase
+    .from('components')
+    .select('id, name, scale_factor, recipe_id, dish_id')
+    .in('dish_id', dishIds)
+
+  if (!components || components.length === 0) {
+    return {
+      menuName: menu.name,
+      guestCount,
+      items: [],
+      grouped: {},
+      totalEstimatedCostCents: 0,
+      linkedRecipeCount: 0,
+      unlinkedComponentCount: 0,
+    }
+  }
+
+  const linkedComponents = components.filter((c: any) => c.recipe_id)
+  const unlinkedCount = components.length - linkedComponents.length
+
+  if (linkedComponents.length === 0) {
+    return {
+      menuName: menu.name,
+      guestCount,
+      items: [],
+      grouped: {},
+      totalEstimatedCostCents: 0,
+      linkedRecipeCount: 0,
+      unlinkedComponentCount: unlinkedCount,
+    }
+  }
+
+  const recipeIds = [...new Set(linkedComponents.map((c: any) => c.recipe_id))] as string[]
+
+  const { data: recipes } = await supabase
+    .from('recipes')
+    .select('id, name, yield_quantity, yield_unit')
+    .in('id', recipeIds)
+
+  const recipeMap = new Map(((recipes as any[]) || []).map((r: any) => [r.id, r]))
+
+  const { data: recipeIngredients } = await supabase
+    .from('recipe_ingredients')
+    .select(
+      'id, recipe_id, quantity, unit, is_optional, ingredient:ingredients(id, name, category, average_price_cents, last_price_cents)'
+    )
+    .in('recipe_id', recipeIds)
+
+  const dishLookup = new Map(((dishes as any[]) || []).map((d: any) => [d.id, d]))
+  const ingredientMap = new Map<string, ShoppingListItem>()
+
+  for (const comp of linkedComponents as any[]) {
+    const recipe: any = recipeMap.get(comp.recipe_id)
+    if (!recipe) continue
+
+    const yieldQty = recipe.yield_quantity || guestCount
+    const scale = (((comp.scale_factor as number) || 1) * guestCount) / yieldQty
+    const dish: any = dishLookup.get(comp.dish_id)
+    const compIngredients = ((recipeIngredients as any[]) || []).filter(
+      (ri: any) => ri.recipe_id === comp.recipe_id
+    )
+
+    for (const ri of compIngredients) {
+      const ingredient = ri.ingredient
+      if (!ingredient) continue
+
+      const scaledQty = ri.quantity * scale
+      const priceCents = ingredient.last_price_cents || ingredient.average_price_cents || 0
+      const hasPricing = !!(ingredient.last_price_cents || ingredient.average_price_cents)
+      const scaledCost = Math.round(priceCents * scaledQty)
+
+      if (ingredientMap.has(ingredient.id)) {
+        const existing = ingredientMap.get(ingredient.id)!
+        existing.totalQuantity += scaledQty
+        existing.estimatedCostCents += scaledCost
+        existing.sources.push({
+          componentName: comp.name,
+          recipeName: recipe.name,
+          dish: dish?.course_name || 'Course',
+          scaledQty,
+        })
+      } else {
+        ingredientMap.set(ingredient.id, {
+          ingredientId: ingredient.id,
+          ingredientName: ingredient.name,
+          category: ingredient.category || 'other',
+          totalQuantity: scaledQty,
+          unit: ri.unit,
+          estimatedCostCents: scaledCost,
+          isOptional: ri.is_optional || false,
+          hasPricing,
+          sources: [
+            {
+              componentName: comp.name,
+              recipeName: recipe.name,
+              dish: dish?.course_name || 'Course',
+              scaledQty,
+            },
+          ],
+        })
+      }
+    }
+  }
+
+  const items = Array.from(ingredientMap.values()).sort((a, b) =>
+    a.ingredientName.localeCompare(b.ingredientName)
+  )
+
+  const grouped = items.reduce(
+    (acc, item) => {
+      const cat = item.category || 'other'
+      if (!acc[cat]) acc[cat] = []
+      acc[cat].push(item)
+      return acc
+    },
+    {} as Record<string, ShoppingListItem[]>
+  )
+
+  return {
+    menuName: menu.name,
+    guestCount,
+    items,
+    grouped,
+    totalEstimatedCostCents: items.reduce((sum, i) => sum + i.estimatedCostCents, 0),
+    linkedRecipeCount: recipeIds.length,
+    unlinkedComponentCount: unlinkedCount,
+  }
+}

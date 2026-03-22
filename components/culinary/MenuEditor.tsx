@@ -5,7 +5,7 @@
 // All mutations go through lib/menus/actions.ts server actions.
 // State is server-driven via revalidatePath - no local optimistic cache needed.
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -19,6 +19,7 @@ import {
   updateComponent,
   deleteComponent,
 } from '@/lib/menus/actions'
+import { searchRecipes } from '@/lib/recipes/actions'
 import {
   COMPONENT_CATEGORIES,
   TRANSPORT_CATEGORIES,
@@ -91,8 +92,29 @@ function emptyComponentForm() {
     prep_day_offset: '' as string,
     prep_time_of_day: '' as string,
     prep_station: '',
+    recipe_id: null as string | null,
   }
 }
+
+// Map recipe categories to component categories
+const RECIPE_TO_COMPONENT_CAT: Record<string, ComponentCategory> = {
+  sauce: 'sauce',
+  protein: 'protein',
+  starch: 'starch',
+  vegetable: 'vegetable',
+  fruit: 'fruit',
+  dessert: 'dessert',
+  bread: 'bread',
+  pasta: 'starch',
+  soup: 'other',
+  salad: 'vegetable',
+  appetizer: 'other',
+  condiment: 'condiment',
+  beverage: 'beverage',
+  other: 'other',
+}
+
+type RecipeSummary = Awaited<ReturnType<typeof searchRecipes>>[number]
 
 // ─── ComponentForm ────────────────────────────────────────────────────────────
 // Reused for both add and edit
@@ -114,8 +136,64 @@ function ComponentForm({
   const [error, setError] = useState('')
   const [pending, startTransition] = useTransition()
 
-  const set = (key: keyof typeof form, value: string | boolean) =>
+  // Recipe search state
+  const [recipeQuery, setRecipeQuery] = useState('')
+  const [recipeResults, setRecipeResults] = useState<RecipeSummary[]>([])
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [searching, startSearch] = useTransition()
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const set = (key: keyof typeof form, value: string | boolean | null) =>
     setForm((prev) => ({ ...prev, [key]: value }))
+
+  // Debounced recipe search
+  useEffect(() => {
+    if (recipeQuery.length < 2) {
+      setRecipeResults([])
+      setShowDropdown(false)
+      return
+    }
+    const timer = setTimeout(() => {
+      startSearch(async () => {
+        try {
+          const results = await searchRecipes(recipeQuery)
+          setRecipeResults(results)
+          setShowDropdown(results.length > 0)
+        } catch {
+          setRecipeResults([])
+        }
+      })
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [recipeQuery])
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const handleSelectRecipe = (recipe: RecipeSummary) => {
+    setForm((prev) => ({
+      ...prev,
+      name: recipe.name,
+      category: RECIPE_TO_COMPONENT_CAT[recipe.category] ?? 'other',
+      recipe_id: recipe.id,
+    }))
+    setRecipeQuery(recipe.name)
+    setShowDropdown(false)
+  }
+
+  const handleClearRecipe = () => {
+    set('recipe_id', null)
+    setRecipeQuery('')
+    setRecipeResults([])
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -141,6 +219,64 @@ function ComponentForm({
         </p>
       )}
 
+      {/* Recipe book search */}
+      <div ref={dropdownRef} className="relative">
+        <label className="block text-xs text-stone-500 mb-1">
+          Link from recipe book{' '}
+          <span className="text-stone-600">(optional - auto-fills name and costs)</span>
+        </label>
+        <div className="relative">
+          <Input
+            value={form.recipe_id ? recipeQuery : recipeQuery}
+            onChange={(e) => {
+              setRecipeQuery(e.target.value)
+              if (form.recipe_id) set('recipe_id', null)
+            }}
+            placeholder="Search your recipes..."
+            className="text-sm pr-8"
+            disabled={disabled || pending}
+          />
+          {form.recipe_id && (
+            <button
+              type="button"
+              onClick={handleClearRecipe}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-red-400 text-lg leading-none"
+              title="Unlink recipe"
+            >
+              &times;
+            </button>
+          )}
+        </div>
+        {searching && <p className="text-xs text-stone-500 mt-1">Searching...</p>}
+        {showDropdown && recipeResults.length > 0 && (
+          <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-stone-800 border border-stone-600 rounded-lg shadow-xl overflow-hidden max-h-52 overflow-y-auto">
+            {recipeResults.map((recipe) => (
+              <button
+                key={recipe.id}
+                type="button"
+                onClick={() => handleSelectRecipe(recipe)}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-stone-700 border-b border-stone-700 last:border-0 flex items-center justify-between gap-2"
+              >
+                <div>
+                  <span className="font-medium text-stone-100">{recipe.name}</span>
+                  <span className="text-xs text-stone-400 ml-2 capitalize">{recipe.category}</span>
+                </div>
+                {recipe.cost_per_serving_cents != null && (
+                  <span className="text-xs text-emerald-400 shrink-0">
+                    ${(recipe.cost_per_serving_cents / 100).toFixed(2)}/serving
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+        {form.recipe_id && (
+          <p className="text-xs text-emerald-400 mt-1">
+            Recipe linked - ingredient costs will flow through automatically
+          </p>
+        )}
+      </div>
+
       {/* Name + Category */}
       <div className="flex gap-2">
         <Input
@@ -149,7 +285,7 @@ function ComponentForm({
           placeholder="Component name (e.g. Sherry Pan Sauce)"
           className="flex-1 text-sm"
           disabled={disabled || pending}
-          autoFocus
+          autoFocus={!form.recipe_id}
         />
         <select
           value={form.category}
@@ -375,6 +511,7 @@ function ComponentRow({
     await updateComponent(component.id, {
       name: form.name.trim(),
       category: form.category,
+      recipe_id: form.recipe_id ?? null,
       is_make_ahead: form.is_make_ahead,
       transport_category: form.is_make_ahead
         ? (form.transport_category as TransportCategory)
@@ -416,6 +553,7 @@ function ComponentRow({
                 : '',
             prep_time_of_day: (component as any).prep_time_of_day ?? '',
             prep_station: (component as any).prep_station ?? '',
+            recipe_id: component.recipe_id ?? null,
           }}
           onSubmit={handleEditSubmit}
           onCancel={() => setEditing(false)}
@@ -571,6 +709,7 @@ function DishCard({
       name: form.name.trim(),
       category: form.category,
       scale_factor: 1,
+      recipe_id: form.recipe_id ?? undefined,
       is_make_ahead: form.is_make_ahead,
       transport_category: form.is_make_ahead
         ? (form.transport_category as TransportCategory)

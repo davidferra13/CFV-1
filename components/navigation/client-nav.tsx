@@ -8,9 +8,7 @@ import { useState, useEffect, useCallback, createContext, useContext } from 'rea
 import {
   Calendar,
   CalendarPlus,
-  ClipboardList,
   DollarSign,
-  FileText,
   Gift,
   LogOut,
   Menu,
@@ -33,14 +31,12 @@ interface ClientNavProps {
 const BOOK_NOW_HREF = '/book-now'
 
 const navItems = [
-  { href: '/my-events', label: 'My Events', icon: Calendar },
-  { href: '/my-inquiries', label: 'My Inquiries', icon: ClipboardList },
-  { href: '/my-quotes', label: 'My Quotes', icon: FileText },
-  { href: '/my-chat', label: 'Messages', icon: MessageCircle },
-  { href: '/my-hub', label: 'My Hub', icon: Users },
+  { href: '/my-bookings', label: 'Bookings', icon: Calendar },
+  { href: '/my-chat', label: 'Messages', icon: MessageCircle, badge: 'chat' },
+  { href: '/my-hub', label: 'Friends & Groups', icon: Users, badge: 'hub' },
+  { href: '/my-profile', label: 'Profile', icon: User, dividerBefore: true },
+  { href: '/my-spending', label: 'Payments', icon: DollarSign },
   { href: '/my-rewards', label: 'Rewards', icon: Gift },
-  { href: '/my-spending', label: 'Spending', icon: DollarSign },
-  { href: '/my-profile', label: 'Profile', icon: User },
 ]
 
 type ClientSidebarContextType = {
@@ -148,18 +144,21 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
               const Icon = item.icon
               const active = isItemActive(pathname, item.href)
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={item.label}
-                  className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
-                    active
-                      ? 'bg-brand-950 text-brand-600'
-                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
-                  }`}
-                >
-                  <Icon className="w-[18px] h-[18px]" />
-                </Link>
+                <div key={item.href} className="w-full flex flex-col items-center">
+                  {item.dividerBefore && <div className="w-6 border-t border-stone-800 my-1.5" />}
+                  <Link
+                    href={item.href}
+                    title={item.label}
+                    className={`relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
+                      active
+                        ? 'bg-brand-950 text-brand-600'
+                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
+                    }`}
+                  >
+                    <Icon className="w-[18px] h-[18px]" />
+                    {item.badge === 'hub' && <ClientHubUnreadBadge />}
+                  </Link>
+                </div>
               )
             })}
           </div>
@@ -180,21 +179,23 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
               const Icon = item.icon
               const active = isItemActive(pathname, item.href)
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    active
-                      ? 'bg-brand-950 text-brand-400'
-                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
-                  }`}
-                >
-                  <Icon
-                    className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                  />
-                  {item.label}
-                  {item.href === '/my-hub' && <ClientHubUnreadBadge />}
-                </Link>
+                <div key={item.href}>
+                  {item.dividerBefore && <div className="border-t border-stone-800 my-2 mx-1" />}
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      active
+                        ? 'bg-brand-950 text-brand-400'
+                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+                    }`}
+                  >
+                    <Icon
+                      className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                    />
+                    {item.label}
+                    {item.badge === 'hub' && <ClientHubUnreadBadge />}
+                  </Link>
+                </div>
               )
             })}
 
@@ -310,20 +311,22 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                 const Icon = item.icon
                 const active = isItemActive(pathname, item.href)
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={closeMenu}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      active ? 'bg-brand-950 text-brand-400' : 'text-stone-400 hover:bg-stone-800'
-                    }`}
-                  >
-                    <Icon
-                      className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                    />
-                    {item.label}
-                    {item.href === '/my-hub' && <ClientHubUnreadBadge />}
-                  </Link>
+                  <div key={item.href}>
+                    {item.dividerBefore && <div className="border-t border-stone-800 my-2 mx-1" />}
+                    <Link
+                      href={item.href}
+                      onClick={closeMenu}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        active ? 'bg-brand-950 text-brand-400' : 'text-stone-400 hover:bg-stone-800'
+                      }`}
+                    >
+                      <Icon
+                        className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                      />
+                      {item.label}
+                      {item.badge === 'hub' && <ClientHubUnreadBadge />}
+                    </Link>
+                  </div>
                 )
               })}
               {/* Cannabis Tier - admin-only feature, hidden from client portal */}
@@ -353,27 +356,30 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
 
       <nav className="lg:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 bg-stone-900 border-b border-stone-700">
         <div className="flex items-center justify-around h-11">
-          {navItems.slice(0, 5).map((item) => {
-            const active = isItemActive(pathname, item.href)
-            const Icon = item.icon
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-h-[44px] text-xxs font-medium transition-colors touch-manipulation ${
-                  active ? 'text-brand-600' : 'text-stone-400'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                {item.label}
-                {item.href === '/my-hub' && (
-                  <span className="absolute top-0.5 right-1/4">
-                    <ClientHubUnreadBadge />
-                  </span>
-                )}
-              </Link>
-            )
-          })}
+          {navItems
+            .filter((item) => !item.dividerBefore)
+            .slice(0, 4)
+            .map((item) => {
+              const active = isItemActive(pathname, item.href)
+              const Icon = item.icon
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-h-[44px] text-xxs font-medium transition-colors touch-manipulation ${
+                    active ? 'text-brand-600' : 'text-stone-400'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {item.label}
+                  {item.badge === 'hub' && (
+                    <span className="absolute top-0.5 right-1/4">
+                      <ClientHubUnreadBadge />
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
         </div>
       </nav>
     </>
