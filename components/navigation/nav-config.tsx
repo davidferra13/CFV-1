@@ -158,31 +158,9 @@ export const standaloneTop: NavItem[] = [
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
-// Groups ordered by chef workflow: AI → Pipeline → Clients → Events → Commerce → Culinary → Operations → Supply Chain → Finance → Marketing → Analytics → Protection → Tools → Admin
+// Groups ordered by chef workflow: Pipeline → Clients → Events → Commerce → Culinary → Operations → Supply Chain → Finance → Marketing → Analytics → Protection → Tools → Admin
 // Within each group: items sorted A-Z. Within each item: children sorted A-Z.
 export const navGroups: NavGroup[] = [
-  // ─── REMY (AI Assistant) ───
-  {
-    id: 'remy',
-    label: 'Remy',
-    icon: Bot,
-    items: [
-      {
-        href: '/settings/ai-privacy',
-        label: 'AI Privacy & Settings',
-        icon: ShieldCheck,
-        adminOnly: true,
-      },
-      {
-        href: '/commands',
-        label: 'Ask Remy',
-        icon: Bot,
-        adminOnly: true,
-        children: [{ href: '/remy', label: 'Conversation History' }],
-      },
-    ],
-  },
-
   // ─── PIPELINE (active deal flow + outreach) ───
   {
     id: 'pipeline',
