@@ -240,7 +240,7 @@ export const navGroups: NavGroup[] = [
         label: 'Proposals',
         icon: Presentation,
         children: [
-          { href: '/proposals/builder', label: 'Proposal Builder', hidden: true },
+          { href: '/proposals/builder', label: 'Proposal Builder' },
           { href: '/proposals/templates', label: 'Templates' },
           { href: '/proposals/addons', label: 'Add-Ons' },
         ],
@@ -661,7 +661,7 @@ export const navGroups: NavGroup[] = [
         icon: ListChecks,
         children: [
           { href: '/tasks/templates', label: 'Task Templates' },
-          { href: '/tasks/va', label: 'VA Tasks', hidden: true },
+          { href: '/tasks/va', label: 'VA Tasks' },
         ],
       },
       {

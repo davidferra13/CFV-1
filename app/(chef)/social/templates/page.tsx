@@ -1,0 +1,82 @@
+// Social Media Templates
+// Reusable caption and post templates for social media.
+
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+export const metadata: Metadata = { title: 'Social Templates | ChefFlow' }
+
+export default async function SocialTemplatesPage() {
+  const chef = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: templates } = await supabase
+    .from('social_post_templates')
+    .select('id, name, caption_template, platform, category, created_at')
+    .eq('chef_id', chef.entityId)
+    .order('created_at', { ascending: false })
+
+  const templateList = templates ?? []
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-stone-100">Social Templates</h1>
+          <p className="mt-1 text-sm text-stone-500">
+            Reusable caption templates for Instagram, Facebook, and other platforms. Save time when
+            posting from events.
+          </p>
+        </div>
+        <Link href="/social/planner">
+          <Button variant="secondary" size="sm">
+            Content Planner
+          </Button>
+        </Link>
+      </div>
+
+      {templateList.length === 0 ? (
+        <div className="text-center py-20 bg-stone-800 rounded-xl border border-dashed border-stone-600">
+          <h3 className="text-lg font-semibold text-stone-200 mb-1">No templates yet</h3>
+          <p className="text-sm text-stone-500 mb-4 max-w-sm mx-auto">
+            Create reusable caption templates to speed up your social media posting workflow.
+          </p>
+          <Link href="/social/planner">
+            <Button variant="primary">Go to Content Planner</Button>
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {templateList.map((template: any) => (
+            <Card key={template.id} className="p-4">
+              <CardHeader className="p-0 mb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">{template.name ?? 'Untitled'}</CardTitle>
+                  {template.platform && (
+                    <span className="text-xs text-stone-400 bg-stone-700 px-2 py-0.5 rounded-full capitalize">
+                      {template.platform}
+                    </span>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {template.caption_template && (
+                  <p className="text-sm text-stone-400 line-clamp-3 whitespace-pre-line">
+                    {template.caption_template}
+                  </p>
+                )}
+                {template.category && (
+                  <p className="text-xs text-stone-500 mt-2 capitalize">{template.category}</p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
