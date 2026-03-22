@@ -1,11 +1,11 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated - last run: 2026-03-21T02:35:07.715Z_
-_Run ID: 197bbed6-714c-4bfc-8dc3-1baf5c916c1e_
+_Auto-generated - last run: 2026-03-21T23:26:51.917Z_
+_Run ID: 05add9f6-bfcf-4730-88f0-479e8cdc2a9d_
 
 ---
 
-# Simulation Report - 2026-03-21T02:35:07.715Z
+# Simulation Report - 2026-03-21T23:26:51.917Z
 
 _Report generation requires Ollama. Start Ollama to enable AI-generated fix recommendations._
 
@@ -13,7 +13,7 @@ _Report generation requires Ollama. Start Ollama to enable AI-generated fix reco
 
 Overall pass rate: 0%
 
-inquiry_parse: 0% (0/1), client_parse: 0% (0/1), allergen_risk: 0% (0/0), correspondence: 0% (0/0), menu_suggestions: 0% (0/0), quote_draft: 0% (0/0)
+inquiry_parse: 0% (0/0), client_parse: 0% (0/0), allergen_risk: 0% (0/0), correspondence: 0% (0/0), menu_suggestions: 0% (0/0), quote_draft: 0% (0/0)
 
 ---
 
