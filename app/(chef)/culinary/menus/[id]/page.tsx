@@ -51,6 +51,11 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
             currentGuestCount={menu.target_guest_count || 4}
             menuStatus={menu.status}
           />
+          <Link href={`/print/menu/${menu.id}`} target="_blank">
+            <Button variant="ghost" size="sm">
+              Print Menu Card
+            </Button>
+          </Link>
           {menu.event_id && (
             <Link href={`/events/${menu.event_id}`}>
               <Button variant="ghost" size="sm">
