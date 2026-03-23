@@ -406,6 +406,11 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/circles',
+        label: 'Dinner Circles',
+        icon: MessagesSquare,
+      },
+      {
         href: '/clients/preferences',
         label: 'Preferences & Dietary',
         icon: Sliders,
@@ -436,6 +441,11 @@ export const navGroups: NavGroup[] = [
           { href: '/calendar/week', label: 'Week Planner' },
           { href: '/calendar/year', label: 'Year View' },
         ],
+      },
+      {
+        href: '/production',
+        label: 'Event Calendar',
+        icon: CalendarDays,
       },
       {
         href: '/feedback',
@@ -663,6 +673,11 @@ export const navGroups: NavGroup[] = [
         icon: Flower,
       },
       {
+        href: '/recipes/sprint',
+        label: 'Recipe Sprint',
+        icon: Zap,
+      },
+      {
         href: '/culinary/substitutions',
         label: 'Substitutions',
         icon: RefreshCw,
@@ -712,6 +727,11 @@ export const navGroups: NavGroup[] = [
         icon: Zap,
       },
       {
+        href: '/scheduling',
+        label: 'Scheduling',
+        icon: CalendarCheck,
+      },
+      {
         href: '/staff',
         label: 'Staff',
         icon: IdentificationBadge,
@@ -743,6 +763,16 @@ export const navGroups: NavGroup[] = [
           { href: '/tasks/templates', label: 'Task Templates' },
           { href: '/tasks/va', label: 'VA Tasks' },
         ],
+      },
+      {
+        href: '/team',
+        label: 'Team Management',
+        icon: Users,
+      },
+      {
+        href: '/travel',
+        label: 'Travel Planning',
+        icon: MapPin,
       },
     ],
   },
@@ -976,6 +1006,11 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/portfolio',
+        label: 'Event Portfolio',
+        icon: Image,
+      },
+      {
         href: '/marketing',
         label: 'Email Campaigns',
         icon: Mail,
@@ -1035,6 +1070,16 @@ export const navGroups: NavGroup[] = [
         icon: Compass,
         children: [{ href: '/intelligence', label: 'Full Dashboard' }],
       },
+      {
+        href: '/reports',
+        label: 'Reports',
+        icon: FileText,
+      },
+      {
+        href: '/surveys',
+        label: 'Surveys',
+        icon: ClipboardCheck,
+      },
     ],
   },
 
@@ -1090,6 +1135,16 @@ export const navGroups: NavGroup[] = [
     advancedOnly: true,
     items: [
       {
+        href: '/activity',
+        label: 'Activity Log',
+        icon: Activity,
+      },
+      {
+        href: '/briefing',
+        label: 'Morning Briefing',
+        icon: Compass,
+      },
+      {
         href: '/import',
         label: 'Data Import',
         icon: Upload,
@@ -1110,6 +1165,17 @@ export const navGroups: NavGroup[] = [
         icon: MessageCircle,
         children: [{ href: '/inbox/triage', label: 'Sort Messages' }],
       },
+      {
+        href: '/notifications',
+        label: 'Notifications',
+        icon: BellRing,
+      },
+      {
+        href: '/remy',
+        label: 'Remy History',
+        icon: Bot,
+        adminOnly: true,
+      },
     ],
   },
 
@@ -1129,7 +1195,7 @@ export const navGroups: NavGroup[] = [
         icon: ClipboardCheck,
         adminOnly: true,
       },
-      { href: '/admin/cannabis', label: 'Cannabis Tier', icon: SealCheck, adminOnly: true },
+      // Hidden: { href: '/admin/cannabis', label: 'Cannabis Tier', icon: SealCheck, adminOnly: true },
       { href: '/admin/users', label: 'Chefs', icon: Users, adminOnly: true },
       { href: '/admin/clients', label: 'Clients', icon: Contact, adminOnly: true },
       {
@@ -1178,7 +1244,7 @@ export const navGroups: NavGroup[] = [
 
 export const standaloneBottom: NavItem[] = [
   { href: '/settings', label: 'Settings', icon: Settings },
-  { href: '/games', label: 'Games', icon: Gamepad2, adminOnly: true },
+  // Hidden: { href: '/games', label: 'Games', icon: Gamepad2, adminOnly: true },
 ]
 
 export const mobileTabItems: NavItem[] = [

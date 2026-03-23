@@ -78,7 +78,6 @@ export function OnboardingWizard() {
 
   function handleSkip() {
     const stepKey = WIZARD_STEPS[currentIndex].key
-    const previousProgress = [...progress]
 
     const newEntry: ProgressEntry = {
       step_key: stepKey,
@@ -89,17 +88,15 @@ export function OnboardingWizard() {
     const updated = [...progress.filter((p) => p.step_key !== stepKey), newEntry]
     setProgress(updated)
 
+    // Always advance immediately so the user is never stuck
+    advanceStep()
+
+    // Save to DB in the background (best-effort)
     startTransition(async () => {
       try {
-        const result = await skipStep(stepKey)
-        if (!result.success) {
-          setProgress(previousProgress)
-          return
-        }
-        advanceStep()
+        await skipStep(stepKey)
       } catch (err) {
-        console.error('[onboarding] Failed to skip step', err)
-        setProgress(previousProgress)
+        console.error('[onboarding] Failed to persist skip for step', stepKey, err)
       }
     })
   }

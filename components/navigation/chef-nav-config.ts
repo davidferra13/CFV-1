@@ -12,16 +12,8 @@ export const QUICK_CREATE_ITEMS: NavQuickItem[] = [
   { href: '/clients/new', label: 'Client', icon: Plus },
 ]
 
-export const cannabisSectionItems = [
-  { href: '/cannabis', label: 'Cannabis Hub' },
-  { href: '/cannabis/events', label: 'Cannabis Events' },
-  { href: '/cannabis/rsvps', label: 'RSVPs' },
-  { href: '/cannabis/ledger', label: 'Cannabis Ledger' },
-  { href: '/cannabis/invite', label: 'Invite' },
-  { href: '/cannabis/handbook', label: 'Handbook (Draft)' },
-  { href: '/cannabis/compliance', label: 'Compliance' },
-  { href: '/cannabis/about', label: 'About' },
-]
+// Cannabis feature is disabled - empty array keeps imports working
+export const cannabisSectionItems: { href: string; label: string }[] = []
 
 export const communitySectionItems = [
   { href: '/network', label: 'Community Hub' },
