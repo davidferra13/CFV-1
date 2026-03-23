@@ -68,30 +68,16 @@ export function CircleArchiveView({
 
     async function loadMilestones() {
       try {
-        // Import dynamically to avoid issues with server actions in client components
-        const { createBrowserClient } = await import('@supabase/ssr')
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
+        const { getCircleMilestones } = await import('@/lib/hub/message-actions')
+        const data = await getCircleMilestones(groupId)
 
-        const { data } = await supabase
-          .from('hub_messages')
-          .select('notification_type, created_at, body')
-          .eq('group_id', groupId)
-          .eq('message_type', 'notification')
-          .is('deleted_at', null)
-          .order('created_at', { ascending: true })
+        if (cancelled) return
 
-        if (cancelled || !data) return
-
-        const parsed = data
-          .filter((m) => m.notification_type)
-          .map((m) => ({
-            type: m.notification_type as HubNotificationType,
-            date: m.created_at,
-            body: m.body,
-          }))
+        const parsed = data.map((m) => ({
+          type: m.notification_type as HubNotificationType,
+          date: m.created_at,
+          body: m.body,
+        }))
 
         // Sort by milestone order
         parsed.sort((a, b) => {

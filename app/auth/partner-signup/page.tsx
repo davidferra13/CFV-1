@@ -11,8 +11,8 @@
 
 import { Suspense, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { createBrowserClient } from '@supabase/ssr'
 import { claimPartnerInvite } from '@/lib/partners/invite-actions'
+import { signIn } from '@/lib/auth/actions'
 import Link from 'next/link'
 
 function PartnerSignupForm() {
@@ -57,19 +57,11 @@ function PartnerSignupForm() {
         return
       }
 
-      // Step 2: Sign in the browser session
+      // Step 2: Sign in via Auth.js credentials
       setStep('signing-in')
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
-
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (signInError) {
+      try {
+        await signIn({ email, password, rememberMe: true })
+      } catch {
         setError('Account created but sign-in failed. Please try signing in manually.')
         setStep('form')
         setLoading(false)

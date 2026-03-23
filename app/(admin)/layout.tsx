@@ -38,7 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <SidebarProvider>
         <NotificationProvider userId={admin.id}>
           <ToastProvider />
-          <TestAccountBanner />
+          <TestAccountBanner email={admin.email} />
           <div className="min-h-screen bg-stone-900 text-stone-100" data-cf-portal="admin">
             <ChefSidebar isAdmin userId={admin.id} tenantId={admin.id} />
             <ChefMobileNav isAdmin userId={admin.id} tenantId={admin.id} />

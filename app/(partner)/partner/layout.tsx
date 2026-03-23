@@ -31,7 +31,7 @@ export default async function PartnerLayout({ children }: { children: React.Reac
   return (
     <div className="min-h-screen bg-stone-800 flex" data-cf-portal="partner">
       <ToastProvider />
-      <TestAccountBanner />
+      <TestAccountBanner email={user.email} />
       <PartnerSidebar partnerName={partnerName} />
 
       <main className="flex-1 pt-14 lg:pt-0">

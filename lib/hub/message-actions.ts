@@ -669,3 +669,25 @@ export async function deletePinnedNote(input: {
 
   await supabase.from('hub_pinned_notes').delete().eq('id', input.noteId)
 }
+
+/**
+ * Get notification milestones for a circle (used by the archive view).
+ * Returns lifecycle notification messages ordered by creation time.
+ */
+export async function getCircleMilestones(
+  groupId: string
+): Promise<{ notification_type: string; created_at: string; body: string | null }[]> {
+  const supabase: any = createServerClient({ admin: true })
+
+  const { data, error } = await supabase
+    .from('hub_messages')
+    .select('notification_type, created_at, body')
+    .eq('group_id', groupId)
+    .eq('message_type', 'notification')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true })
+
+  if (error || !data) return []
+
+  return data.filter((m: any) => m.notification_type)
+}

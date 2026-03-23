@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useIsDemoMode } from '@/lib/demo-mode'
 
 const ROLE_MAP: Record<string, { label: string; color: string }> = {
@@ -23,21 +21,13 @@ function detectRole(email: string): { label: string; color: string; email: strin
   return null
 }
 
-export function TestAccountBanner() {
+export function TestAccountBanner({ email }: { email?: string | null }) {
   const isDemo = useIsDemoMode()
-  const [info, setInfo] = useState<{ label: string; color: string; email: string } | null>(null)
 
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
-      const email = data.user?.email
-      if (email?.endsWith('@chefflow.test')) {
-        setInfo(detectRole(email))
-      }
-    })
-  }, [])
+  if (isDemo || !email || !email.endsWith('@chefflow.test')) return null
 
-  if (isDemo || !info) return null
+  const info = detectRole(email)
+  if (!info) return null
 
   return (
     <div

@@ -154,7 +154,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
         <NotificationProvider userId={user.id}>
           <ToastProvider />
           <RouteProgress />
-          <TestAccountBanner />
+          <TestAccountBanner email={user.email} />
           <KeyboardShortcutsWrapper>
             <div
               data-cf-portal="chef"

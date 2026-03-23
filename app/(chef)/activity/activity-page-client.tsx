@@ -5,7 +5,6 @@ import type { ChefActivityDomain, ChefActivityEntry, ResumeItem } from '@/lib/ac
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
 import type { ActivityActorFilter, ActivityEvent } from '@/lib/activity/types'
 import type { BreadcrumbSession } from '@/lib/activity/breadcrumb-types'
-import { createClient } from '@/lib/supabase/client'
 import { mergeActivityByCreatedAt, parseTimeRangeDays } from '@/lib/activity/merge'
 import { ResumeSection } from '@/components/activity/resume-section'
 import { ChefActivityFeed } from '@/components/activity/chef-activity-feed'
@@ -214,31 +213,13 @@ export function ActivityPageClient({
     void loadRetraceSessions({ append: false })
   }, [viewMode, timeRange, loadRetraceSessions, initialBreadcrumbSessions.length])
 
-  // Realtime refresh: prepend latest events by refreshing current filters.
+  // Poll for new activity every 30 seconds while in summary mode.
   useEffect(() => {
     if (viewMode !== 'summary') return
-    const supabase = createClient()
-    const channel = supabase
-      .channel('activity-page-live')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'activity_events' },
-        () => {
-          void loadFeed({ append: false })
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'chef_activity_log' },
-        () => {
-          void loadFeed({ append: false })
-        }
-      )
-      .subscribe()
-
-    return () => {
-      void supabase.removeChannel(channel)
-    }
+    const interval = setInterval(() => {
+      void loadFeed({ append: false })
+    }, 30_000)
+    return () => clearInterval(interval)
   }, [loadFeed, viewMode])
 
   const hasMore = useMemo(() => {

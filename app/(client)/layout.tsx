@@ -31,7 +31,7 @@ export default async function ClientLayout({ children }: { children: React.React
     <ClientSidebarProvider>
       <NotificationProvider userId={user.id}>
         <ToastProvider />
-        <TestAccountBanner />
+        <TestAccountBanner email={user.email} />
         <div className="min-h-screen bg-stone-900 text-stone-100" data-cf-portal="client">
           <a
             href="#main-content"
