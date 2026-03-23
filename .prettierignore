@@ -5,8 +5,12 @@ node_modules/
 .next/
 out/
 
-# Generated files — never format these
+# Generated files - never format these
 types/database.ts
+lib/db/schema/schema.ts
+lib/db/schema/relations.ts
+lib/db/migrations/schema.ts
+lib/db/migrations/relations.ts
 
 # Supabase local
 supabase/.branches/
