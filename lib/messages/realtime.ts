@@ -1,8 +1,12 @@
-import { createClient } from '@/lib/supabase/client'
+// Real-Time Message Subscriptions (SSE-based)
+// Uses Server-Sent Events instead of Supabase Realtime
+// Client-side only - used in 'use client' components
+
+'use client'
 
 /**
  * Subscribe to real-time message updates for a specific entity.
- * Uses Supabase Realtime (no separate WebSocket server needed).
+ * Uses SSE (no Supabase Realtime needed).
  *
  * Usage:
  *   const unsub = subscribeToMessages('inquiry_id', inquiryId, (msg) => { ... })
@@ -13,24 +17,22 @@ export function subscribeToMessages(
   filterValue: string,
   onMessage: (payload: { new: Record<string, unknown> }) => void
 ) {
-  const supabase = createClient()
+  const channel = `messages:${filterValue}`
+  const es = new EventSource(`/api/realtime/${encodeURIComponent(channel)}`)
 
-  const channel = supabase
-    .channel(`messages:${filterColumn}:${filterValue}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `${filterColumn}=eq.${filterValue}`,
-      },
-      onMessage
-    )
-    .subscribe()
+  es.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data)
+      if (msg.event === 'INSERT') {
+        onMessage({ new: msg.data?.new as Record<string, unknown> })
+      }
+    } catch {
+      // Ignore parse errors (heartbeats, etc.)
+    }
+  }
 
   return () => {
-    supabase.removeChannel(channel)
+    es.close()
   }
 }
 
@@ -42,23 +44,21 @@ export function subscribeToChefNotifications(
   tenantId: string,
   onNotification: (payload: { new: Record<string, unknown> }) => void
 ) {
-  const supabase = createClient()
+  const channel = `notifications:${tenantId}`
+  const es = new EventSource(`/api/realtime/${encodeURIComponent(channel)}`)
 
-  const channel = supabase
-    .channel(`notifications:${tenantId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `tenant_id=eq.${tenantId}`,
-      },
-      onNotification
-    )
-    .subscribe()
+  es.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data)
+      if (msg.event === 'INSERT') {
+        onNotification({ new: msg.data?.new as Record<string, unknown> })
+      }
+    } catch {
+      // Ignore parse errors (heartbeats, etc.)
+    }
+  }
 
   return () => {
-    supabase.removeChannel(channel)
+    es.close()
   }
 }

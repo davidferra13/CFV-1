@@ -1,16 +1,40 @@
-// Real-Time Chat Subscriptions
-// Uses Supabase Realtime for message delivery, typing indicators, and presence
+// Real-Time Chat Subscriptions (SSE-based)
+// Uses Server-Sent Events for message delivery, typing indicators, and presence
 // Client-side only - used in 'use client' components
 
-import { createClient } from '@/lib/supabase/client'
+'use client'
+
 import type { ChatMessage } from './types'
 
-function getSupabaseClient() {
-  return createClient()
+// ============================================
+// Helper: create an EventSource subscription
+// ============================================
+
+function createSSESubscription<T>(
+  channel: string,
+  eventFilter: string,
+  onData: (record: T) => void
+): () => void {
+  const es = new EventSource(`/api/realtime/${encodeURIComponent(channel)}`)
+
+  es.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data)
+      if (msg.event === eventFilter) {
+        onData(msg.data?.new as T)
+      }
+    } catch {
+      // Ignore parse errors (heartbeats, etc.)
+    }
+  }
+
+  return () => {
+    es.close()
+  }
 }
 
 // ============================================
-// MESSAGE SUBSCRIPTIONS (postgres_changes)
+// MESSAGE SUBSCRIPTIONS
 // ============================================
 
 /**
@@ -21,27 +45,7 @@ export function subscribeToChatMessages(
   conversationId: string,
   onMessage: (message: ChatMessage) => void
 ): () => void {
-  const supabase = getSupabaseClient()
-
-  const channel = supabase
-    .channel(`chat:${conversationId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'chat_messages',
-        filter: `conversation_id=eq.${conversationId}`,
-      },
-      (payload) => {
-        onMessage(payload.new as ChatMessage)
-      }
-    )
-    .subscribe()
-
-  return () => {
-    supabase.removeChannel(channel)
-  }
+  return createSSESubscription<ChatMessage>(`chat_messages:${conversationId}`, 'INSERT', onMessage)
 }
 
 /**
@@ -52,31 +56,15 @@ export function subscribeToInboxUpdates(
   tenantId: string,
   onUpdate: (conversation: Record<string, unknown>) => void
 ): () => void {
-  const supabase = getSupabaseClient()
-
-  const channel = supabase
-    .channel(`inbox:${tenantId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'conversations',
-        filter: `tenant_id=eq.${tenantId}`,
-      },
-      (payload) => {
-        onUpdate(payload.new)
-      }
-    )
-    .subscribe()
-
-  return () => {
-    supabase.removeChannel(channel)
-  }
+  return createSSESubscription<Record<string, unknown>>(
+    `conversations:${tenantId}`,
+    'UPDATE',
+    onUpdate
+  )
 }
 
 // ============================================
-// TYPING INDICATORS (Broadcast - ephemeral)
+// TYPING INDICATORS (SSE + REST)
 // ============================================
 
 export interface TypingState {
@@ -95,39 +83,42 @@ export function createTypingIndicator(
   currentUserName: string,
   onTypingChange: (state: TypingState) => void
 ) {
-  const supabase = getSupabaseClient()
+  const es = new EventSource(`/api/realtime/${encodeURIComponent(`typing:chat:${conversationId}`)}`)
 
-  const channel = supabase.channel(`typing:${conversationId}`, {
-    config: { broadcast: { self: false } },
-  })
-
-  channel
-    .on('broadcast', { event: 'typing' }, (payload) => {
-      onTypingChange(payload.payload as TypingState)
-    })
-    .subscribe()
+  es.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data)
+      if (msg.event === 'typing') {
+        onTypingChange(msg.data as TypingState)
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }
 
   const sendTyping = (isTyping: boolean) => {
-    channel.send({
-      type: 'broadcast',
-      event: 'typing',
-      payload: {
+    fetch('/api/realtime/typing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        channel: `chat:${conversationId}`,
         userId: currentUserId,
-        userName: currentUserName,
         isTyping,
-      },
+      }),
+    }).catch(() => {
+      // Non-blocking side effect
     })
   }
 
   const unsubscribe = () => {
-    supabase.removeChannel(channel)
+    es.close()
   }
 
   return { sendTyping, unsubscribe }
 }
 
 // ============================================
-// PRESENCE (Online/Offline)
+// PRESENCE (Online/Offline via SSE + REST)
 // ============================================
 
 /**
@@ -139,28 +130,57 @@ export function subscribeToPresence(
   userId: string,
   onPresenceChange: (onlineUserIds: string[]) => void
 ): () => void {
-  const supabase = getSupabaseClient()
+  const sessionId = `${userId}:${Date.now()}`
+  let heartbeatInterval: ReturnType<typeof setInterval> | null = null
 
-  const channel = supabase.channel(`presence:${conversationId}`)
+  // POST presence heartbeat
+  function sendPresence() {
+    fetch('/api/realtime/presence', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        channel: `chat:${conversationId}`,
+        sessionId,
+        data: { userId, online_at: new Date().toISOString() },
+      }),
+    }).catch(() => {
+      // Non-blocking side effect
+    })
+  }
 
-  channel.on('presence', { event: 'sync' }, () => {
-    const state = channel.presenceState()
-    const onlineUserIds = Object.values(state)
-      .flat()
-      .map((p: any) => p.userId as string)
-    onPresenceChange(onlineUserIds)
-  })
+  // Listen for presence state via SSE
+  const es = new EventSource(
+    `/api/realtime/${encodeURIComponent(`presence:chat:${conversationId}`)}`
+  )
 
-  channel.subscribe(async (status) => {
-    if (status === 'SUBSCRIBED') {
-      await channel.track({
-        userId,
-        online_at: new Date().toISOString(),
-      })
+  es.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data)
+      if (
+        msg.event === 'presence_sync' ||
+        msg.event === 'presence_join' ||
+        msg.event === 'presence_leave'
+      ) {
+        const state = msg.data
+        // Extract online user IDs from the presence state
+        const onlineUserIds = Object.values(state)
+          .map((p: any) => p?.userId as string)
+          .filter(Boolean)
+        onPresenceChange(onlineUserIds)
+      }
+    } catch {
+      // Ignore parse errors
     }
-  })
+  }
+
+  // Start heartbeat on open
+  es.onopen = () => {
+    sendPresence()
+    heartbeatInterval = setInterval(sendPresence, 30000) // Every 30s
+  }
 
   return () => {
-    supabase.removeChannel(channel)
+    es.close()
+    if (heartbeatInterval) clearInterval(heartbeatInterval)
   }
 }

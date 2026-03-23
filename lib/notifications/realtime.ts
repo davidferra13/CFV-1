@@ -1,13 +1,10 @@
-// Real-Time Notification Subscriptions
-// Uses Supabase Realtime postgres_changes for live delivery
+// Real-Time Notification Subscriptions (SSE-based)
+// Uses Server-Sent Events for live notification delivery
 // Client-side only - used in 'use client' components
 
-import { createClient } from '@/lib/supabase/client'
-import type { Notification } from './types'
+'use client'
 
-function getSupabaseClient() {
-  return createClient()
-}
+import type { Notification } from './types'
 
 /**
  * Subscribe to new notifications for a specific user.
@@ -17,25 +14,20 @@ export function subscribeToNotifications(
   recipientId: string,
   onNotification: (notification: Notification) => void
 ): () => void {
-  const supabase = getSupabaseClient()
+  const es = new EventSource(`/api/realtime/${encodeURIComponent(`notifications:${recipientId}`)}`)
 
-  const channel = supabase
-    .channel(`notifications:${recipientId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: `recipient_id=eq.${recipientId}`,
-      },
-      (payload) => {
-        onNotification(payload.new as Notification)
+  es.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data)
+      if (msg.event === 'INSERT') {
+        onNotification(msg.data?.new as Notification)
       }
-    )
-    .subscribe()
+    } catch {
+      // Ignore parse errors (heartbeats, etc.)
+    }
+  }
 
   return () => {
-    supabase.removeChannel(channel)
+    es.close()
   }
 }

@@ -1,9 +1,9 @@
 /**
- * Supabase Realtime subscription hooks
- * Item #46: Realtime Subscriptions / WebSockets
+ * Realtime subscription hooks (SSE-based)
+ * Item #46: Realtime Subscriptions
  *
- * Provides React hooks for live data updates via Supabase Realtime.
- * Uses Supabase's Postgres Changes API (Broadcast + Presence available for chat).
+ * Provides React hooks for live data updates via Server-Sent Events.
+ * Replaces Supabase Realtime postgres_changes with SSE infrastructure.
  *
  * Key events supported:
  *   - Event status changes (FSM transitions)
@@ -20,17 +20,10 @@
 
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import type { RealtimeChannel } from '@supabase/supabase-js'
+import { useRef } from 'react'
+import { useSSE } from '@/lib/realtime/sse-client'
 
-// ─── Supabase browser client (singleton per page) ────────────────────────────
-
-function getSupabaseBrowserClient() {
-  return createClient()
-}
-
-// ─── Event status subscription ───────────────────────────────────────────────
+// ---- Event status subscription ----
 
 /**
  * Subscribes to realtime status changes for a specific event.
@@ -46,44 +39,24 @@ export function useEventStatusSubscription(
   eventId: string | null,
   onStatusChange: (newStatus: string, oldStatus: string) => void
 ) {
-  const channelRef = useRef<RealtimeChannel | null>(null)
   const callbackRef = useRef(onStatusChange)
   callbackRef.current = onStatusChange
 
-  useEffect(() => {
-    if (!eventId) return
-
-    const supabase = getSupabaseBrowserClient()
-    const channel = supabase
-      .channel(`event-status:${eventId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'events',
-          filter: `id=eq.${eventId}`,
-        },
-        (payload) => {
-          const newRecord = payload.new as { status?: string }
-          const oldRecord = payload.old as { status?: string }
-          if (newRecord.status && newRecord.status !== oldRecord.status) {
-            callbackRef.current(newRecord.status, oldRecord.status ?? '')
-          }
+  useSSE(`events:${eventId}`, {
+    enabled: !!eventId,
+    onMessage: (msg) => {
+      if (msg.event === 'UPDATE') {
+        const newRecord = msg.data?.new as { status?: string } | undefined
+        const oldRecord = msg.data?.old as { status?: string } | undefined
+        if (newRecord?.status && newRecord.status !== oldRecord?.status) {
+          callbackRef.current(newRecord.status, oldRecord?.status ?? '')
         }
-      )
-      .subscribe()
-
-    channelRef.current = channel
-
-    return () => {
-      supabase.removeChannel(channel)
-      channelRef.current = null
-    }
-  }, [eventId])
+      }
+    },
+  })
 }
 
-// ─── Notification subscription ────────────────────────────────────────────────
+// ---- Notification subscription ----
 
 export interface RealtimeNotification {
   id: string
@@ -111,33 +84,17 @@ export function useNotificationSubscription(
   const callbackRef = useRef(onNotification)
   callbackRef.current = onNotification
 
-  useEffect(() => {
-    if (!tenantId) return
-
-    const supabase = getSupabaseBrowserClient()
-    const channel = supabase
-      .channel(`notifications:${tenantId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `tenant_id=eq.${tenantId}`,
-        },
-        (payload) => {
-          callbackRef.current(payload.new as RealtimeNotification)
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [tenantId])
+  useSSE(`notifications:${tenantId}`, {
+    enabled: !!tenantId,
+    onMessage: (msg) => {
+      if (msg.event === 'INSERT') {
+        callbackRef.current(msg.data?.new as RealtimeNotification)
+      }
+    },
+  })
 }
 
-// ─── Chat message subscription ────────────────────────────────────────────────
+// ---- Chat message subscription ----
 
 export interface RealtimeMessage {
   id: string
@@ -164,33 +121,17 @@ export function useChatMessageSubscription(
   const callbackRef = useRef(onMessage)
   callbackRef.current = onMessage
 
-  useEffect(() => {
-    if (!conversationId) return
-
-    const supabase = getSupabaseBrowserClient()
-    const channel = supabase
-      .channel(`chat:${conversationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          callbackRef.current(payload.new as RealtimeMessage)
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [conversationId])
+  useSSE(`chat:${conversationId}`, {
+    enabled: !!conversationId,
+    onMessage: (msg) => {
+      if (msg.event === 'INSERT') {
+        callbackRef.current(msg.data?.new as RealtimeMessage)
+      }
+    },
+  })
 }
 
-// ─── Activity feed subscription ───────────────────────────────────────────────
+// ---- Activity feed subscription ----
 
 /**
  * Subscribes to new chef activity log entries for a tenant.
@@ -205,38 +146,22 @@ export function useActivityFeedSubscription(tenantId: string | null, onActivity:
   const callbackRef = useRef(onActivity)
   callbackRef.current = onActivity
 
-  useEffect(() => {
-    if (!tenantId) return
-
-    const supabase = getSupabaseBrowserClient()
-    const channel = supabase
-      .channel(`activity:${tenantId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chef_activity_log',
-          filter: `tenant_id=eq.${tenantId}`,
-        },
-        () => {
-          callbackRef.current()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [tenantId])
+  useSSE(`activity:${tenantId}`, {
+    enabled: !!tenantId,
+    onMessage: (msg) => {
+      if (msg.event === 'INSERT') {
+        callbackRef.current()
+      }
+    },
+  })
 }
 
-// ─── Generic table subscription ───────────────────────────────────────────────
+// ---- Generic table subscription ----
 
 type RealtimeEvent = 'INSERT' | 'UPDATE' | 'DELETE'
 
 /**
- * Low-level hook for subscribing to any Postgres Changes event.
+ * Low-level hook for subscribing to any table change event via SSE.
  * Prefer the typed hooks above for specific use cases.
  */
 export function useTableSubscription<T extends Record<string, unknown>>(
@@ -252,37 +177,20 @@ export function useTableSubscription<T extends Record<string, unknown>>(
   const callbackRef = useRef(options.onData)
   callbackRef.current = options.onData
 
-  const { event, table, schema, filter } = options
-  const stableOptions = useCallback(
-    () => ({ event, table, schema, filter }),
-    [event, table, schema, filter]
-  )
+  // Derive channel from filter value if present, otherwise use channelName
+  const filterValue = options.filter?.split('=eq.')[1]
+  const sseChannel = filterValue ? `${options.table}:${filterValue}` : channelName
 
-  useEffect(() => {
-    const opts = stableOptions()
-    const supabase = getSupabaseBrowserClient()
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: opts.event as '*',
-          schema: opts.schema ?? 'public',
-          table: opts.table,
-          ...(opts.filter ? { filter: opts.filter } : {}),
-        },
-        (payload) => {
-          callbackRef.current({
-            new: payload.new as T,
-            old: payload.old as Partial<T>,
-            eventType: payload.eventType as RealtimeEvent,
-          })
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [channelName, stableOptions])
+  useSSE(sseChannel, {
+    onMessage: (msg) => {
+      const eventType = msg.event as RealtimeEvent
+      if (options.event === '*' || eventType === options.event) {
+        callbackRef.current({
+          new: msg.data?.new as T,
+          old: (msg.data?.old ?? {}) as Partial<T>,
+          eventType,
+        })
+      }
+    },
+  })
 }
