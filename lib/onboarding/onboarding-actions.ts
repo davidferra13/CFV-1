@@ -3,7 +3,7 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
-import { ONBOARDING_STEPS, type OnboardingStepKey } from './onboarding-constants'
+import { WIZARD_STEPS, type OnboardingStepKey } from './onboarding-constants'
 
 // ============================================
 // SERVER ACTIONS
@@ -95,14 +95,17 @@ export async function resetOnboarding() {
 export async function getOnboardingStatus() {
   const progress = await getOnboardingProgress()
 
-  const totalSteps = ONBOARDING_STEPS.length
-  const completed = progress.filter((p: any) => p.completed_at).length
-  const skipped = progress.filter((p: any) => p.skipped).length
+  // Count only against the 3 required wizard steps for banner/status purposes
+  const totalSteps = WIZARD_STEPS.length
+  const wizardKeys = new Set(WIZARD_STEPS.map((s) => s.key))
+  const wizardProgress = progress.filter((p: any) => wizardKeys.has(p.step_key))
+  const completed = wizardProgress.filter((p: any) => p.completed_at).length
+  const skipped = wizardProgress.filter((p: any) => p.skipped).length
   const percentComplete = Math.round((completed / totalSteps) * 100)
 
-  // Find the first step that hasn't been completed or skipped
+  // Find the first wizard step not yet completed or skipped
   const doneKeys = new Set(progress.map((p: any) => p.step_key))
-  const currentStep = ONBOARDING_STEPS.find((s) => !doneKeys.has(s.key))?.key ?? null
+  const currentStep = WIZARD_STEPS.find((s) => !doneKeys.has(s.key))?.key ?? null
 
   return {
     totalSteps,

@@ -649,6 +649,22 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
           value={fmt$(p.referralConversion.referralRevenueCents)}
         />
       </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard label="New Clients (Period)" value={p.clientAcquisition.newClientsThisPeriod} />
+        <StatCard
+          label="Cost Per Client (CAC)"
+          value={
+            p.clientAcquisition.totalMarketingSpendCents > 0
+              ? fmt$(p.clientAcquisition.cacCents)
+              : 'Not tracked'
+          }
+          sub={
+            p.clientAcquisition.totalMarketingSpendCents > 0
+              ? `${fmt$(p.clientAcquisition.totalMarketingSpendCents)} spend`
+              : 'Log marketing spend to enable'
+          }
+        />
+      </div>
       <Card className="p-6">
         <h3 className="font-semibold text-stone-200 mb-4">Revenue Concentration (Top 5 Clients)</h3>
         {p.revenueConcentration.top5Clients.length === 0 ? (

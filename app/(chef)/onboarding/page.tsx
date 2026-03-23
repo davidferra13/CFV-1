@@ -1,39 +1,32 @@
-import { getOnboardingStatus, getChefFullProfile } from '@/lib/chef/profile-actions'
-import { getConnectAccountStatus } from '@/lib/stripe/connect'
 import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard'
 import { OnboardingHub } from '@/components/onboarding/onboarding-hub'
+import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
+import { WIZARD_STEPS } from '@/lib/onboarding/onboarding-constants'
 
 export const metadata = { title: 'Setup | ChefFlow' }
 
-export default async function OnboardingPage({
-  searchParams,
-}: {
-  searchParams: { step?: string }
-}) {
-  const wizardDone = await getOnboardingStatus().catch(() => false)
+async function getWizardDone(tenantId: string): Promise<boolean> {
+  const supabase: any = createServerClient()
+  const { data } = await supabase
+    .from('onboarding_progress')
+    .select('step_key')
+    .eq('chef_id', tenantId)
+
+  if (!data || data.length === 0) return false
+  const doneKeys = new Set(data.map((r: any) => r.step_key))
+  return WIZARD_STEPS.every((s) => doneKeys.has(s.key))
+}
+
+export default async function OnboardingPage() {
+  const user = await requireChef()
+  const wizardDone = await getWizardDone(user.tenantId!).catch(() => false)
 
   if (!wizardDone) {
-    // First-time setup: profile + Stripe wizard
-    const [profile, connectStatus] = await Promise.all([
-      getChefFullProfile().catch(() => null),
-      getConnectAccountStatus().catch(() => ({
-        connected: false,
-        pending: false,
-        accountId: null,
-        chargesEnabled: false,
-        payoutsEnabled: false,
-      })),
-    ])
-
-    const stepParam = parseInt(searchParams?.step ?? '1', 10)
-    const initialStep = isNaN(stepParam) || stepParam < 1 ? 1 : Math.min(stepParam, 5)
-
-    return <OnboardingWizard {...({ profile, connectStatus, initialStep } as any)} />
+    return <OnboardingWizard />
   }
 
-  // Wizard done - show migration hub
   const progress = await getOnboardingProgress()
-
   return <OnboardingHub progress={progress} />
 }

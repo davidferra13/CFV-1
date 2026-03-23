@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { getOnboardingProgress, completeStep, skipStep } from '@/lib/onboarding/onboarding-actions'
-import { ONBOARDING_STEPS } from '@/lib/onboarding/onboarding-constants'
+import { WIZARD_STEPS } from '@/lib/onboarding/onboarding-constants'
 import { ProfileStep } from './onboarding-steps/profile-step'
-import { ServicesStep } from './onboarding-steps/services-step'
-import { FirstClientStep } from './onboarding-steps/first-client-step'
-import { PricingStep } from './onboarding-steps/pricing-step'
+import { ConnectGmailStep } from './onboarding-steps/connect-gmail-step'
 
 type ProgressEntry = {
   step_key: string
@@ -23,6 +21,13 @@ export function OnboardingWizard() {
 
   useEffect(() => {
     loadProgress()
+
+    // If returning from Gmail OAuth during onboarding, auto-complete the gmail step
+    const gmailFlag = sessionStorage.getItem('onboarding_gmail_step')
+    if (gmailFlag) {
+      sessionStorage.removeItem('onboarding_gmail_step')
+      completeStep('connect_gmail', { connected: true }).catch(() => {})
+    }
   }, [])
 
   async function loadProgress() {
@@ -31,7 +36,7 @@ export function OnboardingWizard() {
       setProgress(data as ProgressEntry[])
       // Find first incomplete step
       const doneKeys = new Set(data.map((p: ProgressEntry) => p.step_key))
-      const firstIncomplete = ONBOARDING_STEPS.findIndex((s) => !doneKeys.has(s.key))
+      const firstIncomplete = WIZARD_STEPS.findIndex((s) => !doneKeys.has(s.key))
       if (firstIncomplete === -1) {
         setIsComplete(true)
       } else {
@@ -43,7 +48,7 @@ export function OnboardingWizard() {
   }
 
   function handleComplete(data?: Record<string, unknown>) {
-    const stepKey = ONBOARDING_STEPS[currentIndex].key
+    const stepKey = WIZARD_STEPS[currentIndex].key
     const previousProgress = [...progress]
 
     // Optimistic update
@@ -72,7 +77,7 @@ export function OnboardingWizard() {
   }
 
   function handleSkip() {
-    const stepKey = ONBOARDING_STEPS[currentIndex].key
+    const stepKey = WIZARD_STEPS[currentIndex].key
     const previousProgress = [...progress]
 
     const newEntry: ProgressEntry = {
@@ -100,7 +105,7 @@ export function OnboardingWizard() {
   }
 
   function advanceStep() {
-    if (currentIndex >= ONBOARDING_STEPS.length - 1) {
+    if (currentIndex >= WIZARD_STEPS.length - 1) {
       setIsComplete(true)
     } else {
       setCurrentIndex((i) => i + 1)
@@ -117,7 +122,7 @@ export function OnboardingWizard() {
   }
 
   const completedCount = progress.filter((p) => p.completed_at).length
-  const percentComplete = Math.round((completedCount / ONBOARDING_STEPS.length) * 100)
+  const percentComplete = Math.round((completedCount / WIZARD_STEPS.length) * 100)
 
   if (isComplete) {
     return (
@@ -155,7 +160,7 @@ export function OnboardingWizard() {
     )
   }
 
-  const currentStep = ONBOARDING_STEPS[currentIndex]
+  const currentStep = WIZARD_STEPS[currentIndex]
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
@@ -167,7 +172,7 @@ export function OnboardingWizard() {
         </div>
 
         <nav className="space-y-1">
-          {ONBOARDING_STEPS.map((step, i) => {
+          {WIZARD_STEPS.map((step, i) => {
             const entry = progress.find((p) => p.step_key === step.key)
             const isDone = !!entry?.completed_at
             const isSkipped = !!entry?.skipped
@@ -229,7 +234,7 @@ export function OnboardingWizard() {
         <div className="border-b border-orange-200 bg-white/60 backdrop-blur-sm px-6 py-3">
           <div className="flex items-center justify-between text-sm text-gray-600 mb-1.5">
             <span>
-              Step {currentIndex + 1} of {ONBOARDING_STEPS.length}
+              Step {currentIndex + 1} of {WIZARD_STEPS.length}
             </span>
             <span>{percentComplete}% complete</span>
           </div>
@@ -271,20 +276,8 @@ export function OnboardingWizard() {
           {currentStep.key === 'profile' && (
             <ProfileStep onComplete={handleComplete} onSkip={handleSkip} />
           )}
-          {currentStep.key === 'services' && (
-            <ServicesStep onComplete={handleComplete} onSkip={handleSkip} />
-          )}
-          {currentStep.key === 'first_client' && (
-            <FirstClientStep onComplete={handleComplete} onSkip={handleSkip} />
-          )}
-          {currentStep.key === 'first_recipe' && (
-            <RedirectStep
-              title="Add your first recipe"
-              description="Add a signature dish from your repertoire. You can import recipes later too."
-              href="/recipes"
-              buttonLabel="Go to Recipes"
-              onSkip={handleSkip}
-            />
+          {currentStep.key === 'connect_gmail' && (
+            <ConnectGmailStep onComplete={handleComplete} onSkip={handleSkip} />
           )}
           {currentStep.key === 'first_event' && (
             <RedirectStep
@@ -292,27 +285,6 @@ export function OnboardingWizard() {
               description="Set up an upcoming event, dinner, or booking to see how ChefFlow manages your workflow."
               href="/events"
               buttonLabel="Go to Events"
-              onSkip={handleSkip}
-            />
-          )}
-          {currentStep.key === 'pricing' && (
-            <PricingStep onComplete={handleComplete} onSkip={handleSkip} />
-          )}
-          {currentStep.key === 'calendar' && (
-            <RedirectStep
-              title="Set your availability"
-              description="Define your working hours and days off so clients know when you're available."
-              href="/calendar"
-              buttonLabel="Go to Calendar"
-              onSkip={handleSkip}
-            />
-          )}
-          {currentStep.key === 'communication' && (
-            <RedirectStep
-              title="Communication preferences"
-              description="Configure how you receive inquiries and communicate with clients."
-              href="/settings"
-              buttonLabel="Go to Settings"
               onSkip={handleSkip}
             />
           )}
