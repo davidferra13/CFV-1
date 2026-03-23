@@ -772,21 +772,10 @@ export function ChefSidebar({
     })
   }
 
-  // Auto-open sub-menu for the active hub
+  // Auto-open sub-menu for the hub that contains the current route
   useEffect(() => {
     for (const item of visiblePrimaryItems) {
-      if (
-        item.subMenu &&
-        pathname.startsWith(
-          item.href === '/events' ||
-            item.href === '/clients' ||
-            item.href === '/culinary' ||
-            item.href === '/financials' ||
-            item.href === '/operations'
-            ? item.href
-            : '__never__'
-        )
-      ) {
+      if (item.subMenu && pathname.startsWith(item.href + '/')) {
         setOpenSubMenus((prev) => {
           if (prev.has(item.href)) return prev
           const next = new Set(prev)
@@ -1128,7 +1117,7 @@ export function ChefSidebar({
             <button
               type="button"
               onClick={() => setQuickCreateOpen((prev) => !prev)}
-              aria-expanded={quickCreateOpen}
+              aria-expanded={quickCreateOpen ? 'true' : 'false'}
               className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
             >
               <Plus className="w-4 h-4 text-stone-400" />
@@ -1216,7 +1205,7 @@ export function ChefSidebar({
             <button
               type="button"
               onClick={() => setSettingsOpen((prev) => !prev)}
-              aria-expanded={settingsOpen}
+              aria-expanded={settingsOpen ? 'true' : 'false'}
               className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
             >
               <span className="flex-1 text-left">Settings</span>

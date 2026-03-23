@@ -1,6 +1,8 @@
 // Chef Financials Hub Page
+// Hub tiles render immediately. Dashboard streams in via Suspense.
 
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
@@ -104,9 +106,7 @@ const sections = [
   },
 ]
 
-export default async function FinancialsPage() {
-  await requireChef()
-
+async function FinancialsDashboard() {
   const now = new Date()
   const [financials, ledgerEntries, monthlySummary, outstanding, revenueGoal, marketIncome] =
     await Promise.all([
@@ -119,18 +119,23 @@ export default async function FinancialsPage() {
     ])
 
   return (
-    <div className="space-y-10">
-      {/* Dashboard */}
-      <FinancialsClient
-        financials={financials}
-        ledgerEntries={ledgerEntries}
-        pendingPaymentsCents={outstanding.totalOutstandingCents}
-        monthlySummary={monthlySummary}
-        revenueGoal={revenueGoal}
-        marketIncome={marketIncome}
-      />
+    <FinancialsClient
+      financials={financials}
+      ledgerEntries={ledgerEntries}
+      pendingPaymentsCents={outstanding.totalOutstandingCents}
+      monthlySummary={monthlySummary}
+      revenueGoal={revenueGoal}
+      marketIncome={marketIncome}
+    />
+  )
+}
 
-      {/* Nav tiles */}
+export default async function FinancialsPage() {
+  await requireChef()
+
+  return (
+    <div className="space-y-10">
+      {/* Nav tiles render immediately */}
       {sections.map((section) => (
         <div key={section.heading}>
           <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-3">
@@ -159,6 +164,17 @@ export default async function FinancialsPage() {
           </div>
         </div>
       ))}
+
+      {/* Dashboard streams in separately */}
+      <Suspense
+        fallback={
+          <Card className="p-8 text-center">
+            <p className="text-stone-500 text-sm">Loading financial summary...</p>
+          </Card>
+        }
+      >
+        <FinancialsDashboard />
+      </Suspense>
     </div>
   )
 }

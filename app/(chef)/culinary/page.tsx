@@ -1,7 +1,8 @@
 // Culinary Hub Page
-// Landing page for the /culinary section - quick counts + nav tiles to every subsection.
+// Nav tiles render immediately. Stats stream in via Suspense.
 
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes } from '@/lib/recipes/actions'
@@ -21,7 +22,7 @@ const tiles = [
     icon: '📖',
   },
   {
-    href: '/culinary/menus',
+    href: '/menus',
     label: 'Menus',
     description: 'Event menus and reusable templates',
     icon: '🍽️',
@@ -52,9 +53,7 @@ const tiles = [
   },
 ]
 
-export default async function CulinaryHubPage() {
-  await requireChef()
-
+async function CulinaryStats() {
   const [recipes, menus, ingredients, vendors] = await Promise.all([
     getRecipes(),
     getMenus(),
@@ -72,28 +71,30 @@ export default async function CulinaryHubPage() {
   ]
 
   return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {stats.map((s) => (
+        <Card key={s.label}>
+          <CardContent className="pt-4 pb-4">
+            <p className="text-2xl font-bold text-stone-100">{s.value}</p>
+            <p className="text-sm text-stone-500 mt-0.5">{s.label}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )
+}
+
+export default async function CulinaryHubPage() {
+  await requireChef()
+
+  return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Culinary</h1>
         <p className="text-stone-500 mt-1">Recipes, menus, ingredients, costing, and suppliers</p>
       </div>
 
-      {/* Quick stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <Card key={s.label}>
-            <CardContent className="pt-4 pb-4">
-              <p className="text-2xl font-bold text-stone-100">{s.value}</p>
-              <p className="text-sm text-stone-500 mt-0.5">{s.label}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Price alerts */}
-      <PriceAlertsWidget />
-
-      {/* Nav tiles */}
+      {/* Nav tiles render immediately */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {tiles.map((tile) => (
           <Link key={tile.href} href={tile.href}>
@@ -113,6 +114,27 @@ export default async function CulinaryHubPage() {
           </Link>
         ))}
       </div>
+
+      {/* Stats stream in after tiles are visible */}
+      <Suspense
+        fallback={
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {['Recipes', 'Menus', 'Ingredients', 'Vendors'].map((label) => (
+              <Card key={label}>
+                <CardContent className="pt-4 pb-4">
+                  <div className="h-8 w-12 bg-stone-800 rounded animate-pulse mb-1" />
+                  <p className="text-sm text-stone-500">{label}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        }
+      >
+        <CulinaryStats />
+      </Suspense>
+
+      {/* Price alerts */}
+      <PriceAlertsWidget />
     </div>
   )
 }
