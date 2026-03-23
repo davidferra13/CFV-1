@@ -97,6 +97,8 @@ type NavItem = {
   adminOnly?: boolean
   coreFeature?: boolean
   hidden?: boolean
+  tier?: 'primary' | 'secondary'
+  subMenu?: Array<{ href: string; label: string }>
 }
 type NavSubItem = {
   href: string
@@ -120,22 +122,86 @@ type NavGroup = {
 }
 type PrimaryShortcutOption = NavItem & { context: string }
 
-// Primary hub links shown in the sidebar - 8 top-level destinations + admin.
-// Each item is a hub page that surfaces all sub-sections within that area.
-// The full shortcut pool (for Settings > Navigation customization and global search)
-// is still built from navGroups below, so nothing is lost - just moved off the sidebar.
-// coreFeature: true = shown in Focus Mode.
-// adminOnly items are hidden for non-admins.
+// Primary hub links shown in the sidebar.
+// tier: 'primary' = top section (core daily workflow), 'secondary' = below divider (specialty hubs)
+// subMenu: curated quick-access links shown in a collapsible drawer under the hub link
+// coreFeature: true = shown in Focus Mode
+// adminOnly items are hidden for non-admins
 export const standaloneTop: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, coreFeature: true },
-  { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true },
-  { href: '/events', label: 'Events', icon: CalendarDays, coreFeature: true },
-  { href: '/clients', label: 'Clients', icon: Users, coreFeature: true },
-  { href: '/culinary', label: 'Culinary', icon: ChefHat, coreFeature: true },
-  { href: '/financials', label: 'Finance', icon: DollarSign, coreFeature: true },
-  { href: '/operations', label: 'Operations', icon: Activity, coreFeature: true },
-  { href: '/growth', label: 'Growth', icon: TrendingUp, coreFeature: true },
-  { href: '/admin', label: 'Admin', icon: ShieldAlert, adminOnly: true },
+  {
+    href: '/dashboard',
+    label: 'Dashboard',
+    icon: LayoutDashboard,
+    coreFeature: true,
+    tier: 'primary',
+  },
+  { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true, tier: 'primary' },
+  {
+    href: '/events',
+    label: 'Events',
+    icon: CalendarDays,
+    coreFeature: true,
+    tier: 'primary',
+    subMenu: [
+      { href: '/events/new', label: 'New Event' },
+      { href: '/calendar', label: 'Calendar' },
+      { href: '/inquiries', label: 'Inquiries' },
+      { href: '/quotes', label: 'Quotes' },
+      { href: '/proposals', label: 'Proposals' },
+    ],
+  },
+  {
+    href: '/clients',
+    label: 'Clients',
+    icon: Users,
+    coreFeature: true,
+    tier: 'primary',
+    subMenu: [
+      { href: '/clients/new', label: 'Add Client' },
+      { href: '/clients/communication/follow-ups', label: 'Follow-Ups' },
+      { href: '/clients/insights/top-clients', label: 'Top Clients' },
+      { href: '/clients/loyalty', label: 'Loyalty' },
+    ],
+  },
+  {
+    href: '/culinary',
+    label: 'Culinary',
+    icon: ChefHat,
+    coreFeature: true,
+    tier: 'secondary',
+    subMenu: [
+      { href: '/culinary/recipes', label: 'Recipes' },
+      { href: '/menus', label: 'Menus' },
+      { href: '/culinary/costing', label: 'Costing' },
+      { href: '/culinary/prep', label: 'Prep' },
+    ],
+  },
+  {
+    href: '/financials',
+    label: 'Finance',
+    icon: DollarSign,
+    coreFeature: true,
+    tier: 'secondary',
+    subMenu: [
+      { href: '/finance/invoices', label: 'Invoices' },
+      { href: '/expenses', label: 'Expenses' },
+      { href: '/finance/reporting/profit-loss', label: 'Profit and Loss' },
+    ],
+  },
+  {
+    href: '/operations',
+    label: 'Operations',
+    icon: Activity,
+    coreFeature: true,
+    tier: 'secondary',
+    subMenu: [
+      { href: '/stations/daily-ops', label: 'Daily Ops' },
+      { href: '/staff', label: 'Staff' },
+      { href: '/tasks', label: 'Tasks' },
+    ],
+  },
+  { href: '/growth', label: 'Growth', icon: TrendingUp, coreFeature: true, tier: 'secondary' },
+  { href: '/admin', label: 'Admin', icon: ShieldAlert, adminOnly: true, tier: 'secondary' },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
