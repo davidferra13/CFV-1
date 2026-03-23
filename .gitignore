@@ -44,6 +44,9 @@ next-env.d.ts
 .tmp-*
 tmp_*
 
+# Local file storage (replaces Supabase Storage)
+/storage/
+
 # Supabase local development (Docker temp files)
 supabase/.temp/
 

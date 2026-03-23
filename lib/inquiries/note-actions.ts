@@ -300,6 +300,46 @@ export async function getRecipesForLinker(): Promise<RecipeSlim[]> {
 }
 
 // ============================================
+// ATTACHMENT UPLOAD
+// ============================================
+
+/**
+ * Upload an attachment for an inquiry note.
+ * Accepts FormData with a 'file' field. Returns the public URL and filename.
+ */
+export async function uploadInquiryNoteAttachment(
+  inquiryId: string,
+  formData: FormData
+): Promise<{ url: string; filename: string }> {
+  await requireChef()
+
+  const file = formData.get('file') as File | null
+  if (!file || !(file instanceof File)) {
+    throw new Error('No file provided')
+  }
+
+  const supabase: any = createServerClient()
+  const ext = file.name.split('.').pop() ?? 'bin'
+  const path = `${inquiryId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+
+  const arrayBuffer = await file.arrayBuffer()
+  const buffer = Buffer.from(arrayBuffer)
+
+  const { error } = await supabase.storage
+    .from('inquiry-note-attachments')
+    .upload(path, buffer, { contentType: file.type, upsert: false })
+
+  if (error) {
+    console.error('[uploadInquiryNoteAttachment] Upload error:', error)
+    throw new Error('Upload failed')
+  }
+
+  const { data: urlData } = supabase.storage.from('inquiry-note-attachments').getPublicUrl(path)
+
+  return { url: urlData.publicUrl, filename: file.name }
+}
+
+// ============================================
 // RECIPE LINK ACTIONS
 // ============================================
 

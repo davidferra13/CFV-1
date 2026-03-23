@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useRef, useTransition } from 'react'
-import { createHubMedia, getMediaUrl } from '@/lib/hub/media-actions'
+import { uploadHubMediaFile, getMediaUrl } from '@/lib/hub/media-actions'
 import { postHubMessage } from '@/lib/hub/message-actions'
-import { createBrowserClient } from '@supabase/ssr'
 
 interface HubFileShareProps {
   groupId: string
@@ -58,30 +57,11 @@ export function HubFileShare({ groupId, profileToken, onUploaded }: HubFileShare
 
     startTransition(async () => {
       try {
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
+        const fd = new FormData()
+        fd.append('file', file)
 
-        // Upload to storage
-        const ext = file.name.split('.').pop() ?? 'bin'
-        const path = `${groupId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('hub-media')
-          .upload(path, file, { contentType: file.type })
-
-        if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`)
-
-        // Record in database
-        await createHubMedia({
-          groupId,
-          profileToken,
-          storagePath: path,
-          filename: file.name,
-          contentType: file.type,
-          sizeBytes: file.size,
-        })
+        // Upload to storage and record in database via server action
+        const media = await uploadHubMediaFile(groupId, profileToken, fd)
 
         // Post a message with inline media for images, or text link for documents
         const icon = getFileIcon(file.type)
@@ -89,7 +69,7 @@ export function HubFileShare({ groupId, profileToken, onUploaded }: HubFileShare
 
         if (isImage) {
           // Get signed URL so the image renders inline in the chat
-          const signedUrl = await getMediaUrl(path)
+          const signedUrl = await getMediaUrl(media.storage_path)
           await postHubMessage({
             groupId,
             profileToken,

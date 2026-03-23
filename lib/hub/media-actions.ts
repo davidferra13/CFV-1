@@ -20,6 +20,46 @@ const UploadMediaSchema = z.object({
 })
 
 /**
+ * Upload a file to hub-media storage and record it in the database.
+ * Accepts FormData with a 'file' field. Returns the created HubMedia record.
+ */
+export async function uploadHubMediaFile(
+  groupId: string,
+  profileToken: string,
+  formData: FormData
+): Promise<HubMedia> {
+  const file = formData.get('file') as File | null
+  if (!file || !(file instanceof File)) {
+    throw new Error('No file provided')
+  }
+
+  const supabase = createServerClient({ admin: true })
+
+  const ext = file.name.split('.').pop() ?? 'bin'
+  const path = `${groupId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+
+  const arrayBuffer = await file.arrayBuffer()
+  const buffer = Buffer.from(arrayBuffer)
+
+  const { error: uploadError } = await supabase.storage
+    .from('hub-media')
+    .upload(path, buffer, { contentType: file.type })
+
+  if (uploadError) {
+    throw new Error(`Upload failed: ${uploadError.message}`)
+  }
+
+  return createHubMedia({
+    groupId,
+    profileToken,
+    storagePath: path,
+    filename: file.name,
+    contentType: file.type,
+    sizeBytes: file.size,
+  })
+}
+
+/**
  * Record a media upload in a hub group.
  * The actual file upload to Supabase Storage is handled client-side.
  */

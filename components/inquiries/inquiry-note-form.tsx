@@ -2,8 +2,8 @@
 
 import { useState, useRef } from 'react'
 import { Loader2, ImagePlus, X } from '@/components/ui/icons'
-import { createClient } from '@/lib/supabase/client'
 import type { InquiryNoteCategory } from '@/lib/inquiries/note-actions'
+import { uploadInquiryNoteAttachment } from '@/lib/inquiries/note-actions'
 
 const CATEGORIES: { value: InquiryNoteCategory; label: string }[] = [
   { value: 'general', label: 'General' },
@@ -60,22 +60,13 @@ export function InquiryNoteForm({
     setUploadError(null)
 
     try {
-      const supabase = createClient()
-      const ext = file.name.split('.').pop()
-      const path = `${inquiryId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const fd = new FormData()
+      fd.append('file', file)
 
-      const { error } = await supabase.storage
-        .from('inquiry-note-attachments')
-        .upload(path, file, { upsert: false })
+      const result = await uploadInquiryNoteAttachment(inquiryId, fd)
 
-      if (error) {
-        throw new Error(error.message)
-      }
-
-      const { data: urlData } = supabase.storage.from('inquiry-note-attachments').getPublicUrl(path)
-
-      setAttachmentUrl(urlData.publicUrl)
-      setAttachmentFilename(file.name)
+      setAttachmentUrl(result.url)
+      setAttachmentFilename(result.filename)
     } catch (err) {
       setUploadError('Upload failed. Please try again.')
       console.error('[InquiryNoteForm] Upload error:', err)

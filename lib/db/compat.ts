@@ -1245,7 +1245,9 @@ class AuthCompat {
   }
 }
 
-// ─── Storage compat (stub for Phase 3) ───────────────────────────────────────
+// ─── Storage compat (local filesystem via lib/storage/) ──────────────────────
+
+import * as localStorage from '@/lib/storage'
 
 class StorageBucketCompat {
   private _bucket: string
@@ -1255,29 +1257,33 @@ class StorageBucketCompat {
   }
 
   async upload(
-    path: string,
+    filePath: string,
     file: Blob | Buffer | ArrayBuffer,
     options?: { contentType?: string; upsert?: boolean }
   ) {
-    // Phase 3 will implement local filesystem storage
-    console.warn(
-      `[compat] storage.upload called for ${this._bucket}/${path} - Phase 3 migration pending`
-    )
-    return { data: { path: `${this._bucket}/${path}` }, error: null }
+    try {
+      const result = await localStorage.upload(this._bucket, filePath, file as any, options)
+      return { data: { path: result ? result.path : filePath }, error: null }
+    } catch (err) {
+      return { data: null, error: { message: (err as any).message || 'Upload failed' } }
+    }
   }
 
   async remove(paths: string[]) {
-    console.warn(`[compat] storage.remove called for ${this._bucket} - Phase 3 migration pending`)
-    return { data: paths.map((p) => ({ name: p })), error: null }
+    try {
+      const results = await localStorage.remove(this._bucket, paths)
+      return { data: results, error: null }
+    } catch (err) {
+      return { data: null, error: { message: (err as any).message || 'Remove failed' } }
+    }
   }
 
-  async createSignedUrl(path: string, expiresIn: number) {
-    console.warn(
-      `[compat] storage.createSignedUrl called for ${this._bucket}/${path} - Phase 3 migration pending`
-    )
-    return {
-      data: { signedUrl: `/api/storage/${this._bucket}/${path}?expires=${expiresIn}` },
-      error: null,
+  async createSignedUrl(filePath: string, expiresIn: number) {
+    try {
+      const signedUrl = localStorage.getSignedUrl(this._bucket, filePath, expiresIn)
+      return { data: { signedUrl }, error: null }
+    } catch (err) {
+      return { data: null, error: { message: (err as any).message || 'Signed URL failed' } }
     }
   }
 
@@ -1285,38 +1291,54 @@ class StorageBucketCompat {
     return {
       data: paths.map((p) => ({
         path: p,
-        signedUrl: `/api/storage/${this._bucket}/${p}?expires=${expiresIn}`,
+        signedUrl: localStorage.getSignedUrl(this._bucket, p, expiresIn),
         error: null,
       })),
       error: null,
     }
   }
 
-  getPublicUrl(path: string) {
-    return { data: { publicUrl: `/api/storage/public/${this._bucket}/${path}` } }
+  getPublicUrl(filePath: string) {
+    return { data: { publicUrl: localStorage.getPublicUrl(this._bucket, filePath) } }
   }
 
   async list(
     prefix?: string,
     options?: { limit?: number; offset?: number; sortBy?: { column: string; order: string } }
   ) {
-    console.warn(
-      `[compat] storage.list called for ${this._bucket}/${prefix ?? ''} - Phase 3 migration pending`
-    )
-    return { data: [], error: null }
+    try {
+      const data = await localStorage.list(this._bucket, prefix, options)
+      return { data, error: null }
+    } catch (err) {
+      return { data: [], error: { message: (err as any).message || 'List failed' } }
+    }
   }
 
-  async download(path: string) {
-    console.warn(
-      `[compat] storage.download called for ${this._bucket}/${path} - Phase 3 migration pending`
-    )
-    return { data: null, error: { message: 'Storage migration pending (Phase 3)' } }
+  async download(filePath: string) {
+    try {
+      const data = await localStorage.download(this._bucket, filePath)
+      if (!data) return { data: null, error: { message: 'File not found' } }
+      return { data: new Blob([new Uint8Array(data)]), error: null }
+    } catch (err) {
+      return { data: null, error: { message: (err as any).message || 'Download failed' } }
+    }
   }
 }
 
 class StorageCompat {
   from(bucket: string): StorageBucketCompat {
     return new StorageBucketCompat(bucket)
+  }
+
+  async createBucket(
+    name: string,
+    options?: { public?: boolean; fileSizeLimit?: number; allowedMimeTypes?: string[] }
+  ) {
+    return localStorage.createBucket(name, options)
+  }
+
+  async listBuckets() {
+    return localStorage.listBuckets()
   }
 }
 

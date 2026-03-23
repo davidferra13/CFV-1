@@ -4,8 +4,7 @@
 import { useState, useEffect, useRef, useTransition, memo } from 'react'
 import { toast } from 'sonner'
 import type { HubMedia } from '@/lib/hub/types'
-import { createHubMedia, deleteHubMedia, getMediaUrl } from '@/lib/hub/media-actions'
-import { createClient } from '@/lib/supabase/client'
+import { uploadHubMediaFile, deleteHubMedia, getMediaUrl } from '@/lib/hub/media-actions'
 
 interface HubPhotoGalleryProps {
   groupId: string
@@ -29,24 +28,10 @@ export function HubPhotoGallery({ groupId, media, profileToken, canPost }: HubPh
 
     setUploading(true)
     try {
-      const supabase = createClient()
-      const ext = file.name.split('.').pop() ?? 'jpg'
-      const path = `${groupId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const fd = new FormData()
+      fd.append('file', file)
 
-      const { error: uploadError } = await supabase.storage
-        .from('hub-media')
-        .upload(path, file, { contentType: file.type })
-
-      if (uploadError) throw uploadError
-
-      const newMedia = await createHubMedia({
-        groupId,
-        profileToken,
-        storagePath: path,
-        filename: file.name,
-        contentType: file.type,
-        sizeBytes: file.size,
-      })
+      const newMedia = await uploadHubMediaFile(groupId, profileToken, fd)
 
       setItems((prev) => [newMedia, ...prev])
     } catch (err) {
