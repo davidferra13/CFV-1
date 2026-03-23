@@ -1,11 +1,11 @@
 // ClientPresenceMonitor - Full-page real-time client portal monitoring panel.
 // Expanded version of LivePresencePanel: shows engagement scores, entity context,
-// and a live activity stream. Subscribes to Supabase Realtime for instant updates.
+// and a live activity stream. Subscribes via SSE for instant updates.
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { useSSE } from '@/lib/realtime/sse-client'
 import type {
   ActiveClientWithContext,
   ActivityEvent,
@@ -116,117 +116,86 @@ export function ClientPresenceMonitor({
     new Map(initialClients.map((c) => [c.client_id, c.client_name]))
   )
 
-  useEffect(() => {
-    const supabase = createClient()
-
-    const channel = supabase
-      .channel(`client-presence-monitor:${tenantId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'activity_events',
-          filter: `tenant_id=eq.${tenantId}`,
-        },
-        (payload) => {
-          const row = payload.new as {
-            id: string
-            client_id: string | null
-            actor_type: string
-            event_type: string
-            entity_type: string | null
-            entity_id: string | null
-            metadata: Record<string, unknown> | null
-            created_at: string
-            tenant_id: string
-            actor_id: string
-          }
-
-          if (row.actor_type !== 'client' || !row.client_id) return
-
-          const clientId = row.client_id
-
-          function applyUpdate(resolvedName: string) {
-            const now = Date.now()
-
-            // Update the presence list
-            setClients((prev) => {
-              const stillVisible = prev.filter(
-                (c) => now - new Date(c.last_activity).getTime() < RECENT_WINDOW_MS
-              )
-              const existing = stillVisible.find((c) => c.client_id === clientId)
-              const updatedEntry: ActiveClientWithContext = existing
-                ? {
-                    ...existing,
-                    last_activity: row.created_at,
-                    event_type: row.event_type as ActivityEventType,
-                    entity_type: row.entity_type,
-                    last_entity_id: row.entity_id,
-                    metadata: row.metadata ?? undefined,
-                  }
-                : {
-                    client_id: clientId,
-                    client_name: resolvedName,
-                    last_activity: row.created_at,
-                    event_type: row.event_type as ActivityEventType,
-                    entity_type: row.entity_type,
-                    last_entity_id: row.entity_id,
-                    metadata: row.metadata ?? undefined,
-                    engagement_level: 'none',
-                    engagement_signals: [],
-                    entity_title: null,
-                  }
-
-              const withoutClient = stillVisible.filter((c) => c.client_id !== clientId)
-              return [updatedEntry, ...withoutClient].sort(
-                (a, b) => new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime()
-              )
-            })
-
-            // Prepend to the activity stream (if not a heartbeat)
-            if (!HIDDEN_FROM_STREAM.has(row.event_type)) {
-              const newEvent: ActivityEvent = {
-                id: row.id,
-                tenant_id: row.tenant_id,
-                actor_id: row.actor_id,
-                client_id: clientId,
-                actor_type: 'client',
-                event_type: row.event_type as ActivityEventType,
-                entity_type: row.entity_type,
-                entity_id: row.entity_id,
-                metadata: row.metadata ?? {},
-                created_at: row.created_at,
-              }
-              setStream((prev) =>
-                [{ event: newEvent, clientName: resolvedName }, ...prev].slice(0, MAX_STREAM_EVENTS)
-              )
-            }
-          }
-
-          const cachedName = clientNamesRef.current.get(clientId)
-          if (cachedName) {
-            applyUpdate(cachedName)
-          } else {
-            void (async () => {
-              const { data } = await supabase
-                .from('clients')
-                .select('full_name')
-                .eq('id', clientId)
-                .single()
-              const name = data?.full_name || 'Client'
-              if (name !== 'Client') clientNamesRef.current.set(clientId, name)
-              applyUpdate(name)
-            })()
-          }
-        }
-      )
-      .subscribe()
-
-    return () => {
-      void supabase.removeChannel(channel)
+  const handleMessage = useCallback((msg: { event: string; data: any }) => {
+    const row = msg.data as {
+      id: string
+      client_id: string | null
+      actor_type: string
+      event_type: string
+      entity_type: string | null
+      entity_id: string | null
+      metadata: Record<string, unknown> | null
+      created_at: string
+      tenant_id: string
+      actor_id: string
     }
-  }, [tenantId])
+
+    if (row.actor_type !== 'client' || !row.client_id) return
+
+    const clientId = row.client_id
+    const cachedName = clientNamesRef.current.get(clientId)
+    const resolvedName = cachedName || (row.metadata?.client_name as string) || 'Client'
+    if (resolvedName !== 'Client') {
+      clientNamesRef.current.set(clientId, resolvedName)
+    }
+
+    const now = Date.now()
+
+    // Update the presence list
+    setClients((prev) => {
+      const stillVisible = prev.filter(
+        (c) => now - new Date(c.last_activity).getTime() < RECENT_WINDOW_MS
+      )
+      const existing = stillVisible.find((c) => c.client_id === clientId)
+      const updatedEntry: ActiveClientWithContext = existing
+        ? {
+            ...existing,
+            last_activity: row.created_at,
+            event_type: row.event_type as ActivityEventType,
+            entity_type: row.entity_type,
+            last_entity_id: row.entity_id,
+            metadata: row.metadata ?? undefined,
+          }
+        : {
+            client_id: clientId,
+            client_name: resolvedName,
+            last_activity: row.created_at,
+            event_type: row.event_type as ActivityEventType,
+            entity_type: row.entity_type,
+            last_entity_id: row.entity_id,
+            metadata: row.metadata ?? undefined,
+            engagement_level: 'none',
+            engagement_signals: [],
+            entity_title: null,
+          }
+
+      const withoutClient = stillVisible.filter((c) => c.client_id !== clientId)
+      return [updatedEntry, ...withoutClient].sort(
+        (a, b) => new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime()
+      )
+    })
+
+    // Prepend to the activity stream (if not a heartbeat)
+    if (!HIDDEN_FROM_STREAM.has(row.event_type)) {
+      const newEvent: ActivityEvent = {
+        id: row.id,
+        tenant_id: row.tenant_id,
+        actor_id: row.actor_id,
+        client_id: clientId,
+        actor_type: 'client',
+        event_type: row.event_type as ActivityEventType,
+        entity_type: row.entity_type,
+        entity_id: row.entity_id,
+        metadata: row.metadata ?? {},
+        created_at: row.created_at,
+      }
+      setStream((prev) =>
+        [{ event: newEvent, clientName: resolvedName }, ...prev].slice(0, MAX_STREAM_EVENTS)
+      )
+    }
+  }, [])
+
+  useSSE(`activity_events:${tenantId}`, { onMessage: handleMessage })
 
   const onlineNow = clients.filter((c) => isOnlineNow(c.last_activity))
   const recentlyActive = clients.filter((c) => !isOnlineNow(c.last_activity))

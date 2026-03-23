@@ -1,10 +1,10 @@
 // LivePresencePanel - Real-time "who's online" panel for the chef dashboard.
-// Subscribes to activity_events Realtime and updates as clients browse the portal.
+// Subscribes to activity_events via SSE and updates as clients browse the portal.
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { useSSE } from '@/lib/realtime/sse-client'
 import type { ActiveClient, ActivityEventType } from '@/lib/activity/types'
 
 // Presence buckets
@@ -65,90 +65,55 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
     new Map(initialClients.map((c) => [c.client_id, c.client_name]))
   )
 
-  useEffect(() => {
-    const supabase = createClient()
-
-    const channel = supabase
-      .channel(`client-presence:${tenantId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'activity_events',
-          filter: `tenant_id=eq.${tenantId}`,
-        },
-        (payload) => {
-          const row = payload.new as {
-            client_id: string | null
-            actor_type: string
-            event_type: string
-            entity_type: string | null
-            entity_id: string | null
-            metadata: Record<string, unknown> | null
-            created_at: string
-          }
-
-          // Only care about client activity
-          if (row.actor_type !== 'client' || !row.client_id) return
-
-          const clientId = row.client_id
-
-          function applyPresenceUpdate(resolvedName: string) {
-            setClients((prev) => {
-              const now = Date.now()
-              // Remove clients older than RECENT_WINDOW_MS
-              const still_visible = prev.filter(
-                (c) => now - new Date(c.last_activity).getTime() < RECENT_WINDOW_MS
-              )
-              const updatedEntry: ActiveClient = {
-                client_id: clientId,
-                client_name: resolvedName,
-                last_activity: row.created_at,
-                event_type: row.event_type as ActivityEventType,
-                entity_type: row.entity_type,
-                last_entity_id: row.entity_id,
-                metadata: row.metadata ?? undefined,
-              }
-              const existingIndex = still_visible.findIndex((c) => c.client_id === clientId)
-              if (existingIndex >= 0) {
-                const next = [...still_visible]
-                next[existingIndex] = updatedEntry
-                return next.sort(
-                  (a, b) =>
-                    new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime()
-                )
-              }
-              return [updatedEntry, ...still_visible]
-            })
-          }
-
-          const cachedName = clientNamesRef.current.get(clientId)
-          if (cachedName) {
-            applyPresenceUpdate(cachedName)
-          } else {
-            // Client wasn't in the 30-minute seed window - look them up once, cache, then update
-            void (async () => {
-              const { data } = await supabase
-                .from('clients')
-                .select('full_name')
-                .eq('id', clientId)
-                .single()
-              const resolvedName = data?.full_name || 'Client'
-              if (resolvedName !== 'Client') {
-                clientNamesRef.current.set(clientId, resolvedName)
-              }
-              applyPresenceUpdate(resolvedName)
-            })()
-          }
-        }
-      )
-      .subscribe()
-
-    return () => {
-      void supabase.removeChannel(channel)
+  const handleMessage = useCallback((msg: { event: string; data: any }) => {
+    const row = msg.data as {
+      client_id: string | null
+      actor_type: string
+      event_type: string
+      entity_type: string | null
+      entity_id: string | null
+      metadata: Record<string, unknown> | null
+      created_at: string
     }
-  }, [tenantId])
+
+    // Only care about client activity
+    if (row.actor_type !== 'client' || !row.client_id) return
+
+    const clientId = row.client_id
+    const cachedName = clientNamesRef.current.get(clientId)
+    const resolvedName = cachedName || (row.metadata?.client_name as string) || 'Client'
+    if (resolvedName !== 'Client') {
+      clientNamesRef.current.set(clientId, resolvedName)
+    }
+
+    setClients((prev) => {
+      const now = Date.now()
+      // Remove clients older than RECENT_WINDOW_MS
+      const still_visible = prev.filter(
+        (c) => now - new Date(c.last_activity).getTime() < RECENT_WINDOW_MS
+      )
+      const updatedEntry: ActiveClient = {
+        client_id: clientId,
+        client_name: resolvedName,
+        last_activity: row.created_at,
+        event_type: row.event_type as ActivityEventType,
+        entity_type: row.entity_type,
+        last_entity_id: row.entity_id,
+        metadata: row.metadata ?? undefined,
+      }
+      const existingIndex = still_visible.findIndex((c) => c.client_id === clientId)
+      if (existingIndex >= 0) {
+        const next = [...still_visible]
+        next[existingIndex] = updatedEntry
+        return next.sort(
+          (a, b) => new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime()
+        )
+      }
+      return [updatedEntry, ...still_visible]
+    })
+  }, [])
+
+  useSSE(`activity_events:${tenantId}`, { onMessage: handleMessage })
 
   const onlineNow = clients.filter((c) => isOnlineNow(c.last_activity))
   const recentlyActive = clients.filter((c) => !isOnlineNow(c.last_activity))

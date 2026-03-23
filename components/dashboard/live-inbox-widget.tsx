@@ -3,11 +3,11 @@
 // Live Inbox Widget - Real-time message feed on dashboard
 // Shows unread messages with inline reply capability
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useTransition, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import { createBrowserClient } from '@supabase/ssr'
+import { useSSE } from '@/lib/realtime/sse-client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Mail, MessageSquare, CheckCircle } from '@/components/ui/icons'
@@ -42,34 +42,13 @@ export function LiveInboxWidget({ initialItems, tenantId }: Props) {
 
   const unreadCount = items.filter((m) => !m.is_read).length
 
-  // Real-time subscription for new inbox items
-  useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+  // Real-time subscription for new inbox items via SSE
+  const handleInboxMessage = useCallback((msg: { event: string; data: any }) => {
+    const newItem = msg.data as UnifiedInboxItem
+    setItems((prev) => [newItem, ...prev.slice(0, 7)])
+  }, [])
 
-    const channel = supabase
-      .channel('inbox-dashboard')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'unified_inbox',
-          filter: `tenant_id=eq.${tenantId}`,
-        },
-        (payload) => {
-          const newItem = payload.new as UnifiedInboxItem
-          setItems((prev) => [newItem, ...prev.slice(0, 7)])
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [tenantId])
+  useSSE(`unified_inbox:${tenantId}`, { onMessage: handleInboxMessage })
 
   async function handleReply(item: UnifiedInboxItem) {
     if (!replyText.trim() || !item.conversation_id) return

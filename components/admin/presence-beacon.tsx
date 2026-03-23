@@ -1,12 +1,10 @@
 'use client'
 
-// Presence Beacon - silently broadcasts authenticated portal presence to the
-// site:presence Realtime channel for internal live-ops views.
+// Presence Beacon - silently broadcasts authenticated portal presence via
+// periodic SSE presence POST calls for internal live-ops views.
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export interface PresencePayload {
   sessionId: string
@@ -19,7 +17,7 @@ export interface PresencePayload {
   referrer: string
 }
 
-const CHANNEL_NAME = 'site:presence'
+const HEARTBEAT_INTERVAL_MS = 30_000 // 30 seconds
 
 function generateId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -57,56 +55,56 @@ function getJoinedAt(): string {
 
 export function PresenceBeacon() {
   const pathname = usePathname()
-  const channelRef = useRef<RealtimeChannel | null>(null)
   const sessionIdRef = useRef<string>(getOrCreateSessionId())
   const joinedAtRef = useRef<string>(getJoinedAt())
+  const pathnameRef = useRef(pathname)
 
+  // Keep pathname ref current
   useEffect(() => {
-    const supabase = createClient()
-    const channel = supabase.channel(CHANNEL_NAME)
-    channelRef.current = channel
+    pathnameRef.current = pathname
+  }, [pathname])
 
-    channel.subscribe(async (status) => {
-      if (status !== 'SUBSCRIBED') return
-
-      await channel.track({
-        sessionId: sessionIdRef.current,
-        userId: null,
-        email: null,
-        role: 'authenticated',
-        page: pathname ?? '/',
-        joinedAt: joinedAtRef.current,
-        userAgent: navigator.userAgent.slice(0, 150),
-        referrer: document.referrer || '',
-      } satisfies PresencePayload)
-    })
-
-    return () => {
-      channelRef.current = null
-      supabase.removeChannel(channel)
+  const sendPresence = useCallback(() => {
+    const data: PresencePayload = {
+      sessionId: sessionIdRef.current,
+      userId: null,
+      email: null,
+      role: 'authenticated',
+      page: pathnameRef.current ?? '/',
+      joinedAt: joinedAtRef.current,
+      userAgent: navigator.userAgent.slice(0, 150),
+      referrer: document.referrer || '',
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    fetch('/api/realtime/presence', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        channel: 'site',
+        sessionId: sessionIdRef.current,
+        data,
+      }),
+    }).catch(() => {
+      // Ignore presence errors silently
+    })
   }, [])
 
+  // Send initial presence and start heartbeat
   useEffect(() => {
-    const channel = channelRef.current
-    if (!channel) return
+    sendPresence()
 
-    channel
-      .track({
-        sessionId: sessionIdRef.current,
-        userId: null,
-        email: null,
-        role: 'authenticated',
-        page: pathname ?? '/',
-        joinedAt: joinedAtRef.current,
-        userAgent: navigator.userAgent.slice(0, 150),
-        referrer: document.referrer || '',
-      } satisfies PresencePayload)
-      .catch(() => {
-        // ignore track errors (channel may not be subscribed yet)
-      })
-  }, [pathname])
+    const interval = setInterval(sendPresence, HEARTBEAT_INTERVAL_MS)
+
+    return () => {
+      clearInterval(interval)
+      // On unmount, connection close signals offline (server handles cleanup)
+    }
+  }, [sendPresence])
+
+  // Send updated presence when pathname changes
+  useEffect(() => {
+    sendPresence()
+  }, [pathname, sendPresence])
 
   return null
 }

@@ -1,14 +1,11 @@
 'use client'
 
 // Admin Real-Time Presence Panel
-// Subscribes to site:presence Realtime channel and shows all active visitors live.
+// Subscribes to site:presence SSE channel and shows all active visitors live.
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import type { RealtimeChannel } from '@supabase/supabase-js'
+import { useSSEPresence } from '@/lib/realtime/sse-client'
 import type { PresencePayload } from './presence-beacon'
-
-const CHANNEL_NAME = 'site:presence'
 
 interface SessionEntry extends PresencePayload {
   presenceRef: string
@@ -36,17 +33,15 @@ function RoleBadge({ role }: { role: 'authenticated' | 'anonymous' }) {
   )
 }
 
-function parsePresenceState(state: Record<string, unknown[]>): SessionEntry[] {
+function parsePresenceState(state: Record<string, any>): SessionEntry[] {
   const now = Date.now()
   const entries: SessionEntry[] = []
 
-  Object.entries(state).forEach(([presenceRef, presences]) => {
-    presences.forEach((p) => {
-      const payload = p as PresencePayload
-      const joinedMs = payload.joinedAt ? new Date(payload.joinedAt).getTime() : now
-      const durationSeconds = Math.floor((now - joinedMs) / 1000)
-      entries.push({ ...payload, presenceRef, durationSeconds })
-    })
+  Object.entries(state).forEach(([sessionId, data]) => {
+    const payload = data as PresencePayload
+    const joinedMs = payload.joinedAt ? new Date(payload.joinedAt).getTime() : now
+    const durationSeconds = Math.floor((now - joinedMs) / 1000)
+    entries.push({ ...payload, presenceRef: sessionId, durationSeconds })
   })
 
   // Sort by joinedAt descending (most recent first)
@@ -69,33 +64,13 @@ export function AdminPresencePanel() {
     return () => clearInterval(interval)
   }, [])
 
+  const { presenceState } = useSSEPresence('site')
+
+  // Update sessions whenever presenceState changes
   useEffect(() => {
-    const supabase = createClient()
-    let channel: RealtimeChannel
-
-    channel = supabase
-      .channel(CHANNEL_NAME)
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState() as Record<string, unknown[]>
-        const parsed = parsePresenceState(state)
-        setSessions(parsed)
-      })
-      .on('presence', { event: 'join' }, () => {
-        const state = channel.presenceState() as Record<string, unknown[]>
-        const parsed = parsePresenceState(state)
-        setSessions(parsed)
-      })
-      .on('presence', { event: 'leave' }, () => {
-        const state = channel.presenceState() as Record<string, unknown[]>
-        const parsed = parsePresenceState(state)
-        setSessions(parsed)
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
+    const parsed = parsePresenceState(presenceState)
+    setSessions(parsed)
+  }, [presenceState])
 
   // Update durations every tick
   const displaySessions = sessions
@@ -232,8 +207,8 @@ export function AdminPresencePanel() {
       </div>
 
       <p className="text-xs text-slate-400 text-center">
-        Updates in real-time via Supabase Realtime presence. Sessions disappear automatically when a
-        tab is closed.
+        Updates in real-time via SSE presence. Sessions disappear automatically when a tab is
+        closed.
       </p>
     </div>
   )
