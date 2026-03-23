@@ -57,6 +57,15 @@ type UpsertOptions = {
 const IDENT_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/
 
 function assertIdent(name: string): string {
+  // Allow table-qualified names like "chef_preferences.network_discoverable"
+  if (name.includes('.')) {
+    name.split('.').forEach((part) => {
+      if (!IDENT_RE.test(part)) {
+        throw new Error(`Invalid SQL identifier: ${name}`)
+      }
+    })
+    return name
+  }
   if (!IDENT_RE.test(name)) {
     throw new Error(`Invalid SQL identifier: ${name}`)
   }
@@ -65,6 +74,12 @@ function assertIdent(name: string): string {
 
 function quoteIdent(name: string): string {
   assertIdent(name)
+  if (name.includes('.')) {
+    return name
+      .split('.')
+      .map((p) => `"${p}"`)
+      .join('.')
+  }
   return `"${name}"`
 }
 
@@ -114,10 +129,10 @@ function parseSelectString(select: string): ParsedSelect {
   for (const token of tokens) {
     // Check for nested select: table(col1, col2) or alias:table(col1, col2)
     const nestedMatch = token.match(
-      /^(?:([a-zA-Z_][a-zA-Z0-9_]*):)?([a-zA-Z_][a-zA-Z0-9_]*)\((.+)\)$/
+      /^(?:([a-zA-Z_][a-zA-Z0-9_]*):)?([a-zA-Z_][a-zA-Z0-9_]*)(?:!(inner|left))?\((.+)\)$/
     )
     if (nestedMatch) {
-      const [, alias, table, innerCols] = nestedMatch
+      const [, alias, table, joinHint, innerCols] = nestedMatch
       const columns = innerCols.split(',').map((c) => c.trim())
       joins.push({
         alias: alias || null,
@@ -615,6 +630,12 @@ class QueryBuilder<T = any> {
 
   // ── WHERE clause builder ────────────────────────────────────────────────
 
+  /** Qualify a column: if already table-qualified (has dot), quote as-is; otherwise prefix with this._table */
+  private qualifyColumn(col: string): string {
+    if (col.includes('.')) return quoteIdent(col)
+    return `${quoteIdent(this._table)}.${quoteIdent(col)}`
+  }
+
   private buildWhere(startParamIdx: number = 1): { sql: string; params: unknown[] } {
     if (this._filters.length === 0) return { sql: '', params: [] }
 
@@ -625,57 +646,53 @@ class QueryBuilder<T = any> {
     for (const f of this._filters) {
       switch (f.type) {
         case 'eq':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} = $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} = $${idx++}`)
           params.push(f.value)
           break
         case 'neq':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} != $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} != $${idx++}`)
           params.push(f.value)
           break
         case 'gt':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} > $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} > $${idx++}`)
           params.push(f.value)
           break
         case 'gte':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} >= $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} >= $${idx++}`)
           params.push(f.value)
           break
         case 'lt':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} < $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} < $${idx++}`)
           params.push(f.value)
           break
         case 'lte':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} <= $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} <= $${idx++}`)
           params.push(f.value)
           break
         case 'like':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} LIKE $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} LIKE $${idx++}`)
           params.push(f.value)
           break
         case 'ilike':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} ILIKE $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} ILIKE $${idx++}`)
           params.push(f.value)
           break
         case 'not_like':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} NOT LIKE $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} NOT LIKE $${idx++}`)
           params.push(f.value)
           break
         case 'is':
           if (f.value === null) {
-            conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} IS NULL`)
+            conditions.push(`${this.qualifyColumn(f.column)} IS NULL`)
           } else {
-            conditions.push(
-              `${quoteIdent(this._table)}.${quoteIdent(f.column)} IS ${f.value ? 'TRUE' : 'FALSE'}`
-            )
+            conditions.push(`${this.qualifyColumn(f.column)} IS ${f.value ? 'TRUE' : 'FALSE'}`)
           }
           break
         case 'not_is':
           if (f.value === null) {
-            conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} IS NOT NULL`)
+            conditions.push(`${this.qualifyColumn(f.column)} IS NOT NULL`)
           } else {
-            conditions.push(
-              `${quoteIdent(this._table)}.${quoteIdent(f.column)} IS NOT ${f.value ? 'TRUE' : 'FALSE'}`
-            )
+            conditions.push(`${this.qualifyColumn(f.column)} IS NOT ${f.value ? 'TRUE' : 'FALSE'}`)
           }
           break
         case 'in':
@@ -683,9 +700,7 @@ class QueryBuilder<T = any> {
             conditions.push('FALSE')
           } else {
             const placeholders = f.values.map(() => `$${idx++}`).join(', ')
-            conditions.push(
-              `${quoteIdent(this._table)}.${quoteIdent(f.column)} IN (${placeholders})`
-            )
+            conditions.push(`${this.qualifyColumn(f.column)} IN (${placeholders})`)
             params.push(...f.values)
           }
           break
@@ -694,22 +709,20 @@ class QueryBuilder<T = any> {
             conditions.push('TRUE')
           } else {
             const placeholders = f.values.map(() => `$${idx++}`).join(', ')
-            conditions.push(
-              `${quoteIdent(this._table)}.${quoteIdent(f.column)} NOT IN (${placeholders})`
-            )
+            conditions.push(`${this.qualifyColumn(f.column)} NOT IN (${placeholders})`)
             params.push(...f.values)
           }
           break
         case 'contains':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} @> $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} @> $${idx++}`)
           params.push(typeof f.value === 'string' ? f.value : JSON.stringify(f.value))
           break
         case 'containedBy':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} <@ $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} <@ $${idx++}`)
           params.push(typeof f.value === 'string' ? f.value : JSON.stringify(f.value))
           break
         case 'overlaps':
-          conditions.push(`${quoteIdent(this._table)}.${quoteIdent(f.column)} && $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column)} && $${idx++}`)
           params.push(f.value)
           break
         case 'or':

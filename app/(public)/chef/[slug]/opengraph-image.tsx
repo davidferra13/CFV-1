@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 export const alt = 'Chef Profile | ChefFlow'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
