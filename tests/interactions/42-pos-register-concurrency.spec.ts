@@ -1,23 +1,14 @@
 import { existsSync } from 'fs'
 import { test, expect } from '../helpers/fixtures'
 import type { Page } from '@playwright/test'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const HAS_CHEF_STATE = existsSync('.auth/chef.json')
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 test.use({ trace: 'off' })
 
 function getAdminClient() {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY for concurrency test'
-    )
-  }
-  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  return createAdminClient()
 }
 
 async function safeCloseContext(context: { close: () => Promise<void> }) {

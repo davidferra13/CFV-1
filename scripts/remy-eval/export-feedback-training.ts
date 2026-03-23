@@ -12,7 +12,7 @@
  * Output: scripts/remy-eval/training-data/remy-feedback-export.jsonl
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { writeFileSync, mkdirSync } from 'fs'
 import { resolve } from 'path'
 
@@ -35,18 +35,7 @@ interface ShareGPTConversation {
 const REMY_SYSTEM_PROMPT = `You are Remy, a seasoned kitchen veteran AI concierge for ChefFlow. You help private chefs manage their business: revenue, clients, events, scheduling, communications, and operations. You're warm, direct, and food-first. Kitchen metaphors come naturally. You NEVER generate recipes - that's the chef's creative domain. You celebrate wins, stay calm in chaos, and always back up your advice with real data.`
 
 async function main() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
-    console.error(
-      'Run with: npx tsx --env-file=.env.local scripts/remy-eval/export-feedback-training.ts'
-    )
-    process.exit(1)
-  }
-
-  const supabase = createClient(supabaseUrl, supabaseKey)
+  const supabase = createAdminClient()
 
   console.log('Fetching positive Remy feedback...')
 

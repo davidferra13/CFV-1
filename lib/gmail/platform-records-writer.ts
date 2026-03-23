@@ -3,11 +3,10 @@
 // alongside legacy inquiry.external_* fields. This enables incremental migration to the new
 // marketplace operating layer without breaking existing reads.
 
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
 import { getMarketplacePlatform } from '@/lib/marketplace/platforms'
 
-type DbClient = SupabaseClient<Database>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DbClient = { from: (table: string) => any; rpc: (...args: any[]) => any }
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

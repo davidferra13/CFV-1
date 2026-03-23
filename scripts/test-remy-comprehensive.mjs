@@ -8,7 +8,9 @@
 //   node scripts/test-remy-comprehensive.mjs --quick       # 1 test per task type (faster)
 
 import fs from 'fs'
-import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
+dotenv.config({ path: '.env.local' })
+import { createAnonClient } from './lib/supabase.mjs'
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -19,12 +21,6 @@ const QUICK_MODE = args.includes('--quick')
 const BASE_URL = `http://localhost:${PORT}`
 const PER_TEST_TIMEOUT_MS = 120_000 // 2 min per test
 const CONCURRENCY = 1 // sequential (Ollama is single-threaded)
-
-const env = fs.readFileSync('.env.local', 'utf8')
-const getEnv = (k) => {
-  const m = env.match(new RegExp(k + '=(.+)'))
-  return m ? m[1].trim() : ''
-}
 
 // ─── Test Definitions ────────────────────────────────────────────────────────
 // Each test: { cat, name, msg, expect, tier?, validate? }
@@ -353,9 +349,7 @@ const TESTS = [
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 async function authenticate() {
-  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL')
-  const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
-  const sb = createClient(supabaseUrl, supabaseKey)
+  const sb = createAnonClient()
 
   const { data, error } = await sb.auth.signInWithPassword({
     email: 'agent@chefflow.test',

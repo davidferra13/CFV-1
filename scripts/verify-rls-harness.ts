@@ -15,29 +15,18 @@
  * - 1: Any test FAIL
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { config } from 'dotenv'
 import { resolve } from 'path'
 
 // Load environment variables
 config({ path: resolve(__dirname, '../.env.local') })
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-// Validation
-if (!SUPABASE_URL || !ANON_KEY || !SERVICE_KEY) {
-  console.error('❌ FAIL: Missing environment variables')
-  console.error(
-    'Required: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY'
-  )
-  process.exit(1)
-}
-
-// Create clients
-const anonClient = createClient(SUPABASE_URL, ANON_KEY)
-const serviceClient = createClient(SUPABASE_URL, SERVICE_KEY)
+// NOTE: The compat layer bypasses RLS (direct DB). Both clients are admin-level.
+// RLS-specific tests that rely on anon vs service_role distinction will need
+// the original Supabase SDK if RLS enforcement testing is required.
+const anonClient = createAdminClient()
+const serviceClient = createAdminClient()
 
 // Test data IDs (deterministic UUIDs)
 const TENANT_A_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'

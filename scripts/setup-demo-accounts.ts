@@ -9,7 +9,7 @@
 //   ensureAuthUser → upsertChef → ensureChefRole → ensureChefPreferences
 //   ensureAuthUser → upsertClient → ensureClientRole
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { mkdirSync, writeFileSync } from 'fs'
 import dotenv from 'dotenv'
 
@@ -26,14 +26,8 @@ const DEMO_PARTNER_PASSWORD = 'DemoPartnerFlow!2026'
 const DEMO_CHEF_B_EMAIL = 'demo-chef-b@chefflow.test'
 const DEMO_CHEF_B_PASSWORD = 'DemoChefB!2026'
 
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`[demo-setup] Missing environment variable: ${name}`)
-  return value
-}
-
 async function ensureAuthUser(
-  admin: ReturnType<typeof createClient>,
+  admin: any,
   input: { email: string; password: string; metadata: Record<string, unknown> }
 ): Promise<string> {
   const { data: listed, error: listError } = await admin.auth.admin.listUsers({
@@ -68,15 +62,9 @@ async function ensureAuthUser(
 }
 
 async function main() {
-  const supabaseUrl = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-  const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
-
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  const admin = createAdminClient()
 
   console.log(`[demo-setup] Setting up demo accounts`)
-  console.log(`[demo-setup] Supabase: ${supabaseUrl}`)
 
   // ──────────────────────────────────────────────────────────────────────────
   // 1. Demo Chef

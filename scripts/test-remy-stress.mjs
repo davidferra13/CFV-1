@@ -13,18 +13,12 @@
  */
 
 import fs from 'fs';
-import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+import { createAnonClient } from './lib/supabase.mjs';
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 
-const env = fs.readFileSync('.env.local', 'utf8');
-const getEnv = (k) => {
-  const m = env.match(new RegExp(k + '=(.+)'));
-  return m ? m[1].trim() : '';
-};
-
-const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
-const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
 const projectRef = 'luefkpakzvxcsqroxyhz';
 
 const DELAY_BETWEEN_TESTS_MS = 6000; // 6s - rate limit is 12/min
@@ -37,7 +31,7 @@ let lastAuthTime = 0;
 let currentCookieStr = '';
 
 async function authenticate() {
-  const sb = createClient(supabaseUrl, supabaseKey);
+  const sb = createAnonClient();
   const { data, error } = await sb.auth.signInWithPassword({
     email: 'agent@chefflow.test',
     password: 'AgentChefFlow!2026',

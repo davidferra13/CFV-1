@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { executeFinalPurge } from '@/lib/compliance/account-deletion-actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabaseAdmin = createAdminClient()
 
 /**
  * Daily cron endpoint to purge accounts past their 30-day grace period.

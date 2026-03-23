@@ -1,21 +1,11 @@
 import { test, expect } from '../helpers/fixtures'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const BASE_URL = 'http://localhost:3100'
 const TRANSIENT_500_TEXT = /internal server error/i
 
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`[golden-path] Missing required env var: ${name}`)
-  return value
-}
-
 function getAdminSupabase() {
-  const url = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-  const serviceKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
-  return createClient(url, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  return createAdminClient()
 }
 
 function daysFromNow(days: number): string {

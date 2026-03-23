@@ -7,7 +7,7 @@
 // Follows the same patterns as tests/helpers/e2e-seed.ts:
 //   ensureAuthUser → upsertChef → ensureChefRole → ensureChefPreferences
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { mkdirSync, writeFileSync } from 'fs'
 import dotenv from 'dotenv'
 
@@ -16,22 +16,11 @@ dotenv.config({ path: '.env.local' })
 const AGENT_EMAIL = process.env.AGENT_EMAIL || 'agent@chefflow.test'
 const AGENT_PASSWORD = process.env.AGENT_PASSWORD || 'AgentChefFlow!2026'
 
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`[agent-setup] Missing environment variable: ${name}`)
-  return value
-}
-
 async function main() {
-  const supabaseUrl = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-  const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
-
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  const admin = createAdminClient()
 
   console.log(`[agent-setup] Setting up agent account: ${AGENT_EMAIL}`)
-  console.log(`[agent-setup] Supabase: ${supabaseUrl}`)
+  console.log(`[agent-setup] Supabase: using createAdminClient()`)
 
   // 1. Ensure auth user (create or update)
   const { data: listed, error: listError } = await admin.auth.admin.listUsers({

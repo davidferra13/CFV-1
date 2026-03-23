@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import dotenv from 'dotenv'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from './lib/supabase.mjs'
 
 dotenv.config({ path: '.env.local' })
 

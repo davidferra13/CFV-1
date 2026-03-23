@@ -1,16 +1,10 @@
 import dotenv from 'dotenv'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { MARKETPLACE_PLATFORMS } from '../lib/marketplace/platforms'
 import { extractTakeAChefFinanceMeta } from '../lib/integrations/take-a-chef-finance'
 import { syncMarketplaceInquiryProjection } from '../lib/marketplace/platform-records'
 
 dotenv.config({ path: '.env.local' })
-
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`Missing env: ${name}`)
-  return value
-}
 
 function getArg(flag: string): string | null {
   const index = process.argv.indexOf(flag)
@@ -24,16 +18,7 @@ async function main() {
   const dryRun = process.argv.includes('--dry-run')
   const tenantIdFilter = getArg('--tenant-id')
 
-  const supabase = createClient(
-    requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    }
-  )
+  const supabase = createAdminClient()
 
   let query = supabase
     .from('inquiries')
@@ -81,7 +66,9 @@ async function main() {
           externalInquiryId: inquiry.external_inquiry_id ?? null,
           externalUrl: inquiry.external_link ?? null,
           summary:
-            typeof inquiry.source_message === 'string' ? inquiry.source_message.slice(0, 4000) : null,
+            typeof inquiry.source_message === 'string'
+              ? inquiry.source_message.slice(0, 4000)
+              : null,
           nextActionRequired: inquiry.next_action_required ?? null,
           nextActionBy: inquiry.next_action_by ?? null,
           payout: finance

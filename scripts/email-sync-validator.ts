@@ -11,7 +11,7 @@
 //   --label-only   Only run the label cross-validation (skip sync entirely)
 //   --limit N      Limit historical scan batches (default: unlimited until done)
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import dotenv from 'dotenv'
 
@@ -40,11 +40,7 @@ const flags = {
 // ─── Supabase Admin Client ────────────────────────────────────────────────────
 
 function getAdminClient() {
-  return createClient(
-    requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    { auth: { persistSession: false, autoRefreshToken: false } }
-  )
+  return createAdminClient()
 }
 
 // ─── Developer Identity ───────────────────────────────────────────────────────
@@ -65,7 +61,7 @@ function loadDevIdentity(): DevIdentity {
   }
 }
 
-async function resolveDevIds(admin: ReturnType<typeof createClient>, dev: DevIdentity) {
+async function resolveDevIds(admin: any, dev: DevIdentity) {
   if (dev.chefId && dev.tenantId) return dev
 
   // Find auth user
@@ -88,10 +84,7 @@ async function resolveDevIds(admin: ReturnType<typeof createClient>, dev: DevIde
 
 // ─── Gmail Access Token ───────────────────────────────────────────────────────
 
-async function getAccessToken(
-  admin: ReturnType<typeof createClient>,
-  chefId: string
-): Promise<string> {
+async function getAccessToken(admin: any, chefId: string): Promise<string> {
   const { data: conn } = await admin
     .from('google_connections')
     .select('access_token, refresh_token, token_expires_at')
@@ -134,7 +127,7 @@ async function getAccessToken(
 
 // ─── Phase 1: Reset ──────────────────────────────────────────────────────────
 
-async function resetSyncData(admin: ReturnType<typeof createClient>, tenantId: string) {
+async function resetSyncData(admin: any, tenantId: string) {
   console.log('\n═══ PHASE 1: RESET ═══\n')
 
   // Clear gmail_sync_log
@@ -360,7 +353,7 @@ interface CrossValidationResult {
 }
 
 async function crossValidateLabel(
-  admin: ReturnType<typeof createClient>,
+  admin: any,
   accessToken: string,
   tenantId: string,
   labelName: string
@@ -523,10 +516,7 @@ interface SyncAnalysis {
   }>
 }
 
-async function analyzeSyncLog(
-  admin: ReturnType<typeof createClient>,
-  tenantId: string
-): Promise<SyncAnalysis> {
+async function analyzeSyncLog(admin: any, tenantId: string): Promise<SyncAnalysis> {
   const { data: entries } = await admin
     .from('gmail_sync_log')
     .select('from_address, subject, classification, confidence, action_taken, error')

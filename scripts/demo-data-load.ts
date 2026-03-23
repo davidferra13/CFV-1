@@ -5,7 +5,7 @@
 // Usage: npx tsx scripts/demo-data-load.ts
 // Prereq: npm run demo:setup (creates demo accounts first)
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { readFileSync } from 'fs'
 import { createRequire } from 'module'
 import dotenv from 'dotenv'
@@ -48,12 +48,6 @@ const {
 
 dotenv.config({ path: '.env.local' })
 
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`[demo-load] Missing environment variable: ${name}`)
-  return value
-}
-
 async function main() {
   // Read demo chef credentials
   let demoChef: { chefId: string; tenantId: string; authUserId: string }
@@ -63,12 +57,7 @@ async function main() {
     throw new Error('[demo-load] .auth/demo-chef.json not found. Run `npm run demo:setup` first.')
   }
 
-  const supabaseUrl = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-  const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
-
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  const admin = createAdminClient()
 
   const { chefId, tenantId, authUserId } = demoChef
   console.log(`[demo-load] Loading data for demo chef: ${chefId}`)

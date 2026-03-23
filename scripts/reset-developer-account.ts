@@ -7,17 +7,11 @@
 // Usage: npx tsx scripts/reset-developer-account.ts
 // Prereq: .auth/developer.json must exist with email + password
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { readFileSync, writeFileSync } from 'fs'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
-
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`[dev-reset] Missing environment variable: ${name}`)
-  return value
-}
 
 async function main() {
   // Read developer credentials
@@ -32,12 +26,7 @@ async function main() {
     throw new Error('[dev-reset] Developer credentials not configured in .auth/developer.json')
   }
 
-  const supabaseUrl = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-  const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
-
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  const admin = createAdminClient()
 
   console.log(`[dev-reset] Resetting account: ${devCreds.email}`)
   console.log('')
@@ -181,7 +170,7 @@ async function main() {
 }
 
 async function createFreshChef(
-  admin: ReturnType<typeof createClient>,
+  admin: any,
   devCreds: { email: string; password: string },
   authUserId?: string
 ) {

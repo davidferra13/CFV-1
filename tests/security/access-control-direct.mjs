@@ -10,20 +10,13 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
+dotenv.config({ path: '.env.local' })
+import { createAnonClient } from '../../scripts/lib/supabase.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Parse .env.local
-const envContent = fs.readFileSync('.env.local', 'utf8')
-const getEnv = (key) => {
-  const match = envContent.match(new RegExp(`^${key}=(.+)$`, 'm'))
-  return match ? match[1].trim() : ''
-}
-
-const SUPABASE_URL = getEnv('NEXT_PUBLIC_SUPABASE_URL')
-const SUPABASE_ANON_KEY = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 const PROJECT_REF = 'luefkpakzvxcsqroxyhz'
 const API_BASE = 'http://localhost:3100'
 const REPORT_DIR = path.join(path.dirname(__dirname), '..', 'data', 'access-control-reports')
@@ -1277,7 +1270,7 @@ const TESTS = [
 
 async function authenticate() {
   console.log(`[Auth] Authenticating as ${ATTACKER.email}...`)
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  const supabase = createAnonClient()
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email: ATTACKER.email,

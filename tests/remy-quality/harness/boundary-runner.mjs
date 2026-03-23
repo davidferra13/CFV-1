@@ -21,7 +21,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '../../../scripts/lib/supabase.mjs'
 import { generateReports, printSummary } from './report-generator.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

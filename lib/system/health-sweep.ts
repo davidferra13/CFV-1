@@ -2,7 +2,7 @@
 // Checks all ChefFlow services in dependency order.
 // Not a 'use server' file - pure utility (exports constants + functions).
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { breakers, getCircuitBreakerHealth } from '@/lib/resilience/circuit-breaker'
 import { getOllamaConfig, getModelForEndpoint } from '@/lib/ai/providers'
 import { pingEndpoint } from '@/lib/ai/ollama-wake'
@@ -211,10 +211,7 @@ async function checkDatabase(): Promise<ServiceHealthResult> {
 
   const start = Date.now()
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const supabase = createAdminClient()
     const { error } = await supabase.from('chefs').select('id').limit(1).maybeSingle()
     const latency = Date.now() - start
 

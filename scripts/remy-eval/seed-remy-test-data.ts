@@ -11,15 +11,13 @@
  * All data is scoped to the agent tenant (91ec0e6a-...).
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createHash } from 'crypto'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const supabase = createClient(supabaseUrl, serviceRoleKey)
+const supabase = createAdminClient()
 
 const TENANT_ID = '91ec0e6a-ce61-41ec-b9e5-eea3b415e5b8'
 const AUTH_USER_ID = '20f09030-af9a-44c0-aa59-56d480efa2d7'

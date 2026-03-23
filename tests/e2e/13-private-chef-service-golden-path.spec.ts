@@ -1,22 +1,10 @@
 import { test, expect } from '../helpers/fixtures'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const TRANSIENT_500_TEXT = /internal server error/i
 
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`[private-chef-service] Missing required env var: ${name}`)
-  return value
-}
-
 function getAdminSupabase() {
-  return createClient(
-    requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    {
-      auth: { persistSession: false, autoRefreshToken: false },
-    }
-  )
+  return createAdminClient()
 }
 
 function daysFromNow(days: number): string {

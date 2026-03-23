@@ -13,18 +13,14 @@
 
 import http from 'http'
 import { chromium } from 'playwright'
-import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
+import { createAdminClient } from './lib/supabase.mjs'
 
 const CHEF_ID = '166a7621-c81d-41a8-a510-c488ef53bb74'
 const TENANT_ID = CHEF_ID
 
-const admin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  { auth: { persistSession: false } }
-)
+const admin = createAdminClient()
 
 const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',

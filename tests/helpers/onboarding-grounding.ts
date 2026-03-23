@@ -1,21 +1,9 @@
-import dotenv from 'dotenv'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { expect, type Locator, type Page } from '@playwright/test'
 import type { TourConfig, TourStep } from '../../lib/onboarding/tour-config'
 import { getTourStorageKeys } from '../../lib/onboarding/tour-storage'
 
-dotenv.config({ path: '.env.local', quiet: true })
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-  throw new Error(
-    'onboarding grounding verification requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY'
-  )
-}
-
-const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+const supabase = createAdminClient()
 const FEEDBACK_NUDGE_KEY = 'chefflow:feedback-nudge-done'
 
 function normalizeSelectors(target: TourStep['target']) {

@@ -20,7 +20,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '../../../scripts/lib/supabase.mjs'
 import { parseSSEStream } from './sse-parser.mjs'
 import { evaluateResponse } from './evaluator.mjs'
 import { generateReports, printSummary } from './report-generator.mjs'

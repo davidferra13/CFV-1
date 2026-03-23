@@ -1,5 +1,5 @@
 import dotenv from 'dotenv'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import historicalScanModule from '../lib/gmail/historical-scan'
 
 const { runHistoricalScanBatch } = historicalScanModule
@@ -12,12 +12,6 @@ function getArg(flag: string): string | null {
   return process.argv[index + 1] ?? null
 }
 
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`Missing env: ${name}`)
-  return value
-}
-
 async function main() {
   const chefId = getArg('--chef-id') ?? '166a7621-c81d-41a8-a510-c488ef53bb74'
   const tenantId = getArg('--tenant-id') ?? chefId
@@ -26,16 +20,7 @@ async function main() {
   const batchSize = Number.parseInt(getArg('--batch-size') ?? '500', 10)
   const messageConcurrency = Number.parseInt(getArg('--message-concurrency') ?? '24', 10)
 
-  const supabase = createClient(
-    requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    }
-  )
+  const supabase = createAdminClient()
 
   for (let batchIndex = 1; batchIndex <= maxBatches; batchIndex += 1) {
     const { data: before, error: beforeError } = await supabase

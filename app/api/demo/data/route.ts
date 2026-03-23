@@ -6,7 +6,7 @@
 //   npm run demo:load / demo:clear / demo:reset
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { readFileSync } from 'fs'
 
 import {
@@ -71,16 +71,7 @@ export async function POST(req: NextRequest) {
     demoClient = { clientId: '' }
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-  if (!serviceRoleKey) {
-    return new NextResponse('SUPABASE_SERVICE_ROLE_KEY not set', { status: 500 })
-  }
-
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  const admin = createAdminClient()
 
   const { chefId, tenantId, authUserId } = demoChef
 

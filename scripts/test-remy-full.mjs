@@ -1,19 +1,12 @@
 // Full Remy Quality Test Suite - 100 tests across all categories
 // Run this to measure system-wide improvement
-import fs from 'fs'
-import { createClient } from '@supabase/supabase-js'
-
-const env = fs.readFileSync('.env.local', 'utf8')
-const getEnv = (k) => {
-  const m = env.match(new RegExp(k + '=(.+)'))
-  return m ? m[1].trim() : ''
-}
-const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL')
-const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+import dotenv from 'dotenv'
+dotenv.config({ path: '.env.local' })
+import { createAnonClient } from './lib/supabase.mjs'
 
 async function main() {
   // Sign in
-  const sb = createClient(supabaseUrl, supabaseKey)
+  const sb = createAnonClient()
   const { data, error } = await sb.auth.signInWithPassword({
     email: 'agent@chefflow.test',
     password: 'AgentChefFlow!2026',

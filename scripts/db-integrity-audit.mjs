@@ -12,7 +12,6 @@
  *  Output: reports/overnight-YYYY-MM-DD/db-integrity.md
  */
 
-import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,23 +21,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 dotenv.config({ path: path.join(ROOT, '.env.local') });
 
+import { createAdminClient } from './lib/supabase.mjs';
+
 const DATE = new Date().toISOString().slice(0, 10);
 const REPORTS_DIR = path.join(ROOT, 'reports', `overnight-${DATE}`);
 const startTime = Date.now();
 
 // ═══════════════════════ SUPABASE CLIENT ═════════════════════
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!SUPABASE_URL || !SERVICE_KEY) {
-  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local');
-  process.exit(1);
-}
-
-const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
+const supabase = createAdminClient();
 
 // ═══════════════════════ UTILITIES ════════════════════════════
 

@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabaseAdmin = createAdminClient()
 
 const SYSTEM_KEY = 'relationship_cooling'
 
@@ -78,7 +75,7 @@ export async function GET(request: Request) {
         .not('status', 'eq', 'cancelled')
 
       const upcomingSet = new Set(
-        (upcomingEvents || []).map((e) => `${e.tenant_id}:${e.client_id}`)
+        (upcomingEvents || []).map((e: any) => `${e.tenant_id}:${e.client_id}`)
       )
 
       const filteredPairs = candidates.filter(
@@ -103,7 +100,9 @@ export async function GET(request: Request) {
       .select('id, full_name')
       .in('id', clientIds)
 
-    const clientNameById = new Map((clients ?? []).map((client) => [client.id, client.full_name]))
+    const clientNameById = new Map(
+      (clients ?? []).map((client: any) => [client.id, client.full_name])
+    )
 
     let notified = 0
     let skipped = 0

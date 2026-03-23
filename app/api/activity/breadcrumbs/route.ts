@@ -3,14 +3,11 @@
 // Non-blocking: failures return 200 with { tracked: false } to avoid disrupting the app.
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createServerClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/rateLimit'
 
-const adminClient = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const adminClient = createAdminClient()
 
 export async function POST(request: Request) {
   try {

@@ -3,7 +3,7 @@
 // Called by scheduled cron daily at 7 AM EST. Deterministic - no LLM.
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { generateMorningBriefing } from '@/lib/ai/remy-morning-briefing'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
@@ -15,10 +15,7 @@ export async function GET(request: Request) {
   if (authError) return authError
 
   try {
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const supabaseAdmin = createAdminClient()
 
     const { data: tenants } = await supabaseAdmin.from('tenants').select('id').limit(100)
 

@@ -1,5 +1,5 @@
 import dotenv from 'dotenv'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import primaryShortcuts from '@/lib/navigation/primary-shortcuts'
 
 const {
@@ -11,12 +11,6 @@ const {
 
 dotenv.config({ path: '.env.local' })
 
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`[primary-nav-backfill] Missing environment variable: ${name}`)
-  return value
-}
-
 function equalHrefOrder(left: readonly string[], right: readonly string[]) {
   if (left.length !== right.length) return false
   for (let index = 0; index < left.length; index += 1) {
@@ -27,11 +21,7 @@ function equalHrefOrder(left: readonly string[], right: readonly string[]) {
 
 async function main() {
   const shouldApply = process.argv.includes('--apply')
-  const supabase: any = createClient(
-    requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    { auth: { persistSession: false, autoRefreshToken: false } }
-  )
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('chef_preferences')

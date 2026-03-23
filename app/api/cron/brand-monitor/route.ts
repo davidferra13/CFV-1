@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabaseAdmin = createAdminClient()
 
 const SYSTEM_KEY = 'brand_monitor_negative_mention'
 const WEB_SEARCH_ENABLED = process.env.BRAND_MONITOR_WEB_SEARCH_ENABLED === 'true'
@@ -76,7 +73,7 @@ export async function GET(request: Request) {
             .eq('tenant_id', chef.id)
             .in('source_url', itemUrls)
 
-          const existingUrls = new Set((existing ?? []).map((e) => e.source_url))
+          const existingUrls = new Set((existing ?? []).map((e: any) => e.source_url))
 
           // Sentiment helpers
           const negWords = [

@@ -11,16 +11,13 @@
  *   after(async () => { await testDb.cleanup() })
  */
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONNECTION
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-let _client: SupabaseClient | null = null
+let _client: any = null
 const _createdIds: { table: string; id: string }[] = []
 
 /**
@@ -28,21 +25,16 @@ const _createdIds: { table: string; id: string }[] = []
  * If not, integration tests should skip gracefully.
  */
 export function hasSupabaseCredentials(): boolean {
-  return !!(SUPABASE_URL && SERVICE_ROLE_KEY)
+  // The admin client reads credentials internally; check env vars for skip logic
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
 }
 
 /**
- * Get or create the Supabase service-role client.
- * Throws if credentials are not configured.
+ * Get or create the admin database client.
  */
-export function getClient(): SupabaseClient {
-  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-    throw new Error(
-      'Integration tests require NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY'
-    )
-  }
+export function getClient(): any {
   if (!_client) {
-    _client = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+    _client = createAdminClient()
   }
   return _client
 }

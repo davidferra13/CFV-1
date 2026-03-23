@@ -15,7 +15,7 @@
  * Run: npm run test:remy-quality:client:boundary
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '../../../scripts/lib/supabase.mjs'
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { execSync, spawn } from 'child_process'
 import { fileURLToPath } from 'url'

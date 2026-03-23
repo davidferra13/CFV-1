@@ -2,7 +2,7 @@
 // Inserts classified listings into directory_listings as 'discovered' status.
 // Skips duplicates by checking existing slugs and name+city combos.
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '../lib/supabase.mjs'
 import config from './config.json' with { type: 'json' }
 
 let supabase = null

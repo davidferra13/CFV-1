@@ -7,21 +7,12 @@
 // all seeded events, clients, quotes, menus, etc. in one operation.
 // Safe to run at any time - only targets @chefflow.test addresses.
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
 
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`Missing environment variable: ${name}`)
-  return value
-}
-
 async function main() {
-  const url = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-  const key = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
-
   if (process.env.SUPABASE_E2E_ALLOW_REMOTE !== 'true') {
     throw new Error(
       'Set SUPABASE_E2E_ALLOW_REMOTE=true in .env.local to run cleanup.\n' +
@@ -29,7 +20,7 @@ async function main() {
     )
   }
 
-  const admin = createClient(url, key, { auth: { persistSession: false } })
+  const admin = createAdminClient()
 
   const { data: users, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
   if (error) throw new Error(`Failed to list users: ${error.message}`)

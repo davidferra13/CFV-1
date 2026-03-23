@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabaseAdmin = createAdminClient()
 
 export async function GET(request: Request) {
   const authError = verifyCronAuth(request.headers.get('authorization'))

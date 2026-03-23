@@ -5,35 +5,16 @@
 
 import { config } from 'dotenv'
 import { resolve } from 'path'
-import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 config({ path: resolve(process.cwd(), '.env.local') })
-
-function required(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`Missing environment variable: ${name}`)
-  return value
-}
 
 async function verifySupabase() {
   console.log('Verifying Supabase connection...\n')
 
-  const supabaseUrl = required('NEXT_PUBLIC_SUPABASE_URL')
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  const supabaseKey = serviceRoleKey || anonKey
+  console.log('Using createAdminClient() (direct DB connection)\n')
 
-  if (!supabaseKey) {
-    throw new Error('Missing key: SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY')
-  }
-
-  const usingServiceRole = Boolean(serviceRoleKey)
-
-  console.log(`URL: ${supabaseUrl}`)
-  console.log(`Auth mode: ${usingServiceRole ? 'service_role' : 'anon'}\n`)
-
-  const supabase = createClient<Database>(supabaseUrl, supabaseKey)
+  const supabase = createAdminClient()
 
   const health = await supabase.from('chefs').select('id', { head: true, count: 'exact' })
   if (health.error) {

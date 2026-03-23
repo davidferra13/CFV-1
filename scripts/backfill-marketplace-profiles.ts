@@ -20,17 +20,9 @@
 import { config } from 'dotenv'
 config({ path: '.env.local' })
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-if (!supabaseUrl || !serviceKey) {
-  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local')
-  process.exit(1)
-}
-
-const supabase = createClient(supabaseUrl, serviceKey)
+const supabase = createAdminClient()
 
 async function backfillMarketplaceProfiles() {
   console.log('=== Backfill Marketplace Profiles ===\n')

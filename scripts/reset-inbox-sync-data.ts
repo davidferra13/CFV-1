@@ -4,17 +4,11 @@
 // Run:
 //   npx tsx scripts/reset-inbox-sync-data.ts
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { readFileSync } from 'fs'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
-
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`Missing env: ${name}`)
-  return value
-}
 
 type DevIdentity = {
   email: string
@@ -32,20 +26,11 @@ function loadDevIdentity(): DevIdentity {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AdminClient = ReturnType<typeof createClient<any>>
-
-function getAdminClient(): AdminClient {
-  return createClient(
-    requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    {
-      auth: { persistSession: false, autoRefreshToken: false },
-    }
-  )
+function getAdminClient() {
+  return createAdminClient()
 }
 
-async function resolveTenant(admin: AdminClient, dev: DevIdentity) {
+async function resolveTenant(admin: any, dev: DevIdentity) {
   const { data: listed } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
   const authUser = listed?.users.find((u) => u.email?.toLowerCase() === dev.email.toLowerCase())
   if (!authUser) throw new Error(`No auth user found for ${dev.email}`)
@@ -61,7 +46,7 @@ async function resolveTenant(admin: AdminClient, dev: DevIdentity) {
 }
 
 async function deleteByTenant(
-  admin: AdminClient,
+  admin: any,
   table: string,
   tenantId: string,
   extraFilters?: (q: any) => any

@@ -11,21 +11,13 @@
  *   npx tsx scripts/backfill-platform-records.ts --dry-run
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import dotenv from 'dotenv'
 import path from 'path'
 
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local')
-  process.exit(1)
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+const supabase = createAdminClient()
 const isDryRun = process.argv.includes('--dry-run')
 
 async function main() {

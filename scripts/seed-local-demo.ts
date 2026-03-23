@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { randomBytes } from 'crypto'
 import { promises as fs } from 'fs'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
@@ -48,7 +48,7 @@ function daysFromNow(days: number): string {
 }
 
 async function ensureAuthUser(
-  admin: ReturnType<typeof createClient>,
+  admin: any,
   input: { email: string; password: string; metadata: Record<string, unknown> }
 ): Promise<AuthUser> {
   const { data: listed, error: listError } = await admin.auth.admin.listUsers({
@@ -90,7 +90,7 @@ async function ensureAuthUser(
   return { id: created.user.id, email: created.user.email }
 }
 
-async function upsertChef(admin: ReturnType<typeof createClient>, authUserId: string) {
+async function upsertChef(admin: any, authUserId: string) {
   const { data: existingChef } = await admin
     .from('chefs')
     .select('id')
@@ -142,11 +142,7 @@ async function upsertChef(admin: ReturnType<typeof createClient>, authUserId: st
   return inserted.id as string
 }
 
-async function ensureChefRole(
-  admin: ReturnType<typeof createClient>,
-  authUserId: string,
-  chefId: string
-) {
+async function ensureChefRole(admin: any, authUserId: string, chefId: string) {
   const { error } = await admin.from('user_roles').upsert(
     {
       auth_user_id: authUserId,
@@ -159,7 +155,7 @@ async function ensureChefRole(
   if (error) throw new Error(`Failed to upsert chef role: ${error.message}`)
 }
 
-async function ensureChefPreferences(admin: ReturnType<typeof createClient>, chefId: string) {
+async function ensureChefPreferences(admin: any, chefId: string) {
   const { error } = await (admin as any).from('chef_preferences').upsert(
     {
       chef_id: chefId,
@@ -174,11 +170,7 @@ async function ensureChefPreferences(admin: ReturnType<typeof createClient>, che
   if (error) throw new Error(`Failed to upsert chef preferences: ${error.message}`)
 }
 
-async function upsertClient(
-  admin: ReturnType<typeof createClient>,
-  authUserId: string,
-  chefId: string
-) {
+async function upsertClient(admin: any, authUserId: string, chefId: string) {
   const { data: existingClient } = await admin
     .from('clients')
     .select('id')
@@ -221,11 +213,7 @@ async function upsertClient(
   return inserted.id as string
 }
 
-async function ensureClientRole(
-  admin: ReturnType<typeof createClient>,
-  authUserId: string,
-  clientId: string
-) {
+async function ensureClientRole(admin: any, authUserId: string, clientId: string) {
   const { error } = await admin.from('user_roles').upsert(
     {
       auth_user_id: authUserId,
@@ -238,11 +226,7 @@ async function ensureClientRole(
   if (error) throw new Error(`Failed to upsert client role: ${error.message}`)
 }
 
-async function ensureInquiry(
-  admin: ReturnType<typeof createClient>,
-  chefId: string,
-  clientId: string
-) {
+async function ensureInquiry(admin: any, chefId: string, clientId: string) {
   const { data: existing } = await admin
     .from('inquiries')
     .select('id')
@@ -279,12 +263,7 @@ async function ensureInquiry(
   return inserted.id as string
 }
 
-async function ensureEvent(
-  admin: ReturnType<typeof createClient>,
-  chefId: string,
-  clientId: string,
-  inquiryId: string
-) {
+async function ensureEvent(admin: any, chefId: string, clientId: string, inquiryId: string) {
   const { data: existing } = await admin
     .from('events')
     .select('id')
@@ -322,11 +301,7 @@ async function ensureEvent(
   return inserted.id as string
 }
 
-async function linkInquiryToEvent(
-  admin: ReturnType<typeof createClient>,
-  inquiryId: string,
-  eventId: string
-) {
+async function linkInquiryToEvent(admin: any, inquiryId: string, eventId: string) {
   const { error } = await admin
     .from('inquiries')
     .update({ converted_to_event_id: eventId })
@@ -335,10 +310,7 @@ async function linkInquiryToEvent(
   if (error) throw new Error(`Failed to link inquiry to event: ${error.message}`)
 }
 
-async function ensureIntegrationConnections(
-  admin: ReturnType<typeof createClient>,
-  chefId: string
-) {
+async function ensureIntegrationConnections(admin: any, chefId: string) {
   const providers: Array<{ provider: string; label: string; authType: 'oauth2' | 'none' }> = [
     { provider: 'square', label: 'Demo Square Location', authType: 'oauth2' },
     { provider: 'calendly', label: 'Demo Calendly Workspace', authType: 'oauth2' },
@@ -371,7 +343,7 @@ async function ensureIntegrationConnections(
   }
 }
 
-async function ensureIntegrationEvents(admin: ReturnType<typeof createClient>, chefId: string) {
+async function ensureIntegrationEvents(admin: any, chefId: string) {
   const events = [
     {
       provider: 'square',
@@ -437,12 +409,9 @@ async function updatePlatformOwnerEnv(chefId: string) {
 
 async function main() {
   const supabaseUrl = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-  const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
   ensureLocalSupabase(supabaseUrl)
 
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  const admin = createAdminClient()
 
   console.log('Seeding local demo users and data...')
 

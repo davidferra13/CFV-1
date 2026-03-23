@@ -11,18 +11,9 @@
 
 import { describe, it, before, after } from 'node:test'
 import assert from 'node:assert/strict'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-// Only run if remote credentials are available
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-  console.warn('[SKIP] ledger-idempotency integration test: SUPABASE credentials not set')
-  process.exit(0)
-}
-
-const supabase = createClient(SUPABASE_URL!, SERVICE_ROLE_KEY!)
+const supabase = createAdminClient()
 
 // Test data — use a unique reference per test run to avoid conflicts
 const TEST_REF = `test-idem-${Date.now()}`

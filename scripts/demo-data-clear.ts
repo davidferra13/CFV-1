@@ -6,20 +6,14 @@
 // Usage: npx tsx scripts/demo-data-clear.ts
 // Prereq: npm run demo:setup (creates demo accounts first)
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { readFileSync } from 'fs'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
 
-function requireEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`[demo-clear] Missing environment variable: ${name}`)
-  return value
-}
-
 async function clearTable(
-  admin: ReturnType<typeof createClient>,
+  admin: any,
   table: string,
   tenantId: string,
   tenantColumn = 'tenant_id'
@@ -57,12 +51,7 @@ async function main() {
     demoClient = { clientId: '' }
   }
 
-  const supabaseUrl = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-  const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
-
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  const admin = createAdminClient()
 
   const { chefId, tenantId } = demoChef
   console.log(`[demo-clear] Clearing data for demo chef: ${chefId}`)

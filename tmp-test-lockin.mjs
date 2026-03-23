@@ -1,9 +1,9 @@
 import { chromium } from 'playwright';
-import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
+import { createAdminClient } from './scripts/lib/supabase.mjs';
 
-const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const admin = createAdminClient();
 const chefId = '91ec0e6a-ce61-41ec-b9e5-eea3b415e5b8';
 const eventId = 'e0a10002-0001-4000-8000-000000000030';
 

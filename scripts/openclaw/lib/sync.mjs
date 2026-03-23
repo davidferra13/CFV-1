@@ -1,7 +1,7 @@
 // Syncs local crawler_findings to Supabase directory_listings table.
 // Runs periodically, pushing new findings in batches.
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '../../lib/supabase.mjs'
 import { readFileSync, readdirSync, existsSync, statSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'

@@ -4,10 +4,8 @@
 // from both the manual UI trigger and the cron endpoint.
 
 import { createServerClient } from '@/lib/supabase/server'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
-
-type DbClient = SupabaseClient<Database>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DbClient = { from: (table: string) => any; rpc: (...args: any[]) => any }
 import { getGoogleAccessToken } from '@/lib/google/auth'
 import {
   listRecentMessages,
@@ -912,8 +910,8 @@ async function handleExistingThread(
             : null
 
           await routeEmailReplyToCircle({
-            inquiryId: linkedInquiryId,
-            eventId: convertedEventId,
+            inquiryId: linkedInquiryId!,
+            eventId: convertedEventId as string | null,
             senderEmail: email.from?.email || '',
             senderName: email.from?.name || email.from?.email || 'Client',
             emailBody: email.body,
@@ -1443,7 +1441,7 @@ async function ensureTacSeriesEvents(params: {
 
   let series = existingSeries as {
     id: string
-    service_mode: Database['public']['Enums']['booking_service_mode']
+    service_mode: any
   } | null
 
   if (!series) {
@@ -1482,7 +1480,7 @@ async function ensureTacSeriesEvents(params: {
 
     series = createdSeries as {
       id: string
-      service_mode: Database['public']['Enums']['booking_service_mode']
+      service_mode: any
     }
   }
 

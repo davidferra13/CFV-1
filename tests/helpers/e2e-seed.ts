@@ -3,7 +3,7 @@
 // Called from tests/helpers/global-setup.ts and scripts/seed-e2e-remote.ts (CLI)
 // All data namespaced under *@chefflow.test emails to isolate from real chef data
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
@@ -107,12 +107,6 @@ function daysFromNow(days: number): string {
   const date = new Date()
   date.setDate(date.getDate() + days)
   return date.toISOString().slice(0, 10)
-}
-
-function createAdminClient(url: string, key: string) {
-  return createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
 }
 
 function isMissingColumn(error: any, column: string): boolean {
@@ -906,10 +900,9 @@ async function ensurePartnerRole(admin, authUserId: string, partnerId: string) {
 
 export async function seedE2EData(): Promise<SeedResult> {
   const supabaseUrl = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-  const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
   assertRemoteTestAllowed(supabaseUrl)
 
-  const admin = createAdminClient(supabaseUrl, serviceRoleKey)
+  const admin = createAdminClient()
   const suffix = getIsolationSuffix()
 
   console.log(`[e2e-seed] Seeding for suffix: ${suffix}`)
