@@ -4,6 +4,7 @@
 // Searches recipes by name with 300ms debounce, shows cost data, links on click.
 
 import { useState, useTransition, useCallback, useRef, useEffect } from 'react'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { searchRecipesForEditor, linkRecipeToEditorDish } from '@/lib/menus/editor-actions'
@@ -58,11 +59,15 @@ export function RecipeLinkPicker({
 
   const handleLink = (recipe: RecipeResult) => {
     startTransition(async () => {
-      await linkRecipeToEditorDish(dishId, recipe.id, recipe.name)
-      setQuery('')
-      setResults([])
-      setOpen(false)
-      onLinked()
+      try {
+        await linkRecipeToEditorDish(dishId, recipe.id, recipe.name)
+        setQuery('')
+        setResults([])
+        setOpen(false)
+        onLinked()
+      } catch {
+        toast.error('Failed to link recipe')
+      }
     })
   }
 

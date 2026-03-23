@@ -106,7 +106,9 @@ export function getCachedDeletionStatus(chefId: string): Promise<CachedDeletionS
   )()
 }
 
-// ─── Admin Check (cached 60s) ────────────────────────────────────────────────
+// ─── Admin Check (cached 60s) ────────────────────────────────────────────
+// Note: admin status is managed directly in the platform_admins table (no server action).
+// The 60s TTL is the only revalidation path, which is acceptable for rare manual changes.────
 
 export function getCachedIsAdmin(authUserId: string): Promise<boolean> {
   return unstable_cache(

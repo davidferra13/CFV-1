@@ -6,6 +6,7 @@ import type { VendorCategory } from '@/lib/vendors/vendor-actions'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Star, Plus, Trash2, Search } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Vendor = {
   id: string
@@ -90,6 +91,7 @@ export function VendorList({
         await togglePreferred(id)
       } catch {
         setVendors(previous)
+        toast.error('Failed to update vendor preference')
       }
     })
   }
@@ -103,6 +105,7 @@ export function VendorList({
         await deleteVendor(id)
       } catch {
         setVendors(previous)
+        toast.error('Failed to delete vendor')
       }
     })
   }

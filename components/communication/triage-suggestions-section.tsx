@@ -30,14 +30,9 @@ export function TriageSuggestionsSection() {
   }, [])
 
   const handleApply = (suggestion: TriageSuggestion) => {
-    // Remove from local list optimistically
-    const prev = suggestions
+    // Remove from local list (dismiss only, no persistence yet)
     setSuggestions((s) => s.filter((item) => item.id !== suggestion.id))
-    toast.success(`Rule applied: ${suggestion.suggestion}`)
-    // TODO: persist the applied rule via a server action once triage rule storage is built
-    // On failure, restore:
-    // setSuggestions(prev)
-    // toast.error('Failed to apply rule')
+    toast('Suggestion noted')
   }
 
   const handleDismiss = (suggestionId: string) => {

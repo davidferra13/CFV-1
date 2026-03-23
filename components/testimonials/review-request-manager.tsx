@@ -11,6 +11,7 @@ import {
   deleteTestimonial,
 } from '@/lib/testimonials/testimonial-actions'
 import type { TestimonialRow } from '@/lib/testimonials/testimonial-actions'
+import { toast } from 'sonner'
 
 type Props = {
   initialTestimonials: TestimonialRow[]
@@ -77,6 +78,7 @@ export function ReviewRequestManager({ initialTestimonials, events }: Props) {
         await approveTestimonial(id)
       } catch {
         setTestimonials(previous)
+        toast.error('Failed to approve testimonial')
       }
     })
   }
@@ -91,6 +93,7 @@ export function ReviewRequestManager({ initialTestimonials, events }: Props) {
         await featureTestimonial(id)
       } catch {
         setTestimonials(previous)
+        toast.error('Failed to update featured status')
       }
     })
   }
@@ -104,6 +107,7 @@ export function ReviewRequestManager({ initialTestimonials, events }: Props) {
         await deleteTestimonial(id)
       } catch {
         setTestimonials(previous)
+        toast.error('Failed to delete testimonial')
       }
     })
   }

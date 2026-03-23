@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DollarSign, Check, Receipt } from '@/components/ui/icons'
 import { formatCurrency } from '@/lib/utils/currency'
+import { toast } from 'sonner'
 
 const EXPENSE_CATEGORIES = [
   { value: 'groceries', label: 'Groceries' },
@@ -83,6 +84,7 @@ export function QuickExpenseWidget({
         const result = await quickCaptureExpense(submittedData)
         if (!result.success) {
           setRecentExpenses(previous)
+          toast.error('Failed to save expense')
           return
         }
         // Replace optimistic entry with real one if returned
@@ -95,6 +97,7 @@ export function QuickExpenseWidget({
         setTimeout(() => setShowSuccess(false), 2000)
       } catch {
         setRecentExpenses(previous)
+        toast.error('Failed to save expense')
       }
     })
   }

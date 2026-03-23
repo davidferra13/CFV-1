@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { dismissFailure } from '@/lib/monitoring/failure-actions'
 import type { SideEffectFailure } from '@/lib/monitoring/failure-actions'
+import { toast } from 'sonner'
 
 const severityColors: Record<string, string> = {
   critical: 'bg-red-100 text-red-700',
@@ -36,6 +37,7 @@ function FailureRow({ failure }: { failure: SideEffectFailure }) {
         await dismissFailure(failure.id, 'admin')
       } catch {
         setDismissed(previous)
+        toast.error('Failed to dismiss failure')
       }
     })
   }

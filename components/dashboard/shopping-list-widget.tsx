@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ShoppingCart, Check, CheckSquare, Square } from '@/components/ui/icons'
+import { toast } from 'sonner'
 
 // ============================================
 // Types
@@ -81,6 +82,7 @@ export function ShoppingListWidget({
         await toggleShoppingItem(itemId, !toggled?.purchased)
       } catch {
         setItems(previous)
+        toast.error('Failed to update shopping item')
       }
     })
   }

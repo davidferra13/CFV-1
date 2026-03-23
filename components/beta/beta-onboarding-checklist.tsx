@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { dismissBetaChecklist, type BetaChecklist } from '@/lib/beta/onboarding-actions'
+import { toast } from 'sonner'
 
 interface BetaOnboardingChecklistProps {
   discountPercent: number
@@ -90,6 +91,7 @@ export function BetaOnboardingChecklist({
         await dismissBetaChecklist()
       } catch {
         setDismissed(previous)
+        toast.error('Failed to dismiss checklist')
       }
     })
   }

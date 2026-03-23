@@ -6,6 +6,7 @@ import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateCallStatus, type ScheduledCall } from '@/lib/calls/actions'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 export function CallStatusActions({ call }: { call: ScheduledCall }) {
   const router = useRouter()
@@ -18,6 +19,7 @@ export function CallStatusActions({ call }: { call: ScheduledCall }) {
         router.refresh()
       } catch (err) {
         console.error(err)
+        toast.error('Failed to update call status')
       }
     })
   }

@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { getChannelAnalytics } from '@/lib/analytics/channel-actions'
 import type { ChannelAnalyticsData } from '@/lib/analytics/channel-actions'
 import { getSourceColor, getSourceLabel } from '@/lib/constants/booking-sources'
+import { toast } from 'sonner'
 
 // ============================================
 // HELPERS
@@ -89,6 +90,7 @@ export function ChannelDashboard({ initialData }: { initialData: ChannelAnalytic
       } catch (err) {
         setData(previous)
         console.error('[ChannelDashboard] Failed to load data:', err)
+        toast.error('Failed to load channel analytics')
       }
     })
   }

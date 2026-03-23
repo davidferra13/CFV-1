@@ -10,6 +10,7 @@ import {
 } from '@/lib/clients/dietary-alert-actions'
 import type { DietaryAlert } from '@/lib/clients/dietary-alert-actions'
 import { AlertTriangle, Check, CheckCheck, Filter } from 'lucide-react'
+import { toast } from 'sonner'
 
 type SeverityFilter = 'all' | 'critical' | 'warning' | 'info'
 
@@ -67,6 +68,7 @@ export function DietaryAlertPanel({ initialAlerts }: Props) {
         await acknowledgeAlert(alertId)
       } catch {
         setAlerts(previous)
+        toast.error('Failed to acknowledge alert')
       }
     })
   }
@@ -79,6 +81,7 @@ export function DietaryAlertPanel({ initialAlerts }: Props) {
         await acknowledgeAllAlerts()
       } catch {
         setAlerts(previous)
+        toast.error('Failed to acknowledge alerts')
       }
     })
   }

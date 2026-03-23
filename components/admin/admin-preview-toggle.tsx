@@ -7,6 +7,7 @@
 import { useState, useTransition } from 'react'
 import { Eye, EyeOff } from '@/components/ui/icons'
 import { toggleAdminPreview } from '@/lib/auth/admin-preview-actions'
+import { toast } from 'sonner'
 
 type Props = {
   initialPreview: boolean
@@ -25,6 +26,7 @@ export function AdminPreviewToggle({ initialPreview }: Props) {
         await toggleAdminPreview(next)
       } catch {
         setPreview(previous)
+        toast.error('Failed to toggle preview mode')
       }
     })
   }
