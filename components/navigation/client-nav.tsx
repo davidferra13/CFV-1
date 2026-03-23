@@ -22,6 +22,7 @@ import {
 import { AppLogo } from '@/components/branding/app-logo'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { ClientHubUnreadBadge } from '@/components/hub/client-hub-unread-badge'
+import { ClientChatUnreadBadge } from '@/components/chat/client-chat-unread-badge'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface ClientNavProps {
@@ -31,10 +32,10 @@ interface ClientNavProps {
 const BOOK_NOW_HREF = '/book-now'
 
 const navItems = [
-  { href: '/my-bookings', label: 'Bookings', icon: Calendar },
-  { href: '/my-chat', label: 'Messages', icon: MessageCircle, badge: 'chat' },
-  { href: '/my-hub', label: 'Friends & Groups', icon: Users, badge: 'hub' },
-  { href: '/my-profile', label: 'Profile', icon: User, dividerBefore: true },
+  { href: '/my-bookings', label: 'Bookings', icon: Calendar, mobileTab: true },
+  { href: '/my-chat', label: 'Messages', icon: MessageCircle, badge: 'chat', mobileTab: true },
+  { href: '/my-hub', label: 'Friends & Groups', icon: Users, badge: 'hub', mobileTab: true },
+  { href: '/my-profile', label: 'Profile', icon: User, dividerBefore: true, mobileTab: true },
   { href: '/my-spending', label: 'Payments', icon: DollarSign },
   { href: '/my-rewards', label: 'Rewards', icon: Gift },
 ]
@@ -157,6 +158,7 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
                   >
                     <Icon className="w-[18px] h-[18px]" />
                     {item.badge === 'hub' && <ClientHubUnreadBadge />}
+                    {item.badge === 'chat' && <ClientChatUnreadBadge />}
                   </Link>
                 </div>
               )
@@ -194,6 +196,7 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
                     />
                     {item.label}
                     {item.badge === 'hub' && <ClientHubUnreadBadge />}
+                    {item.badge === 'chat' && <ClientChatUnreadBadge />}
                   </Link>
                 </div>
               )
@@ -325,6 +328,7 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                       />
                       {item.label}
                       {item.badge === 'hub' && <ClientHubUnreadBadge />}
+                      {item.badge === 'chat' && <ClientChatUnreadBadge />}
                     </Link>
                   </div>
                 )
@@ -357,8 +361,7 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
       <nav className="lg:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 bg-stone-900 border-b border-stone-700">
         <div className="flex items-center justify-around h-11">
           {navItems
-            .filter((item) => !item.dividerBefore)
-            .slice(0, 4)
+            .filter((item) => item.mobileTab)
             .map((item) => {
               const active = isItemActive(pathname, item.href)
               const Icon = item.icon
@@ -375,6 +378,11 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                   {item.badge === 'hub' && (
                     <span className="absolute top-0.5 right-1/4">
                       <ClientHubUnreadBadge />
+                    </span>
+                  )}
+                  {item.badge === 'chat' && (
+                    <span className="absolute top-0.5 right-1/4">
+                      <ClientChatUnreadBadge />
                     </span>
                   )}
                 </Link>

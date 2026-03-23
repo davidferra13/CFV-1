@@ -120,13 +120,15 @@ const NavFilterInput = memo(function NavFilterInput({
   placeholder?: string
 }) {
   return (
-    <label className="relative block px-1">
+    <label className="relative block px-1" suppressHydrationWarning>
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-500 pointer-events-none" />
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
+        autoComplete="off"
         className="w-full h-8 pl-8 pr-3 rounded-lg border border-stone-700 bg-stone-950 text-xs text-stone-200 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-600"
+        suppressHydrationWarning
       />
     </label>
   )

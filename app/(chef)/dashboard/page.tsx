@@ -4,9 +4,11 @@
 // Each widget is an always-visible card showing its key metric immediately.
 
 import { Suspense } from 'react'
+import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
+import { createServerClient } from '@/lib/supabase/server'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { getDashboardPrimaryAction } from '@/lib/archetypes/ui-copy'
 import Link from 'next/link'
@@ -17,6 +19,7 @@ import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards
 import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-card-shell'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { AARPromptBanner } from '@/components/events/aar-prompt-banner'
+import { OnboardingBanner } from '@/components/onboarding/onboarding-banner'
 import UpcomingTouchpoints from '@/components/clients/upcoming-touchpoints'
 import { getUpcomingTouchpoints } from '@/lib/clients/touchpoint-actions'
 
@@ -228,6 +231,28 @@ function PriorityQueueSkeleton() {
 
 export default async function ChefDashboard() {
   const user = await requireChef()
+
+  // Redirect brand-new chefs to onboarding on first login
+  try {
+    const supabase: any = createServerClient()
+    const { count } = await supabase
+      .from('onboarding_progress')
+      .select('*', { count: 'exact', head: true })
+      .eq('chef_id', user.tenantId!)
+    if (count === 0) {
+      redirect('/onboarding')
+    }
+  } catch (err) {
+    // Next.js redirect() throws internally - re-throw it so the redirect works
+    if (
+      err instanceof Error &&
+      (err.message === 'NEXT_REDIRECT' || err.message.startsWith('NEXT_'))
+    ) {
+      throw err
+    }
+    // Real DB failure: just show the dashboard rather than crashing
+  }
+
   const hour = new Date().getHours()
   const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
   const firstName = (user.email ?? '').split('@')[0].split('.')[0]
@@ -275,6 +300,11 @@ export default async function ChefDashboard() {
             {primaryAction.label}
           </Link>
         </div>
+      </div>
+
+      {/* Onboarding banner - shows until setup is complete, then auto-hides */}
+      <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+        <OnboardingBanner />
       </div>
 
       {/* ============================================ */}

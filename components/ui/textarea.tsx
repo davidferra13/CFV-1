@@ -42,6 +42,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           rows={4}
           aria-invalid={ariaInvalid}
           aria-describedby={describedBy}
+          suppressHydrationWarning
           {...props}
         />
         {error && (
