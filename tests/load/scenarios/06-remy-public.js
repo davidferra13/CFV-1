@@ -10,7 +10,7 @@ import http from 'k6/http'
 import { sleep } from 'k6'
 import { Trend, Counter } from 'k6/metrics'
 import { BASE_URL, AI_THRESHOLDS } from '../config.js'
-import { checkJsonOk } from '../helpers/checks.js'
+import { check } from 'k6'
 
 const PROFILE = __ENV.PROFILE || 'load'
 
@@ -79,7 +79,12 @@ export default function () {
   )
 
   if (res.status === 200) {
-    checkJsonOk(res, 'remy-public')
+    // Remy returns text/event-stream (SSE), not JSON
+    check(res, {
+      'remy: status 200': (r) => r.status === 200,
+      'remy: has SSE data': (r) => r.body && r.body.includes('data:'),
+      'remy: has response type': (r) => r.body && r.body.includes('"type":'),
+    })
     remyDuration.add(res.timings.duration)
   } else {
     remyErrors.add(1)
