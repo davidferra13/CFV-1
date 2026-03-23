@@ -116,47 +116,26 @@ type NavGroup = {
   icon: LucideIcon
   items: NavCollapsibleItem[]
   module?: string
+  advancedOnly?: boolean
 }
 type PrimaryShortcutOption = NavItem & { context: string }
 
-// Primary always-visible shortcuts (top of sidebar)
-// coreFeature: true = shown in Focus Mode. false/undefined = hidden in Focus Mode, shown when OFF.
-// adminOnly items are always hidden for non-admins regardless of Focus Mode.
-// Users can customize this list via Settings > Navigation. Default shows first 8.
+// Primary hub links shown in the sidebar - 8 top-level destinations + admin.
+// Each item is a hub page that surfaces all sub-sections within that area.
+// The full shortcut pool (for Settings > Navigation customization and global search)
+// is still built from navGroups below, so nothing is lost - just moved off the sidebar.
+// coreFeature: true = shown in Focus Mode.
+// adminOnly items are hidden for non-admins.
 export const standaloneTop: NavItem[] = [
-  // ─── Daily essentials ───
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, coreFeature: true },
   { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true },
-  { href: '/daily', label: 'Daily Ops', icon: ListChecks, coreFeature: true },
-  { href: '/schedule', label: 'Calendar', icon: CalendarDays, coreFeature: true },
-  { href: '/events', label: 'All Events', icon: CalendarCheck, coreFeature: true },
+  { href: '/events', label: 'Events', icon: CalendarDays, coreFeature: true },
   { href: '/clients', label: 'Clients', icon: Users, coreFeature: true },
-  { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText, coreFeature: true },
-  { href: '/chat', label: 'Messaging', icon: MessageCircle, coreFeature: true },
-  // ─── Several times a week ───
-  { href: '/briefing', label: 'Briefing', icon: ClipboardCheck },
-  { href: '/tasks', label: 'Tasks', icon: Kanban },
-  { href: '/quotes', label: 'Quotes', icon: Invoice },
-  { href: '/staff', label: 'Staff', icon: IdentificationBadge },
-  { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
-  { href: '/recipes', label: 'Recipes', icon: BookOpen },
-  { href: '/expenses', label: 'Expenses', icon: Coins },
-  { href: '/finance/invoices', label: 'Invoices', icon: CurrencyCircleDollar },
-  { href: '/contracts', label: 'Contracts', icon: ScrollText },
-  { href: '/documents', label: 'Documents', icon: FileText },
-  { href: '/goals', label: 'Goals', icon: Target },
-  // ─── Weekly ───
-  { href: '/culinary/costing', label: 'Costing', icon: Calculator },
-  { href: '/rate-card', label: 'Rate Card', icon: Coins },
-  { href: '/travel', label: 'Travel', icon: MapPin },
-  { href: '/stations', label: 'Stations', icon: Notepad },
-  { href: '/activity', label: 'Activity', icon: Activity },
-  { href: '/circles', label: 'Circles', icon: MessagesSquare },
-  { href: '/portfolio', label: 'Portfolio', icon: Image },
-  { href: '/queue', label: 'Priority Queue', icon: Zap },
-  // ─── Admin only ───
-  { href: '/commands', label: 'Ask Remy', icon: Bot, adminOnly: true },
-  { href: '/prospecting', label: 'Prospecting', icon: Crosshair, adminOnly: true },
+  { href: '/culinary', label: 'Culinary', icon: ChefHat, coreFeature: true },
+  { href: '/financials', label: 'Finance', icon: DollarSign, coreFeature: true },
+  { href: '/operations', label: 'Operations', icon: Activity, coreFeature: true },
+  { href: '/growth', label: 'Growth', icon: TrendingUp, coreFeature: true },
+  { href: '/admin', label: 'Admin', icon: ShieldAlert, adminOnly: true },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
@@ -427,6 +406,7 @@ export const navGroups: NavGroup[] = [
     label: 'Commerce',
     icon: Store,
     module: 'commerce',
+    advancedOnly: true,
     items: [
       {
         href: '/commerce/parity',
@@ -702,6 +682,7 @@ export const navGroups: NavGroup[] = [
     label: 'Supply Chain',
     icon: Truck,
     module: 'operations',
+    advancedOnly: true,
     items: [
       {
         href: '/inventory/demand',
@@ -898,6 +879,7 @@ export const navGroups: NavGroup[] = [
     label: 'Marketing',
     icon: Megaphone,
     module: 'more',
+    advancedOnly: true,
     items: [
       {
         href: '/reputation/mentions',
@@ -947,6 +929,7 @@ export const navGroups: NavGroup[] = [
     label: 'Analytics',
     icon: BarChart3,
     module: 'more',
+    advancedOnly: true,
     items: [
       {
         href: '/analytics/benchmarks',
@@ -990,6 +973,7 @@ export const navGroups: NavGroup[] = [
     label: 'Protection',
     icon: ShieldCheck,
     module: 'protection',
+    advancedOnly: true,
     items: [
       {
         href: '/safety/backup-chef',
@@ -1032,6 +1016,7 @@ export const navGroups: NavGroup[] = [
     label: 'Tools',
     icon: Toolbox,
     module: 'more',
+    advancedOnly: true,
     items: [
       {
         href: '/import',

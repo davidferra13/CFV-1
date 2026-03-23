@@ -1,9 +1,10 @@
-// Chef Clients List Page
-// Shows all clients with statistics + client invitation form
+// Chef Clients Hub Page
+// Hub tiles for all client sub-sections + the clients list below.
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
+import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats, getPendingInvitations } from '@/lib/clients/actions'
 
@@ -20,20 +21,56 @@ import { RebookingBar } from '@/components/intelligence/rebooking-bar'
 import { safeFetch } from '@/lib/utils/safe-fetch'
 import { ErrorState } from '@/components/ui/error-state'
 
+const hubTiles = [
+  {
+    href: '/clients/insights/top-clients',
+    label: 'Client Insights',
+    description: 'Top clients, at-risk clients, and most frequent bookers',
+    icon: '💡',
+  },
+  {
+    href: '/clients/loyalty',
+    label: 'Loyalty and Rewards',
+    description: 'Loyalty overview, rewards, and referral tracking',
+    icon: '🎁',
+  },
+  {
+    href: '/clients/communication/follow-ups',
+    label: 'Follow-Ups',
+    description: 'Scheduled touchpoints and pending follow-up actions',
+    icon: '📬',
+  },
+  {
+    href: '/clients/preferences/dietary-restrictions',
+    label: 'Dietary Preferences',
+    description: 'Allergies, restrictions, dislikes, and favorite dishes',
+    icon: '🥗',
+  },
+  {
+    href: '/clients/recurring',
+    label: 'Recurring Board',
+    description: 'Clients on recurring service schedules',
+    icon: '🔄',
+  },
+  {
+    href: '/partners',
+    label: 'Partners and Referrals',
+    description: 'Referral partners and the events they generate',
+    icon: '🤝',
+  },
+]
+
 export default async function ClientsPage() {
   await requireChef()
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Clients</h1>
-          <p className="text-stone-400 mt-1">Manage your client relationships and invitations</p>
+          <p className="text-stone-400 mt-1">Directory, insights, loyalty, and communication</p>
         </div>
         <div className="flex gap-2">
-          <Button href="/clients/recurring" variant="secondary">
-            Recurring Board
-          </Button>
           <a
             href="/clients/csv-export"
             className="inline-flex items-center justify-center px-3 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
@@ -44,6 +81,27 @@ export default async function ClientsPage() {
             + Add Client
           </Button>
         </div>
+      </div>
+
+      {/* Hub tiles */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {hubTiles.map((tile) => (
+          <Link key={tile.href} href={tile.href} className="group block">
+            <Card className="h-full transition-colors group-hover:border-brand-700/60 group-hover:bg-stone-800/60">
+              <CardContent className="pt-5 pb-5">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl leading-none mt-0.5 flex-shrink-0">{tile.icon}</span>
+                  <div>
+                    <p className="font-semibold text-stone-100 group-hover:text-brand-400 transition-colors">
+                      {tile.label}
+                    </p>
+                    <p className="text-sm text-stone-500 mt-0.5">{tile.description}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
 
       {/* Rebooking Intelligence */}

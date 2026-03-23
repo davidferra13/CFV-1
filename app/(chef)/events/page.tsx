@@ -1,13 +1,11 @@
-// Chef Events List Page
-// Displays all events in a filterable, sortable table
+// Chef Events Hub Page
+// Hub page for /events - navigation tiles to all event sub-sections + the events list below.
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-
-export const metadata: Metadata = { title: 'Events - ChefFlow' }
 import { getEvents } from '@/lib/events/actions'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { Badge } from '@/components/ui/badge'
@@ -20,10 +18,78 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { isDemoEvent } from '@/lib/onboarding/demo-data-utils'
+
+export const metadata: Metadata = { title: 'Events - ChefFlow' }
+
+const hubSections = [
+  {
+    heading: 'Planning',
+    items: [
+      {
+        href: '/events/new',
+        label: 'New Event',
+        description: 'Create a new event from scratch',
+        icon: '➕',
+      },
+      {
+        href: '/calendar',
+        label: 'Calendar',
+        description: 'Day, week, and year views of your schedule',
+        icon: '📅',
+      },
+      {
+        href: '/events/board',
+        label: 'Kanban Board',
+        description: 'Visual board of all events by status',
+        icon: '🗂️',
+      },
+    ],
+  },
+  {
+    heading: 'Pipeline',
+    items: [
+      {
+        href: '/inquiries',
+        label: 'Inquiries',
+        description: 'Incoming requests and new leads',
+        icon: '📥',
+      },
+      {
+        href: '/quotes',
+        label: 'Quotes',
+        description: 'Draft, sent, accepted, and expired quotes',
+        icon: '📄',
+      },
+      {
+        href: '/proposals',
+        label: 'Proposals',
+        description: 'Detailed proposals with packages and add-ons',
+        icon: '📋',
+      },
+    ],
+  },
+  {
+    heading: 'Review',
+    items: [
+      {
+        href: '/feedback',
+        label: 'Client Feedback',
+        description: 'Request and view post-event feedback',
+        icon: '⭐',
+      },
+      {
+        href: '/aar',
+        label: 'Event Reviews',
+        description: 'After-action reviews and lessons learned',
+        icon: '📝',
+      },
+    ],
+  },
+]
 
 type EventStatus =
   | 'all'
@@ -41,12 +107,10 @@ async function EventsList({ status }: { status: EventStatus }) {
 
   let events = await getEvents()
 
-  // Filter by status if not 'all'
   if (status !== 'all') {
     events = events.filter((event: any) => event.status === status)
   }
 
-  // Sort by date (newest first by default)
   events = events.sort(
     (a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
   )
@@ -137,81 +201,95 @@ export default async function EventsPage({
   const status = (searchParams.status || 'all') as EventStatus
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Events</h1>
-          <p className="text-stone-600 mt-1">Manage your events and proposals</p>
+          <h1 className="text-3xl font-bold text-stone-100">Events</h1>
+          <p className="text-stone-500 mt-1">Calendar, pipeline, and event management</p>
         </div>
         <Link href="/events/new">
           <Button data-tour="create-event">+ New Event</Button>
         </Link>
       </div>
 
-      {/* Status Filter */}
-      <Card className="p-4">
-        <div className="flex gap-2 flex-wrap">
-          <Link href="/events?status=all">
-            <Button size="sm" variant={status === 'all' ? 'primary' : 'secondary'}>
-              All
-            </Button>
-          </Link>
-          <Link href="/events?status=draft">
-            <Button size="sm" variant={status === 'draft' ? 'primary' : 'secondary'}>
-              Draft
-            </Button>
-          </Link>
-          <Link href="/events?status=proposed">
-            <Button size="sm" variant={status === 'proposed' ? 'primary' : 'secondary'}>
-              Proposed
-            </Button>
-          </Link>
-          <Link href="/events?status=accepted">
-            <Button size="sm" variant={status === 'accepted' ? 'primary' : 'secondary'}>
-              Accepted
-            </Button>
-          </Link>
-          <Link href="/events?status=paid">
-            <Button size="sm" variant={status === 'paid' ? 'primary' : 'secondary'}>
-              Paid
-            </Button>
-          </Link>
-          <Link href="/events?status=confirmed">
-            <Button size="sm" variant={status === 'confirmed' ? 'primary' : 'secondary'}>
-              Confirmed
-            </Button>
-          </Link>
-          <Link href="/events?status=in_progress">
-            <Button size="sm" variant={status === 'in_progress' ? 'primary' : 'secondary'}>
-              In Progress
-            </Button>
-          </Link>
-          <Link href="/events?status=completed">
-            <Button size="sm" variant={status === 'completed' ? 'primary' : 'secondary'}>
-              Completed
-            </Button>
-          </Link>
-          <Link href="/events?status=cancelled">
-            <Button size="sm" variant={status === 'cancelled' ? 'primary' : 'secondary'}>
-              Cancelled
-            </Button>
-          </Link>
+      {/* Hub tiles */}
+      {hubSections.map((section) => (
+        <div key={section.heading}>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-3">
+            {section.heading}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {section.items.map((tile) => (
+              <Link key={tile.href} href={tile.href} className="group block">
+                <Card className="h-full transition-colors group-hover:border-brand-700/60 group-hover:bg-stone-800/60">
+                  <CardContent className="pt-5 pb-5">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl leading-none mt-0.5 flex-shrink-0">
+                        {tile.icon}
+                      </span>
+                      <div>
+                        <p className="font-semibold text-stone-100 group-hover:text-brand-400 transition-colors">
+                          {tile.label}
+                        </p>
+                        <p className="text-sm text-stone-500 mt-0.5">{tile.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </div>
-      </Card>
+      ))}
 
-      {/* Events Table */}
-      <WidgetErrorBoundary name="Events List">
-        <Suspense
-          fallback={
-            <Card className="p-8 text-center">
-              <p className="text-stone-500">Loading events...</p>
-            </Card>
-          }
-        >
-          <EventsList status={status} />
-        </Suspense>
-      </WidgetErrorBoundary>
+      {/* Events list */}
+      <div>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-3">
+          All Events
+        </h2>
+
+        {/* Status Filter */}
+        <Card className="p-4 mb-4">
+          <div className="flex gap-2 flex-wrap">
+            {(
+              [
+                'all',
+                'draft',
+                'proposed',
+                'accepted',
+                'paid',
+                'confirmed',
+                'in_progress',
+                'completed',
+                'cancelled',
+              ] as EventStatus[]
+            ).map((s) => (
+              <Link key={s} href={`/events?status=${s}`}>
+                <Button size="sm" variant={status === s ? 'primary' : 'secondary'}>
+                  {s === 'all'
+                    ? 'All'
+                    : s === 'in_progress'
+                      ? 'In Progress'
+                      : s.charAt(0).toUpperCase() + s.slice(1)}
+                </Button>
+              </Link>
+            ))}
+          </div>
+        </Card>
+
+        <WidgetErrorBoundary name="Events List">
+          <Suspense
+            fallback={
+              <Card className="p-8 text-center">
+                <p className="text-stone-500">Loading events...</p>
+              </Card>
+            }
+          >
+            <EventsList status={status} />
+          </Suspense>
+        </WidgetErrorBoundary>
+      </div>
     </div>
   )
 }

@@ -1,38 +1,164 @@
-// Chef Financials Dashboard - Protected by layout
+// Chef Financials Hub Page
 
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
-
-export const metadata: Metadata = { title: 'Financials - ChefFlow' }
 import { getLedgerEntries } from '@/lib/ledger/actions'
 import { getMonthlyFinancialSummary } from '@/lib/expenses/actions'
 import { getOutstandingPayments } from '@/lib/dashboard/actions'
 import { getRevenueGoalSnapshot } from '@/lib/revenue-goals/actions'
 import { getMarketIncomeSummary } from '@/lib/calendar/entry-actions'
 import { FinancialsClient } from './financials-client'
+import { Card, CardContent } from '@/components/ui/card'
+
+export const metadata: Metadata = { title: 'Finance - ChefFlow' }
+
+const sections = [
+  {
+    heading: 'Money In',
+    items: [
+      {
+        href: '/finance/invoices',
+        label: 'Invoices',
+        description: 'Sent, paid, overdue, and recurring invoices',
+        icon: '🧾',
+      },
+      {
+        href: '/finance/payments/deposits',
+        label: 'Deposits',
+        description: 'Deposits received and deposit schedules',
+        icon: '💵',
+      },
+      {
+        href: '/finance/retainers',
+        label: 'Retainers',
+        description: 'Retainer agreements and balances',
+        icon: '🔒',
+      },
+    ],
+  },
+  {
+    heading: 'Money Out',
+    items: [
+      {
+        href: '/expenses',
+        label: 'Expenses',
+        description: 'Log and categorize business expenses',
+        icon: '💳',
+      },
+      {
+        href: '/receipts',
+        label: 'Receipt Library',
+        description: 'Uploaded receipts sorted by category',
+        icon: '🗂️',
+      },
+      {
+        href: '/finance/payouts/stripe-payouts',
+        label: 'Payouts',
+        description: 'Stripe payouts and bank feed',
+        icon: '🏦',
+      },
+    ],
+  },
+  {
+    heading: 'Reports',
+    items: [
+      {
+        href: '/finance/reporting/profit-loss',
+        label: 'Profit and Loss',
+        description: 'Revenue vs expenses summary',
+        icon: '📊',
+      },
+      {
+        href: '/finance/reporting/revenue-by-month',
+        label: 'Revenue by Month',
+        description: 'Monthly revenue trends',
+        icon: '📈',
+      },
+      {
+        href: '/finance/reporting/profit-by-event',
+        label: 'Profit by Event',
+        description: 'Per-event margin breakdown',
+        icon: '🎯',
+      },
+      {
+        href: '/finance/tax/quarterly',
+        label: 'Tax Center',
+        description: 'Quarterly estimates, year-end package, and tax summary',
+        icon: '🏛️',
+      },
+      {
+        href: '/finance/ledger/transaction-log',
+        label: 'Transaction Ledger',
+        description: 'Full append-only ledger of every financial entry',
+        icon: '📒',
+      },
+      {
+        href: '/finance/cash-flow',
+        label: 'Cash Flow Forecast',
+        description: 'Projected income and expenses forward',
+        icon: '🔮',
+      },
+    ],
+  },
+]
 
 export default async function FinancialsPage() {
   await requireChef()
 
   const now = new Date()
-  const [financials, ledgerEntries, monthlySummary, outstanding, revenueGoal, marketIncome] = await Promise.all([
-    getTenantFinancialSummary(),
-    getLedgerEntries(),
-    getMonthlyFinancialSummary(now.getFullYear(), now.getMonth() + 1),
-    getOutstandingPayments(),
-    getRevenueGoalSnapshot(),
-    getMarketIncomeSummary(now.getFullYear()),
-  ])
+  const [financials, ledgerEntries, monthlySummary, outstanding, revenueGoal, marketIncome] =
+    await Promise.all([
+      getTenantFinancialSummary(),
+      getLedgerEntries(),
+      getMonthlyFinancialSummary(now.getFullYear(), now.getMonth() + 1),
+      getOutstandingPayments(),
+      getRevenueGoalSnapshot(),
+      getMarketIncomeSummary(now.getFullYear()),
+    ])
 
   return (
-    <FinancialsClient
-      financials={financials}
-      ledgerEntries={ledgerEntries}
-      pendingPaymentsCents={outstanding.totalOutstandingCents}
-      monthlySummary={monthlySummary}
-      revenueGoal={revenueGoal}
-      marketIncome={marketIncome}
-    />
+    <div className="space-y-10">
+      {/* Dashboard */}
+      <FinancialsClient
+        financials={financials}
+        ledgerEntries={ledgerEntries}
+        pendingPaymentsCents={outstanding.totalOutstandingCents}
+        monthlySummary={monthlySummary}
+        revenueGoal={revenueGoal}
+        marketIncome={marketIncome}
+      />
+
+      {/* Nav tiles */}
+      {sections.map((section) => (
+        <div key={section.heading}>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-3">
+            {section.heading}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {section.items.map((tile) => (
+              <Link key={tile.href} href={tile.href} className="group block">
+                <Card className="h-full transition-colors group-hover:border-brand-700/60 group-hover:bg-stone-800/60">
+                  <CardContent className="pt-5 pb-5">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl leading-none mt-0.5 flex-shrink-0">
+                        {tile.icon}
+                      </span>
+                      <div>
+                        <p className="font-semibold text-stone-100 group-hover:text-brand-400 transition-colors">
+                          {tile.label}
+                        </p>
+                        <p className="text-sm text-stone-500 mt-0.5">{tile.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }

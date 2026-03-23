@@ -620,6 +620,7 @@ export function ChefSidebar({
   )
   const accessibleGroups = useMemo(() => {
     const baseGroups = navGroups
+      .filter((group) => !group.advancedOnly)
       .map((group) => ({
         ...group,
         items: (isAdmin ? group.items : group.items.filter((item) => !item.adminOnly))
@@ -884,18 +885,6 @@ export function ChefSidebar({
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
-            {/* Groups as flyouts */}
-            {groupEntries.map(({ group }) => (
-              <RailFlyout
-                key={group.id}
-                group={group}
-                pathname={pathname}
-                searchParams={searchParams}
-              />
-            ))}
-
-            <div className="w-6 border-t border-stone-800 my-1.5" />
-
             {/* Community - rail icon */}
             <Link
               href="/network"
@@ -960,48 +949,29 @@ export function ChefSidebar({
           <div className="px-3 space-y-1">
             <NavFilterInput value={navFilter} onChange={setNavFilter} />
 
-            <button
-              type="button"
-              onClick={() => setShortcutsOpen((prev) => !prev)}
-              aria-expanded={shortcutsOpen}
-              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-            >
-              <span className="flex-1 text-left">Shortcuts</span>
-              <ChevronDown
-                className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                  shortcutsOpen ? 'rotate-0' : '-rotate-90'
-                }`}
-              />
-            </button>
-            <div
-              className={`overflow-hidden transition-all duration-200 ${
-                shortcutsOpen ? 'max-h-[1400px] opacity-100' : 'max-h-0 opacity-0'
-              }`}
-            >
-              <div className="space-y-0.5">
-                {filteredPrimaryItems.map((item) => {
-                  const Icon = item.icon
-                  const active = isItemActive(pathname, item.href, searchParams)
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
-                        active
-                          ? 'bg-brand-950 text-brand-400 border-brand-500 nav-active-glow'
-                          : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
-                      }`}
-                    >
-                      <Icon
-                        className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                      />
-                      {item.label}
-                      {item.href === '/inbox' && <InboxUnreadBadge />}
-                      {item.href === '/circles' && <CirclesUnreadBadge />}
-                    </Link>
-                  )
-                })}
-              </div>
+            <div className="space-y-0.5 pb-1">
+              {filteredPrimaryItems.map((item) => {
+                const Icon = item.icon
+                const active = isItemActive(pathname, item.href, searchParams)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
+                      active
+                        ? 'bg-brand-950 text-brand-400 border-brand-500 nav-active-glow'
+                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
+                    }`}
+                  >
+                    <Icon
+                      className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                    />
+                    {item.label}
+                    {item.href === '/inbox' && <InboxUnreadBadge />}
+                    {item.href === '/circles' && <CirclesUnreadBadge />}
+                  </Link>
+                )
+              })}
             </div>
 
             <button
@@ -1046,23 +1016,6 @@ export function ChefSidebar({
             </div>
 
             <RecentPagesSection />
-
-            <div className="divider-brand h-px my-2 mx-3 opacity-40" />
-
-            {/* Grouped nav */}
-            {filteredGroupEntries.map(({ group, isLocked }) => (
-              <NavGroupSection
-                key={group.id}
-                group={group}
-                pathname={pathname}
-                searchParams={searchParams}
-                isOpen={openGroups.has(group.id)}
-                onToggle={() => toggleGroup(group.id)}
-                openItems={openItems}
-                onToggleItem={toggleItem}
-                isLocked={isLocked}
-              />
-            ))}
 
             <div className="divider-brand h-px my-2 mx-3 opacity-40" />
 
