@@ -1,5 +1,5 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
 import {
   isApiSkipAuthPath,
   isPublicAssetPath,
@@ -14,77 +14,7 @@ import {
   stripInternalRequestHeaders,
 } from '@/lib/auth/request-auth-context'
 
-type PendingCookie = {
-  name: string
-  value: string
-  options?: Record<string, unknown>
-}
-
 const roleCookieName = 'chefflow-role-cache'
-
-function applyPendingCookies(
-  response: NextResponse,
-  pendingCookies: Map<string, PendingCookie>
-): NextResponse {
-  pendingCookies.forEach(({ name, value, options }) => {
-    response.cookies.set(name, value, options as any)
-  })
-  return response
-}
-
-function nextWithState(
-  requestHeaders: Headers,
-  pendingCookies: Map<string, PendingCookie>
-): NextResponse {
-  return applyPendingCookies(
-    NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    }),
-    pendingCookies
-  )
-}
-
-function redirectWithState(url: URL, pendingCookies: Map<string, PendingCookie>): NextResponse {
-  return applyPendingCookies(NextResponse.redirect(url), pendingCookies)
-}
-
-function jsonWithState(
-  body: Record<string, unknown>,
-  status: number,
-  pendingCookies: Map<string, PendingCookie>
-): NextResponse {
-  return applyPendingCookies(NextResponse.json(body, { status }), pendingCookies)
-}
-
-function queueCookie(
-  pendingCookies: Map<string, PendingCookie>,
-  sessionOnly: boolean,
-  name: string,
-  value: string,
-  options?: Record<string, unknown>
-): void {
-  pendingCookies.set(name, {
-    name,
-    value,
-    options: sessionOnly && options ? { ...options, maxAge: undefined } : options,
-  })
-}
-
-function setRoleCookie(
-  pendingCookies: Map<string, PendingCookie>,
-  sessionOnly: boolean,
-  role: string
-): void {
-  queueCookie(pendingCookies, sessionOnly, roleCookieName, role, {
-    maxAge: sessionOnly ? undefined : 300,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-  })
-}
 
 function getHomePathForRole(role: string | null | undefined): string {
   switch (role) {
@@ -99,7 +29,13 @@ function getHomePathForRole(role: string | null | undefined): string {
   }
 }
 
-export async function middleware(request: NextRequest) {
+/**
+ * Auth.js v5 middleware wrapper.
+ * The auth() function decodes the JWT from the session cookie and attaches
+ * the session to request.auth. No DB query per request - role/tenant are
+ * cached in the JWT from login time.
+ */
+export default auth(async (request) => {
   const { pathname } = request.nextUrl
 
   if (isPublicAssetPath(pathname)) {
@@ -119,124 +55,79 @@ export async function middleware(request: NextRequest) {
   setPathnameHeader(requestHeaders, pathname)
   setRequestAuthContext(requestHeaders, null)
 
-  const pendingCookies = new Map<string, PendingCookie>()
-  const sessionOnly = request.cookies.get('chefflow-session-only')?.value === '1'
+  // Auth.js attaches the decoded JWT session to request.auth
+  const session = request.auth
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value)
-            queueCookie(
-              pendingCookies,
-              sessionOnly,
-              name,
-              value,
-              options as Record<string, unknown>
-            )
-          })
-        },
-      },
-    }
-  )
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  if (!session?.user) {
     if (pathname === '/') {
-      return nextWithState(requestHeaders, pendingCookies)
+      return NextResponse.next({ request: { headers: requestHeaders } })
     }
 
     if (pathname.startsWith('/api/')) {
-      return jsonWithState({ error: 'Authentication required' }, 401, pendingCookies)
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     const redirectUrl = new URL('/auth/signin', request.url)
     redirectUrl.searchParams.set('redirect', pathname)
-    return redirectWithState(redirectUrl, pendingCookies)
+    return NextResponse.redirect(redirectUrl)
   }
 
-  const { data: roleData, error: roleError } = await supabase
-    .from('user_roles')
-    .select('role, entity_id')
-    .eq('auth_user_id', user.id)
-    .maybeSingle()
+  const { user } = session
+  const role = user.role
+  const entityId = user.entityId
+  const tenantId = user.tenantId ?? null
 
-  if (roleError) {
-    console.error('[middleware] Failed to resolve user role:', roleError)
-  }
-
-  if (!roleData) {
-    return redirectWithState(new URL('/unauthorized', request.url), pendingCookies)
-  }
-
-  setRoleCookie(pendingCookies, sessionOnly, roleData.role)
-
-  let tenantId: string | null = null
-  if (roleData.role === 'chef') {
-    tenantId = roleData.entity_id
-  } else if (roleData.role === 'client') {
-    const { data: clientData, error: clientError } = await supabase
-      .from('clients')
-      .select('tenant_id')
-      .eq('id', roleData.entity_id)
-      .maybeSingle()
-
-    if (clientError) {
-      console.error('[middleware] Failed to resolve client tenant:', clientError)
+  if (!role || !entityId) {
+    // Authenticated but no role (new OAuth user) - send to role selection
+    if (pathname !== '/auth/role-selection' && !pathname.startsWith('/api/auth')) {
+      return NextResponse.redirect(new URL('/auth/role-selection', request.url))
     }
-
-    tenantId = clientData?.tenant_id ?? null
+    return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
-  if (roleData.role === 'chef' || roleData.role === 'client') {
+  // Set auth context headers for downstream server components/actions
+  if (role === 'chef' || role === 'client') {
     setRequestAuthContext(requestHeaders, {
       userId: user.id,
       email: user.email ?? '',
-      role: roleData.role,
-      entityId: roleData.entity_id,
+      role: role as 'chef' | 'client',
+      entityId,
       tenantId,
     })
   }
 
+  // Build response with auth context headers
+  const response = NextResponse.next({ request: { headers: requestHeaders } })
+
+  // Set role cookie for client-side access
+  const sessionOnly = request.cookies.get('chefflow-session-only')?.value === '1'
+  response.cookies.set(roleCookieName, role, {
+    maxAge: sessionOnly ? undefined : 300,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  })
+
+  // Route-level access control
   if (pathname === '/') {
-    return redirectWithState(
-      new URL(getHomePathForRole(roleData.role), request.url),
-      pendingCookies
-    )
+    return NextResponse.redirect(new URL(getHomePathForRole(role), request.url))
   }
 
-  if (isChefRoutePath(pathname) && roleData.role !== 'chef') {
-    return redirectWithState(
-      new URL(getHomePathForRole(roleData.role), request.url),
-      pendingCookies
-    )
+  if (isChefRoutePath(pathname) && role !== 'chef') {
+    return NextResponse.redirect(new URL(getHomePathForRole(role), request.url))
   }
 
-  if (isClientRoutePath(pathname) && roleData.role !== 'client') {
-    return redirectWithState(
-      new URL(getHomePathForRole(roleData.role), request.url),
-      pendingCookies
-    )
+  if (isClientRoutePath(pathname) && role !== 'client') {
+    return NextResponse.redirect(new URL(getHomePathForRole(role), request.url))
   }
 
-  if (isStaffRoutePath(pathname) && roleData.role !== 'staff') {
-    return redirectWithState(
-      new URL(getHomePathForRole(roleData.role), request.url),
-      pendingCookies
-    )
+  if (isStaffRoutePath(pathname) && role !== 'staff') {
+    return NextResponse.redirect(new URL(getHomePathForRole(role), request.url))
   }
 
-  return nextWithState(requestHeaders, pendingCookies)
-}
+  return response
+})
 
 export const config = {
   matcher: [

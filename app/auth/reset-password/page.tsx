@@ -1,8 +1,8 @@
 // Reset Password Page - Set new password after clicking reset link
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { updatePassword } from '@/lib/auth/actions'
 
@@ -11,10 +11,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const recoveryToken = searchParams?.get('token') ?? null
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(
+    !recoveryToken ? 'Invalid or missing reset link. Please request a new one.' : null
+  )
   const [success, setSuccess] = useState(false)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -22,6 +26,11 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    if (!recoveryToken) {
+      setError('Invalid or missing reset link. Please request a new one.')
+      return
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
@@ -36,9 +45,8 @@ export default function ResetPasswordPage() {
     setLoading(true)
 
     try {
-      await updatePassword(password)
+      await updatePassword(password, recoveryToken)
       setSuccess(true)
-      // Redirect to sign-in after a brief delay so user sees the success message
       setTimeout(() => {
         router.push('/auth/signin?message=Password updated successfully')
       }, 2000)
@@ -102,6 +110,7 @@ export default function ResetPasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={!recoveryToken}
                 helperText="Minimum 8 characters"
                 autoComplete="new-password"
                 autoFocus
@@ -113,12 +122,19 @@ export default function ResetPasswordPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                disabled={!recoveryToken}
                 autoComplete="new-password"
               />
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" variant="primary" className="w-full" loading={loading}>
+              <Button
+                type="submit"
+                variant="primary"
+                className="w-full"
+                loading={loading}
+                disabled={!recoveryToken}
+              >
                 Update Password
               </Button>
 
@@ -135,5 +151,13 @@ export default function ResetPasswordPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordForm />
+    </Suspense>
   )
 }

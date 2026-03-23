@@ -17,7 +17,7 @@ export function getCachedCannabisAccess(authUserId: string): Promise<boolean> {
   return unstable_cache(
     async (): Promise<boolean> => {
       const supabase: any = createAdminClient()
-      if (await hasPersistedAdminAccessForAuthUser(supabase, authUserId)) return true
+      if (await hasPersistedAdminAccessForAuthUser(authUserId)) return true
 
       const { data, error } = await supabase
         .from('cannabis_tier_users')
@@ -113,8 +113,7 @@ export function getCachedDeletionStatus(chefId: string): Promise<CachedDeletionS
 export function getCachedIsAdmin(authUserId: string): Promise<boolean> {
   return unstable_cache(
     async (): Promise<boolean> => {
-      const supabase: any = createAdminClient()
-      return hasPersistedAdminAccessForAuthUser(supabase, authUserId)
+      return hasPersistedAdminAccessForAuthUser(authUserId)
     },
     [`is-admin-${authUserId}`],
     { revalidate: 60, tags: [`is-admin-${authUserId}`] }

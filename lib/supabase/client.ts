@@ -1,13 +1,21 @@
-// Browser-side Supabase client
-// Used in Client Components only
+// Browser-side auth client
+// Google OAuth now uses Auth.js signIn('google') instead of Supabase
+//
+// NOTE: The Supabase browser client (createClient) is still exported for
+// Phase 2 migration. Components that use it for data queries will be migrated
+// to server actions with Drizzle in Phase 2.
 
 import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from '@/types/database'
+import { signIn } from 'next-auth/react'
 
 type BrowserSupabaseClient = ReturnType<typeof createBrowserClient<Database>>
 
 let browserClient: BrowserSupabaseClient | null = null
 
+/**
+ * @deprecated Will be removed in Phase 4. Use server actions with Drizzle instead.
+ */
 export function createClient() {
   if (!browserClient) {
     browserClient = createBrowserClient<Database>(
@@ -19,80 +27,12 @@ export function createClient() {
   return browserClient
 }
 
-type OAuthCallbackOptions = {
-  browserOrigin?: string
-  siteUrl?: string
-}
-
-function parseAllowedOrigin(candidate?: string): string | null {
-  if (!candidate) return null
-  try {
-    const parsed = new URL(candidate)
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      return null
-    }
-    return parsed.origin
-  } catch {
-    return null
-  }
-}
-
-function resolveConfiguredSiteOrigin(siteUrl?: string): string | null {
-  if (!siteUrl) return null
-
-  const origin = parseAllowedOrigin(siteUrl)
-  if (!origin) {
-    throw new Error('Invalid NEXT_PUBLIC_SITE_URL. Expected a valid http(s) URL.')
-  }
-
-  return origin
-}
-
 /**
- * Build a callback URL for Supabase OAuth.
- * Prefer NEXT_PUBLIC_SITE_URL so callbacks stay on the configured allowlisted origin.
- */
-export function resolveGoogleOAuthCallbackUrl(
-  nextPath?: string,
-  options: OAuthCallbackOptions = {}
-): string {
-  const configuredSiteUrl = options.siteUrl ?? process.env.NEXT_PUBLIC_SITE_URL
-  const configuredOrigin = resolveConfiguredSiteOrigin(configuredSiteUrl)
-  const runtimeOrigin = parseAllowedOrigin(options.browserOrigin)
-
-  if (process.env.NODE_ENV === 'production' && !configuredOrigin) {
-    throw new Error('NEXT_PUBLIC_SITE_URL must be set for Google OAuth in production.')
-  }
-
-  const callbackOrigin = configuredOrigin ?? runtimeOrigin
-
-  if (!callbackOrigin) {
-    throw new Error('Unable to determine OAuth callback origin.')
-  }
-
-  const callbackUrl = new URL('/auth/callback', callbackOrigin)
-  if (nextPath) {
-    callbackUrl.searchParams.set('next', nextPath)
-  }
-  return callbackUrl.toString()
-}
-
-/**
- * Sign in with Google OAuth via Supabase.
+ * Sign in with Google OAuth via Auth.js.
  * Must be called from a client component - triggers a full-page redirect.
  */
 export async function signInWithGoogle(nextPath?: string) {
-  const supabase = createClient()
-  const callbackUrl = resolveGoogleOAuthCallbackUrl(nextPath, {
-    browserOrigin: window.location.origin,
+  await signIn('google', {
+    callbackUrl: nextPath || '/dashboard',
   })
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: callbackUrl,
-    },
-  })
-  if (error) {
-    throw new Error(error.message)
-  }
 }

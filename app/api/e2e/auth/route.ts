@@ -3,11 +3,15 @@
 // can establish authenticated sessions without accumulating rate-limit counts
 // across multiple test runs (the in-memory limiter persists while reuseExistingServer is true).
 //
-// SECURITY: This endpoint is ONLY active when SUPABASE_E2E_ALLOW_REMOTE=true.
+// SECURITY: This endpoint is ONLY active when E2E_ALLOW_TEST_AUTH=true.
 // That env var must never be set in production. Any request without it gets 403.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { db } from '@/lib/db'
+import { authUsers } from '@/lib/db/schema/auth'
+import { eq } from 'drizzle-orm'
+import bcrypt from 'bcryptjs'
+import { encode } from 'next-auth/jwt'
 
 export async function POST(req: NextRequest) {
   // Hard gate - never available in production, regardless of env vars
@@ -15,8 +19,12 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Forbidden', { status: 403 })
   }
 
-  // Only allowed when explicitly opted into E2E remote testing
-  if (process.env.SUPABASE_E2E_ALLOW_REMOTE !== 'true') {
+  // Only allowed when explicitly opted into E2E testing
+  // Accept both old and new env var names for backward compatibility
+  if (
+    process.env.E2E_ALLOW_TEST_AUTH !== 'true' &&
+    process.env.SUPABASE_E2E_ALLOW_REMOTE !== 'true'
+  ) {
     return new NextResponse('Forbidden', { status: 403 })
   }
 
@@ -30,16 +38,55 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Bad Request', { status: 400 })
   }
 
-  // Use the standard SSR server client - it handles cookie setting automatically
-  const supabase: any = createServerClient()
+  // Verify credentials directly
+  const [user] = await db
+    .select({
+      id: authUsers.id,
+      email: authUsers.email,
+      encryptedPassword: authUsers.encryptedPassword,
+    })
+    .from(authUsers)
+    .where(eq(authUsers.email, email.trim().toLowerCase()))
+    .limit(1)
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-
-  if (error || !data.session) {
-    return NextResponse.json({ error: error?.message ?? 'Sign-in failed' }, { status: 401 })
+  if (!user?.encryptedPassword) {
+    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
   }
 
-  // Cookies are set on the response via the SSR client's setAll handler.
-  // Playwright captures Set-Cookie headers from page.request.post() responses.
-  return NextResponse.json({ ok: true, userId: data.user.id })
+  const valid = await bcrypt.compare(password, user.encryptedPassword)
+  if (!valid) {
+    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+  }
+
+  // Create Auth.js session token directly for E2E testing
+  const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET
+  if (!secret) {
+    return NextResponse.json({ error: 'Auth secret not configured' }, { status: 500 })
+  }
+
+  const token = await encode({
+    token: {
+      userId: user.id,
+      email: user.email ?? email,
+      role: '',
+      entityId: '',
+      tenantId: null,
+    },
+    secret,
+  })
+
+  // Set the Auth.js session cookie
+  const response = NextResponse.json({ ok: true, userId: user.id })
+  const cookieName =
+    process.env.NODE_ENV === 'production' ? '__Secure-authjs.session-token' : 'authjs.session-token'
+
+  response.cookies.set(cookieName, token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  })
+
+  return response
 }

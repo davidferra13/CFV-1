@@ -1,29 +1,8 @@
-export type AdminAccessLevel = 'admin' | 'owner'
+import { db } from '@/lib/db'
+import { platformAdmins } from '@/lib/db/schema/schema'
+import { eq, and } from 'drizzle-orm'
 
-type SupabaseReader = {
-  from: (table: string) => {
-    select: (columns: string) => {
-      eq: (
-        column: string,
-        value: unknown
-      ) => {
-        eq: (
-          column: string,
-          value: unknown
-        ) => {
-          maybeSingle: () => Promise<{
-            data: {
-              auth_user_id: string
-              email: string | null
-              access_level: AdminAccessLevel
-            } | null
-            error: { message: string } | null
-          }>
-        }
-      }
-    }
-  }
-}
+export type AdminAccessLevel = 'admin' | 'owner'
 
 export type PersistedAdminAccess = {
   authUserId: string
@@ -32,31 +11,30 @@ export type PersistedAdminAccess = {
 }
 
 export async function getPersistedAdminAccessForAuthUser(
-  supabase: SupabaseReader,
   authUserId: string
 ): Promise<PersistedAdminAccess | null> {
-  const { data, error } = await supabase
-    .from('platform_admins')
-    .select('auth_user_id, email, access_level')
-    .eq('auth_user_id', authUserId)
-    .eq('is_active', true)
-    .maybeSingle()
+  const [data] = await db
+    .select({
+      authUserId: platformAdmins.authUserId,
+      email: platformAdmins.email,
+      accessLevel: platformAdmins.accessLevel,
+    })
+    .from(platformAdmins)
+    .where(and(eq(platformAdmins.authUserId, authUserId), eq(platformAdmins.isActive, true)))
+    .limit(1)
 
-  if (error || !data) {
+  if (!data) {
     return null
   }
 
   return {
-    authUserId: data.auth_user_id,
+    authUserId: data.authUserId,
     email: data.email,
-    accessLevel: data.access_level,
+    accessLevel: data.accessLevel as AdminAccessLevel,
   }
 }
 
-export async function hasPersistedAdminAccessForAuthUser(
-  supabase: SupabaseReader,
-  authUserId: string
-): Promise<boolean> {
-  const access = await getPersistedAdminAccessForAuthUser(supabase, authUserId)
+export async function hasPersistedAdminAccessForAuthUser(authUserId: string): Promise<boolean> {
+  const access = await getPersistedAdminAccessForAuthUser(authUserId)
   return access !== null
 }

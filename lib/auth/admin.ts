@@ -2,7 +2,7 @@
 // Platform-level gating separate from the chef/client/staff role system.
 // Access is persisted in platform_admins and queried per-session.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getPersistedAdminAccessForAuthUser, type AdminAccessLevel } from '@/lib/auth/admin-access'
 
@@ -17,24 +17,20 @@ export type AdminUser = {
  * Returns null for unauthenticated users and authenticated non-admins.
  */
 export async function getCurrentAdminUser(): Promise<AdminUser | null> {
-  const supabase: any = createServerClient()
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
+  const session = await auth()
 
-  if (error || !user || !user.email) {
+  if (!session?.user?.id || !session.user.email) {
     return null
   }
 
-  const access = await getPersistedAdminAccessForAuthUser(supabase as any, user.id)
+  const access = await getPersistedAdminAccessForAuthUser(session.user.id)
   if (!access) {
     return null
   }
 
   return {
-    id: user.id,
-    email: user.email.toLowerCase(),
+    id: session.user.id,
+    email: session.user.email.toLowerCase(),
     accessLevel: access.accessLevel,
   }
 }

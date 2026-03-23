@@ -1,7 +1,9 @@
 import { cache } from 'react'
 import { headers } from 'next/headers'
-import { createServerClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { auth } from '@/lib/auth'
+import { db } from '@/lib/db'
+import { userRoles, clients, chefs, staffMembers, referralPartners } from '@/lib/db/schema/schema'
+import { eq } from 'drizzle-orm'
 import { isAdmin } from '@/lib/auth/admin'
 import { readRequestAuthContext } from '@/lib/auth/request-auth-context'
 
@@ -37,6 +39,7 @@ export type PartnerAuthUser = {
  * Returns null if not authenticated or no role assigned
  */
 export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
+  // Fast path: middleware already resolved auth context into request headers
   const requestAuthContext = readRequestAuthContext(headers())
   if (requestAuthContext) {
     return {
@@ -50,25 +53,37 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
     }
   }
 
-  const supabase: any = createServerClient()
+  // Fallback: read from Auth.js session (e.g. in API routes without middleware)
+  const session = await auth()
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
-
-  if (error || !user) {
+  if (!session?.user) {
     return null
   }
 
-  const { data: roleData, error: roleError } = await supabase
-    .from('user_roles')
-    .select('role, entity_id')
-    .eq('auth_user_id', user.id)
-    .single()
+  const { user } = session
 
-  if (roleError || !roleData) {
-    console.error('[AUTH] User has no role assigned:', user.id, roleError)
+  // If the JWT already has role info, use it directly
+  if (user.role && user.entityId && (user.role === 'chef' || user.role === 'client')) {
+    return {
+      id: user.id,
+      userId: user.id,
+      authUserId: user.id,
+      email: user.email ?? '',
+      role: user.role as 'chef' | 'client',
+      entityId: user.entityId,
+      tenantId: user.tenantId ?? null,
+    }
+  }
+
+  // JWT doesn't have role info - query the database
+  const [roleData] = await db
+    .select({ role: userRoles.role, entityId: userRoles.entityId })
+    .from(userRoles)
+    .where(eq(userRoles.authUserId, user.id))
+    .limit(1)
+
+  if (!roleData) {
+    console.error('[AUTH] User has no role assigned:', user.id)
     return null
   }
 
@@ -79,24 +94,23 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
   let tenantId: string | null = null
 
   if (roleData.role === 'chef') {
-    tenantId = roleData.entity_id
+    tenantId = roleData.entityId
   } else if (roleData.role === 'client') {
-    const { data: clientData } = await supabase
-      .from('clients')
-      .select('tenant_id')
-      .eq('id', roleData.entity_id)
-      .single()
-
-    tenantId = clientData?.tenant_id || null
+    const [clientData] = await db
+      .select({ tenantId: clients.tenantId })
+      .from(clients)
+      .where(eq(clients.id, roleData.entityId))
+      .limit(1)
+    tenantId = clientData?.tenantId || null
   }
 
   return {
     id: user.id,
     userId: user.id,
     authUserId: user.id,
-    email: user.email!,
-    role: roleData.role,
-    entityId: roleData.entity_id,
+    email: user.email ?? '',
+    role: roleData.role as 'chef' | 'client',
+    entityId: roleData.entityId,
     tenantId,
   }
 })
@@ -112,17 +126,15 @@ export async function requireChef(): Promise<AuthUser> {
     throw new Error('Unauthorized: Chef access required')
   }
 
-  // Check suspension status - additive column added by migration 20260307000004
-  // account_status defaults to 'active'; only present after that migration is applied.
+  // Check suspension status
   if (user.entityId) {
-    const supabase: any = createServerClient()
-    const { data: chef } = await supabase
-      .from('chefs')
-      .select('account_status')
-      .eq('id', user.entityId)
-      .single()
+    const [chef] = await db
+      .select({ accountStatus: chefs.accountStatus })
+      .from(chefs)
+      .where(eq(chefs.id, user.entityId))
+      .limit(1)
 
-    if (chef?.account_status === 'suspended') {
+    if (chef?.accountStatus === 'suspended') {
       throw new Error('Account suspended: Contact support.')
     }
   }
@@ -163,37 +175,31 @@ export async function requireAuth(): Promise<AuthUser> {
  * their invite and logged in. They are NOT chefs or clients.
  */
 export async function requirePartner(): Promise<PartnerAuthUser> {
-  const supabase: any = createServerClient()
+  const session = await auth()
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
-
-  if (error || !user) {
+  if (!session?.user) {
     throw new Error('Unauthorized: Authentication required')
   }
 
-  // Check user_roles for the partner role (users can read their own role row)
-  const { data: roleData } = await supabase
-    .from('user_roles')
-    .select('role, entity_id')
-    .eq('auth_user_id', user.id)
-    .single()
+  const { user } = session
+
+  // Check user_roles for the partner role
+  const [roleData] = await db
+    .select({ role: userRoles.role, entityId: userRoles.entityId })
+    .from(userRoles)
+    .where(eq(userRoles.authUserId, user.id))
+    .limit(1)
 
   if (!roleData || roleData.role !== 'partner') {
     throw new Error('Unauthorized: Partner access required')
   }
 
-  // Look up tenant_id from the partner record.
-  // Uses admin client because existing chef-only RLS blocks the partner session
-  // from reading referral_partners directly (until migration applies the partner policy).
-  const adminClient = createAdminClient()
-  const { data: partner } = await adminClient
-    .from('referral_partners')
-    .select('tenant_id')
-    .eq('id', roleData.entity_id)
-    .single()
+  // Look up tenant_id from the partner record (direct DB query, no RLS needed)
+  const [partner] = await db
+    .select({ tenantId: referralPartners.tenantId })
+    .from(referralPartners)
+    .where(eq(referralPartners.id, roleData.entityId))
+    .limit(1)
 
   if (!partner) {
     throw new Error('Partner record not found')
@@ -201,10 +207,10 @@ export async function requirePartner(): Promise<PartnerAuthUser> {
 
   return {
     id: user.id,
-    email: user.email!,
+    email: user.email ?? '',
     role: 'partner',
-    partnerId: roleData.entity_id,
-    tenantId: partner.tenant_id,
+    partnerId: roleData.entityId,
+    tenantId: partner.tenantId!,
   }
 }
 
@@ -214,37 +220,31 @@ export async function requirePartner(): Promise<PartnerAuthUser> {
  * They see tasks, recipes, schedules, and station clipboards scoped to their chef (tenant).
  */
 export async function requireStaff(): Promise<StaffAuthUser> {
-  const supabase: any = createServerClient()
+  const session = await auth()
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
-
-  if (error || !user) {
+  if (!session?.user) {
     throw new Error('Unauthorized: Authentication required')
   }
 
+  const { user } = session
+
   // Check user_roles for the staff role
-  const { data: roleData } = await supabase
-    .from('user_roles')
-    .select('role, entity_id')
-    .eq('auth_user_id', user.id)
-    .single()
+  const [roleData] = await db
+    .select({ role: userRoles.role, entityId: userRoles.entityId })
+    .from(userRoles)
+    .where(eq(userRoles.authUserId, user.id))
+    .limit(1)
 
   if (!roleData || roleData.role !== 'staff') {
     throw new Error('Unauthorized: Staff access required')
   }
 
-  // Look up chef_id (tenant) from the staff member record.
-  // Uses admin client because existing chef-only RLS blocks the staff session
-  // from reading staff_members directly (until migration applies the staff policy).
-  const adminClient = createAdminClient()
-  const { data: staffMember } = await adminClient
-    .from('staff_members')
-    .select('chef_id')
-    .eq('id', roleData.entity_id)
-    .single()
+  // Look up chef_id (tenant) from the staff member record (direct DB query, no RLS needed)
+  const [staffMember] = await db
+    .select({ chefId: staffMembers.chefId })
+    .from(staffMembers)
+    .where(eq(staffMembers.id, roleData.entityId))
+    .limit(1)
 
   if (!staffMember) {
     throw new Error('Staff member record not found')
@@ -252,10 +252,10 @@ export async function requireStaff(): Promise<StaffAuthUser> {
 
   return {
     id: user.id,
-    email: user.email!,
+    email: user.email ?? '',
     role: 'staff',
-    staffMemberId: roleData.entity_id,
-    tenantId: staffMember.chef_id,
+    staffMemberId: roleData.entityId,
+    tenantId: staffMember.chefId,
   }
 }
 

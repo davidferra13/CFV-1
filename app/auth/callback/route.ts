@@ -1,9 +1,8 @@
-// Auth callback handler
-// Exchanges auth code for a Supabase session (OAuth, password recovery, etc.)
+// Auth callback handler (legacy compatibility)
+// Auth.js handles OAuth callbacks at /api/auth/callback/[provider]
+// This route exists for backward compatibility with old links and password reset flows.
 
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
-import { log } from '@/lib/logger'
 
 /** Validate redirect path to prevent open redirect attacks */
 function safeRedirectPath(raw: string | null): string {
@@ -19,45 +18,18 @@ function safeRedirectPath(raw: string | null): string {
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
-  const code = searchParams.get('code')
   const next = safeRedirectPath(searchParams.get('next'))
+  const token = searchParams.get('token')
 
-  if (code) {
-    const supabase: any = createServerClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
-    }
-    log.auth.error('Auth callback code exchange failed', {
-      error,
-      context: {
-        route: '/auth/callback',
-        next,
-      },
-    })
-  } else {
-    log.auth.warn('Auth callback missing code parameter', {
-      context: {
-        route: '/auth/callback',
-        next,
-      },
-    })
+  // Password reset token flow - redirect to reset page with token
+  if (token && next === '/auth/reset-password') {
+    return NextResponse.redirect(`${origin}/auth/reset-password?token=${encodeURIComponent(token)}`)
   }
 
-  // Auth failed - determine appropriate error message based on intended flow
-  const isPasswordReset = next === '/auth/reset-password'
-  const errorMessage = isPasswordReset
-    ? 'Password reset link is invalid or has expired. Please request a new one.'
-    : 'Authentication failed. Please try again.'
+  // For any other callback, redirect to the intended destination or signin
+  if (next && next !== '/') {
+    return NextResponse.redirect(`${origin}${next}`)
+  }
 
-  const redirectPath = isPasswordReset ? '/auth/forgot-password' : '/auth/signin'
-  log.auth.warn('Auth callback redirecting to error recovery path', {
-    context: {
-      route: '/auth/callback',
-      redirectPath,
-      isPasswordReset,
-    },
-  })
-  return NextResponse.redirect(`${origin}${redirectPath}?error=${encodeURIComponent(errorMessage)}`)
+  return NextResponse.redirect(`${origin}/auth/signin`)
 }
