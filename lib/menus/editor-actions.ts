@@ -32,6 +32,7 @@ export type EditorMenu = {
   name: string
   description: string | null
   cuisine_type: string | null
+  scene_type: string | null
   service_style: string | null
   target_guest_count: number | null
   price_per_person_cents: number | null
@@ -131,6 +132,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
     name: menu.name,
     description: menu.description,
     cuisine_type: menu.cuisine_type,
+    scene_type: (menu as any).scene_type ?? null,
     service_style: menu.service_style,
     target_guest_count: menu.target_guest_count,
     price_per_person_cents: (menu as any).price_per_person_cents ?? null,
@@ -254,6 +256,7 @@ export async function updateMenuMeta(
   data: {
     name?: string
     cuisine_type?: string | null
+    scene_type?: string | null
     service_style?: string | null
     target_guest_count?: number | null
     price_per_person_cents?: number | null

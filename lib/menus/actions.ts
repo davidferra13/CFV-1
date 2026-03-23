@@ -32,6 +32,7 @@ const CreateMenuSchema = z.object({
     .enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other'])
     .optional(),
   cuisine_type: z.string().optional(),
+  scene_type: z.string().optional(),
   target_guest_count: z.number().int().positive().optional(),
   notes: z.string().optional(),
   is_template: z.boolean().optional(),
@@ -46,6 +47,7 @@ const UpdateMenuSchema = z.object({
     .enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other'])
     .optional(),
   cuisine_type: z.string().optional(),
+  scene_type: z.string().optional(),
   target_guest_count: z.number().int().positive().optional(),
   notes: z.string().optional(),
   is_template: z.boolean().optional(),
@@ -192,6 +194,7 @@ export async function createMenu(input: CreateMenuInput) {
           description: validated.description,
           service_style: validated.service_style as ServiceStyle | undefined,
           cuisine_type: validated.cuisine_type,
+          scene_type: validated.scene_type,
           target_guest_count: validated.target_guest_count,
           notes: validated.notes,
           is_template: validated.is_template,
@@ -269,6 +272,53 @@ export async function createMenu(input: CreateMenuInput) {
   } catch {}
 
   return result
+}
+
+// ─── Course input type for createMenuWithCourses ──────────────────────────────
+
+export type CourseInput = {
+  course_label: string
+  dish_name?: string
+  description?: string
+}
+
+/**
+ * Create a menu with an initial set of courses in one operation.
+ * Returns { menu, dishes, courseErrors } so callers can surface any per-course failures.
+ */
+export async function createMenuWithCourses(
+  menuInput: CreateMenuInput,
+  courses: CourseInput[]
+): Promise<{ menu: any; dishes: any[]; courseErrors: string[] }> {
+  const menuResult = await createMenu(menuInput)
+  const menu = (menuResult as any).menu
+  if (!menu?.id) throw new UnknownAppError('Menu creation failed')
+
+  const dishes: any[] = []
+  const courseErrors: string[] = []
+
+  for (let i = 0; i < courses.length; i++) {
+    const course = courses[i]
+    const courseNumber = i + 1
+    try {
+      const result = await addDishToMenu({
+        menu_id: menu.id,
+        course_number: courseNumber,
+        course_name: course.course_label || `Course ${courseNumber}`,
+        name: course.dish_name || undefined,
+        description: course.description || undefined,
+        dietary_tags: [],
+        allergen_flags: [],
+      })
+      if ((result as any).dish) dishes.push((result as any).dish)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : `Course ${courseNumber} failed`
+      courseErrors.push(msg)
+      console.error(`[createMenuWithCourses] Course ${courseNumber} error:`, err)
+    }
+  }
+
+  return { menu, dishes, courseErrors }
 }
 
 /**
