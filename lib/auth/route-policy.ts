@@ -186,6 +186,8 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/feeds',
   '/api/v1',
   '/api/v2',
+  '/api/storage',
+  '/api/realtime',
 ] as const
 
 function matchesPathOrChild(pathname: string, basePath: string): boolean {

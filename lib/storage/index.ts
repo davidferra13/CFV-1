@@ -3,7 +3,8 @@ import path from 'path'
 import crypto from 'crypto'
 
 const STORAGE_ROOT = process.env.STORAGE_PATH || path.join(process.cwd(), 'storage')
-const SIGNING_SECRET = process.env.NEXTAUTH_SECRET || 'dev-signing-secret'
+const SIGNING_SECRET =
+  process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'dev-signing-secret'
 
 // Ensure directory exists
 async function ensureDir(dirPath: string): Promise<void> {
