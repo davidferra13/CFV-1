@@ -1,0 +1,20 @@
+{
+  "recommendations": [
+    "bradlc.vscode-tailwindcss",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-playwright.playwright",
+    "usernamehw.errorlens",
+    "yoavbls.pretty-ts-errors",
+    "prisma.prisma",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    "csstools.postcss",
+    "mikestead.dotenv",
+    "christian-kohler.path-intellisense",
+    "christian-kohler.npm-intellisense",
+    "eamodio.gitlens",
+    "pkief.material-icon-theme"
+  ],
+  "unwantedRecommendations": []
+}

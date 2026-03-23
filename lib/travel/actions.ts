@@ -430,7 +430,7 @@ export async function updateIngredientStatus(
   const supabase = createClient()
 
   // Verify ownership through leg
-  const { data: row } = await supabase
+  const { data: row }: any = await supabase
     .from('travel_leg_ingredients')
     .select('leg_id')
     .eq('id', ingredientRowId)
@@ -438,7 +438,7 @@ export async function updateIngredientStatus(
 
   if (!row) throw new Error('Ingredient not found')
 
-  const { data: leg } = await supabase
+  const { data: leg }: any = await supabase
     .from('event_travel_legs')
     .select('id')
     .eq('id', row.leg_id)
@@ -463,7 +463,7 @@ export async function deleteLegIngredient(ingredientRowId: string): Promise<void
   const supabase = createClient()
 
   // Verify ownership through leg
-  const { data: row } = await supabase
+  const { data: row }: any = await supabase
     .from('travel_leg_ingredients')
     .select('leg_id')
     .eq('id', ingredientRowId)
@@ -471,7 +471,7 @@ export async function deleteLegIngredient(ingredientRowId: string): Promise<void
 
   if (!row) throw new Error('Ingredient not found')
 
-  const { data: leg } = await supabase
+  const { data: leg }: any = await supabase
     .from('event_travel_legs')
     .select('id')
     .eq('id', row.leg_id)
@@ -576,7 +576,7 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
   if (hasServiceTravel && hasReturnHome) return
 
   // Fetch event and chef prefs to pre-populate addresses
-  const [{ data: event }, { data: prefs }] = await Promise.all([
+  const [{ data: event }, { data: prefs }]: any[] = await Promise.all([
     supabase
       .from('events')
       .select(

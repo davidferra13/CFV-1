@@ -126,7 +126,7 @@ export async function togglePreferred(id: string) {
   const tenantId = user.tenantId!
 
   // Fetch current state
-  const { data: vendor, error: fetchError } = await supabase
+  const { data: vendor, error: fetchError }: any = await supabase
     .from('vendors')
     .select('is_preferred')
     .eq('id', id)
@@ -216,7 +216,7 @@ export async function comparePrices(itemName: string) {
 
   // Get the latest price entry for each vendor for this item
   // Using a subquery approach: get all entries, then deduplicate in JS
-  const { data: entries, error } = await supabase
+  const { data: entries, error }: any = await supabase
     .from('vendor_price_entries')
     .select('*, vendors!inner(id, name, is_preferred, category)')
     .eq('chef_id', tenantId)

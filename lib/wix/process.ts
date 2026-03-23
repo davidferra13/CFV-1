@@ -17,7 +17,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
   const supabase = createServerClient({ admin: true })
 
   // 1. Fetch the pending submission
-  const { data: submission, error: fetchError } = await supabase
+  const { data: submission, error: fetchError }: any = await supabase
     .from('wix_submissions')
     .select('*')
     .eq('id', submissionId)
@@ -60,7 +60,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
         new Date(submission.created_at).getTime() + 10 * 60 * 1000
       ).toISOString()
 
-      const { data: gmailMatch } = await supabase
+      const { data: gmailMatch }: any = await supabase
         .from('gmail_sync_log')
         .select('id, inquiry_id')
         .eq('tenant_id', submission.tenant_id)
@@ -149,7 +149,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
     if (submission.wix_form_id) unknownFields.wix_form_id = submission.wix_form_id
 
     // 8. Create the inquiry
-    const { data: inquiry, error: inquiryError } = await supabase
+    const { data: inquiry, error: inquiryError }: any = await supabase
       .from('inquiries')
       .insert({
         tenant_id: submission.tenant_id,
@@ -202,7 +202,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
       .eq('id', submissionId)
 
     // 11. Update connection stats
-    const { data: conn } = await supabase
+    const { data: conn }: any = await supabase
       .from('wix_connections')
       .select('total_submissions')
       .eq('tenant_id', submission.tenant_id)

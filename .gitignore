@@ -143,6 +143,10 @@ null
 # Claude Code personal settings (machine-specific)
 .claude/settings.json
 
+# VS Code (keep extensions.json, ignore settings with DB creds)
+.vscode/*
+!.vscode/extensions.json
+
 # Remy local AI stats (machine-specific, no PII, regenerated automatically)
 /data/remy-stats/
 
