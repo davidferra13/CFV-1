@@ -98,7 +98,16 @@ type DraftData = {
   courses: CourseRow[]
 }
 
+// Stable initial course ID avoids SSR/client hydration mismatch from crypto.randomUUID()
+const INITIAL_COURSE: CourseRow = {
+  localId: 'course-init-0',
+  label: '',
+  dishName: '',
+  description: '',
+}
+
 function makeCourse(): CourseRow {
+  // Only called client-side (after mount) so UUID is safe here
   return { localId: crypto.randomUUID(), label: '', dishName: '', description: '' }
 }
 
@@ -119,8 +128,8 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
   const [guestCount, setGuestCount] = useState('')
   const [notes, setNotes] = useState('')
 
-  // Courses
-  const [courses, setCourses] = useState<CourseRow[]>([makeCourse()])
+  // Courses - use stable initial value to avoid hydration mismatch
+  const [courses, setCourses] = useState<CourseRow[]>([INITIAL_COURSE])
 
   // Post-submit data for breakdown
   const [createdMenuId, setCreatedMenuId] = useState<string | null>(null)
@@ -149,7 +158,7 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
       service_style: '',
       guest_count: '',
       notes: '',
-      courses: [makeCourse()],
+      courses: [INITIAL_COURSE],
     }),
     []
   )
