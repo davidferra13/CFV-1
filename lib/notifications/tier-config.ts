@@ -136,6 +136,9 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   low_stock: 'critical',
   guest_comp: 'alert',
 
+  // Marketplace
+  marketplace_lead_stale: 'alert',
+
   // System
   system_alert: 'critical',
 }

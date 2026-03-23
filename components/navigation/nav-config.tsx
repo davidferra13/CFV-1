@@ -265,6 +265,11 @@ export const navGroups: NavGroup[] = [
         href: '/marketplace',
         label: 'Marketplace',
         icon: Store,
+        children: [
+          { href: '/marketplace', label: 'Command Center' },
+          { href: '/availability', label: 'Availability Broadcaster' },
+          { href: '/marketplace/capture', label: 'Capture Live Page' },
+        ],
       },
       {
         href: '/proposals',
@@ -1461,7 +1466,7 @@ export function resolveStandaloneTop(preferredHrefs?: string[] | null): NavItem[
     const option = byHref.get(href)
     if (!option) continue
     seen.add(href)
-    resolved.push({ href: option.href, label: option.label, icon: option.icon })
+    resolved.push({ ...option })
   }
 
   if (resolved.length > 0) return resolved

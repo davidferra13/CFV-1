@@ -89,9 +89,17 @@ export default async function CulinaryHubPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-stone-100">Culinary</h1>
-        <p className="text-stone-500 mt-1">Recipes, menus, ingredients, costing, and suppliers</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-stone-100">Culinary</h1>
+          <p className="text-stone-500 mt-1">Recipes, menus, ingredients, costing, and suppliers</p>
+        </div>
+        <Link
+          href="/menus/new"
+          className="shrink-0 inline-flex items-center gap-2 rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600 transition-colors"
+        >
+          <span>+</span> Create Menu
+        </Link>
       </div>
 
       {/* Nav tiles render immediately */}

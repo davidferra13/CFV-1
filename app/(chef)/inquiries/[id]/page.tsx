@@ -19,6 +19,7 @@ import {
 import { InquiryTransitions } from '@/components/inquiries/inquiry-transitions'
 import { InquiryDeadlineForm } from '@/components/inquiries/inquiry-deadline-form'
 import { InquiryResponseComposer } from '@/components/inquiries/inquiry-response-composer'
+import { PlatformResponseDrafter } from '@/components/marketplace/platform-response-drafter'
 import { InquiryNotes } from '@/components/inquiries/inquiry-notes'
 import { InquiryRecipeLinker } from '@/components/inquiries/inquiry-recipe-linker'
 import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
@@ -771,7 +772,29 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         )}
       </Card>
 
-      {/* AI Response Composer */}
+      {/* Platform Response Drafter - for marketplace leads that require copy/paste on the source platform */}
+      {inquiry.status !== 'declined' &&
+        inquiry.status !== 'expired' &&
+        [
+          'take_a_chef',
+          'private_chef_manager',
+          'yhangry',
+          'bark',
+          'thumbtack',
+          'cozymeal',
+          'gigsalad',
+          'theknot',
+          'hireachef',
+          'cuisineist',
+        ].includes(inquiry.channel ?? '') && (
+          <PlatformResponseDrafter
+            inquiryId={inquiry.id}
+            channel={inquiry.channel ?? ''}
+            externalLink={(inquiry as any).external_link ?? null}
+          />
+        )}
+
+      {/* AI Response Composer (Gmail send - for direct/email inquiries) */}
       {inquiry.status !== 'declined' && inquiry.status !== 'expired' && (
         <InquiryResponseComposer
           inquiryId={inquiry.id}
