@@ -213,10 +213,10 @@ export async function getWaitlistStats(): Promise<WaitlistStats> {
 
   const entries = data ?? []
   const total = entries.length
-  const waiting = entries.filter((e) => e.status === 'waiting').length
-  const contacted = entries.filter((e) => e.status === 'contacted').length
-  const booked = entries.filter((e) => e.status === 'booked').length
-  const expired = entries.filter((e) => e.status === 'expired').length
+  const waiting = entries.filter((e: any) => e.status === 'waiting').length
+  const contacted = entries.filter((e: any) => e.status === 'contacted').length
+  const booked = entries.filter((e: any) => e.status === 'booked').length
+  const expired = entries.filter((e: any) => e.status === 'expired').length
 
   // Conversion rate: booked / (total entries that are no longer waiting)
   const resolved = booked + expired

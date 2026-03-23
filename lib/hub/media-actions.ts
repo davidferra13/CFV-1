@@ -96,7 +96,7 @@ export async function getGroupMedia(input: {
 
   if (error) throw new Error(`Failed to load media: ${error.message}`)
 
-  return (data ?? []).map((m) => ({
+  return (data ?? []).map((m: any) => ({
     ...m,
     uploaded_by: m.hub_guest_profiles ?? undefined,
     hub_guest_profiles: undefined,

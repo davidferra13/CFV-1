@@ -2268,7 +2268,7 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
     const menuList = menuRows || []
 
     // Fetch dishes for all menus in one query
-    const menuIds = menuList.map((m) => m.id)
+    const menuIds = menuList.map((m: any) => m.id)
     let dishMap: Record<string, (typeof menus)[number]['dishes']> = {}
     if (menuIds.length > 0) {
       const { data: dishRows } = await supabase
@@ -2293,7 +2293,7 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
       }
     }
 
-    menus = menuList.map((m) => ({
+    menus = menuList.map((m: any) => ({
       ...m,
       dishes: dishMap[m.id] || [],
     }))
@@ -2307,7 +2307,7 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
       .eq('event_share_id', share.id)
       .order('created_at', { ascending: true })
 
-    guestList = (guestRows || []).map((row) => ({
+    guestList = (guestRows || []).map((row: any) => ({
       full_name: row.full_name,
       rsvp_status: row.rsvp_status,
     }))

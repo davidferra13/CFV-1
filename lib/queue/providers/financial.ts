@@ -1,7 +1,6 @@
 // Priority Queue - Financial Provider
 // Surfaces: outstanding balances, expenses missing receipts, events not financially closed
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 
@@ -16,7 +15,7 @@ function getMonthBounds(now: Date) {
 }
 
 export async function getFinancialQueueItems(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string
 ): Promise<QueueItem[]> {
   const items: QueueItem[] = []
@@ -30,7 +29,7 @@ export async function getFinancialQueueItems(
     .gt('outstanding_balance_cents', 0)
 
   if (outstandingSummaries && outstandingSummaries.length > 0) {
-    const eventIds = outstandingSummaries.map((s) => s.event_id).filter(Boolean) as string[]
+    const eventIds = outstandingSummaries.map((s: any) => s.event_id).filter(Boolean) as string[]
     const { data: events } = await supabase
       .from('events')
       .select('id, occasion, event_date, status, client:clients(full_name)')
@@ -39,7 +38,7 @@ export async function getFinancialQueueItems(
       .not('status', 'in', '("draft","cancelled")')
 
     for (const event of events || []) {
-      const fin = outstandingSummaries.find((s) => s.event_id === event.id)
+      const fin = outstandingSummaries.find((s: any) => s.event_id === event.id)
       const outstanding = fin?.outstanding_balance_cents ?? 0
       const hoursSinceEvent = (now.getTime() - new Date(event.event_date).getTime()) / 3600000
       const clientName = (event.client as any)?.full_name ?? 'Unknown'
@@ -169,7 +168,7 @@ export async function getFinancialQueueItems(
       .lte('event_date', monthEnd)
       .not('status', 'eq', 'cancelled')
 
-    const monthEventIds = (monthEvents || []).map((event) => event.id)
+    const monthEventIds = (monthEvents || []).map((event: any) => event.id)
     let realizedCents = 0
     let averagePaidCents = 150000
 
@@ -181,10 +180,10 @@ export async function getFinancialQueueItems(
         .in('event_id', monthEventIds)
 
       const paidValues = (summaries || [])
-        .map((summary) => Math.max(0, summary.total_paid_cents ?? 0))
-        .filter((value) => value > 0)
+        .map((summary: any) => Math.max(0, summary.total_paid_cents ?? 0))
+        .filter((value: any) => value > 0)
 
-      realizedCents = paidValues.reduce((sum, value) => sum + value, 0)
+      realizedCents = paidValues.reduce((sum: any, value: any) => sum + value, 0)
       if (paidValues.length > 0) {
         averagePaidCents = Math.max(1, Math.round(realizedCents / paidValues.length))
       }

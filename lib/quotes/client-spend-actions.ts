@@ -37,7 +37,7 @@ export async function getClientSpendSummary(clientId: string): Promise<ClientSpe
 
   if (!events || events.length === 0) return null
 
-  const eventIds = events.map((e) => e.id)
+  const eventIds = events.map((e: any) => e.id)
 
   // Get actual paid amounts from financial summary view
   const { data: financials, error: finError } = await supabase

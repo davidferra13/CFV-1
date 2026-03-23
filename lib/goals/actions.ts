@@ -1,7 +1,6 @@
 'use server'
 
 import { z } from 'zod'
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
@@ -321,11 +320,7 @@ export async function getGoalsDashboard(): Promise<GoalsDashboard> {
 
   const hasRevenueGoal = goals.some((g) => isRevenueGoal(g.goalType))
   const revenueSnapshot: RevenueGoalSnapshot | null = hasRevenueGoal
-    ? await getRevenueGoalSnapshotForTenantAdmin(
-        tenantId,
-        now,
-        supabase as unknown as SupabaseClient
-      )
+    ? await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, supabase)
     : null
 
   const activeGoals = await Promise.all(
@@ -343,7 +338,7 @@ export async function getGoalsDashboard(): Promise<GoalsDashboard> {
 }
 
 async function computeGoalView(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   goal: ChefGoal,
   now: Date,
@@ -359,7 +354,7 @@ async function computeGoalView(
 }
 
 async function computeRevenueGoalView(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   goal: ChefGoal,
   now: Date,
@@ -411,7 +406,7 @@ async function computeRevenueGoalView(
 }
 
 async function computeManualGoalView(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   goal: ChefGoal
 ): Promise<GoalView> {
@@ -450,7 +445,7 @@ async function computeManualGoalView(
 }
 
 async function computeAutoGoalView(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   goal: ChefGoal,
   _now: Date
@@ -561,7 +556,7 @@ export async function getGoalHistory(goalId: string, limit = 12): Promise<GoalSn
 // ── Snapshot writing (called from cron with admin supabase client) ─────────────
 
 export async function writeGoalSnapshot(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   goalId: string,
   goalView: GoalView,

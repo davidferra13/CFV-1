@@ -8,8 +8,6 @@
 //
 // Rule: NEVER overwrite or delete an existing inquiry. Duplicates are skipped.
 
-import type { SupabaseClient } from '@supabase/supabase-js'
-
 export interface TacDedupMatch {
   isDuplicate: boolean
   existingInquiryId: string | null
@@ -26,7 +24,7 @@ export interface TacDedupMatch {
  * Returns the existing inquiry ID if found, or null if this is a new inquiry.
  */
 export async function checkTacInquiryDuplicate(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   opts: {
     externalId?: string | null
@@ -112,7 +110,7 @@ export async function checkTacInquiryDuplicate(
  * Used for matching message/booking/customer-info emails to existing inquiries.
  */
 export async function findTacInquiryByContext(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   opts: {
     clientName: string | null

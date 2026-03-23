@@ -1,7 +1,6 @@
 // Priority Queue - Inquiry Provider
 // Surfaces: new inquiries, awaiting_chef, overdue follow-ups, unresolved unknown_fields
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 
@@ -57,10 +56,7 @@ function channelLabel(channel: string): string {
   }
 }
 
-export async function getInquiryQueueItems(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<QueueItem[]> {
+export async function getInquiryQueueItems(supabase: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 

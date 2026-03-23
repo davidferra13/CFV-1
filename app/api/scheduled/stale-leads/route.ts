@@ -54,7 +54,7 @@ async function handleStaleLeads(request: NextRequest): Promise<NextResponse> {
   const { data: staleLeads, error } = await supabase
     .from('inquiries')
     .select('id, tenant_id, channel, confirmed_occasion, confirmed_date, created_at')
-    .in('channel', MARKETPLACE_CHANNELS)
+    .in('channel', [...MARKETPLACE_CHANNELS])
     .in('status', ['new', 'awaiting_chef'])
     .lt('created_at', staleThreshold)
 

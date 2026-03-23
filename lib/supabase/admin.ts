@@ -1,15 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
+// Admin database client (Drizzle compatibility layer)
+// Drop-in replacement for the old Supabase admin client.
+// No RLS since we connect directly to PostgreSQL.
 
-export function createAdminClient() {
-  return createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    }
-  )
+import { createCompatClient, type CompatClient } from '@/lib/db/compat'
+
+export function createAdminClient(): CompatClient {
+  return createCompatClient()
 }

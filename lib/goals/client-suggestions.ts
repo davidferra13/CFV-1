@@ -1,4 +1,3 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ClientSuggestion } from './types'
 
 type SummaryRow = {
@@ -30,7 +29,7 @@ type ExistingSuggestionRow = {
 // Existing rows (already contacted, booked, etc.) keep their status.
 
 export async function buildClientSuggestions(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   gapCents: number,
   goalId: string,

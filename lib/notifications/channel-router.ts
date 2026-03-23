@@ -142,7 +142,7 @@ async function deliverPush(
 
   // Send to all devices in parallel; handle each result independently
   const results = await Promise.allSettled(
-    subscriptions.map((sub) => sendPushNotification(sub, payload))
+    subscriptions.map((sub: any) => sendPushNotification(sub, payload))
   )
 
   let sent = 0

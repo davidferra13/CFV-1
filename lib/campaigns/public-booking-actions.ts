@@ -75,7 +75,7 @@ export async function getCampaignByToken(token: string): Promise<PublicDinnerInf
       .order('course_number', { ascending: true })
       .limit(8)
 
-    menuPreview = (dishes ?? []).map((d) => ({
+    menuPreview = (dishes ?? []).map((d: any) => ({
       name: d.description ?? '',
       course_name: d.course_name ?? '',
     }))

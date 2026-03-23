@@ -1,14 +1,10 @@
 // Priority Queue - Message Provider
 // Surfaces: outbound draft messages needing approval, approved messages needing send
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 
-export async function getMessageQueueItems(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<QueueItem[]> {
+export async function getMessageQueueItems(supabase: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 

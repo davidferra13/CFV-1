@@ -1145,7 +1145,7 @@ export async function uploadChefProfileImage(
 
   if (
     uploadError &&
-    String(uploadError.message || '')
+    String((uploadError as any).message || '')
       .toLowerCase()
       .includes('bucket')
   ) {

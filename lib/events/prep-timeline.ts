@@ -147,7 +147,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
     }
   }
 
-  const dishIds = dishes.map((d) => d.id)
+  const dishIds = dishes.map((d: any) => d.id)
 
   // 3. Fetch components with their recipes
   const { data: components } = await supabase
@@ -170,7 +170,9 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   }
 
   // 4. Fetch recipes for components that have recipe_id
-  const recipeIds = components.map((c) => c.recipe_id).filter((id): id is string => id !== null)
+  const recipeIds = components
+    .map((c: any) => c.recipe_id)
+    .filter((id: any): id is string => id !== null)
 
   let recipesMap: Map<
     string,
@@ -197,7 +199,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   }
 
   // 5. Build dish lookup
-  const dishMap = new Map(dishes.map((d) => [d.id, d]))
+  const dishMap = new Map(dishes.map((d: any) => [d.id, d]))
 
   // 6. Build tasks
   const serveMinutes = parseTimeToMinutes(event.serve_time)
@@ -237,8 +239,8 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
     tasks.push({
       recipeName,
       componentName: comp.name,
-      courseName: dish.course_name,
-      courseNumber: dish.course_number,
+      courseName: (dish as any).course_name,
+      courseNumber: (dish as any).course_number,
       startTime,
       durationMinutes: duration,
       category,

@@ -1393,7 +1393,7 @@ export async function uploadChefJourneyPhoto(
 
   if (
     uploadError &&
-    String(uploadError.message || '')
+    String((uploadError as any).message || '')
       .toLowerCase()
       .includes('bucket')
   ) {

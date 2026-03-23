@@ -73,18 +73,20 @@ export async function POST(req: NextRequest) {
       tenantId: null,
     },
     secret,
-  })
+  } as any)
 
   // Set the Auth.js session cookie
   const response = NextResponse.json({ ok: true, userId: user.id })
   const cookieName =
-    process.env.NODE_ENV === 'production' ? '__Secure-authjs.session-token' : 'authjs.session-token'
+    (process.env.NODE_ENV as string) === 'production'
+      ? '__Secure-authjs.session-token'
+      : 'authjs.session-token'
 
   response.cookies.set(cookieName, token, {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
-    secure: process.env.NODE_ENV === 'production',
+    secure: (process.env.NODE_ENV as string) === 'production',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   })
 

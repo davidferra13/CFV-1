@@ -1,10 +1,8 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
-
 // ── Booking count ─────────────────────────────────────────────────────────────
 // Returns the number of completed events in the period [start, end].
 
 export async function fetchBookingCount(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   start: string,
   end: string
@@ -24,7 +22,7 @@ export async function fetchBookingCount(
 // Returns the number of clients first created in the period.
 
 export async function fetchNewClientCount(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   start: string,
   end: string
@@ -43,10 +41,7 @@ export async function fetchNewClientCount(
 // Returns the total number of recipes in the chef's library.
 // This is a cumulative "library size" goal, not period-scoped.
 
-export async function fetchRecipeCount(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<number> {
+export async function fetchRecipeCount(supabase: any, tenantId: string): Promise<number> {
   const { count } = await supabase
     .from('recipes')
     .select('id', { count: 'exact', head: true })
@@ -61,7 +56,7 @@ export async function fetchRecipeCount(
 // Falls back to 0 if no data.
 
 export async function fetchTrailingProfitMarginBp(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   trailingDays: number
 ): Promise<number> {
@@ -98,7 +93,7 @@ export async function fetchTrailingProfitMarginBp(
 // expressed as basis points.
 
 export async function fetchTrailingExpenseRatioBp(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   trailingDays: number
 ): Promise<number> {
@@ -146,10 +141,7 @@ export async function fetchTrailingExpenseRatioBp(
 // Returns the % of clients who have completed 2+ events with this chef,
 // expressed as basis points (e.g. 4000 = 40.00%).
 
-export async function fetchRepeatBookingRateBp(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<number> {
+export async function fetchRepeatBookingRateBp(supabase: any, tenantId: string): Promise<number> {
   // Get all clients and count how many have 2+ completed events
   const { data: clientEvents } = await supabase
     .from('events')
@@ -175,10 +167,7 @@ export async function fetchRepeatBookingRateBp(
 // ── Total reviews ─────────────────────────────────────────────────────────────
 // Returns total external reviews synced for this tenant.
 
-export async function fetchTotalReviews(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<number> {
+export async function fetchTotalReviews(supabase: any, tenantId: string): Promise<number> {
   const { count } = await supabase
     .from('external_reviews')
     .select('id', { count: 'exact', head: true })
@@ -191,10 +180,7 @@ export async function fetchTotalReviews(
 // Returns average rating from external_reviews, expressed in basis points
 // (e.g. 450 = 4.50 stars). Returns 0 if no reviews.
 
-export async function fetchReviewAverageBp(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<number> {
+export async function fetchReviewAverageBp(supabase: any, tenantId: string): Promise<number> {
   const { data } = await supabase
     .from('external_reviews')
     .select('rating')
@@ -215,7 +201,7 @@ export async function fetchReviewAverageBp(
 // We resolve chef_id from user_roles using the admin client.
 
 export async function fetchWorkshopsAttended(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   start: string,
   end: string

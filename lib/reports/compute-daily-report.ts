@@ -4,10 +4,10 @@
 //   - The cron route (no user session)
 //   - The app page server action (via requireChef + admin client)
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DailyReportContent, HighIntentVisit, DailyReportEvent } from './types'
 
-type AdminClient = SupabaseClient
+// Accept any client with a Supabase-compatible query builder API
+type AdminClient = { from: (table: string) => any; rpc: (fn: string, params?: any) => any }
 
 /**
  * Safe wrapper - if a fetch fails, return the fallback instead of throwing.
@@ -327,13 +327,14 @@ export async function computeDailyReport(
           .order('event_id', { ascending: false })
           .limit(10)
         if (!data || data.length === 0) return { avg: null, trending: 'stable' as const }
-        const avg = data.reduce((sum, d) => sum + (d.food_cost_percentage ?? 0), 0) / data.length
+        const avg =
+          data.reduce((sum: any, d: any) => sum + (d.food_cost_percentage ?? 0), 0) / data.length
         // Compare first half vs second half
         const mid = Math.floor(data.length / 2)
         const recentAvg =
-          data.slice(0, mid).reduce((s, d) => s + (d.food_cost_percentage ?? 0), 0) / mid
+          data.slice(0, mid).reduce((s: any, d: any) => s + (d.food_cost_percentage ?? 0), 0) / mid
         const olderAvg =
-          data.slice(mid).reduce((s, d) => s + (d.food_cost_percentage ?? 0), 0) /
+          data.slice(mid).reduce((s: any, d: any) => s + (d.food_cost_percentage ?? 0), 0) /
           (data.length - mid)
         const trending =
           recentAvg > olderAvg * 1.05

@@ -4,7 +4,10 @@
 //
 // Pattern follows tests/helpers/e2e-seed.ts
 
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { CompatClient } from '@/lib/db/compat'
+
+// Accept both CompatClient and legacy SupabaseClient
+type DbClient = CompatClient | { from: (table: string) => any }
 
 function daysFromNow(days: number): string {
   const d = new Date()
@@ -19,7 +22,7 @@ function daysAgoISO(days: number): string {
 // ─── Clients ─────────────────────────────────────────────────────────────────
 
 export async function ensureClient(
-  admin: SupabaseClient,
+  admin: DbClient,
   tenantId: string,
   client: {
     full_name: string
@@ -66,7 +69,7 @@ export async function ensureClient(
 // ─── Events ──────────────────────────────────────────────────────────────────
 
 export async function ensureEvent(
-  admin: SupabaseClient,
+  admin: DbClient,
   tenantId: string,
   clientId: string,
   event: {
@@ -122,7 +125,7 @@ export async function ensureEvent(
 // ─── Inquiries ───────────────────────────────────────────────────────────────
 
 export async function ensureInquiry(
-  admin: SupabaseClient,
+  admin: DbClient,
   tenantId: string,
   clientId: string,
   inquiry: {
@@ -176,7 +179,7 @@ export async function ensureInquiry(
 // ─── Menus ───────────────────────────────────────────────────────────────────
 
 export async function ensureMenu(
-  admin: SupabaseClient,
+  admin: DbClient,
   tenantId: string,
   menu: {
     name: string
@@ -237,7 +240,7 @@ export async function ensureMenu(
 // ─── Recipes ─────────────────────────────────────────────────────────────────
 
 export async function ensureRecipe(
-  admin: SupabaseClient,
+  admin: DbClient,
   tenantId: string,
   chefAuthId: string,
   recipe: {
@@ -289,7 +292,7 @@ export async function ensureRecipe(
 // ─── Quotes ──────────────────────────────────────────────────────────────────
 
 export async function ensureQuote(
-  admin: SupabaseClient,
+  admin: DbClient,
   tenantId: string,
   clientId: string,
   eventId: string,
@@ -334,7 +337,7 @@ export async function ensureQuote(
 // ─── Ledger Entries ──────────────────────────────────────────────────────────
 
 export async function ensureLedgerEntry(
-  admin: SupabaseClient,
+  admin: DbClient,
   tenantId: string,
   clientId: string,
   eventId: string,
@@ -380,7 +383,7 @@ export async function ensureLedgerEntry(
 // ─── Expenses ────────────────────────────────────────────────────────────────
 
 export async function ensureExpense(
-  admin: SupabaseClient,
+  admin: DbClient,
   tenantId: string,
   eventId: string | null,
   expense: {
@@ -422,7 +425,7 @@ export async function ensureExpense(
 // ─── Loyalty Config ─────────────────────────────────────────────────────────
 
 export async function ensureLoyaltyConfig(
-  admin: SupabaseClient,
+  admin: DbClient,
   tenantId: string,
   config: {
     is_active: boolean
@@ -450,7 +453,7 @@ export async function ensureLoyaltyConfig(
 // ─── Loyalty Transactions ───────────────────────────────────────────────────
 
 export async function ensureLoyaltyTransaction(
-  admin: SupabaseClient,
+  admin: DbClient,
   tenantId: string,
   clientId: string,
   tx: {
@@ -488,7 +491,7 @@ export async function ensureLoyaltyTransaction(
 // ─── Client Loyalty State ───────────────────────────────────────────────────
 
 export async function updateClientLoyalty(
-  admin: SupabaseClient,
+  admin: DbClient,
   clientId: string,
   loyalty: { loyalty_points: number; loyalty_tier: string }
 ): Promise<void> {
@@ -506,7 +509,7 @@ export async function updateClientLoyalty(
 // ─── Staff Assignments ──────────────────────────────────────────────────────
 
 export async function ensureStaffAssignment(
-  admin: SupabaseClient,
+  admin: DbClient,
   chefId: string,
   staffMemberId: string,
   eventId: string,
@@ -546,7 +549,7 @@ export async function ensureStaffAssignment(
 // ─── Calendar Entries ────────────────────────────────────────────────────────
 
 export async function ensureCalendarEntry(
-  admin: SupabaseClient,
+  admin: DbClient,
   chefId: string,
   entry: {
     daysOut: number

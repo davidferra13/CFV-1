@@ -353,7 +353,7 @@ export async function getMealPrepStats(): Promise<MealPrepStats> {
   if (e3) throw new Error(e3.message)
 
   const revenueThisWeekCents = (weekOrders ?? []).reduce(
-    (sum, o) => sum + (o.total_cents ?? 0),
+    (sum: any, o: any) => sum + (o.total_cents ?? 0),
     0
   )
 

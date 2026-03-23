@@ -2,7 +2,6 @@
 // Surfaces unclaimed contact form submissions to all chefs.
 // Domain: 'inquiry' (pre-inquiry leads, no new domain type needed)
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 
@@ -14,10 +13,7 @@ type ContactRow = {
   created_at: string
 }
 
-export async function getContactQueueItems(
-  supabase: SupabaseClient,
-  _tenantId: string
-): Promise<QueueItem[]> {
+export async function getContactQueueItems(supabase: any, _tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 

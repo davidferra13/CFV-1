@@ -224,7 +224,7 @@ export async function getGroupMembers(groupId: string): Promise<HubGroupMember[]
 
   if (error) throw new Error(`Failed to load members: ${error.message}`)
 
-  return (data ?? []).map((m) => ({
+  return (data ?? []).map((m: any) => ({
     ...m,
     profile: m.hub_guest_profiles ?? undefined,
     hub_guest_profiles: undefined,

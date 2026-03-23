@@ -78,7 +78,7 @@ export async function clearDemoData(): Promise<ClearDemoDataResult> {
       return { cleared: true, clientsDeleted: 0, eventsDeleted: 0, inquiriesDeleted: 0 }
     }
 
-    const clientIds = demoClients.map((client) => client.id)
+    const clientIds = demoClients.map((client: any) => client.id)
 
     const { data: eventRows, error: eventLookupError } = await admin
       .from('events')
@@ -90,7 +90,7 @@ export async function clearDemoData(): Promise<ClearDemoDataResult> {
       throw new Error(`Failed to load sample events: ${eventLookupError.message}`)
     }
 
-    const eventIds = (eventRows ?? []).map((event) => event.id)
+    const eventIds = (eventRows ?? []).map((event: any) => event.id)
 
     if (eventIds.length > 0) {
       await admin.from('quotes').delete().eq('tenant_id', tenantId).in('event_id', eventIds)

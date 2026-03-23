@@ -80,7 +80,7 @@ export async function listDeferredTransferChefs(): Promise<DeferredTransferSumma
     .select('id, business_name, display_name, stripe_account_id, stripe_onboarding_complete')
     .in('id', tenantIds)
 
-  return (chefs ?? []).map((chef) => {
+  return (chefs ?? []).map((chef: any) => {
     const deferred = deferredByTenant.get(chef.id) ?? { count: 0, totalCents: 0 }
     const onboardingComplete = (chef as any).stripe_onboarding_complete === true
     const stripeAccountId = (chef as any).stripe_account_id ?? null

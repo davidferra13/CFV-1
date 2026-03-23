@@ -104,7 +104,7 @@ export async function getClientHubGroups(): Promise<ClientHubGroup[]> {
 
   if (memErr || !memberships?.length) return []
 
-  const groupIds = memberships.map((m) => m.group_id)
+  const groupIds = memberships.map((m: any) => m.group_id)
 
   // Fetch groups
   const { data: groups, error: grpErr } = await supabase
@@ -128,10 +128,10 @@ export async function getClientHubGroups(): Promise<ClientHubGroup[]> {
   }
 
   // Build lookup for membership data
-  const membershipMap = new Map(memberships.map((m) => [m.group_id, m]))
+  const membershipMap = new Map(memberships.map((m: any) => [m.group_id, m]))
 
-  return groups.map((g) => {
-    const membership = membershipMap.get(g.id)
+  return groups.map((g: any) => {
+    const membership = membershipMap.get(g.id) as any
     const lastRead = membership?.last_read_at
     const hasUnread = !!(g.last_message_at && (!lastRead || g.last_message_at > lastRead))
 

@@ -1135,7 +1135,7 @@ export async function getShowcasePartners(chefSlug: string) {
   }
 
   // Filter to only active locations
-  const partnersWithActiveLocations = (partners || []).map((p) => ({
+  const partnersWithActiveLocations = (partners || []).map((p: any) => ({
     ...p,
     partner_locations: (p.partner_locations || []).filter(
       (l: { is_active: boolean }) => l.is_active

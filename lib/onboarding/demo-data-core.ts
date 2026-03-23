@@ -99,7 +99,7 @@ export async function getDemoClientRows(tenantId: string) {
     throw new Error(`Failed to load sample data state: ${error.message}`)
   }
 
-  return (data ?? []).filter((client) => isDemoClient(client))
+  return (data ?? []).filter((client: any) => isDemoClient(client))
 }
 
 export async function hasDemoDataForTenant(tenantId: string) {

@@ -1,7 +1,6 @@
 // Priority Queue - Builder
 // Calls all providers in parallel, merges, deduplicates, sorts by score.
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { PriorityQueue, QueueItem, QueueDomain, QueueUrgency, QueueSummary } from './types'
 import type { DashboardWorkSurface } from '@/lib/workflow/types'
 
@@ -23,7 +22,7 @@ import { getContactQueueItems } from './providers/contact'
  * - Items merged, deduplicated by id, sorted by score descending
  */
 export async function buildPriorityQueue(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   workSurface: DashboardWorkSurface
 ): Promise<PriorityQueue> {

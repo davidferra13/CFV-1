@@ -42,7 +42,7 @@ export async function getSocialFeed(input: {
     return { items: [], nextCursor: null }
   }
 
-  const groupIds = memberships.map((m) => m.group_id)
+  const groupIds = memberships.map((m: any) => m.group_id)
 
   // Fetch recent messages across all groups
   let query = supabase
@@ -64,13 +64,13 @@ export async function getSocialFeed(input: {
   if (error || !messages) return { items: [], nextCursor: null }
 
   // Load group info for names
-  const uniqueGroupIds = [...new Set(messages.map((m) => m.group_id))]
+  const uniqueGroupIds = [...new Set(messages.map((m: any) => m.group_id))]
   const { data: groups } = await supabase
     .from('hub_groups')
     .select('id, name, emoji, group_token')
     .in('id', uniqueGroupIds)
 
-  const groupMap = new Map((groups ?? []).map((g) => [g.id, g]))
+  const groupMap = new Map((groups ?? []).map((g: any) => [g.id, g]))
 
   const hasMore = messages.length > limit
   const rows = hasMore ? messages.slice(0, limit) : messages
@@ -81,9 +81,9 @@ export async function getSocialFeed(input: {
     return {
       id: m.id,
       group_id: m.group_id,
-      group_name: group?.name ?? 'Circle',
-      group_emoji: group?.emoji ?? null,
-      group_token: group?.group_token ?? '',
+      group_name: (group as any)?.name ?? 'Circle',
+      group_emoji: (group as any)?.emoji ?? null,
+      group_token: (group as any)?.group_token ?? '',
       author_name: author?.display_name ?? 'Someone',
       author_avatar_url: author?.avatar_url ?? null,
       message_type: m.message_type,

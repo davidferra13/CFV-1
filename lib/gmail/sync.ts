@@ -204,7 +204,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
   // 4. Load known client emails for classification context
   const { data: clients } = await supabase.from('clients').select('email').eq('tenant_id', tenantId)
 
-  const knownClientEmails = (clients || []).map((c) => c.email).filter(Boolean) as string[]
+  const knownClientEmails = (clients || []).map((c: any) => c.email).filter(Boolean) as string[]
 
   // 5. Batch-fetch already-synced message IDs to avoid N+1 dedup queries
   const { data: alreadySynced } = await supabase
@@ -212,7 +212,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
     .select('gmail_message_id')
     .eq('tenant_id', tenantId)
     .in('gmail_message_id', messageIds)
-  const syncedSet = new Set((alreadySynced ?? []).map((r) => r.gmail_message_id))
+  const syncedSet = new Set((alreadySynced ?? []).map((r: any) => r.gmail_message_id))
 
   // 6. Process each message
   for (const messageId of messageIds) {
@@ -222,7 +222,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
     }
     try {
       await processMessage(
-        supabase,
+        supabase as unknown as DbClient,
         accessToken,
         messageId,
         chefId,

@@ -44,7 +44,7 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
   if (error) throw new Error(`Failed to fetch travel legs: ${error.message}`)
 
   // Fetch ingredients for all legs
-  const legIds = (legs ?? []).map((l) => l.id)
+  const legIds = (legs ?? []).map((l: any) => l.id)
   let ingredients: TravelLegIngredient[] = []
 
   if (legIds.length > 0) {
@@ -106,7 +106,7 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
       .lte('event_date', upper.toISOString().split('T')[0])
       .order('event_date', { ascending: true })
 
-    nearbyEvents = (nearby ?? []).map((e) => {
+    nearbyEvents = (nearby ?? []).map((e: any) => {
       const eDays = Math.round(
         (new Date(e.event_date).getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24)
       )
@@ -129,7 +129,7 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
   }
 
   const legsWithIngredients: TravelLegWithIngredients[] = (legs ?? []).map(
-    (leg) =>
+    (leg: any) =>
       ({
         ...leg,
         leg_type: leg.leg_type as TravelLegType,
@@ -173,7 +173,7 @@ export async function getAllTravelLegs(options?: {
   if (error) throw new Error(`Failed to fetch travel legs: ${error.message}`)
 
   return (legs ?? []).map(
-    (leg) =>
+    (leg: any) =>
       ({
         ...leg,
         leg_type: leg.leg_type as TravelLegType,
@@ -526,16 +526,16 @@ export async function searchIngredientsForEvent(
                       .select('id')
                       .eq('event_id', eventId)
                       .eq('tenant_id', user.tenantId!)
-                  ).data?.map((m) => m.id) ?? []
+                  ).data?.map((m: any) => m.id) ?? []
                 )
                 .eq('tenant_id', user.tenantId!)
-            ).data?.map((d) => d.id) ?? []
+            ).data?.map((d: any) => d.id) ?? []
           )
           .not('recipe_id', 'is', null)
           .eq('tenant_id', user.tenantId!)
       ).data
-        ?.map((c) => c.recipe_id)
-        .filter((id): id is string => id !== null) ?? []
+        ?.map((c: any) => c.recipe_id)
+        .filter((id: any): id is string => id !== null) ?? []
     )
     .limit(20)
 
@@ -570,8 +570,8 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
     .eq('primary_event_id', eventId)
     .in('leg_type', ['service_travel', 'return_home'])
 
-  const hasServiceTravel = (existing ?? []).some((l) => l.leg_type === 'service_travel')
-  const hasReturnHome = (existing ?? []).some((l) => l.leg_type === 'return_home')
+  const hasServiceTravel = (existing ?? []).some((l: any) => l.leg_type === 'service_travel')
+  const hasReturnHome = (existing ?? []).some((l: any) => l.leg_type === 'return_home')
 
   if (hasServiceTravel && hasReturnHome) return
 

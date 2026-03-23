@@ -229,7 +229,7 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
 
   if (
     uploadError &&
-    String(uploadError.message || '')
+    String((uploadError as any).message || '')
       .toLowerCase()
       .includes('bucket')
   ) {

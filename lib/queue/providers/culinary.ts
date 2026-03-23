@@ -1,16 +1,12 @@
 // Priority Queue - Culinary Provider
 // Surfaces: draft menus on upcoming events, seasonal micro-windows ending soon
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 import { getCurrentSeason, getEndingMicroWindows } from '@/lib/seasonal/helpers'
 import type { SeasonalPalette } from '@/lib/seasonal/types'
 
-export async function getCulinaryQueueItems(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<QueueItem[]> {
+export async function getCulinaryQueueItems(supabase: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 

@@ -92,7 +92,7 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
     return result
   }
 
-  const tenantIds = Array.from(new Set(events.map((event) => event.tenant_id)))
+  const tenantIds = Array.from(new Set(events.map((event: any) => event.tenant_id)))
   const { data: chefRoles, error: rolesError } = await supabase
     .from('user_roles')
     .select('entity_id, auth_user_id')

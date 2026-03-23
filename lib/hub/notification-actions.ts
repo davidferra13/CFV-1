@@ -42,7 +42,7 @@ export async function getHubUnreadCounts(profileToken: string): Promise<HubUnrea
   if (!memberships || memberships.length === 0) return []
 
   // Batch: count unread messages for all groups in parallel
-  const countPromises = memberships.map((membership) => {
+  const countPromises = memberships.map((membership: any) => {
     let query = supabase
       .from('hub_messages')
       .select('*', { count: 'exact', head: true })

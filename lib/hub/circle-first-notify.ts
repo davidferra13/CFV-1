@@ -208,7 +208,7 @@ async function notifyMembersOfUpdate(input: {
         try {
           const subs = await getActiveSubscriptions(profile.auth_user_id)
           await Promise.allSettled(
-            subs.map((sub) =>
+            subs.map((sub: any) =>
               sendPushNotification(sub, {
                 title: `${label} from ${chefName}`,
                 body: input.messagePreview.slice(0, 120),

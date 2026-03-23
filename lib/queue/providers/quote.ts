@@ -1,14 +1,10 @@
 // Priority Queue - Quote Provider
 // Surfaces: draft quotes, expiring sent quotes, accepted quotes not converted to events
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 
-export async function getQuoteQueueItems(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<QueueItem[]> {
+export async function getQuoteQueueItems(supabase: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 

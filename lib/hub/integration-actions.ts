@@ -163,7 +163,7 @@ export async function snapshotEventToHub(input: {
     // Get menu items for snapshot via menus → dishes
     const { data: menus } = await supabase.from('menus').select('id').eq('event_id', input.eventId)
 
-    const menuIds = (menus ?? []).map((m) => m.id)
+    const menuIds = (menus ?? []).map((m: any) => m.id)
     let coursesServed: { name: string | null; course: string; description: string | null }[] = []
 
     if (menuIds.length > 0) {
@@ -173,7 +173,7 @@ export async function snapshotEventToHub(input: {
         .in('menu_id', menuIds)
         .order('course_number', { ascending: true })
 
-      coursesServed = (dishes ?? []).map((d) => ({
+      coursesServed = (dishes ?? []).map((d: any) => ({
         name: d.name,
         course: d.course_name,
         description: d.description,
@@ -353,7 +353,7 @@ export async function getStubsSeekingChef(): Promise<
 
   // Get member counts for each stub's group
   const results = await Promise.all(
-    (data ?? []).map(async (stub) => {
+    (data ?? []).map(async (stub: any) => {
       let memberCount = 0
       if (stub.hub_group_id) {
         const { count } = await supabase

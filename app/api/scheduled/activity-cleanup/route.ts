@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (oldRows && oldRows.length > 0) {
-      const archivePayload = oldRows.map((row) => ({
+      const archivePayload = oldRows.map((row: any) => ({
         ...row,
         archived_at: new Date().toISOString(),
       }))

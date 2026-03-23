@@ -191,7 +191,7 @@ export async function analyzeMenuEngineering(dateRange?: {
   const totalEvents = events?.length ?? 0
 
   // 3. Get financial summaries for these events to compute average revenue per guest
-  const eventIds = (events ?? []).map((e) => e.id)
+  const eventIds = (events ?? []).map((e: any) => e.id)
   let avgRevenuePerGuestCents = 0
 
   if (eventIds.length > 0) {
@@ -202,14 +202,14 @@ export async function analyzeMenuEngineering(dateRange?: {
 
     if (financials && financials.length > 0) {
       // Match financials to events to get per-guest revenue
-      const eventMap = new Map((events ?? []).map((e) => [e.id, e]))
+      const eventMap = new Map((events ?? []).map((e: any) => [e.id, e]))
       let totalRevenue = 0
       let totalGuests = 0
       for (const f of financials) {
         const ev = eventMap.get(f.event_id!)
-        if (ev && f.quoted_price_cents && ev.guest_count > 0) {
+        if (ev && f.quoted_price_cents && (ev as any).guest_count > 0) {
           totalRevenue += f.quoted_price_cents
-          totalGuests += ev.guest_count
+          totalGuests += (ev as any).guest_count
         }
       }
       if (totalGuests > 0) {
@@ -219,7 +219,9 @@ export async function analyzeMenuEngineering(dateRange?: {
   }
 
   // 4. For each menu, get recipes via dishes -> components -> recipe_id
-  const menuIds = [...new Set((events ?? []).filter((e) => e.menu_id).map((e) => e.menu_id!))]
+  const menuIds = [
+    ...new Set((events ?? []).filter((e: any) => e.menu_id).map((e: any) => e.menu_id!)),
+  ]
   const recipeEventCount = new Map<string, number>()
 
   if (menuIds.length > 0) {
@@ -231,7 +233,7 @@ export async function analyzeMenuEngineering(dateRange?: {
       .eq('tenant_id', tenantId)
 
     if (dishes && dishes.length > 0) {
-      const dishIds = dishes.map((d) => d.id)
+      const dishIds = dishes.map((d: any) => d.id)
       // Build menu -> dishes map
       const menuDishMap = new Map<string, string[]>()
       for (const d of dishes) {
@@ -392,7 +394,7 @@ export async function getRecipeProfitability(recipeId: string): Promise<RecipePr
   const eventsUsedIn: { eventId: string; eventDate: string; menuName: string }[] = []
 
   if (components && components.length > 0) {
-    const dishIds = [...new Set(components.map((c) => c.dish_id))]
+    const dishIds = [...new Set(components.map((c: any) => c.dish_id))]
 
     const { data: dishes } = await supabase
       .from('dishes')
@@ -401,7 +403,7 @@ export async function getRecipeProfitability(recipeId: string): Promise<RecipePr
       .eq('tenant_id', tenantId)
 
     if (dishes && dishes.length > 0) {
-      const menuIds = [...new Set(dishes.map((d) => d.menu_id))]
+      const menuIds = [...new Set(dishes.map((d: any) => d.menu_id))]
 
       const { data: menus } = await supabase
         .from('menus')
@@ -411,7 +413,7 @@ export async function getRecipeProfitability(recipeId: string): Promise<RecipePr
         .not('event_id', 'is', null)
 
       if (menus && menus.length > 0) {
-        const eventIds = menus.filter((m) => m.event_id).map((m) => m.event_id!)
+        const eventIds = menus.filter((m: any) => m.event_id).map((m: any) => m.event_id!)
 
         const { data: events } = await supabase
           .from('events')
@@ -421,14 +423,14 @@ export async function getRecipeProfitability(recipeId: string): Promise<RecipePr
           .eq('is_demo', false)
 
         if (events) {
-          const menuMap = new Map(menus.map((m) => [m.event_id!, m]))
+          const menuMap = new Map(menus.map((m: any) => [m.event_id!, m]))
           for (const ev of events) {
             const menu = menuMap.get(ev.id)
             if (menu) {
               eventsUsedIn.push({
                 eventId: ev.id,
                 eventDate: ev.event_date,
-                menuName: menu.name,
+                menuName: (menu as any).name,
               })
             }
           }
@@ -493,7 +495,7 @@ export async function getMenuMixAnalysis(menuId: string): Promise<MenuMixResult>
     }
   }
 
-  const dishIds = dishes.map((d) => d.id)
+  const dishIds = dishes.map((d: any) => d.id)
   const { data: components } = await supabase
     .from('components')
     .select('recipe_id')
@@ -502,7 +504,7 @@ export async function getMenuMixAnalysis(menuId: string): Promise<MenuMixResult>
     .eq('tenant_id', tenantId)
 
   const recipeIds = [
-    ...new Set((components ?? []).filter((c) => c.recipe_id).map((c) => c.recipe_id!)),
+    ...new Set((components ?? []).filter((c: any) => c.recipe_id).map((c: any) => c.recipe_id!)),
   ]
 
   if (recipeIds.length === 0) {
@@ -528,7 +530,7 @@ export async function getMenuMixAnalysis(menuId: string): Promise<MenuMixResult>
 
   // If the full analysis didn't cover some recipes (no events yet), fill them in from cost data
   const coveredIds = new Set(menuRecipes.map((r) => r.recipeId))
-  const missingIds = recipeIds.filter((id) => !coveredIds.has(id))
+  const missingIds = recipeIds.filter((id: any) => !coveredIds.has(id))
 
   if (missingIds.length > 0) {
     const { data: missingCosts } = await supabase
@@ -674,7 +676,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
           .select('allergen, severity, confirmed_by_chef')
           .eq('client_id', event.client_id)
 
-        guestAllergens = (allergies ?? []).map((a) => ({
+        guestAllergens = (allergies ?? []).map((a: any) => ({
           allergen: a.allergen,
           severity: a.severity,
           confirmed_by_chef: a.confirmed_by_chef,
@@ -693,7 +695,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
   const currentDishes: SimulatorDish[] = []
 
   if (dishes && dishes.length > 0) {
-    const dishIds = dishes.map((d) => d.id)
+    const dishIds = dishes.map((d: any) => d.id)
 
     // Get components with recipe links
     const { data: components } = await supabase
@@ -704,7 +706,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
 
     // Get recipe costs
     const recipeIds = [
-      ...new Set((components ?? []).filter((c) => c.recipe_id).map((c) => c.recipe_id!)),
+      ...new Set((components ?? []).filter((c: any) => c.recipe_id).map((c: any) => c.recipe_id!)),
     ]
 
     let recipeCostMap = new Map<string, number>()
@@ -734,7 +736,9 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
 
       const ingredientIds = [
         ...new Set(
-          (recipeIngredients ?? []).filter((ri) => ri.ingredient_id).map((ri) => ri.ingredient_id!)
+          (recipeIngredients ?? [])
+            .filter((ri: any) => ri.ingredient_id)
+            .map((ri: any) => ri.ingredient_id!)
         ),
       ]
 

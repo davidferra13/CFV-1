@@ -114,7 +114,7 @@ export async function getGroupAvailability(groupId: string): Promise<HubAvailabi
 
   if (error) throw new Error(`Failed to load availability: ${error.message}`)
 
-  return (data ?? []).map((a) => ({
+  return (data ?? []).map((a: any) => ({
     ...a,
     created_by: a.hub_guest_profiles ?? null,
     hub_guest_profiles: undefined,
@@ -147,7 +147,7 @@ export async function getAvailabilityWithResponses(
     .eq('availability_id', availabilityId)
     .order('response_date', { ascending: true })
 
-  const mappedResponses = (responses ?? []).map((r) => ({
+  const mappedResponses = (responses ?? []).map((r: any) => ({
     ...r,
     profile: r.hub_guest_profiles ?? null,
     hub_guest_profiles: undefined,

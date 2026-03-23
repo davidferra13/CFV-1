@@ -10,7 +10,6 @@
 //
 // Rule: NEVER overwrite or delete an existing inquiry. Duplicates are skipped.
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { collectStoredPlatformIdentityKeys, dedupeIdentityKeys } from './platform-identity'
 import { namesMatch } from '@/lib/utils/name-matching'
 
@@ -30,7 +29,7 @@ export interface PlatformDedupMatch {
  * Returns the existing inquiry ID if found, or null if this is a new inquiry.
  */
 export async function checkPlatformInquiryDuplicate(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   opts: {
     channel: string
@@ -124,7 +123,7 @@ export async function checkPlatformInquiryDuplicate(
  * Used for matching follow-up emails (messages, bookings, customer info) to existing inquiries.
  */
 export async function findPlatformInquiryByContext(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   opts: {
     channel: string
@@ -201,7 +200,7 @@ export async function findPlatformInquiryByContext(
 }
 
 async function findInquiryByIdentityKeys(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   channel: string,
   identityKeys: string[]
@@ -260,7 +259,7 @@ async function findInquiryByIdentityKeys(
  * on (tenant_id, platform, external_inquiry_id) and (tenant_id, platform, external_uri_token).
  */
 async function findInquiryViaPlatformRecords(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   channel: string,
   identityKeys: string[]

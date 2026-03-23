@@ -1,7 +1,6 @@
 'use server'
 
 import { z } from 'zod'
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import type { RevenueGoalSnapshot } from './types'
@@ -88,7 +87,7 @@ function normalizePreferences(row: Record<string, unknown> | null): RevenueGoalP
 }
 
 async function getPreferencesForTenant(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string
 ): Promise<RevenueGoalPreferences> {
   const { data } = await supabase
@@ -103,7 +102,7 @@ async function getPreferencesForTenant(
 }
 
 async function getRangeSignals(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   start: string,
   end: string
@@ -158,7 +157,7 @@ async function getRangeSignals(
 }
 
 async function getAverageBookingValueCents(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   now: Date
 ): Promise<number> {
@@ -209,7 +208,7 @@ async function getAverageBookingValueCents(
 }
 
 async function getPipelineSignals(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   start: string,
   end: string
@@ -248,7 +247,7 @@ async function getPipelineSignals(
 }
 
 async function getOpenDatesThisMonth(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   start: string,
   end: string
@@ -279,10 +278,7 @@ async function getOpenDatesThisMonth(
   return openDates
 }
 
-async function getDormantClientNames(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<string[]> {
+async function getDormantClientNames(supabase: any, tenantId: string): Promise<string[]> {
   const { data: rows } = await supabase
     .from('client_financial_summary')
     .select('client_id, lifetime_value_cents')
@@ -309,7 +305,7 @@ async function getDormantClientNames(
 // ── Previous month realized revenue (for trend) ──────────────────────────────
 
 async function getPreviousMonthRealizedCents(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   now: Date
 ): Promise<number> {
@@ -322,7 +318,7 @@ async function getPreviousMonthRealizedCents(
 // ── Same month last year (for YoY) ───────────────────────────────────────────
 
 async function getLastYearSameMonthRealizedCents(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   now: Date
 ): Promise<number> {
@@ -340,7 +336,7 @@ async function getLastYearSameMonthRealizedCents(
 // ── Historical event dates (for smart open dates) ────────────────────────────
 
 async function getHistoricalEventDates(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   now: Date
 ): Promise<string[]> {
@@ -357,7 +353,7 @@ async function getHistoricalEventDates(
 }
 
 async function buildRevenueGoalSnapshotForTenant(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string,
   now: Date,
   prefs: RevenueGoalPreferences
@@ -500,22 +496,16 @@ async function buildRevenueGoalSnapshotForTenant(
 export async function getRevenueGoalSnapshot(now = new Date()): Promise<RevenueGoalSnapshot> {
   const user = await requireChef()
   const supabase: any = createServerClient()
-  const prefs = await getPreferencesForTenant(supabase as unknown as SupabaseClient, user.tenantId!)
-  return buildRevenueGoalSnapshotForTenant(
-    supabase as unknown as SupabaseClient,
-    user.tenantId!,
-    now,
-    prefs
-  )
+  const prefs = await getPreferencesForTenant(supabase, user.tenantId!)
+  return buildRevenueGoalSnapshotForTenant(supabase, user.tenantId!, now, prefs)
 }
 
 export async function getRevenueGoalSnapshotForTenantAdmin(
   tenantId: string,
   now = new Date(),
-  supabaseClient?: SupabaseClient
+  supabaseClient?: any
 ): Promise<RevenueGoalSnapshot> {
-  const supabase =
-    supabaseClient ?? (createServerClient({ admin: true }) as unknown as SupabaseClient)
+  const supabase = supabaseClient ?? createServerClient({ admin: true })
   const prefs = await getPreferencesForTenant(supabase, tenantId)
   return buildRevenueGoalSnapshotForTenant(supabase, tenantId, now, prefs)
 }

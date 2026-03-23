@@ -59,7 +59,7 @@ export async function getMyChefsToShare(): Promise<ShareableChef[]> {
 
   if (!chefs?.length) return []
 
-  return chefs.map((c) => ({
+  return chefs.map((c: any) => ({
     id: c.id,
     business_name: c.business_name,
     slug: c.slug,

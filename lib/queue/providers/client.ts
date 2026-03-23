@@ -1,15 +1,11 @@
 // Priority Queue - Client Provider
 // Surfaces: upcoming milestones, dormant client re-engagement
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 import { getMilestoneOutreachSuggestions } from '@/lib/clients/milestones'
 
-export async function getClientQueueItems(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<QueueItem[]> {
+export async function getClientQueueItems(supabase: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 
@@ -63,13 +59,13 @@ export async function getClientQueueItems(
       .limit(5)
 
     if (dormantClients && dormantClients.length > 0) {
-      const clientIds = dormantClients.map((c) => c.client_id).filter(Boolean) as string[]
+      const clientIds = dormantClients.map((c: any) => c.client_id).filter(Boolean) as string[]
       const { data: clients } = await supabase
         .from('clients')
         .select('id, full_name')
         .in('id', clientIds)
 
-      const nameMap = new Map((clients || []).map((c) => [c.id, c.full_name]))
+      const nameMap = new Map((clients || []).map((c: any) => [c.id, c.full_name]))
 
       for (const dc of dormantClients) {
         if (!dc.client_id) continue
@@ -94,7 +90,7 @@ export async function getClientQueueItems(
           description: `${clientName} has not booked recently. Consider a personal outreach.`,
           href: `/clients/${dc.client_id}`,
           icon: 'UserPlus',
-          context: { primaryLabel: clientName },
+          context: { primaryLabel: clientName } as any,
           createdAt: now.toISOString(),
           dueAt: null,
           entityId: dc.client_id,

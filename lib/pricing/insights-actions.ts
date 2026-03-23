@@ -44,7 +44,7 @@ export async function getPricingInsights(
     }
 
     // Map to HistoricalEvent[]
-    const historicalEvents: HistoricalEvent[] = (events ?? []).map((e) => ({
+    const historicalEvents: HistoricalEvent[] = (events ?? []).map((e: any) => ({
       occasion: e.occasion,
       guest_count: e.guest_count,
       quoted_price_cents: e.quoted_price_cents,

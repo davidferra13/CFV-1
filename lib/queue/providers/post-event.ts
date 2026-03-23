@@ -1,12 +1,11 @@
 // Priority Queue - Post-Event Provider
 // Surfaces: unfiled AARs, unsent follow-ups, unsent review links, incomplete resets
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 
 export async function getPostEventQueueItems(
-  supabase: SupabaseClient,
+  supabase: any,
   tenantId: string
 ): Promise<QueueItem[]> {
   const items: QueueItem[] = []

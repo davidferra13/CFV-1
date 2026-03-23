@@ -221,7 +221,7 @@ export async function getPoll(pollId: string, viewerProfileId?: string): Promise
     }
   }
 
-  const enrichedOptions = (options ?? []).map((o) => ({
+  const enrichedOptions = (options ?? []).map((o: any) => ({
     ...o,
     vote_count: voteCounts[o.id] ?? 0,
     voted_by_me: myVotes.has(o.id),
