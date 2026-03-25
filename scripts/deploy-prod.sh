@@ -51,7 +51,7 @@ DST_WIN=$(cygpath -w "$PROD_DIR")
 
 set +e
 robocopy "$SRC_WIN" "$DST_WIN" //MIR //NFL //NDL //NJH //NJS //NP \
-  //XD .next .next-staging .next.backup node_modules .git \
+  //XD .next .next-dev .next-staging .next.backup node_modules .git \
   //XF .env.local \
   > /dev/null 2>&1
 RC_EXIT=$?
