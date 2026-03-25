@@ -27,7 +27,20 @@ export type ArchetypeDefinition = {
 
 // ─── Shared constants ─────────────────────────────────────────────
 // These modules are ON for every archetype - they're universally useful.
-const ALWAYS_ON = ['dashboard', 'finance']
+const ALWAYS_ON = [
+  'dashboard',
+  'pipeline',
+  'events',
+  'culinary',
+  'clients',
+  'finance',
+  'protection',
+  'more',
+  'commerce',
+  'social-hub',
+  'station-ops',
+  'operations',
+]
 
 // ─── Archetype Definitions ────────────────────────────────────────
 

@@ -20,7 +20,14 @@ export const CORE_MODULES = [
  * Extended modules - powerful features hidden in Focus Mode.
  * Still accessible when Focus Mode is OFF. Nothing is deleted.
  */
-export const EXTENDED_MODULES = ['protection', 'more', 'commerce', 'social-hub'] as const
+export const EXTENDED_MODULES = [
+  'protection',
+  'more',
+  'commerce',
+  'social-hub',
+  'station-ops',
+  'operations',
+] as const
 
 /**
  * Core standalone nav items - shown in Focus Mode.

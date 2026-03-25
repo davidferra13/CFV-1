@@ -623,7 +623,6 @@ export function ChefSidebar({
   )
   const accessibleGroups = useMemo(() => {
     const baseGroups = navGroups
-      .filter((group) => !group.advancedOnly)
       .map((group) => ({
         ...group,
         items: (isAdmin ? group.items : group.items.filter((item) => !item.adminOnly))
@@ -1161,25 +1160,7 @@ export function ChefSidebar({
 
             <div className="divider-brand h-px my-2 mx-3 opacity-40" />
 
-            {isAdmin && !focusMode && (
-              <SectionAccordion
-                title="Cannabis"
-                items={filteredCannabisItems}
-                icon={Leaf}
-                isOpen={cannabisSectionOpen}
-                onToggle={() => setCannabisSectionOpen((prev) => !prev)}
-                pathname={pathname}
-                searchParams={searchParams}
-                headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
-                headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
-                dividerClass="border-green-800/30"
-                itemActiveClass="text-emerald-700"
-                itemInactiveClass="text-stone-500 hover:text-stone-300"
-                activeBgStyle={{ background: 'rgba(74, 124, 78, 0.08)' }}
-                iconActiveColor="#4a7c4e"
-                iconInactiveColor="rgba(74, 124, 78, 0.5)"
-              />
-            )}
+            {/* Cannabis section hidden - feature disabled */}
 
             {!focusMode && (
               <SectionAccordion

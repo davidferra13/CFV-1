@@ -118,7 +118,6 @@ type NavGroup = {
   icon: LucideIcon
   items: NavCollapsibleItem[]
   module?: string
-  advancedOnly?: boolean
 }
 type PrimaryShortcutOption = NavItem & { context: string }
 
@@ -487,7 +486,6 @@ export const navGroups: NavGroup[] = [
     label: 'Commerce',
     icon: Store,
     module: 'commerce',
-    advancedOnly: true,
     items: [
       {
         href: '/commerce/parity',
@@ -783,7 +781,6 @@ export const navGroups: NavGroup[] = [
     label: 'Supply Chain',
     icon: Truck,
     module: 'operations',
-    advancedOnly: true,
     items: [
       {
         href: '/inventory/demand',
@@ -980,7 +977,6 @@ export const navGroups: NavGroup[] = [
     label: 'Marketing',
     icon: Megaphone,
     module: 'more',
-    advancedOnly: true,
     items: [
       {
         href: '/reputation/mentions',
@@ -1035,7 +1031,6 @@ export const navGroups: NavGroup[] = [
     label: 'Analytics',
     icon: BarChart3,
     module: 'more',
-    advancedOnly: true,
     items: [
       {
         href: '/analytics/benchmarks',
@@ -1089,7 +1084,6 @@ export const navGroups: NavGroup[] = [
     label: 'Protection',
     icon: ShieldCheck,
     module: 'protection',
-    advancedOnly: true,
     items: [
       {
         href: '/safety/backup-chef',
@@ -1132,7 +1126,6 @@ export const navGroups: NavGroup[] = [
     label: 'Tools',
     icon: Toolbox,
     module: 'more',
-    advancedOnly: true,
     items: [
       {
         href: '/activity',
