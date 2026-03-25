@@ -4,13 +4,9 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 ---
 
-> **🚨 STOP — READ THESE THREE BLOCKS BEFORE DOING ANYTHING 🚨**
+> **🚨 STOP — READ THESE TWO BLOCKS BEFORE DOING ANYTHING 🚨**
 
-> **BLOCK 1 — NEVER PUSH TO MAIN**
->
-> Pushing to `main` = deploying to production. You are NEVER allowed to push to `main`, merge to `main`, or trigger a production deployment. EVER. The ONLY exception is if the developer explicitly says "push everything" or "merge to main" or "deploy." Feature branch pushes are always safe ($0). If unsure: don't push.
-
-> **BLOCK 2 — DO YOUR OWN WORK, TEST YOUR OWN WORK, FIX YOUR OWN BUGS**
+> **BLOCK 1 — DO YOUR OWN WORK, TEST YOUR OWN WORK, FIX YOUR OWN BUGS**
 >
 > **NEVER** tell the developer to "check the website," "verify this works," "let me know if it looks right," or "you may want to test." You have a Playwright browser. You have an agent test account (`.auth/agent.json`). You have screenshots. **USE THEM.** After writing code: sign in, navigate, screenshot, verify. If it's broken: fix it yourself, verify the fix, then report it's done. The developer is NOT your QA team. If you CAN test it, you MUST test it. If you find a bug, you MUST fix it — don't report it back.
 >
@@ -20,7 +16,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 >
 > **NEVER** tell the developer to restart something. You have Bash. If the dev server needs restarting, kill the process and start it. If Ollama needs restarting, run `ollama serve`. If a service is down, check why and fix it. The ONLY exception is if you literally cannot do it (e.g., a physical power cycle, or a process owned by a different user). "Please restart the dev server" when you have `bash` access is laziness. Just run the command.
 
-> **BLOCK 3 — READ THIS ENTIRE FILE BEFORE STARTING WORK**
+> **BLOCK 2 — READ THIS ENTIRE FILE BEFORE STARTING WORK**
 >
 > This document contains rules that will prevent you from making expensive mistakes. Every section exists because an agent already made that mistake and it cost real money. Skimming or skipping sections = repeating those mistakes. Read it all. Follow it all.
 
@@ -34,7 +30,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
 - **End every session:** commit everything → push the feature branch → update this file if new rules were found
 - **Private AI:** client data stays local via Ollama only — never Gemini, never cloud LLMs
-- **Never:** merge to `main`, deploy to production, or run `supabase db push` without explicit user approval
+- **Never:** run `supabase db push` without explicit user approval
 
 ---
 
@@ -362,9 +358,7 @@ The developer should never have to ask for these steps separately. "Ship it" = t
 
 **What "ship it" does NOT mean:**
 
-- Merge to `main` — NEVER (requires explicit "merge to main" or "deploy to production")
-- Deploy to production — NEVER (requires explicit "deploy" or "push to main")
-- Run on production — NEVER
+- Deploy to production (requires explicit "deploy" or "push to production")
 
 ---
 
@@ -437,12 +431,8 @@ This file is the **master registry of every page, button, tab, form, modal, over
 
 ### Git Workflow
 
-- Use **feature branches** for new work, not direct commits to `main`.
-- Branch naming: `feature/description` or `fix/description`.
-- **NEVER** merge to `main` or deploy to production unless the user explicitly says so.
-- **ALWAYS `git push` the current branch to GitHub at the end of every session.** This is the off-machine backup. Do not wait to be asked.
-- Pushing feature branches is **always safe** and costs $0.
-- `git commit` + `git push origin <current-branch>` is the default. Merging to `main` is not.
+- **ALWAYS `git push` to GitHub at the end of every session.** This is the off-machine backup. Do not wait to be asked.
+- Pushing to `main` is fine. Commit directly to `main` unless the developer asks for a feature branch.
 
 ### Feature Close-Out (run when user asks to close out a feature)
 
