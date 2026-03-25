@@ -22,6 +22,8 @@ import {
   type ServiceType,
 } from './compute'
 
+import type { PricingConfig } from './config-types'
+
 import {
   WEEKLY_RATES,
   DEPOSIT_PERCENTAGE,
@@ -119,6 +121,10 @@ export interface PricingEvaluationInput {
   numberOfDays?: number // for weekly service types
   weekendPremiumEnabled?: boolean
   addOns?: PricingInput['addOns']
+
+  // ── Per-chef pricing config ─────────────────────────────────────────────
+  /** Chef's pricing config from DB. When omitted, falls back to system defaults. */
+  config?: PricingConfig
 
   // ── AI eligibility gate ───────────────────────────────────────────────────
   /**
@@ -357,7 +363,13 @@ interface ResolvedAdjustment {
 export async function evaluateChefPricing(
   input: PricingEvaluationInput
 ): Promise<PricingEvaluationResult> {
-  const { eligibility, adjustment, weekendPremiumEnabled: inputWeekendPremium, ...rest } = input
+  const {
+    eligibility,
+    adjustment,
+    config,
+    weekendPremiumEnabled: inputWeekendPremium,
+    ...rest
+  } = input
 
   // ── weekendPremiumEnabled default ─────────────────────────────────────────
   // Chef-tool mode (eligibility omitted): default to true so Fri/Sat events are
@@ -379,7 +391,8 @@ export async function evaluateChefPricing(
   // ── Step 2: Core pricing computation ──────────────────────────────────────
   // Deterministic. Returns a full PricingBreakdown regardless of eligibility.
   // computePricing() is declared async (no actual I/O; safe to await).
-  const breakdown = await computePricing(pricingInput)
+  // Pass chef's per-chef pricing config when available; otherwise uses system defaults.
+  const breakdown = await computePricing(pricingInput, config)
 
   // ── Step 3: Range pricing for weekly services ──────────────────────────────
   // weekly_standard and weekly_commitment have min/max day rates.

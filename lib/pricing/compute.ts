@@ -820,9 +820,10 @@ export async function generateQuoteFromPricing(
     eventId?: string
     quoteName?: string
     pricingNotes?: string
-  }
+  },
+  config?: PricingConfig
 ) {
-  const pricing = await computePricing(input)
+  const pricing = await computePricing(input, config)
 
   return {
     client_id: input.clientId,

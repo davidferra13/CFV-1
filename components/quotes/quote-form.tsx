@@ -30,6 +30,8 @@ import {
   type ServiceType,
   type PricingBreakdown,
 } from '@/lib/pricing/compute'
+import { getPricingConfig } from '@/lib/pricing/config-actions'
+import type { PricingConfig } from '@/lib/pricing/config-types'
 import { PricingSuggestionPanel } from '@/components/analytics/pricing-suggestion-panel'
 import { SmartPricingHint } from '@/components/intelligence/smart-pricing-hint'
 import { QuoteEventContext } from '@/components/intelligence/quote-event-context'
@@ -186,6 +188,20 @@ export function QuoteForm({
       cancelled = true
     }
   }, [existingQuote?.event_id, prefilledEventId])
+
+  // Per-chef pricing config (loaded from DB)
+  const [chefPricingConfig, setChefPricingConfig] = useState<PricingConfig | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    getPricingConfig()
+      .then((config) => {
+        if (!cancelled) setChefPricingConfig(config)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // Form state
   const [clientId, setClientId] = useState(prefilledClientId || '')
@@ -473,14 +489,17 @@ export function QuoteForm({
     setCalcResult(null)
     try {
       const guests = parseInt(guestCount) || 1
-      const result = await computePricing({
-        serviceType: calcServiceType,
-        guestCount: guests,
-        courseCount: calcServiceType === 'private_dinner' ? parseInt(calcCourseCount) : undefined,
-        eventDate: calcEventDate || undefined,
-        distanceMiles: parseFloat(calcDistance) || 0,
-        weekendPremiumEnabled: calcWeekendPremium,
-      })
+      const result = await computePricing(
+        {
+          serviceType: calcServiceType,
+          guestCount: guests,
+          courseCount: calcServiceType === 'private_dinner' ? parseInt(calcCourseCount) : undefined,
+          eventDate: calcEventDate || undefined,
+          distanceMiles: parseFloat(calcDistance) || 0,
+          weekendPremiumEnabled: calcWeekendPremium,
+        },
+        chefPricingConfig ?? undefined
+      )
       setCalcResult(result)
     } catch {
       setCalcError('Calculation failed. Check your inputs.')

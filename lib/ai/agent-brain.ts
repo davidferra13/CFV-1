@@ -4,7 +4,9 @@
 
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { generateRateCardString, DEPOSIT_PERCENTAGE } from '@/lib/pricing/constants'
+import { DEPOSIT_PERCENTAGE } from '@/lib/pricing/constants'
+import { generateRateCardFromConfig } from '@/lib/pricing/compute'
+import type { PricingConfig } from '@/lib/pricing/config-types'
 
 // ─── Chef Identity (injected at runtime, never hardcoded) ────────────────────
 
@@ -105,7 +107,8 @@ interface AgentBrainContext {
  */
 export function getAgentBrainForState(
   detection: LifecycleDetectionResult,
-  chef: ChefIdentity
+  chef: ChefIdentity,
+  pricingConfig?: PricingConfig
 ): AgentBrainContext {
   const { emailStage, pricingAllowed } = detection
 
@@ -143,17 +146,17 @@ export function getAgentBrainForState(
   switch (emailStage) {
     case 'discovery':
       stageRules = extractDiscoveryRules()
-      rateCard = extractRateCard() // Chef quotes their own prices in first response
+      rateCard = extractRateCard(pricingConfig) // Chef quotes their own prices in first response
       break
     case 'pricing':
       stageRules = extractPricingRules()
       if (pricingAllowed) {
-        rateCard = extractRateCard()
+        rateCard = extractRateCard(pricingConfig)
       }
       break
     case 'booking':
       stageRules = extractBookingRules()
-      rateCard = extractRateCard()
+      rateCard = extractRateCard(pricingConfig)
       break
     case 'post_service':
       stageRules = '' // Post-service uses simple templates, minimal rules
@@ -779,8 +782,8 @@ REWRITE-FROM-SCRATCH MANDATE: The email must be written fresh every time. Never 
 
 // ─── Rate Card Extraction ────────────────────────────────────────────────────
 
-function extractRateCard(): string {
-  return generateRateCardString()
+function extractRateCard(config?: PricingConfig): string {
+  return generateRateCardFromConfig(config)
 }
 
 // ─── Conversation Depth Detection ────────────────────────────────────────────

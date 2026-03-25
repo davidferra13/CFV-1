@@ -8,22 +8,23 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 
-// System defaults for reference display
+// Policy defaults (deposit, hours, mileage) - reasonable starting points
+// Rate defaults are zero: chefs must set their own pricing
 const DEFAULTS = {
-  couples_rate_3_course: 20000,
-  couples_rate_4_course: 25000,
-  couples_rate_5_course: 30000,
-  group_rate_3_course: 15500,
-  group_rate_4_course: 18500,
-  group_rate_5_course: 21500,
-  weekly_standard_min: 40000,
-  weekly_standard_max: 50000,
-  weekly_commit_min: 30000,
-  weekly_commit_max: 35000,
-  cook_and_leave_rate: 15000,
-  pizza_rate: 15000,
+  couples_rate_3_course: 0,
+  couples_rate_4_course: 0,
+  couples_rate_5_course: 0,
+  group_rate_3_course: 0,
+  group_rate_4_course: 0,
+  group_rate_5_course: 0,
+  weekly_standard_min: 0,
+  weekly_standard_max: 0,
+  weekly_commit_min: 0,
+  weekly_commit_max: 0,
+  cook_and_leave_rate: 0,
+  pizza_rate: 0,
   deposit_percentage: 50,
-  minimum_booking_cents: 30000,
+  minimum_booking_cents: 0,
   balance_due_hours: 24,
   mileage_rate_cents: 70,
   weekend_premium_pct: 10,
@@ -72,10 +73,7 @@ function CentsField({
           setDisplayValue(e.target.value)
           onChange(dollarsToCents(e.target.value))
         }}
-        helperText={
-          helperText ||
-          (isDefault ? 'Using system default' : `System default: $${centsToDollars(defaultValue)}`)
-        }
+        helperText={helperText || (value === 0 ? 'Enter your rate' : undefined)}
       />
     </div>
   )
@@ -105,7 +103,7 @@ function NumberField({
         value={value}
         onChange={(e) => onChange(parseInt(e.target.value, 10) || 0)}
         helperText={
-          helperText || (isDefault ? 'Using system default' : `System default: ${defaultValue}`)
+          helperText || (value === 0 && defaultValue === 0 ? 'Enter your value' : undefined)
         }
       />
     </div>

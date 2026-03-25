@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { PricingConfig, PricingConfigInput } from './config-types'
 
 // Zod schema for validating pricing config updates
@@ -52,10 +52,10 @@ const pricingConfigSchema = z.object({
 export async function getPricingConfig(): Promise<PricingConfig> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Try to fetch existing config
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_pricing_config')
     .select('*')
     .eq('chef_id', chefId)
@@ -66,7 +66,7 @@ export async function getPricingConfig(): Promise<PricingConfig> {
   }
 
   // No config exists yet, create one with defaults
-  const { data: created, error: insertError } = await supabase
+  const { data: created, error: insertError } = await db
     .from('chef_pricing_config')
     .insert({ chef_id: chefId })
     .select('*')
@@ -75,7 +75,7 @@ export async function getPricingConfig(): Promise<PricingConfig> {
   if (insertError) {
     // Handle race condition: another request created it between our select and insert
     if (insertError.code === '23505') {
-      const { data: retry } = await supabase
+      const { data: retry } = await db
         .from('chef_pricing_config')
         .select('*')
         .eq('chef_id', chefId)
@@ -118,20 +118,17 @@ export async function updatePricingConfig(
     return { success: true } // Nothing to update
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Ensure config row exists (upsert pattern)
-  await supabase
+  await db
     .from('chef_pricing_config')
     .upsert({ chef_id: chefId }, { onConflict: 'chef_id' })
     .select('id')
     .single()
 
   // Update only the provided fields
-  const { error } = await supabase
-    .from('chef_pricing_config')
-    .update(cleanUpdates)
-    .eq('chef_id', chefId)
+  const { error } = await db.from('chef_pricing_config').update(cleanUpdates).eq('chef_id', chefId)
 
   if (error) {
     console.error('[updatePricingConfig] Update failed:', error)

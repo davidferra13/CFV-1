@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { generateACEDraft, draftChefResponse } from './ace-ollama'
 import {
@@ -11,16 +11,17 @@ import {
   type LifecycleDetectionResult,
   type ChefIdentity,
 } from './agent-brain'
+import { getPricingConfig } from '@/lib/pricing/config-actions'
 
 // ─── ACE Draft for Inquiry ──────────────────────────────────────────────────
 
 export async function draftResponseForInquiry(inquiryId: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // ── 1. Fetch inquiry ──────────────────────────────────────────────────────
 
-  const { data: inquiry, error: iqErr } = await supabase
+  const { data: inquiry, error: iqErr } = await db
     .from('inquiries')
     .select('*')
     .eq('id', inquiryId)
@@ -31,7 +32,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
 
   // ── 1b. Fetch chef identity for AI personalization ────────────────────────
 
-  const { data: chefRecord } = await supabase
+  const { data: chefRecord } = await db
     .from('chefs')
     .select('business_name, display_name')
     .eq('id', chef.entityId)
@@ -43,7 +44,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
 
   // ── 2. Fetch related quote (if any) ───────────────────────────────────────
 
-  const { data: quote } = await supabase
+  const { data: quote } = await db
     .from('quotes')
     .select('*')
     .eq('inquiry_id', inquiryId)
@@ -56,7 +57,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
 
   let event = null
   if (inquiry.converted_to_event_id) {
-    const { data: eventData } = await supabase
+    const { data: eventData } = await db
       .from('events')
       .select('*')
       .eq('id', inquiry.converted_to_event_id)
@@ -71,7 +72,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
   let clientHasPriorEvents = false
 
   if (inquiry.client_id) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select(
         'id, full_name, email, phone, dietary_restrictions, allergies, notes, status, loyalty_tier, loyalty_points'
@@ -84,7 +85,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
       clientContext = `Client: ${client.full_name}\nEmail: ${client.email || 'N/A'}\nPhone: ${client.phone || 'N/A'}`
 
       // Check for prior events to detect repeat clients
-      const { count } = await supabase
+      const { count } = await db
         .from('events')
         .select('id', { count: 'exact', head: true })
         .eq('client_id', inquiry.client_id)
@@ -103,7 +104,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
   let threadMessages: string[] = []
   let messageCount = 0
 
-  const { data: conversation } = await supabase
+  const { data: conversation } = await db
     .from('conversations')
     .select('id')
     .eq('inquiry_id', inquiryId)
@@ -111,7 +112,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
     .maybeSingle()
 
   if (conversation) {
-    const { data: messages, count } = await supabase
+    const { data: messages, count } = await db
       .from('chat_messages')
       .select('body, sender_id, created_at', { count: 'exact' })
       .eq('conversation_id', conversation.id)
@@ -135,7 +136,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
 
   let calendarContext = 'No date specified yet.'
   if (inquiry.confirmed_date) {
-    const { data: conflicts } = await supabase
+    const { data: conflicts } = await db
       .from('events')
       .select('id, status')
       .eq('tenant_id', chef.tenantId!)
@@ -189,7 +190,8 @@ export async function draftResponseForInquiry(inquiryId: string) {
 
   // ── 8. Load agent-brain rules for this state ──────────────────────────────
 
-  const brainContext = getAgentBrainForState(detection, chefIdentity)
+  const chefPricingConfig = await getPricingConfig()
+  const brainContext = getAgentBrainForState(detection, chefIdentity, chefPricingConfig)
 
   // ── 9. Determine conversation depth ───────────────────────────────────────
 
@@ -203,7 +205,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
   // ── 10.5. Payment link context for booking stage ────────────────────────
 
   if (detection.emailStage === 'booking' && inquiry.converted_to_event_id) {
-    const { data: eventForPayment } = await supabase
+    const { data: eventForPayment } = await db
       .from('events')
       .select('status')
       .eq('id', inquiry.converted_to_event_id)
@@ -295,9 +297,9 @@ export async function draftSimpleResponse(
   latestClientMessage: string
 ) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: chefRecord } = await supabase
+  const { data: chefRecord } = await db
     .from('chefs')
     .select('business_name, display_name')
     .eq('id', chef.entityId)
@@ -313,9 +315,9 @@ export async function draftSimpleResponse(
 
 export async function draftPostEventFollowUp(clientName: string, eventDate: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: chefRecord } = await supabase
+  const { data: chefRecord } = await db
     .from('chefs')
     .select('business_name, display_name')
     .eq('id', chef.entityId)
