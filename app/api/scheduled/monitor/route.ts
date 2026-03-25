@@ -71,7 +71,6 @@ async function handleMonitor(request: NextRequest): Promise<NextResponse> {
   const now = new Date()
 
   // Fetch the most recent execution for each cron name
-  const db = db as any
   const { data: recentRunsRaw, error } = await db
     .from('cron_executions')
     .select('cron_name, executed_at, status')

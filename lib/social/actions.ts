@@ -1339,7 +1339,6 @@ export async function attachSocialAssetToPost(
   const user = await requireChef()
   const validated = AttachAssetSchema.parse(input)
   const db: any = createServerClient()
-  const db = db as any
 
   const { data: assetData, error: assetError } = await db
     .from('social_media_assets')
@@ -1404,7 +1403,6 @@ export async function detachSocialAssetFromPost(input: z.infer<typeof DetachAsse
   const user = await requireChef()
   const validated = DetachAssetSchema.parse(input)
   const db: any = createServerClient()
-  const db = db as any
 
   const { data: linkData, error: linkError } = await db
     .from('social_post_assets')

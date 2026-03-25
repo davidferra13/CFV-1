@@ -43,7 +43,6 @@ export async function getEventAllergenRisk(eventId: string): Promise<AllergenRis
 
   // Fetch event + guests + menu components
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = db as any
   const [eventResult, guestsResult, menuResult]: [
     { data: { occasion: string | null; dietary_restrictions: unknown; allergies: unknown } | null },
     {

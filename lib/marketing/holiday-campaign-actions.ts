@@ -22,7 +22,6 @@ export async function processHolidayCampaignDrafts(): Promise<{
   skipped: number
 }> {
   const db = createServerClient({ admin: true })
-  const db = db as any
 
   let drafted = 0
   let skipped = 0

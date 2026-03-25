@@ -1317,7 +1317,6 @@ async function handleTransferEvent(event: Stripe.Event) {
 
   const db = createServerClient({ admin: true })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = db as any
 
   // Check if we already track this transfer
   const { data: existing } = await db

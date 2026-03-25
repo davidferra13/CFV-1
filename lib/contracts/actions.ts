@@ -95,8 +95,6 @@ export async function createContractTemplate(input: CreateTemplateInput) {
   const validated = CreateTemplateSchema.parse(input)
   const db: any = createServerClient()
 
-  const db = db as any
-
   // If setting as default, unset existing default first
   if (validated.is_default) {
     await db
@@ -130,7 +128,6 @@ export async function updateContractTemplate(id: string, input: UpdateTemplateIn
   const user = await requireChef()
   const validated = UpdateTemplateSchema.parse(input)
   const db: any = createServerClient()
-  const db = db as any
 
   // If setting as default, unset existing default first
   if (validated.is_default) {

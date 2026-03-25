@@ -38,7 +38,6 @@ export async function fetchContractData(
   owner: { chefId: string | null; clientEntityId: string | null }
 ): Promise<ContractDocumentData | null> {
   const db: any = createServerClient()
-  const db = db as any
 
   let query = db
     .from('event_contracts')
