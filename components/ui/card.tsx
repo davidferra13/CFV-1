@@ -12,7 +12,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     return (
       <div
         ref={ref}
-        className={`bg-[var(--surface-2)] rounded-xl border border-stone-700/60 shadow-[var(--shadow-card)] bg-[image:var(--card-gradient)] ${interactive ? 'card-lift hover:border-[rgba(232,143,71,0.25)] hover:bg-stone-800/80 cursor-pointer' : 'transition-all duration-200'} ${className}`}
+        className={`bg-[var(--surface-2)] rounded-xl border border-stone-700/40 shadow-[var(--shadow-card)] bg-[image:var(--card-gradient)] ${interactive ? 'card-lift hover:border-[rgba(232,143,71,0.2)] hover:bg-stone-800/80 cursor-pointer' : 'transition-all duration-200'} ${className}`}
         {...props}
       >
         {children}

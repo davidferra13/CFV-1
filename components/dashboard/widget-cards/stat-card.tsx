@@ -53,7 +53,7 @@ export function StatCard({
       <div className="flex items-end justify-between gap-3">
         <div className="min-w-0">
           {/* Hero value */}
-          <p className="text-2xl font-bold text-stone-100 leading-tight truncate">{value}</p>
+          <p className="metric-display-sm truncate">{value}</p>
 
           {/* Subtitle */}
           {subtitle && <p className="text-xs text-stone-500 mt-0.5 truncate">{subtitle}</p>}

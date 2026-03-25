@@ -30,18 +30,18 @@ const SHORTCUTS = [
 export function ShortcutStrip() {
   return (
     <div className="col-span-1 sm:col-span-2 md:col-span-4">
-      <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex gap-4 overflow-x-auto pb-1 scrollbar-none">
         {SHORTCUTS.map((s) => (
           <Link
             key={s.href}
             href={s.href}
-            className="flex flex-col items-center gap-1.5 min-w-[60px] group"
+            className="flex flex-col items-center gap-1.5 min-w-[56px] group"
           >
             <div
-              className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-95"
-              style={{ backgroundColor: `${s.color}18`, border: `1px solid ${s.color}30` }}
+              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110 group-hover:shadow-lg group-active:scale-95"
+              style={{ backgroundColor: `${s.color}14`, border: `1px solid ${s.color}20` }}
             >
-              <s.icon className="w-5 h-5" style={{ color: s.color }} />
+              <s.icon className="w-[18px] h-[18px]" style={{ color: s.color }} />
             </div>
             <span className="text-xxs font-medium text-stone-500 group-hover:text-stone-300 transition-colors">
               {s.label}

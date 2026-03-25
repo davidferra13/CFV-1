@@ -1,7 +1,6 @@
-// Chef Dashboard - Widget Card Layout
-// Real data visible at a glance. No accordions. No clicking to see info.
-// Grid: 4 columns desktop, 2 tablet, 1 mobile.
-// Each widget is an always-visible card showing its key metric immediately.
+// Chef Dashboard - Daily Briefing Layout
+// Structured as a morning newspaper: hero metrics up top, today's focus, then details.
+// Section headers replace uniform card grid. Content breathes.
 
 import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
@@ -63,6 +62,19 @@ const emptyQueue: PriorityQueue = {
 }
 
 // Section loading skeletons
+function HeroMetricsSkeleton() {
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="py-2">
+          <div className="h-3 w-20 loading-bone loading-bone-muted rounded" />
+          <div className="h-9 w-24 loading-bone loading-bone-muted rounded mt-2" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function ScheduleCardsSkeleton() {
   return (
     <>
@@ -126,9 +138,9 @@ async function PriorityQueueSection() {
       {/* PRIORITY BANNER */}
       <div className="col-span-1 sm:col-span-2 lg:col-span-4">
         {queue.nextAction ? (
-          <Link href={queue.nextAction.href} className="block">
+          <Link href={queue.nextAction.href} className="block group">
             <div
-              className={`flex items-center justify-between rounded-2xl border px-5 py-4 transition-colors hover:opacity-90 ${
+              className={`flex items-center justify-between rounded-2xl border px-5 py-4 transition-all group-hover:translate-y-[-1px] group-hover:shadow-lg ${
                 queue.nextAction.urgency === 'critical'
                   ? 'bg-gradient-to-r from-red-950/80 to-red-900/30 border-red-800/50 text-red-200'
                   : queue.nextAction.urgency === 'high'
@@ -138,7 +150,7 @@ async function PriorityQueueSection() {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  className="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
                   style={{
                     backgroundColor:
                       queue.nextAction.urgency === 'critical'
@@ -159,17 +171,19 @@ async function PriorityQueueSection() {
                   </p>
                 </div>
               </div>
-              <span className="text-xs font-medium shrink-0 ml-4">Go &rarr;</span>
+              <span className="text-xs font-medium shrink-0 ml-4 group-hover:translate-x-0.5 transition-transform">
+                Go &rarr;
+              </span>
             </div>
           </Link>
         ) : (
-          <div className="flex items-center gap-3 rounded-2xl border border-green-800/40 bg-gradient-to-r from-green-950/60 to-emerald-950/30 px-5 py-4">
+          <div className="flex items-center gap-3 rounded-2xl border border-emerald-800/30 bg-gradient-to-r from-emerald-950/40 to-emerald-950/10 px-5 py-4">
             <span
-              className="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
+              className="w-2.5 h-2.5 rounded-full shrink-0"
               style={{ backgroundColor: '#10b981' }}
               aria-hidden="true"
             />
-            <p className="text-sm font-medium text-green-300">
+            <p className="text-sm font-medium text-emerald-400/90">
               All caught up. Nothing urgent right now.
             </p>
           </div>
@@ -260,153 +274,133 @@ export default async function ChefDashboard() {
   const archetype = await safe('archetype', () => getCachedChefArchetype(user.entityId), null)
   const primaryAction = getDashboardPrimaryAction(archetype)
 
+  // Time-aware greeting
+  const greeting =
+    timeOfDay === 'morning'
+      ? "Here's your day at a glance."
+      : timeOfDay === 'afternoon'
+        ? 'Your afternoon overview.'
+        : 'End-of-day summary.'
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-8">
       {/* ============================================ */}
-      {/* HEADER                                       */}
+      {/* GREETING + ACTIONS                          */}
       {/* ============================================ */}
-      <div className="col-span-1 sm:col-span-2 lg:col-span-4 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+      <header className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-display text-stone-100">Dashboard</h1>
-          <p className="text-sm text-stone-400 mt-0.5">
+          <p className="text-sm text-stone-500 font-medium">
             Good {timeOfDay}
-            {firstName ? `, ${firstName}` : ''}.
-            {timeOfDay === 'morning'
-              ? " Here's your schedule and what needs attention today."
-              : timeOfDay === 'afternoon'
-                ? ' Check your alerts and upcoming events.'
-                : " Here's your end-of-day financial summary."}
+            {firstName ? `, ${firstName}` : ''}
           </p>
+          <h1 className="text-3xl sm:text-4xl font-display text-stone-100 mt-1 tracking-tight">
+            {greeting}
+          </h1>
         </div>
-        <div className="flex gap-2 items-center flex-wrap">
+        <div className="flex gap-2 items-center flex-wrap shrink-0">
           <Link
             href="/briefing"
-            className="inline-flex items-center justify-center px-4 py-2 border border-brand-600 text-brand-400 rounded-lg hover:bg-brand-950 transition-colors font-medium text-sm"
+            className="inline-flex items-center justify-center px-4 py-2.5 border border-stone-700 text-stone-300 rounded-xl hover:bg-stone-800 hover:border-stone-600 transition-all font-medium text-sm"
           >
             Briefing
           </Link>
           <Link
-            href="/queue"
-            className="inline-flex items-center justify-center px-4 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
-          >
-            Full Queue
-          </Link>
-          <Link
             href={primaryAction.href}
             data-tour="chef-dashboard-home"
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 gradient-accent text-white rounded-lg font-medium text-sm glow-hover"
+            className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 gradient-accent text-white rounded-xl font-medium text-sm glow-hover"
           >
             <Plus className="h-4 w-4" />
             {primaryAction.label}
           </Link>
         </div>
-      </div>
+      </header>
 
       {/* Onboarding banner - shows until setup is complete, then auto-hides */}
-      <div className="col-span-1 sm:col-span-2 lg:col-span-4">
-        <OnboardingBanner />
-      </div>
+      <OnboardingBanner />
 
       {/* ============================================ */}
-      {/* HERO METRICS                                 */}
+      {/* HERO METRICS - Big numbers, no card wrapper  */}
       {/* ============================================ */}
       <WidgetErrorBoundary name="Hero Metrics" compact>
-        <Suspense
-          fallback={
-            <div className="col-span-1 sm:col-span-2 lg:col-span-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-stone-800 bg-stone-900/60 px-4 py-3"
-                >
-                  <div className="h-3 w-16 loading-bone loading-bone-muted" />
-                  <div className="h-6 w-12 loading-bone loading-bone-muted mt-2" />
-                </div>
-              ))}
-            </div>
-          }
-        >
+        <Suspense fallback={<HeroMetricsSkeleton />}>
           <HeroMetrics />
         </Suspense>
       </WidgetErrorBoundary>
 
-      {/* ============================================ */}
-      {/* SHORTCUT STRIP                               */}
-      {/* ============================================ */}
+      {/* Quick navigation strip */}
       <ShortcutStrip />
 
       {/* ============================================ */}
-      {/* PRIORITY QUEUE (streamed, non-blocking)      */}
+      {/* FOCUS: What needs attention now              */}
       {/* ============================================ */}
-      <WidgetErrorBoundary name="Priority Queue" compact>
-        <Suspense fallback={<PriorityQueueSkeleton />}>
-          <PriorityQueueSection />
-        </Suspense>
-      </WidgetErrorBoundary>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* PRIORITY QUEUE (streamed, non-blocking) */}
+        <WidgetErrorBoundary name="Priority Queue" compact>
+          <Suspense fallback={<PriorityQueueSkeleton />}>
+            <PriorityQueueSection />
+          </Suspense>
+        </WidgetErrorBoundary>
 
-      {/* ============================================ */}
-      {/* AAR PROMPT BANNER (completed events needing review) */}
-      {/* ============================================ */}
-      <div className="col-span-1 sm:col-span-2 lg:col-span-4">
-        <AARPromptBanner tenantId={user.tenantId!} />
+        {/* AAR PROMPT BANNER (completed events needing review) */}
+        <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+          <AARPromptBanner tenantId={user.tenantId!} />
+        </div>
+
+        {/* UPCOMING TOUCHPOINTS (streamed, non-blocking) */}
+        <WidgetErrorBoundary name="Upcoming Touchpoints" compact>
+          <Suspense fallback={<TouchpointsSkeleton />}>
+            <TouchpointsSection />
+          </Suspense>
+        </WidgetErrorBoundary>
       </div>
 
       {/* ============================================ */}
-      {/* UPCOMING TOUCHPOINTS (streamed, non-blocking) */}
+      {/* SCHEDULE + OPERATIONS                        */}
       {/* ============================================ */}
-      <WidgetErrorBoundary name="Upcoming Touchpoints" compact>
-        <Suspense fallback={<TouchpointsSkeleton />}>
-          <TouchpointsSection />
-        </Suspense>
-      </WidgetErrorBoundary>
+      <section>
+        <div className="section-label mb-4">Today &amp; This Week</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <WidgetErrorBoundary name="Schedule" compact>
+            <Suspense fallback={<ScheduleCardsSkeleton />}>
+              <ScheduleCards />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </div>
+      </section>
 
       {/* ============================================ */}
-      {/* STREAMED SECTIONS (time-aware order)          */}
-      {/* Morning: Schedule > Alerts > Intelligence > Business  */}
-      {/* Afternoon: Schedule > Alerts > Business > Intelligence */}
-      {/* Evening: Business > Alerts > Schedule > Intelligence   */}
+      {/* ALERTS + INTELLIGENCE                        */}
       {/* ============================================ */}
-      {(timeOfDay === 'evening'
-        ? (['business', 'alerts', 'schedule', 'intelligence'] as const)
-        : timeOfDay === 'afternoon'
-          ? (['schedule', 'alerts', 'business', 'intelligence'] as const)
-          : (['schedule', 'intelligence', 'alerts', 'business'] as const)
-      ).map((section) => {
-        switch (section) {
-          case 'schedule':
-            return (
-              <WidgetErrorBoundary key="schedule" name="Schedule" compact>
-                <Suspense fallback={<ScheduleCardsSkeleton />}>
-                  <ScheduleCards />
-                </Suspense>
-              </WidgetErrorBoundary>
-            )
-          case 'intelligence':
-            return (
-              <WidgetErrorBoundary key="intelligence" name="Intelligence" compact>
-                <Suspense fallback={<IntelligenceCardsSkeleton />}>
-                  <IntelligenceCards />
-                </Suspense>
-              </WidgetErrorBoundary>
-            )
-          case 'alerts':
-            return (
-              <WidgetErrorBoundary key="alerts" name="Alerts" compact>
-                <Suspense fallback={<AlertCardsSkeleton />}>
-                  <AlertCards />
-                </Suspense>
-              </WidgetErrorBoundary>
-            )
-          case 'business':
-            return (
-              <WidgetErrorBoundary key="business" name="Business" compact>
-                <Suspense fallback={<BusinessCardsSkeleton />}>
-                  <BusinessCards />
-                </Suspense>
-              </WidgetErrorBoundary>
-            )
-        }
-      })}
+      <section>
+        <div className="section-label mb-4">Alerts &amp; Health</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <WidgetErrorBoundary name="Alerts" compact>
+            <Suspense fallback={<AlertCardsSkeleton />}>
+              <AlertCards />
+            </Suspense>
+          </WidgetErrorBoundary>
+
+          <WidgetErrorBoundary name="Intelligence" compact>
+            <Suspense fallback={<IntelligenceCardsSkeleton />}>
+              <IntelligenceCards />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </div>
+      </section>
+
+      {/* ============================================ */}
+      {/* BUSINESS METRICS                             */}
+      {/* ============================================ */}
+      <section>
+        <div className="section-label mb-4">Business</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <WidgetErrorBoundary name="Business" compact>
+            <Suspense fallback={<BusinessCardsSkeleton />}>
+              <BusinessCards />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </div>
+      </section>
     </div>
   )
 }

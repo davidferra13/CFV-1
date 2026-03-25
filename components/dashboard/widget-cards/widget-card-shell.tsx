@@ -45,26 +45,25 @@ export function WidgetCardShell({
   return (
     <div
       data-widget-id={widgetId}
-      className={`${sizeClass} rounded-2xl overflow-hidden card-lift hover:brightness-[1.06] ${className ?? ''}`}
+      className={`${sizeClass} rounded-2xl overflow-hidden transition-all duration-200 hover:translate-y-[-2px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] ${className ?? ''}`}
       style={{
-        border: '1px solid rgba(255,255,255,0.07)',
-        borderLeft: `4px solid ${catStyle.border}`,
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderLeft: `3px solid ${catStyle.border}`,
         background: catStyle.bgExpanded,
-        boxShadow: `0 0 20px ${catStyle.border}08, 0 1px 3px rgba(0,0,0,0.2)`,
       }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-3.5 pb-1">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className="text-base leading-none shrink-0">{icon}</span>
-          <span className="text-xs font-semibold text-stone-400 uppercase tracking-wider truncate">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-sm leading-none shrink-0 opacity-80">{icon}</span>
+          <span className="text-xxs font-bold text-stone-500 uppercase tracking-wider truncate">
             {title}
           </span>
         </div>
         {href && (
           <Link
             href={href}
-            className="text-xs font-medium shrink-0 ml-3 transition-colors"
+            className="text-xs font-medium shrink-0 ml-3 transition-colors hover:brightness-125"
             style={{ color: catStyle.border }}
           >
             View &rarr;

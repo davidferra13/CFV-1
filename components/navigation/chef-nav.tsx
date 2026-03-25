@@ -437,18 +437,17 @@ const NavGroupSection = memo(function NavGroupSection({
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-base font-semibold transition-colors ${
+        className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
           active && !isOpen
             ? 'text-brand-400'
-            : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
+            : 'text-stone-300 hover:bg-stone-800/60 hover:text-brand-400'
         }`}
-        style={{ letterSpacing: 0.2 }}
       >
         <GroupIcon
-          className={`w-[20px] h-[20px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
+          className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-500' : 'text-stone-500'}`}
         />
         <span
-          className={`flex-1 text-left tracking-tight transition-opacity ${active ? 'opacity-100' : 'opacity-50'}`}
+          className={`flex-1 text-left tracking-tight transition-opacity ${active ? 'opacity-100' : 'opacity-70'}`}
         >
           {group.label}
         </span>
@@ -469,7 +468,7 @@ const NavGroupSection = memo(function NavGroupSection({
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="ml-3 pl-3 border-l-2 border-stone-800 mt-0.5 space-y-1">
+        <div className="ml-3 pl-3 border-l border-stone-800/60 mt-0.5 space-y-0.5">
           {group.items.map((item) => {
             const Icon = item.icon
             const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
@@ -794,13 +793,13 @@ export function ChefSidebar({
 
   return (
     <aside
-      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 glass-subtle sidebar-gradient border-r border-stone-800/60 transition-all duration-200 z-30 ${
+      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 glass-subtle sidebar-gradient border-r border-stone-800/40 transition-all duration-200 z-30 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
       {/* Logo + notification bell + collapse toggle */}
       <div
-        className={`flex items-center h-16 border-b border-stone-800/60 shadow-[0_1px_8px_rgba(0,0,0,0.2)] ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
+        className={`flex items-center h-14 border-b border-stone-800/40 ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
       >
         <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0 group/logo">
           <span className="transition-transform duration-200 group-hover/logo:scale-110">
