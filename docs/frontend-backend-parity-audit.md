@@ -447,29 +447,37 @@ A page-level deep audit verified actual integration chains for 300+ pages across
 
 ### Remaining Items (Low Priority)
 
-| Priority   | Issue                                              | Impact              | Effort                                              |
-| ---------- | -------------------------------------------------- | ------------------- | --------------------------------------------------- |
-| **Medium** | 9 high-priority duplicate functions (see E1 above) | Maintenance burden  | Consolidate over 2-3 sessions                       |
-| **Low**    | Legacy `lib/rateLimit.ts` (1 importer)             | Dead code           | Migrate push/unsubscribe to `lib/api/rate-limit.ts` |
-| **Low**    | 6 unused DB columns on clients/events              | Schema bloat        | Evaluate and clean up                               |
-| **Low**    | Route/file naming mismatches                       | Developer confusion | Document or rename                                  |
-| **Low**    | `error_reports` table has no admin viewer          | Errors go unseen    | Build simple admin page or log to external          |
+| Priority | Issue                                                                           | Impact                | Effort                                     |
+| -------- | ------------------------------------------------------------------------------- | --------------------- | ------------------------------------------ |
+| **Low**  | 6 unused DB columns on clients/events                                           | Schema bloat          | Evaluate and clean up                      |
+| **Low**  | `error_reports` table has no admin viewer                                       | Errors go unseen      | Build simple admin page or log to external |
+| **Low**  | `createExpense`/`deleteExpense` exist in two files with incompatible interfaces | Maintenance confusion | Document separation (see below)            |
 
-### Duplicate Consolidation Guide (for future sessions)
+### Duplicate Investigation Results (2026-03-25, Phase 3)
 
-Primary (keep) vs Secondary (consolidate) for each high-priority duplicate:
+Deep investigation of the 9 reported duplicate pairs found most were **false alarms** (same function name, different domain/purpose). Corrected assessment:
 
-| Function                          | Primary File (more imports)                 | Secondary File                             | Import Ratio |
-| --------------------------------- | ------------------------------------------- | ------------------------------------------ | ------------ |
-| `createExpense` / `deleteExpense` | `lib/expenses/actions.ts` (32)              | `lib/finance/expense-actions.ts` (8)       | 4:1          |
-| `createConversation`              | `lib/chat/actions.ts` (19)                  | `lib/communication/actions.ts` (0)         | 19:0         |
-| `createTemplate`                  | `lib/communication/template-actions.ts` (5) | `lib/menus/template-actions.ts` (2)        | 2.5:1        |
-| `canConvert`                      | `lib/units/conversion-engine.ts` (3)        | `lib/grocery/unit-conversion.ts` (1)       | 3:1          |
-| `computeLeadScore`                | `lib/prospecting/lead-scoring.ts` (4)       | `lib/inquiries/goldmine-lead-score.ts` (2) | 2:1          |
-| `categorizeExpense`               | `lib/ai/expense-categorizer.ts` (3)         | `lib/finance/tax-prep-actions.ts` (1)      | 3:1          |
-| `checkDietaryConflicts`           | TIED (1:1)                                  | Needs manual review                        | 1:1          |
-| `bulkUpdateIngredientPrices`      | `lib/recipes/bulk-price-actions.ts` (1)     | `lib/recipes/actions.ts` (0)               | 1:0          |
+| Pair                                          | Verdict                                                                                                                                                                                                                                                 | Action Taken                                                      |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `createExpense` / `deleteExpense`             | **Not a duplicate.** Incompatible interfaces: `lib/expenses/actions.ts` uses `expense_date`, `tenant_id`, Zod, returns `{success, expense}`; `lib/finance/expense-actions.ts` uses `date`, `chef_id`, no Zod, returns raw data. Two independent layers. | Kept both - different APIs serving different UI components.       |
+| `createConversation`                          | **False alarm.** `lib/communication/actions.ts` does NOT export this function.                                                                                                                                                                          | No action needed.                                                 |
+| `createTemplate`                              | **False alarm.** Different domains: email/SMS templates vs menu templates. Different function names (`createTemplate` vs `createMenuTemplate`).                                                                                                         | No action needed.                                                 |
+| `canConvert`                                  | **True duplicate.** `lib/grocery/unit-conversion.ts` orphaned (0 imports).                                                                                                                                                                              | **Deleted** orphaned file.                                        |
+| `computeLeadScore`                            | **Name collision.** Two intentionally separate scoring algorithms (prospect enrichment vs inquiry GOLDMINE formula).                                                                                                                                    | **Renamed** prospecting version to `computeProspectScore()`.      |
+| `categorizeExpense`                           | **Name collision.** AI keyword categorizer vs manual IRS Schedule C line assignment.                                                                                                                                                                    | **Renamed** tax-prep version to `assignExpenseToTaxLine()`.       |
+| `checkDietaryConflicts`                       | **Name collision.** DB-persisted alerts (event checklists) vs in-memory report (Remy queries).                                                                                                                                                          | **Renamed** event version to `generateAndPersistDietaryAlerts()`. |
+| `bulkUpdateIngredientPrices`                  | **True duplicate.** Identical code, one copy had 0 imports.                                                                                                                                                                                             | **Deleted** dead copy from `lib/recipes/actions.ts`.              |
+| `lib/rateLimit.ts` vs `lib/api/rate-limit.ts` | **Not a duplicate.** Different APIs: throws on limit (24 importers) vs returns `{success}` object (API middleware, 3 importers).                                                                                                                        | Kept both.                                                        |
+
+### Expense Layer Documentation
+
+Two expense action files coexist intentionally:
+
+- **`lib/expenses/actions.ts`** (32 importers): Full expense CRUD with Zod validation, `tenant_id` scoping, activity logging. Used by expense pages, event detail, financial reports. The primary expense layer.
+- **`lib/finance/expense-actions.ts`** (4 importers): Dashboard analytics layer with summary charts, monthly trends, deductible totals. Used by finance dashboard widgets only.
+
+Both write to the same `expenses` table but use different column naming conventions from different eras of the codebase. Merging requires updating 4 component interfaces - low priority.
 
 ### Overall Assessment
 
-**HEALTHY, STABLE CODEBASE.** 644 pages, 292 API routes, 150+ tables, 900+ server actions. Deep page-level verification of 300+ pages found zero integration gaps. All identified issues (orphaned nav, dead API, unused duplicate) have been resolved. The remaining duplicate functions are low-risk maintenance items that can be consolidated incrementally.
+**HEALTHY, STABLE CODEBASE.** 644 pages, 292 API routes, 150+ tables, 900+ server actions. Deep page-level verification of 300+ pages found zero integration gaps. All identified issues have been resolved. No remaining duplicate functions require consolidation.
