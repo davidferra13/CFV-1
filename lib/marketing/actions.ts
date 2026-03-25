@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { revalidatePath } from 'next/cache'
@@ -51,12 +51,12 @@ async function resolveAudience(
   chefEntityId: string,
   segment: Record<string, unknown>
 ): Promise<AudienceClient[]> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const baseSelect = 'id, full_name, email, phone, preferred_contact_method'
 
   // Base query factory
   const base = () =>
-    supabase
+    db
       .from('clients')
       .select(baseSelect)
       .eq('chef_id', chefEntityId)
@@ -71,7 +71,7 @@ async function resolveAudience(
 
     case 'dormant_90_days': {
       const cutoff = subDays(new Date(), 90).toISOString().slice(0, 10)
-      const { data: recentEvents } = await supabase
+      const { data: recentEvents } = await db
         .from('events')
         .select('client_id')
         .eq('chef_id', chefEntityId)
@@ -114,7 +114,7 @@ async function resolveAudience(
     case 'post_event_30_60': {
       const from = subDays(new Date(), 60).toISOString().slice(0, 10)
       const to = subDays(new Date(), 30).toISOString().slice(0, 10)
-      const { data: events } = await supabase
+      const { data: events } = await db
         .from('events')
         .select('client_id, event_date')
         .eq('chef_id', chefEntityId)
@@ -144,7 +144,7 @@ async function resolveAudience(
     }
 
     case 'never_booked': {
-      const { data: eventClients } = await supabase
+      const { data: eventClients } = await db
         .from('events')
         .select('client_id')
         .eq('chef_id', chefEntityId)
@@ -173,10 +173,10 @@ async function resolveAudience(
 export async function createCampaign(input: CampaignInput) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = CampaignSchema.parse(input)
 
-  const { data: campaign, error } = await supabase
+  const { data: campaign, error } = await db
     .from('marketing_campaigns')
     .insert({
       ...data,
@@ -195,9 +195,9 @@ export async function createCampaign(input: CampaignInput) {
 export async function updateCampaign(id: string, input: Partial<CampaignInput>) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('marketing_campaigns')
     .update(input)
     .eq('id', id)
@@ -211,9 +211,9 @@ export async function updateCampaign(id: string, input: Partial<CampaignInput>) 
 export async function deleteCampaign(id: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('marketing_campaigns')
     .delete()
     .eq('id', id)
@@ -227,9 +227,9 @@ export async function deleteCampaign(id: string) {
 export async function listCampaigns() {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('marketing_campaigns')
     .select('*')
     .eq('chef_id', chef.entityId)
@@ -242,9 +242,9 @@ export async function listCampaigns() {
 export async function getCampaign(id: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('marketing_campaigns')
     .select('*')
     .eq('id', id)
@@ -311,9 +311,9 @@ export async function getChannelSplit(segment: Record<string, unknown>): Promise
 // ============================================
 
 async function getChefDisplayName(chefEntityId: string): Promise<string> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   // Try chef_preferences for display_name first, fall back to chefs.name
-  const { data: prefs } = await supabase
+  const { data: prefs } = await db
     .from('chef_preferences')
     .select('display_name, business_name')
     .eq('chef_id', chefEntityId)
@@ -325,9 +325,9 @@ async function getChefDisplayName(chefEntityId: string): Promise<string> {
 export async function sendCampaignNow(campaignId: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: campaign, error: campErr } = await supabase
+  const { data: campaign, error: campErr } = await db
     .from('marketing_campaigns')
     .select('*')
     .eq('id', campaignId)
@@ -337,7 +337,7 @@ export async function sendCampaignNow(campaignId: string) {
   if (campErr || !campaign) throw new Error('Campaign not found')
   if (campaign.status === 'sent') throw new Error('Campaign already sent')
 
-  await supabase.from('marketing_campaigns').update({ status: 'sending' }).eq('id', campaignId)
+  await db.from('marketing_campaigns').update({ status: 'sending' }).eq('id', campaignId)
 
   const audience = await resolveAudience(
     chef.entityId,
@@ -353,7 +353,7 @@ export async function sendCampaignNow(campaignId: string) {
     const { first, last } = splitName(client.full_name)
 
     // Insert recipient row first - its ID is the unsubscribe token
-    const { data: recipientRow } = await supabase
+    const { data: recipientRow } = await db
       .from('campaign_recipients')
       .insert({
         campaign_id: campaignId,
@@ -384,7 +384,7 @@ export async function sendCampaignNow(campaignId: string) {
       // Call Resend directly to capture the message ID
       if (!process.env.RESEND_API_KEY) {
         console.log('[campaign] RESEND_API_KEY not configured, skipping email to client', client.id)
-        await supabase
+        await db
           .from('campaign_recipients')
           .update({ error_message: 'Email not configured' })
           .eq('id', recipientRow.id)
@@ -405,12 +405,12 @@ export async function sendCampaignNow(campaignId: string) {
       })
 
       if (sendError) {
-        await supabase
+        await db
           .from('campaign_recipients')
           .update({ error_message: sendError.message })
           .eq('id', recipientRow.id)
       } else {
-        await supabase
+        await db
           .from('campaign_recipients')
           .update({
             sent_at: new Date().toISOString(),
@@ -420,14 +420,14 @@ export async function sendCampaignNow(campaignId: string) {
         sentCount++
       }
     } catch (err) {
-      await supabase
+      await db
         .from('campaign_recipients')
         .update({ error_message: err instanceof Error ? err.message : 'Delivery failed' })
         .eq('id', recipientRow.id)
     }
   }
 
-  await supabase
+  await db
     .from('marketing_campaigns')
     .update({
       status: 'sent',
@@ -448,15 +448,13 @@ export async function sendCampaignNow(campaignId: string) {
  * Public unsubscribe - called from the /unsubscribe page.
  * Uses the campaign_recipient row ID as a token (no auth required).
  * NOTE: This action uses createServerClient but the /unsubscribe page uses
- * the Supabase admin client (lib/supabase/admin.ts) to bypass RLS.
+ * the admin DB client (lib/db/admin.ts) to bypass RLS.
  */
 export async function recordUnsubscribeByRecipientId(recipientId: string) {
   // This is called server-side from the public unsubscribe page
   // The admin client bypasses RLS for this unauthenticated operation
-  const { createAdminClient } = await import('@/lib/supabase/admin')
-  const supabase: any = createAdminClient()
-
-  const db = supabase as any
+  const { createAdminClient } = await import('@/lib/db/admin')
+  const db: any = createAdminClient()
 
   // Find the recipient row to get client_id and chef_id
   const { data: recipient, error: rErr } = await db
@@ -501,9 +499,9 @@ export async function recordUnsubscribeByRecipientId(recipientId: string) {
 export async function getCampaignStats(campaignId: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: recipients } = await supabase
+  const { data: recipients } = await db
     .from('campaign_recipients')
     .select('sent_at, opened_at, clicked_at, unsubscribed_at, error_message')
     .eq('campaign_id', campaignId)
@@ -530,9 +528,9 @@ export async function getCampaignStats(campaignId: string) {
 export async function getCampaignRecipients(campaignId: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('campaign_recipients')
     .select('id, email, client_id, sent_at, opened_at, clicked_at, unsubscribed_at, error_message')
     .eq('campaign_id', campaignId)
@@ -552,9 +550,9 @@ export async function getCampaignRecipients(campaignId: string) {
 export async function getCampaignRevenueAttribution(campaignId: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: campaign } = await supabase
+  const { data: campaign } = await db
     .from('marketing_campaigns')
     .select('sent_at')
     .eq('id', campaignId)
@@ -567,7 +565,7 @@ export async function getCampaignRevenueAttribution(campaignId: string) {
   const windowEnd = addDays(sentAt, 30).toISOString()
 
   // Get client IDs from this campaign
-  const { data: recipients } = await supabase
+  const { data: recipients } = await db
     .from('campaign_recipients')
     .select('client_id')
     .eq('campaign_id', campaignId)
@@ -578,7 +576,7 @@ export async function getCampaignRevenueAttribution(campaignId: string) {
   if (clientIds.length === 0) return { bookings: 0, revenue_cents: 0 }
 
   // Events created in the 30-day window after send
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, total_cents')
     .eq('chef_id', chef.entityId)
@@ -602,12 +600,12 @@ export async function getCampaignRevenueAttribution(campaignId: string) {
 export async function listCampaignTemplates() {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Ensure system templates are seeded for this chef
-  await ensureSystemTemplatesSeeded(chef.entityId, supabase)
+  await ensureSystemTemplatesSeeded(chef.entityId, db)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('campaign_templates')
     .select('*')
     .eq('chef_id', chef.entityId)
@@ -618,8 +616,8 @@ export async function listCampaignTemplates() {
   return data ?? []
 }
 
-async function ensureSystemTemplatesSeeded(chefEntityId: string, supabase: any) {
-  const { data: existing } = await supabase
+async function ensureSystemTemplatesSeeded(chefEntityId: string, db: any) {
+  const { data: existing } = await db
     .from('campaign_templates')
     .select('id')
     .eq('chef_id', chefEntityId)
@@ -628,7 +626,7 @@ async function ensureSystemTemplatesSeeded(chefEntityId: string, supabase: any) 
 
   if (existing && existing.length > 0) return // already seeded
 
-  await supabase.from('campaign_templates').insert(
+  await db.from('campaign_templates').insert(
     SYSTEM_TEMPLATES.map((t) => ({
       ...t,
       chef_id: chefEntityId,
@@ -645,9 +643,9 @@ export async function createCampaignTemplate(input: {
 }) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('campaign_templates').insert({
+  const { error } = await db.from('campaign_templates').insert({
     ...input,
     chef_id: chef.entityId,
     is_system: false,
@@ -660,9 +658,9 @@ export async function createCampaignTemplate(input: {
 export async function deleteCampaignTemplate(id: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('campaign_templates')
     .delete()
     .eq('id', id)
@@ -676,9 +674,9 @@ export async function deleteCampaignTemplate(id: string) {
 export async function saveAsTemplate(campaignId: string, templateName: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: campaign } = await supabase
+  const { data: campaign } = await db
     .from('marketing_campaigns')
     .select('campaign_type, subject, body_html')
     .eq('id', campaignId)
@@ -687,7 +685,7 @@ export async function saveAsTemplate(campaignId: string, templateName: string) {
 
   if (!campaign) throw new Error('Campaign not found')
 
-  await supabase.from('campaign_templates').insert({
+  await db.from('campaign_templates').insert({
     name: templateName,
     campaign_type: campaign.campaign_type,
     subject: campaign.subject,
@@ -711,10 +709,10 @@ export async function sendDirectOutreach(input: {
 }) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch client
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, full_name, email, phone, chef_id')
     .eq('id', input.clientId)
@@ -767,7 +765,7 @@ export async function sendDirectOutreach(input: {
   }
 
   // Log to direct_outreach_log
-  await supabase.from('direct_outreach_log').insert({
+  await db.from('direct_outreach_log').insert({
     chef_id: chef.entityId,
     client_id: input.clientId,
     channel: input.channel,
@@ -783,9 +781,9 @@ export async function sendDirectOutreach(input: {
 export async function getClientOutreachHistory(clientId: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('direct_outreach_log')
     .select('id, channel, subject, body, delivered, error_msg, sent_at')
     .eq('chef_id', chef.entityId)
@@ -805,9 +803,9 @@ export async function getClientOutreachHistory(clientId: string) {
  * Called from /api/scheduled/campaigns cron.
  */
 export async function processScheduledCampaigns() {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: due } = await supabase
+  const { data: due } = await db
     .from('marketing_campaigns')
     .select('id, chef_id')
     .eq('status', 'scheduled')
@@ -822,7 +820,7 @@ export async function processScheduledCampaigns() {
       processed++
     } catch (err) {
       console.error('[campaigns] Failed to send scheduled campaign', campaign.id, err)
-      await supabase.from('marketing_campaigns').update({ status: 'draft' }).eq('id', campaign.id)
+      await db.from('marketing_campaigns').update({ status: 'draft' }).eq('id', campaign.id)
     }
   }
 
@@ -842,9 +840,9 @@ const SequenceSchema = z.object({
 export async function listSequences() {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('automated_sequences')
     .select('*, sequence_steps(*), sequence_enrollments(count)')
     .eq('chef_id', chef.entityId)
@@ -862,10 +860,10 @@ export async function createSequence(input: {
 }) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = SequenceSchema.parse(input)
 
-  const { data: seq, error } = await supabase
+  const { data: seq, error } = await db
     .from('automated_sequences')
     .insert({ ...data, chef_id: chef.entityId })
     .select('id')
@@ -874,9 +872,7 @@ export async function createSequence(input: {
   if (error) throw new Error(error.message)
 
   if (input.steps && input.steps.length > 0) {
-    await supabase
-      .from('sequence_steps')
-      .insert(input.steps.map((s) => ({ ...s, sequence_id: seq.id })))
+    await db.from('sequence_steps').insert(input.steps.map((s) => ({ ...s, sequence_id: seq.id })))
   }
 
   revalidatePath('/marketing/sequences')
@@ -886,9 +882,9 @@ export async function createSequence(input: {
 export async function toggleSequence(id: string, isActive: boolean) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('automated_sequences')
     .update({ is_active: isActive })
     .eq('id', id)
@@ -901,9 +897,9 @@ export async function toggleSequence(id: string, isActive: boolean) {
 export async function deleteSequence(id: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase.from('automated_sequences').delete().eq('id', id).eq('chef_id', chef.entityId)
+  await db.from('automated_sequences').delete().eq('id', id).eq('chef_id', chef.entityId)
 
   revalidatePath('/marketing/sequences')
 }
@@ -918,9 +914,9 @@ export async function enrollInSequence(
   triggerType: 'birthday' | 'dormant_90' | 'post_event',
   firstSendAt: Date
 ) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: sequences } = await supabase
+  const { data: sequences } = await db
     .from('automated_sequences')
     .select('id, sequence_steps(*)')
     .eq('chef_id', chefEntityId)
@@ -930,7 +926,7 @@ export async function enrollInSequence(
   if (!sequences || sequences.length === 0) return
 
   // Check client is not unsubscribed
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('marketing_unsubscribed')
     .eq('id', clientId)
@@ -943,7 +939,7 @@ export async function enrollInSequence(
     if (steps.length === 0) continue
 
     // Upsert enrollment (ignore conflict = already enrolled)
-    await supabase.from('sequence_enrollments').upsert(
+    await db.from('sequence_enrollments').upsert(
       {
         sequence_id: seq.id,
         chef_id: chefEntityId,
@@ -961,10 +957,10 @@ export async function enrollInSequence(
  * Called from /api/scheduled/sequences cron (daily).
  */
 export async function processSequences() {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find all pending enrollments due to send
-  const { data: pending } = await supabase
+  const { data: pending } = await db
     .from('sequence_enrollments')
     .select(
       `
@@ -985,7 +981,7 @@ export async function processSequences() {
     const client = enrollment.clients
     if (!client || client.marketing_unsubscribed || !client.email) {
       // Cancel enrollment
-      await supabase
+      await db
         .from('sequence_enrollments')
         .update({ cancelled_at: new Date().toISOString() })
         .eq('id', enrollment.id)
@@ -993,7 +989,7 @@ export async function processSequences() {
     }
 
     // Fetch the current step
-    const { data: step } = await supabase
+    const { data: step } = await db
       .from('sequence_steps')
       .select('*')
       .eq('sequence_id', enrollment.sequence_id)
@@ -1001,7 +997,7 @@ export async function processSequences() {
       .single()
 
     if (!step) {
-      await supabase
+      await db
         .from('sequence_enrollments')
         .update({ completed_at: new Date().toISOString() })
         .eq('id', enrollment.id)
@@ -1034,7 +1030,7 @@ export async function processSequences() {
     })
 
     // Find next step
-    const { data: nextStep } = await supabase
+    const { data: nextStep } = await db
       .from('sequence_steps')
       .select('step_number, delay_days')
       .eq('sequence_id', enrollment.sequence_id)
@@ -1042,7 +1038,7 @@ export async function processSequences() {
       .maybeSingle()
 
     if (nextStep) {
-      await supabase
+      await db
         .from('sequence_enrollments')
         .update({
           current_step: nextStep.step_number,
@@ -1050,7 +1046,7 @@ export async function processSequences() {
         })
         .eq('id', enrollment.id)
     } else {
-      await supabase
+      await db
         .from('sequence_enrollments')
         .update({ completed_at: new Date().toISOString() })
         .eq('id', enrollment.id)
@@ -1067,10 +1063,10 @@ export async function processSequences() {
  * Called from the sequences cron.
  */
 export async function processBirthdayEnrollments() {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find all active birthday sequences
-  const { data: sequences } = await supabase
+  const { data: sequences } = await db
     .from('automated_sequences')
     .select('id, chef_id, days_before_trigger, sequence_steps(*)')
     .eq('trigger_type', 'birthday')
@@ -1083,7 +1079,7 @@ export async function processBirthdayEnrollments() {
     const triggerDate = addDays(new Date(), daysBefore)
 
     // Fetch clients with milestones for this chef
-    const { data: clients } = await supabase
+    const { data: clients } = await db
       .from('clients')
       .select('id, full_name, email, personal_milestones')
       .eq('chef_id', seq.chef_id)
