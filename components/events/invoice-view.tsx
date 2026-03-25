@@ -170,7 +170,7 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                   <tr className="border-b border-stone-700">
                     <td className="px-4 py-3">
                       <p className="text-stone-400 text-sm">
-                        Beta tester discount ({betaDiscount.discountPercent}%)
+                        Early adopter discount ({betaDiscount.discountPercent}%)
                       </p>
                     </td>
                     <td className="px-4 py-3 text-right text-green-700 text-sm">
@@ -297,7 +297,7 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
             )}
             {betaDiscount?.applied && (
               <div className="flex justify-between text-sm text-stone-400">
-                <span>Beta tester discount ({betaDiscount.discountPercent}%)</span>
+                <span>Early adopter discount ({betaDiscount.discountPercent}%)</span>
                 <span className="text-green-700">-{formatCents(betaDiscount.discountCents)}</span>
               </div>
             )}

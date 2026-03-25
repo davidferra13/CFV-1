@@ -29,8 +29,6 @@ import {
   getCachedIsAdmin,
 } from '@/lib/chef/layout-data-cache'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
-import { Suspense } from 'react'
-import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
 import { ChefTourWrapper } from '@/components/onboarding/chef-tour-wrapper'
 import { CommandPalette } from '@/components/search/command-palette'
 
@@ -177,10 +175,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
               {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && <EnvironmentBadge />}
               {/* Trial / subscription banner - shown when trial is expiring (≤3 days) or expired */}
               <TrialBanner chefId={user.entityId} />
-              {/* Beta survey banner - non-blocking, shows when an active survey hasn't been submitted */}
-              <Suspense fallback={null}>
-                <BetaSurveyBannerWrapper href="/beta-survey" />
-              </Suspense>
               {/* Account deletion pending banner - shown during 30-day grace period */}
               {deletionStatus.isPending &&
                 deletionStatus.scheduledFor &&

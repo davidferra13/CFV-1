@@ -75,3 +75,8 @@ Failing: none - all modules passed
 
 Passing: client_parse, allergen_risk, correspondence, menu_suggestions, quote_draft
 Failing: inquiry_parse (0%)
+
+## 2026-03-25 19:24 UTC - 80% pass rate - Run 3809616b
+
+Passing: allergen_risk, correspondence, menu_suggestions, quote_draft
+Failing: inquiry_parse (0%), client_parse (0%)

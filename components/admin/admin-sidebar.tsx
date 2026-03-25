@@ -45,8 +45,8 @@ const navItems = [
   { href: '/admin/feedback', label: 'Feedback', icon: MessageSquare },
   { href: '/admin/animations', label: 'Animations', icon: Sparkles },
   // { href: '/admin/cannabis', label: 'Cannabis Tier', icon: Leaf }, // hidden - feature disabled
-  { href: '/admin/beta', label: 'Beta Signups', icon: Rocket },
-  { href: '/admin/beta-surveys', label: 'Beta Surveys', icon: ClipboardList },
+  { href: '/admin/beta', label: 'Early Signups', icon: Rocket },
+  { href: '/admin/beta-surveys', label: 'Surveys', icon: ClipboardList },
   { href: '/admin/silent-failures', label: 'Silent Failures', icon: ShieldAlert },
 ]
 

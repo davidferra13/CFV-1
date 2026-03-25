@@ -34,7 +34,7 @@ export async function BetaTestersWidget() {
       <CardContent className="p-5">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-stone-200">Beta Program</h3>
+            <h3 className="text-sm font-semibold text-stone-200">Early Adopters</h3>
             <p className="text-xs text-stone-500">{totalTesters} testers enrolled</p>
           </div>
           <Link href="/admin/beta">

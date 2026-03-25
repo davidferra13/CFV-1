@@ -52,11 +52,11 @@ function getSearchParamValue(value?: string | string[]) {
 }
 
 export const metadata: Metadata = {
-  title: 'Join the Beta | ChefFlow',
+  title: 'Request Early Access | ChefFlow',
   description:
     'Apply for early access to ChefFlow, the operating system for private chefs and chef-led teams. Limited spots available.',
   openGraph: {
-    title: 'Join the ChefFlow Beta',
+    title: 'Request Early Access to ChefFlow',
     description:
       'Request early access to the chef operating system built for client memory, service execution, and repeat growth.',
     url: 'https://cheflowhq.com/beta',
@@ -90,7 +90,7 @@ export default async function BetaSignupPage({ searchParams }: BetaSignupPagePro
         <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:items-start lg:px-8">
           <div>
             <p className="inline-flex rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
-              Closed beta for chefs and operators
+              Early access for chefs and operators
             </p>
             <h1 className="mt-5 max-w-4xl fluid-display-xl font-display tracking-tight text-stone-100">
               Request access to the operator system behind every booking.
@@ -136,7 +136,7 @@ export default async function BetaSignupPage({ searchParams }: BetaSignupPagePro
 
               <article className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-300">
-                  Beta program
+                  Early access program
                 </p>
                 <ul className="mt-4 space-y-3">
                   {BETA_PROGRAM.map((item) => (

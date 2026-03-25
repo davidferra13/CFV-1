@@ -106,12 +106,12 @@ export function BetaOnboardingChecklist({
         <div className="mb-6 flex items-start justify-between">
           <div>
             <div className="mb-1 flex items-center gap-2">
-              <h3 className="text-lg font-semibold text-stone-100">Welcome to the Beta!</h3>
+              <h3 className="text-lg font-semibold text-stone-100">Welcome!</h3>
               <Badge variant="warning">{discountPercent}% OFF</Badge>
             </div>
             <p className="text-sm text-stone-400">
-              Your {discountPercent}% beta tester discount is already applied to every booking. Here
-              is a quick guide to get the most out of your experience
+              Your {discountPercent}% early adopter discount is already applied to every booking.
+              Here is a quick guide to get the most out of your experience
               {chefName ? ` with ${chefName}` : ''}.
             </p>
           </div>
@@ -223,11 +223,10 @@ export function BetaOnboardingChecklist({
         {allComplete && (
           <div className="mt-4 rounded-lg border border-emerald-800/40 bg-emerald-950/20 p-4 text-center">
             <p className="text-sm font-medium text-emerald-400">
-              You have completed everything! Thank you for being an amazing beta tester.
+              You have completed everything! Thank you for being an amazing early adopter.
             </p>
             <p className="mt-1 text-xs text-stone-400">
-              Your {discountPercent}% discount continues on all future bookings during the beta
-              period.
+              Your {discountPercent}% discount continues on all future bookings.
             </p>
           </div>
         )}

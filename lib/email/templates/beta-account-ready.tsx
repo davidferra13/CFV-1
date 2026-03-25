@@ -14,12 +14,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export function BetaAccountReadyEmail({ name, signInUrl }: BetaAccountReadyEmailProps) {
   return (
-    <BaseLayout preview="Your ChefFlow beta account is ready.">
-      <Text style={heading}>Your beta account is live.</Text>
+    <BaseLayout preview="Your ChefFlow account is ready.">
+      <Text style={heading}>Your account is live.</Text>
       <Text style={paragraph}>Hi {name},</Text>
       <Text style={paragraph}>
-        You are officially in. Your ChefFlow beta account has been created and is ready for
-        onboarding.
+        You are officially in. Your ChefFlow account has been created and is ready for onboarding.
       </Text>
 
       <Button style={button} href={signInUrl}>

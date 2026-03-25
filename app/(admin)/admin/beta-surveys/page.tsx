@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BetaSurveyListActions } from './list-actions'
 
-export const metadata: Metadata = { title: 'Beta Surveys - Admin' }
+export const metadata: Metadata = { title: 'Surveys - Admin' }
 
 export default async function AdminBetaSurveysPage() {
   await requireAdmin()
@@ -16,10 +16,8 @@ export default async function AdminBetaSurveysPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Beta Surveys</h1>
-        <p className="text-slate-400 text-sm mt-1">
-          Pre-beta and post-beta surveys for gathering participant feedback.
-        </p>
+        <h1 className="text-2xl font-bold text-white">Surveys</h1>
+        <p className="text-slate-400 text-sm mt-1">Surveys for gathering participant feedback.</p>
       </div>
 
       {/* Summary */}
@@ -55,7 +53,7 @@ export default async function AdminBetaSurveysPage() {
                     {survey.is_active ? 'Active' : 'Inactive'}
                   </span>
                   <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-700 text-slate-300">
-                    {survey.survey_type === 'pre_beta' ? 'Pre-Beta' : 'Post-Beta'}
+                    {survey.survey_type === 'pre_beta' ? 'Pre-Launch' : 'Post-Launch'}
                   </span>
                 </div>
                 <p className="text-sm text-slate-400 mb-3">{survey.description}</p>

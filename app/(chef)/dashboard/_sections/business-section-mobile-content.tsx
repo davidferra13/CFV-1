@@ -887,7 +887,7 @@ export function BusinessSectionMobileContent(
           className={widgetGridClass('beta_program')}
           style={{ order: getWidgetOrder('beta_program') }}
         >
-          <CollapsibleWidget widgetId="beta_program" title="Beta Program">
+          <CollapsibleWidget widgetId="beta_program" title="Early Adopters">
             <BetaTestersWidget />
           </CollapsibleWidget>
         </section>

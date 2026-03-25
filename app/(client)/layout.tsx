@@ -14,8 +14,6 @@ import { ToastProvider } from '@/components/notifications/toast-provider'
 import { PageInfoButton } from '@/components/ui/page-info'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
-import { Suspense } from 'react'
-import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
 import { ClientTourWrapper } from '@/components/onboarding/client-tour-wrapper'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 
@@ -39,10 +37,6 @@ export default async function ClientLayout({ children }: { children: React.React
           >
             Skip to main content
           </a>
-          {/* Beta survey banner - non-blocking, shows when an active survey hasn't been submitted */}
-          <Suspense fallback={null}>
-            <BetaSurveyBannerWrapper href="/beta-survey" />
-          </Suspense>
           <ClientSidebar userEmail={user.email} />
           <ClientMobileNav userEmail={user.email} />
           <ActivityTracker eventType="portal_login" />

@@ -105,7 +105,7 @@ export function BetaSignupForm() {
           placeholder="you@example.com"
           value={formData.email}
           onChange={handleChange}
-          helperText="We will use this for beta onboarding updates."
+          helperText="We will use this for onboarding updates."
         />
       </div>
 

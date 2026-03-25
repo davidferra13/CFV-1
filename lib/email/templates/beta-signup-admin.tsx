@@ -28,10 +28,10 @@ export function BetaSignupAdminEmail({
   totalSignups,
 }: BetaSignupAdminProps) {
   return (
-    <BaseLayout preview={`New beta signup: ${name} (${email})`}>
-      <Text style={heading}>New beta signup</Text>
+    <BaseLayout preview={`New signup: ${name} (${email})`}>
+      <Text style={heading}>New signup</Text>
       <Text style={paragraph}>
-        Someone just signed up for the closed beta. Total signups: <strong>{totalSignups}</strong>.
+        Someone just signed up for early access. Total signups: <strong>{totalSignups}</strong>.
       </Text>
       <table style={detailsTable}>
         <tbody>

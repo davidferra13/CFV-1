@@ -1,7 +1,8 @@
 export type LaunchMode = 'beta' | 'public'
 
 function resolveLaunchMode(value: string | undefined): LaunchMode {
-  return value?.toLowerCase() === 'public' ? 'public' : 'beta'
+  // Default to public - the site is one thing now
+  return value?.toLowerCase() === 'beta' ? 'beta' : 'public'
 }
 
 export const LAUNCH_MODE: LaunchMode = resolveLaunchMode(process.env.NEXT_PUBLIC_MARKETING_MODE)

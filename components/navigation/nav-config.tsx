@@ -1181,10 +1181,10 @@ export const navGroups: NavGroup[] = [
       { href: '/admin/events', label: 'All Events', icon: CalendarDays, adminOnly: true },
       { href: '/admin/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
       { href: '/admin/audit', label: 'Audit Log', icon: NotebookIcon, adminOnly: true },
-      { href: '/admin/beta', label: 'Beta Signups', icon: Star, adminOnly: true },
+      { href: '/admin/beta', label: 'Early Signups', icon: Star, adminOnly: true },
       {
         href: '/admin/beta-surveys',
-        label: 'Beta Surveys',
+        label: 'Surveys',
         icon: ClipboardCheck,
         adminOnly: true,
       },

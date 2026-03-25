@@ -6,7 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { Metadata } from 'next'
 import { BetaSignupsTable } from '@/components/admin/beta-signups-table'
 
-export const metadata: Metadata = { title: 'Beta Signups - Admin' }
+export const metadata: Metadata = { title: 'Early Signups - Admin' }
 
 export default async function AdminBetaPage() {
   await requireAdmin()
@@ -18,9 +18,7 @@ export default async function AdminBetaPage() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    return (
-      <div className="p-6 text-red-600 text-sm">Failed to load beta signups: {error.message}</div>
-    )
+    return <div className="p-6 text-red-600 text-sm">Failed to load signups: {error.message}</div>
   }
 
   const signups = rows ?? []
@@ -33,10 +31,8 @@ export default async function AdminBetaPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Beta Signups</h1>
-        <p className="text-slate-400 text-sm mt-1">
-          Manage beta signup requests from the public /beta page.
-        </p>
+        <h1 className="text-2xl font-bold text-white">Early Signups</h1>
+        <p className="text-slate-400 text-sm mt-1">Manage early access signup requests.</p>
       </div>
 
       {/* Summary chips */}

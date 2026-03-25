@@ -10,11 +10,7 @@ export default async function WebBetaChefLayout({ children }: { children: React.
   }
 
   return (
-    <ReleasePortalShell
-      portalLabel="Chef Beta Portal"
-      primaryHref="/onboarding"
-      primaryLabel="Setup"
-    >
+    <ReleasePortalShell portalLabel="Chef Portal" primaryHref="/onboarding" primaryLabel="Setup">
       {children}
     </ReleasePortalShell>
   )

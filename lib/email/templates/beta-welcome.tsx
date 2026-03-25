@@ -14,12 +14,12 @@ type BetaWelcomeProps = {
 
 export function BetaWelcomeEmail({ name }: BetaWelcomeProps) {
   return (
-    <BaseLayout preview="You're on the list - welcome to the ChefFlow beta.">
+    <BaseLayout preview="You're on the list - welcome to ChefFlow.">
       <Text style={heading}>You&apos;re on the list.</Text>
       <Text style={paragraph}>Hi {name},</Text>
       <Text style={paragraph}>
-        Thank you for signing up for the ChefFlow closed beta. Your spot is reserved, and we&apos;ll
-        be in touch when your access is ready.
+        Thank you for signing up for ChefFlow. Your spot is reserved, and we&apos;ll be in touch
+        when your access is ready.
       </Text>
       <Text style={paragraph}>Here&apos;s what happens next:</Text>
       <table style={stepsTable}>

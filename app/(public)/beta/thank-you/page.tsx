@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { CheckCircle2 } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
-  title: 'Welcome to the Beta | ChefFlow',
-  description: "You're in. Here's what to expect from the ChefFlow beta.",
+  title: 'Welcome to ChefFlow',
+  description: "You're in. Here's what to expect.",
 }
 
 export default function BetaThankYouPage() {
@@ -19,7 +19,7 @@ export default function BetaThankYouPage() {
           You&apos;re in.
         </h1>
         <p className="mt-4 max-w-lg mx-auto text-base leading-relaxed text-stone-300 md:text-lg">
-          Your beta spot is reserved. We&apos;ll be in touch soon.
+          Your spot is reserved. We&apos;ll be in touch soon.
         </p>
       </div>
 
@@ -58,8 +58,8 @@ export default function BetaThankYouPage() {
                 3
               </span>
               <span>
-                <strong className="text-stone-200">Direct support</strong> - beta users get priority
-                help and a voice in what ships next.
+                <strong className="text-stone-200">Direct support</strong> - early users get
+                priority help and a voice in what ships next.
               </span>
             </li>
           </ul>
@@ -78,7 +78,9 @@ export default function BetaThankYouPage() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-brand-500 mt-0.5 flex-shrink-0">&bull;</span>
-              <span>The beta is free. Early users get launch pricing consideration.</span>
+              <span>
+                ChefFlow is free. Early users get priority support and input on what ships next.
+              </span>
             </li>
           </ul>
         </div>

@@ -11,7 +11,7 @@ export default async function WebBetaClientLayout({ children }: { children: Reac
 
   return (
     <ReleasePortalShell
-      portalLabel="Client Beta Portal"
+      portalLabel="Client Portal"
       primaryHref="/my-profile"
       primaryLabel="My Profile"
     >
