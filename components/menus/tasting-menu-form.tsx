@@ -251,51 +251,55 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-lg font-semibold text-stone-100">
           {isEditing ? 'Edit Tasting Menu' : 'New Tasting Menu'}
         </h2>
 
-        {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        {error && (
+          <div className="rounded-md bg-red-950 border border-red-800 p-3 text-sm text-red-300">
+            {error}
+          </div>
+        )}
 
         {/* Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Menu Name *</label>
+          <label className="block text-sm font-medium text-stone-300">Menu Name *</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Spring Tasting Experience"
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="mt-1 block w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
+          <label className="block text-sm font-medium text-stone-300">Description</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
             placeholder="A journey through seasonal flavors..."
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="mt-1 block w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
 
         {/* Row: course count, price, wine upcharge */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Course Count</label>
+            <label className="block text-sm font-medium text-stone-300">Course Count</label>
             <input
               type="number"
               min={1}
               max={20}
               value={courseCount}
               onChange={(e) => setCourseCount(parseInt(e.target.value) || 5)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 block w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Price per Person ($)</label>
+            <label className="block text-sm font-medium text-stone-300">Price per Person ($)</label>
             <input
               type="number"
               min={0}
@@ -303,11 +307,11 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
               value={pricePerPerson}
               onChange={(e) => setPricePerPerson(e.target.value)}
               placeholder="0.00"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 block w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-stone-300">
               Wine Pairing Upcharge ($)
             </label>
             <input
@@ -317,7 +321,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
               value={wineUpcharge}
               onChange={(e) => setWineUpcharge(e.target.value)}
               placeholder="0.00"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 block w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -325,21 +329,21 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
         {/* Row: occasion, season */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Occasion</label>
+            <label className="block text-sm font-medium text-stone-300">Occasion</label>
             <input
               type="text"
               value={occasion}
               onChange={(e) => setOccasion(e.target.value)}
               placeholder="e.g. Anniversary, Birthday, Wine Dinner"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 block w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Season</label>
+            <label className="block text-sm font-medium text-stone-300">Season</label>
             <select
               value={season}
               onChange={(e) => setSeason(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 block w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             >
               <option value="">Select season...</option>
               {SEASONS.map((s) => (
@@ -355,18 +359,18 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
       {/* Courses */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-900">Courses ({courses.length})</h3>
+          <h3 className="text-sm font-semibold text-stone-100">Courses ({courses.length})</h3>
           <button
             type="button"
             onClick={addNewCourse}
-            className="rounded-md bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 hover:bg-brand-100"
+            className="rounded-md bg-brand-950 border border-brand-700 px-3 py-1.5 text-xs font-medium text-brand-400 hover:bg-brand-900"
           >
             + Add Course
           </button>
         </div>
 
         {courses.length === 0 && (
-          <p className="text-sm text-gray-500 italic">
+          <p className="text-sm text-stone-500 italic">
             No courses yet. Click "Add Course" to start building your tasting menu.
           </p>
         )}
@@ -375,12 +379,12 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
           {courses.map((course, idx) => (
             <div
               key={course._localId}
-              className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+              className="rounded-lg border border-stone-700 bg-stone-800/60 p-4"
             >
               {/* Course header */}
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-gray-500">
+                  <span className="text-sm font-semibold text-stone-400">
                     #{course.course_number}
                   </span>
                   <span
@@ -394,7 +398,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                     type="button"
                     onClick={() => moveCourse(course._localId, 'up')}
                     disabled={idx === 0}
-                    className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30"
+                    className="rounded p-1 text-stone-400 hover:bg-stone-700 hover:text-stone-200 disabled:opacity-30"
                     title="Move up"
                   >
                     &#x25B2;
@@ -403,7 +407,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                     type="button"
                     onClick={() => moveCourse(course._localId, 'down')}
                     disabled={idx === courses.length - 1}
-                    className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30"
+                    className="rounded p-1 text-stone-400 hover:bg-stone-700 hover:text-stone-200 disabled:opacity-30"
                     title="Move down"
                   >
                     &#x25BC;
@@ -411,7 +415,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                   <button
                     type="button"
                     onClick={() => removeCourseLocal(course._localId)}
-                    className="ml-2 rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600"
+                    className="ml-2 rounded p-1 text-red-400 hover:bg-red-950 hover:text-red-300"
                     title="Remove course"
                   >
                     &times;
@@ -422,13 +426,13 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
               {/* Course fields */}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600">Course Type</label>
+                  <label className="block text-xs font-medium text-stone-400">Course Type</label>
                   <select
                     value={course.course_type}
                     onChange={(e) =>
                       updateCourseLocal(course._localId, 'course_type', e.target.value)
                     }
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-stone-600 bg-stone-900 px-2 py-1.5 text-sm text-stone-100 focus:border-brand-500 focus:outline-none"
                   >
                     {COURSE_TYPES.map((ct) => (
                       <option key={ct.value} value={ct.value}>
@@ -438,7 +442,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600">Dish Name *</label>
+                  <label className="block text-xs font-medium text-stone-400">Dish Name *</label>
                   <input
                     type="text"
                     value={course.dish_name}
@@ -446,11 +450,11 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                       updateCourseLocal(course._localId, 'dish_name', e.target.value)
                     }
                     placeholder="e.g. Seared Scallop with Citrus Beurre Blanc"
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-stone-600 bg-stone-900 px-2 py-1.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-600">Description</label>
+                  <label className="block text-xs font-medium text-stone-400">Description</label>
                   <input
                     type="text"
                     value={course.description ?? ''}
@@ -458,11 +462,11 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                       updateCourseLocal(course._localId, 'description', e.target.value || null)
                     }
                     placeholder="Brief description of the dish"
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-stone-600 bg-stone-900 px-2 py-1.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600">Wine Pairing</label>
+                  <label className="block text-xs font-medium text-stone-400">Wine Pairing</label>
                   <input
                     type="text"
                     value={course.wine_pairing ?? ''}
@@ -470,17 +474,17 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                       updateCourseLocal(course._localId, 'wine_pairing', e.target.value || null)
                     }
                     placeholder="e.g. 2022 Sancerre, Loire Valley"
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-stone-600 bg-stone-900 px-2 py-1.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600">Portion Size</label>
+                  <label className="block text-xs font-medium text-stone-400">Portion Size</label>
                   <select
                     value={course.portion_size ?? 'small'}
                     onChange={(e) =>
                       updateCourseLocal(course._localId, 'portion_size', e.target.value)
                     }
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-stone-600 bg-stone-900 px-2 py-1.5 text-sm text-stone-100 focus:border-brand-500 focus:outline-none"
                   >
                     {PORTION_SIZES.map((ps) => (
                       <option key={ps.value} value={ps.value}>
@@ -490,7 +494,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-600">Pairing Notes</label>
+                  <label className="block text-xs font-medium text-stone-400">Pairing Notes</label>
                   <input
                     type="text"
                     value={course.pairing_notes ?? ''}
@@ -498,11 +502,11 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                       updateCourseLocal(course._localId, 'pairing_notes', e.target.value || null)
                     }
                     placeholder="Why this pairing works..."
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-stone-600 bg-stone-900 px-2 py-1.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-600">Prep Notes</label>
+                  <label className="block text-xs font-medium text-stone-400">Prep Notes</label>
                   <input
                     type="text"
                     value={course.prep_notes ?? ''}
@@ -510,7 +514,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
                       updateCourseLocal(course._localId, 'prep_notes', e.target.value || null)
                     }
                     placeholder="Timing, plating, temperature notes..."
-                    className="mt-0.5 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                    className="mt-0.5 block w-full rounded border border-stone-600 bg-stone-900 px-2 py-1.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -520,7 +524,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-3 border-t border-gray-200 pt-4">
+      <div className="flex items-center gap-3 border-t border-stone-700 pt-4">
         <button
           type="button"
           onClick={handleSave}
@@ -534,7 +538,7 @@ export function TastingMenuForm({ menu, onSaved, onCancel }: Props) {
             type="button"
             onClick={onCancel}
             disabled={isPending}
-            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-md border border-stone-600 bg-stone-800 px-4 py-2 text-sm font-medium text-stone-300 hover:bg-stone-700"
           >
             Cancel
           </button>

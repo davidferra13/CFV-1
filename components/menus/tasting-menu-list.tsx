@@ -62,9 +62,9 @@ export function TastingMenuList({ menus, onEdit, onPreview, onRefresh }: Props) 
 
   if (menus.length === 0) {
     return (
-      <div className="rounded-lg border-2 border-dashed border-gray-200 p-8 text-center">
-        <p className="text-sm text-gray-500">No tasting menus yet.</p>
-        <p className="mt-1 text-xs text-gray-400">
+      <div className="rounded-lg border-2 border-dashed border-stone-700 p-8 text-center">
+        <p className="text-sm text-stone-400">No tasting menus yet.</p>
+        <p className="mt-1 text-xs text-stone-500">
           Create your first multi-course tasting menu to get started.
         </p>
       </div>
@@ -76,33 +76,33 @@ export function TastingMenuList({ menus, onEdit, onPreview, onRefresh }: Props) 
       {menus.map((menu) => (
         <div
           key={menu.id}
-          className="group relative rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+          className="group relative rounded-lg border border-stone-700 bg-stone-900 p-4 shadow-sm transition-shadow hover:shadow-md hover:border-brand-600/50"
         >
           {/* Clickable card body */}
           <button type="button" onClick={() => onEdit(menu.id)} className="block w-full text-left">
-            <h3 className="text-sm font-semibold text-gray-900 group-hover:text-brand-600">
+            <h3 className="text-sm font-semibold text-stone-100 group-hover:text-brand-400">
               {menu.name}
             </h3>
             {menu.description && (
-              <p className="mt-1 line-clamp-2 text-xs text-gray-500">{menu.description}</p>
+              <p className="mt-1 line-clamp-2 text-xs text-stone-400">{menu.description}</p>
             )}
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+              <span className="inline-flex items-center rounded-full bg-stone-800 px-2 py-0.5 text-xs text-stone-300">
                 {menu.course_count} courses
               </span>
               {menu.price_per_person_cents && (
-                <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-700">
+                <span className="inline-flex items-center rounded-full bg-green-900/40 px-2 py-0.5 text-xs text-green-400">
                   {formatPrice(menu.price_per_person_cents)}/pp
                 </span>
               )}
               {menu.wine_pairing_upcharge_cents && menu.wine_pairing_upcharge_cents > 0 && (
-                <span className="inline-flex items-center rounded-full bg-purple-50 px-2 py-0.5 text-xs text-purple-700">
+                <span className="inline-flex items-center rounded-full bg-purple-900/40 px-2 py-0.5 text-xs text-purple-400">
                   +{formatPrice(menu.wine_pairing_upcharge_cents)} wine
                 </span>
               )}
               {menu.season && (
-                <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700">
+                <span className="inline-flex items-center rounded-full bg-amber-900/40 px-2 py-0.5 text-xs text-amber-400">
                   {menu.season}
                 </span>
               )}
@@ -110,11 +110,11 @@ export function TastingMenuList({ menus, onEdit, onPreview, onRefresh }: Props) 
           </button>
 
           {/* Action buttons */}
-          <div className="mt-3 flex items-center gap-2 border-t border-gray-100 pt-2">
+          <div className="mt-3 flex items-center gap-2 border-t border-stone-800 pt-2">
             <button
               type="button"
               onClick={() => onPreview(menu.id)}
-              className="rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+              className="rounded px-2 py-1 text-xs text-stone-400 hover:bg-stone-800 hover:text-stone-200"
             >
               Preview
             </button>
@@ -122,7 +122,7 @@ export function TastingMenuList({ menus, onEdit, onPreview, onRefresh }: Props) 
               type="button"
               onClick={() => handleDuplicate(menu.id, menu.name)}
               disabled={isPending}
-              className="rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+              className="rounded px-2 py-1 text-xs text-stone-400 hover:bg-stone-800 hover:text-stone-200"
             >
               Duplicate
             </button>
@@ -130,7 +130,7 @@ export function TastingMenuList({ menus, onEdit, onPreview, onRefresh }: Props) 
               type="button"
               onClick={() => handleDelete(menu.id, menu.name)}
               disabled={isPending || deletingId === menu.id}
-              className="rounded px-2 py-1 text-xs text-red-400 hover:bg-red-50 hover:text-red-600"
+              className="rounded px-2 py-1 text-xs text-red-400 hover:bg-red-950 hover:text-red-300"
             >
               {deletingId === menu.id ? 'Deleting...' : 'Delete'}
             </button>

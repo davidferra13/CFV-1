@@ -25,6 +25,14 @@ import {
   type PreviousMenu,
 } from '@/lib/menus/editor-actions'
 import { sendMenuForApproval } from '@/lib/events/menu-approval-actions'
+import {
+  checkMenuBudgetCompliance,
+  getIngredientPriceAlerts,
+  scaleMenuToGuestCount,
+  type BudgetComplianceResult,
+  type PriceAlert,
+  type ScalingSummary,
+} from '@/lib/menus/menu-intelligence-actions'
 import { CocktailBrowserPanel } from '@/components/menus/cocktail-browser-panel'
 import { RecipeLinkPicker } from '@/components/menus/recipe-link-picker'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
@@ -281,8 +289,12 @@ function CourseBlock({
   const handleConfirmedDelete = () => {
     setShowDeleteConfirm(false)
     startDelete(async () => {
-      await deleteEditorCourse(dish.id, menuId)
-      onDelete(dish.id)
+      try {
+        await deleteEditorCourse(dish.id, menuId)
+        onDelete(dish.id)
+      } catch (err) {
+        console.error('[deleteEditorCourse] Failed:', err)
+      }
     })
   }
 
@@ -685,8 +697,12 @@ function CourseBlock({
                   disabled={unlinking}
                   onClick={() => {
                     startUnlink(async () => {
-                      await unlinkRecipeFromEditorDish(dish.id, lr.recipeId)
-                      onUnlinkRecipe(dish.id, lr.recipeId, lr.componentId)
+                      try {
+                        await unlinkRecipeFromEditorDish(dish.id, lr.recipeId)
+                        onUnlinkRecipe(dish.id, lr.recipeId, lr.componentId)
+                      } catch (err) {
+                        console.error('[unlinkRecipe] Failed:', err)
+                      }
                     })
                   }}
                   className="text-xs text-red-400 hover:text-red-300 hover:underline ml-2 shrink-0 disabled:opacity-50"
@@ -830,6 +846,208 @@ function AddCourseRow({
   )
 }
 
+// ─── Intelligence Widgets ────────────────────────────────────────────────────
+
+/** Budget Compliance - shows how food cost compares to quoted price */
+function BudgetComplianceWidget({ menuId }: { menuId: string }) {
+  const [data, setData] = useState<BudgetComplianceResult | null>(null)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    checkMenuBudgetCompliance(menuId)
+      .then((result) => {
+        if (!cancelled) setData(result)
+      })
+      .catch(() => {
+        if (!cancelled) setError(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [menuId])
+
+  // No event quote linked, or no cost data - don't render
+  if (!data && !error) return null
+  if (error) return null
+
+  const statusConfig = {
+    ok: { label: 'On budget', color: 'text-emerald-400', bg: 'bg-emerald-950 border-emerald-800' },
+    warning: {
+      label: 'Tight margin',
+      color: 'text-amber-400',
+      bg: 'bg-amber-950 border-amber-800',
+    },
+    critical: { label: 'Over budget', color: 'text-red-400', bg: 'bg-red-950 border-red-800' },
+  }
+
+  const cfg = statusConfig[data!.status]
+
+  return (
+    <div className={`rounded-xl border p-4 shadow-sm ${cfg.bg}`}>
+      <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">
+        Budget Check
+      </p>
+      <div className="flex items-center justify-between mb-1">
+        <span className={`text-sm font-semibold ${cfg.color}`}>{cfg.label}</span>
+        <span className={`text-sm font-semibold ${cfg.color}`}>
+          {data!.marginPercent.toFixed(1)}%
+        </span>
+      </div>
+      <div className="flex justify-between text-xs text-stone-400">
+        <span>Food cost: ${(data!.totalCostCents / 100).toFixed(2)}</span>
+        <span>Quote: ${(data!.quotedPriceCents / 100).toFixed(2)}</span>
+      </div>
+      {data!.status !== 'ok' && (
+        <p className="text-xs text-stone-500 mt-2 leading-relaxed">
+          Food cost is {data!.marginPercent.toFixed(0)}% of the quoted price.
+          {data!.status === 'critical'
+            ? ' Consider reducing portions or swapping high-cost ingredients.'
+            : ' Keep an eye on ingredient costs.'}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** Price Alerts - shows ingredients with price spikes affecting this menu */
+function PriceAlertsWidget({ menuId }: { menuId: string }) {
+  const [alerts, setAlerts] = useState<PriceAlert[]>([])
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    getIngredientPriceAlerts()
+      .then((all) => {
+        if (!cancelled) {
+          // Filter to only alerts that affect this menu
+          const relevant = all.filter((a) => a.affectedMenus.includes(menuId))
+          setAlerts(relevant)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setError(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [menuId])
+
+  if (error || alerts.length === 0) return null
+
+  return (
+    <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">
+        Price Alerts
+      </p>
+      <div className="space-y-2">
+        {alerts.slice(0, 5).map((alert) => (
+          <div key={alert.ingredientId} className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-stone-200 truncate">{alert.ingredientName}</p>
+              <p className="text-xs text-stone-500">
+                avg ${(alert.averagePriceCents / 100).toFixed(2)} → now $
+                {(alert.currentPriceCents / 100).toFixed(2)}
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-red-400 whitespace-nowrap">
+              +{alert.spikePercent}%
+            </span>
+          </div>
+        ))}
+        {alerts.length > 5 && <p className="text-xs text-stone-500">+{alerts.length - 5} more</p>}
+      </div>
+    </div>
+  )
+}
+
+/** Guest Scaling - interactive widget to rescale the menu */
+function GuestScalingWidget({
+  menuId,
+  currentGuestCount,
+  onScaled,
+}: {
+  menuId: string
+  currentGuestCount: number | null
+  onScaled: (summary: ScalingSummary) => void
+}) {
+  const [targetCount, setTargetCount] = useState(currentGuestCount?.toString() ?? '')
+  const [scaling, startScaling] = useTransition()
+  const [result, setResult] = useState<ScalingSummary | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleScale = () => {
+    const count = parseInt(targetCount, 10)
+    if (!count || count < 1 || count > 500) {
+      setError('Enter a number between 1 and 500')
+      return
+    }
+    if (count === currentGuestCount) return
+
+    setError(null)
+    setResult(null)
+    startScaling(async () => {
+      try {
+        const summary = await scaleMenuToGuestCount(menuId, count)
+        setResult(summary)
+        onScaled(summary)
+      } catch (err: any) {
+        setError(err?.message || 'Failed to scale')
+      }
+    })
+  }
+
+  return (
+    <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Scale Menu</p>
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          value={targetCount}
+          onChange={(e) => {
+            setTargetCount(e.target.value)
+            setResult(null)
+            setError(null)
+          }}
+          placeholder={currentGuestCount?.toString() || '0'}
+          min="1"
+          max="500"
+          className="w-20 text-sm text-stone-100 bg-stone-800 border border-stone-600 rounded-lg px-2 py-1.5 focus:outline-none focus:border-brand-600"
+        />
+        <span className="text-xs text-stone-400">guests</span>
+        <button
+          type="button"
+          onClick={handleScale}
+          disabled={scaling || !targetCount || parseInt(targetCount, 10) === currentGuestCount}
+          className="ml-auto text-xs py-1.5 px-3 rounded-lg border border-brand-700 text-brand-400 bg-brand-950 hover:bg-brand-900 hover:border-brand-600 transition-colors disabled:opacity-50 font-medium"
+        >
+          {scaling ? 'Scaling...' : 'Scale'}
+        </button>
+      </div>
+      {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
+      {result && (
+        <div className="mt-2 text-xs text-stone-400 space-y-0.5">
+          <p className="text-emerald-400 font-medium">
+            Scaled {result.previousGuestCount} → {result.newGuestCount} guests
+          </p>
+          {result.componentsScaled > 0 && (
+            <p>
+              {result.componentsScaled} component{result.componentsScaled !== 1 ? 's' : ''} adjusted
+            </p>
+          )}
+          {result.adjustments
+            .filter((a) => a.note)
+            .map((a, i) => (
+              <p key={i} className="text-amber-500">
+                {a.componentName}: {a.note}
+              </p>
+            ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── ContextSidebar ───────────────────────────────────────────────────────────
 
 type MenuCostData = {
@@ -841,20 +1059,26 @@ type MenuCostData = {
 } | null
 
 function ContextSidebar({
+  menuId,
   event,
   previousMenus,
   pricePerPerson,
   onPriceChange,
   locked,
   menuCost,
+  guestCount,
+  onGuestScaled,
   onCocktailSelect,
 }: {
+  menuId: string
   event: EditorEvent | null
   previousMenus: PreviousMenu[]
   pricePerPerson: string
   onPriceChange: (v: string) => void
   locked: boolean
   menuCost: MenuCostData
+  guestCount: number | null
+  onGuestScaled: (summary: ScalingSummary) => void
   onCocktailSelect?: (cocktail: {
     name: string
     glass: string
@@ -1004,6 +1228,21 @@ function ContextSidebar({
 
       {/* Allergen conflict check (deterministic, auto-runs when event is linked) */}
       {event && <AllergenConflictAlert eventId={event.id} />}
+
+      {/* Budget compliance (auto-checks when event has a quote) */}
+      <BudgetComplianceWidget menuId={menuId} />
+
+      {/* Ingredient price spike alerts */}
+      <PriceAlertsWidget menuId={menuId} />
+
+      {/* Guest scaling (interactive, hidden when locked) */}
+      {!locked && (
+        <GuestScalingWidget
+          menuId={menuId}
+          currentGuestCount={guestCount}
+          onScaled={onGuestScaled}
+        />
+      )}
 
       {/* Season panel */}
       {season && (
@@ -1248,6 +1487,16 @@ export function MenuDocEditor({
     refreshCost()
   }
 
+  // ─── Guest scaling callback ──────────────────────────────────────────────────
+
+  const handleGuestScaled = useCallback(
+    (summary: ScalingSummary) => {
+      setGuestCount(summary.newGuestCount.toString())
+      refreshCost()
+    },
+    [refreshCost]
+  )
+
   // ─── Cocktail pairing ──────────────────────────────────────────────────────
 
   const handleCocktailSelect = useCallback(
@@ -1289,6 +1538,7 @@ export function MenuDocEditor({
 
   const handleMoveUp = useCallback(
     (dishId: string) => {
+      const snapshot = dishes
       setDishes((prev) => {
         const sorted = [...prev].sort((a, b) => a.sort_order - b.sort_order)
         const idx = sorted.findIndex((d) => d.id === dishId)
@@ -1300,14 +1550,16 @@ export function MenuDocEditor({
         result[idx - 1].sort_order = tmp
         return result.sort((a, b) => a.sort_order - b.sort_order)
       })
-      // Fire server action (best-effort, page reload will correct any mismatch)
-      reorderEditorCourse(initialMenu.id, dishId, 'up').catch(console.error)
+      reorderEditorCourse(initialMenu.id, dishId, 'up').catch(() => {
+        setDishes(snapshot)
+      })
     },
-    [initialMenu.id]
+    [initialMenu.id, dishes]
   )
 
   const handleMoveDown = useCallback(
     (dishId: string) => {
+      const snapshot = dishes
       setDishes((prev) => {
         const sorted = [...prev].sort((a, b) => a.sort_order - b.sort_order)
         const idx = sorted.findIndex((d) => d.id === dishId)
@@ -1318,9 +1570,11 @@ export function MenuDocEditor({
         result[idx + 1].sort_order = tmp
         return result.sort((a, b) => a.sort_order - b.sort_order)
       })
-      reorderEditorCourse(initialMenu.id, dishId, 'down').catch(console.error)
+      reorderEditorCourse(initialMenu.id, dishId, 'down').catch(() => {
+        setDishes(snapshot)
+      })
     },
-    [initialMenu.id]
+    [initialMenu.id, dishes]
   )
 
   // ─── Save indicator ──────────────────────────────────────────────────────────
@@ -1580,12 +1834,15 @@ export function MenuDocEditor({
           {/* ─── Sidebar ─── */}
           <div className="w-72 shrink-0">
             <ContextSidebar
+              menuId={initialMenu.id}
               event={event}
               previousMenus={previousMenus}
               pricePerPerson={pricePerPerson}
               onPriceChange={handlePricePerPerson}
               locked={locked}
               menuCost={menuCost}
+              guestCount={guestCount ? parseInt(guestCount, 10) || null : null}
+              onGuestScaled={handleGuestScaled}
               onCocktailSelect={handleCocktailSelect}
             />
           </div>

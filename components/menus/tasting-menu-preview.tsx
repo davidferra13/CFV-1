@@ -23,17 +23,17 @@ const COURSE_TYPE_LABELS: Record<CourseType, string> = {
 }
 
 const COURSE_TYPE_COLORS: Record<CourseType, string> = {
-  amuse_bouche: 'bg-purple-100 text-purple-800 border-purple-200',
-  appetizer: 'bg-brand-100 text-brand-800 border-brand-200',
-  soup: 'bg-amber-100 text-amber-800 border-amber-200',
-  salad: 'bg-green-100 text-green-800 border-green-200',
-  fish: 'bg-brand-100 text-brand-800 border-brand-200',
-  intermezzo: 'bg-brand-100 text-brand-800 border-brand-200',
-  main: 'bg-red-100 text-red-800 border-red-200',
-  cheese: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  pre_dessert: 'bg-pink-100 text-pink-800 border-pink-200',
-  dessert: 'bg-rose-100 text-rose-800 border-rose-200',
-  mignardise: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200',
+  amuse_bouche: 'bg-purple-900/40 text-purple-400 border-purple-800',
+  appetizer: 'bg-brand-900/40 text-brand-400 border-brand-800',
+  soup: 'bg-amber-900/40 text-amber-400 border-amber-800',
+  salad: 'bg-green-900/40 text-green-400 border-green-800',
+  fish: 'bg-brand-900/40 text-brand-400 border-brand-800',
+  intermezzo: 'bg-brand-900/40 text-brand-400 border-brand-800',
+  main: 'bg-red-900/40 text-red-400 border-red-800',
+  cheese: 'bg-yellow-900/40 text-yellow-400 border-yellow-800',
+  pre_dessert: 'bg-pink-900/40 text-pink-400 border-pink-800',
+  dessert: 'bg-rose-900/40 text-rose-400 border-rose-800',
+  mignardise: 'bg-fuchsia-900/40 text-fuchsia-400 border-fuchsia-800',
 }
 
 const PORTION_LABELS: Record<string, string> = {
@@ -75,7 +75,7 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
+              className="rounded-md border border-stone-600 bg-stone-800 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700"
             >
               Back
             </button>
@@ -84,7 +84,7 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
         <button
           type="button"
           onClick={handlePrint}
-          className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
+          className="rounded-md border border-stone-600 bg-stone-800 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700"
         >
           Print
         </button>
@@ -92,22 +92,24 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
 
       {/* Menu header */}
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">{menu.name}</h1>
+        <h1 className="text-2xl font-bold text-stone-100 print:text-gray-900">{menu.name}</h1>
         {menu.description && (
-          <p className="mt-2 text-sm text-gray-600 italic">{menu.description}</p>
+          <p className="mt-2 text-sm text-stone-400 italic print:text-gray-600">
+            {menu.description}
+          </p>
         )}
 
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-gray-500">
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-stone-500 print:text-gray-500">
           <span>{menu.course_count} Courses</span>
           {menu.occasion && (
             <>
-              <span className="text-gray-300">|</span>
+              <span className="text-stone-600 print:text-gray-300">|</span>
               <span>{menu.occasion}</span>
             </>
           )}
           {menu.season && (
             <>
-              <span className="text-gray-300">|</span>
+              <span className="text-stone-600 print:text-gray-300">|</span>
               <span>{menu.season}</span>
             </>
           )}
@@ -120,12 +122,12 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
           <div key={course.id} className="relative">
             {/* Connector line between courses */}
             {idx < menu.courses.length - 1 && (
-              <div className="absolute bottom-0 left-6 top-12 w-px bg-gray-200 print:hidden" />
+              <div className="absolute bottom-0 left-6 top-12 w-px bg-stone-700 print:hidden" />
             )}
 
             <div className="flex gap-4">
               {/* Course number circle */}
-              <div className="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border-2 border-gray-200 bg-white text-sm font-bold text-gray-400">
+              <div className="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border-2 border-stone-600 bg-stone-900 text-sm font-bold text-stone-400 print:border-gray-200 print:bg-white print:text-gray-400">
                 {course.course_number}
               </div>
 
@@ -139,27 +141,33 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
                       {COURSE_TYPE_LABELS[course.course_type]}
                     </span>
                     {course.portion_size && (
-                      <span className="ml-2 text-xxs text-gray-400">
+                      <span className="ml-2 text-xxs text-stone-500">
                         {PORTION_LABELS[course.portion_size] ?? course.portion_size}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <h3 className="mt-1.5 text-base font-semibold text-gray-900">{course.dish_name}</h3>
+                <h3 className="mt-1.5 text-base font-semibold text-stone-100 print:text-gray-900">
+                  {course.dish_name}
+                </h3>
 
                 {course.description && (
-                  <p className="mt-0.5 text-sm text-gray-600">{course.description}</p>
+                  <p className="mt-0.5 text-sm text-stone-400 print:text-gray-600">
+                    {course.description}
+                  </p>
                 )}
 
                 {/* Wine pairing */}
                 {course.wine_pairing && (
-                  <div className="mt-2 flex items-start gap-1.5 rounded-md bg-purple-50 px-3 py-2">
+                  <div className="mt-2 flex items-start gap-1.5 rounded-md bg-purple-950/40 px-3 py-2 print:bg-purple-50">
                     <span className="text-sm">&#127863;</span>
                     <div>
-                      <p className="text-xs font-medium text-purple-800">{course.wine_pairing}</p>
+                      <p className="text-xs font-medium text-purple-300 print:text-purple-800">
+                        {course.wine_pairing}
+                      </p>
                       {course.pairing_notes && (
-                        <p className="mt-0.5 text-xs-tight text-purple-600 italic">
+                        <p className="mt-0.5 text-xs-tight text-purple-400 italic print:text-purple-600">
                           {course.pairing_notes}
                         </p>
                       )}
@@ -174,25 +182,31 @@ export function TastingMenuPreview({ menu, onClose }: Props) {
 
       {/* Pricing footer */}
       {((totalPerPerson ?? 0) > 0 || (totalWithWine ?? 0) > 0) && (
-        <div className="mt-8 border-t border-gray-200 pt-4">
+        <div className="mt-8 border-t border-stone-700 pt-4 print:border-gray-200">
           <div className="flex flex-col items-end gap-1 text-sm">
             {(totalPerPerson ?? 0) > 0 && (
               <div className="flex items-center gap-4">
-                <span className="text-gray-600">Per Person</span>
-                <span className="font-semibold text-gray-900">{formatCents(totalPerPerson)}</span>
+                <span className="text-stone-400 print:text-gray-600">Per Person</span>
+                <span className="font-semibold text-stone-100 print:text-gray-900">
+                  {formatCents(totalPerPerson)}
+                </span>
               </div>
             )}
             {hasWinePairings && (menu.wine_pairing_upcharge_cents ?? 0) > 0 && (
               <>
                 <div className="flex items-center gap-4">
-                  <span className="text-gray-600">Wine Pairing</span>
-                  <span className="text-gray-700">
+                  <span className="text-stone-400 print:text-gray-600">Wine Pairing</span>
+                  <span className="text-stone-300 print:text-gray-700">
                     +{formatCents(menu.wine_pairing_upcharge_cents)}
                   </span>
                 </div>
-                <div className="mt-1 flex items-center gap-4 border-t border-gray-100 pt-1">
-                  <span className="font-medium text-gray-700">With Wine Pairing</span>
-                  <span className="font-bold text-gray-900">{formatCents(totalWithWine)}</span>
+                <div className="mt-1 flex items-center gap-4 border-t border-stone-800 pt-1 print:border-gray-100">
+                  <span className="font-medium text-stone-300 print:text-gray-700">
+                    With Wine Pairing
+                  </span>
+                  <span className="font-bold text-stone-100 print:text-gray-900">
+                    {formatCents(totalWithWine)}
+                  </span>
                 </div>
               </>
             )}

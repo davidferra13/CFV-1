@@ -633,6 +633,7 @@ export const navGroups: NavGroup[] = [
           { href: '/nutrition', label: 'Nutritional Analysis', hidden: true },
           { href: '/culinary/menus/scaling', label: 'Scaling' },
           { href: '/culinary/menus/substitutions', label: 'Substitutions' },
+          { href: '/menus/tasting', label: 'Tasting Menus' },
           { href: '/culinary/menus/templates', label: 'Templates' },
         ],
       },
