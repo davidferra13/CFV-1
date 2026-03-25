@@ -297,8 +297,8 @@ const OUT_OF_SCOPE_PATTERNS = [
   // General philosophical/existential questions
   /\b(what\s+is\s+the\s+meaning|meaning\s+of)\b/i,
   /\b(why\s+do\s+we\s+exist|existential|philosophy|philosophical)\b/i,
-  // Entertainment/gaming
-  /\b(tell\s+me\s+a\s+joke|play\s+a\s+game|tell\s+me\s+a\s+story|play\s+trivia)\b/i,
+  // Entertainment
+  /\b(tell\s+me\s+a\s+joke|tell\s+me\s+a\s+story)\b/i,
   // General knowledge (unless business-related)
   /\b(what\s+is|who\s+is|when\s+did)\s+(the\s+)?(president|history|science|math|physics|biology|chemistry|geography)\b/i,
   // Requests for advice outside chef domain

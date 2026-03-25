@@ -1620,6 +1620,7 @@ export async function getMenuQuickViewData(menuId: string): Promise<MenuQuickVie
     .from('menu_cost_summary' as any)
     .select('cost_per_guest_cents, food_cost_percentage')
     .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
     .maybeSingle()
 
   // Fetch linked event if present
@@ -1861,6 +1862,7 @@ export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingL
     .from('components')
     .select('id, name, scale_factor, recipe_id, dish_id')
     .in('dish_id', dishIds)
+    .eq('tenant_id', user.tenantId!)
 
   if (!components || components.length === 0) {
     return {
@@ -1895,6 +1897,7 @@ export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingL
     .from('recipes')
     .select('id, name, yield_quantity, yield_unit')
     .in('id', recipeIds)
+    .eq('tenant_id', user.tenantId!)
 
   const recipeMap = new Map(((recipes as any[]) || []).map((r: any) => [r.id, r]))
 
@@ -1904,6 +1907,7 @@ export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingL
       'id, recipe_id, quantity, unit, is_optional, ingredient:ingredients(id, name, category, average_price_cents, last_price_cents)'
     )
     .in('recipe_id', recipeIds)
+    .eq('tenant_id', user.tenantId!)
 
   const dishLookup = new Map(((dishes as any[]) || []).map((d: any) => [d.id, d]))
   const ingredientMap = new Map<string, ShoppingListItem>()

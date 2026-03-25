@@ -72,12 +72,6 @@ export const CHEF_PORTAL_MISCELLANEOUS_PAGE_INFO: Record<string, PageInfoEntry> 
     features: ['Event simulation', 'Data generation', 'Testing scenarios'],
   },
 
-  '/games': {
-    title: 'Games',
-    description: 'Fun and engagement - take a break with built-in games.',
-    features: ['Tic-tac-toe', 'Snake', 'Galaga', 'Trivia', 'More'],
-  },
-
   '/goals': {
     title: 'Goals',
     description: 'Revenue and booking targets - set goals and track progress.',

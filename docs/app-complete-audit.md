@@ -10,7 +10,7 @@
 > - [`docs/ui-audit-settings.md`](ui-audit-settings.md) — Settings (50 pages, 1730 lines)
 > - [`docs/ui-audit-network-community.md`](ui-audit-network-community.md) — Network & Community (6 pages, 14 components, 1093 lines)
 > - [`docs/ui-audit-marketing-social.md`](ui-audit-marketing-social.md) — Marketing & Social (14 routes, 1173 lines)
-> - [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md) — Onboarding, Import, Cannabis, Help, Loyalty, Safety, Remy, Games, Dev Tools (31 pages, 1431 lines)
+> - [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md) — Onboarding, Import, Cannabis, Help, Loyalty, Safety, Remy, Dev Tools (31 pages, 1431 lines)
 
 ---
 
@@ -81,9 +81,8 @@
 21. [Onboarding & Import](#21-onboarding--import)
 22. [Cannabis Vertical](#22-cannabis-vertical)
 23. [Help Center](#23-help-center)
-24. [Games](#24-games)
-25. [Dev Tools](#25-dev-tools)
-26. [Blog](#26-blog)
+24. [Dev Tools](#24-dev-tools)
+25. [Blog](#25-blog)
 
 ---
 
@@ -1493,23 +1492,7 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 
 ---
 
-## 24. GAMES
-
-> **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Games Pages
-
-| Game        | Route                | Description                                                                                                                                                                                                                                                                 |
-| ----------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arcade Hub  | `/games`             | Game selection menu with cards per game (thumbnail, description, play button)                                                                                                                                                                                               |
-| Galaga      | `/games/galaga`      | Space shooter (canvas-based, keyboard controls, high score in localStorage)                                                                                                                                                                                                 |
-| Chef Snake  | `/games/snake`       | Snake with culinary twist: collect ingredient emojis to complete recipes (+50 bonus). 14 food types, 10 recipes. Canvas 480x480, keyboard + touch. High score in localStorage                                                                                               |
-| The Line    | `/games/the-line`    | Kitchen service game: ORDER RAIL → 4 STATIONS (Grill/Sauté/Prep/Oven) → PLATING. Click ticket items to assign, click stations to pull. Timing: raw/perfect/overcooked/burnt. 3 strikes = game over. 5 rush levels. Prep Mode uses chef's actual menu dishes. Canvas 480x640 |
-| Menu Muse   | `/games/menu-muse`   | Culinary-themed word game (5-letter words, 6 guesses, keyboard input, color-coded feedback)                                                                                                                                                                                 |
-| Tic-Tac-Toe | `/games/tic-tac-toe` | vs Remy AI. 3x3 (minimax, unbeatable), 4x4/5x5 (heuristic, beatable). Win/loss/draw tracking. Remy taunts                                                                                                                                                                   |
-| Trivia      | `/games/trivia`      | Remy's Kitchen Trivia. Culinary Knowledge or My Business modes. 15 topic chips + custom. Difficulty levels. Timed mode. 4-answer questions with fun facts + source citations + confidence badges. High score + seen-question dedup in localStorage                          |
-
----
-
-## 25. DEV TOOLS
+## 24. DEV TOOLS
 
 > **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Dev Tools
 
@@ -1517,7 +1500,7 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 
 ---
 
-## 26. BLOG
+## 25. BLOG
 
 | Route          | Content                                                                                                                                                                                                 |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1571,7 +1554,6 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 | Vendor/food cost pages    | 6 (list, detail, invoices, price-comparison, dashboard, revenue)         |
 | Guest CRM pages           | 3 (directory, profile, reservations)                                     |
 | Staff portal pages        | 6 (login, dashboard, tasks, station, recipes, schedule)                  |
-| Games                     | 6                                                                        |
 | Calendar views            | 7 (month, day, week, year, share, schedule, waitlist)                    |
 | Event FSM states          | 8                                                                        |
 | Total audit lines         | ~8,600 (master + 5 companion docs)                                       |

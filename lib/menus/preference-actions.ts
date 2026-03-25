@@ -4,7 +4,7 @@
 
 'use server'
 
-import { requireChef, requireClient } from '@/lib/auth/get-user'
+import { requireAuth, requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -119,6 +119,7 @@ export async function submitMenuPreferences(input: SubmitPreferencesInput) {
  * Works for both chefs (tenant scope) and clients (client scope - RLS handles it).
  */
 export async function getMenuPreferences(eventId: string) {
+  await requireAuth()
   const supabase: any = createServerClient()
 
   const { data, error } = await supabase

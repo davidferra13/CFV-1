@@ -57,8 +57,8 @@ ChefFlow is a **multi-tenant private chef operations platform** built on Next.js
 | **Framework**       | Next.js (App Router)            | 14.2.18                 |
 | **Language**        | TypeScript                      | 5.7.2                   |
 | **Runtime**         | React                           | 18.3.1                  |
-| **Database**        | Supabase (PostgreSQL)           | Remote, linked          |
-| **Auth**            | Supabase Auth                   | SSR via `@supabase/ssr` |
+| **Database**        | (PostgreSQL)                    | Remote, linked          |
+| **Auth**            | Auth                            | SSR via `@supabase/ssr` |
 | **Payments**        | Stripe                          | v20.3.1 (Connect)       |
 | **Styling**         | Tailwind CSS                    | 3.4.17                  |
 | **Icons**           | Lucide React, Phosphor Icons    | Latest                  |
@@ -366,7 +366,6 @@ Internal tooling, developer utilities, experimental features. Never user-facing 
 | **Grazing Event Scripts**    | `scripts/grazing-*.mjs`, `scripts/event-*.mjs`                         |
 | **MCP Check**                | `scripts/mcp-check.ps1`                                                |
 | **Cannabis Vertical**        | `lib/cannabis/` (experimental)                                         |
-| **Games**                    | `lib/games/`                                                           |
 | **Simulation**               | `lib/simulation/`                                                      |
 | **Kiosk/POS**                | `app/kiosk/`, `lib/commerce/`                                          |
 | **Blog**                     | `lib/blog/`, `app/(public)/blog/`                                      |

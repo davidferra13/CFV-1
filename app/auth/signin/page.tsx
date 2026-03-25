@@ -28,9 +28,6 @@ function safeRedirectPath(raw: string | null): string {
 }
 
 type SignInStage = 'idle' | 'authenticating' | 'redirecting'
-type StepState = 'pending' | 'active' | 'complete'
-
-const SLOW_SIGN_IN_MS = 4000
 
 function normalizeAuthErrorMessage(message: string): string {
   const normalized = message.toLowerCase()
@@ -46,118 +43,20 @@ function normalizeAuthErrorMessage(message: string): string {
   return message
 }
 
-function formatElapsedMs(elapsedMs: number): string {
-  if (elapsedMs < 10_000) {
-    return `${(elapsedMs / 1000).toFixed(1)}s`
-  }
-  return `${Math.round(elapsedMs / 1000)}s`
-}
-
-function StepIcon({ state }: { state: StepState }) {
-  if (state === 'complete') {
-    return (
-      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-        <svg
-          className="h-3 w-3"
-          viewBox="0 0 12 12"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M2 6.5 4.5 9 10 3.5" />
-        </svg>
-      </span>
-    )
-  }
-
-  if (state === 'active') {
-    return (
-      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-100 text-brand-700">
-        <LoadingSpinner size="xs" className="text-current" />
-      </span>
-    )
-  }
-
-  return (
-    <span className="h-5 w-5 rounded-full border border-stone-300 bg-white" aria-hidden="true" />
-  )
-}
-
-function SignInProgress({
-  stage,
-  elapsedMs,
-}: {
-  stage: Exclude<SignInStage, 'idle'>
-  elapsedMs: number
-}) {
-  const steps: Array<{
-    title: string
-    description: string
-    state: StepState
-  }> = [
-    {
-      title: 'Submitting sign-in request',
-      description: 'Verifying your email and password.',
-      state: stage === 'authenticating' ? 'active' : 'complete',
-    },
-    {
-      title: 'Session established',
-      description: 'Your authenticated session is ready.',
-      state: stage === 'redirecting' ? 'complete' : 'pending',
-    },
-    {
-      title: 'Opening your workspace',
-      description:
-        stage === 'redirecting'
-          ? 'Redirecting to the next screen now.'
-          : 'Waiting for the sign-in request to finish first.',
-      state: stage === 'redirecting' ? 'active' : 'pending',
-    },
-  ]
-
+function SignInProgress({ stage }: { stage: Exclude<SignInStage, 'idle'> }) {
   return (
     <div
-      className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-left"
+      className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-center"
       role="status"
       aria-live="polite"
       aria-atomic="true"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-sm font-semibold text-stone-900">
-            {stage === 'authenticating' ? 'Signing you in' : 'Opening your workspace'}
-          </p>
-          <p className="text-xs text-stone-600">
-            {stage === 'authenticating'
-              ? 'Showing only the steps that have actually happened.'
-              : 'Your session is ready. Waiting on the destination page to finish loading.'}
-          </p>
-        </div>
-        <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium tabular-nums text-stone-600">
-          {formatElapsedMs(elapsedMs)}
-        </span>
-      </div>
-
-      <ol className="mt-3 space-y-2" aria-label="Live sign-in progress">
-        {steps.map((step) => (
-          <li key={step.title} className="flex items-start gap-3">
-            <StepIcon state={step.state} />
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-stone-800">{step.title}</p>
-              <p className="text-xs text-stone-500">{step.description}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
-
-      {elapsedMs >= SLOW_SIGN_IN_MS ? (
-        <p className="mt-3 text-xs text-stone-500">
-          Still working. Either the sign-in request or the redirect is taking longer than usual.
+      <div className="flex items-center justify-center gap-3">
+        <LoadingSpinner size="sm" />
+        <p className="text-sm font-medium text-stone-700">
+          {stage === 'authenticating' ? 'Signing you in...' : 'Opening your workspace...'}
         </p>
-      ) : null}
+      </div>
     </div>
   )
 }
@@ -166,8 +65,6 @@ function SignInForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [stage, setStage] = useState<SignInStage>('idle')
-  const [startedAt, setStartedAt] = useState<number | null>(null)
-  const [elapsedMs, setElapsedMs] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [formData, setFormData] = useState<SignInInput>({
@@ -185,18 +82,6 @@ function SignInForm() {
     setMessage(callbackMessage || null)
   }, [callbackError, callbackMessage])
 
-  useEffect(() => {
-    if (stage === 'idle' || startedAt === null) {
-      setElapsedMs(0)
-      return
-    }
-
-    const updateElapsed = () => setElapsedMs(Date.now() - startedAt)
-    updateElapsed()
-    const timer = window.setInterval(updateElapsed, 200)
-    return () => window.clearInterval(timer)
-  }, [stage, startedAt])
-
   const isWorking = stage !== 'idle'
   const progressStage = stage === 'idle' ? null : stage
 
@@ -205,7 +90,6 @@ function SignInForm() {
     setError(null)
     setMessage(null)
     setStage('authenticating')
-    setStartedAt(Date.now())
 
     try {
       await signIn(formData)
@@ -219,7 +103,6 @@ function SignInForm() {
       const error = err as Error
       setError(normalizeAuthErrorMessage(error.message))
       setStage('idle')
-      setStartedAt(null)
     }
   }
 
@@ -296,9 +179,7 @@ function SignInForm() {
                     : 'Sign In'}
               </Button>
 
-              {progressStage ? (
-                <SignInProgress stage={progressStage} elapsedMs={elapsedMs} />
-              ) : null}
+              {progressStage ? <SignInProgress stage={progressStage} /> : null}
 
               <div className="text-sm text-center text-stone-400">
                 Don&apos;t have an account?{' '}

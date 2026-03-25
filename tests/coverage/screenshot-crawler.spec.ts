@@ -354,7 +354,6 @@ const CHEF_ROUTES = [
   // Special
   '/onboarding',
   '/import',
-  '/games',
   '/training',
   '/travel',
   '/compliance',

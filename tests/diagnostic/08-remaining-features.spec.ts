@@ -25,32 +25,6 @@ test.describe('Cannabis Vertical', () => {
   }
 })
 
-// ─── Games ──────────────────────────────────────────────────────────────────
-
-test.describe('Games', () => {
-  const gameRoutes = [
-    '/games',
-    '/games/galaga',
-    '/games/snake',
-    '/games/the-line',
-    '/games/menu-muse',
-    '/games/tic-tac-toe',
-    '/games/trivia',
-  ]
-
-  for (const route of gameRoutes) {
-    test(`${route} loads without 500`, async ({ page }) => {
-      const resp = await page.goto(route)
-      expect(resp?.status()).toBeLessThan(500)
-      if (resp?.status() === 200) {
-        await page.waitForLoadState('networkidle')
-        const body = await page.locator('body').innerText()
-        expect(body).not.toMatch(/500|internal server error/i)
-      }
-    })
-  }
-})
-
 // ─── Help Center ────────────────────────────────────────────────────────────
 
 test.describe('Help Center', () => {

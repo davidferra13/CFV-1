@@ -570,16 +570,7 @@ export function BusinessSectionMobileContent(
         { label: 'Overdue Tasks', value: toInteger(overdueTaskCount) },
       ],
     },
-    {
-      id: 'cannabis_control_center',
-      title: 'Cannabis Control Center',
-      href: '/cannabis/events',
-      rows: [
-        { label: 'Access Enabled', value: cannabisAccess ? 'Yes' : 'No' },
-        { label: 'Upcoming Events', value: toInteger(cannabisUpcomingEventCount) },
-        { label: 'Missing RSVPs', value: toInteger(cannabisMissingResponses) },
-      ],
-    },
+    // Cannabis Control Center card hidden - feature disabled
     {
       id: 'charity_impact',
       title: 'Charity Impact',

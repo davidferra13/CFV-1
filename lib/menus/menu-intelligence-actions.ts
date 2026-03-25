@@ -242,6 +242,7 @@ export async function getMenuBreakdown(menuId: string): Promise<MenuCostBreakdow
       .from('events')
       .select('guest_count, quoted_price_cents')
       .eq('id', menu.event_id)
+      .eq('tenant_id', user.tenantId!)
       .single()
 
     if (event) {
@@ -1289,6 +1290,7 @@ export async function validateMenuAllergens(menuId: string): Promise<{
     .from('events')
     .select('client_id, dietary_restrictions, allergies')
     .eq('id', menu.event_id)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!event?.client_id) {
@@ -1299,6 +1301,7 @@ export async function validateMenuAllergens(menuId: string): Promise<{
     .from('clients')
     .select('first_name, last_name, dietary_restrictions, allergies')
     .eq('id', event.client_id)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   // Merge event + client level allergens
@@ -1336,6 +1339,7 @@ export async function validateMenuAllergens(menuId: string): Promise<{
     .from('components')
     .select('dish_id, name, recipe_id')
     .in('dish_id', dishIds)
+    .eq('tenant_id', user.tenantId!)
 
   // Get all recipe ingredient names
   const recipeIds = (components || []).filter((c: any) => c.recipe_id).map((c: any) => c.recipe_id)
@@ -1445,6 +1449,7 @@ export async function getRecipeUsage(recipeId: string): Promise<RecipeUsageEntry
     .from('components')
     .select('dish_id')
     .eq('recipe_id', recipeId)
+    .eq('tenant_id', user.tenantId!)
 
   if (!components?.length) return []
 
@@ -1453,6 +1458,7 @@ export async function getRecipeUsage(recipeId: string): Promise<RecipeUsageEntry
     .from('dishes')
     .select('id, menu_id, course_name')
     .in('id', dishIds)
+    .eq('tenant_id', user.tenantId!)
 
   if (!dishes?.length) return []
 
@@ -1554,6 +1560,7 @@ export async function checkMenuScaleMismatch(menuId: string): Promise<{
     .from('events')
     .select('guest_count, name')
     .eq('id', menu.event_id)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!event?.guest_count) return null
@@ -1645,6 +1652,7 @@ async function _getMenuSeasonalWarningsInner(
     .from('events')
     .select('event_date')
     .eq('id', menu.event_id)
+    .eq('tenant_id', tenantId)
     .single()
 
   if (!event?.event_date) return []
@@ -1819,6 +1827,7 @@ async function _getMenuPerformanceInner(
       .from('clients')
       .select('full_name')
       .eq('id', events[0].client_id)
+      .eq('tenant_id', tenantId)
       .single()
     lastClient = client?.full_name || null
   }

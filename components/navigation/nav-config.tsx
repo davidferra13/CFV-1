@@ -34,7 +34,6 @@ import {
   FlagBanner,
   Flower,
   Funnel,
-  Gamepad2,
   Gift,
   HandArrowDown,
   Handshake,
@@ -739,7 +738,7 @@ export const navGroups: NavGroup[] = [
           { href: '/staff/clock', label: 'Clock In/Out' },
           { href: '/staff/labor', label: 'Labor Dashboard' },
           { href: '/staff/live', label: 'Live Activity' },
-          { href: '/staff/payroll', label: 'Payroll Summary', hidden: true },
+
           { href: '/staff/performance', label: 'Performance' },
           { href: '/staff/schedule', label: 'Schedule' },
         ],
@@ -955,7 +954,7 @@ export const navGroups: NavGroup[] = [
           { href: '/finance/reporting/revenue-by-client', label: 'Revenue by Client' },
           { href: '/finance/reporting/revenue-by-event', label: 'Revenue by Event' },
           { href: '/finance/reporting/revenue-by-month', label: 'Revenue by Month' },
-          { href: '/finance/reporting/yoy-comparison', label: 'Year-over-Year', hidden: true },
+
           { href: '/finance/reporting/year-to-date-summary', label: 'Year-to-Date Summary' },
         ],
       },
@@ -1238,7 +1237,6 @@ export const navGroups: NavGroup[] = [
 
 export const standaloneBottom: NavItem[] = [
   { href: '/settings', label: 'Settings', icon: Settings },
-  // Hidden: { href: '/games', label: 'Games', icon: Gamepad2, adminOnly: true },
 ]
 
 export const mobileTabItems: NavItem[] = [

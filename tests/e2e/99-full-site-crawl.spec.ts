@@ -177,7 +177,6 @@ const ROUTES = {
     '/help/guides',
     '/onboarding',
     '/cannabis',
-    '/games',
     '/import',
   ],
 }

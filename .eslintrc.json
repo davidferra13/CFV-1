@@ -7,7 +7,7 @@
   },
   "overrides": [
     {
-      "files": ["lib/remotion/**/*.{ts,tsx}", "app/(chef)/games/menu-muse/page.tsx"],
+      "files": ["lib/remotion/**/*.{ts,tsx}"],
       "rules": {
         "react-hooks/rules-of-hooks": "off"
       }

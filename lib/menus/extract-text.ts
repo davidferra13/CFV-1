@@ -4,6 +4,8 @@
 
 'use server'
 
+import { requireChef } from '@/lib/auth/get-user'
+
 // Max extraction time per file - prevents malicious/malformed files from hanging the server
 const EXTRACTION_TIMEOUT_MS = 30_000 // 30 seconds
 
@@ -31,6 +33,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
  * Extract text from a PDF buffer using pdf-parse.
  */
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+  await requireChef()
   const pdfParse = ((await import('pdf-parse')) as any).default
   const result = await withTimeout<{ text: string }>(
     pdfParse(buffer),
@@ -44,6 +47,7 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
  * Extract text from a DOCX buffer using mammoth.
  */
 export async function extractTextFromDocx(buffer: Buffer): Promise<string> {
+  await requireChef()
   const mammoth = await import('mammoth')
   const result = await withTimeout(
     mammoth.extractRawText({ buffer }),
@@ -57,6 +61,7 @@ export async function extractTextFromDocx(buffer: Buffer): Promise<string> {
  * Extract text from a plain text buffer.
  */
 export async function extractTextFromTxt(buffer: Buffer): Promise<string> {
+  await requireChef()
   return buffer.toString('utf-8').trim()
 }
 
@@ -67,6 +72,7 @@ export async function extractTextFromTxt(buffer: Buffer): Promise<string> {
 export async function extractTextFromImage(
   buffer: Buffer
 ): Promise<{ text: string; confidence: number }> {
+  await requireChef()
   const Tesseract = await import('tesseract.js')
   const worker = await Tesseract.createWorker('eng')
   try {
@@ -91,6 +97,7 @@ export async function extractTextFromFile(
   buffer: Buffer,
   fileName: string
 ): Promise<{ text: string; confidence?: number }> {
+  await requireChef()
   const ext = fileName.split('.').pop()?.toLowerCase()
 
   switch (ext) {

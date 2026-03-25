@@ -789,25 +789,7 @@ export function ChefMobileNav({
 
               <div className="border-t border-stone-800 my-2" />
 
-              {isAdmin && !focusMode && (
-                <SectionAccordion
-                  title="Cannabis"
-                  items={filteredCannabisItems}
-                  icon={Leaf}
-                  isOpen={cannabisSectionOpen}
-                  onToggle={() => setCannabisSectionOpen((prev) => !prev)}
-                  pathname={pathname}
-                  searchParams={searchParams}
-                  headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
-                  headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
-                  dividerClass="border-green-800/30"
-                  itemActiveClass="text-green-700 bg-green-950/50"
-                  itemInactiveClass="text-stone-500 hover:bg-stone-800"
-                  iconActiveColor="#16a34a"
-                  iconInactiveColor="rgba(21, 128, 61, 0.45)"
-                  onNavigate={closeMenu}
-                />
-              )}
+              {/* Cannabis section hidden - feature disabled */}
 
               {!focusMode && (
                 <SectionAccordion

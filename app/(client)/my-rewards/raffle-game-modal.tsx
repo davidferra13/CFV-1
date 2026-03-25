@@ -2,14 +2,47 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { submitRaffleEntry } from '@/lib/raffle/actions'
-import {
-  type Dir,
-  collidesWithBody,
-  nextHeadPosition,
-  positionsEqual,
-  queueDirection,
-  randomOpenPosition,
-} from '@/lib/games/snake-utils'
+// Snake utility types and functions (inlined from removed lib/games/snake-utils)
+type Dir = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
+
+const OPPOSITE: Record<Dir, Dir> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' }
+
+function positionsEqual(a: Pos, b: Pos): boolean {
+  return a.x === b.x && a.y === b.y
+}
+
+function queueDirection(queue: Dir[], requested: Dir, current: Dir, maxBuffered = 2): Dir[] {
+  const anchor = queue[queue.length - 1] ?? current
+  if (requested === anchor || OPPOSITE[requested] === anchor || queue.length >= maxBuffered)
+    return queue
+  return [...queue, requested]
+}
+
+function nextHeadPosition(head: Pos, dir: Dir): Pos {
+  if (dir === 'UP') return { x: head.x, y: head.y - 1 }
+  if (dir === 'DOWN') return { x: head.x, y: head.y + 1 }
+  if (dir === 'LEFT') return { x: head.x - 1, y: head.y }
+  return { x: head.x + 1, y: head.y }
+}
+
+function collidesWithBody(snake: Pos[], nextHead: Pos, willGrow: boolean): boolean {
+  const body = willGrow ? snake : snake.slice(0, -1)
+  return body.some((segment) => positionsEqual(segment, nextHead))
+}
+
+function randomOpenPosition(grid: number, blocked: Pos[]): Pos {
+  const blockedSet = new Set(blocked.map((p) => `${p.x}:${p.y}`))
+  for (let i = 0; i < 200; i++) {
+    const candidate = { x: Math.floor(Math.random() * grid), y: Math.floor(Math.random() * grid) }
+    if (!blockedSet.has(`${candidate.x}:${candidate.y}`)) return candidate
+  }
+  for (let y = 0; y < grid; y++) {
+    for (let x = 0; x < grid; x++) {
+      if (!blockedSet.has(`${x}:${y}`)) return { x, y }
+    }
+  }
+  throw new Error('No open positions available')
+}
 
 const GRID = 16
 const CELL = 24

@@ -550,6 +550,7 @@ export async function getEditorMenuCost(menuId: string) {
       'total_recipe_cost_cents, cost_per_guest_cents, food_cost_percentage, has_all_recipe_costs, total_component_count'
     )
     .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
     .maybeSingle()
 
   return data
