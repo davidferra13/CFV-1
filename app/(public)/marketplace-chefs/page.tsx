@@ -315,12 +315,12 @@ export default function MarketplaceChefsPage() {
               {PRIMARY_SIGNUP_LABEL}
             </TrackedLink>
             <TrackedLink
-              href="/pricing"
-              analyticsName="marketplace_chefs_pricing"
+              href="/contact"
+              analyticsName="marketplace_chefs_contact"
               analyticsProps={{ section: 'final_cta' }}
               className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-7 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
             >
-              Review pricing
+              Contact us
             </TrackedLink>
           </div>
           {isBeta && (

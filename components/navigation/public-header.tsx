@@ -8,10 +8,7 @@ import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
-const NAV_ITEMS = [
-  { href: '/contact', label: 'Contact' },
-  { href: '/pricing', label: 'Pricing' },
-]
+const NAV_ITEMS = [{ href: '/contact', label: 'Contact' }]
 
 export function PublicHeader() {
   const pathname = usePathname()

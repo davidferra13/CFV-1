@@ -470,7 +470,7 @@ export async function executeGoalCheckIns(inputs: Record<string, unknown>) {
 
 export async function executeCertificationStatus() {
   const { getCertifications, getExpiringCertifications } =
-    await import('@/lib/protection/certification-actions')
+    await import('@/lib/compliance/certification-actions')
   const [all, expiring] = await Promise.all([getCertifications(), getExpiringCertifications(60)])
   return { certifications: all, expiringSoon: expiring }
 }

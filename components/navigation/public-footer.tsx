@@ -16,7 +16,6 @@ const FOOTER_LINKS = {
   ],
   forOperators: [
     { href: '/marketplace-chefs', label: 'For chefs' },
-    { href: '/pricing', label: 'Pricing' },
     { href: '/compare', label: 'Compare Plans' },
     { href: '/partner-signup', label: 'Become a Partner' },
   ],
